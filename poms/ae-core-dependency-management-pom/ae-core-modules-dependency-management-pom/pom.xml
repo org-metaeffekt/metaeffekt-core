@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-core-dependency-management-pom</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <artifactId>ae-core-modules-dependency-management-pom</artifactId>
+    <packaging>pom</packaging>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-common-kernel</artifactId>
+                <scope>compile</scope>
+                <version>${ae.core.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-maven-kernel</artifactId>
+                <scope>compile</scope>
+                <version>${ae.core.version}</version>
+            </dependency>
+
+            <!-- FIXME get rid of runtime artifacts -->
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-commons-annotation</artifactId>
+                <scope>runtime</scope>
+                <version>${ae.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-commons-annotation</artifactId>
+                <classifier>runtime</classifier>
+                <scope>runtime</scope>
+                <version>${ae.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-commons-annotation</artifactId>
+                <classifier>api</classifier>
+                <scope>ccompile</scope>
+                <version>${ae.core.version}</version>
+            </dependency>
+
+            <!--
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-maven-kernel</artifactId>
+                <version>${ae.core.version}</version>
+                <optional>true</optional>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-maven-kernel</artifactId>
+                <version>${ae.core.version}</version>
+                <classifier>javadoc</classifier>
+                <optional>true</optional>
+                <scope>provided</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-commons-util</artifactId>
+                <version>${ae.core.version}</version>
+                <optional>true</optional>
+                <scope>provided</scope>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-commons-util</artifactId>
+                <version>${ae.core.version}</version>
+                <classifier>runtime</classifier>
+                <scope>runtime</scope>
+            </dependency>
+
+           <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-commons-util</artifactId>
+                <version>${ae.core.version}</version>
+                <classifier>javadoc</classifier>
+                <optional>true</optional>
+                <scope>provided</scope>
+            </dependency>
+            -->
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+
+        <!-- repeat the dependencies here for verification -->
+
+        <!--
+        <dependency>
+            <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-commons-util</artifactId>
+            <classifier>javadoc</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-commons-util</artifactId>
+            <classifier>javadoc</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-commons-util</artifactId>
+            <classifier>javadoc</classifier>
+        </dependency>
+        -->
+
+
+    </dependencies>
+
+</project>

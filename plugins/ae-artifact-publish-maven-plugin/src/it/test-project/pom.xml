@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.metaeffekt.core</groupId>
+  <artifactId>test-project</artifactId>
+  <name>test-project</name>
+  <version>@project.version@</version>
+
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+  </dependencies>
+
+  <build>
+    <plugins>
+        <plugin>
+          <groupId>org.metaeffekt.core</groupId>
+          <artifactId>ae-artifact-publish-maven-plugin</artifactId>
+          <version>@project.version@</version>
+          <executions>
+            <execution>
+              <id>package-api</id>
+              <phase>package</phase>
+              <goals>
+                <goal>publish-artifact</goal>
+              </goals>
+	          <configuration>
+	          	<qualifier>api</qualifier>
+	            <filesets>
+	              <fileset>
+	                <directory>${basedir}/target/classes</directory>
+	                <includes>
+	                  <include>**/*Service*.class</include>
+	                </includes>
+	                <followSymlinks>false</followSymlinks>
+	               </fileset>
+	             </filesets>
+	           </configuration>
+            </execution>
+
+            <execution>
+              <id>package-config</id>
+              <phase>package</phase>
+              <goals>
+                <goal>publish-artifact</goal>
+              </goals>
+	          <configuration>
+	          	<qualifier>mysources</qualifier>
+	            <filesets>
+	              <fileset>
+	                <directory>${basedir}/src/main</directory>
+	                <outputDirectory>test-output-dir</outputDirectory>
+	                <includes>
+	                  <include>**/*</include>
+	                </includes>
+	                <followSymlinks>false</followSymlinks>
+	               </fileset>
+	              <fileset>
+	                <directory>${basedir}/src</directory>
+	                <outputDirectory>test-nested-output-dir</outputDirectory>
+	                <includes>
+	                  <include>**/*</include>
+	                </includes>
+	                <followSymlinks>false</followSymlinks>
+	               </fileset>
+	             </filesets>
+	           </configuration>
+            </execution>
+          </executions>
+
+        </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_third-party-license-summary" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Licenses in Effect</title>
+    <body>
+        <table otherprops="wide" id="table_third-party-license-summary" >
+            <tgroup cols="1">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">License</entry>
+                    </row>
+                </thead>
+                <tbody> 
+#foreach($license in $inventory.evaluateLicenses(false))
+                    <row>
+                        #set($folder=$inventory.getLicenseFolder($license))
+                        #if($folder) 
+                            <entry><xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref></entry>
+                        #else
+                            <entry>$license.trim()</entry>
+                        #end
+                    </row>
+#end
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

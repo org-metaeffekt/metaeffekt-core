@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_third-party-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Third-Party Components</title>
+    <body>
+        <p>
+
+            <table otherprops="wide" id="table_third-party-components">
+                <tgroup cols="3">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="55*" />
+                    <colspec colname="COLSPEC2" colnum="3" colwidth="25*" />
+
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC1" valign="top">File(s)</entry>
+                            <entry colname="COLSPEC2" valign="top">License</entry>
+                        </row>
+                    </thead>
+
+                    <tbody>
+
+#foreach($component in $inventory.evaluateComponents())
+
+    #set($group=$inventory.evaluateComponent($component, true))
+
+    #if($inventory.hasConcreteArtifacts($group))
+
+                <row>
+                    <entry>#if($component.getGroup())$component.getGroup().trim()#else&nbsp;#end</entry>
+
+                    <entry>
+                        <lines>#foreach($artifact in $group)#if($artifact.getId())<codeph>$artifact.getId().trim().replaceAll("\.", ".&#8203;")</codeph>
+#end#end</lines>
+                    </entry>
+
+                    #set($license=$group.get(0).getLicense())
+                    #set($folder=$inventory.getLicenseFolder($license))
+                    #if($folder)
+                        <entry><xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref></entry>
+                    #else
+                        <entry>#if($license)$license.trim()#else&nbsp;#end</entry>
+                    #end
+                </row>
+
+    #end
+#end
+                    </tbody>
+                </tgroup>
+            </table>
+        </p>
+    </body>
+
+</topic>

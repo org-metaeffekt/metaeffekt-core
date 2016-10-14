@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>ae-core-inventory</artifactId>
+    <packaging>jar</packaging>
+
+    <!-- FIXME: dedicated parent POM for inventories is required -->
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-core</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.metaeffekt.core</groupId>
+                    <artifactId>ae-inventory-maven-plugin</artifactId>
+                    <version>${ae.core.version}</version>
+                    <configuration>
+                        <componentNameMapping>
+                            <mapping>spin.js-->Spin</mapping>
+                        </componentNameMapping>
+
+                        <licenseNameMapping>
+                            <mapping>Jtidy License-->JTidy License</mapping>
+                            <mapping>Jdom License-->JDOM License</mapping>
+                            <mapping>JSon License-->JSON License</mapping>
+                            <mapping>BSD 2.0-->BSD 3-Clause License</mapping>
+                            <mapping>BSD Two Clause License-->BSD 2-Clause License</mapping>
+                            <mapping>BSD Two Clause License (BSD-)-->BSD 2-Clause License</mapping>
+                            <mapping>MIT License V2-->MIT License</mapping>
+                        </licenseNameMapping>
+                    </configuration>
+                </plugin>
+            
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>default-jar</id>
+                            <configuration>
+                                <excludes>
+                                    <exclude>**/*.xls.previous.txt</exclude>
+                                    <exclude>**/*.xls.update.txt</exclude>
+                                </excludes>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-inventory-maven-plugin</artifactId>
+                <version>${ae.core.version}</version>
+                <executions>
+                    <execution>
+                        <id>2016-Q1</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>update-inventory</goal>
+                        </goals>
+                        <configuration>
+                            <sourceInventoryPath>${project.build.directory}/classes/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</sourceInventoryPath>
+                            <targetInventoryPath>${project.build.directory}/classes/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</targetInventoryPath>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <processors>
+                        <processor>
+                            <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
+                            <skip>true</skip>
+                        </processor>
+                        <processor>
+                            <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
+                            <skip>true</skip>
+                        </processor>
+                        <processor>
+                            <className>org.metaeffekt.core.inventory.processor.UpdateVersionRecommendationProcessor</className>
+                        </processor>
+                    </processors>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>sync-versions</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.metaeffekt.core</groupId>
+                        <artifactId>ae-inventory-maven-plugin</artifactId>
+                        <version>${ae.core.version}</version>
+                        <executions>
+                            <execution>
+                                <id>2016-Q1</id>
+                                <phase>process-sources</phase>
+                                <goals>
+                                    <goal>update-inventory</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceInventoryPath>src/main/resources/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</sourceInventoryPath>
+                                    <targetInventoryPath>src/main/resources/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</targetInventoryPath>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <processors>
+                                <processor>
+                                    <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
+                                </processor>
+                                <processor>
+                                    <className>org.metaeffekt.core.inventory.processor.MavenCentralUpdateProcessor</className>
+                                    <skip>false</skip>
+                                    <properties>
+                                        <groupid.exclude.patterns>-nothing-</groupid.exclude.patterns>
+                                        <artifactid.exclude.patterns>-nothing-</artifactid.exclude.patterns>
+                                        <overwrite.existing.version>true</overwrite.existing.version>
+                                    </properties>
+                                </processor>
+                                <processor>
+                                    <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
+                                </processor>
+                                <processor>
+                                    <className>org.metaeffekt.core.inventory.processor.UpdateVersionRecommendationProcessor</className>
+                                </processor>
+                            </processors>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>jaxen</groupId>
+                                <artifactId>jaxen</artifactId>
+                                <version>1.1.1</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

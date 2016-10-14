@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>ae-core-plugin-management-pom</artifactId>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-core-poms</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+
+    <properties>
+        <header.copyright.year>2016</header.copyright.year>
+
+        <ae.core.version>0.1.0-SNAPSHOT</ae.core.version>
+
+        <artifact.inventory.version>0.1.0-SNAPSHOT</artifact.inventory.version>
+        <artifact.inventory.enabled>true</artifact.inventory.enabled>
+
+        <artifact.inventory.manage.scope.provided>true</artifact.inventory.manage.scope.provided>
+        <artifact.inventory.manage.scope.test>true</artifact.inventory.manage.scope.test>
+        <artifact.inventory.manage.scope.system>true</artifact.inventory.manage.scope.system>
+        <artifact.inventory.manage.optional>true</artifact.inventory.manage.optional>
+        <artifact.inventory.manage.plugins>true</artifact.inventory.manage.plugins>
+
+        <artifact.inventory.enforce.plugins>false</artifact.inventory.enforce.plugins>
+        <artifact.inventory.external.enabled>false</artifact.inventory.external.enabled>
+        <artifact.inventory.exclude.artifacts>^org.metaeffekt\..*:*</artifact.inventory.exclude.artifacts>
+        <artifact.inventory.source.version>2016-Q1</artifact.inventory.source.version>
+        <artifact.inventory.source>/META-INF/artifact-inventory-thirdparty-${artifact.inventory.source.version}.xls
+        </artifact.inventory.source>
+
+        <ant.version>1.9.6</ant.version>
+
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.jdk>1.8</maven.compiler.jdk>
+
+        <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-core-dependency-management-pom</artifactId>
+                <version>${ae.core.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <!-- determining bumped up version -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <!-- determining bumped up version -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <!-- determining bumped up version -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
+                </plugin>
+                <plugin>
+                    <!-- determining bumped up version -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.5.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>2.10.4</version>
+                    <configuration>
+                        <javadocVersion>1.8</javadocVersion>
+                        <additionalparam>-Xdoclint:none</additionalparam>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <!-- introduced to manage version -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.19.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.5.1</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>3.5</version>
+                    <executions>
+                        <execution>
+                            <id>default-descriptor</id>
+                            <phase>process-classes</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.12</version>
+                    <executions>
+                        <execution>
+                            <!-- maven3 populates the local repository with timestamped snapshots.
+                                This execution removes all artifacts for THIS version of the 
+                                project including the the SNAPSHOT version that is currently being
+                                built and the timestamped artifact for this version)
+                             -->
+                            <id>remove-obsolete-artifacts</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>remove-project-artifact</goal>
+                            </goals>
+                            <configuration>
+                                <failOnError>false</failOnError>
+                                <removeAll>false</removeAll>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- FIXME: check this is needed in the current project scope -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>jaxb2-maven-plugin</artifactId>
+                    <version>1.6</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.metaeffekt.core</groupId>
+                    <artifactId>ae-inventory-maven-plugin</artifactId>
+                    <version>${ae.core.version}</version>
+                    <configuration>
+                        <sourceInventoryPath>${artifact.inventory.source}</sourceInventoryPath>
+
+                        <failOnError>${artifact.inventory.enabled}</failOnError>
+                        <failOnUnknown>${artifact.inventory.enabled}</failOnUnknown>
+                        <failOnUnknownVersion>${artifact.inventory.enabled}</failOnUnknownVersion>
+                        <failOnMissingLicense>${artifact.inventory.enabled}</failOnMissingLicense>
+                        <failOnMissingLicenseFile>false</failOnMissingLicenseFile>
+                        <failOnMissingNotice>${artifact.inventory.enabled}</failOnMissingNotice>
+                        <failOnDevelopment>${artifact.inventory.external.enabled}</failOnDevelopment>
+                        <failOnInternal>${artifact.inventory.external.enabled}</failOnInternal>
+                        <failOnUpgrade>false</failOnUpgrade>
+                        <failOnDowngrade>${artifact.inventory.enabled}</failOnDowngrade>
+
+                        <manageScopeProvided>${artifact.inventory.manage.scope.provided}</manageScopeProvided>
+                        <manageScopeTest>${artifact.inventory.manage.scope.test}</manageScopeTest>
+                        <manageScopeSystem>${artifact.inventory.manage.scope.system}</manageScopeSystem>
+                        <manageOptional>${artifact.inventory.manage.optional}</manageOptional>
+                        <managePlugins>${artifact.inventory.manage.plugins}</managePlugins>
+
+                        <artifactExcludes>${artifact.inventory.exclude.artifacts}</artifactExcludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>inventory-check</id>
+                            <goals>
+                                <goal>create-pom-report</goal>
+                            </goals>
+                            <phase>validate</phase>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.metaeffekt.core</groupId>
+                            <artifactId>ae-core-inventory</artifactId>
+                            <version>${ae.core.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>1.8</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.ant</groupId>
+                            <artifactId>ant</artifactId>
+                            <version>${ant.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>2.17</version>
+                </plugin>
+
+                <!-- FIXME: check whether we need and want this -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>1.4.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.10</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>3.0</version>
+                    <configuration>
+                        <header>header/apache-license-2-header.txt</header>
+                        <properties>
+                            <owner>metaeffekt.org</owner>
+                            <email>contact@metaeffekt.org</email>
+                            <year.initial>2009</year.initial>
+                            <year>2016</year>
+                        </properties>
+                        <includes>
+                            <include>**/*.java</include>
+                        </includes>
+                        <excludes>
+                            <exclude>**/README*</exclude>
+                            <exclude>src/test/resources/**</exclude>
+                            <exclude>src/main/resources/**</exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>check-license-header</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.metaeffekt.core</groupId>
+                            <artifactId>ae-configuration</artifactId>
+                            <version>${ae.core.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>apply-license-header</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.mycila</groupId>
+                            <artifactId>license-maven-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>check-license-header</id>
+                                    <phase>never</phase>
+                                </execution>
+                                <execution>
+                                    <id>apply-license-header</id>
+                                    <phase>validate</phase>
+                                    <goals>
+                                        <goal>format</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+
+                <plugins>
+                    <plugin>
+                        <groupId>com.mycila</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+
+            </build>
+        </profile>
+    </profiles>
+
+</project>

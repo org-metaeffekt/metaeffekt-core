@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_third-party-jars" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Third-Party Artifacts</title>
+    <body>
+        <table otherprops="wide" id="table_third-party-jars">
+            <tgroup cols="4">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="30*" />
+                <colspec colname="COLSPEC2" colnum="3" colwidth="15*" />
+                <colspec colname="COLSPEC3" colnum="4" colwidth="25*" />
+
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">Group Id</entry>
+                        <entry colname="COLSPEC1" valign="top">Artifact Id</entry>
+                        <entry colname="COLSPEC2" valign="top">Version</entry>
+                        <entry colname="COLSPEC3" valign="top">License</entry>
+                    </row>
+                </thead>
+                
+                <tbody>
+#foreach($artifact in $inventory.getArtifacts())#if($inventory.hasConcreteArtifacts($artifact))
+                    <row>
+                        <entry>#if($artifact.getGroupId())$artifact.getGroupId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</entry>
+                        <entry>#if($artifact.getArtifactId())$artifact.getArtifactId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end#if($artifact.getType() && !$artifact.getType().toLowerCase().equals("jar")) ($artifact.getType())#end</entry>
+                        <entry><codeph>#if($artifact.getVersion())$artifact.getVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
+                        
+                        #set($license=$artifact.getLicense())
+                        #if($license)
+                            #set($folder=$inventory.getLicenseFolder($license))
+                            #if($folder) 
+                                <entry><xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref></entry>
+                            #else
+                                <entry>$license.trim()</entry>
+                            #end
+                        #else
+                            <entry>&nbsp;</entry>
+                        #end
+                    </row>
+#end#end
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

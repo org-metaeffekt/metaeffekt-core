@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_third-party-version-diff" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Third-Party Version Upgrades</title>
+    <body>
+        <table otherprops="wide" id="table_third-party-version-diff">
+            <tgroup cols="4">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="30*" />
+                <colspec colname="COLSPEC2" colnum="3" colwidth="20*" />
+                <colspec colname="COLSPEC3" colnum="4" colwidth="20*" />
+
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">Group Id</entry>
+                        <entry colname="COLSPEC1" valign="top">Artifact Id</entry>
+                        <entry colname="COLSPEC2" valign="top">Version</entry>
+                        <entry colname="COLSPEC3" valign="top">Previous Version</entry>
+                    </row>
+                </thead>
+
+                <tbody>            
+#foreach($artifact in $inventory.getArtifacts())#if($artifact.getGroupId() || $artifact.getArtifactId())        
+                    <row>
+                        <entry>#if($artifact.getGroupId())$artifact.getGroupId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</entry>
+                        <entry>#if($artifact.getArtifactId())$artifact.getArtifactId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</entry>
+                        <entry><codeph>#if($artifact.getVersion())$artifact.getVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
+                        <entry><codeph>#if($artifact.getPreviousVersion())$artifact.getPreviousVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
+                    </row>
+#end#end
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.metaeffekt.core</groupId>
+    <artifactId>ae-core</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <organization>
+        <name>metaeffekt GmbH</name>
+        <url>http://www.metaeffekt.org</url>
+    </organization>
+
+    <inceptionYear>2016</inceptionYear>
+
+    <prerequisites>
+        <maven>3.3</maven>
+    </prerequisites>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <artifact.inventory.version>0.1.0-SNAPSHOT</artifact.inventory.version>
+        <artifact.inventory.enabled>true</artifact.inventory.enabled>
+        <ae.core.version>0.1.0-SNAPSHOT</ae.core.version>
+    </properties>
+
+    <modules>
+        <module>poms</module>
+        <module>libraries</module>
+        <module>plugins</module>
+        <module>modules</module>
+        <module>inventory</module>
+        <module>tests</module>
+        <module>tools</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.metaeffekt.core</groupId>
+                    <!-- FIXME: rename plugin -->
+                    <artifactId>ae-version-maven-plugin</artifactId>
+                    <version>${ae.core.version}</version>
+                    <configuration>
+                        <includes>**/pom.xml</includes>
+                        <excludes>**/src/test/resources/**</excludes>
+                        <projectVersion>${ae.core.version}</projectVersion>
+                        <groupIdVersionMap>
+                            <org.metaeffekt.core>${ae.core.version}</org.metaeffekt.core>
+                        </groupIdVersionMap>
+                        <propertyVersionMap>
+                            <artifact.inventory.version>${artifact.inventory.version}</artifact.inventory.version>
+                            <artifact.inventory.enabled>${artifact.inventory.enabled}</artifact.inventory.enabled>
+                            <ae.core.version>${ae.core.version}</ae.core.version>
+                        </propertyVersionMap>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>update-versions</id>
+                            <phase>pre-clean</phase>
+                            <goals>
+                                <goal>update</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>update-versions</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.metaeffekt.core</groupId>
+                        <artifactId>ae-version-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

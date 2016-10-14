@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration strict="true" monitorInterval="30">
+
+    <Properties>
+        <Property name="consoleLayoutPattern">%d{ISO8601} %-5p [%t] %c(%L) - %m%n</Property>
+        <Property name="fileLayoutPattern">%d{ISO8601} %-5p [%t] %c#%M(%L) - %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="${consoleLayoutPattern}"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Root level="WARN">
+            <AppenderRef ref="CONSOLE"/>
+        </Root>
+    </Loggers>
+
+</Configuration>
