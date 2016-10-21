@@ -6,7 +6,7 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
-    <version>0.1.0</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>metaeffekt-core</name>
@@ -49,9 +49,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <artifact.inventory.version>0.1.0</artifact.inventory.version>
+        <artifact.inventory.version>0.2-SNAPSHOT</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
-        <ae.core.version>0.1.0</ae.core.version>
+        <ae.core.version>0.2-SNAPSHOT</ae.core.version>
     </properties>
 
     <modules>
