@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -49,34 +50,48 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
      */
     private String projectName;
 
+    /**
+     * @parameter default-value="${session}"
+     * @required
+     * @readonly
+     */
+    private MavenSession mavenSession;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // adapt maven logging to underlying logging facade
         MavenLogAdapter.initialize(getLog());
         try {
-            // initialize empty multi-project inventory
-            Inventory multiProjectInventory = new Inventory();
-            File inventory = new File(targetInventoryPath);
+            boolean isRoot = false;
+            File sessionPath = new File(mavenSession.getExecutionRootDirectory());
+            File projectPath = getProject().getBasedir();
+            isRoot = sessionPath.getAbsolutePath().equals(projectPath.getAbsolutePath());
 
-            // scan project for other produced inventory files
-            DirectoryScanner scanner = new DirectoryScanner();
-            scanner.setBasedir(getProject().getBasedir());
-            scanner.setIncludes(scanIncludes);
-            scanner.scan();
+            if (isRoot) {
+                // initialize empty multi-project inventory
+                Inventory multiProjectInventory = new Inventory();
+                File inventory = new File(targetInventoryPath);
 
-            // iterate the scanned files, read and extend.
-            for (String file : scanner.getIncludedFiles()) {
-                getLog().warn("Integrating content of inventory: " + file);
-                File inventoryToRead = new File(scanner.getBasedir(), file);
-                // skip the file that we are about to write (from a previous run)
-                if (!inventoryToRead.equals(inventory)) {
-                    Inventory readInventory = new GlobalInventoryReader().readInventory(inventoryToRead);
-                    extendMultiProjectReport(multiProjectInventory, readInventory);
+                // scan project for other produced inventory files
+                DirectoryScanner scanner = new DirectoryScanner();
+                scanner.setBasedir(getProject().getBasedir());
+                scanner.setIncludes(scanIncludes);
+                scanner.scan();
+
+                // iterate the scanned files, read and extend.
+                for (String file : scanner.getIncludedFiles()) {
+                    getLog().warn("Integrating content of inventory: " + file);
+                    File inventoryToRead = new File(scanner.getBasedir(), file);
+                    // skip the file that we are about to write (from a previous run)
+                    if (!inventoryToRead.equals(inventory)) {
+                        Inventory readInventory = new GlobalInventoryReader().readInventory(inventoryToRead);
+                        extendMultiProjectReport(multiProjectInventory, readInventory);
+                    }
                 }
-            }
 
-            // we write the resulting inventory
-            writeMultiProjectInventory(multiProjectInventory, inventory);
+                // we write the resulting inventory
+                writeMultiProjectInventory(multiProjectInventory, inventory);
+            }
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         } finally {
@@ -85,12 +100,6 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
     }
 
     private void extendMultiProjectReport(Inventory multiProjectInventory, Inventory inventory) throws IOException {
-        // update / extend project name
-        for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
-            artifact.getProjects().clear();
-            artifact.addProject(getProjectName());
-        }
-
         // merge content
         multiProjectInventory.getArtifacts().addAll(inventory.getArtifacts());
         multiProjectInventory.mergeDuplicates();
