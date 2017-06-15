@@ -37,26 +37,30 @@ public class LicenseMetaData {
 
     public static String deriveLicenseFolderName(String license) {
         if (license == null) return null;
-        String fileName = license.replace(" ", "-");
-        fileName = fileName.replace("+", "");
-        fileName = fileName.replace("!", "");
-        fileName = fileName.replace(",", "-");
-        fileName = fileName.replace(":", "_");
-        fileName = fileName.replace(";", "_");
-        fileName = fileName.replace("/", "_");
-        fileName = fileName.replace("\\", "_");
+        return normalizeId(license);
+    }
+
+    public static String normalizeId(String string) {
+        String result = string.replace(" ", "-");
+        result = result.replace("+", "");
+        result = result.replace("!", "");
+        result = result.replace(",", "-");
+        result = result.replace(":", "_");
+        result = result.replace(";", "_");
+        result = result.replace("/", "_");
+        result = result.replace("\\", "_");
 
         int length = -1;
-        while (length != fileName.length()) {
-            length = fileName.length();
-            fileName = fileName.replace("__", "_");
-            fileName = fileName.replace("--", "-");
-            fileName = fileName.replace("-_", "-");
-            fileName = fileName.replace("_-", "-");
-            fileName = fileName.replace("_(", "(");
-            fileName = fileName.replace("-)", ")");
+        while (length != result.length()) {
+            length = result.length();
+            result = result.replace("__", "_");
+            result = result.replace("--", "-");
+            result = result.replace("-_", "-");
+            result = result.replace("_-", "-");
+            result = result.replace("_(", "(");
+            result = result.replace("-)", ")");
         }
-        return fileName;
+        return result;
     }
 
     public String getComponent() {

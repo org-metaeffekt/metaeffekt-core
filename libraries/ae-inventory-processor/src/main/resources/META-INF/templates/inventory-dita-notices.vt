@@ -1,43 +1,47 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_third-party-notices" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>Copyright Notices</title>
+    <title>License Notices</title>
 #foreach($license in $inventory.evaluateLicenses(false))
 
-    #set($group=$inventory.evaluateNotices($license))
+#set($group=$inventory.evaluateNotices($license))
     
-    #if(!$group.isEmpty())
+#if(!$group.isEmpty())
         <topic id="tpc_license_$inventory.deriveLicenseId($license)">
             <title>$license</title>
             <body>
-                <table otherprops="wide" id="table_license_$inventory.deriveLicenseId($license)">
-                    <tgroup cols="4">
-                        <colspec colname="COLSPEC0" colnum="1" colwidth="25*" />
-                        <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
-                        <colspec colname="COLSPEC2" colnum="3" colwidth="15*" />
-                        <colspec colname="COLSPEC3" colnum="4" colwidth="45*" />
-        
-                        <thead>
-                            <row>
-                                <entry colname="COLSPEC0" valign="top">Component</entry>
-                                <entry colname="COLSPEC1" valign="top">Group Id / Artifact Id</entry>
-                                <entry colname="COLSPEC2" valign="top">Version</entry>
-                                <entry colname="COLSPEC3" valign="top">Notice</entry>
-                            </row>
-                        </thead>
-        
-                        <tbody>
-        #foreach($artifactLicenseData in $group)
-                            <row>
-                                <entry>#if($artifactLicenseData.artifact.getName())$artifactLicenseData.artifact.getName().trim()#else&nbsp;#end</entry>
-                                <entry>#if($artifactLicenseData.artifact.getGroupId())$artifactLicenseData.artifact.getGroupId().trim().replaceAll("\.", ".&#8203;") / #end#if($artifactLicenseData.artifact.getArtifactId())$artifactLicenseData.artifact.getArtifactId().trim().replaceAll("\.", ".&#8203;")#end&nbsp;</entry>
-                                <entry><codeph>#if($artifactLicenseData.artifact.getVersion())$artifactLicenseData.artifact.getVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
-                                <entry>#if($artifactLicenseData.licenseMetaData.getObligationText())$artifactLicenseData.licenseMetaData.getObligationText().trim()#else&nbsp;#end</entry>
-                            </row>
-        #end
-                        </tbody>
-                    </tgroup>
-                </table>
+#foreach($artifactLicenseData in $group)
+                <section>
+                    <title>$artifactLicenseData.componentName - $artifactLicenseData.componentVersion</title>
+                    <p>
+                        <table otherprops="wide" id="table_license_notice_$artifactLicenseData.deriveId()">
+                            <tgroup cols="3">
+                                <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+                                <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
+                                <colspec colname="COLSPEC2" colnum="3" colwidth="25*" />
+
+                                <thead>
+                                    <row>
+                                        <entry colname="COLSPEC0" valign="top">File</entry>
+                                        <entry colname="COLSPEC1" valign="top">Group Id</entry>
+                                        <entry colname="COLSPEC2" valign="top">Artifact Id</entry>
+                                    </row>
+                                </thead>
+                                <tbody>
+#foreach($artifact in $artifactLicenseData.artifacts)
+    <row>
+        <entry><codeph>#if($artifact.getId())$artifact.getId().trim()#else&nbsp;#end</codeph></entry>
+        <entry>#if($artifact.getGroupId())$artifact.getGroupId().trim().replaceAll("\.", ".&#8203;")#end</entry>
+        <entry>#if($artifact.getArtifactId())$artifact.getArtifactId().trim().replaceAll("\.", ".&#8203;")#end&nbsp;</entry>
+    </row>
+#end
+                                </tbody>
+                            </tgroup>
+                        </table>
+                    </p>
+#if($artifactLicenseData.licenseMetaData.getObligationText())$artifactLicenseData.licenseMetaData.getObligationText().trim()#else&nbsp;#end
+                </section>
+#end
             </body>
         </topic>
     #end

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
@@ -25,10 +26,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-@org.junit.Ignore
 public class RepositoryReportTest {
 
-    private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/ae-global-artifact-inventory-latest.xls";
+    private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/artifact-inventory-thirdparty-2016-Q1.xls";
     private static final String GLOBAL_INVENTORY = "src/test/resources/artifact-inventory-thirdparty-2016-Q1.xls";
     private static final String REPOSITORY = "repository";
 
@@ -79,6 +79,7 @@ public class RepositoryReportTest {
     }
 
     @Test
+    @Ignore
     public void testRepositoryReport() throws Exception {
 
         String repoPath = inferRepoPath();
@@ -116,6 +117,7 @@ public class RepositoryReportTest {
     }
 
     @Test
+    @Ignore
     public void testRepositoryReportFromClasspath() throws Exception {
 
         String repoPath = inferRepoPath();

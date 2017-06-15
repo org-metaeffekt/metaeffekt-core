@@ -16,32 +16,62 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Data container for artifact and {@link LicenseMetaData} tuple.
+ * Data container for artifacts and {@link LicenseMetaData}.
  *
  * @author Karsten Klein
  */
 public class ArtifactLicenseData {
-    private final Artifact artifact;
+    private final List<Artifact> artifacts;
     private final LicenseMetaData licenseMetaData;
+    private final String componentName;
+    private final String componentVersion;
 
-    public ArtifactLicenseData(Artifact artifact, LicenseMetaData licenseMetaData) {
-        this.artifact = artifact;
+    public ArtifactLicenseData(String componentName, String componentVersion, LicenseMetaData licenseMetaData) {
         this.licenseMetaData = licenseMetaData;
-    }
-
-    public Artifact getArtifact() {
-        return artifact;
+        this.componentName = componentName;
+        this.componentVersion = componentVersion;
+        this.artifacts = new ArrayList<>();
     }
 
     public LicenseMetaData getLicenseMetaData() {
         return licenseMetaData;
     }
 
+    public void add(Artifact artifact) {
+        artifacts.add(artifact);
+    }
+
+    public List<Artifact> getArtifacts() {
+        return artifacts;
+    }
+
+    public String getComponentName() {
+        return componentName;
+    }
+
+    public String getComponentVersion() {
+        return componentVersion;
+    }
+
+    public String deriveId() {
+        StringBuilder sb = new StringBuilder(licenseMetaData.getName()).append(licenseMetaData.getName()).append(licenseMetaData.getVersion());
+        return normizeTokenId(LicenseMetaData.normalizeId(sb.toString()));
+    }
+
+    public static String normizeTokenId(String string) {
+        String result = string.replace(" ", "-");
+        result = result.replace("(", "");
+        result = result.replace(")", "");
+        return result;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(licenseMetaData.getComponent());
-        sb.append('/').append(artifact.getArtifactId());
         return sb.toString();
     }
 }

@@ -593,6 +593,9 @@ public class InventoryReport {
 
     protected void writeObligationSummary(Inventory projectInventory) throws Exception {
         if (targetDitaNoticeReportPath != null) {
+
+
+
             produceDita(projectInventory, DITA_NOTICE_TEMPLATE, new File(targetDitaNoticeReportPath));
         }
     }

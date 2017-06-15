@@ -597,27 +597,32 @@ public class Inventory {
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String license) {
-        List<ArtifactLicenseData> group = new ArrayList<ArtifactLicenseData>();
-        for (Artifact artifact : artifacts) {
-            String artifactLicenses = artifact.getLicense();
+        final Map<String, ArtifactLicenseData> map = new LinkedHashMap<>();
+        for (final Artifact artifact : artifacts) {
+            final String artifactLicenses = artifact.getLicense();
             if (artifactLicenses != null) {
-                String[] splitLicense = artifactLicenses.split("\\|");
+                final String[] splitLicense = artifactLicenses.split("\\|");
                 for (int i = 0; i < splitLicense.length; i++) {
-                    String artifactLicense = splitLicense[i].trim();
+                    final String artifactLicense = splitLicense[i].trim();
                     if (license.equals(artifactLicense)) {
                         // find a matching LMD instance
                         LicenseMetaData match = findMatchingLicenseMetaData(
                                 artifact.getName(), artifactLicense, artifact.getVersion());
                         if (match != null) {
-                            ArtifactLicenseData ald = new ArtifactLicenseData(artifact, match);
-                            group.add(ald);
+                            String qualifier = new StringBuilder(artifactLicense).append("-").
+                                    append(artifact.getVersion()).append("-").append(artifact.getName()).toString();
+                            ArtifactLicenseData artifactLicenseData = map.get(qualifier);
+                            if (artifactLicenseData == null) {
+                                artifactLicenseData = new ArtifactLicenseData(artifact.getName(), artifact.getVersion(), match);
+                                map.put(qualifier, artifactLicenseData);
+                            }
+                            artifactLicenseData.add(artifact);
                         }
                     }
                 }
             }
         }
-
-        return group;
+        return new ArrayList<>(map.values());
     }
 
     /**
@@ -674,18 +679,19 @@ public class Inventory {
         Set<String> touchedDerivedLicenses = new HashSet<String>();
         for (ArtifactLicenseData artifactLicenseData : derivedList) {
             // derive license path
-            String derivedComponentFolderName = LicenseMetaData.deriveLicenseFolderName(
-                    artifactLicenseData.getArtifact().getName());
-            if (derivedComponentFolderName != null) {
-                String version = null;
-                if (!artifactLicenseData.getLicenseMetaData().getVersion().equals(ASTERISK)) {
-                    version = artifactLicenseData.getArtifact().getVersion();
+            for (Artifact artifact : artifactLicenseData.getArtifacts()) {
+                String derivedComponentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getName());
+                if (derivedComponentFolderName != null) {
+                    String version = null;
+                    if (!artifactLicenseData.getLicenseMetaData().getVersion().equals(ASTERISK)) {
+                        version = artifact.getVersion();
+                    }
+                    String derivedPath = licenseFolderName + "/" + derivedComponentFolderName;
+                    if (version != null) {
+                        derivedPath += "-" + version;
+                    }
+                    touchedDerivedLicenses.add(derivedPath);
                 }
-                String derivedPath = licenseFolderName + "/" + derivedComponentFolderName;
-                if (version != null) {
-                    derivedPath += "-" + version;
-                }
-                touchedDerivedLicenses.add(derivedPath);
             }
         }
         return touchedDerivedLicenses;
@@ -1199,16 +1205,13 @@ public class Inventory {
             return STRING_EMPTY + group + "/" + license;
         }
 
-
         public String getGroup() {
             return group;
         }
 
-
         public void setGroup(String group) {
             this.group = group;
         }
-
 
         public String getLicense() {
             return license;
