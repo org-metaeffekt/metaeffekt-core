@@ -182,5 +182,27 @@
             </build>
         </profile>
 
+        <profile>
+            <id>aggregate-inventory</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.metaeffekt.core</groupId>
+                        <artifactId>ae-inventory-maven-plugin</artifactId>
+                        <version>${ae.core.version}</version>
+                        <executions>
+                            <execution>
+                                <id>aggregate-reports</id>
+                                <goals>
+                                    <goal>aggregate-inventory-reports</goal>
+                                </goals>
+                                <phase>validate</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
     </profiles>
 </project>

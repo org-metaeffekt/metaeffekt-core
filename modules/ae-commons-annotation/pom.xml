@@ -54,6 +54,11 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
             </plugin>
+
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-inventory-maven-plugin</artifactId>
+            </plugin>
         </plugins>
 
     </build>
