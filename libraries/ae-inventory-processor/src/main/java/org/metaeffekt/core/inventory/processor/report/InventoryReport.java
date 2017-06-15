@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2016 the original author or authors.
+ * Copyright 2009-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,9 @@ public class InventoryReport {
     private static final String DITA_LICENSE_TEMPLATE =
             "/META-INF/templates/inventory-dita-licenses.vt";
     // notice summary
-    private static final String DITA_NOTICE_TEMPLATE =
-            "/META-INF/templates/inventory-dita-notices.vt";
+    private static final String DITA_NOTICE_TEMPLATE = "/META-INF/templates/inventory-dita-notices.vt";
+    private static final String MAVEN_POM_TEMPLATE =  "/META-INF/templates/inventory-pom-xml.vt";
+
     private static final Map<String, File> STATIC_FILE_MAP = Collections
             .synchronizedMap(new HashMap<String, File>());
     private final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
@@ -68,6 +69,8 @@ public class InventoryReport {
     private String targetDitaDiffPath;
     private String targetDitaLicenseReportPath;
     private String targetDitaNoticeReportPath;
+    private String targetMavenPomPath;
+
     private String projectName = "local project";
     private boolean failOnError = true;
     private boolean failOnDowngrade = true;
@@ -413,6 +416,8 @@ public class InventoryReport {
         writeObligationSummary(projectInventory);
         writeLicenseSummary(projectInventory);
 
+        writeMavenPom(projectInventory);
+
         // evaluate licenses only for managed artifacts
         List<String> licenses = projectInventory.evaluateLicenses(false, true);
 
@@ -592,6 +597,12 @@ public class InventoryReport {
         }
     }
 
+    protected void writeMavenPom(Inventory projectInventory) throws Exception {
+        if (targetMavenPomPath != null) {
+            produceDita(projectInventory, MAVEN_POM_TEMPLATE, new File(targetMavenPomPath));
+        }
+    }
+
     protected void writeDiffReport(File referenceInventoryFile, Inventory referenceInventory,
                                    Inventory projectInventory) throws Exception {
         if (referenceInventoryFile != null && targetDitaDiffPath != null) {
@@ -716,6 +727,10 @@ public class InventoryReport {
 
     public void setTargetDitaComponentReportPath(String targetDitaComponentReportPath) {
         this.targetDitaComponentReportPath = targetDitaComponentReportPath;
+    }
+
+    public void setTargetMavenPomPath(String targetMavenPomPath) {
+        this.targetMavenPomPath = targetMavenPomPath;
     }
 
     public String getTargetDitaDiffPath() {
@@ -898,5 +913,6 @@ public class InventoryReport {
     public void setRepositoryExcludes(String[] localRepositoryExcludes) {
         this.repositoryExcludes = localRepositoryExcludes;
     }
+
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2016 the original author or authors.
+ * Copyright 2009-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.util.List;
 public class RepositoryReportTest {
 
     private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/ae-global-artifact-inventory-latest.xls";
-    private static final String GLOBAL_INVENTORY = "src/test/resources/META-INF/ae-global-artifact-inventory-latest.xls";
+    private static final String GLOBAL_INVENTORY = "src/test/resources/artifact-inventory-thirdparty-2016-Q1.xls";
     private static final String REPOSITORY = "repository";
 
     @Test
@@ -50,6 +50,35 @@ public class RepositoryReportTest {
     }
 
     @Test
+    public void testGlobalInventoryReport() throws Exception {
+
+        InventoryReport report = new InventoryReport();
+        report.setFailOnUnknown(false);
+        report.setFailOnUnknownVersion(false);
+        report.setGlobalInventoryPath(GLOBAL_INVENTORY);
+        report.setRepositoryInventory(new GlobalInventoryReader().readInventory(new File(GLOBAL_INVENTORY)));
+        PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
+        artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
+        report.setArtifactFilter(artifactFilter);
+
+        File target = new File("target");
+        target.mkdirs();
+        File licenseReport = new File(target, "license.dita");
+        File componentReport = new File(target, "component-report.dita");
+        File noticeReport = new File(target, "notice.dita");
+        File artifactReport = new File(target, "artifacts.dita");
+        File mavenPom = new File(target, "ae-pom.xml");
+
+        report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
+        report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
+        report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
+        report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
+        report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
+
+        report.createReport();
+    }
+
+    @Test
     public void testRepositoryReport() throws Exception {
 
         String repoPath = inferRepoPath();
@@ -59,6 +88,7 @@ public class RepositoryReportTest {
             report.setFailOnUnknown(false);
             report.setFailOnUnknownVersion(false);
             report.setGlobalInventoryPath(GLOBAL_INVENTORY);
+            report.setRepositoryPath(GLOBAL_INVENTORY);
             report.setRepositoryPath(repoPath);
             PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
             artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
@@ -70,11 +100,13 @@ public class RepositoryReportTest {
             File componentReport = new File(target, "component-report.dita");
             File noticeReport = new File(target, "notice.dita");
             File artifactReport = new File(target, "artifacts.dita");
+            File mavenPom = new File(target, "ae-pom.xml");
 
             report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
             report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
             report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
             report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
+            report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
 
             report.createReport();
         } else {

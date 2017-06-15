@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2016 the original author or authors.
+ * Copyright 2009-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -271,7 +271,7 @@ public class MavenCentralUpdateProcessor extends AbstractInventoryProcessor {
                 && StringUtils.hasText(artifact.getVersion())) {
 
             String replacedUri = URI_PATTERN_ARTIFACT_SEARCH.
-                    replaceAll("\\$\\{artifactId\\}", artifact.getId().replace(" ", "-"));
+                    replaceAll("\\$\\{artifactId\\}", artifact.getArtifactId());
             replacedUri = replacedUri.
                     replaceAll("\\$\\{artifactVersion\\}", artifact.getVersion().replace(" ", ""));
             getMethod.setURI(new URI(replacedUri));

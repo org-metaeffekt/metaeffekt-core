@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2016 the original author or authors.
+ * Copyright 2009-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
@@ -44,7 +45,7 @@ public class RepositoryReportCreationMojo extends AbstractInventoryReportCreatio
     private String repositoryPath;
 
     @Override
-    protected InventoryReport initializeInventoryReport() {
+    protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         InventoryReport report = super.initializeInventoryReport();
         report.setRepositoryIncludes(
             ParameterConversionUtil.convertStringToStringArray(repositoryIncludes, ","));

@@ -15,54 +15,42 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import java.io.File;
-
+import org.apache.maven.BuildFailureException;
+import org.apache.maven.execution.BuildFailure;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
- * Creates a report by scanning a folder in the file system.
+ * Creates a report based on an existing inventory.
  * 
- * @goal create-directory-report
+ * @goal create-inventory-report
  */
-public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCreationMojo {
+public class InventoryReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
     /**
      * @parameter
      * @required
      */
-    private File inputDirectory;
+    private File inventory;
     
-    /**
-     * @parameter expression="${project.build.directory}/scan"
-     * @required
-     */
-    private File scanDirectory;
-    
-    /**
-     * @parameter
-     * @required
-     */
-    private String[] scanIncludes = new String[] { "**/*" };
-
-    /**
-     * @parameter
-     * @required
-     */
-    private String[] scanExcludes;
-
     @Override
-    protected InventoryReport initializeInventoryReport() {
-        InventoryScanReport report = new InventoryScanReport();
+    protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
+        InventoryReport report = new InventoryReport();
 
         // apply standard configuration (parent class)
         configureInventoryReport(report);
 
-        report.setInputDirectory(inputDirectory);
-        report.setScanDirectory(scanDirectory);
-        report.setScanIncludes(scanIncludes);
-        report.setScanExcludes(scanExcludes);
-        
+        try {
+            report.setRepositoryInventory(new GlobalInventoryReader().readInventory(inventory));
+        } catch (IOException e) {
+            throw new MojoExecutionException("Cannot create inventory report.", e);
+        }
+
         return report;
     }
 

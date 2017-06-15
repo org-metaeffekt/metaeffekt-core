@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <header.copyright.year>2016</header.copyright.year>
+        <header.copyright.year>2017</header.copyright.year>
 
         <ae.core.version>0.2-SNAPSHOT</ae.core.version>
 
@@ -264,7 +264,7 @@
                             <owner>metaeffekt.org</owner>
                             <email>contact@metaeffekt.org</email>
                             <year.initial>2009</year.initial>
-                            <year>2016</year>
+                            <year>2017</year>
                         </properties>
                         <includes>
                             <include>**/*.java</include>

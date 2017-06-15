@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2016 the original author or authors.
+ * Copyright 2009-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -221,6 +221,7 @@ public class InventoryWriter {
         for (int i = 0; i < 5; i++) {
             Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
             if (width != null) {
+                width = Math.min(width, 255);
                 mySheet.setColumnWidth(i, width);
             }
         }

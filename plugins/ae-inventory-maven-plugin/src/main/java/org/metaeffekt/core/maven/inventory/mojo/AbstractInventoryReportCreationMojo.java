@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2016 the original author or authors.
+ * Copyright 2009-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -177,8 +177,13 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter
      */
     private List<Artifact> addOnArtifacts;
+
+    /**
+     * @parameter default-value="false"
+     */
+    private boolean skip;
     
-    protected InventoryReport initializeInventoryReport() {
+    protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         InventoryReport report = new InventoryReport();
         configureInventoryReport(report);
         return report;
@@ -239,6 +244,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             
             // skip execution for POM packaged projects
             if (isPomPackagingProject()) {
+                return;
+            }
+
+            if (skip) {
+                getLog().info("Plugin execution skipped.");
                 return;
             }
             

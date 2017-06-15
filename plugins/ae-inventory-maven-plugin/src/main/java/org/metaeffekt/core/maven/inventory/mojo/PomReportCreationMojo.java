@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2016 the original author or authors.
+ * Copyright 2009-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,15 +44,10 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
     private static final String DEPENDENCY_TYPE_JAR = "jar";
     private static final String DEPENDENCY_TYPE_MAVEN_PLUGIN = "maven-plugin";
+
     private static final String SCOPE_PROVIDED = "provided";
     private static final String SCOPE_SYSTEM = "system";
     private static final String SCOPE_TEST = "test";
-    
-    private static final Set<String> processedPoms = new HashSet<String>();
-    
-    private static File multiProjectInventoryFile;
-    
-    private static Inventory multiProjectInventory;
     
     /**
      * @parameter default-value="false"
@@ -116,24 +111,6 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
      */
     private MavenSession mavenSession;
     
-    // NOTE: we use a shutdown hook to write the last version of the multi project inventory to
-    // disc. This is necessary to prevent that the reactor build cleans the root target
-    // folder after we have last stored the file. This approach is obviously not very nice. But
-    // for the time being a better approach was not obvious (maven was not playing nice, too).
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread() { 
-            public void run() { 
-                try {
-                    PomReportCreationMojo.writeMultiProjectInventory();
-                } catch (IOException e) {
-                    // noting we can do about it. Just provide the output without relying
-                    // that resources like a log are still available.
-                    e.printStackTrace();
-                }
-            } 
-        });
-    }
-    
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // adapt maven logging to underlying logging facade
@@ -142,8 +119,7 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
         if (skipExecution()) {
             return;
         }
-        initializeMultiProjectInventoryFileIfNecessary();
-        
+
         InventoryReport report = initializeInventoryReport();
         Inventory inventory = createInventoryFromPom();
         report.setRepositoryInventory(inventory);
@@ -151,7 +127,6 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
         boolean success = false;
         try {
             success = report.createReport();
-            extendMultiProjectReport(report);
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -160,87 +135,6 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
         }
         } finally {
             MavenLogAdapter.release();
-        }
-    }
-
-    private void extendMultiProjectReport(InventoryReport report) throws IOException {
-        Inventory localReportInventory = report.getLastProjectInventory();
-        for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : localReportInventory.getArtifacts()) {
-            artifact.getProjects().clear();
-            artifact.addProject(getProjectName());
-        }
-
-        if (multiProjectInventoryFile.exists()) {
-            // read inventory (may be dirty from other process)
-            try {
-                multiProjectInventory = new GlobalInventoryReader().readInventory(multiProjectInventoryFile);
-            } catch (IOException e) {
-                getLog().warn("Cannot read global inventory from " + multiProjectInventoryFile + ".");
-            }
-        } else{
-            if (multiProjectInventory == null) {
-                multiProjectInventory = new Inventory();
-            } else {
-                // we continue to use the static instance
-            }
-        }
-        
-        // merge content
-        multiProjectInventory.getArtifacts().addAll(localReportInventory.getArtifacts());
-        multiProjectInventory.mergeDuplicates();
-        
-        // we write the file every time; this way the content is complete in the sense
-        // of the build
-        writeMultiProjectInventory();
-    }
-
-    protected static void writeMultiProjectInventory() throws IOException {
-        if (multiProjectInventory != null && multiProjectInventoryFile != null) {
-            // ensure that the target folder exists (this may not be the case due to the build 
-            // sequence and goals invoked)
-            if (multiProjectInventoryFile.getParentFile() != null) {
-                multiProjectInventoryFile.getParentFile().mkdirs();
-            }
-            new InventoryWriter().writeInventory(multiProjectInventory, multiProjectInventoryFile);
-            
-            // check whether reading is possible
-            try {
-                new GlobalInventoryReader().readInventory(multiProjectInventoryFile);
-            } catch (IOException e) {
-                System.err.println("Inventory file corrupted after save. Please analyze and report this"
-                    + " error.");
-                multiProjectInventoryFile.deleteOnExit();
-            }
-        }
-    }
-    
-    private void initializeMultiProjectInventoryFileIfNecessary() {
-        if (multiProjectInventoryFile == null && mavenSession != null) {
-            // find execution project (independent from parent hierarchy)
-            List<MavenProject> projects = mavenSession.getSortedProjects();
-            MavenProject executionRootMavenProject = mavenSession.getCurrentProject();
-            for (MavenProject mavenProject : projects) {
-                if (mavenProject.isExecutionRoot()) {
-                    executionRootMavenProject = mavenProject;
-                    break;
-                }
-            }
-            
-            // infer relative filename from targetInventoryPath (as this may be plugin configured)
-            File file = new File(getTargetInventoryPath());
-            File targetFolder = new File(getProject().getBuild().getDirectory());
-            String path = file.getAbsolutePath();
-            path = path.replace(targetFolder.getAbsolutePath(), "");
-            
-            // construct file path for complete inventory
-            File projectRootBuildDir = new File(executionRootMavenProject.getBuild().getDirectory());
-            File completeInventoryFolder = new File(projectRootBuildDir, path).getParentFile();
-            multiProjectInventoryFile = new File(completeInventoryFolder, 
-                executionRootMavenProject.getArtifactId() + "-" + 
-                executionRootMavenProject.getVersion() + "-" + 
-                "complete-inventory.xls");
-            
-            getLog().info("Global inventory report will be written to " + multiProjectInventoryFile);
         }
     }
 
@@ -253,12 +147,6 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
                 return true;
             }
         }
-        
-        String key = getProject().getModel().getId();
-        if (processedPoms.contains(key)) {
-            return true;
-        }
-        processedPoms.add(key);
         return false;
     }
 
