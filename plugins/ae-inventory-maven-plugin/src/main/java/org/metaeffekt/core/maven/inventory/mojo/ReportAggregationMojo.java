@@ -41,6 +41,11 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
     private String[] scanIncludes = new String[] { "**/target/**/*-inventory.xls" };
 
     /**
+     * @parameter
+     */
+    private String[] scanExcludes = new String[] { "-nothing-" };
+
+    /**
      * @parameter expression="${project.build.directory}/inventory/${project.artifactId}-${project.version}-aggregate-inventory.xls"
      */
     private String targetInventoryPath;
@@ -76,6 +81,7 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
                 DirectoryScanner scanner = new DirectoryScanner();
                 scanner.setBasedir(getProject().getBasedir());
                 scanner.setIncludes(scanIncludes);
+                scanner.setExcludes(scanExcludes);
                 scanner.scan();
 
                 // iterate the scanned files, read and extend.

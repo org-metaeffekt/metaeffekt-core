@@ -197,6 +197,10 @@
                                     <goal>aggregate-inventory-reports</goal>
                                 </goals>
                                 <phase>validate</phase>
+                                <configuration>
+                                    <!-- exclude all ae-core-artifact-inventory.xls to not mix content -->
+                                    <scanExcludes>**/ae-core-artifact-inventory.xls</scanExcludes>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
