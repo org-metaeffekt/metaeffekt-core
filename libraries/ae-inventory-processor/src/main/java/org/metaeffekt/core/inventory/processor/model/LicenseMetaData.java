@@ -103,6 +103,10 @@ public class LicenseMetaData {
         this.version = version;
     }
 
+    public String deriveQualifier() {
+        return new StringBuilder(getComponent()).append(getName()).append(getVersion()).toString();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(name);
@@ -113,5 +117,9 @@ public class LicenseMetaData {
             sb.append('/').append(comment);
         }
         return sb.toString();
+    }
+
+    public String createCompareStringRepresentation() {
+        return toString();
     }
 }

@@ -68,8 +68,8 @@
                             <goal>update-inventory</goal>
                         </goals>
                         <configuration>
-                            <sourceInventoryPath>${project.build.directory}/classes/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</sourceInventoryPath>
-                            <targetInventoryPath>${project.build.directory}/classes/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</targetInventoryPath>
+                            <sourceInventoryPath>${project.build.directory}/classes/META-INF/ae-core-artifact-inventory.xls</sourceInventoryPath>
+                            <targetInventoryPath>${project.build.directory}/classes/META-INF/ae-core-artifact-inventory.xls</targetInventoryPath>
                         </configuration>
                     </execution>
                 </executions>
@@ -109,8 +109,8 @@
                                     <goal>update-inventory</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceInventoryPath>src/main/resources/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</sourceInventoryPath>
-                                    <targetInventoryPath>src/main/resources/META-INF/artifact-inventory-thirdparty-2016-Q1.xls</targetInventoryPath>
+                                    <sourceInventoryPath>src/main/resources/META-INF/ae-core-artifact-inventory.xls</sourceInventoryPath>
+                                    <targetInventoryPath>src/main/resources/META-INF/ae-core-artifact-inventory.xls</targetInventoryPath>
                                 </configuration>
                             </execution>
                         </executions>

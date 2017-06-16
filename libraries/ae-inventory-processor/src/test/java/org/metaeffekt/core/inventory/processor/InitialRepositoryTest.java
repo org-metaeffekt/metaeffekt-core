@@ -30,7 +30,7 @@ import java.util.Properties;
 @org.junit.Ignore
 public class InitialRepositoryTest {
 
-    private static final String GLOBAL_INVENTORY = "src/test/resources/artifact-inventory-thirdparty-2016-Q1.xls";
+    private static final String GLOBAL_INVENTORY = "src/test/resources/ae-core-artifact-inventory.xls";
     private static final String SOURCE_INVENTORY = "/Volumes/USB/lcm/input/artifact-inventory-thirdparty-license_verification.xls";
     private static final String TARGET_INVENTORY = "/Volumes/USB/lcm/out/out-inventory.xls";
 

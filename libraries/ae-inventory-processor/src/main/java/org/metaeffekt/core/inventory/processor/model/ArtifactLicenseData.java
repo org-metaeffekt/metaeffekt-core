@@ -58,8 +58,7 @@ public class ArtifactLicenseData {
     }
 
     public String deriveId() {
-        StringBuilder sb = new StringBuilder(licenseMetaData.getName()).append(licenseMetaData.getName()).append(licenseMetaData.getVersion());
-        return normizeTokenId(LicenseMetaData.normalizeId(sb.toString()));
+        return normizeTokenId(LicenseMetaData.normalizeId(licenseMetaData.deriveQualifier()));
     }
 
     public static String normizeTokenId(String string) {

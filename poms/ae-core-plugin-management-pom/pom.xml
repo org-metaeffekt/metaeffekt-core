@@ -31,11 +31,10 @@
         <artifact.inventory.enforce.plugins>false</artifact.inventory.enforce.plugins>
         <artifact.inventory.external.enabled>false</artifact.inventory.external.enabled>
         <artifact.inventory.exclude.artifacts>^org.metaeffekt\..*:*</artifact.inventory.exclude.artifacts>
-        <artifact.inventory.source.version>2016-Q1</artifact.inventory.source.version>
-        <artifact.inventory.source>/META-INF/artifact-inventory-thirdparty-${artifact.inventory.source.version}.xls
-        </artifact.inventory.source>
 
-        <ant.version>1.9.6</ant.version>
+        <artifact.inventory.source>/META-INF/ae-core-artifact-inventory.xls</artifact.inventory.source>
+
+        <ant.version>1.10.1</ant.version>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

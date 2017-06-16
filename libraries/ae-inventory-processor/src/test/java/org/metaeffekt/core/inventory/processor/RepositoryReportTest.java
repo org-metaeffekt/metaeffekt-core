@@ -28,8 +28,8 @@ import java.util.List;
 
 public class RepositoryReportTest {
 
-    private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/artifact-inventory-thirdparty-2016-Q1.xls";
-    private static final String GLOBAL_INVENTORY = "src/test/resources/artifact-inventory-thirdparty-2016-Q1.xls";
+    private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/ae-core-artifact-inventory.xls";
+    private static final String GLOBAL_INVENTORY = "src/test/resources/ae-core-artifact-inventory.xls";
     private static final String REPOSITORY = "repository";
 
     @Test

@@ -28,7 +28,7 @@ import java.util.List;
 public class InventoryScanReportTest {
 
     private static final String GLOBAL_INVENTORY =
-            "../../inventory/src/main/resources/META-INF/artifact-inventory-thirdparty-2016-Q1.xls";
+            "../../inventory/src/main/resources/META-INF/ae-core-artifact-inventory.xls";
 
     /**
      * Local test based on sample artifact. Ignored in general build.
