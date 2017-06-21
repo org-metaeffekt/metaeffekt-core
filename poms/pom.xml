@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core</artifactId>
-        <version>0.2-SNAPSHOT</version>
+        <version>0.2.0</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -19,4 +19,15 @@
         <module>ae-core-dependency-management-pom</module>
         <module>ae-core-plugin-management-pom</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <!-- ensure the proper build order in the reactor -->
+            <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-configuration</artifactId>
+            <version>${ae.core.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 </project>
