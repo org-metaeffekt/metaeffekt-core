@@ -41,6 +41,11 @@
         <maven.compiler.jdk>1.8</maven.compiler.jdk>
 
         <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
+
+        <organization>metaeffekt.org</organization>
+
+        <license.identifier>Apache License 2.0</license.identifier>
+        <license.file>/META-INF/LICENSE</license.file>
     </properties>
 
     <dependencyManagement>
@@ -59,10 +64,28 @@
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <!-- determining bumped up version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.0.2</version>
+                    <configuration>
+                        <archive>
+                            <index>false</index>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                            <manifestEntries>
+                                <Created-By>${organization}</Created-By>
+                                <Built-By>${organization}</Built-By>
+                            </manifestEntries>
+                            <manifestSections>
+                                <manifestSection>
+                                    <name>License Information</name>
+                                    <manifestEntries>
+                                        <License>${license.identifier}</License>
+                                        <License-File>${license.file}</License-File>
+                                    </manifestEntries>
+                                </manifestSection>
+                            </manifestSections>
+                        </archive>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <!-- determining bumped up version -->
@@ -90,6 +113,27 @@
                     <configuration>
                         <javadocVersion>1.8</javadocVersion>
                         <additionalparam>-Xdoclint:none</additionalparam>
+                        <bottom>
+                            Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
+                            {currentYear} the original author or authors.
+                        </bottom>
+                        <archive>
+                            <index>false</index>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                            <manifestEntries>
+                                <Created-By>${organization}</Created-By>
+                                <Built-By>${organization}</Built-By>
+                            </manifestEntries>
+                            <manifestSections>
+                                <manifestSection>
+                                    <name>License Information</name>
+                                    <manifestEntries>
+                                        <License>${license.identifier}</License>
+                                        <License-File>${license.file}</License-File>
+                                    </manifestEntries>
+                                </manifestSection>
+                            </manifestSections>
+                        </archive>
                     </configuration>
                 </plugin>
 
@@ -113,6 +157,25 @@
                             </goals>
                         </execution>
                     </executions>
+                    <configuration>
+                        <archive>
+                            <index>false</index>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                            <manifestEntries>
+                                <Created-By>${organization}</Created-By>
+                                <Built-By>${organization}</Built-By>
+                            </manifestEntries>
+                            <manifestSections>
+                                <manifestSection>
+                                    <name>License Information</name>
+                                    <manifestEntries>
+                                        <License>${license.identifier}</License>
+                                        <License-File>${license.file}</License-File>
+                                    </manifestEntries>
+                                </manifestSection>
+                            </manifestSections>
+                        </archive>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -234,6 +297,34 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>apply-license</id>
+                            <phase>generate-sources</phase>
+                            <goals><goal>copy-resources</goal></goals>
+                            <configuration>
+                                <outputDirectory>${project.basedir}/src/main/resources/META-INF</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>apply-license-to-javadoc</id>
+                            <phase>generate-sources</phase>
+                            <goals><goal>copy-resources</goal></goals>
+                            <configuration>
+                                <outputDirectory>${project.build.directory}/apidocs/META-INF</outputDirectory>
+                                <resources>
+                                    <resource>
+                                        <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                    </resource>
+                                </resources>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -251,6 +342,25 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>2.10</version>
+                    <executions>
+                        <execution>
+                            <id>include-license</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>unpack</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.metaeffekt.core</groupId>
+                                        <artifactId>ae-configuration</artifactId>
+                                        <version>${ae.core.version}</version>
+                                    </artifactItem>
+                                </artifactItems>
+                                <outputDirectory>${project.build.directory}/tmp/config</outputDirectory>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
                 <plugin>
@@ -258,7 +368,7 @@
                     <artifactId>license-maven-plugin</artifactId>
                     <version>3.0</version>
                     <configuration>
-                        <header>header/apache-license-2-header.txt</header>
+                        <header>header/apache-license-2.0-header.txt</header>
                         <properties>
                             <owner>metaeffekt.org</owner>
                             <email>contact@metaeffekt.org</email>
@@ -303,6 +413,11 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
 
         </plugins>

@@ -33,21 +33,41 @@
                         <goals>
                             <goal>publishapi</goal>
                         </goals>
+                        <configuration>
+                            <archive>
+                                <index>false</index>
+                                <addMavenDescriptor>false</addMavenDescriptor>
+                                <manifestEntries>
+                                    <Created-By>${organization}</Created-By>
+                                    <Built-By>${organization}</Built-By>
+                                </manifestEntries>
+                                <manifestSections>
+                                    <manifestSection>
+                                        <name>License Information</name>
+                                        <manifestEntries>
+                                            <License>${license.identifier}</License>
+                                            <License-File>${license.file}</License-File>
+                                        </manifestEntries>
+                                    </manifestSection>
+                                </manifestSections>
+                            </archive>
+
+                            <scanRootDir>${basedir}/target/classes</scanRootDir>
+                            <annotationClass>org.metaeffekt.core.commons.annotation.Public</annotationClass>
+                            <filesets>
+                                <fileset>
+                                    <directory>${basedir}/target/classes</directory>
+                                    <includes>
+                                        <include>**/Public*</include>
+                                        <include>/META-INF/**/*</include>
+                                    </includes>
+                                    <followSymlinks>false</followSymlinks>
+                                </fileset>
+                            </filesets>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <scanRootDir>${basedir}/target/classes</scanRootDir>
-                    <annotationClass>org.metaeffekt.core.commons.annotation.Public</annotationClass>
-                    <filesets>
-                        <fileset>
-                            <directory>${basedir}/target/classes</directory>
-                            <includes>
-                                <include>**/Public*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                    </filesets>
-                </configuration>
+
             </plugin>
 
             <plugin>

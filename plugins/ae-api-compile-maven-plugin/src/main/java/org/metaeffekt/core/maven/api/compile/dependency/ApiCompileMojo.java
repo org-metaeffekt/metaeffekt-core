@@ -15,11 +15,6 @@
  */
 package org.metaeffekt.core.maven.api.compile.dependency;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
@@ -31,20 +26,21 @@ import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.compiler.CompilerMojo;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
-
 import org.metaeffekt.core.maven.kernel.MavenProjectUtil;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * This goal extends the maven compile goal and ensures that source code compilation is performed
  * against API artifacts rather than runtime artifacts.
  */
 @SuppressWarnings("rawtypes")
-@org.apache.maven.plugins.annotations.Mojo( name = "compile", defaultPhase = LifecyclePhase.COMPILE, threadSafe = true,
+@Mojo( name = "compile", defaultPhase = LifecyclePhase.COMPILE, threadSafe = true,
 requiresDependencyResolution = ResolutionScope.COMPILE )
 public class ApiCompileMojo extends CompilerMojo {
 

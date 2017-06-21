@@ -15,38 +15,27 @@
  */
 package org.metaeffekt.core.maven.artifact.publisher;
 
-import java.io.File;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+
+import java.io.File;
 
 /**
  * Prepares the artifact creation by copying selected resources to a dedicated
  * folder structure.
- * 
- * @goal publish-artifact-copy
- * @phase prepare-package
  */
+@Mojo(name="publish-artifact-copy", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class PublishArtifactCopyMojo extends AbstractArtifactMojo {
 
     /**
-     * The qualifier of the resource to be copied from.
-     * @parameter
-     */
-    private String sourceQualifier = null;
-
-    /**
      * The classifier of the resource to be copied from.
-     * @parameter
      */
+    @Parameter
     private String sourceClassifier = null;
     
-    /**
-     * The groupId to be used for the created artifact.
-     * @parameter
-     */
-    private String alternateGroupId = null;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // exit if the project is pom only
@@ -54,19 +43,11 @@ public class PublishArtifactCopyMojo extends AbstractArtifactMojo {
             return;
         }
 
-        File srcArtifactFile = getArtifactFile(getSourceClassifier(), getSourceQualifier());
+        File srcArtifactFile = getArtifactFile(getSourceClassifier());
 
         if (srcArtifactFile.exists()) {
-            attachArtifact(srcArtifactFile, getAlternateGroupId());
+            attachArtifact(srcArtifactFile);
         }
-    }
-
-    public String getSourceQualifier() {
-        return sourceQualifier;
-    }
-
-    public void setSourceQualifier(String sourceQualifier) {
-        this.sourceQualifier = sourceQualifier;
     }
 
     public String getSourceClassifier() {
@@ -77,12 +58,4 @@ public class PublishArtifactCopyMojo extends AbstractArtifactMojo {
         this.sourceClassifier = sourceClassifier;
     }
 
-    public String getAlternateGroupId() {
-        return alternateGroupId;
-    }
-
-    public void setAlternateGroupId(String alternateGroupId) {
-        this.alternateGroupId = alternateGroupId;
-    }
-    
 }

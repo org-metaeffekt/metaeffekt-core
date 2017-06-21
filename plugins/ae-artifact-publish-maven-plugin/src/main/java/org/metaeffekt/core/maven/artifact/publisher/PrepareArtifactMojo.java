@@ -15,43 +15,42 @@
  */
 package org.metaeffekt.core.maven.artifact.publisher;
 
-import java.io.File;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.taskdefs.Delete;
 
+import java.io.File;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Prepares the artifact creation by copying selected resources to a dedicated
  * folder structure.
- * 
- * @goal prepare-artifact
- * @phase prepare-package
  */
+@Mojo(name="prepare-artifact", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class PrepareArtifactMojo extends AbstractArtifactMojo {
 
     /**
      * The list of fileSets to include in the API jar.
-     * 
-     * @parameter
      */
+    @Parameter
     private List<Fileset> filesets;
+
     /**
      * The content of this properties file will be used to do the replacements.
-     * 
-     * @parameter expression="${propertiesFile}"
      */
+    @Parameter(defaultValue = "${propertiesFile}")
     private File propertiesFile;
 
     /**
      * The exclude pattern for token replacement.
-     * 
-     * @parameter expression="${tokenReplaceExcludePattern}"
      */
+    @Parameter(defaultValue = "${tokenReplaceExcludePattern}")
     private String tokenReplaceExcludePattern;
 
     @Override
@@ -61,7 +60,7 @@ public class PrepareArtifactMojo extends AbstractArtifactMojo {
             return;
         }
         
-        File artifactFile = getArtifactFile(getClassifier(), getQualifier());
+        File artifactFile = getArtifactFile(getClassifier());
 
         File tempDir = getTempDir(artifactFile);
 

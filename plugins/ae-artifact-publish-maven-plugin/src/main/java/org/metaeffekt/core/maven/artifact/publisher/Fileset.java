@@ -27,7 +27,6 @@ public class Fileset extends org.apache.maven.model.FileSet {
         return outputDirectory;
     }
 
-    
     public void setOutputDirectory(String outputDirectory) {
         this.outputDirectory = outputDirectory;
     }

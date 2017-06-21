@@ -23,66 +23,87 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.handler.ArtifactHandler;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.FileSet;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
+import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
+import org.apache.maven.archiver.MavenArchiveConfiguration;
 
 import org.metaeffekt.core.common.kernel.annotation.PublicAnnotationAnalyser;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
 /**
  * Create and promote API extensions to the maven repository.
- * 
- * @goal publishapi
- * @phase package
- * @requiresDependencyResolution compile
  */
+@Mojo( name = "publishapi", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true,
+        requiresDependencyResolution = ResolutionScope.COMPILE)
 public class PublishApiMojo extends AbstractProjectAwareMojo {
 
     /**
-     * The Maven project.
-     * 
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
+     * Directory containing the generated JAR.
      */
+    @Parameter( defaultValue = "${project.build.directory}", required = true )
+    private File outputDirectory;
+
+    /**
+     * Directory containing the classes and resource files that should be packaged into the JAR.
+     */
+    @Parameter( defaultValue = "${project.build.outputDirectory}", required = true )
+    private File classesDirectory;
+
+    /**
+     * The {@link MavenSession}.
+     */
+    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    private MavenSession session;
+
+    /**
+     * The Maven project.
+     */
+    @Parameter(required = true, readonly = true, defaultValue = "${project}")
     private MavenProject project;
 
     /**
      * Used for attaching the artifact in the project.
-     * 
-     * @component
      */
+    @Component
     private MavenProjectHelper projectHelper;
 
     /**
      * The list of fileSets to include in the API jar.
-     * 
-     * @parameter
      */
+    @Parameter
     private List<FileSet> filesets;
 
     /**
      * The root directory from which to start scanning for artefact to include in the API jar.
-     * @parameter
      */
+    @Parameter
     private String scanRootDir;
 
     /**
      * The class name of the annotation used to mark classes and interfaces
      * as part of the public API.
-     * @parameter
-     * @required
      */
+    @Parameter(required = true)
     private String annotationClass;
+
+    @Parameter
+    private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
+
+    @Component( role = Archiver.class, hint = "jar" )
+    private JarArchiver jarArchiver;
 
     /**
      * Executes this Mojo.
@@ -95,7 +116,7 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        ArtifactHandler artifactHandler = project.getArtifact().getArtifactHandler();
+        ArtifactHandler artifactHandler = getProject().getArtifact().getArtifactHandler();
         if (!"java".equals(artifactHandler.getLanguage())) {
             this.getLog().debug("Not executing >>publishapi<< as the project is not a Java classpath-capable package");
             return;
@@ -107,48 +128,22 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
         File apiJar = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-"
             + project.getVersion() + "-api.jar");
 
+        extendFileset();
+
+        MavenArchiver archiver = new MavenArchiver();
+        archiver.setArchiver(jarArchiver);
+        archiver.setOutputFile(apiJar);
+        archive.setForced(true);
         try {
-            extendFileset();
-
-            if (!filesets.isEmpty()) {
-                JarArchiver archiver = new JarArchiver();
-                archiver.setDestFile(apiJar);
-                archiver.setCompress(true);
-                archiver.setIncludeEmptyDirs(true);
-                // suppress logging of the archiver (logs massively on info)
-                archiver.enableLogging(new ConsoleLogger(
-                    org.codehaus.plexus.logging.Logger.LEVEL_WARN, "Warn Level Uppwards"));
-                getLog().debug("Processing " + filesets.size() + " FileSets with configuration data");
-
-                Iterator<FileSet> iterFiles = filesets.iterator();
-                while (iterFiles.hasNext()) {
-                    FileSet fs = iterFiles.next();
-                    final String[] includes = convert(fs.getIncludes());
-                    final String[] excludes = convert(fs.getExcludes());
-                    archiver.addDirectory(new File(fs.getDirectory()), includes, excludes);
-                }
-                archiver.createArchive();
+            File contentDirectory = classesDirectory;
+            Iterator<FileSet> iterFiles = filesets.iterator();
+            while (iterFiles.hasNext()) {
+                FileSet fs = iterFiles.next();
+                final String[] includes = convert(fs.getIncludes());
+                final String[] excludes = convert(fs.getExcludes());
+                archiver.getArchiver().addDirectory(new File(fs.getDirectory()), includes, excludes);
             }
-
-            projectHelper.attachArtifact(project, "jar", "api", apiJar);
-            getLog().info("API jar marked for export: " + apiJar.getAbsolutePath());
-
-        } catch (ArchiverException e) {
-            // in case the archiver cannot create an artifact we take care of. Even if the
-            // resulting artifact is empty. This is required for symmetry reasons.
-            
-            getLog().info("Creating empty API artifact: " + apiJar.getAbsolutePath());
-
-            Project antProject = new Project();
-            antProject.setBaseDir(new File(project.getBuild().getDirectory()));
-
-            Jar jar = new Jar();
-            jar.setProject(antProject);
-            jar.setBasedir(new File(project.getBuild().getDirectory()));
-            jar.setExcludes("**/*");
-            jar.setDestFile(apiJar);
-            jar.execute();
-            
+            archiver.createArchive(session, project, archive);
             projectHelper.attachArtifact(project, "jar", "api", apiJar);
             getLog().info("API jar marked for export: " + apiJar.getAbsolutePath());
         } catch (Exception e) {

@@ -15,29 +15,58 @@
  */
 package org.metaeffekt.core.maven.artifact.publisher;
 
-import java.io.File;
-
+import org.apache.maven.archiver.MavenArchiveConfiguration;
+import org.apache.maven.archiver.MavenArchiver;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.tools.ant.Project;
-import org.codehaus.plexus.archiver.ArchiveEntry;
-import org.codehaus.plexus.archiver.ResourceIterator;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
+import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
+
+import java.io.File;
 
 /**
  * Create and promote API extensions to the maven repository.
- * 
- * @goal publish-artifact
- * @phase package
  */
+@Mojo(name="publish-artifact", defaultPhase=LifecyclePhase.PACKAGE, requiresProject=true, threadSafe=true)
 public class PublishArtifactMojo extends PrepareArtifactMojo {
 
     /**
-     * The groupId to be used for the created artifact.
-     * @parameter
+     * Directory containing the generated JAR.
      */
-    private String alternateGroupId = null;
-    
+    @Parameter( defaultValue = "${project.build.directory}", required = true )
+    private File outputDirectory;
+
+    /**
+     * Directory containing the classes and resource files that should be packaged into the JAR.
+     */
+    @Parameter( defaultValue = "${project.build.outputDirectory}", required = true )
+    private File classesDirectory;
+
+    /**
+     * The {@link MavenSession}.
+     */
+    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    private MavenSession session;
+
+    @Component( role = Archiver.class, hint = "jar" )
+    private JarArchiver jarArchiver;
+
+    @Parameter
+    private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
+
+    /**
+     * Used for attaching the artifact in the project.
+     */
+    @Component
+    private MavenProjectHelper projectHelper;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // exit if the project is pom only
@@ -48,49 +77,24 @@ public class PublishArtifactMojo extends PrepareArtifactMojo {
         // perform the preparation step
         super.execute();
 
-        File artifactFile = getArtifactFile(getClassifier(), getQualifier());
-        File tempDir = getTempDir(artifactFile);
+        final File artifactFile = getArtifactFile(getClassifier());
+        final File tempDir = getTempDir(artifactFile);
 
-        if (tempDir.exists()) {
-            Project project = new Project();
-            project.setBaseDir(new File(getProject().getBuild().getDirectory()));
+        try {
+            archive.setForced(true);
+            final MavenArchiver archiver = new MavenArchiver();
+            archiver.setArchiver(jarArchiver);
+            archiver.setOutputFile(artifactFile);
+            archiver.getArchiver().setIncludeEmptyDirs(true);
+            archiver.getArchiver().setCompress(true);
+            archiver.getArchiver().addDirectory(tempDir);
+            archiver.createArchive(session, getProject(), archive);
 
-            try {
-                JarArchiver archiver = new JarArchiver();
-                archiver.setDestFile(artifactFile);
-                archiver.setIncludeEmptyDirs(true);
-                archiver.setCompress(true);
-                archiver.addDirectory(tempDir);
-                
-                // check whether the aggregated artifact includes any file
-                ResourceIterator resourceIterator = archiver.getResources();
-                boolean hasFile = false;
-                while (!hasFile && resourceIterator.hasNext()) {
-                    ArchiveEntry entry = resourceIterator.next();
-                    if (ArchiveEntry.FILE == entry.getType()) {
-                        hasFile = true;
-                    }
-                }
-                
-                if (hasFile) {
-                    archiver.createArchive();
-                    attachArtifact(artifactFile, getAlternateGroupId());
-                    getLog().info("Artifact marked for export: " + artifactFile.getAbsolutePath());
-                } else {
-                    getLog().info("Skipping creation of empty archive.");
-                }
-            } catch (Exception e) {
-                getLog().info("Couldn't create artifact.", e);
-            }
+            // attach the artifact
+            projectHelper.attachArtifact(getProject(), getType(), getClassifier(), artifactFile);
+        } catch (Exception e) {
+            getLog().info("Couldn't create artifact.", e);
         }
     }
 
-    public String getAlternateGroupId() {
-        return alternateGroupId;
-    }
-
-    public void setAlternateGroupId(String alternateGroupId) {
-        this.alternateGroupId = alternateGroupId;
-    }
-    
 }

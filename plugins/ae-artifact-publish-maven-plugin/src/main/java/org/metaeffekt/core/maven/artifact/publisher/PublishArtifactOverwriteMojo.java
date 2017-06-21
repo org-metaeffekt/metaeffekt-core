@@ -15,60 +15,48 @@
  */
 package org.metaeffekt.core.maven.artifact.publisher;
 
-import java.io.File;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
+
+import java.io.File;
 
 /**
  * Prepares the artifact creation by copying selected resources to a dedicated
  * folder structure.
- * 
- * @goal publish-artifact-overwrite
- * @phase prepare-package
  */
+@Mojo(name="publish-artifact-overwrite", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
 
     /**
      * The qualifier of the resource to be copied from.
-     * @parameter
      */
+    @Parameter
     private String sourceQualifier = null;
 
     /**
-     * The qualifier of the target resource.
-     * @parameter
-     */
-    private String targetQualifier = null;
-
-    /**
      * The classifier of the resource to be copied from.
-     * @parameter
      */
+    @Parameter
     private String sourceClassifier = null;
 
     /**
      * The classifier of the target resource.
-     * @parameter
      */
+    @Parameter
     private String targetClassifier = null;
     
     /**
      * Determines if the created artifact should be uploaded into the maven repository
-     * @parameter
      */
+    @Parameter
     private boolean attachArtifact = false;
     
     /**
-     * The groupId to be used for the created artifact.
-     * @parameter
-     */
-    private String alternateGroupId = null;
-    
-    /**
-     * 
      * @throws MojoExecutionException
      * @throws MojoFailureException 
      */
@@ -79,14 +67,15 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
             return;
         }
 
-        File srcArtifactFile = getArtifactFile(getSourceClassifier(), getSourceQualifier());
-        // verify that the artifact exisits
+        File srcArtifactFile = getArtifactFile(getSourceClassifier());
+
+        // verify that the artifact exists
         if(!srcArtifactFile.exists()){
             getLog().info("No source artifact found for file: "+srcArtifactFile.getName());
             // do nothing, just skip it here.
             return;
         }
-        File targetArtifactFile = getArtifactFile(getClassifier(), getQualifier());
+        File targetArtifactFile = getArtifactFile(getClassifier());
         
         Project project = new Project();
         project.setBaseDir(new File(getProject().getBuild().getDirectory()));
@@ -99,12 +88,12 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
             copy.setTofile(targetArtifactFile);
             copy.execute();
             
-            // please note that we assume the artifact is already attached
+            // we assume the orginal artifact is already attached
         }
         
         // should it be uploaded into the maven repository?
         if(attachArtifact){
-            attachArtifact(targetArtifactFile, alternateGroupId);
+            attachArtifact(targetArtifactFile);
         }
         
     }
@@ -116,24 +105,6 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
         } else {
             return getTargetClassifier();
         }
-    }
-
-    @Override
-    public String getQualifier() {
-        if(getTargetQualifier() == null){
-            return super.getQualifier();
-        } else {
-            return getTargetQualifier();
-        }
-        
-    }
-
-    public String getSourceQualifier() {
-        return sourceQualifier;
-    }
-
-    public void setSourceQualifier(String sourceQualifier) {
-        this.sourceQualifier = sourceQualifier;
     }
 
     public String getSourceClassifier() {
@@ -152,12 +123,4 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
         this.targetClassifier = targetClassifier;
     }
 
-    public String getTargetQualifier() {
-        return targetQualifier;
-    }
-
-    public void setTargetQualifier(String targetQualifier) {
-        this.targetQualifier = targetQualifier;
-    }
-    
 }
