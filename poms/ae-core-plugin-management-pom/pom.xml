@@ -299,19 +299,6 @@
                     <version>3.0.1</version>
                     <executions>
                         <execution>
-                            <id>apply-license</id>
-                            <phase>generate-sources</phase>
-                            <goals><goal>copy-resources</goal></goals>
-                            <configuration>
-                                <outputDirectory>${project.basedir}/src/main/resources/META-INF</outputDirectory>
-                                <resources>
-                                    <resource>
-                                        <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
-                                    </resource>
-                                </resources>
-                            </configuration>
-                        </execution>
-                        <execution>
                             <id>apply-license-to-javadoc</id>
                             <phase>generate-sources</phase>
                             <goals><goal>copy-resources</goal></goals>
@@ -456,6 +443,72 @@
                     </plugin>
                 </plugins>
 
+            </build>
+        </profile>
+
+        <profile>
+            <id>apply-license-to-test</id>
+            <activation>
+                <file><exists>src/test</exists></file>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-resources-plugin</artifactId>
+                            <version>3.0.1</version>
+                            <executions>
+                                <execution>
+                                    <id>apply-license-to-test</id>
+                                    <phase>generate-sources</phase>
+                                    <goals><goal>copy-resources</goal></goals>
+                                    <configuration>
+                                        <outputDirectory>${project.basedir}/src/test/resources/META-INF</outputDirectory>
+                                        <resources>
+                                            <resource>
+                                                <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                            </resource>
+                                        </resources>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <profile>
+            <id>apply-license-to-main</id>
+            <activation>
+                <file><exists>src/main</exists></file>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-resources-plugin</artifactId>
+                            <version>3.0.1</version>
+                            <executions>
+                                <execution>
+                                    <id>apply-license-to-main</id>
+                                    <phase>generate-sources</phase>
+                                    <goals><goal>copy-resources</goal></goals>
+                                    <configuration>
+                                        <outputDirectory>${project.basedir}/src/main/resources/META-INF</outputDirectory>
+                                        <resources>
+                                            <resource>
+                                                <directory>${project.build.directory}/tmp/config/license/apache-license-2.0</directory>
+                                            </resource>
+                                        </resources>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
             </build>
         </profile>
     </profiles>
