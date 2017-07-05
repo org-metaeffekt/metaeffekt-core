@@ -39,7 +39,7 @@
                             </tgroup>
                         </table>
                     </p>
-#if($artifactLicenseData.licenseMetaData.getObligationText())$artifactLicenseData.licenseMetaData.getObligationText().trim()#else&nbsp;#end
+#if($artifactLicenseData.licenseMetaData.getObligationText())$artifactLicenseData.licenseMetaData.getNotice().trim()#else&nbsp;#end
                 </section>
 #end
             </body>

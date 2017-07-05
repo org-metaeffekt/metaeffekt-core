@@ -519,7 +519,7 @@ public class InventoryReport {
         }
         for (Artifact artifact : projectInventory.getArtifacts()) {
             String license = artifact.getLicense();
-            if (StringUtils.hasText(license)) {
+            if (StringUtils.hasText(license) && artifact.isRelevant()) {
                 if (licensesRequiringNotice.contains(license)) {
                     LicenseMetaData licenseMetaData =
                             projectInventory.findMatchingLicenseMetaData(

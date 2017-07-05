@@ -33,6 +33,7 @@ import java.util.*;
 public class Inventory {
 
     public static final String CLASSIFICATION_CURRENT = "current";
+
     private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
     private static final String STRING_EMPTY = "";
     private static final String VERSION_UNSPECIFIED = "unspecified";
@@ -47,7 +48,7 @@ public class Inventory {
 
     private Map<String, String> componentNameMap = new HashMap<String, String>();
 
-    private Map<String, Object> contextMap = new HashMap<String, Object>();
+    private Map<String, Object> contextMap = new HashMap<>();
 
     public static void sortArtifacts(List<Artifact> artifacts) {
         Comparator<Artifact> comparator = new Comparator<Artifact>() {
@@ -576,6 +577,15 @@ public class Inventory {
                 }
             }
 
+            // check whether there is an effective license
+            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact.getName(), artifactLicense, artifact.getVersion());
+            if (matchingLicenseMetaData != null) {
+                final String licenseInEffect = matchingLicenseMetaData.getLicenseInEffect();
+                if (!StringUtils.isEmpty(licenseInEffect)) {
+                    artifactLicense = licenseInEffect;
+                }
+            }
+
             if (artifactLicense != null) {
                 String[] splitLicense = artifactLicense.split("\\|");
                 for (int i = 0; i < splitLicense.length; i++) {
@@ -638,7 +648,7 @@ public class Inventory {
                                                        String version) {
         LicenseMetaData match = null;
         for (LicenseMetaData lmd : licenseMetaData) {
-            if (lmd.getName().equals(license) &&
+            if (lmd.getLicense().equals(license) &&
                     (lmd.getVersion().equals(version) || lmd.getVersion().equals(ASTERISK)) &&
                     (lmd.getComponent().equals(component) || lmd.getComponent().equals(ASTERISK))) {
                 if (match != null) {

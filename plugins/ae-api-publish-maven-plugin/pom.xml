@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>0.2.0</version>
+        <version>0.3-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -57,7 +57,8 @@
         </dependency>
 
     </dependencies>
-    
+
+    <!--
     <build>
         <plugins>
             <plugin>
@@ -66,5 +67,6 @@
             </plugin>
         </plugins>
     </build>
+    -->
 
 </project>

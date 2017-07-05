@@ -21,15 +21,19 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+@Ignore
 public class RepositoryReportTest {
 
     private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/ae-core-artifact-inventory.xls";
-    private static final String GLOBAL_INVENTORY = "src/test/resources/ae-core-artifact-inventory.xls";
+    private static final String GLOBAL_INVENTORY = "/Users/kklein/workspace/metaeffekt-core/inventory/src/main/resources/META-INF/ae-core-artifact-inventory.xls";
     private static final String REPOSITORY = "repository";
 
     @Test
@@ -38,6 +42,28 @@ public class RepositoryReportTest {
         for (Artifact artifact : inventory.getArtifacts()) {
             artifact.deriveArtifactId();
         }
+
+        new InventoryWriter().writeInventory(inventory, new File("target", "out.xls"));
+
+        inventory = new GlobalInventoryReader().readInventory(new File("target", "out.xls"));
+        for (Artifact artifact : inventory.getArtifacts()) {
+            artifact.deriveArtifactId();
+        }
+
+
+        // filter notices to only include the required notices
+        Set<LicenseMetaData> covered = new HashSet<>();
+        for (Artifact artifact : inventory.getArtifacts()) {
+            LicenseMetaData match = inventory.findMatchingLicenseMetaData(artifact.getName(), artifact.getLicense(), artifact.getVersion());
+            if (match != null) {
+                covered.add(match);
+            }
+        }
+        inventory.getLicenseMetaData().retainAll(covered);
+
+        new InventoryWriter().writeInventory(inventory, new File("target", "out2.xls"));
+
+        System.out.println(inventory.evaluateLicenses(true, false));
 
         Assert.assertNotNull(inventory.getLicenseMetaData());
 

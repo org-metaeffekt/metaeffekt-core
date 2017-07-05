@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -171,10 +172,10 @@ public class InventoryWriter {
     }
 
     private void writeNotices(Inventory inventory, HSSFWorkbook myWorkBook) {
-        HSSFSheet mySheet = myWorkBook.createSheet("Obligation Notices");
+        HSSFSheet mySheet = myWorkBook.createSheet("License Notices");
         mySheet.createFreezePane(0, 1);
         mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, 4));
-        mySheet.setDefaultColumnWidth(20);
+        mySheet.setDefaultColumnWidth(80);
 
         HSSFRow myRow = null;
         HSSFCell myCell = null;
@@ -197,7 +198,10 @@ public class InventoryWriter {
         myCell.setCellValue(new HSSFRichTextString("License"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Text"));
+        myCell.setCellValue(new HSSFRichTextString("License in Effect"));
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("License Notice"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Comment"));
@@ -211,20 +215,26 @@ public class InventoryWriter {
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getVersion()));
             myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getName()));
+            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getLicense()));
             myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getObligationText()));
+            String licenseInEffect = licenseMetaData.getLicenseInEffect();
+            if (StringUtils.isEmpty(licenseInEffect)) {
+                licenseInEffect = licenseMetaData.getLicense();
+            }
+            myCell.setCellValue(new HSSFRichTextString(licenseInEffect));
+            myCell = myRow.createCell(cellNum++);
+            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getNotice()));
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getComment()));
         }
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
             if (width != null) {
-                width = Math.min(width, 255);
                 mySheet.setColumnWidth(i, width);
             }
         }
+
     }
 
 }

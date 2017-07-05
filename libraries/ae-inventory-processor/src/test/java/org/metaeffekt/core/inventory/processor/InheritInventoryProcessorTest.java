@@ -110,7 +110,7 @@ public class InheritInventoryProcessorTest {
 
         LicenseMetaData licenseMetaData10 = createTestLicenseMetaData("1.0");
         LicenseMetaData licenseMetaData10Overwrite = createTestLicenseMetaData("1.0");
-        licenseMetaData10Overwrite.setObligationText("Overwritten");
+        licenseMetaData10Overwrite.setNotice("Overwritten");
 
         inputInventory.getLicenseMetaData().add(licenseMetaData10);
         inventory.getLicenseMetaData().add(licenseMetaData10Overwrite);
@@ -118,15 +118,15 @@ public class InheritInventoryProcessorTest {
         // validate precondition
         Assert.assertNotNull(inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
         Assert.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertEquals("Test support license notices.", inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getObligationText());
-        Assert.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getObligationText());
+        Assert.assertEquals("Test support license notices.", inputInventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
+        Assert.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
 
         final InheritInventoryProcessor processor = createInheritInventoryProcessor(inputInventory);
         processor.process(inventory);
 
         // validate post-condition
         Assert.assertNotNull(inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0"));
-        Assert.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getObligationText());
+        Assert.assertEquals("Overwritten", inventory.findMatchingLicenseMetaData("Test Support", "MIT License", "1.0").getNotice());
     }
 
     private InheritInventoryProcessor createInheritInventoryProcessor(final Inventory inputInventory) {
@@ -155,7 +155,7 @@ public class InheritInventoryProcessorTest {
         licenseMetaData.setName("MIT License");
         licenseMetaData.setComponent("Test Support");
         licenseMetaData.setComment("Test support comment");
-        licenseMetaData.setObligationText("Test support license notices.");
+        licenseMetaData.setNotice("Test support license notices.");
         licenseMetaData.setVersion(version);
         return licenseMetaData;
     }

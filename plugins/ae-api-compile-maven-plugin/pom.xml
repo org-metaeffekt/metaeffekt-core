@@ -8,13 +8,14 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>0.2.0</version>
+        <version>0.3-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
     <artifactId>ae-api-compile-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
 
+    <!--
     <build>
         <plugins>
             <plugin>
@@ -23,6 +24,7 @@
             </plugin>
         </plugins>
     </build>
+-->
 
     <dependencies>
         <dependency>

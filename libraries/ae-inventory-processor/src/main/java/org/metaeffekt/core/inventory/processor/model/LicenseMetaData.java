@@ -29,12 +29,15 @@ public class LicenseMetaData {
 
     private String version;
 
-    private String name;
+    private String license;
 
-    private String obligationText;
+    private String licenseInEffect;
+
+    private String notice;
 
     private String comment;
 
+    // FIXME: we should also copy the folder with the license in effect
     public static String deriveLicenseFolderName(String license) {
         if (license == null) return null;
         return normalizeId(license);
@@ -71,20 +74,30 @@ public class LicenseMetaData {
         this.component = component;
     }
 
+    @Deprecated
     public String getName() {
-        return name;
+        return license;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    @Deprecated
+    public void setName(String license) {
+        this.license = license;
     }
 
-    public String getObligationText() {
-        return obligationText;
+    public String getLicense() {
+        return license;
     }
 
-    public void setObligationText(String obligationText) {
-        this.obligationText = obligationText;
+    public void setLicense(String license) {
+        this.license = license;
+    }
+
+    public String getNotice() {
+        return notice;
+    }
+
+    public void setNotice(String notice) {
+        this.notice = notice;
     }
 
     public String getComment() {
@@ -103,16 +116,25 @@ public class LicenseMetaData {
         this.version = version;
     }
 
+    public String getLicenseInEffect() {
+        return licenseInEffect;
+    }
+
+    public void setLicenseInEffect(String licenseInEffect) {
+        this.licenseInEffect = licenseInEffect;
+    }
+
     public String deriveQualifier() {
         return new StringBuilder(getComponent()).append(getName()).append(getVersion()).toString();
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(name);
+        StringBuilder sb = new StringBuilder(license);
         sb.append('/').append(component);
         sb.append('/').append(version);
-        sb.append('/').append(obligationText);
+        sb.append('/').append(licenseInEffect);
+        sb.append('/').append(notice);
         if (StringUtils.hasText(comment)) {
             sb.append('/').append(comment);
         }

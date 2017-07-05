@@ -22,10 +22,14 @@ import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class GlobalInventoryReader extends AbstractXlsInventoryReader {
+
+    private Map<Integer, String> columnMap = new HashMap<>();
 
     @Override
     protected void readHeader(HSSFRow row) {
@@ -39,9 +43,8 @@ public class GlobalInventoryReader extends AbstractXlsInventoryReader {
 
     @Override
     protected void readLicenseMetaDataHeader(HSSFRow row) {
-        if (row.getPhysicalNumberOfCells() != 5) {
-            throw new IllegalArgumentException("Header does not contain not all relevant information. " +
-                    row.getPhysicalNumberOfCells());
+        for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
+            columnMap.put(i, row.getCell(i).getStringCellValue());
         }
     }
 
@@ -53,7 +56,7 @@ public class GlobalInventoryReader extends AbstractXlsInventoryReader {
 
         int i = 0;
 
-        // id
+        // component
         HSSFCell myCell = row.getCell(i++);
         if (myCell != null) {
             artifact.setId(myCell.toString());
@@ -155,29 +158,32 @@ public class GlobalInventoryReader extends AbstractXlsInventoryReader {
 
     @Override
     protected LicenseMetaData readLicenseMetaData(HSSFRow row) {
-        LicenseMetaData licenseMetaData = new LicenseMetaData();
+        final LicenseMetaData licenseMetaData = new LicenseMetaData();
 
-        int i = 0;
+        for (int i = 0; i < columnMap.size(); i++) {
+            final String columnName = columnMap.get(i);
+            final HSSFCell myCell = row.getCell(i);
+            final String value = myCell != null ? myCell.toString() : null;
 
-        // component
-        HSSFCell myCell = row.getCell(i++);
-        licenseMetaData.setComponent(myCell.toString());
-
-        // version
-        myCell = row.getCell(i++);
-        licenseMetaData.setVersion(myCell.toString());
-
-        // name
-        myCell = row.getCell(i++);
-        licenseMetaData.setName(myCell.toString());
-
-        // text
-        myCell = row.getCell(i++);
-        licenseMetaData.setObligationText(myCell.toString());
-
-        // comment
-        myCell = row.getCell(i++);
-        licenseMetaData.setComment(myCell.toString());
+            if (columnName.equalsIgnoreCase("component")) {
+                licenseMetaData.setComponent(value);
+            }
+            if (columnName.equalsIgnoreCase("version")) {
+                licenseMetaData.setVersion(value);
+            }
+            if (columnName.equalsIgnoreCase("license")) {
+                licenseMetaData.setLicense(value);
+            }
+            if (columnName.equalsIgnoreCase("license in effect")) {
+                licenseMetaData.setLicenseInEffect(value);
+            }
+            if (columnName.equalsIgnoreCase("license notice") || columnName.equalsIgnoreCase("text")) {
+                licenseMetaData.setNotice(value);
+            }
+            if (columnName.equalsIgnoreCase("comment")) {
+                licenseMetaData.setComment(value);
+            }
+        }
 
         return licenseMetaData;
     }

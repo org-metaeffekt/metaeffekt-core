@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>0.2.0</version>
+        <version>0.3-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -29,13 +29,13 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>

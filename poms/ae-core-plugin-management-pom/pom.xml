@@ -10,23 +10,23 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
-        <version>0.2.0</version>
+        <version>0.3-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
 
     <properties>
         <header.copyright.year>2017</header.copyright.year>
 
-        <ae.core.version>0.2.0</ae.core.version>
+        <ae.core.version>0.3-SNAPSHOT</ae.core.version>
 
         <artifact.inventory.version>${ae.core.version}</artifact.inventory.version>
-        <artifact.inventory.enabled>false</artifact.inventory.enabled>
+        <artifact.inventory.enabled>true</artifact.inventory.enabled>
 
         <artifact.inventory.manage.scope.provided>true</artifact.inventory.manage.scope.provided>
         <artifact.inventory.manage.scope.test>true</artifact.inventory.manage.scope.test>
         <artifact.inventory.manage.scope.system>true</artifact.inventory.manage.scope.system>
         <artifact.inventory.manage.optional>true</artifact.inventory.manage.optional>
-        <artifact.inventory.manage.plugins>true</artifact.inventory.manage.plugins>
+        <artifact.inventory.manage.plugins>false</artifact.inventory.manage.plugins>
 
         <artifact.inventory.enforce.plugins>false</artifact.inventory.enforce.plugins>
         <artifact.inventory.external.enabled>false</artifact.inventory.external.enabled>
