@@ -6,6 +6,7 @@
         <p>
 
             <table otherprops="wide" id="table_third-party-components">
+                <title>Third-Party Components</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="55*" />

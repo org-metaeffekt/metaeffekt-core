@@ -3,14 +3,14 @@
 <topic id="tpc_third-party-notices" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>License Notices</title>
 #foreach($license in $inventory.evaluateLicenses(false))
-
 #set($group=$inventory.evaluateNotices($license))
-    
 #if(!$group.isEmpty())
         <topic id="tpc_license_$inventory.deriveLicenseId($license)">
             <title>$license</title>
             <body>
+
 #foreach($artifactLicenseData in $group)
+
                 <section>
                     <title>$artifactLicenseData.componentName - $artifactLicenseData.componentVersion</title>
                     <p>
@@ -39,11 +39,11 @@
                             </tgroup>
                         </table>
                     </p>
-#if($artifactLicenseData.licenseMetaData.getObligationText())$artifactLicenseData.licenseMetaData.getNotice().trim()#else&nbsp;#end
+#if($artifactLicenseData.licenseMetaData.getNotice())$artifactLicenseData.licenseMetaData.getNotice().trim()#else&nbsp;#end
                 </section>
 #end
             </body>
         </topic>
-    #end
-#end        
+#end
+#end
 </topic>

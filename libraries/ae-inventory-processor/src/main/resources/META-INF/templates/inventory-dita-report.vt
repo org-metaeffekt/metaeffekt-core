@@ -4,6 +4,7 @@
     <title>Third-Party Artifacts</title>
     <body>
         <table otherprops="wide" id="table_third-party-jars">
+            <title>Third-Party Artifacts</title>
             <tgroup cols="4">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="30*" />

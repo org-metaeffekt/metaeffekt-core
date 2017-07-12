@@ -16,6 +16,8 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 
+import org.springframework.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +68,10 @@ public class ArtifactLicenseData {
         result = result.replace("(", "");
         result = result.replace(")", "");
         return result;
+    }
+
+    public String getLicenseInEffect() {
+        return licenseMetaData.deriveLicenseInEffect();
     }
 
     @Override

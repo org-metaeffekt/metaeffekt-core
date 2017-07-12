@@ -185,6 +185,10 @@ public class GlobalInventoryReader extends AbstractXlsInventoryReader {
             }
         }
 
+        if (licenseMetaData.isValid()) {
+            return licenseMetaData;
+        }
+
         return licenseMetaData;
     }
 

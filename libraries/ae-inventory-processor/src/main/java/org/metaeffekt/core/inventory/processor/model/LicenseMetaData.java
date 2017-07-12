@@ -128,6 +128,14 @@ public class LicenseMetaData {
         return new StringBuilder(getComponent()).append(getName()).append(getVersion()).toString();
     }
 
+    public String deriveLicenseInEffect() {
+        String licenseInEffect = getLicenseInEffect();
+        if (StringUtils.isEmpty(licenseInEffect)) {
+            licenseInEffect = getLicense();
+        }
+        return licenseInEffect;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(license);
@@ -143,5 +151,11 @@ public class LicenseMetaData {
 
     public String createCompareStringRepresentation() {
         return toString();
+    }
+
+    public boolean isValid() {
+        if (StringUtils.isEmpty(getComponent())) return false;
+        if (StringUtils.isEmpty(getVersion())) return false;
+        return true;
     }
 }

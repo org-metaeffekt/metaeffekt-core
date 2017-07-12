@@ -4,6 +4,7 @@
     <title>Licenses in Effect</title>
     <body>
         <table otherprops="wide" id="table_third-party-license-summary" >
+            <title>Licenses in Effect</title>
             <tgroup cols="1">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
                 <thead>
@@ -14,12 +15,12 @@
                 <tbody> 
 #foreach($license in $inventory.evaluateLicenses(false))
                     <row>
-                        #set($folder=$inventory.getLicenseFolder($license))
-                        #if($folder) 
+    #set($folder=$inventory.getLicenseFolder($license))
+    #if($folder)
                             <entry><xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref></entry>
-                        #else
+    #else
                             <entry>$license.trim()</entry>
-                        #end
+    #end
                     </row>
 #end
                 </tbody>

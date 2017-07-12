@@ -578,12 +578,10 @@ public class Inventory {
             }
 
             // check whether there is an effective license
+
             final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact.getName(), artifactLicense, artifact.getVersion());
             if (matchingLicenseMetaData != null) {
-                final String licenseInEffect = matchingLicenseMetaData.getLicenseInEffect();
-                if (!StringUtils.isEmpty(licenseInEffect)) {
-                    artifactLicense = licenseInEffect;
-                }
+                artifactLicense = matchingLicenseMetaData.deriveLicenseInEffect();
             }
 
             if (artifactLicense != null) {
@@ -604,31 +602,28 @@ public class Inventory {
     /**
      * Returns all relevant notices for a given license.
      *
+     * @param effectiveLicense The effective license.
+     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
-    public List<ArtifactLicenseData> evaluateNotices(String license) {
+    public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
         final Map<String, ArtifactLicenseData> map = new LinkedHashMap<>();
         for (final Artifact artifact : artifacts) {
-            final String artifactLicenses = artifact.getLicense();
-            if (artifactLicenses != null) {
-                final String[] splitLicense = artifactLicenses.split("\\|");
-                for (int i = 0; i < splitLicense.length; i++) {
-                    final String artifactLicense = splitLicense[i].trim();
-                    if (license.equals(artifactLicense)) {
-                        // find a matching LMD instance
-                        LicenseMetaData match = findMatchingLicenseMetaData(
-                                artifact.getName(), artifactLicense, artifact.getVersion());
-                        if (match != null) {
-                            String qualifier = new StringBuilder(artifactLicense).append("-").
-                                    append(artifact.getVersion()).append("-").append(artifact.getName()).toString();
-                            ArtifactLicenseData artifactLicenseData = map.get(qualifier);
-                            if (artifactLicenseData == null) {
-                                artifactLicenseData = new ArtifactLicenseData(artifact.getName(), artifact.getVersion(), match);
-                                map.put(qualifier, artifactLicenseData);
-                            }
-                            artifactLicenseData.add(artifact);
-                        }
+            String artifactLicense = artifact.getLicense();
+            if (artifactLicense != null) {
+                artifactLicense = artifactLicense.trim();
+                // find a matching LMD instance
+                LicenseMetaData match = findMatchingLicenseMetaData(
+                        artifact.getName(), artifactLicense, artifact.getVersion());
+                if (match != null && effectiveLicense.equals(match.deriveLicenseInEffect())) {
+                    String qualifier = new StringBuilder(artifactLicense).append("-").
+                        append(artifact.getVersion()).append("-").append(artifact.getName()).toString();
+                    ArtifactLicenseData artifactLicenseData = map.get(qualifier);
+                    if (artifactLicenseData == null) {
+                        artifactLicenseData = new ArtifactLicenseData(artifact.getName(), artifact.getVersion(), match);
+                        map.put(qualifier, artifactLicenseData);
                     }
+                    artifactLicenseData.add(artifact);
                 }
             }
         }
@@ -1006,7 +1001,7 @@ public class Inventory {
 
     public List<Artifact> evaluateLicense(String licenseName,
                                           boolean includeLicensesWithArtifactsOnly) {
-        List<Artifact> artifactsForComponent = new ArrayList<Artifact>();
+        List<Artifact> artifactsForComponent = new ArrayList<>();
         for (Artifact artifact : getArtifacts()) {
             if (licenseName.equals(artifact.getLicense())) {
                 if (!StringUtils.hasText(artifact.getArtifactId())) {

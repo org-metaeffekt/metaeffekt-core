@@ -33,7 +33,10 @@ import java.util.Set;
 public class RepositoryReportTest {
 
     private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/ae-core-artifact-inventory.xls";
-    private static final String GLOBAL_INVENTORY = "/Users/kklein/workspace/metaeffekt-core/inventory/src/main/resources/META-INF/ae-core-artifact-inventory.xls";
+   //private static final String GLOBAL_INVENTORY = "/Users/kklein/workspace/metaeffekt-core/inventory/src/main/resources/META-INF/ae-core-artifact-inventory.xls";
+
+    private static final String GLOBAL_INVENTORY = "/Users/kklein/Documents/venture/internal-projects/metaeffekt-lcm/{metaeffekt} inventory_02-07-2017/inventory/artifact-inventory.xls";
+
     private static final String REPOSITORY = "repository";
 
     @Test
@@ -49,7 +52,6 @@ public class RepositoryReportTest {
         for (Artifact artifact : inventory.getArtifacts()) {
             artifact.deriveArtifactId();
         }
-
 
         // filter notices to only include the required notices
         Set<LicenseMetaData> covered = new HashSet<>();
