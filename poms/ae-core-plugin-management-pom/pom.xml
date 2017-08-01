@@ -103,7 +103,7 @@
                     <!-- determining bumped up version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.5.1</version>
+                    <version>3.6</version>
                 </plugin>
 
                 <plugin>
@@ -141,7 +141,7 @@
                     <!-- introduced to manage version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.19.1</version>
+                    <version>2.20</version>
                 </plugin>
 
                 <plugin>
@@ -181,7 +181,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.5.1</version>
+                    <version>3.6.2</version>
                     <configuration>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -232,50 +232,6 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.metaeffekt.core</groupId>
-                    <artifactId>ae-inventory-maven-plugin</artifactId>
-                    <version>${ae.core.version}</version>
-                    <configuration>
-                        <sourceInventoryPath>${artifact.inventory.source}</sourceInventoryPath>
-
-                        <failOnError>${artifact.inventory.enabled}</failOnError>
-                        <failOnUnknown>${artifact.inventory.enabled}</failOnUnknown>
-                        <failOnUnknownVersion>${artifact.inventory.enabled}</failOnUnknownVersion>
-                        <failOnMissingLicense>${artifact.inventory.enabled}</failOnMissingLicense>
-                        <failOnMissingLicenseFile>false</failOnMissingLicenseFile>
-                        <failOnMissingNotice>${artifact.inventory.enabled}</failOnMissingNotice>
-                        <failOnDevelopment>${artifact.inventory.external.enabled}</failOnDevelopment>
-                        <failOnInternal>${artifact.inventory.external.enabled}</failOnInternal>
-                        <failOnUpgrade>false</failOnUpgrade>
-                        <failOnDowngrade>${artifact.inventory.enabled}</failOnDowngrade>
-
-                        <manageScopeProvided>${artifact.inventory.manage.scope.provided}</manageScopeProvided>
-                        <manageScopeTest>${artifact.inventory.manage.scope.test}</manageScopeTest>
-                        <manageScopeSystem>${artifact.inventory.manage.scope.system}</manageScopeSystem>
-                        <manageOptional>${artifact.inventory.manage.optional}</manageOptional>
-                        <managePlugins>${artifact.inventory.manage.plugins}</managePlugins>
-
-                        <artifactExcludes>${artifact.inventory.exclude.artifacts}</artifactExcludes>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <id>inventory-check</id>
-                            <goals>
-                                <goal>create-pom-report</goal>
-                            </goals>
-                            <phase>validate</phase>
-                        </execution>
-                    </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>org.metaeffekt.core</groupId>
-                            <artifactId>ae-core-inventory</artifactId>
-                            <version>${ae.core.version}</version>
-                        </dependency>
-                    </dependencies>
-                </plugin>
-
-                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-antrun-plugin</artifactId>
                     <version>1.8</version>
@@ -296,7 +252,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.0.2</version>
                     <executions>
                         <execution>
                             <id>apply-license-to-javadoc</id>
@@ -328,7 +284,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>3.0.1</version>
                     <executions>
                         <execution>
                             <id>include-license</id>
@@ -412,6 +368,62 @@
 
     <profiles>
         <profile>
+            <id>validate-using-inventory</id>
+            <activation>
+                <file><missing>.NO_INVENTORY_CHECK</missing></file>
+            </activation>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.metaeffekt.core</groupId>
+                            <artifactId>ae-inventory-maven-plugin</artifactId>
+                            <version>${ae.core.version}</version>
+                            <configuration>
+                                <sourceInventoryPath>${artifact.inventory.source}</sourceInventoryPath>
+
+                                <failOnError>${artifact.inventory.enabled}</failOnError>
+                                <failOnUnknown>${artifact.inventory.enabled}</failOnUnknown>
+                                <failOnUnknownVersion>${artifact.inventory.enabled}</failOnUnknownVersion>
+                                <failOnMissingLicense>${artifact.inventory.enabled}</failOnMissingLicense>
+                                <failOnMissingLicenseFile>false</failOnMissingLicenseFile>
+                                <failOnMissingNotice>${artifact.inventory.enabled}</failOnMissingNotice>
+                                <failOnDevelopment>${artifact.inventory.external.enabled}</failOnDevelopment>
+                                <failOnInternal>${artifact.inventory.external.enabled}</failOnInternal>
+                                <failOnUpgrade>false</failOnUpgrade>
+                                <failOnDowngrade>${artifact.inventory.enabled}</failOnDowngrade>
+
+                                <manageScopeProvided>${artifact.inventory.manage.scope.provided}</manageScopeProvided>
+                                <manageScopeTest>${artifact.inventory.manage.scope.test}</manageScopeTest>
+                                <manageScopeSystem>${artifact.inventory.manage.scope.system}</manageScopeSystem>
+                                <manageOptional>${artifact.inventory.manage.optional}</manageOptional>
+                                <managePlugins>${artifact.inventory.manage.plugins}</managePlugins>
+
+                                <artifactExcludes>${artifact.inventory.exclude.artifacts}</artifactExcludes>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <id>inventory-check</id>
+                                    <goals>
+                                        <goal>create-pom-report</goal>
+                                    </goals>
+                                    <phase>validate</phase>
+                                </execution>
+                            </executions>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.metaeffekt.core</groupId>
+                                    <artifactId>ae-core-inventory</artifactId>
+                                    <version>${ae.core.version}</version>
+                                </dependency>
+                            </dependencies>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+
+        <profile>
             <id>apply-license-header</id>
             <build>
                 <pluginManagement>
@@ -457,7 +469,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-resources-plugin</artifactId>
-                            <version>3.0.1</version>
+                            <version>3.0.2</version>
                             <executions>
                                 <execution>
                                     <id>apply-license-to-test</id>
@@ -490,7 +502,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-resources-plugin</artifactId>
-                            <version>3.0.1</version>
+                            <version>3.0.2</version>
                             <executions>
                                 <execution>
                                     <id>apply-license-to-main</id>

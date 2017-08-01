@@ -5,12 +5,11 @@
     <artifactId>ae-core-inventory</artifactId>
     <packaging>jar</packaging>
 
-    <!-- FIXME: dedicated parent POM for inventories is required -->
     <parent>
         <groupId>org.metaeffekt.core</groupId>
-        <artifactId>ae-core</artifactId>
+        <artifactId>ae-core-plugin-management-pom</artifactId>
         <version>0.4-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <relativePath>../poms/ae-core-plugin-management-pom</relativePath>
     </parent>
 
     <build>
@@ -20,21 +19,6 @@
                     <groupId>org.metaeffekt.core</groupId>
                     <artifactId>ae-inventory-maven-plugin</artifactId>
                     <version>${ae.core.version}</version>
-                    <configuration>
-                        <componentNameMapping>
-                            <mapping>spin.js-->Spin</mapping>
-                        </componentNameMapping>
-
-                        <licenseNameMapping>
-                            <mapping>Jtidy License-->JTidy License</mapping>
-                            <mapping>Jdom License-->JDOM License</mapping>
-                            <mapping>JSon License-->JSON License</mapping>
-                            <mapping>BSD 2.0-->BSD 3-Clause License</mapping>
-                            <mapping>BSD Two Clause License-->BSD 2-Clause License</mapping>
-                            <mapping>BSD Two Clause License (BSD-)-->BSD 2-Clause License</mapping>
-                            <mapping>MIT License V2-->MIT License</mapping>
-                        </licenseNameMapping>
-                    </configuration>
                 </plugin>
             
                 <plugin>
@@ -62,7 +46,7 @@
                 <version>${ae.core.version}</version>
                 <executions>
                     <execution>
-                        <id>2016-Q1</id>
+                        <id>update-inventory</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>update-inventory</goal>
@@ -75,10 +59,6 @@
                 </executions>
                 <configuration>
                     <processors>
-                        <processor>
-                            <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
-                            <skip>true</skip>
-                        </processor>
                         <processor>
                             <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
                             <skip>true</skip>
@@ -103,7 +83,7 @@
                         <version>${ae.core.version}</version>
                         <executions>
                             <execution>
-                                <id>2016-Q1</id>
+                                <id>update-versions</id>
                                 <phase>process-sources</phase>
                                 <goals>
                                     <goal>update-inventory</goal>
