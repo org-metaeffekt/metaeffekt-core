@@ -41,11 +41,6 @@
         <maven.compiler.jdk>1.8</maven.compiler.jdk>
 
         <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
-
-        <organization>metaeffekt.org</organization>
-
-        <license.identifier>Apache License 2.0</license.identifier>
-        <license.file>/META-INF/LICENSE</license.file>
     </properties>
 
     <dependencyManagement>
@@ -63,30 +58,6 @@
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
-                    <configuration>
-                        <archive>
-                            <index>false</index>
-                            <addMavenDescriptor>false</addMavenDescriptor>
-                            <manifestEntries>
-                                <Created-By>${organization}</Created-By>
-                                <Built-By>${organization}</Built-By>
-                            </manifestEntries>
-                            <manifestSections>
-                                <manifestSection>
-                                    <name>License Information</name>
-                                    <manifestEntries>
-                                        <License>${license.identifier}</License>
-                                        <License-File>${license.file}</License-File>
-                                    </manifestEntries>
-                                </manifestSection>
-                            </manifestSections>
-                        </archive>
-                    </configuration>
-                </plugin>
                 <plugin>
                     <!-- determining bumped up version -->
                     <groupId>org.apache.maven.plugins</groupId>
@@ -107,75 +78,10 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>2.10.4</version>
-                    <configuration>
-                        <javadocVersion>1.8</javadocVersion>
-                        <additionalparam>-Xdoclint:none</additionalparam>
-                        <bottom>
-                            Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
-                            {currentYear} the original author or authors.
-                        </bottom>
-                        <archive>
-                            <index>false</index>
-                            <addMavenDescriptor>false</addMavenDescriptor>
-                            <manifestEntries>
-                                <Created-By>${organization}</Created-By>
-                                <Built-By>${organization}</Built-By>
-                            </manifestEntries>
-                            <manifestSections>
-                                <manifestSection>
-                                    <name>License Information</name>
-                                    <manifestEntries>
-                                        <License>${license.identifier}</License>
-                                        <License-File>${license.file}</License-File>
-                                    </manifestEntries>
-                                </manifestSection>
-                            </manifestSections>
-                        </archive>
-                    </configuration>
-                </plugin>
-
-                <plugin>
                     <!-- introduced to manage version -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.20</version>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.0.1</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <phase>verify</phase>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <archive>
-                            <index>false</index>
-                            <addMavenDescriptor>false</addMavenDescriptor>
-                            <manifestEntries>
-                                <Created-By>${organization}</Created-By>
-                                <Built-By>${organization}</Built-By>
-                            </manifestEntries>
-                            <manifestSections>
-                                <manifestSection>
-                                    <name>License Information</name>
-                                    <manifestEntries>
-                                        <License>${license.identifier}</License>
-                                        <License-File>${license.file}</License-File>
-                                    </manifestEntries>
-                                </manifestSection>
-                            </manifestSections>
-                        </archive>
-                    </configuration>
                 </plugin>
 
                 <plugin>

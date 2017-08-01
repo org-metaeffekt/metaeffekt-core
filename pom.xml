@@ -52,6 +52,11 @@
         <artifact.inventory.version>0.2-SNAPSHOT</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
         <ae.core.version>0.4-SNAPSHOT</ae.core.version>
+
+        <organization>metaeffekt.org</organization>
+
+        <license.identifier>Apache License 2.0</license.identifier>
+        <license.file>/META-INF/LICENSE</license.file>
     </properties>
 
     <modules>
@@ -95,6 +100,31 @@
                         </execution>
                     </executions>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                    <configuration>
+                        <archive>
+                            <index>false</index>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                            <manifestEntries>
+                                <Created-By>${organization}</Created-By>
+                                <Built-By>${organization}</Built-By>
+                            </manifestEntries>
+                            <manifestSections>
+                                <manifestSection>
+                                    <name>License Information</name>
+                                    <manifestEntries>
+                                        <License>${license.identifier}</License>
+                                        <License-File>${license.file}</License-File>
+                                    </manifestEntries>
+                                </manifestSection>
+                            </manifestSections>
+                        </archive>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -120,6 +150,25 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <archive>
+                                <index>false</index>
+                                <addMavenDescriptor>false</addMavenDescriptor>
+                                <manifestEntries>
+                                    <Created-By>${organization}</Created-By>
+                                    <Built-By>${organization}</Built-By>
+                                </manifestEntries>
+                                <manifestSections>
+                                    <manifestSection>
+                                        <name>License Information</name>
+                                        <manifestEntries>
+                                            <License>${license.identifier}</License>
+                                            <License-File>${license.file}</License-File>
+                                        </manifestEntries>
+                                    </manifestSection>
+                                </manifestSections>
+                            </archive>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -143,6 +192,31 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <javadocVersion>1.8</javadocVersion>
+                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <bottom>
+                                Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
+                                {currentYear} the original author or authors.
+                            </bottom>
+                            <archive>
+                                <index>false</index>
+                                <addMavenDescriptor>false</addMavenDescriptor>
+                                <manifestEntries>
+                                    <Created-By>${organization}</Created-By>
+                                    <Built-By>${organization}</Built-By>
+                                </manifestEntries>
+                                <manifestSections>
+                                    <manifestSection>
+                                        <name>License Information</name>
+                                        <manifestEntries>
+                                            <License>${license.identifier}</License>
+                                            <License-File>${license.file}</License-File>
+                                        </manifestEntries>
+                                    </manifestSection>
+                                </manifestSections>
+                            </archive>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
