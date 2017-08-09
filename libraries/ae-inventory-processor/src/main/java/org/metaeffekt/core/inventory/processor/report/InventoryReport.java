@@ -370,7 +370,7 @@ public class InventoryReport {
                             LOG.info(messagePattern, classifier, artifactQualifier, comment);
                         }
                     } else {
-                        if (classifier.length() > 0) {
+                        if (classifier.contains("[hint]")) {
                             if (!artifact.isRelevant()) {
                                 final String messagePattern = "{} {} {} (not relevant for report)";
                                 LOG.info(messagePattern, classifier, artifactQualifier, comment);
@@ -421,9 +421,11 @@ public class InventoryReport {
         // evaluate licenses only for managed artifacts
         List<String> licenses = projectInventory.evaluateLicenses(false, true);
 
-        // apply consistency checks on license meta data
-        boolean missingLicenseFile = verifyLicenseFiles(projectInventory, licenses);
-        boolean missingNotice = evaluateMissingNotices(projectInventory, licenses);
+        // evaluaate / copy / check checks on license and notice files
+        boolean missingLicenseFile = evaluateLicenseFiles(projectInventory);
+        boolean missingNotice = evaluateNotices(projectInventory, licenses);
+
+        // TODO: verify availability of source artifacts to complement distribution
 
         // write report xls
         if (targetInventoryFile != null) {
@@ -506,13 +508,13 @@ public class InventoryReport {
         }
     }
 
-    protected boolean evaluateMissingNotices(Inventory projectInventory, List<String> licenses) {
+    public boolean evaluateNotices(Inventory projectInventory, List<String> licenses) {
         boolean missingNotice = false;
-        List<LicenseMetaData> licenseMetaDataList = projectInventory.getLicenseMetaData();
-        Set<String> licensesRequiringNotice = new HashSet<String>();
+        final List<LicenseMetaData> licenseMetaDataList = projectInventory.getLicenseMetaData();
+        final Set<String> licensesRequiringNotice = new HashSet();
         for (String license : licenses) {
             for (LicenseMetaData licenseMetaData : licenseMetaDataList) {
-                if (licenseMetaData.getName().equalsIgnoreCase(license)) {
+                if (licenseMetaData.getLicense().equalsIgnoreCase(license)) {
                     licensesRequiringNotice.add(license);
                 }
             }
@@ -539,7 +541,30 @@ public class InventoryReport {
         return missingNotice;
     }
 
-    protected boolean verifyLicenseFiles(Inventory projectInventory, List<String> licenses) {
+    private boolean checkAndCopyLicenseFolder(String licenseFolderName, String targetLicenseFolder,
+          boolean derived, Set<String> reportedLicenseFolders) {
+        File sourceDir = new File(licenseSourcePath);
+        File targetDir = new File(licenseTargetPath);
+        File derivedFile = new File(sourceDir, licenseFolderName);
+        if (derivedFile.exists()) {
+            copyLicense(sourceDir, licenseFolderName, targetLicenseFolder, targetDir);
+        } else {
+            if (!reportedLicenseFolders.contains(licenseFolderName)) {
+                final String derivedText = derived ? "derived " : "";
+                if (failOnMissingLicenseFile) {
+                    LOG.error("No {}license file in folder '{}'", derivedText, licenseFolderName);
+                } else {
+                    LOG.warn("No {}license file in folder '{}'", derivedText, licenseFolderName);
+                }
+                reportedLicenseFolders.add(licenseFolderName);
+            }
+            return false;
+        }
+        return true;
+    }
+
+    public boolean evaluateLicenseFiles(Inventory projectInventory) {
+        Set<String> reportedLicenseFolders = new HashSet<>();
         boolean missingLicenseFile = false;
         if (licenseTargetPath != null && licenseSourcePath != null) {
             // copy all touched licenses to the given folder
@@ -552,31 +577,53 @@ public class InventoryReport {
                 targetDir.mkdirs();
             }
 
-            for (String license : licenses) {
-                String licenseFolderName = LicenseMetaData.deriveLicenseFolderName(license);
+            for (Artifact artifact : projectInventory.getArtifacts()) {
+                String sourceLicense = artifact.getLicense();
 
-                File derivedFile = new File(sourceDir, licenseFolderName);
-                if (derivedFile.exists()) {
-                    copyLicense(sourceDir, licenseFolderName, targetDir);
-                } else {
-                    if (failOnMissingLicenseFile) {
-                        LOG.error("No license file in folder '{}'", licenseFolderName);
-                    } else {
-                        LOG.warn("No license file in folder '{}'", licenseFolderName);
-                    }
-                    missingLicenseFile = true;
+                if (!StringUtils.hasText(sourceLicense)) {
+                    continue;
                 }
 
-                // and now the derived licenses
-                Set<String> derivedLicenses = projectInventory.
-                        listDerivedLicenses(license, licenseFolderName);
+                // copy source license folder
+                String licenseFolderName = LicenseMetaData.deriveLicenseFolderName(sourceLicense);
+                checkAndCopyLicenseFolder(licenseFolderName, licenseFolderName, false, reportedLicenseFolders);
 
-                for (String derivedPath : derivedLicenses) {
-                    File derivedLicense = new File(sourceDir, derivedPath);
-                    if (derivedLicense.exists()) {
-                        copyLicense(sourceDir, derivedPath, targetDir);
+                // try to resolve license meta data if available
+                final LicenseMetaData matchingLicenseMetaData = projectInventory.
+                        findMatchingLicenseMetaData(artifact.getName(), sourceLicense, artifact.getVersion());
+
+                // copy derived, artifact-specific license folder
+                if (artifact.getName() != null) {
+                    String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getName());
+                    String versionUnspecificPath =  licenseFolderName + "/" + componentFolderName;
+                    String versionSpecificPath = versionUnspecificPath + "-" + artifact.getVersion();
+
+                    if (matchingLicenseMetaData != null && matchingLicenseMetaData.getVersion().equals("*")) {
+                        checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificPath, true, reportedLicenseFolders);
                     } else {
-                        LOG.warn("No derived license folder '{}'", derivedPath);
+                        checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificPath, true, reportedLicenseFolders);
+                    }
+                }
+
+                if (matchingLicenseMetaData != null) {
+                    String[] effectiveLicenses = matchingLicenseMetaData.deriveLicenseInEffect().split("\\|");
+                    for (String licenseInEffect : effectiveLicenses) {
+                        String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
+                        // copy license folder (unspecific)
+                        checkAndCopyLicenseFolder(effectiveLicenseFolderName, effectiveLicenseFolderName, false, reportedLicenseFolders);
+
+                        String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getName());
+                        String versionUnspecificPath =  licenseFolderName + "/" + componentFolderName;
+                        String versionSpecificPath = versionUnspecificPath + "-" + artifact.getVersion();
+
+                        String versionUnspecificTargetPath =  effectiveLicenseFolderName + "/" + componentFolderName;
+                        String versionSpecificTargetPath = versionUnspecificTargetPath + "-" + artifact.getVersion();
+
+                        if (matchingLicenseMetaData != null && matchingLicenseMetaData.getVersion().equals("*")) {
+                            checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificTargetPath, true, reportedLicenseFolders);
+                        } else {
+                            checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificTargetPath, true, reportedLicenseFolders);
+                        }
                     }
                 }
             }
@@ -593,9 +640,6 @@ public class InventoryReport {
 
     protected void writeObligationSummary(Inventory projectInventory) throws Exception {
         if (targetDitaNoticeReportPath != null) {
-
-
-
             produceDita(projectInventory, DITA_NOTICE_TEMPLATE, new File(targetDitaNoticeReportPath));
         }
     }
@@ -644,20 +688,31 @@ public class InventoryReport {
         }
     }
 
-    private void copyLicense(File licenseSourceDir, String licenseFolder, File targetDir) {
+    /**
+     * Copies all files located in licenseSourceDir/licenseFolder to targetDir. No subdirectories are
+     * copied.
+     *
+     * @param licenseSourceDir
+     * @param licenseFolder
+     * @param targetLicenseFolder
+     * @param targetDir
+     */
+    private void copyLicense(File licenseSourceDir, String licenseFolder, String targetLicenseFolder, File targetDir) {
         Copy copy = new Copy();
         copy.setProject(new Project());
         FileSet fileSet = new FileSet();
         fileSet.setDir(new File(licenseSourceDir, licenseFolder));
-        fileSet.setIncludes("*.txt,*.html,*.htm");
+        fileSet.setIncludes("*");
         copy.setIncludeEmptyDirs(false);
         copy.setFailOnError(true);
         copy.setOverwrite(true);
         copy.addFileset(fileSet);
-        copy.setTodir(new File(targetDir, licenseFolder));
+        copy.setTodir(new File(targetDir, targetLicenseFolder));
         copy.perform();
+
+        // verify something was copied
         if (!new File(licenseSourceDir, licenseFolder).exists()) {
-            throw new IllegalStateException("File copied, but not avaiable in target location");
+            throw new IllegalStateException("File copied, but not available in target location");
         }
     }
 

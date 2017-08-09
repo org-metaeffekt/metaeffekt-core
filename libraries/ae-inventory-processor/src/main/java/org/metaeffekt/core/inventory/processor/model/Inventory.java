@@ -577,7 +577,7 @@ public class Inventory {
                 }
             }
 
-            // check whether there is an effective license
+            // check whether there is an effective license (set of licenses)
 
             final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact.getName(), artifactLicense, artifact.getVersion());
             if (matchingLicenseMetaData != null) {
@@ -594,13 +594,13 @@ public class Inventory {
             }
         }
 
-        List<String> sortedByLicense = new ArrayList<String>(licenses);
+        List<String> sortedByLicense = new ArrayList<>(licenses);
         Collections.sort(sortedByLicense);
         return sortedByLicense;
     }
 
     /**
-     * Returns all relevant notices for a given license.
+     * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
      *
@@ -615,7 +615,7 @@ public class Inventory {
                 // find a matching LMD instance
                 LicenseMetaData match = findMatchingLicenseMetaData(
                         artifact.getName(), artifactLicense, artifact.getVersion());
-                if (match != null && effectiveLicense.equals(match.deriveLicenseInEffect())) {
+                if (match != null && matches(effectiveLicense, match)) {
                     String qualifier = new StringBuilder(artifactLicense).append("-").
                         append(artifact.getVersion()).append("-").append(artifact.getName()).toString();
                     ArtifactLicenseData artifactLicenseData = map.get(qualifier);
@@ -628,6 +628,11 @@ public class Inventory {
             }
         }
         return new ArrayList<>(map.values());
+    }
+
+    private boolean matches(String effectiveLicense, LicenseMetaData match) {
+        List<String> licenses = Arrays.asList(match.deriveLicenseInEffect().split("\\|"));
+        return licenses.contains(effectiveLicense);
     }
 
     /**
@@ -681,7 +686,7 @@ public class Inventory {
 
     public Set<String> listDerivedLicenses(String licenseName, String licenseFolderName) {
         List<ArtifactLicenseData> derivedList = evaluateNotices(licenseName);
-        Set<String> touchedDerivedLicenses = new HashSet<String>();
+        Set<String> touchedDerivedLicenses = new HashSet<>();
         for (ArtifactLicenseData artifactLicenseData : derivedList) {
             // derive license path
             for (Artifact artifact : artifactLicenseData.getArtifacts()) {

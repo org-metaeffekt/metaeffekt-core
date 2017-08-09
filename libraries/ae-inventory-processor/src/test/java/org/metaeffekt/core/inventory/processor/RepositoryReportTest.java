@@ -15,81 +15,41 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
+import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-@Ignore
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class RepositoryReportTest {
 
-    private static final String GLOBAL_INVENTORY_ON_CLASSPATH = "/META-INF/ae-core-artifact-inventory.xls";
-   //private static final String GLOBAL_INVENTORY = "/Users/kklein/workspace/metaeffekt-core/inventory/src/main/resources/META-INF/ae-core-artifact-inventory.xls";
+    public static final String TARGET_FOLDER = "target/test-inventory-01";
 
-    private static final String GLOBAL_INVENTORY = "/Users/kklein/Documents/venture/internal-projects/metaeffekt-lcm/{metaeffekt} inventory_02-07-2017/inventory/artifact-inventory.xls";
-
-    private static final String REPOSITORY = "repository";
-
-    @Test
-    public void testInventory() throws Exception {
-        Inventory inventory = new GlobalInventoryReader().readInventory(new File(GLOBAL_INVENTORY));
-        for (Artifact artifact : inventory.getArtifacts()) {
-            artifact.deriveArtifactId();
-        }
-
-        new InventoryWriter().writeInventory(inventory, new File("target", "out.xls"));
-
-        inventory = new GlobalInventoryReader().readInventory(new File("target", "out.xls"));
-        for (Artifact artifact : inventory.getArtifacts()) {
-            artifact.deriveArtifactId();
-        }
-
-        // filter notices to only include the required notices
-        Set<LicenseMetaData> covered = new HashSet<>();
-        for (Artifact artifact : inventory.getArtifacts()) {
-            LicenseMetaData match = inventory.findMatchingLicenseMetaData(artifact.getName(), artifact.getLicense(), artifact.getVersion());
-            if (match != null) {
-                covered.add(match);
-            }
-        }
-        inventory.getLicenseMetaData().retainAll(covered);
-
-        new InventoryWriter().writeInventory(inventory, new File("target", "out2.xls"));
-
-        System.out.println(inventory.evaluateLicenses(true, false));
-
-        Assert.assertNotNull(inventory.getLicenseMetaData());
-
-        List<String> evaluateLicenses = inventory.evaluateLicenses(false);
-        Assert.assertNotNull(evaluateLicenses);
-
-        String selectedLicense = evaluateLicenses.iterator().next();
-        List<ArtifactLicenseData> licenseMetaData = inventory.evaluateNotices(selectedLicense);
-        Assert.assertNotNull(licenseMetaData);
-    }
+    private static final String INVENTORY = "src/test/resources/test-inventory-01/inventory/artifact-inventory.xls";
+    private static final String LICENSES_FOLDER = "src/test/resources/test-inventory-01/licenses";
+    public static final String UTF_8 = "UTF-8";
 
     @Test
-    public void testGlobalInventoryReport() throws Exception {
+    public void testInventoryReport() throws Exception {
 
         InventoryReport report = new InventoryReport();
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
-        report.setGlobalInventoryPath(GLOBAL_INVENTORY);
-        report.setRepositoryInventory(new GlobalInventoryReader().readInventory(new File(GLOBAL_INVENTORY)));
+        report.setGlobalInventoryPath(INVENTORY);
+        report.setRepositoryInventory(new GlobalInventoryReader().readInventory(new File(INVENTORY)));
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);
 
-        File target = new File("target");
+        File target = new File(TARGET_FOLDER);
         target.mkdirs();
         File licenseReport = new File(target, "license.dita");
         File componentReport = new File(target, "component-report.dita");
@@ -103,111 +63,75 @@ public class RepositoryReportTest {
         report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
         report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
 
-        report.createReport();
-    }
+        report.setLicenseSourcePath(LICENSES_FOLDER);
+        final File targetLicensesFolder = new File(target, "licenses");
+        report.setLicenseTargetPath(targetLicensesFolder.getAbsolutePath());
 
-    @Test
-    @Ignore
-    public void testRepositoryReport() throws Exception {
+        final boolean valid = report.createReport();
 
-        String repoPath = inferRepoPath();
+        assertTrue(valid);
+        assertTrue(targetLicensesFolder.exists());
 
-        if (repoPath != null) {
-            InventoryReport report = new InventoryReport();
-            report.setFailOnUnknown(false);
-            report.setFailOnUnknownVersion(false);
-            report.setGlobalInventoryPath(GLOBAL_INVENTORY);
-            report.setRepositoryPath(GLOBAL_INVENTORY);
-            report.setRepositoryPath(repoPath);
-            PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
-            artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
-            report.setArtifactFilter(artifactFilter);
+        // check first-level license folders are created as expected
+        assertTrue(new File(targetLicensesFolder, "A-License").exists());
+        assertTrue(new File(targetLicensesFolder, "A-License-B-License").exists());
+        assertTrue(new File(targetLicensesFolder, "B-License").exists());
+        assertTrue(new File(targetLicensesFolder, "D-License").exists());
+        assertTrue(new File(targetLicensesFolder, "G-License-(with-sub-components)").exists());
+        assertFalse(new File(targetLicensesFolder, "T-License").exists());
 
-            File target = new File("target");
-            target.mkdirs();
-            File licenseReport = new File(target, "license.dita");
-            File componentReport = new File(target, "component-report.dita");
-            File noticeReport = new File(target, "notice.dita");
-            File artifactReport = new File(target, "artifacts.dita");
-            File mavenPom = new File(target, "ae-pom.xml");
+        // check multiple licensed artifacts are multiplied to the different license folders
+        assertTrue(new File(targetLicensesFolder, "A-License-B-License/AlphaBeta-Component-1.0.0").exists());
+        assertTrue(new File(targetLicensesFolder, "A-License/AlphaBeta-Component-1.0.0").exists());
 
-            report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
-            report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
-            report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
-            report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
-            report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
+        // check license information is multiplied for sub-components
+        assertTrue(new File(targetLicensesFolder, "G-License-(with-sub-components)/Gamma-Component-1.0.0").exists());
+        assertTrue(new File(targetLicensesFolder, "A-License/Gamma-Component-1.0.0").exists());
+        assertTrue(new File(targetLicensesFolder, "B-License/Gamma-Component-1.0.0").exists());
 
-            report.createReport();
-        } else {
-            new IllegalStateException("Cannot produce report as local repository was not readable.");
-        }
+        // check generated DITA files contain the appropriate details
+        String artifacts = FileUtils.readFileToString(artifactReport, UTF_8);
+        assertTrue(artifacts.contains("<xref href=\"licenses/A-License/\" type=\"html\" scope=\"external\">A License</xref>"));
+        assertTrue(artifacts.contains("<xref href=\"licenses/B-License/\" type=\"html\" scope=\"external\">B License</xref>"));
+        assertTrue(artifacts.contains("<xref href=\"licenses/A-License-B-License/\" type=\"html\" scope=\"external\">A License + B License</xref>"));
+        assertTrue(artifacts.contains("<xref href=\"licenses/G-License-(with-sub-components)/\" type=\"html\" scope=\"external\">G License (with sub-components)</xref>"));
+        assertTrue(artifacts.contains("<xref href=\"licenses/D-License/\" type=\"html\" scope=\"external\">D License</xref>"));
 
-    }
+        String components = FileUtils.readFileToString(componentReport, UTF_8);
+        assertTrue(components.contains("<xref href=\"licenses/A-License/\" type=\"html\" scope=\"external\">A License</xref>"));
+        assertTrue(components.contains("<xref href=\"licenses/B-License/\" type=\"html\" scope=\"external\">B License</xref>"));
+        assertTrue(components.contains("<xref href=\"licenses/A-License-B-License/\" type=\"html\" scope=\"external\">A License + B License</xref>"));
+        assertTrue(components.contains("<xref href=\"licenses/G-License-(with-sub-components)/\" type=\"html\" scope=\"external\">G License (with sub-components)</xref>"));
+        assertTrue(components.contains("<xref href=\"licenses/D-License/\" type=\"html\" scope=\"external\">D License</xref>"));
 
-    @Test
-    @Ignore
-    public void testRepositoryReportFromClasspath() throws Exception {
+        String licenses = FileUtils.readFileToString(licenseReport, UTF_8);
+        assertTrue(licenses.contains("<xref href=\"licenses/A-License/\" type=\"html\" scope=\"external\">A License</xref>"));
+        assertTrue(licenses.contains("<xref href=\"licenses/B-License/\" type=\"html\" scope=\"external\">B License</xref>"));
+        assertTrue(licenses.contains("<xref href=\"licenses/D-License/\" type=\"html\" scope=\"external\">D License</xref>"));
+        assertFalse(licenses.contains("<xref href=\"licenses/A-License-B-License/\" type=\"html\" scope=\"external\">A License + B License</xref>"));
+        assertFalse(licenses.contains("<xref href=\"licenses/G-License-(with-sub-components)/\" type=\"html\" scope=\"external\">G License (with sub-components)</xref>"));
 
-        String repoPath = inferRepoPath();
+        String notices = FileUtils.readFileToString(noticeReport, UTF_8);
+        assertTrue(notices.contains("Notice for Alpha component licensed under A License."));
+        assertTrue(notices.contains("Notice for Beta component licensed under B License."));
+        assertTrue(notices.contains("Notice for AlphaBeta component licensed under either A License or B License. A License is selected for this distribution."));
+        assertTrue(notices.contains("Notice for Gamma component, which contains sub-components licensed under A License and B License."));
 
-        if (repoPath != null) {
-            InventoryReport report = new InventoryReport();
-            report.setFailOnUnknown(false);
-            report.setFailOnUnknownVersion(false);
-            report.setGlobalInventoryPath(GLOBAL_INVENTORY_ON_CLASSPATH);
-            report.setRepositoryPath(repoPath);
-            PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
-            artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
-            report.setArtifactFilter(artifactFilter);
+        List<ArtifactLicenseData> artifactLicenseData = report.getLastProjectInventory().evaluateNotices("A License");
+        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Alpha Component")));
+        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Gamma Component")));
+        assertFalse(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Beta Component")));
 
-            List<Artifact> addOnArtifacts = new ArrayList<Artifact>();
+        artifactLicenseData = report.getLastProjectInventory().evaluateNotices("B License");
+        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Beta Component")));
+        assertTrue(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Gamma Component")));
+        assertFalse(artifactLicenseData.stream().anyMatch(l -> l.getComponentName().equals("Alpha Component")));
 
-            DefaultArtifact licenseOnlyArtifact = new DefaultArtifact();
-            licenseOnlyArtifact.setLicense("Karsten's Open Source License 7.1");
-            addOnArtifacts.add(licenseOnlyArtifact);
+        artifactLicenseData = report.getLastProjectInventory().evaluateNotices("D License");
+        assertTrue(artifactLicenseData.isEmpty());
 
-            DefaultArtifact obligationAddOn = new DefaultArtifact();
-            obligationAddOn.setLicense("MyLicense");
-            obligationAddOn.setName("MyComponent");
-            obligationAddOn.setVersion("1.0.3");
-            addOnArtifacts.add(obligationAddOn);
-
-            report.setAddOnArtifacts(addOnArtifacts);
-
-            report.createReport();
-
-            Inventory projectInventory = report.getLastProjectInventory();
-            List<String> licenses = projectInventory.evaluateLicenses(false);
-
-            Assert.assertTrue(licenses.contains("Apache License Version 2.0"));
-            Assert.assertTrue(licenses.contains("Karsten's Open Source License 7.1"));
-            Assert.assertTrue(licenses.contains("MyLicense"));
-
-        } else {
-            new IllegalStateException("Cannot produce report as local repository was not readable.");
-        }
-
-    }
-
-    private String inferRepoPath() {
-        // infer location of local repository
-        String classpath = System.getProperty("java.class.path");
-        String pathSeparator = System.getProperty("path.separator");
-        String fileSeparator = System.getProperty("file.separator");
-
-        String[] splitClassPath = classpath.split("\\" + pathSeparator);
-
-        String repoPath = null;
-        for (int i = 0; i < splitClassPath.length; i++) {
-
-            String path = splitClassPath[i];
-            int index = path.lastIndexOf(fileSeparator + REPOSITORY + fileSeparator);
-            if (index > 0) {
-                repoPath = path.substring(0, index + REPOSITORY.length() + 1);
-                break;
-            }
-        }
-        return repoPath;
+        artifactLicenseData = report.getLastProjectInventory().evaluateNotices("G License (with sub-components)");
+        assertTrue(artifactLicenseData.isEmpty());
     }
 
 }

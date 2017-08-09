@@ -16,8 +16,6 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 
-import org.springframework.util.StringUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,10 +58,10 @@ public class ArtifactLicenseData {
     }
 
     public String deriveId() {
-        return normizeTokenId(LicenseMetaData.normalizeId(licenseMetaData.deriveQualifier()));
+        return normalizeTokenId(LicenseMetaData.normalizeId(licenseMetaData.deriveQualifier()));
     }
 
-    public static String normizeTokenId(String string) {
+    public static String normalizeTokenId(String string) {
         String result = string.replace(" ", "-");
         result = result.replace("(", "");
         result = result.replace(")", "");
