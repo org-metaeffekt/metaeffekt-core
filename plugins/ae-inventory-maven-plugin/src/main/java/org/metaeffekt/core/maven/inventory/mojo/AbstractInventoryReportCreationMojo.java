@@ -66,6 +66,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter default-value="true"
      */
+    private boolean failOnBanned;
+
+    /**
+     * @parameter default-value="true"
+     */
     private boolean failOnDowngrade;
 
     /**
@@ -192,6 +197,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     protected void configureInventoryReport(InventoryReport report) {
         report.setFailOnDevelopment(isFailOnDevelopment());
         report.setFailOnError(isFailOnError());
+        report.setFailOnBanned(isFailOnBanned());
         report.setFailOnDowngrade(isFailOnDowngrade());
         report.setFailOnInternal(isFailOnInternal());
         report.setFailOnUnknown(isFailOnUnknown());
@@ -346,6 +352,14 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
+    }
+
+    public boolean isFailOnBanned() {
+        return failOnBanned;
+    }
+
+    public void setFailOnBanned(boolean failOnBanned) {
+        this.failOnBanned = failOnBanned;
     }
 
     public boolean isFailOnUnknown() {

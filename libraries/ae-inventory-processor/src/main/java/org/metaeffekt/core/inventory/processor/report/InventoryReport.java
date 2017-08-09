@@ -73,6 +73,7 @@ public class InventoryReport {
 
     private String projectName = "local project";
     private boolean failOnError = true;
+    private boolean failOnBanned = true;
     private boolean failOnDowngrade = true;
     private boolean failOnUnknown = true;
     private boolean failOnUnknownVersion = true;
@@ -188,6 +189,7 @@ public class InventoryReport {
         boolean development = false;
         boolean internal = false;
         boolean error = false;
+        boolean banned = false;
         boolean upgrade = false;
         boolean downgrade = false;
 
@@ -196,6 +198,7 @@ public class InventoryReport {
         for (Artifact artifact : list) {
 
             boolean localError = false;
+            boolean localBanned = false;
             boolean localWarn = false;
             boolean localUnknown = false;
             boolean localUnknownVersion = false;
@@ -258,7 +261,10 @@ public class InventoryReport {
                     }
                     if (classification.contains("banned")) {
                         classifier += "[banned]";
-                        localError = true;
+                        localBanned = true;
+                        if (failOnBanned) {
+                            localError = true;
+                        }
                     }
                     if (classification.contains("unknown")) {
                         classifier += "[unknown]";
@@ -385,6 +391,7 @@ public class InventoryReport {
                 // escalate the error only in case the artifact is relevant for reporting
                 if (artifact.isManaged()) {
                     error |= localError;
+                    banned |= localBanned;
                     unknown |= localUnknown;
                     unknownVersion |= localUnknownVersion;
                     development |= localDevelopment;
@@ -449,6 +456,9 @@ public class InventoryReport {
         if (error && failOnError) {
             return false;
         }
+        if (banned && failOnBanned) {
+            return false;
+        }
         if (unknown && failOnUnknown) {
             return false;
         }
@@ -476,7 +486,6 @@ public class InventoryReport {
         if (missingNotice && failOnMissingNotice) {
             return false;
         }
-
         return true;
     }
 
@@ -829,6 +838,14 @@ public class InventoryReport {
 
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
+    }
+
+    public boolean isFailOnBanned() {
+        return failOnBanned;
+    }
+
+    public void setFailOnBanned(boolean failOnBanned) {
+        this.failOnBanned = failOnBanned;
     }
 
     public boolean isFailOnDowngrade() {
