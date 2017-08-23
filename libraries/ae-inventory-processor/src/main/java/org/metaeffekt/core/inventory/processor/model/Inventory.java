@@ -421,12 +421,14 @@ public class Inventory {
     public Artifact findArtifact(Artifact artifact, boolean fuzzy) {
         for (Artifact candidate : getArtifacts()) {
             candidate.deriveArtifactId();
-
-            boolean found =
-                    matchesOnMavenProperties(artifact, candidate) ||
-                            matchesOnProtexProperties(artifact, candidate, fuzzy);
-
-            if (found) {
+        }
+        for (Artifact candidate : getArtifacts()) {
+            if (matchesOnMavenProperties(artifact, candidate)) {
+                return candidate;
+            }
+        }
+        for (Artifact candidate : getArtifacts()) {
+            if (matchesOnComponentProperties(artifact, candidate, fuzzy)) {
                 return candidate;
             }
         }
@@ -482,7 +484,7 @@ public class Inventory {
         return false;
     }
 
-    private boolean matchesOnProtexProperties(Artifact artifact, Artifact candidate, boolean fuzzy) {
+    private boolean matchesOnComponentProperties(Artifact artifact, Artifact candidate, boolean fuzzy) {
         if (candidate.getName() == null)
             return false;
         if (candidate.getVersion() == null)

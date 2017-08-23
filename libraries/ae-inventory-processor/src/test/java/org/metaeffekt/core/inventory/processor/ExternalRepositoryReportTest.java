@@ -26,8 +26,8 @@ import java.io.File;
 @Ignore
 public class ExternalRepositoryReportTest {
 
-    private static final String INVENTORY = "/Users/kklein/Documents/venture/internal-projects/metaeffekt-lcm/{metaeffekt} inventory_28-07-2017/inventory/artifact-inventory.xls";
-    private static final String LICENSES_FOLDER = "/Users/kklein/Documents/venture/internal-projects/metaeffekt-lcm/{metaeffekt} inventory_28-07-2017/licenses";
+    private static final String INVENTORY = "/Users/kklein/workspace/spring-boot-boms/spring-boot-10/src/main/inventory/artifact-inventory.xls";
+    private static final String LICENSES_FOLDER = "/Users/kklein/workspace/spring-boot-boms/spring-boot-10/src/main/licenses";
     public static final String TARGET_FOLDER = "target/test-external";
 
     @Test

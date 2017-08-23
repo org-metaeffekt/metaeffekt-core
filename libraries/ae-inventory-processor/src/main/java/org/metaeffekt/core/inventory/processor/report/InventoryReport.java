@@ -196,6 +196,7 @@ public class InventoryReport {
         boolean missingLicense = false;
 
         for (Artifact artifact : list) {
+            artifact.deriveArtifactId();
 
             boolean localError = false;
             boolean localBanned = false;
@@ -211,9 +212,12 @@ public class InventoryReport {
 
             Artifact foundArtifact = globalInventory.findArtifact(artifact);
 
-            if (foundArtifact != null) {
-                foundArtifact = globalInventory.findArtifact(artifact, true);
+            if (foundArtifact == null) {
+                foundArtifact = globalInventory.findArtifact(artifact, false);
             }
+
+            LOG.debug("Query for artifact:" + artifact);
+            LOG.debug("Result artifact:   " + foundArtifact);
 
             String classifier = "";
             String comment = "";

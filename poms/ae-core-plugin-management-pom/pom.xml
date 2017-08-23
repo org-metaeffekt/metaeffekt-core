@@ -109,7 +109,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.12</version>
+                    <version>3.0.0</version>
                     <executions>
                         <execution>
                             <!-- maven3 populates the local repository with timestamped snapshots.
@@ -296,7 +296,7 @@
                                 <failOnMissingNotice>${artifact.inventory.enabled}</failOnMissingNotice>
                                 <failOnDevelopment>${artifact.inventory.external.enabled}</failOnDevelopment>
                                 <failOnInternal>${artifact.inventory.external.enabled}</failOnInternal>
-                                <failOnUpgrade>false</failOnUpgrade>
+                                <failOnUpgrade>${artifact.inventory.enabled}</failOnUpgrade>
                                 <failOnDowngrade>${artifact.inventory.enabled}</failOnDowngrade>
 
                                 <manageScopeProvided>${artifact.inventory.manage.scope.provided}</manageScopeProvided>
