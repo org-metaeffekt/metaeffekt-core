@@ -17,11 +17,13 @@ package org.metaeffekt.core.inventory.processor;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import java.io.File;
+import java.io.IOException;
 
 @Ignore
 public class ExternalRepositoryReportTest {
@@ -37,7 +39,8 @@ public class ExternalRepositoryReportTest {
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
         report.setGlobalInventoryPath(INVENTORY);
-        report.setRepositoryInventory(new GlobalInventoryReader().readInventory(new File(INVENTORY)));
+        final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
+        report.setRepositoryInventory(inventory);
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);
@@ -60,6 +63,13 @@ public class ExternalRepositoryReportTest {
         report.setLicenseTargetPath(new File(target, "licenses").getAbsolutePath());
 
         report.createReport();
+    }
+
+    @Test
+    public void testVersionUpdateProcessor() throws IOException {
+        UpdateVersionRecommendationProcessor processor = new UpdateVersionRecommendationProcessor();
+        final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
+        processor.process(inventory);
     }
 
 }

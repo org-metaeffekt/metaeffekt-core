@@ -495,21 +495,24 @@ public class DefaultArtifact implements Artifact {
     }
 
     private String inferClassifierFromId() {
-        String classifier = null;
         if (id != null) {
-            // get rid of trailing .{type}
-            int index = id.lastIndexOf(DELIMITER_COLON);
-            if (index != -1) {
-                classifier = id.substring(0, index);
-                index = classifier.lastIndexOf(getVersion() + DELIMITER_DASH);
-                if (index != -1) {
-                    System.out.println("Classifier: " + classifier);
-                    return classifier.substring(index + 1);
-                }
+            // get rid of anything right to version
+            int versionIndex = id.indexOf(DELIMITER_DASH + version + DELIMITER_DASH);
+            if (versionIndex < 0) {
+                // no version, no classifier
+                return null;
             }
+            String classifierAndType = id.substring(versionIndex+version.length() + 2);
+            // get rid of trailing .{type}
+            int index = classifierAndType.indexOf(DELIMITER_DOT);
+            if (index != -1) {
+                final String classifier = classifierAndType.substring(0, index).trim();
+                if (StringUtils.hasText(classifier)) {
+                    return classifier;
+                }
+             }
         }
-
-        return classifier;
+        return null;
     }
 
     public String createCompareStringRepresentation() {

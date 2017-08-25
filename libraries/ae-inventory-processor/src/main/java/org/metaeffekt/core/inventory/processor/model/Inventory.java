@@ -854,11 +854,30 @@ public class Inventory {
         return licenseId.toLowerCase();
     }
 
+    public Artifact findMatchingId(Artifact artifact) {
+        final String id = normalize(artifact.getId());
+        // find current only works for artifacts, which have a proper artifact id
+        if (id.isEmpty()) {
+            return null;
+        }
+
+        for (Artifact candidate : artifacts) {
+            if (candidate != artifact) {
+                final String candidateId = normalize(candidate.getId());
+                if (id.equals(candidateId)) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+
     public Artifact findCurrent(Artifact artifact) {
         final String id = normalize(artifact.getId());
         final String artifactId = normalize(artifact.getArtifactId());
         final String groupId = normalize(artifact.getGroupId());
         final String classifier = normalize(artifact.getClassifier());
+        final String type = normalize(artifact.getType());
 
         // find current only works for artifacts, which have a proper artifact id
         if (id.isEmpty()) {
@@ -872,10 +891,11 @@ public class Inventory {
                     final String candidateGroupId = normalize(candidate.getGroupId());
                     final String candidateArtifactId = normalize(candidate.getArtifactId());
                     final String candidateClassifier = normalize(candidate.getClassifier());
+                    final String candidateType = normalize(candidate.getType());
                     if (groupId.equals(candidateGroupId)) {
                         if (artifactId.equals(candidateArtifactId)) {
-                            if (artifactId.equals(candidateArtifactId)) {
-                                if (classifier.equals(candidateClassifier)) {
+                            if (classifier.equals(candidateClassifier)) {
+                                if (type.equals(candidateType)) {
                                     return candidate;
                                 }
                             }
@@ -885,78 +905,6 @@ public class Inventory {
             }
         }
 
-        // check match on id level (current)
-        for (Artifact candidate : artifacts) {
-            Artifact match = matchIds(artifact, candidate, false);
-            if (match != null) {
-                return match;
-            }
-        }
-
-        // check match on id level with eliminated version (current)
-        for (Artifact candidate : artifacts) {
-            Artifact match = matchVersionAgnostic(artifact, candidate, false);
-            if (match != null) {
-                return match;
-            }
-        }
-
-        // check match on id level (not current)
-        for (Artifact candidate : artifacts) {
-            Artifact match = matchIds(artifact, candidate, true);
-            if (match != null) {
-                return match;
-            }
-        }
-
-        // check match on id level with eliminated version (not current)
-        for (Artifact candidate : artifacts) {
-            Artifact match = matchVersionAgnostic(artifact, candidate, true);
-            if (match != null) {
-                return match;
-            }
-        }
-
-        return null;
-    }
-
-    protected Artifact matchIds(Artifact artifact, Artifact candidate, boolean anyClassification) {
-        if (candidate != artifact) {
-            final String candidateArtifactId = normalize(candidate.getArtifactId());
-            // do not allow empty candidate artifact ids to match
-            if (!candidateArtifactId.isEmpty()) {
-                final String candidateClassification = normalize(candidate.getClassification());
-                if (anyClassification || candidateClassification.contains(CLASSIFICATION_CURRENT)) {
-                    final String candidateId = normalize(candidate.getId());
-                    final String id = normalize(artifact.getId());
-                    if (id.contentEquals(candidateId)) {
-                        return candidate;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    protected Artifact matchVersionAgnostic(Artifact artifact, Artifact candidate, boolean anyClassification) {
-        if (candidate != artifact) {
-            final String candidateArtifactId = normalize(candidate.getArtifactId());
-            // do not allow empty candidate artifact ids to match
-            if (!candidateArtifactId.isEmpty()) {
-                final String candidateClassification = normalize(candidate.getClassification());
-                if (anyClassification || candidateClassification.contains(CLASSIFICATION_CURRENT)) {
-                    final String candidateId = normalize(candidate.getId());
-                    final String candidateVersion = normalize(candidate.getVersion());
-                    String candidateIdNoVersion = candidateId.replace("-" + candidateVersion, "-_*");
-                    candidateIdNoVersion = candidateIdNoVersion.replace(".", "\\.");
-                    candidateIdNoVersion = candidateIdNoVersion.replace("-_*", "-.*");
-                    final String id = normalize(artifact.getId());
-                    if (id.matches(candidateIdNoVersion)) {
-                        return candidate;
-                    }
-                }
-            }
-        }
         return null;
     }
 
