@@ -121,7 +121,6 @@ public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
             getLog().info("Processors found: ");
             for (InventoryProcessor inventoryProcessor : inventoryProcessors) {
                 getLog().info(inventoryProcessor.getClass().toString());
-                getLog().info(((AbstractInventoryProcessor)inventoryProcessor).getProperties().toString());
             }
             
             InventoryUpdate inventoryUpdate = new InventoryUpdate();

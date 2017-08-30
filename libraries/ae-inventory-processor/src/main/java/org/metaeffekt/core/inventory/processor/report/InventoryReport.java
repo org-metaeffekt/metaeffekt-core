@@ -290,11 +290,19 @@ public class InventoryReport {
                     }
                 }
             } else {
+                // branch: no extact match found
                 if (artifactFilter == null || !artifactFilter.filter(artifact)) {
+
                     // try to find a similar artifact:
                     Artifact similar = globalInventory.findCurrent(artifact);
-                    if (similar != null) {
+                    if (similar == null) {
+                        // no current found, in this case we accept any artifact with matching attributes
+                        // excluding version
+                        similar = globalInventory.findArtifactClassificationAgnostic(artifact);
+                    } else {
                         comment = "[recommended version: " + similar.getVersion() + "]";
+                    }
+                    if (similar != null) {
                         foundArtifact = new DefaultArtifact(artifact);
 
                         // the found artifact has at least id, version, artifactId (may be inferred),

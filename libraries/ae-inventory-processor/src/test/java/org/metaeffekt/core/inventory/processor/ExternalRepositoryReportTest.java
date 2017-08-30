@@ -15,8 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
@@ -24,6 +27,7 @@ import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 
 @Ignore
 public class ExternalRepositoryReportTest {
@@ -40,6 +44,15 @@ public class ExternalRepositoryReportTest {
         report.setFailOnUnknownVersion(false);
         report.setGlobalInventoryPath(INVENTORY);
         final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
+
+        final DefaultArtifact candidate = new DefaultArtifact();
+        candidate.setLicense("L");
+        candidate.setGroupId("org.springframework");
+        candidate.setVersion("4.2.9.RELEASE");
+        candidate.setId("spring-aop-4.2.9.RELEASE.jar");
+        candidate.deriveArtifactId();
+        inventory.getArtifacts().add(candidate);
+
         report.setRepositoryInventory(inventory);
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
@@ -66,10 +79,31 @@ public class ExternalRepositoryReportTest {
     }
 
     @Test
-    public void testVersionUpdateProcessor() throws IOException {
+    public void testInventory() throws IOException {
         UpdateVersionRecommendationProcessor processor = new UpdateVersionRecommendationProcessor();
         final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
         processor.process(inventory);
+
+        final DefaultArtifact candidate = new DefaultArtifact();
+        candidate.setLicense("L");
+        candidate.setGroupId("org.springframework");
+        candidate.setVersion("4.2.9.RELEASE");
+        candidate.setId("spring-aop-4.2.9.RELEASE.jar");
+        candidate.deriveArtifactId();
+
+        Assert.assertNull(inventory.findArtifact(candidate));
+        final Artifact artifactClassificationAgnostic = inventory.findArtifactClassificationAgnostic(candidate);
+        Assert.assertNotNull(artifactClassificationAgnostic);
+        System.out.println(artifactClassificationAgnostic);
+    }
+
+    @Test
+    public void testValidateLicensesProcessor() throws IOException {
+        Properties properties = new Properties();
+        properties.setProperty(ValidateLicensesProcessor.LICENSES_DIR, LICENSES_FOLDER);
+        ValidateLicensesProcessor validateLicensesProcessor = new ValidateLicensesProcessor(properties);
+        final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
+        validateLicensesProcessor.process(inventory);
     }
 
 }

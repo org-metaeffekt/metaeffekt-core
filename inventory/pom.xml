@@ -66,6 +66,17 @@
                         <processor>
                             <className>org.metaeffekt.core.inventory.processor.UpdateVersionRecommendationProcessor</className>
                         </processor>
+                        <processor>
+                            <className>org.metaeffekt.core.inventory.processor.ValidateInventoryProcessor</className>
+                        </processor>
+                        <processor>
+                            <className>org.metaeffekt.core.inventory.processor.ValidateLicensesProcessor</className>
+                            <properties>
+                                <licenses.path>${project.build.directory}/classes/META-INF/licenses</licenses.path>
+                                <create.license.folders>true</create.license.folders>
+                                <create.component.folders>true</create.component.folders>
+                            </properties>
+                        </processor>
                     </processors>
                 </configuration>
             </plugin>

@@ -904,7 +904,39 @@ public class Inventory {
                 }
             }
         }
+        return null;
+    }
 
+    public Artifact findArtifactClassificationAgnostic(Artifact artifact) {
+        final String id = normalize(artifact.getId());
+        final String artifactId = normalize(artifact.getArtifactId());
+        final String groupId = normalize(artifact.getGroupId());
+        final String classifier = normalize(artifact.getClassifier());
+        final String type = normalize(artifact.getType());
+
+        // find current only works for artifacts, which have a proper artifact id
+        if (id.isEmpty()) {
+            return null;
+        }
+
+        for (Artifact candidate : artifacts) {
+            if (candidate != artifact) {
+                final String candidateClassification = normalize(candidate.getClassification());
+                final String candidateGroupId = normalize(candidate.getGroupId());
+                final String candidateArtifactId = normalize(candidate.getArtifactId());
+                final String candidateClassifier = normalize(candidate.getClassifier());
+                final String candidateType = normalize(candidate.getType());
+                if (groupId.equals(candidateGroupId)) {
+                    if (artifactId.equals(candidateArtifactId)) {
+                        if (classifier.equals(candidateClassifier)) {
+                            if (type.equals(candidateType)) {
+                                return candidate;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return null;
     }
 
@@ -917,9 +949,9 @@ public class Inventory {
     public List<Component> evaluateComponents() {
         Set<Component> componentNames = new HashSet<Component>();
         for (Artifact artifact : getArtifacts()) {
-            String componentName = artifact.getName();
-            if (StringUtils.hasText(componentName)) {
-                componentNames.add(new Component(componentName, artifact.getLicense()));
+            if (StringUtils.hasText(artifact.getName())) {
+                final Component component = createComponent(artifact);
+                componentNames.add(component);
             }
         }
 
@@ -1137,6 +1169,10 @@ public class Inventory {
         filteredInventory.setLicenseMetaData(getLicenseMetaData());
         filteredInventory.setLicenseNameMap(getLicenseNameMap());
         return filteredInventory;
+    }
+
+    public Component createComponent(Artifact artifact) {
+        return new Component(artifact.getName(), artifact.getLicense());
     }
 
     public class Component {

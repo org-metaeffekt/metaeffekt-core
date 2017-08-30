@@ -44,41 +44,6 @@ public class UpdateVersionRecommendationProcessor extends AbstractInventoryProce
         }
 
         for (Artifact artifact : inventory.getArtifacts()) {
-            // check whether we have duplicate ids
-            if (StringUtils.hasText(artifact.getId())) {
-                Set<Artifact> alreadyReported = new HashSet<>();
-                if (!alreadyReported.contains(artifact)) {
-                    Artifact duplicateArtifact = inventory.findMatchingId(artifact);
-                    if (duplicateArtifact != null) {
-                        LOG.warn("Duplicate artifact detected: {} / {}",
-                                artifact.getId() + "-" + artifact.createStringRepresentation(),
-                                duplicateArtifact.getId() + "-" + duplicateArtifact.createStringRepresentation());
-                        alreadyReported.add(duplicateArtifact);
-                    }
-                }
-            }
-        }
-        for (Artifact artifact : inventory.getArtifacts()) {
-            // check whether there is another current and provide hints
-            if (artifact.getClassification() != null &&
-                    artifact.getClassification().contains(Inventory.CLASSIFICATION_CURRENT)) {
-                Set<Artifact> alreadyReported = new HashSet<>();
-                if (!alreadyReported.contains(artifact)) {
-                    if (StringUtils.hasText(artifact.getArtifactId())) {
-                        Artifact currentArtifact = inventory.findCurrent(artifact);
-                        if (currentArtifact != null) {
-                            LOG.warn("Inconsistent classification (at least one and only one " +
-                                            "with classification 'current' expected): {} / {}",
-                                    artifact.getId() + "-" + artifact.createStringRepresentation(),
-                                    currentArtifact.getId() + "-" + currentArtifact.createStringRepresentation());
-                            alreadyReported.add(currentArtifact);
-                        }
-                    }
-                }
-            }
-        }
-
-        for (Artifact artifact : inventory.getArtifacts()) {
             String comment = artifact.getComment();
             if (comment == null) {
                 comment = "";
@@ -110,5 +75,8 @@ public class UpdateVersionRecommendationProcessor extends AbstractInventoryProce
             }
             artifact.setComment(comment.trim());
         }
+
+
+
     }
 }
