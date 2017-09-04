@@ -585,6 +585,17 @@ public class DefaultArtifact implements Artifact {
         return inferClassifierFromId();
     }
 
+    @Override
+    public boolean isEnabledForDistribution() {
+        String classification = getClassification();
+        if (!StringUtils.isEmpty(classification)) {
+            if (classification.contains("internal") || classification.contains("banned")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public boolean isRelevant() {
         return relevant;
     }

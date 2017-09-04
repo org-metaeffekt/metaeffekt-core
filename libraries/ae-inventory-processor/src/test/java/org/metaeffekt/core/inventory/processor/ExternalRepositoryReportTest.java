@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,8 +33,8 @@ import java.util.Properties;
 @Ignore
 public class ExternalRepositoryReportTest {
 
-    private static final String INVENTORY = "/Users/kklein/workspace/spring-boot-boms/spring-boot-10/src/main/inventory/artifact-inventory.xls";
-    private static final String LICENSES_FOLDER = "/Users/kklein/workspace/spring-boot-boms/spring-boot-10/src/main/licenses";
+    private static final String INVENTORY = "/Users/kklein/workspace/metaeffekt-inventory/inventory/artifact-inventory.xls";
+    private static final String LICENSES_FOLDER = "/Users/kklein/workspace/metaeffekt-inventory/licenses";
     public static final String TARGET_FOLDER = "target/test-external";
 
     @Test
@@ -95,6 +96,27 @@ public class ExternalRepositoryReportTest {
         final Artifact artifactClassificationAgnostic = inventory.findArtifactClassificationAgnostic(candidate);
         Assert.assertNotNull(artifactClassificationAgnostic);
         System.out.println(artifactClassificationAgnostic);
+
+
+        // test that any artifact can be addressed by id only (relevant for scan based bom generation)
+        for (Artifact artifact : inventory.getArtifacts()) {
+            if (artifact.getId() != null) {
+                DefaultArtifact artifact1 = new DefaultArtifact();
+                artifact1.setId(artifact.getId());
+                Assert.assertNull(inventory.findArtifact(artifact1));
+                Assert.assertNull(inventory.findArtifact(artifact1, false));
+                Assert.assertNotNull(inventory.findArtifact(artifact1, true));
+
+                if (StringUtils.isNotBlank(artifact.getGroupId())) {
+                    // note: type and classifier are inferred from id
+                    artifact1.setGroupId(artifact.getGroupId());
+                    artifact1.setVersion(artifact.getVersion());
+                    artifact1.deriveArtifactId();
+                    System.out.println(artifact);
+                    Assert.assertNotNull(inventory.findArtifact(artifact1, false));
+                }
+            }
+        }
     }
 
     @Test

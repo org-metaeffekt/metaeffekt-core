@@ -125,7 +125,7 @@ public class LicenseMetaData {
     }
 
     public String deriveQualifier() {
-        return new StringBuilder(getComponent()).append(getName()).append(getVersion()).toString();
+        return new StringBuilder(getComponent()).append("-").append(getLicense()).append("-").append(getVersion()).toString();
     }
 
     public String deriveLicenseInEffect() {

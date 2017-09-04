@@ -213,7 +213,7 @@ public class InventoryReport {
             Artifact foundArtifact = globalInventory.findArtifact(artifact);
 
             if (foundArtifact == null) {
-                foundArtifact = globalInventory.findArtifact(artifact, false);
+                foundArtifact = globalInventory.findArtifact(artifact, true);
             }
 
             LOG.debug("Query for artifact:" + artifact);
@@ -440,7 +440,7 @@ public class InventoryReport {
         // evaluate licenses only for managed artifacts
         List<String> licenses = projectInventory.evaluateLicenses(false, true);
 
-        // evaluaate / copy / check checks on license and notice files
+        // evaluate / copy / check checks on license and notice files
         boolean missingLicenseFile = evaluateLicenseFiles(projectInventory);
         boolean missingNotice = evaluateNotices(projectInventory, licenses);
 
@@ -541,6 +541,9 @@ public class InventoryReport {
             }
         }
         for (Artifact artifact : projectInventory.getArtifacts()) {
+            if (!artifact.isEnabledForDistribution()) {
+                continue;
+            }
             String license = artifact.getLicense();
             if (StringUtils.hasText(license) && artifact.isRelevant()) {
                 if (licensesRequiringNotice.contains(license)) {
@@ -551,6 +554,7 @@ public class InventoryReport {
                         final String messagePattern = "No notice for artifact '{}' with license '{}'.";
                         if (failOnMissingNotice) {
                             LOG.error(messagePattern, artifact.createStringRepresentation(), artifact.getLicense());
+                            return true;
                         } else {
                             LOG.warn(messagePattern, artifact.createStringRepresentation(), artifact.getLicense());
                         }
@@ -578,10 +582,10 @@ public class InventoryReport {
                     LOG.warn("No {}license file in folder '{}'", derivedText, licenseFolderName);
                 }
                 reportedLicenseFolders.add(licenseFolderName);
+                return true;
             }
-            return false;
         }
-        return true;
+        return false;
     }
 
     public boolean evaluateLicenseFiles(Inventory projectInventory) {
@@ -599,6 +603,11 @@ public class InventoryReport {
             }
 
             for (Artifact artifact : projectInventory.getArtifacts()) {
+                // skip artifact which are not ready for distribution
+                if (!artifact.isEnabledForDistribution()) {
+                    continue;
+                }
+
                 String sourceLicense = artifact.getLicense();
 
                 if (!StringUtils.hasText(sourceLicense)) {
@@ -607,7 +616,7 @@ public class InventoryReport {
 
                 // copy source license folder
                 String licenseFolderName = LicenseMetaData.deriveLicenseFolderName(sourceLicense);
-                checkAndCopyLicenseFolder(licenseFolderName, licenseFolderName, false, reportedLicenseFolders);
+                missingLicenseFile |= checkAndCopyLicenseFolder(licenseFolderName, licenseFolderName, false, reportedLicenseFolders);
 
                 // try to resolve license meta data if available
                 final LicenseMetaData matchingLicenseMetaData = projectInventory.
@@ -620,9 +629,9 @@ public class InventoryReport {
                     String versionSpecificPath = versionUnspecificPath + "-" + artifact.getVersion();
 
                     if (matchingLicenseMetaData != null && matchingLicenseMetaData.getVersion().equals("*")) {
-                        checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificPath, true, reportedLicenseFolders);
+                        missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificPath, true, reportedLicenseFolders);
                     } else {
-                        checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificPath, true, reportedLicenseFolders);
+                        missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificPath, true, reportedLicenseFolders);
                     }
                 }
 
@@ -641,9 +650,9 @@ public class InventoryReport {
                         String versionSpecificTargetPath = versionUnspecificTargetPath + "-" + artifact.getVersion();
 
                         if (matchingLicenseMetaData != null && matchingLicenseMetaData.getVersion().equals("*")) {
-                            checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificTargetPath, true, reportedLicenseFolders);
+                            missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificTargetPath, true, reportedLicenseFolders);
                         } else {
-                            checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificTargetPath, true, reportedLicenseFolders);
+                            missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificTargetPath, true, reportedLicenseFolders);
                         }
                     }
                 }

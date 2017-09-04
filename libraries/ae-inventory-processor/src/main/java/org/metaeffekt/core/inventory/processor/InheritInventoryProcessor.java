@@ -116,7 +116,8 @@ public class InheritInventoryProcessor extends AbstractInventoryProcessor {
                     LOG.info("Artifact {} overwritten. Relevant content nevertheless matches. " +
                             "Consider removing the overwrite.", qualifier);
                 } else {
-                    LOG.info("Artifact {} overwritten. %n{} / %n{}", qualifier, artifact.createCompareStringRepresentation(), currentArtifact.createCompareStringRepresentation());
+                    LOG.info(String.format("Artifact %s overwritten. %n  %s%n  %s", qualifier,
+                        artifact.createCompareStringRepresentation(), currentArtifact.createCompareStringRepresentation()));
                 }
             } else {
                 // add the artifact

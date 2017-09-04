@@ -124,6 +124,8 @@ public interface Artifact {
      *
      * @return
      */
+    boolean isEnabledForDistribution();
+
     boolean isRelevant();
 
     /**
@@ -133,5 +135,6 @@ public interface Artifact {
      * @return
      */
     boolean isManaged();
+
 
 }

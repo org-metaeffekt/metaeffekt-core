@@ -24,7 +24,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
 
 public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
 
@@ -60,11 +63,15 @@ public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
 
             final String license = artifact.getLicense();
             List<String> splitLicense = getSplitLicenses(license);
-            splitLicense.stream().filter(l -> !licenseFoldersFromInventory.contains(l)).forEach(l ->
-                licenseFoldersFromInventory.add(inventory.getLicenseFolder(l)));
 
-            final String classification = artifact.getClassification() == null ? "" : artifact.getClassification();
-            if (!classification.contains("internal") && !classification.contains("banned")) {
+            for (String singleLicense : splitLicense) {
+                String licenseFolder = inventory.getLicenseFolder(singleLicense);
+                if (!licenseFoldersFromInventory.contains(licenseFolder)) {
+                    licenseFoldersFromInventory.add(licenseFolder);
+                }
+            }
+
+            if (artifact.isEnabledForDistribution()) {
                 if (StringUtils.isNotBlank(artifact.getName())) {
                     StringBuilder sb = new StringBuilder();
                     sb.append(LicenseMetaData.normalizeId(artifact.getLicense()));
@@ -85,12 +92,16 @@ public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
             }
         }
 
-
         // build further set for later checks
         for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
             final String license = licenseMetaData.getLicenseInEffect();
             List<String> splitLicense = getSplitLicenses(license);
-            splitLicense.forEach(l -> licenseFoldersFromInventory.add(inventory.getLicenseFolder(l)));
+            for (String singleLicense : splitLicense) {
+                String licenseFolder = inventory.getLicenseFolder(singleLicense);
+                if (!licenseFoldersFromInventory.contains(licenseFolder)) {
+                    licenseFoldersFromInventory.add(licenseFolder);
+                }
+            }
         }
 
         // 1st level is the license level
@@ -102,7 +113,7 @@ public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
         for (String file : licenseDirectories) {
             licenseFoldersFromDirectory.add(file);
             if (!licenseFoldersFromInventory.contains(file)) {
-                LOG.warn("License folder does not match any artifact license / effective license in inventory: " + file);
+                LOG.warn(String.format("License folder '%s' does not match any artifact license / effective license in inventory.", file));
             }
         }
 
@@ -117,7 +128,7 @@ public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
         for (String file : licenseFoldersFromInventory) {
             final String[] files = scanForFiles(new File(new File(baseDir), file).getPath());
             if (files.length == 0) {
-                LOG.warn(String.format("License folder %s does not contain any license or notice files.", file));
+                LOG.warn(String.format("License folder '%s' does not contain any license or notice files.", file));
             }
         }
 
@@ -132,13 +143,12 @@ public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
 
         // iterate component level for each license folder
         for (String file : licenseFoldersFromInventory) {
-
             // check whether this folder is required
             final String[] componentDirectories = scanForDirectories(new File(new File(baseDir), file).getPath());
             for (String component : componentDirectories) {
                 String licenseComponent = file + "/" + component;
                 if (!componentsFromInventory.contains(licenseComponent)) {
-                    LOG.warn(String.format("Component folder %s does not match any artifact in the inventory.", licenseComponent));
+                    LOG.warn(String.format("Component folder '%s' does not match any artifact (not banned, not initernal) in the inventory.", licenseComponent));
                 }
             }
         }
@@ -148,7 +158,7 @@ public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
             final File componentFolder = new File(new File(baseDir), component);
             final String[] files = scanForFiles(componentFolder.getPath());
             if (files.length == 0) {
-                LOG.warn(String.format("Component folder %s does not contain any license or notice files.", component));
+                LOG.warn(String.format("Component folder '%s' does not contain any license or notice files.", component));
             }
         }
 
@@ -180,6 +190,86 @@ public class ValidateLicensesProcessor extends AbstractInventoryProcessor {
             if (!licenseReferenceFromInventory.contains(refSb.toString())) {
                 LOG.warn(String.format("License notice '%s' not used in inventory.", refSb.toString()));
             }
+        }
+
+        // verify unique match of licenses within one component
+        for (Artifact artifact : inventory.getArtifacts()) {
+            String license = artifact.getLicense();
+            if (StringUtils.isNotBlank(license)) {
+                license = license.trim();
+                String componentRef = artifact.getName() + "/" + artifact.getVersion();
+                for (Artifact candidateArtifact : inventory.getArtifacts()) {
+                    String candiateComponentRef = candidateArtifact.getName() + "/" + candidateArtifact.getVersion();
+                    if (componentRef.equals(candiateComponentRef)) {
+                        String candidateLicense = candidateArtifact.getLicense();
+                        if (candidateLicense != null) {
+                            candidateLicense = candidateLicense.trim();
+                        }
+                        if (!license.equals(candidateLicense)) {
+                            LOG.warn(String.format("Component '%s' in version '%s' does not have a unique license association: '%s' <> '%s'. See '%s'.",
+                                    artifact.getName(), artifact.getVersion(), license, candidateLicense, candidateArtifact.getId()));
+                        }
+                    }
+                }
+
+            }
+        }
+
+        // verify unique match of licenses within one component
+        for (Artifact artifact : inventory.getArtifacts()) {
+            String version = artifact.getVersion();
+            final String id = artifact.getId();
+            final String groupId = artifact.getGroupId();
+            if (StringUtils.isNotBlank(groupId) && version != null && id != null && !id.contains(version)) {
+                LOG.warn(String.format("Version information inconsistent. " +
+                        "Mismatch between version and artifact file name. Version '%s' not contained in '%s'.",
+                        artifact.getVersion(), id));
+            }
+        }
+
+        // validate license notice content
+        for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
+            String notice = licenseMetaData.getNotice();
+            if (StringUtils.isBlank(notice)) {
+                LOG.warn(String.format("Empty license notice for '%s'.", licenseMetaData.deriveQualifier()));
+            }
+
+            validateElement(licenseMetaData, notice, "p");
+            validateElement(licenseMetaData, notice, "i");
+            validateElement(licenseMetaData, notice, "li");
+            validateElement(licenseMetaData, notice, "ol");
+            validateElement(licenseMetaData, notice, "ul");
+            validateElement(licenseMetaData, notice, "strong");
+
+            validateEvenCount(licenseMetaData, notice, "\"");
+
+            validateNotContained(licenseMetaData, notice, " .</");
+           // validateNotContained(licenseMetaData, notice, "> ");
+            validateNotContained(licenseMetaData, notice, "IS\"WITHOUT");
+        }
+    }
+
+    private void validateElement(LicenseMetaData licenseMetaData, String notice, String element) {
+        String openElement = "<" + element + ">";
+        String closeElement = "</" + element + ">";
+        validateOpenClose(licenseMetaData, notice, openElement, closeElement);
+    }
+
+    private void validateOpenClose(LicenseMetaData licenseMetaData, String notice, String openElement, String closeElement) {
+        if (StringUtils.countMatches(notice, openElement) != StringUtils.countMatches(notice, closeElement)) {
+            LOG.warn(String.format("License text '%s': number of '%s' does not match number of '%s'.", licenseMetaData.deriveQualifier(), openElement, closeElement));
+        }
+    }
+
+    private void validateNotContained(LicenseMetaData licenseMetaData, String notice, String text) {
+        if (StringUtils.countMatches(notice, text) > 0) {
+            LOG.warn(String.format("License text '%s': suspicious character sequence '%s'.", licenseMetaData.deriveQualifier(), text));
+        }
+    }
+
+    private void validateEvenCount(LicenseMetaData licenseMetaData, String notice, String text) {
+        if (StringUtils.countMatches(notice, text) % 2 != 0) {
+            LOG.warn(String.format("License text '%s': expected even count of character sequence '%s'.", licenseMetaData.deriveQualifier(), text));
         }
     }
 

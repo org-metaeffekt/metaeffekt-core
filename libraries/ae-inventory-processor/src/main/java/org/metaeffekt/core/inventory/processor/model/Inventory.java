@@ -427,9 +427,13 @@ public class Inventory {
                 return candidate;
             }
         }
-        for (Artifact candidate : getArtifacts()) {
-            if (matchesOnComponentProperties(artifact, candidate, fuzzy)) {
-                return candidate;
+
+        // the pure match on id is required to support filesystem scans (no maven metadata available)
+        if (fuzzy) {
+            for (Artifact candidate : getArtifacts()) {
+                if (matchesOnId(artifact, candidate)) {
+                    return candidate;
+                }
             }
         }
         return null;
@@ -445,12 +449,12 @@ public class Inventory {
     }
 
     private boolean matchesOnMavenProperties(Artifact artifact, Artifact candidate) {
-        // please note that we do not compare the artifact id as it may vary
-        // variation may for example be due to uncontrolled but redundant classifiers
+        if (!matchesOnId(artifact, candidate)) {
+            return false;
+        }
         if (!matchesOnType(artifact, candidate)) {
             return false;
         }
-
         if (candidate.getGroupId() == null)
             return false;
         if (candidate.getArtifactId() == null)
@@ -472,6 +476,20 @@ public class Inventory {
         return true;
     }
 
+    protected boolean matchesOnId(Artifact artifact, Artifact candidate) {
+        final String id = artifact.getId();
+        final String candidateId = candidate.getId();
+        if (id == null && candidateId == null) {
+            return true;
+        }
+        if (id != null) {
+            return id.equals(candidateId);
+        }
+
+        // FIXME: id matching must be supported by checksum
+        return false;
+    }
+
     protected boolean matchesOnType(Artifact artifact, Artifact candidate) {
         final String artifactType = artifact.getType();
         final String candidateType = candidate.getType();
@@ -482,30 +500,6 @@ public class Inventory {
             return artifactType.equals(candidateType);
         }
         return false;
-    }
-
-    private boolean matchesOnComponentProperties(Artifact artifact, Artifact candidate, boolean fuzzy) {
-        if (candidate.getName() == null)
-            return false;
-        if (candidate.getVersion() == null)
-            return false;
-        if (artifact.getName() == null)
-            return false;
-        if (artifact.getVersion() == null)
-            return false;
-        if (!candidate.getName().trim().equalsIgnoreCase(artifact.getName().trim()))
-            return false;
-        if (fuzzy) {
-            if (candidate.getVersion().trim().equalsIgnoreCase(artifact.getVersion().trim()) ||
-                    candidate.getVersion().trim().equalsIgnoreCase(VERSION_UNSPECIFIED)) {
-                return true;
-            }
-            return false;
-        } else {
-            if (!candidate.getVersion().trim().equalsIgnoreCase(artifact.getVersion().trim()))
-                return false;
-        }
-        return true;
     }
 
     public Artifact findArtifact(String groupId, String artifactId) {
