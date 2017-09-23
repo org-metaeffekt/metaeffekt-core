@@ -146,7 +146,7 @@ public class InheritInventoryProcessorTest {
         artifact.setClassification("current");
         artifact.setComment("Test Comment");
         artifact.setLicense("Apache License 2.0");
-        artifact.setName("Test Component");
+        artifact.setComponent("Test Component");
         return artifact;
     }
 

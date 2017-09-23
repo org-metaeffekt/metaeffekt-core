@@ -29,10 +29,10 @@ public class DefaultArtifact implements Artifact {
 
     private static final char DELIMITER_COLON = ':';
 
-    // name of the artifact (uncontrolled)
-    private String name;
+    // component of the artifact (uncontrolled)
+    private String component;
 
-    // id of the artifact (file name)
+    // id of the artifact (file component)
     private String id;
 
     private String version;
@@ -101,7 +101,7 @@ public class DefaultArtifact implements Artifact {
      */
     public DefaultArtifact(Artifact artifact) {
         this.id = artifact.getId();
-        this.name = artifact.getName();
+        this.component = artifact.getComponent();
         this.version = artifact.getVersion();
         this.license = artifact.getLicense();
         this.url = artifact.getUrl();
@@ -137,13 +137,13 @@ public class DefaultArtifact implements Artifact {
     }
 
     @Override
-    public String getName() {
-        return name;
+    public String getComponent() {
+        return component;
     }
 
     @Override
-    public void setName(String name) {
-        this.name = name;
+    public void setComponent(String name) {
+        this.component = name;
     }
 
     public String getGroupId() {
@@ -300,7 +300,7 @@ public class DefaultArtifact implements Artifact {
 
     @Override
     public String toString() {
-        return "Artifact id: " + id + ", name: " + name + ", version: " + version
+        return "Artifact id: " + id + ", component: " + component + ", version: " + version
                 + " securityCatergory: " + securityCategory;
     }
 
@@ -317,55 +317,14 @@ public class DefaultArtifact implements Artifact {
     }
 
     @Override
-    public String extractVersionFromId() {
-        String version = getId();
-        if (version != null) {
-            if (version.indexOf('.') > 0) {
-                version = version.substring(0, version.lastIndexOf('.'));
-            }
-
-            if (version.endsWith("-tests") ||
-                    version.endsWith("-api") ||
-                    version.endsWith("-config") ||
-                    version.endsWith("-sources") ||
-                    version.endsWith("-sources") ||
-                    version.endsWith("-bootstrap") ||
-                    version.endsWith("-mock") ||
-                    version.endsWith("-doc") ||
-                    version.endsWith("-runtime")) {
-                version = version.substring(0, version.lastIndexOf('-'));
-            }
-
-            if (version.endsWith("-api") ||
-                    version.endsWith("-runtime")) {
-                version = version.substring(0, version.lastIndexOf('-'));
-            }
-
-            while (version.length() > 0 && version.substring(0, 1).matches("[a-zA-Z]")) {
-                int index = version.indexOf('-');
-                if (index > -1) {
-                    version = version.substring(index + 1);
-                } else
-                    break;
-            }
-
-            int index = version.indexOf('/');
-            if (index > -1) {
-                version = version.substring(0, index);
-            }
-        }
-        return version;
-    }
-
-    @Override
     public void merge(Artifact a) {
 
         if (!StringUtils.hasText(this.id)) {
             this.id = a.getId();
         }
 
-        if (!StringUtils.hasText(this.name)) {
-            this.name = a.getName();
+        if (!StringUtils.hasText(this.component)) {
+            this.component = a.getComponent();
         }
 
         if (!StringUtils.hasText(this.version)) {
@@ -429,25 +388,31 @@ public class DefaultArtifact implements Artifact {
         if (artifactId == null) {
             String id = extractArtifactId(getId(), getVersion());
             if (id == null) {
-                id = extractArtifactId(getId(), extractVersionFromId());
-            }
-            if (id == null) {
                 id = getId();
             }
             this.setArtifactId(id);
         }
     }
 
-    private String extractArtifactId(String id, String version) {
+    /**
+     * Extracts a derived artifactId. The artifactId is derived from the artifact file component. The extraction here is
+     * based on the knowledge of the version. This is particularly the case, when using maven as repository manager.
+     * Where the file component is constructed as artifactId-version[-classifier].type. The version therefore can be used to
+     * separate the artifactId from the remaining pieces of the file component.
+     *
+     * @param id
+     * @param version
+     *
+     * @return The derived artifact id or null, in case the version is not part of the file component.
+     */
+    public String extractArtifactId(String id, String version) {
         if (StringUtils.hasText(id) && StringUtils.hasText(version)) {
             int index = id.lastIndexOf(version);
             if (index != -1) {
                 id = id.substring(0, index);
-
                 if (id.endsWith(DELIMITER_DASH)) {
                     id = id.substring(0, id.length() - 1);
                 }
-
                 if (StringUtils.hasText(id)) {
                     return id;
                 }
@@ -459,26 +424,25 @@ public class DefaultArtifact implements Artifact {
     @Override
     public String createStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
-        if (groupId != null || artifactId != null) {
+        if (groupId != null) {
             artifactRepresentation.append(getGroupId());
-            artifactRepresentation.append(DELIMITER_COLON);
+        }
+        artifactRepresentation.append(DELIMITER_COLON);
+        if (artifactId != null) {
             artifactRepresentation.append(getArtifactId());
-            artifactRepresentation.append(DELIMITER_COLON);
+        }
+        artifactRepresentation.append(DELIMITER_COLON);
+        if (version != null) {
             artifactRepresentation.append(getVersion());
-            if (getClassification() != null) {
-                artifactRepresentation.append(DELIMITER_COLON);
-                artifactRepresentation.append(getClassification());
-            }
+        }
+        if (getClassifier() != null) {
             artifactRepresentation.append(DELIMITER_COLON);
+            artifactRepresentation.append(getClassifier());
+        }
+        artifactRepresentation.append(DELIMITER_COLON);
+        // skip type if no information was derived
+        if (id != null && !id.equals(artifactId)) {
             artifactRepresentation.append(getType());
-        } else if (getName() != null) {
-            artifactRepresentation.append(getName());
-            artifactRepresentation.append(DELIMITER_COLON);
-            artifactRepresentation.append(getVersion());
-        } else if (getLicense() != null) {
-            artifactRepresentation.append(getLicense());
-        } else {
-            artifactRepresentation.append(toString());
         }
         return artifactRepresentation.toString();
     }
@@ -486,12 +450,77 @@ public class DefaultArtifact implements Artifact {
     private String inferTypeFromId() {
         String type = null;
         if (id != null) {
-            final int index = id.lastIndexOf(DELIMITER_DOT);
+            String classifier = inferClassifierFromId();
+            String version = inferVersionFromId();
+
+            final String versionClassifierPart;
+            if (classifier == null) {
+                versionClassifierPart = version + DELIMITER_DOT;
+            } else {
+                versionClassifierPart = version + DELIMITER_DASH + classifier + DELIMITER_DOT;
+            }
+
+            final int index = id.lastIndexOf(versionClassifierPart);
             if (index != -1) {
-                type = id.substring(index + 1);
+                type = id.substring(index + versionClassifierPart.length());
+            }
+
+            if (type == null) {
+                final int i = id.lastIndexOf(DELIMITER_DOT);
+                if (i != -1) {
+                    type = id.substring(i + 1);
+                }
             }
         }
         return type;
+    }
+
+    private String inferVersionFromId() {
+        String version = getVersion();
+        if (!StringUtils.hasText(version)) {
+            version = deriveVersionFromId();
+        }
+        return version;
+    }
+
+    public String deriveVersionFromId() {
+        String version = getId();
+        if (version != null) {
+            if (version.indexOf('.') > 0) {
+                version = version.substring(0, version.lastIndexOf('.'));
+            }
+
+            if (version.endsWith("-tests") ||
+                    version.endsWith("-api") ||
+                    version.endsWith("-config") ||
+                    version.endsWith("-source") ||
+                    version.endsWith("-sources") ||
+                    version.endsWith("-bootstrap") ||
+                    version.endsWith("-mock") ||
+                    version.endsWith("-doc") ||
+                    version.endsWith("-runtime")) {
+                version = version.substring(0, version.lastIndexOf('-'));
+            }
+
+            if (version.endsWith("-api") ||
+                    version.endsWith("-runtime")) {
+                version = version.substring(0, version.lastIndexOf('-'));
+            }
+
+            while (version.length() > 0 && version.substring(0, 1).matches("[a-zA-Z]")) {
+                int index = version.indexOf('-');
+                if (index > -1) {
+                    version = version.substring(index + 1);
+                } else
+                    break;
+            }
+
+            int index = version.indexOf('/');
+            if (index > -1) {
+                version = version.substring(0, index);
+            }
+        }
+        return version;
     }
 
     private String inferClassifierFromId() {
@@ -521,7 +550,7 @@ public class DefaultArtifact implements Artifact {
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getArtifactId()));
         artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(getName()));
+        artifactRepresentation.append(normalize(getComponent()));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getVersion()));
         artifactRepresentation.append(DELIMITER_COLON);
@@ -541,34 +570,6 @@ public class DefaultArtifact implements Artifact {
         if (StringUtils.hasText(s))
             return s.trim();
         return "";
-    }
-
-    public Set<Artifact> getDependencies() {
-        return dependencies;
-    }
-
-    public void setDependencies(Set<Artifact> dependencies) {
-        this.dependencies = dependencies;
-    }
-
-    @Override
-    public void addDependency(Artifact dependency) {
-        this.dependencies.add(dependency);
-    }
-
-    @Override
-    public void addDependencies(Collection<Artifact> dependencies) {
-        this.dependencies.addAll(dependencies);
-    }
-
-    @Override
-    public void removeDependency(Artifact dependency) {
-        this.dependencies.remove(dependency);
-    }
-
-    @Override
-    public void removeDependencies(Collection<Artifact> dependencies) {
-        this.dependencies.removeAll(dependencies);
     }
 
     public String getDerivedLicenseFolder() {

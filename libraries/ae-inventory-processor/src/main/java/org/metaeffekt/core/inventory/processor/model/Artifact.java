@@ -25,21 +25,9 @@ public interface Artifact {
 
     void setProjects(Set<String> projects);
 
-    Set<Artifact> getDependencies();
+    String getComponent();
 
-    void setDependencies(Set<Artifact> dependencies);
-
-    void addDependency(Artifact dependency);
-
-    void addDependencies(Collection<Artifact> dependencies);
-
-    void removeDependency(Artifact dependency);
-
-    void removeDependencies(Collection<Artifact> dependencies);
-
-    String getName();
-
-    void setName(String name);
+    void setComponent(String name);
 
     String getGroupId();
 
@@ -83,6 +71,8 @@ public interface Artifact {
 
     boolean isVersionReported();
 
+    public String extractArtifactId(String id, String version);
+
     void setVersionReported(boolean versionReported);
 
     String getArtifactId();
@@ -92,8 +82,6 @@ public interface Artifact {
     void addProject(String project);
 
     void addProjects(Collection<String> projects);
-
-    String extractVersionFromId();
 
     void merge(Artifact a);
 
@@ -119,6 +107,8 @@ public interface Artifact {
 
     String getClassifier();
 
+    java.lang.String deriveVersionFromId();
+
     /**
      * Provides information whether this artifact is relevant for reporting.
      *
@@ -135,6 +125,7 @@ public interface Artifact {
      * @return
      */
     boolean isManaged();
+
 
 
 }

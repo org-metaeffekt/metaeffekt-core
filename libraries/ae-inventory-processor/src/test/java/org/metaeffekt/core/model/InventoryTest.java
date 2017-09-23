@@ -27,7 +27,7 @@ public class InventoryTest {
         Inventory inventory = new Inventory();
         final DefaultArtifact artifact = new DefaultArtifact();
         artifact.setLicense("L");
-        artifact.setName("Test Component");
+        artifact.setComponent("Test Component");
         artifact.setClassification("current");
         artifact.setId("test-1.0.0.jar");
         artifact.setVersion("1.0.0");
@@ -37,7 +37,7 @@ public class InventoryTest {
 
         final DefaultArtifact candidate = new DefaultArtifact();
         candidate.setLicense("L");
-        candidate.setName("Test Component");
+        candidate.setComponent("Test Component");
         candidate.setGroupId("org.test");
         candidate.setId("test-1.0.0.jar");
         candidate.setVersion("1.0.0");
@@ -52,7 +52,7 @@ public class InventoryTest {
         Inventory inventory = new Inventory();
         final DefaultArtifact artifact = new DefaultArtifact();
         artifact.setLicense("L");
-        artifact.setName("Test Component");
+        artifact.setComponent("Test Component");
         artifact.setClassification("any");
         artifact.setId("test-1.0.0.jar");
         artifact.setVersion("1.0.0");
@@ -62,7 +62,7 @@ public class InventoryTest {
 
         final DefaultArtifact candidate = new DefaultArtifact();
         candidate.setLicense("L");
-        candidate.setName("Test Component");
+        candidate.setComponent("Test Component");
         candidate.setClassification("any");
         candidate.setGroupId("org.test");
         candidate.setVersion("1.0.1");

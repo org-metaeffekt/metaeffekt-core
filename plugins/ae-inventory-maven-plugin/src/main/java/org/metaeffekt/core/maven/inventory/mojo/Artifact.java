@@ -24,12 +24,4 @@ import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
  */
 public class Artifact extends DefaultArtifact {
     
-    public String getComponent() {
-        return super.getName();
-    }
-    
-    public void setComponent(String component) {
-        super.setName(component);
-    }
-    
 }

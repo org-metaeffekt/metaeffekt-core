@@ -407,14 +407,7 @@
                 <version>${saxon.version}</version>
                 <scope>runtime</scope>
             </dependency>
-            <!--
-                        <dependency>
-                            <groupId>net.sf.saxon</groupId>
-                            <artifactId>saxon-dom</artifactId>
-                            <version>${saxon.version}</version>
-                            <scope>runtime</scope>
-                        </dependency>
-            -->
+
             <dependency>
                 <groupId>jaxen</groupId>
                 <artifactId>jaxen</artifactId>
@@ -462,15 +455,6 @@
                 <scope>compile</scope>
             </dependency>
 
-            <!--
-            <dependency>
-                <groupId>commons-chain</groupId>
-                <artifactId>commons-chain</artifactId>
-                <version>${commons.chain.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            -->
-
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
@@ -492,22 +476,6 @@
                 <scope>compile</scope>
             </dependency>
 
-            <!--
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-validator</artifactId>
-                <version>${commons.validator.version}</version>
-                <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>commons-validator</groupId>
-                <artifactId>commons-validator</artifactId>
-                <version>${commons.validator.version}</version>
-                <scope>compile</scope>
-            </dependency>
-            -->
-
             <dependency>
                 <groupId>org.easymock</groupId>
                 <artifactId>easymock</artifactId>
@@ -528,18 +496,6 @@
                 <version>${hibernate.core.version}</version>
                 <scope>compile</scope>
                 <exclusions>
-                    <!--                     <exclusion> -->
-                    <!--                         <groupId>org.jboss.logging</groupId> -->
-                    <!--                         <artifactId>jboss-logging</artifactId> -->
-                    <!--                     </exclusion> -->
-                    <!--                     <exclusion> -->
-                    <!--                         <groupId>org.jboss.logging</groupId> -->
-                    <!--                         <artifactId>jboss-logging-annotations</artifactId> -->
-                    <!--                     </exclusion> -->
-                    <!--                     <exclusion> -->
-                    <!--                         <groupId>org.jboss.spec.javax.transaction</groupId> -->
-                    <!--                         <artifactId>jboss-transaction-api_1.2_spec</artifactId> -->
-                    <!--                     </exclusion> -->
                     <exclusion>
                         <groupId>org.jboss</groupId>
                         <artifactId>jandex</artifactId>
@@ -553,34 +509,7 @@
                 <version>${hibernate.jpa.version}</version>
                 <scope>compile</scope>
             </dependency>
-<!--
-            <dependency>
-                <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.2_spec</artifactId>
-                <version>${jboss.jta.version}</version>
-            </dependency>
 
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging</artifactId>
-                <version>${jboss.logging.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.logging</groupId>
-                <artifactId>jboss-logging-annotations</artifactId>
-                <version>${jboss.logging.annotations.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.hibernate.common</groupId>
-                <artifactId>hibernate-commons-annotations</artifactId>
-                <version>${hibernate.commons.annotations.version}</version>
-                <scope>compile</scope>
-            </dependency>
--->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
@@ -637,38 +566,6 @@
                 <version>${geronimo.servlet.spec.version}</version>
                 <scope>provided</scope>
             </dependency>
-
-            <!--
-            <dependency>
-                <groupId>antlr</groupId>
-                <artifactId>antlr</artifactId>
-                <version>${antlr.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            -->
-<!--
-            <dependency>
-                <groupId>commons-digester</groupId>
-                <artifactId>commons-digester</artifactId>
-                <version>${commons.digester.version}</version>
-                <scope>compile</scope>
-            </dependency>
-    -->
-
-<!--
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${jetty.version}</version>
-                <scope>test</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty.orbit</groupId>
-                        <artifactId>javax.servlet</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
--->
 
             <dependency>
                 <groupId>org.javassist</groupId>

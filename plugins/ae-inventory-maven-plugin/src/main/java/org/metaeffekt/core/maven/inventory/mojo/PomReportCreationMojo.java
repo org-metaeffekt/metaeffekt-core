@@ -15,24 +15,15 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.project.MavenProject;
 
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 /**
  * Creates a report for the dependencies listed in the pom.

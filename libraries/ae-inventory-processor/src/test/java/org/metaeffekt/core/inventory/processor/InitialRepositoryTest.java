@@ -15,10 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.*;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import java.io.File;
@@ -46,16 +45,14 @@ public class InitialRepositoryTest {
         File targetFile = new File(TARGET_INVENTORY);
 
         Properties properties = new Properties();
-        properties.setProperty(MavenCentralUpdateProcessor.GROUPID_EXCLUDE_PATTERNS, "-nothing-");
-        properties.setProperty(MavenCentralUpdateProcessor.ARTIFACTID_EXCLUDE_PATTERNS, "-nothing-");
+        properties.setProperty(MavenCentralVersionProcessor.GROUPID_EXCLUDE_PATTERNS, "-nothing-");
+        properties.setProperty(MavenCentralVersionProcessor.ARTIFACTID_EXCLUDE_PATTERNS, "-nothing-");
 
         InventoryUpdate inventoryUpdate = new InventoryUpdate();
         inventoryUpdate.setSourceInventoryFile(sourceFile);
         inventoryUpdate.setTargetInventoryFile(targetFile);
 
         List<InventoryProcessor> inventoryProcessors = new ArrayList<InventoryProcessor>();
-    //    inventoryProcessors.add(new InferVersionInventoryProcessor(properties));
-      //  inventoryProcessors.add(new MavenCentralUpdateProcessor(properties));
         inventoryProcessors.add(new CleanupInventoryProcessor(properties));
         inventoryProcessors.add(new UpdateVersionRecommendationProcessor(properties));
 
@@ -97,8 +94,8 @@ public class InitialRepositoryTest {
         String inventory1 = "/Volumes/USB/lcm/input/artifact-inventory-thirdparty-license_verification.xls";
         String inventory2 = "/Volumes/USB/lcm/input/artifact-inventory-thirdparty.xls";
 
-        Inventory inv1 = new GlobalInventoryReader().readInventory(new File(inventory1));
-        Inventory inv2 = new GlobalInventoryReader().readInventory(new File(inventory2));
+        Inventory inv1 = new InventoryReader().readInventory(new File(inventory1));
+        Inventory inv2 = new InventoryReader().readInventory(new File(inventory2));
 
         inv1.dumpAsFile(new File("/Volumes/USB/lcm/input/artifact-inventory-thirdparty-license_verification.xls.txt"));
         inv2.dumpAsFile(new File("/Volumes/USB/lcm/input/artifact-inventory-thirdparty.xls.txt"));

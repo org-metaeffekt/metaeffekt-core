@@ -116,7 +116,7 @@ public class InventoryWriter {
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getId()));
             myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getName()));
+            myCell.setCellValue(new HSSFRichTextString(artifact.getComponent()));
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getGroupId()));
             myCell = myRow.createCell(cellNum++);

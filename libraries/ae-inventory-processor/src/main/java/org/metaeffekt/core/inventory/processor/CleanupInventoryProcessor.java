@@ -38,20 +38,6 @@ public class CleanupInventoryProcessor extends AbstractInventoryProcessor {
         // merge duplicates
         inventory.mergeDuplicates();
 
-//        // remove unspecific covered by concrete versions
-//        inventory.removeUnspecificCoveredByConcrete();
-
-        // infer duplicates by name
-//        inventory.inferDuplicatesByName();
-
-        // merge remaining duplicates
-//        inventory.mergeDuplicates();
-
-        // remove not supported artifacts
-//        inventory.removeArtifactWithMatchingId(".*-sources\\.jar");
-//        inventory.removeArtifactWithMatchingId(".*-javadoc\\.jar");
-//        inventory.removeArtifactWithMatchingId(".*-tests\\.jar");
-
         // remove all artifacts having no relevance
         inventory.cleanup();
     }

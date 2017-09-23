@@ -68,13 +68,11 @@
                         </processor>
                         <processor>
                             <className>org.metaeffekt.core.inventory.processor.ValidateInventoryProcessor</className>
-                        </processor>
-                        <processor>
-                            <className>org.metaeffekt.core.inventory.processor.ValidateLicensesProcessor</className>
                             <properties>
                                 <licenses.path>${project.build.directory}/classes/META-INF/licenses</licenses.path>
                                 <create.license.folders>true</create.license.folders>
                                 <create.component.folders>true</create.component.folders>
+                                <failOnError>false</failOnError>
                             </properties>
                         </processor>
                     </processors>
@@ -111,7 +109,14 @@
                                     <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
                                 </processor>
                                 <processor>
-                                    <className>org.metaeffekt.core.inventory.processor.MavenCentralUpdateProcessor</className>
+                                    <className>org.metaeffekt.core.inventory.processor.MavenCentralGroupIdProcessor</className>
+                                    <skip>false</skip>
+                                    <properties>
+                                        <artifactid.exclude.patterns>-nothing-</artifactid.exclude.patterns>
+                                    </properties>
+                                </processor>
+                                <processor>
+                                    <className>org.metaeffekt.core.inventory.processor.MavenCentralGroupIdProcessor</className>
                                     <skip>false</skip>
                                     <properties>
                                         <groupid.exclude.patterns>-nothing-</groupid.exclude.patterns>

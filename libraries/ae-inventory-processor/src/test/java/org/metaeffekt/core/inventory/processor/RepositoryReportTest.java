@@ -16,11 +16,10 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import java.io.File;
@@ -44,7 +43,7 @@ public class RepositoryReportTest {
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
         report.setGlobalInventoryPath(INVENTORY);
-        report.setRepositoryInventory(new GlobalInventoryReader().readInventory(new File(INVENTORY)));
+        report.setRepositoryInventory(new InventoryReader().readInventory(new File(INVENTORY)));
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);

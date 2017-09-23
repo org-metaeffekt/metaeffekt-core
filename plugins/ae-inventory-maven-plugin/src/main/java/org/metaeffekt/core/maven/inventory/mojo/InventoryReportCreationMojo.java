@@ -15,12 +15,9 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.maven.BuildFailureException;
-import org.apache.maven.execution.BuildFailure;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
-import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +43,7 @@ public class InventoryReportCreationMojo extends AbstractInventoryReportCreation
         configureInventoryReport(report);
 
         try {
-            report.setRepositoryInventory(new GlobalInventoryReader().readInventory(inventory));
+            report.setRepositoryInventory(new InventoryReader().readInventory(inventory));
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot create inventory report.", e);
         }

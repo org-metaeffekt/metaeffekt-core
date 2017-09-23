@@ -25,7 +25,7 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.DependencyData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -55,11 +55,11 @@ public class DependenciesDitaReport {
 
     public void createReport() throws Exception {
         if (sourceInventoryPath != null) {
-            Resource globalInventoryResource = InventoryReport.inferPathFile(sourceInventoryPath);
-            InputStream in = globalInventoryResource.getInputStream();
+            Resource inventoryResource = InventoryReport.inferPathFile(sourceInventoryPath);
+            InputStream in = inventoryResource.getInputStream();
             sourceInventory = null;
             try {
-                sourceInventory = new GlobalInventoryReader().readInventory(in);
+                sourceInventory = new InventoryReader().readInventory(in);
             } catch (IOException e) {
                 LOG.error("Could not find sourceInventoryPath: {}", sourceInventoryPath);
                 // continue without sourceInventory, third party module names will not be resolved
@@ -152,8 +152,8 @@ public class DependenciesDitaReport {
                     continue;
                 }
                 String artifactIdWithoutVersion = idWithVersion.substring(0, i - 1);
-                if (artifactIdWithoutVersion.equals(artifactId) && a.getName() != null) {
-                    return a.getName();
+                if (artifactIdWithoutVersion.equals(artifactId) && a.getComponent() != null) {
+                    return a.getComponent();
                 }
             }
         }
@@ -188,8 +188,8 @@ public class DependenciesDitaReport {
         return sourceInventoryPath;
     }
 
-    public void setSourceInventoryPath(String globalInventoryPath) {
-        this.sourceInventoryPath = globalInventoryPath;
+    public void setSourceInventoryPath(String sourceInventoryPath) {
+        this.sourceInventoryPath = sourceInventoryPath;
     }
 
     public String getArtifactNameMappingPath() {

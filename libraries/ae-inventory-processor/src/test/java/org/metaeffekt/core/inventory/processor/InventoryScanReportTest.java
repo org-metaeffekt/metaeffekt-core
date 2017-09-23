@@ -49,7 +49,7 @@ public class InventoryScanReportTest {
         List<Artifact> addOnArtifacts = new ArrayList<Artifact>();
         DefaultArtifact apacheAnt = new DefaultArtifact();
         apacheAnt.setArtifactId("apache-ant-1.8.2.zip");
-        apacheAnt.setName("Apache Ant");
+        apacheAnt.setComponent("Apache Ant");
         apacheAnt.setVersion("1.8.2");
         addOnArtifacts.add(apacheAnt);
         report.setAddOnArtifacts(addOnArtifacts);

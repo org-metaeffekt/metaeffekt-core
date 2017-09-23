@@ -21,10 +21,13 @@ import java.util.Properties;
 
 public abstract class AbstractInventoryProcessor implements InventoryProcessor {
 
+    public static final String FAIL_ON_ERROR = "failOnError";
+
     /**
      * The contextMap stores results are intermediate computations.
      */
     private final Map<String, Object> contextMap = new HashMap<String, Object>();
+
     /**
      * Properties can be used to configure the processor.
      */
@@ -37,8 +40,6 @@ public abstract class AbstractInventoryProcessor implements InventoryProcessor {
     public AbstractInventoryProcessor() {
     }
 
-    ;
-
     public Properties getProperties() {
         return properties;
     }
@@ -49,6 +50,11 @@ public abstract class AbstractInventoryProcessor implements InventoryProcessor {
 
     public Map<String, Object> getContextMap() {
         return contextMap;
+    }
+
+    public boolean isFailOnError() {
+        return Boolean.parseBoolean(getProperties().
+                getProperty(FAIL_ON_ERROR, Boolean.TRUE.toString()));
     }
 
 }

@@ -26,7 +26,7 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.inventory.processor.model.*;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.reader.LocalRepositoryInventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.slf4j.Logger;
@@ -41,28 +41,39 @@ import java.util.*;
 
 public class InventoryReport {
 
+    private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
+
     // artifacts summaries (maven centric)
     private static final String DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE =
             "/META-INF/templates/inventory-dita-report.vt";
+
     // artifacts summaries (component centric)
     private static final String DITA_COMPONENT_ARTIFACT_REPORT_TEMPLATE =
             "/META-INF/templates/inventory-dita-component-report.vt";
+
     // version diff
     private static final String DITA_DIFF_TEMPLATE = "/META-INF/templates/inventory-dita-diff.vt";
+
     // license summary
     private static final String DITA_LICENSE_TEMPLATE =
             "/META-INF/templates/inventory-dita-licenses.vt";
+
     // notice summary
     private static final String DITA_NOTICE_TEMPLATE = "/META-INF/templates/inventory-dita-notices.vt";
+
+    // generating a pom from the inventory
     private static final String MAVEN_POM_TEMPLATE =  "/META-INF/templates/inventory-pom-xml.vt";
 
-    private static final Map<String, File> STATIC_FILE_MAP = Collections
-            .synchronizedMap(new HashMap<String, File>());
-    private final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
+    private static final Map<String, File> STATIC_FILE_MAP = Collections.synchronizedMap(new HashMap<>());
+
     private String globalInventoryPath;
+
+    // The reference inventory is used for version diffs.
     private String referenceInventoryPath;
+
     private String repositoryPath;
     private Inventory repositoryInventory;
+
     private String targetInventoryPath;
     private String targetDitaReportPath;
     private String targetDitaComponentReportPath;
@@ -141,7 +152,7 @@ public class InventoryReport {
 
         File repositoryFile = repositoryPath != null ? new File(repositoryPath) : null;
 
-        Inventory globalInventory = readGlobalInventory();
+        Inventory globalInventory = globalInventoryPath == null ? new Inventory() : readGlobalInventory();
 
         // read local repository
         Inventory localRepositoryInventory;
@@ -166,15 +177,14 @@ public class InventoryReport {
         return createReport(globalInventory, localRepositoryInventory);
     }
 
-    protected boolean createReport(Inventory globalInventory, Inventory localInventory)
-            throws FileNotFoundException, IOException, Exception {
+    protected boolean createReport(Inventory globalInventory, Inventory localInventory) throws Exception {
         Inventory referenceInventory = null;
         File referenceInventoryFile = referenceInventoryPath != null ? new File(referenceInventoryPath) : null;
         File targetInventoryFile = targetInventoryPath != null ? new File(targetInventoryPath) : null;
 
         // read the reference file if specified
         if (referenceInventoryFile != null) {
-            referenceInventory = new GlobalInventoryReader().readInventory(referenceInventoryFile);
+            referenceInventory = new InventoryReader().readInventory(referenceInventoryFile);
         }
 
         Inventory projectInventory = new Inventory();
@@ -290,7 +300,7 @@ public class InventoryReport {
                     }
                 }
             } else {
-                // branch: no extact match found
+                // branch: no exact match found
                 if (artifactFilter == null || !artifactFilter.filter(artifact)) {
 
                     // try to find a similar artifact:
@@ -320,13 +330,13 @@ public class InventoryReport {
                         }
 
                         foundArtifact.setComment(commentAggregation.toString());
-                        foundArtifact.setName(similar.getName());
+                        foundArtifact.setComponent(similar.getComponent());
                         foundArtifact.setLatestAvailableVersion(similar.getLatestAvailableVersion());
                         foundArtifact.setLicense(similar.getLicense());
                         foundArtifact.setSecurityCategory(similar.getSecurityCategory());
                         foundArtifact.setUrl(similar.getUrl());
                         foundArtifact.setSecurityRelevant(similar.isSecurityRelevant());
-                        foundArtifact.setReported(similar.isReported() || similar.isVersionReported());
+                        foundArtifact.setReported(true);
                         foundArtifact.setVersionReported(false);
                         foundArtifact.setGroupId(similar.getGroupId());
 
@@ -359,22 +369,28 @@ public class InventoryReport {
             }
 
             if (artifactFilter == null || !artifactFilter.filter(artifact)) {
+                Artifact reportArtifact = artifact;
                 if (foundArtifact != null) {
                     // ids may vary; we try to preserve the id here
                     DefaultArtifact copy = new DefaultArtifact(foundArtifact);
                     copy.setId(artifact.getId());
+
+                    copy.setVersionReported(!"*".equals(foundArtifact.getVersion()));
+                    copy.setReported(true);
 
                     // override flags (the original data does not include context)
                     copy.setRelevant(artifact.isRelevant());
                     copy.setManaged(artifact.isManaged());
 
                     projectInventory.getArtifacts().add(copy);
+
+                    reportArtifact = foundArtifact;
                 } else {
                     projectInventory.getArtifacts().add(artifact);
                 }
 
                 if (classifier.length() > 0) {
-                    String artifactQualifier = artifact.createStringRepresentation();
+                    String artifactQualifier = reportArtifact.createStringRepresentation();
                     if (StringUtils.hasText(comment)) {
                         comment = "- " + comment;
                     }
@@ -508,7 +524,7 @@ public class InventoryReport {
         InputStream in = globalInventoryResource.getInputStream();
         Inventory globalInventory = null;
         try {
-            globalInventory = new GlobalInventoryReader().readInventory(in);
+            globalInventory = new InventoryReader().readInventory(in);
         } finally {
             in.close();
         }
@@ -549,7 +565,7 @@ public class InventoryReport {
                 if (licensesRequiringNotice.contains(license)) {
                     LicenseMetaData licenseMetaData =
                             projectInventory.findMatchingLicenseMetaData(
-                                    artifact.getName(), license, artifact.getVersion());
+                                    artifact.getComponent(), license, artifact.getVersion());
                     if (licenseMetaData == null) {
                         final String messagePattern = "No notice for artifact '{}' with license '{}'.";
                         if (failOnMissingNotice) {
@@ -610,6 +626,7 @@ public class InventoryReport {
 
                 String sourceLicense = artifact.getLicense();
 
+                // without source license, no license meta data, no license texts / notices
                 if (!StringUtils.hasText(sourceLicense)) {
                     continue;
                 }
@@ -620,39 +637,49 @@ public class InventoryReport {
 
                 // try to resolve license meta data if available
                 final LicenseMetaData matchingLicenseMetaData = projectInventory.
-                        findMatchingLicenseMetaData(artifact.getName(), sourceLicense, artifact.getVersion());
+                        findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, artifact.getVersion());
 
-                // copy derived, artifact-specific license folder
-                if (artifact.getName() != null) {
-                    String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getName());
+                boolean isArtifactVersionSpecific = artifact.isVersionReported();
+                boolean isSourceLicenseDataVersionSpecific = matchingLicenseMetaData == null ? isArtifactVersionSpecific :
+                    !matchingLicenseMetaData.getVersion().equals("*");
+
+                // copy derived, component-specific source license folder
+                if (artifact.getComponent() != null) {
+                    String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getComponent());
                     String versionUnspecificPath =  licenseFolderName + "/" + componentFolderName;
                     String versionSpecificPath = versionUnspecificPath + "-" + artifact.getVersion();
 
-                    if (matchingLicenseMetaData != null && matchingLicenseMetaData.getVersion().equals("*")) {
-                        missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificPath, true, reportedLicenseFolders);
+                    if (!isArtifactVersionSpecific && !isSourceLicenseDataVersionSpecific) {
+                        missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath,
+                                versionUnspecificPath, true, reportedLicenseFolders);
                     } else {
-                        missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificPath, true, reportedLicenseFolders);
+                        missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath,
+                                versionSpecificPath, true, reportedLicenseFolders);
                     }
                 }
 
+                // support for license mapping / effective licenses in license meta data
                 if (matchingLicenseMetaData != null) {
-                    String[] effectiveLicenses = matchingLicenseMetaData.deriveLicenseInEffect().split("\\|");
+                    final String[] effectiveLicenses = matchingLicenseMetaData.deriveLicenseInEffect().split("\\|");
                     for (String licenseInEffect : effectiveLicenses) {
                         String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
-                        // copy license folder (unspecific)
+
+                        // in any case copy the component/version unspecific license folder
                         checkAndCopyLicenseFolder(effectiveLicenseFolderName, effectiveLicenseFolderName, false, reportedLicenseFolders);
 
-                        String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getName());
+                        String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getComponent());
                         String versionUnspecificPath =  licenseFolderName + "/" + componentFolderName;
                         String versionSpecificPath = versionUnspecificPath + "-" + artifact.getVersion();
 
                         String versionUnspecificTargetPath =  effectiveLicenseFolderName + "/" + componentFolderName;
                         String versionSpecificTargetPath = versionUnspecificTargetPath + "-" + artifact.getVersion();
 
-                        if (matchingLicenseMetaData != null && matchingLicenseMetaData.getVersion().equals("*")) {
-                            missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath, versionUnspecificTargetPath, true, reportedLicenseFolders);
+                        if (!isArtifactVersionSpecific && !isSourceLicenseDataVersionSpecific) {
+                            missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath,
+                                    versionUnspecificTargetPath, true, reportedLicenseFolders);
                         } else {
-                            missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath, versionSpecificTargetPath, true, reportedLicenseFolders);
+                            missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath,
+                                    versionSpecificTargetPath, true, reportedLicenseFolders);
                         }
                     }
                 }

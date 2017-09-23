@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
@@ -48,7 +48,7 @@ public class InventoryUpdate {
             Inventory inventory = null;
 
             if (sourceInventoryFile.exists()) {
-                inventory = new GlobalInventoryReader().readInventory(sourceInventoryFile);
+                inventory = new InventoryReader().readInventory(sourceInventoryFile);
             } else {
                 inventory = new Inventory();
             }

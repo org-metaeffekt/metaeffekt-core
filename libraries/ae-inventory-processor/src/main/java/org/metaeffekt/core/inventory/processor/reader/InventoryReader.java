@@ -27,7 +27,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class GlobalInventoryReader extends AbstractXlsInventoryReader {
+public class InventoryReader extends AbstractXlsInventoryReader {
 
     private Map<Integer, String> columnMap = new HashMap<>();
 
@@ -65,7 +65,7 @@ public class GlobalInventoryReader extends AbstractXlsInventoryReader {
         // name
         myCell = row.getCell(i++);
         if (myCell != null) {
-            artifact.setName(myCell.toString());
+            artifact.setComponent(myCell.toString());
         }
 
         // groupId

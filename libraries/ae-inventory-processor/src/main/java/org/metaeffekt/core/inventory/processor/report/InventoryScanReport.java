@@ -83,7 +83,6 @@ public class InventoryScanReport extends InventoryReport {
 
     protected void scanDirectory(File scanDir, Inventory globalInventory,
                                  Inventory scanInventory) {
-        System.out.println("Scanning " + scanDir);
         final String[] files = scanDirectory(scanDir);
         for (int i = 0; i < files.length; i++) {
             final String id = new File(files[i]).getName();

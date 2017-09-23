@@ -23,7 +23,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import java.io.File;
@@ -33,8 +33,8 @@ import java.util.Properties;
 @Ignore
 public class ExternalRepositoryReportTest {
 
-    private static final String INVENTORY = "/Users/kklein/workspace/metaeffekt-inventory/inventory/artifact-inventory.xls";
-    private static final String LICENSES_FOLDER = "/Users/kklein/workspace/metaeffekt-inventory/licenses";
+    private static final String INVENTORY = "/Users/kklein/workspace/metaeffekt-inventory/src/main/resources/inventory/artifact-inventory.xls";
+    private static final String LICENSES_FOLDER = "/Users/kklein/workspace/metaeffekt-inventory/src/main/resources/licenses";
     public static final String TARGET_FOLDER = "target/test-external";
 
     @Test
@@ -44,17 +44,22 @@ public class ExternalRepositoryReportTest {
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
         report.setGlobalInventoryPath(INVENTORY);
-        final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
+
+        final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
+
+        // apply modifications to simulate defined cases.
+        inventory.getArtifacts().remove(inventory.findArtifact("effluxlib-*.jar"));
+        inventory.getArtifacts().removeAll(inventory.getArtifacts());
 
         final DefaultArtifact candidate = new DefaultArtifact();
-        candidate.setLicense("L");
-        candidate.setGroupId("org.springframework");
-        candidate.setVersion("4.2.9.RELEASE");
-        candidate.setId("spring-aop-4.2.9.RELEASE.jar");
+        candidate.setId("effluxlib-1.3.83.jar");
+        candidate.setId("spring-aop-4.3.9.RELEASE.jar");
+        // candidate.setId("achilles-core-5.2.1-shaded.jar");
         candidate.deriveArtifactId();
         inventory.getArtifacts().add(candidate);
 
         report.setRepositoryInventory(inventory);
+
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);
@@ -82,7 +87,7 @@ public class ExternalRepositoryReportTest {
     @Test
     public void testInventory() throws IOException {
         UpdateVersionRecommendationProcessor processor = new UpdateVersionRecommendationProcessor();
-        final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
+        final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
         processor.process(inventory);
 
         final DefaultArtifact candidate = new DefaultArtifact();
@@ -101,6 +106,10 @@ public class ExternalRepositoryReportTest {
         // test that any artifact can be addressed by id only (relevant for scan based bom generation)
         for (Artifact artifact : inventory.getArtifacts()) {
             if (artifact.getId() != null) {
+                if (artifact.getId().endsWith(".jar")) {
+                    Assert.assertEquals(artifact.getId(), "jar", artifact.getType());
+                }
+
                 DefaultArtifact artifact1 = new DefaultArtifact();
                 artifact1.setId(artifact.getId());
                 Assert.assertNull(inventory.findArtifact(artifact1));
@@ -120,12 +129,24 @@ public class ExternalRepositoryReportTest {
     }
 
     @Test
-    public void testValidateLicensesProcessor() throws IOException {
+    public void testValidateInventoryProcessor() throws IOException {
+        final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
+
         Properties properties = new Properties();
-        properties.setProperty(ValidateLicensesProcessor.LICENSES_DIR, LICENSES_FOLDER);
-        ValidateLicensesProcessor validateLicensesProcessor = new ValidateLicensesProcessor(properties);
-        final Inventory inventory = new GlobalInventoryReader().readInventory(new File(INVENTORY));
-        validateLicensesProcessor.process(inventory);
+        properties.setProperty(ValidateInventoryProcessor.LICENSES_DIR, LICENSES_FOLDER);
+
+        MavenCentralGroupIdProcessor groupIdProcessor = new MavenCentralGroupIdProcessor(properties);
+        // groupIdProcessor.process(inventory);
+
+        ValidateInventoryProcessor validateInventoryProcessor = new ValidateInventoryProcessor(properties);
+        validateInventoryProcessor.process(inventory);
+
+        final DefaultArtifact candidate = new DefaultArtifact();
+        candidate.setId("effluxlib-1.8.83.jar");
+        candidate.deriveArtifactId();
+
+        Artifact found = inventory.findArtifact(candidate.getId());
+        Assert.assertNotNull(found);
     }
 
 }

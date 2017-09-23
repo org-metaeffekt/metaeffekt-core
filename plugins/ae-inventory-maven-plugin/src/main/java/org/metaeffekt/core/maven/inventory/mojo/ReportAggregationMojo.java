@@ -20,9 +20,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -90,7 +89,7 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
                     File inventoryToRead = new File(scanner.getBasedir(), file);
                     // skip the file that we are about to write (from a previous run)
                     if (!inventoryToRead.equals(inventory)) {
-                        Inventory readInventory = new GlobalInventoryReader().readInventory(inventoryToRead);
+                        Inventory readInventory = new InventoryReader().readInventory(inventoryToRead);
                         extendMultiProjectReport(multiProjectInventory, readInventory);
                     }
                 }
@@ -122,7 +121,7 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
             
             // check whether reading is possible
             try {
-                new GlobalInventoryReader().readInventory(inventory);
+                new InventoryReader().readInventory(inventory);
             } catch (IOException e) {
                 System.err.println("Inventory file corrupted after save. Please analyze and report this"
                     + " error.");

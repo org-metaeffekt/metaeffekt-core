@@ -96,7 +96,7 @@ public class Inventory {
         Map<String, Set<Artifact>> mergeArtifactMap = mergeInventory.buildMapByName();
 
         for (Artifact localArtifact : this.artifacts) {
-            String localName = localArtifact.getName();
+            String localName = localArtifact.getComponent();
 
             String mergeName = localName;
 
@@ -208,13 +208,13 @@ public class Inventory {
     }
 
     private Map<String, Set<Artifact>> buildMapByName() {
-        Map<String, Set<Artifact>> artifactMap = new HashMap<String, Set<Artifact>>();
+        Map<String, Set<Artifact>> artifactMap = new HashMap<>();
         for (Artifact artifact : artifacts) {
-            String key = artifact.getName();
+            String key = artifact.getComponent();
             if (key != null && key.trim().length() > 0) {
                 Set<Artifact> set = artifactMap.get(key);
                 if (set == null) {
-                    set = new HashSet<Artifact>();
+                    set = new HashSet<>();
                 }
                 set.add(artifact);
                 artifactMap.put(key, set);
@@ -225,8 +225,8 @@ public class Inventory {
 
     public void expandArtifactsWithMultipleVersions() {
 
-        List<Artifact> derivedArtifacts = new ArrayList<Artifact>();
-        List<Artifact> removedArtifacts = new ArrayList<Artifact>();
+        List<Artifact> derivedArtifacts = new ArrayList<>();
+        List<Artifact> removedArtifacts = new ArrayList<>();
 
         for (Artifact artifact : this.artifacts) {
             String version = artifact.getVersion();
@@ -250,40 +250,6 @@ public class Inventory {
 
     }
 
-    public void expandArtifactsWithMultipleIds() {
-
-        List<Artifact> derivedArtifacts = new ArrayList<Artifact>();
-        List<Artifact> removedArtifacts = new ArrayList<Artifact>();
-
-        for (Artifact artifact : this.artifacts) {
-            String id = artifact.getId();
-
-            if (id != null) {
-                id = id.replace('\r', ' ');
-                id = id.replace('\n', ',');
-
-                String[] split = id.split(",");
-
-                if (split.length > 1) {
-                    for (String string : split) {
-                        Artifact a = new DefaultArtifact(artifact);
-                        a.setId(string.trim());
-
-                        // update version
-                        String version = a.extractVersionFromId();
-                        a.setVersion(version);
-                        derivedArtifacts.add(a);
-                    }
-                    removedArtifacts.add(artifact);
-                }
-            }
-        }
-
-        this.artifacts.removeAll(removedArtifacts);
-        this.artifacts.addAll(derivedArtifacts);
-
-    }
-
     public void mergeDuplicates() {
 
         Map<String, Set<Artifact>> artifactMap = new HashMap<String, Set<Artifact>>();
@@ -293,7 +259,7 @@ public class Inventory {
 
             String key = artifact.getId();
             if (!StringUtils.hasText(key)) {
-                key = artifact.getName();
+                key = artifact.getComponent();
             }
 
             if (StringUtils.hasText(key)) {
@@ -318,100 +284,6 @@ public class Inventory {
                 }
             }
         }
-
-    }
-
-    public void inferDuplicatesByName() {
-
-        // build a map based on the repository artifact id
-        Map<String, Set<Artifact>> artifactMap = new HashMap<String, Set<Artifact>>();
-        for (Artifact artifact : artifacts) {
-            String key = artifact.getArtifactId();
-            if (StringUtils.hasText(key)) {
-                Set<Artifact> set = artifactMap.get(key);
-                if (set == null) {
-                    set = new HashSet<Artifact>();
-                }
-                set.add(artifact);
-                artifactMap.put(key, set);
-            }
-        }
-
-        for (Artifact artifact : this.artifacts) {
-            if (!StringUtils.hasText(artifact.getName())) {
-                artifact.deriveArtifactId();
-                String artifactId = artifact.getArtifactId();
-                Set<Artifact> artifacts = artifactMap.get(artifactId);
-                if (artifacts != null) {
-                    for (Artifact a : artifacts) {
-                        if (a.getName() != null) {
-                            artifact.merge(a);
-                            break;
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-
-    public void removeUnspecificCoveredByConcrete() {
-        // build a map with artifacts having a name but no id
-        Map<String, Set<Artifact>> artifactMap = new HashMap<String, Set<Artifact>>();
-        for (Artifact artifact : artifacts) {
-            String key = artifact.getName();
-            if (key != null && artifact.getId() == null) {
-                Set<Artifact> set = artifactMap.get(key);
-                if (set == null) {
-                    set = new HashSet<Artifact>();
-                }
-                set.add(artifact);
-                artifactMap.put(key, set);
-            }
-        }
-
-        // build a map with artifacts having a name / id and version unspecific
-        Set<String> unspecificMap = new HashSet<String>();
-        for (Artifact artifact : artifacts) {
-            String key = artifact.getName();
-            if (key != null && artifact.getId() != null && !unspecificMap.contains(key) &&
-                    !VERSION_UNSPECIFIED.equalsIgnoreCase(artifact.getVersion())) {
-
-                key = key.replaceAll("\\s", STRING_EMPTY);
-                key = key.replaceAll("\\-", STRING_EMPTY);
-                key = key.replaceAll("[0-9]", STRING_EMPTY);
-                key = key.replaceAll("\\.", STRING_EMPTY);
-                key = key.toLowerCase();
-
-                unspecificMap.add(key);
-            }
-        }
-
-        for (Set<Artifact> set : artifactMap.values()) {
-            for (Artifact artifact : set) {
-
-                String key = artifact.getName();
-                key = key.replaceAll("\\s", STRING_EMPTY);
-                key = key.replaceAll("\\-", STRING_EMPTY);
-                key = key.replaceAll("[0-9]", STRING_EMPTY);
-                key = key.replaceAll("\\.", STRING_EMPTY);
-                key = key.toLowerCase();
-
-                if (unspecificMap.contains(key)) {
-                    this.artifacts.remove(artifact);
-                }
-            }
-        }
-    }
-
-    public void filterProject(String projectName) {
-        Set<Artifact> disposableSet = new HashSet<Artifact>();
-        for (Artifact artifact : this.artifacts) {
-            if (!artifact.getProjects().contains(projectName)) {
-                disposableSet.add(artifact);
-            }
-        }
-        this.artifacts.removeAll(disposableSet);
     }
 
     public Artifact findArtifact(Artifact artifact) {
@@ -431,7 +303,7 @@ public class Inventory {
         // the pure match on id is required to support filesystem scans (no maven metadata available)
         if (fuzzy) {
             for (Artifact candidate : getArtifacts()) {
-                if (matchesOnId(artifact, candidate)) {
+                if (matchesOnId(artifact.getId(), candidate)) {
                     return candidate;
                 }
             }
@@ -441,7 +313,7 @@ public class Inventory {
 
     public Artifact findArtifact(String id) {
         for (Artifact candidate : getArtifacts()) {
-            if (id.equals(candidate.getId())) {
+            if (matchesOnId(id, candidate)) {
                 return candidate;
             }
         }
@@ -449,7 +321,7 @@ public class Inventory {
     }
 
     private boolean matchesOnMavenProperties(Artifact artifact, Artifact candidate) {
-        if (!matchesOnId(artifact, candidate)) {
+        if (!matchesOnId(artifact.getId(), candidate)) {
             return false;
         }
         if (!matchesOnType(artifact, candidate)) {
@@ -476,14 +348,30 @@ public class Inventory {
         return true;
     }
 
-    protected boolean matchesOnId(Artifact artifact, Artifact candidate) {
-        final String id = artifact.getId();
+    protected boolean matchesOnId(String id, Artifact candidate) {
         final String candidateId = candidate.getId();
+
         if (id == null && candidateId == null) {
             return true;
         }
+
+        // check the ids match (exact)
         if (id != null) {
-            return id.equals(candidateId);
+            if (id.equals(candidateId)) {
+                return true;
+            }
+        }
+
+        // check the ids match (allow wildcard)
+        if (ASTERISK.equals(candidate.getVersion())) {
+            final int index = candidate.getId().indexOf(ASTERISK);
+            if (index != -1) {
+                String prefix = candidate.getId().substring(0, index - 1);
+                String suffix = candidate.getId().substring(index + 1);
+                if (id.startsWith(prefix) && id.endsWith(suffix)) {
+                    return true;
+                }
+            }
         }
 
         // FIXME: id matching must be supported by checksum
@@ -575,7 +463,7 @@ public class Inventory {
 
             // check whether there is an effective license (set of licenses)
 
-            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact.getName(), artifactLicense, artifact.getVersion());
+            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact.getComponent(), artifactLicense, artifact.getVersion());
             if (matchingLicenseMetaData != null) {
                 artifactLicense = matchingLicenseMetaData.deriveLicenseInEffect();
             }
@@ -610,13 +498,13 @@ public class Inventory {
                 artifactLicense = artifactLicense.trim();
                 // find a matching LMD instance
                 LicenseMetaData match = findMatchingLicenseMetaData(
-                        artifact.getName(), artifactLicense, artifact.getVersion());
+                        artifact.getComponent(), artifactLicense, artifact.getVersion());
                 if (match != null && matches(effectiveLicense, match)) {
                     String qualifier = new StringBuilder(artifactLicense).append("-").
-                        append(artifact.getVersion()).append("-").append(artifact.getName()).toString();
+                        append(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
                     ArtifactLicenseData artifactLicenseData = map.get(qualifier);
                     if (artifactLicenseData == null) {
-                        artifactLicenseData = new ArtifactLicenseData(artifact.getName(), artifact.getVersion(), match);
+                        artifactLicenseData = new ArtifactLicenseData(artifact.getComponent(), artifact.getVersion(), match);
                         map.put(qualifier, artifactLicenseData);
                     }
                     artifactLicenseData.add(artifact);
@@ -648,15 +536,11 @@ public class Inventory {
                     (lmd.getVersion().equals(version) || lmd.getVersion().equals(ASTERISK)) &&
                     (lmd.getComponent().equals(component) || lmd.getComponent().equals(ASTERISK))) {
                 if (match != null) {
-                    // in case match is not null we have found two matching license meta data
-                    // elements
+                    // in case match is not null we have found two matching license meta data elements
                     // this means that the license data is inconsistent and has overlaps. This must
                     // be resolved in the underlying meta data.
-                    throw new IllegalStateException(
-                            "Multiple matches for license "
-                                    + license
-                                    +
-                                    ". Meta data inconsistent. Please correct license meta data to resolve inconsistencies.");
+                    throw new IllegalStateException("Multiple matches for license " + license
+                        + ". Meta data inconsistent. Please correct license meta data to resolve inconsistencies.");
                 }
                 match = lmd;
             }
@@ -680,131 +564,12 @@ public class Inventory {
         this.licenseMetaData = licenses;
     }
 
-    public Set<String> listDerivedLicenses(String licenseName, String licenseFolderName) {
-        List<ArtifactLicenseData> derivedList = evaluateNotices(licenseName);
-        Set<String> touchedDerivedLicenses = new HashSet<>();
-        for (ArtifactLicenseData artifactLicenseData : derivedList) {
-            // derive license path
-            for (Artifact artifact : artifactLicenseData.getArtifacts()) {
-                String derivedComponentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getName());
-                if (derivedComponentFolderName != null) {
-                    String version = null;
-                    if (!artifactLicenseData.getLicenseMetaData().getVersion().equals(ASTERISK)) {
-                        version = artifact.getVersion();
-                    }
-                    String derivedPath = licenseFolderName + "/" + derivedComponentFolderName;
-                    if (version != null) {
-                        derivedPath += "-" + version;
-                    }
-                    touchedDerivedLicenses.add(derivedPath);
-                }
-            }
-        }
-        return touchedDerivedLicenses;
-    }
-
     public String getLicenseFolder(String license) {
         if (StringUtils.hasText(license)) {
             return LicenseMetaData.deriveLicenseFolderName(license.trim());
         } else {
             return null;
         }
-    }
-
-    public void removeArtifactWithMatchingId(String regexp) {
-        Set<Artifact> removed = new HashSet<Artifact>();
-        for (Artifact candidate : getArtifacts()) {
-            if (candidate.getId() != null) {
-                if (candidate.getId().matches(regexp)) {
-                    removed.add(candidate);
-                }
-            }
-        }
-        getArtifacts().removeAll(removed);
-        LOG.debug("Removed {} artifacts matching the regular expression [{}].", removed.size(), regexp);
-    }
-
-    public void inferClassificationFromVersions() {
-        int count = 0;
-        for (Artifact candidate : getArtifacts()) {
-            if (!StringUtils.hasText(candidate.getClassification())) {
-                if (StringUtils.hasText(candidate.getVersion()) &&
-                        StringUtils.hasText(candidate.getLatestAvailableVersion())) {
-                    if (candidate.getVersion().equals(candidate.getLatestAvailableVersion())) {
-
-                        // attention: we should not make timestamped artifacts current
-                        if (candidate.getLatestAvailableVersion().length() < 8) {
-                            candidate.setClassification(CLASSIFICATION_CURRENT);
-                            count++;
-                        }
-                    }
-                }
-            }
-        }
-        LOG.info("Updated 'current' classification for {} artifacts.", count);
-
-        int upgradeCount = 0;
-
-        // now check whether we can mark older versions for 'upgrade'
-        for (Artifact candidate : getArtifacts()) {
-            if (CLASSIFICATION_CURRENT.equals(candidate.getClassification())
-                    || !StringUtils.hasText(candidate.getClassification())) {
-                if (StringUtils.hasText(candidate.getArtifactId())
-                        && StringUtils.hasText(candidate.getGroupId())) {
-                    Set<Artifact> matches =
-                            findArtifacts(candidate.getGroupId(), candidate.getArtifactId());
-                    String[] split1 = candidate.getVersion().split("[\\.\\-\\_]");
-                    for (Artifact artifact : matches) {
-                        if (!candidate.getVersion().equals(artifact.getVersion())) {
-                            if (!StringUtils.hasText(artifact.getClassification())) {
-                                String[] split2 = artifact.getVersion().split("[\\.\\-\\_]");
-                                boolean versionGreater = true;
-                                for (int i = 0; i < split1.length; i++) {
-                                    if (i < split2.length) {
-                                        // try to convert to number if possible
-                                        if (split1[i].length() < 4 && split2[i].length() < 4) {
-                                            try {
-                                                int s1 = Integer.parseInt(split1[i]);
-                                                int s2 = Integer.parseInt(split2[i]);
-                                                if (s1 < s2) {
-                                                    versionGreater = false;
-                                                } else {
-                                                    if (s1 > s2) {
-                                                        break;
-                                                    }
-                                                }
-                                            } catch (NumberFormatException nfe) {
-                                                if (split1[i].compareTo(split2[i]) < 0) {
-                                                    versionGreater = false;
-                                                } else {
-                                                    if (split1[i].compareTo(split2[i]) > 0) {
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            if (split1[i].compareTo(split2[i]) < 0) {
-                                                versionGreater = false;
-                                            } else {
-                                                if (split1[i].compareTo(split2[i]) > 0) {
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if (versionGreater) {
-                                    artifact.setClassification("upgrade");
-                                    upgradeCount++;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        LOG.info("Updated 'upgrade' classification for {} artifacts.", upgradeCount);
     }
 
     public void dumpAsFile(File file) {
@@ -826,12 +591,6 @@ public class Inventory {
         if (license == null)
             return null;
         return removeSpecialCharacters(license);
-    }
-
-    public String deriveComponentId(String component) {
-        if (component == null)
-            return null;
-        return removeSpecialCharacters(component);
     }
 
     private String removeSpecialCharacters(String license) {
@@ -915,7 +674,6 @@ public class Inventory {
 
         for (Artifact candidate : artifacts) {
             if (candidate != artifact) {
-                final String candidateClassification = normalize(candidate.getClassification());
                 final String candidateGroupId = normalize(candidate.getGroupId());
                 final String candidateArtifactId = normalize(candidate.getArtifactId());
                 final String candidateClassifier = normalize(candidate.getClassifier());
@@ -943,7 +701,7 @@ public class Inventory {
     public List<Component> evaluateComponents() {
         Set<Component> componentNames = new HashSet<Component>();
         for (Artifact artifact : getArtifacts()) {
-            if (StringUtils.hasText(artifact.getName())) {
+            if (StringUtils.hasText(artifact.getComponent())) {
                 final Component component = createComponent(artifact);
                 componentNames.add(component);
             }
@@ -963,7 +721,7 @@ public class Inventory {
                                             boolean includeLicensesWithArtifactsOnly) {
         List<Artifact> artifactsForComponent = new ArrayList<Artifact>();
         for (Artifact artifact : getArtifacts()) {
-            if (component.group != null && component.group.equals(artifact.getName())) {
+            if (component.group != null && component.group.equals(artifact.getComponent())) {
                 if (component.license != null && component.license.equals(artifact.getLicense())) {
 
                     if (!StringUtils.hasText(artifact.getArtifactId())) {
@@ -1008,8 +766,8 @@ public class Inventory {
         List<Artifact> removeList = new ArrayList<Artifact>();
 
         for (Artifact a : getArtifacts()) {
-            if (StringUtils.hasText(a.getName())) {
-                String key = a.getName() + "/" + a.getVersion();
+            if (StringUtils.hasText(a.getComponent())) {
+                String key = a.getComponent() + "/" + a.getVersion();
                 String qualifier = key + "/" + a.getLicense() + "/" + a.getVersion();
                 if (uniqueSet.contains(key) && !qualifiedSet.contains(qualifier)) {
                     Artifact duplicate = map.get(key);
@@ -1034,9 +792,9 @@ public class Inventory {
     public void mapComponentNames() {
         if (getArtifacts() != null) {
             for (Artifact a : getArtifacts()) {
-                String mappedName = mapComponentName(a.getName());
+                String mappedName = mapComponentName(a.getComponent());
                 if (mappedName != null) {
-                    a.setName(mappedName);
+                    a.setComponent(mappedName);
                 }
             }
         }
@@ -1096,7 +854,7 @@ public class Inventory {
 
             // an artifact requires at least an id or a component (name)
             if (!StringUtils.hasText(artifact.getArtifactId()) &&
-                    !StringUtils.hasText(artifact.getName())) {
+                    !StringUtils.hasText(artifact.getComponent())) {
                 iterator.remove();
             }
         }
@@ -1166,7 +924,7 @@ public class Inventory {
     }
 
     public Component createComponent(Artifact artifact) {
-        return new Component(artifact.getName(), artifact.getLicense());
+        return new Component(artifact.getComponent(), artifact.getLicense());
     }
 
     public class Component {

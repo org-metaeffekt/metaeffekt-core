@@ -18,7 +18,7 @@ package org.metaeffekt.core.inventory.processor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
-import org.metaeffekt.core.inventory.processor.reader.GlobalInventoryReader;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public class InheritInventoryProcessor extends AbstractInventoryProcessor {
 
         Inventory inputInventory;
         try {
-            inputInventory = new GlobalInventoryReader().readInventory(inventoryFile);
+            inputInventory = new InventoryReader().readInventory(inventoryFile);
         } catch (IOException e) {
             throw new RuntimeException("Cannot load inventory.", e);
         }
