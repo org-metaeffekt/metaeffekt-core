@@ -355,6 +355,10 @@ public class Inventory {
             return true;
         }
 
+        if (candidateId == null) {
+            return false;
+        }
+
         // check the ids match (exact)
         if (id != null) {
             if (id.equals(candidateId)) {
