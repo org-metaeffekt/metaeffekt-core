@@ -23,6 +23,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
 import java.util.HashSet;
@@ -97,7 +98,6 @@ public class InventoryScanReport extends InventoryReport {
                 if (unpackedFile == null) {
                     // add new unknown artifact
                     Artifact newArtifact = new DefaultArtifact();
-
                     newArtifact.setId(id);
                     newArtifact.addProject(idFullPath);
                     scanInventory.getArtifacts().add(newArtifact);
@@ -106,7 +106,12 @@ public class InventoryScanReport extends InventoryReport {
                 }
             } else {
                 artifact.addProject(files[i]);
-                scanInventory.getArtifacts().add(artifact);
+
+                // we use the plain id to continue. The rest is sorted out by the report.
+                DefaultArtifact copy = new DefaultArtifact();
+                copy.setId(id);
+                scanInventory.getArtifacts().add(copy);
+                copy.addProject(idFullPath);
 
                 // in case the artifact contain the scan classification we try to unpack and scan in depth
                 if (artifact.getClassification().contains("scan")) {

@@ -381,7 +381,8 @@ public class InventoryReport {
 
                         // in this case we also need to managed the version
                         int index = foundArtifact.getId().indexOf("*");
-                        String version = artifact.getId().substring(index, foundArtifact.getId().length() + 1);
+                        String version = artifact.getId().substring(index,
+                            artifact.getId().length() - foundArtifact.getId().length() + index + 1);
                         copy.setVersion(version);
                     } else {
                         copy.setVersionReported(true);
@@ -643,7 +644,8 @@ public class InventoryReport {
 
                 // copy source license folder
                 String licenseFolderName = LicenseMetaData.deriveLicenseFolderName(sourceLicense);
-                missingLicenseFile |= checkAndCopyLicenseFolder(licenseFolderName, licenseFolderName, false, reportedLicenseFolders);
+                missingLicenseFile |= checkAndCopyLicenseFolder(licenseFolderName, licenseFolderName,
+                    false, reportedLicenseFolders);
 
                 // try to resolve license meta data if available
                 final LicenseMetaData matchingLicenseMetaData = projectInventory.
@@ -661,7 +663,7 @@ public class InventoryReport {
 
                     if (!isArtifactVersionSpecific && !isSourceLicenseDataVersionSpecific) {
                         missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath,
-                                versionUnspecificPath, true, reportedLicenseFolders);
+                                versionSpecificPath, true, reportedLicenseFolders);
                     } else {
                         missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath,
                                 versionSpecificPath, true, reportedLicenseFolders);
@@ -686,7 +688,7 @@ public class InventoryReport {
 
                         if (!isArtifactVersionSpecific && !isSourceLicenseDataVersionSpecific) {
                             missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath,
-                                    versionUnspecificTargetPath, true, reportedLicenseFolders);
+                                    versionSpecificTargetPath, true, reportedLicenseFolders);
                         } else {
                             missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath,
                                     versionSpecificTargetPath, true, reportedLicenseFolders);

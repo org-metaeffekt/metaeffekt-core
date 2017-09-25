@@ -28,6 +28,8 @@ import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 @Ignore
@@ -48,7 +50,17 @@ public class ExternalRepositoryReportTest {
         final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
 
         // apply modifications to simulate defined cases.
-        inventory.getArtifacts().removeAll(inventory.getArtifacts());
+        final List<Artifact> artifacts = new ArrayList<>(inventory.getArtifacts());
+        inventory.getArtifacts().removeAll(artifacts);
+        for (Artifact artifact: artifacts) {
+            if (!artifact.getId().contains("*")) {
+                final DefaultArtifact candidate = new DefaultArtifact();
+                candidate.setId(artifact.getId());
+                candidate.deriveArtifactId();
+                inventory.getArtifacts().add(candidate);
+            }
+        }
+
         final DefaultArtifact candidate = new DefaultArtifact();
         candidate.setId("effluxlib-1.3.83.jar");
         candidate.deriveArtifactId();
@@ -87,6 +99,7 @@ public class ExternalRepositoryReportTest {
         Assert.assertNotNull(artifact);
         Assert.assertEquals(artifact.getId(), candidate.getId());
         Assert.assertEquals("effluxlib-1.3.83.jar", artifact.getId());
+        Assert.assertEquals("1.3.83", artifact.getVersion());
 
     }
 
