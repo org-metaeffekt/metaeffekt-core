@@ -65,6 +65,7 @@ public class InventoryReport {
     private static final String MAVEN_POM_TEMPLATE =  "/META-INF/templates/inventory-pom-xml.vt";
 
     private static final Map<String, File> STATIC_FILE_MAP = Collections.synchronizedMap(new HashMap<>());
+    public static final String ASTERISK = "*";
 
     private String globalInventoryPath;
 
@@ -375,7 +376,16 @@ public class InventoryReport {
                     DefaultArtifact copy = new DefaultArtifact(foundArtifact);
                     copy.setId(artifact.getId());
 
-                    copy.setVersionReported(!"*".equals(foundArtifact.getVersion()));
+                    if (ASTERISK.equals(foundArtifact.getVersion())) {
+                        copy.setVersionReported(false);
+
+                        // in this case we also need to managed the version
+                        int index = foundArtifact.getId().indexOf("*");
+                        String version = artifact.getId().substring(index, foundArtifact.getId().length() + 1);
+                        copy.setVersion(version);
+                    } else {
+                        copy.setVersionReported(true);
+                    }
                     copy.setReported(true);
 
                     // override flags (the original data does not include context)

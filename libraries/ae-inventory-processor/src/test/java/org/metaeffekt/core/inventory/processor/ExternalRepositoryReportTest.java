@@ -48,13 +48,9 @@ public class ExternalRepositoryReportTest {
         final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
 
         // apply modifications to simulate defined cases.
-        inventory.getArtifacts().remove(inventory.findArtifact("effluxlib-*.jar"));
         inventory.getArtifacts().removeAll(inventory.getArtifacts());
-
         final DefaultArtifact candidate = new DefaultArtifact();
         candidate.setId("effluxlib-1.3.83.jar");
-        candidate.setId("spring-aop-4.3.9.RELEASE.jar");
-        // candidate.setId("achilles-core-5.2.1-shaded.jar");
         candidate.deriveArtifactId();
         inventory.getArtifacts().add(candidate);
 
@@ -78,10 +74,20 @@ public class ExternalRepositoryReportTest {
         report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
         report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
 
+        report.setTargetInventoryPath(new File(TARGET_FOLDER, "inventory.xls").getPath());
+
         report.setLicenseSourcePath(LICENSES_FOLDER);
         report.setLicenseTargetPath(new File(target, "licenses").getAbsolutePath());
 
         report.createReport();
+
+        Inventory resultInventory = new InventoryReader().readInventory(new File(report.getTargetInventoryPath()));
+
+        final Artifact artifact = resultInventory.findArtifact(candidate.getId());
+        Assert.assertNotNull(artifact);
+        Assert.assertEquals(artifact.getId(), candidate.getId());
+        Assert.assertEquals("effluxlib-1.3.83.jar", artifact.getId());
+
     }
 
     @Test

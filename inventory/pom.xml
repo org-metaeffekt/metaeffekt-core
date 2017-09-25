@@ -72,7 +72,7 @@
                                 <licenses.path>${project.build.directory}/classes/META-INF/licenses</licenses.path>
                                 <create.license.folders>true</create.license.folders>
                                 <create.component.folders>true</create.component.folders>
-                                <failOnError>false</failOnError>
+                                <failOnError>true</failOnError>
                             </properties>
                         </processor>
                     </processors>
