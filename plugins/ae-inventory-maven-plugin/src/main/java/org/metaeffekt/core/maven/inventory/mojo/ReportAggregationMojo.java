@@ -94,6 +94,9 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
                     }
                 }
 
+                // filter the inventory license metadata
+                multiProjectInventory.filterLicenseMetaData();
+
                 // we write the resulting inventory
                 writeMultiProjectInventory(multiProjectInventory, inventory);
             }
@@ -105,9 +108,12 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
     }
 
     private void extendMultiProjectReport(Inventory multiProjectInventory, Inventory inventory) throws IOException {
-        // merge content
+        // merge artifacts
         multiProjectInventory.getArtifacts().addAll(inventory.getArtifacts());
         multiProjectInventory.mergeDuplicates();
+
+        // merge license metadata
+        multiProjectInventory.inheritLicenseMetaData(inventory, false);
     }
 
     private void writeMultiProjectInventory(Inventory multiProjectInventory, File inventory) throws IOException {

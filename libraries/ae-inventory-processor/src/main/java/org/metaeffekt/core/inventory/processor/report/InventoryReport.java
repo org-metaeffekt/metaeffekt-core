@@ -453,7 +453,8 @@ public class InventoryReport {
         projectInventory.mergeDuplicates();
 
         // transfer license meta data into project inventory (required for the license related reports)
-        projectInventory.setLicenseMetaData(globalInventory.getLicenseMetaData());
+        projectInventory.inheritLicenseMetaData(globalInventory, false);
+        projectInventory.filterLicenseMetaData();
 
         // write reports
         writeArtifactReport(projectInventory);
@@ -571,19 +572,17 @@ public class InventoryReport {
             if (!artifact.isEnabledForDistribution()) {
                 continue;
             }
-            String license = artifact.getLicense();
+            final String license = artifact.getLicense();
             if (StringUtils.hasText(license) && artifact.isRelevant()) {
                 if (licensesRequiringNotice.contains(license)) {
-                    LicenseMetaData licenseMetaData =
-                            projectInventory.findMatchingLicenseMetaData(
-                                    artifact.getComponent(), license, artifact.getVersion());
+                    LicenseMetaData licenseMetaData = projectInventory.findMatchingLicenseMetaData(artifact);
                     if (licenseMetaData == null) {
                         final String messagePattern = "No notice for artifact '{}' with license '{}'.";
                         if (failOnMissingNotice) {
-                            LOG.error(messagePattern, artifact.createStringRepresentation(), artifact.getLicense());
+                            LOG.error(messagePattern, artifact.createStringRepresentation(), license);
                             return true;
                         } else {
-                            LOG.warn(messagePattern, artifact.createStringRepresentation(), artifact.getLicense());
+                            LOG.warn(messagePattern, artifact.createStringRepresentation(), license);
                         }
                         missingNotice = true;
                     }

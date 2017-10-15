@@ -39,16 +39,11 @@ public class Mapping {
                 }
             }
         }
-        
-        System.out.println("Mapping: " + map);
-        
         return map;
     }
     
     public void setMapping(String string) {
         this.mappings.add(string);
-        
-        System.out.println("Adding mapping: " + string);
     }
 
 }

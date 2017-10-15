@@ -183,6 +183,9 @@ public class InventoryReader extends AbstractXlsInventoryReader {
             if (columnName.equalsIgnoreCase("comment")) {
                 licenseMetaData.setComment(value);
             }
+            if (columnName.equalsIgnoreCase("source category")) {
+                licenseMetaData.setSourceCategory(value);
+            }
         }
 
         if (licenseMetaData.isValid()) {

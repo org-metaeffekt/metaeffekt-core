@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -60,6 +60,7 @@ public class ExternalRepositoryReportTest {
                 inventory.getArtifacts().add(candidate);
             }
         }
+        inventory.getLicenseMetaData().clear();
 
         final DefaultArtifact candidate = new DefaultArtifact();
         candidate.setId("effluxlib-1.3.83.jar");

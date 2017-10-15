@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -201,6 +201,9 @@ public class InventoryWriter {
         myCell.setCellValue(new HSSFRichTextString("License in Effect"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("Source Category"));
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("License Notice"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
@@ -222,8 +225,13 @@ public class InventoryWriter {
                 licenseInEffect = licenseMetaData.getLicense();
             }
             myCell.setCellValue(new HSSFRichTextString(licenseInEffect));
+
+            myCell = myRow.createCell(cellNum++);
+            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getSourceCategory()));
+
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getNotice()));
+
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getComment()));
         }

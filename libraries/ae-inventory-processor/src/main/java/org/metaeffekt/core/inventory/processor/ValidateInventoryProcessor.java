@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.Delete;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -193,8 +193,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             artifact.deriveArtifactId();
 
             if (artifact.isEnabledForDistribution()) {
-                final LicenseMetaData matchingLicenseMetaData =
-                        inventory.findMatchingLicenseMetaData(artifact.getComponent(), artifact.getLicense(), artifact.getVersion());
+                final LicenseMetaData matchingLicenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
 
                 if (matchingLicenseMetaData == null) {
                     if (licensesRequiringNotice.contains(artifact.getLicense())) {
@@ -306,6 +305,19 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             if (!licenseReferenceFromInventory.contains(refSb.toString())) {
                 LOG.error(format("License notice '%s' not used in inventory. Proposal: remove the license notice from the inventory.", refSb.toString()));
                 error = true;
+            }
+
+            if (StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
+                String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
+                switch (sourceCategory) {
+                    case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
+                    case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
+                        break;
+                    default:
+                        LOG.error(format("Source category '%s' not supported. Proposal: change source category to " +
+                            "'extended' or 'additional' or remove the value.", licenseMetaData.getSourceCategory()));
+                        error = true;
+                }
             }
         }
 

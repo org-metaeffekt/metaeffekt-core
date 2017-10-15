@@ -71,187 +71,7 @@ public class Inventory {
         Collections.sort(artifacts, comparator);
     }
 
-    /**
-     * Merges this inventory with the specified inventory according to well-defined merge
-     * rules. The merge assumes that the inventory specified as parameter contains more
-     * recent information. The merge is component name-centric and focuses on the license and
-     * usage meta data, only.
-     * <ul>
-     * <li>project list is merged</li>
-     * <li>license is replaced</li>
-     * <li>reported flag is replaced</li>
-     * <li>versionCovered flag is recomputed</li>
-     * <li>used flag is replaced</li>
-     * <li>url is replaced</li>
-     * </ul>
-     *
-     * @param mergeInventory The inventory to merge to this inventory.
-     * @param propagateNotExisting Boolean indicating whether artifacts that do not yet exist in
-     *            this inventory should be added.
-     */
-    public void mergeLicenseData(Inventory mergeInventory, boolean propagateNotExisting) {
-
-        List<Artifact> derivedArtifacts = new ArrayList<Artifact>(mergeInventory.artifacts);
-
-        Map<String, Set<Artifact>> mergeArtifactMap = mergeInventory.buildMapByName();
-
-        for (Artifact localArtifact : this.artifacts) {
-            String localName = localArtifact.getComponent();
-
-            String mergeName = localName;
-
-            boolean merged = false;
-            if (StringUtils.hasText(localName)) {
-                Set<Artifact> mergeSet = mergeArtifactMap.get(mergeName);
-                if (mergeSet != null) {
-                    for (Artifact mergeArtifact : mergeSet) {
-                        boolean versionMatch = localArtifact.getVersion() != null &&
-                                localArtifact.getVersion().equals(mergeArtifact.getVersion());
-                        if (versionMatch) {
-                            mergeArtifactLicenseData(mergeArtifact, localArtifact);
-                            merged = true;
-                            derivedArtifacts.remove(mergeArtifact);
-                        }
-                    }
-                } else {
-                    // no matching protex component
-                    localArtifact.setVersionReported(false);
-                    localArtifact.setReported(false);
-                    merged = true;
-                }
-                if (!merged) {
-                    // reasons: no matching version
-
-                    LOG.debug("No matching version for component: {}", localName);
-
-                    Artifact match = null;
-
-                    // simply take the first artifact from the merge set
-                    if (!mergeSet.isEmpty()) {
-                        match = mergeSet.iterator().next();
-                    }
-
-                    if (match != null) {
-                        // in case of unspecified version we need to check the
-                        // for unique licenses. In case the license is ambiguous
-                        // we do not merge.
-                        LOG.debug("Checking for uniqueness of license for: {}", localName);
-                        boolean unique = true;
-                        String license = null;
-                        boolean first = true;
-                        for (Artifact mergeArtifact : mergeSet) {
-                            if (first) {
-                                license = mergeArtifact.getLicense();
-                                first = false;
-                            } else {
-                                String candidateLicense = mergeArtifact.getLicense();
-                                if ((license == null && candidateLicense == null) ||
-                                        license != null && license.equals(candidateLicense)) {
-                                    // preserve uniquess
-                                } else {
-                                    unique = false;
-                                    LOG.debug("license [{}] != candidateLicense [{}]", license, candidateLicense);
-                                }
-                            }
-                        }
-                        if (unique) {
-                            mergeArtifactLicenseData(match, localArtifact);
-                            merged = true;
-                            derivedArtifacts.remove(match);
-
-                            localArtifact.setReported(true);
-                        } else {
-                            LOG.warn("No explicity version and no unique license reference found for: {}",
-                                    localArtifact.createStringRepresentation());
-
-                            // you need to introduce the specific version in the protex inventory to
-                            // fix this. Otherwise the data in the resulting inventory will only
-                            // be partially merged (conserved)
-                        }
-                    }
-                }
-                if (!merged) {
-                    localArtifact.setVersionReported(false);
-                    localArtifact.setReported(false);
-
-                    // FIXME: activate with next inventory update
-                    // localArtifact.setComment("" + localArtifact.getComment() +
-                    // "[REVIEW REQUIRED]");
-                    merged = true;
-                }
-            }
-
-        }
-
-        if (propagateNotExisting) {
-            this.artifacts.addAll(derivedArtifacts);
-        }
-    }
-
-    private void mergeArtifactLicenseData(Artifact mergeArtifact, Artifact localArtifact) {
-        // the project list is extended
-        localArtifact.addProjects(mergeArtifact.getProjects());
-
-        // transport the reported id
-        localArtifact.setReported(mergeArtifact.isReported());
-
-        boolean versionCovered =
-                localArtifact.getVersion().equalsIgnoreCase(mergeArtifact.getVersion());
-        versionCovered |= localArtifact.isVersionReported();
-        versionCovered &= !VERSION_UNSPECIFIED.equalsIgnoreCase(localArtifact.getVersion());
-        localArtifact.setVersionReported(versionCovered);
-
-        localArtifact.setUsed(mergeArtifact.isUsed());
-
-        // protex ip url is master
-        localArtifact.setUrl(mergeArtifact.getUrl());
-    }
-
-    private Map<String, Set<Artifact>> buildMapByName() {
-        Map<String, Set<Artifact>> artifactMap = new HashMap<>();
-        for (Artifact artifact : artifacts) {
-            String key = artifact.getComponent();
-            if (key != null && key.trim().length() > 0) {
-                Set<Artifact> set = artifactMap.get(key);
-                if (set == null) {
-                    set = new HashSet<>();
-                }
-                set.add(artifact);
-                artifactMap.put(key, set);
-            }
-        }
-        return artifactMap;
-    }
-
-    public void expandArtifactsWithMultipleVersions() {
-
-        List<Artifact> derivedArtifacts = new ArrayList<>();
-        List<Artifact> removedArtifacts = new ArrayList<>();
-
-        for (Artifact artifact : this.artifacts) {
-            String version = artifact.getVersion();
-
-            if (version != null) {
-                String[] split = version.split(",");
-
-                if (split.length > 1) {
-                    for (String v : split) {
-                        Artifact a = new DefaultArtifact(artifact);
-                        a.setVersion(v.trim());
-                        derivedArtifacts.add(a);
-                    }
-                    removedArtifacts.add(artifact);
-                }
-            }
-        }
-
-        this.artifacts.removeAll(removedArtifacts);
-        this.artifacts.addAll(derivedArtifacts);
-
-    }
-
     public void mergeDuplicates() {
-
         Map<String, Set<Artifact>> artifactMap = new HashMap<String, Set<Artifact>>();
 
         for (Artifact artifact : artifacts) {
@@ -467,7 +287,7 @@ public class Inventory {
 
             // check whether there is an effective license (set of licenses)
 
-            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact.getComponent(), artifactLicense, artifact.getVersion());
+            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact);
             if (matchingLicenseMetaData != null) {
                 artifactLicense = matchingLicenseMetaData.deriveLicenseInEffect();
             }
@@ -524,16 +344,14 @@ public class Inventory {
     }
 
     /**
-     * Iterates throw the license meta data to find a match for the given component and
-     * license parameters.
+     * Iterates through the license metadata to find a match for the given component and license parameters.
      *
      * @param component The component.
      * @param license The license name.
      * @return A matching {@link LicenseMetaData} instance if available. In case multiple
      *         can be matched an {@link IllegalStateException} is thrown.
      */
-    public LicenseMetaData findMatchingLicenseMetaData(String component, String license,
-                                                       String version) {
+    public LicenseMetaData findMatchingLicenseMetaData(String component, String license, String version) {
         LicenseMetaData match = null;
         for (LicenseMetaData lmd : licenseMetaData) {
             if (lmd.getLicense().equals(license) &&
@@ -550,6 +368,17 @@ public class Inventory {
             }
         }
         return match;
+    }
+
+    /**
+     * Tries to find the matching {@link LicenseMetaData} details for the specified artifact.
+     *
+     * @param artifact The artifact to look for {@link LicenseMetaData}.
+     * @return The found {@link LicenseMetaData} or <code>null</code> when no matching {@link LicenseMetaData} could be
+     *      found.
+     */
+    public LicenseMetaData findMatchingLicenseMetaData(Artifact artifact) {
+        return findMatchingLicenseMetaData(artifact.getComponent(), artifact.getLicense(), artifact.getVersion());
     }
 
     public List<Artifact> getArtifacts() {
@@ -971,6 +800,98 @@ public class Inventory {
 
         public void setLicense(String license) {
             this.license = license;
+        }
+    }
+
+    /**
+     * Takes over missing license metadata from the provided inputInventory. If the local inventory already has matching
+     * license metadata the local data has priority.
+     *
+     * @param inputInventory The input inventory. From this inventory license metadata will be taken over.
+     */
+    public void inheritLicenseMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
+        // Iterate through all license meta data. Generate qualifier based on component name, version and license.
+        // Test whether the qualifier is present in current. If yes skip; otherwise add.
+        final Map<String, LicenseMetaData> currentLicenseMetaDataMap = new HashMap<>();
+        for (LicenseMetaData licenseMetaData : getLicenseMetaData()) {
+            final String qualifier = licenseMetaData.deriveQualifier();
+            currentLicenseMetaDataMap.put(qualifier, licenseMetaData);
+        }
+
+        for (LicenseMetaData licenseMetaData : inputInventory.getLicenseMetaData()) {
+            final String qualifier = licenseMetaData.deriveQualifier();
+            if (currentLicenseMetaDataMap.containsKey(qualifier)) {
+                // overwrite; the current inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    LicenseMetaData currentLicenseMetaData = currentLicenseMetaDataMap.get(qualifier);
+                    if (currentLicenseMetaData.createCompareStringRepresentation().equals(
+                            licenseMetaData.createCompareStringRepresentation())) {
+                        LOG.info("License meta data {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info("License meta data {} overwritten.", qualifier);
+                    }
+                }
+            } else {
+                // add the license meta data
+                getLicenseMetaData().add(licenseMetaData);
+            }
+        }
+    }
+
+    public void filterLicenseMetaData() {
+        Set<LicenseMetaData> filteredSet = new HashSet<>();
+        for (Artifact artifact : getArtifacts()) {
+            LicenseMetaData lmd = findMatchingLicenseMetaData(artifact);
+            if (lmd != null) {
+                filteredSet.add(lmd);
+            }
+        }
+        getLicenseMetaData().retainAll(filteredSet);
+    }
+
+
+
+    /**
+     * Inherits the artifacts from the specified inputInventory. Local artifacts with the same qualifier have
+     * priority.
+     *
+     * @param inputInventory Input inventory with artifact information.
+     * @param infoOnOverwrite Logs information on overwrites when active.
+     */
+    public void inheritArifacts(Inventory inputInventory, boolean infoOnOverwrite) {
+        // Iterate through all artifacts in the input repository. If the artifact is present in the current repository
+        // then skip (but log some information); otherwise add the artifact to current.
+        final Map<String, Artifact> currentArtifactMap = new HashMap<>();
+        for (Artifact artifact : getArtifacts()) {
+            artifact.deriveArtifactId();
+            String qualifier = artifact.getId();
+            if (qualifier != null) {
+                currentArtifactMap.put(qualifier, artifact);
+            }
+        }
+        for (Artifact artifact : inputInventory.getArtifacts()) {
+            artifact.deriveArtifactId();
+            String qualifier = artifact.getId();
+            // NOTE: the qualifier will be extended by the checksum once we have it.
+            if (qualifier != null && currentArtifactMap.containsKey(qualifier)) {
+                // overwrite; the current inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    Artifact currentArtifact = currentArtifactMap.get(qualifier);
+                    if (artifact.createCompareStringRepresentation().equals(
+                            currentArtifact.createCompareStringRepresentation())) {
+                        LOG.info("Artifact {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Artifact %s overwritten. %n  %s%n  %s", qualifier,
+                            artifact.createCompareStringRepresentation(),
+                            currentArtifact.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                // add the artifact
+                getArtifacts().add(artifact);
+            }
         }
     }
 

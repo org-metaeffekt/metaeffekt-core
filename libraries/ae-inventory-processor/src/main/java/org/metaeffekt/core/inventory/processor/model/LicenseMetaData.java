@@ -18,12 +18,15 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.springframework.util.StringUtils;
 
 /**
- * {@link LicenseMetaData} contains relevant meta data to evaluate notices with regards to the
- * used licenses in a project. 
+ * {@link LicenseMetaData} contains relevant meta data to evaluate notices with regards to the used licenses in a
+ * component.
  *
  * @author Karsten Klein
  */
 public class LicenseMetaData {
+
+    public static final String SOURCE_CATEGORY_ADDITIONAL = "additional";
+    public static final String SOURCE_CATEGORY_EXTENDED = "extended";
 
     private String component;
 
@@ -36,6 +39,15 @@ public class LicenseMetaData {
     private String notice;
 
     private String comment;
+
+    /**
+     * The sourceCategory specifies whether source code for the artifacts associated with this component must be included
+     * either in the 'extended distribution' or the 'additional sources' archive. To include the source code in the
+     * extended distribution specify the value 'extended'; to include the source code in the additional sources specify
+     * 'additional'. Other values are currently not supported. If no information is provided no source code is to
+     * be inlcuded in any archive.
+     */
+    private String sourceCategory;
 
     // FIXME: we should also copy the folder with the license in effect
     public static String deriveLicenseFolderName(String license) {
@@ -143,6 +155,9 @@ public class LicenseMetaData {
         sb.append('/').append(version);
         sb.append('/').append(licenseInEffect);
         sb.append('/').append(notice);
+        if (StringUtils.hasText(sourceCategory)) {
+            sb.append('/').append(sourceCategory);
+        }
         if (StringUtils.hasText(comment)) {
             sb.append('/').append(comment);
         }
@@ -157,5 +172,13 @@ public class LicenseMetaData {
         if (StringUtils.isEmpty(getComponent())) return false;
         if (StringUtils.isEmpty(getVersion())) return false;
         return true;
+    }
+
+    public String getSourceCategory() {
+        return sourceCategory;
+    }
+
+    public void setSourceCategory(String sourceCategory) {
+        this.sourceCategory = sourceCategory;
     }
 }
