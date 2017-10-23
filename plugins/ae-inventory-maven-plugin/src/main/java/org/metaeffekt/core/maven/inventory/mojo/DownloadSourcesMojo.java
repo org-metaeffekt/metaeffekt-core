@@ -84,11 +84,13 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     private File additionalSourcesSourcePath;
 
     /**
-     * The mojo supports to specify a mapping von artifact id to group id to provide an alternative to download the
-     * sources from. This indirection can be used, when originally no source is provided and needs to be augmented.
+     * Some source files may not be located at the expected preset location. This mapping allows to map a file to an
+     * alternative location. Key for the mapping is the file name (later with checksum). Values are new maven
+     * source artifact coordinates in the shape groupId:artifactId:version:classifier:type.
      */
     @Parameter
-    private Mapping alternativeArtifactIdToGroupIdMapping;
+    private Mapping alternativeArtifactSourceMapping;
+
 
     @Parameter(defaultValue = "true")
     private boolean failOnMissingSources;
@@ -165,23 +167,42 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     }
 
     private Artifact resolveSourceArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact) throws MojoFailureException {
-        ArtifactHandler handler = new DefaultArtifactHandler(artifact.getType());
         try {
             artifact.deriveArtifactId();
 
-            // allow to derive a groupId from the artifact id
+            // preset for default source resolving
             String groupId = artifact.getGroupId();
-            final String artifactId = artifact.getArtifactId();
-            if (alternativeArtifactIdToGroupIdMapping != null && alternativeArtifactIdToGroupIdMapping.getMap().containsKey(artifactId)) {
-                groupId = alternativeArtifactIdToGroupIdMapping.getMap().get(artifactId);
+            String artifactId = artifact.getArtifactId();
+            String version = artifact.getVersion();
+            String classifier = "sources";
+            String type = artifact.getType();
+
+            // enable mapping (by filename)
+            if (alternativeArtifactSourceMapping != null &&
+                    alternativeArtifactSourceMapping.getMap().containsKey(artifact.getId())) {
+                String mappedSource = alternativeArtifactSourceMapping.getMap().get(artifact.getId());
+                // FIXME: for uniqueness a checksum may be required here
+
+                String[] mappedSourceParts = mappedSource.split(":");
+                groupId = extractPart(mappedSourceParts, 0, groupId);
+                artifactId = extractPart(mappedSourceParts, 1, artifactId);
+                version = extractPart(mappedSourceParts, 2, version);
+                classifier = extractPart(mappedSourceParts, 3, classifier);
+                type = extractPart(mappedSourceParts, 4, type);
             }
 
-            Artifact sourceArtifact = new DefaultArtifact(
-                    groupId, artifactId,
-                    VersionRange.createFromVersionSpec(artifact.getVersion()),
-                    "runtime", artifact.getType(), "sources", handler);
+            StringBuilder sourceCoordinates = new StringBuilder();
+            sourceCoordinates.append(groupId).append(":");
+            sourceCoordinates.append(artifactId).append(":");
+            sourceCoordinates.append(version).append(":");
+            sourceCoordinates.append(classifier).append(":");
+            sourceCoordinates.append(type).append(":");
 
+            ArtifactHandler handler = new DefaultArtifactHandler(type);
+            Artifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
+                    VersionRange.createFromVersionSpec(version), "runtime", type, classifier, handler);
             getLog().info("Resolving " + sourceArtifact);
+
             ArtifactResolutionRequest request = new ArtifactResolutionRequest();
             request.setArtifact(sourceArtifact);
             request.setLocalRepository(localRepository);
@@ -190,12 +211,21 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             if (result != null && result.isSuccess()) {
                 return result.getArtifacts().iterator().next();
             } else {
-                logOrFailOn(String.format("Cannot resolve sources for %s.", artifact.createStringRepresentation()));
+                logOrFailOn(String.format("Cannot resolve sources for %s with source parameters %s.",
+                        artifact.createStringRepresentation(), sourceCoordinates.toString()));
+
             }
         } catch (InvalidVersionSpecificationException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
         return null;
+    }
+
+    private String extractPart(String[] mappedSourceParts, int index, String defaultValue) {
+        if (mappedSourceParts.length > index && StringUtils.isNotBlank(mappedSourceParts[index])) {
+            return mappedSourceParts[index].trim();
+        }
+        return defaultValue;
     }
 
     @Override
