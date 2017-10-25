@@ -6,7 +6,7 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
-    <version>HEAD-SNAPSHOT</version>
+    <version>0.12.0</version>
     <packaging>pom</packaging>
 
     <name>metaeffekt-core</name>
@@ -51,7 +51,7 @@
 
         <artifact.inventory.version>0.2-SNAPSHOT</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
-        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
+        <ae.core.version>0.12.0</ae.core.version>
 
         <organization>metaeffekt.org</organization>
 
@@ -125,6 +125,12 @@
                         </archive>
                     </configuration>
                 </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -141,7 +147,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.0.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>

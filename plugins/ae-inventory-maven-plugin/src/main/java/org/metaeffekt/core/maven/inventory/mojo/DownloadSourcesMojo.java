@@ -153,8 +153,6 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
         Artifact sourceArtifact = resolveSourceArtifact(artifact);
         if (sourceArtifact != null) {
             FileUtils.copyFile(sourceArtifact.getFile(), new File(targetPath, sourceArtifact.getFile().getName()));
-        } else {
-            logOrFailOn(String.format("Cannot resolve sources for %s.", artifact.createStringRepresentation()));
         }
     }
 
@@ -192,11 +190,11 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             }
 
             StringBuilder sourceCoordinates = new StringBuilder();
-            sourceCoordinates.append(groupId).append(":");
-            sourceCoordinates.append(artifactId).append(":");
-            sourceCoordinates.append(version).append(":");
-            sourceCoordinates.append(classifier).append(":");
-            sourceCoordinates.append(type).append(":");
+            appendPart(sourceCoordinates, groupId);
+            appendPart(sourceCoordinates, artifactId);
+            appendPart(sourceCoordinates, version);
+            appendPart(sourceCoordinates, classifier);
+            appendPart(sourceCoordinates, type);
 
             ArtifactHandler handler = new DefaultArtifactHandler(type);
             Artifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
@@ -211,19 +209,28 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             if (result != null && result.isSuccess()) {
                 return result.getArtifacts().iterator().next();
             } else {
-                logOrFailOn(String.format("Cannot resolve sources for %s with source parameters %s.",
+                logOrFailOn(String.format("Cannot resolve sources for [%s] with source parameters [%s].",
                         artifact.createStringRepresentation(), sourceCoordinates.toString()));
+                return null;
 
             }
         } catch (InvalidVersionSpecificationException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
-        return null;
+    }
+
+    private void appendPart(StringBuilder sourceCoordinates, String part) {
+        sourceCoordinates.append(part == null ? "" : part).append(":");
     }
 
     private String extractPart(String[] mappedSourceParts, int index, String defaultValue) {
         if (mappedSourceParts.length > index && StringUtils.isNotBlank(mappedSourceParts[index])) {
-            return mappedSourceParts[index].trim();
+            final String value = mappedSourceParts[index].trim();
+            if (value.equals("-")) {
+                // value '-' indicates that the value is removed
+                return null;
+            }
+            return value;
         }
         return defaultValue;
     }
