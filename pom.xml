@@ -6,7 +6,7 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
-    <version>0.13.0</version>
+    <version>HEAD-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>metaeffekt-core</name>
@@ -51,7 +51,7 @@
 
         <artifact.inventory.version>0.2-SNAPSHOT</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
-        <ae.core.version>0.13.0</ae.core.version>
+        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
 
         <organization>metaeffekt.org</organization>
 
