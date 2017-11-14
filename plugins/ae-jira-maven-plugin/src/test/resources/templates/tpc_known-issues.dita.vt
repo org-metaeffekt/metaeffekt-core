@@ -1,0 +1,13 @@
+#parse("utils/macros.vt")
+##--------------------------------------------------
+## jql_data: project=AECORE AND type="Bug" AND priority in (High,Medium) AND (status not in (closed)) order by key
+##--------------------------------------------------
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_known-issues" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+<title>Known Issues</title>
+<body>
+
+#list_issues_with_workaround($data.issues, "No known issues.")
+</body>
+</topic>

@@ -1,0 +1,99 @@
+##============================================================
+## Macro to get the workaround out of a JIRA issue
+##------------------------------------------------------------
+#macro(show_workaround $issue)
+#set ($workaround = $issue.fields.customfield_10233)
+#if ($workaround)Workaround: $!esc.xml($workaround).replaceAll("\r\n", "</p><p>")#end
+#end
+##============================================================
+##============================================================
+#macro(parseText $text)
+#if (${text.startsWith("[")})
+#set ($index = ${text.lastIndexOf("] ")} + 2)
+${text.substring(${index})}
+#else
+$text
+#end
+#end
+##============================================================
+##============================================================
+## Macro for the simple issues list
+##------------------------------------------------------------
+#macro(list_issues $issues $no_result)
+#if($issues.size() > 0)
+<table>
+    <tgroup cols="2">
+        <colspec colname="Column1" colnum="1" colwidth="1*"/>
+        <colspec colname="Column2" colnum="2" colwidth="5*"/>
+        <thead>
+            <row>
+                <entry>Key</entry>
+                <entry>Description</entry>
+            </row>
+        </thead>
+        <tbody>
+##----------
+#foreach($issue in $issues)
+            <row>
+                <entry>$!esc.xml(${issue.key})</entry>
+                <entry>#parseText($!esc.xml(${issue.fields.summary}))</entry>
+            </row>
+#end
+##----------
+        </tbody>
+    </tgroup>
+</table>
+#{else}<p>$no_result</p>#end
+#end
+##============================================================
+##============================================================
+## Macro for issues with workaround (known issues)
+##------------------------------------------------------------
+#macro(list_issues_with_workaround $issues, $no_result)
+#if($issues.size() > 0)
+<table>
+    <tgroup cols="2">
+        <colspec colname="Column1" colnum="1" colwidth="1*"/>
+        <colspec colname="Column2" colnum="2" colwidth="5*"/>
+        <thead>
+            <row>
+                <entry>Key</entry>
+                <entry>Description and Workaround</entry>
+            </row>
+        </thead>
+        <tbody>
+##----------
+#foreach($issue in $issues)
+            <row>
+                <entry>$!esc.xml(${issue.key})</entry>
+                <entry>
+                    <p>#parseText($!esc.xml(${issue.fields.summary}))</p>
+                    <p>#show_workaround($issue)</p>
+                </entry>
+            </row>
+#end
+##----------
+        </tbody>
+    </tgroup>
+</table>
+#{else}<p>$no_result</p>#end
+#end
+##============================================================
+## Macro for features
+##------------------------------------------------------------
+#macro(list_features $issues)
+#if($issues.size() > 0)
+##----------
+#foreach($issue in $issues)
+<section>
+    <title>#escape_feature(${issue.fields.summary})</title>
+    #escape_feature($issue.fields.description)
+</section>
+#end
+##----------
+#end
+#end
+##
+#macro(escape_feature $text)
+$text.replaceAll("\{\{", "\$\{").replaceAll("\}\}", "\}")
+#end

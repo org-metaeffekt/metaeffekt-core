@@ -1,0 +1,16 @@
+#parse("utils/macros.vt")
+##--------------------------------------------------
+## jql_data: project=AECORE AND resolution in ("Done") order by key
+##--------------------------------------------------
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_features" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+<title>${product.name} ${product.version}</title>
+<body>
+    <p conref="../../dcc-agent-release-notes/release-notes/tpc_dcc-agent-introduction.dita#tpc_dcc-agent-introduction/p_dcc-agent-intro-short" />
+    <p>The ${product.name} in the current version supports the following features:</p>
+
+#list_features($data.issues)
+
+</body>
+</topic>
