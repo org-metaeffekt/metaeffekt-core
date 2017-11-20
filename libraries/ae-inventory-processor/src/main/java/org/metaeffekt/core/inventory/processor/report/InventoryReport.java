@@ -459,7 +459,7 @@ public class InventoryReport {
         // write reports
         writeArtifactReport(projectInventory);
         writeComponentReport(projectInventory);
-        writeDiffReport(referenceInventoryFile, referenceInventory, projectInventory);
+        writeDiffReport(referenceInventory, projectInventory);
         writeObligationSummary(projectInventory);
         writeLicenseSummary(projectInventory);
 
@@ -718,24 +718,19 @@ public class InventoryReport {
         }
     }
 
-    protected void writeDiffReport(File referenceInventoryFile, Inventory referenceInventory,
-                                   Inventory projectInventory) throws Exception {
-        if (referenceInventoryFile != null && targetDitaDiffPath != null) {
+    protected void writeDiffReport(Inventory referenceInventory, Inventory projectInventory) throws Exception {
+        if (targetDitaDiffPath != null) {
             if (referenceInventory != null) {
                 for (Artifact artifact : projectInventory.getArtifacts()) {
-                    if (artifact.getGroupId() == null) {
+                    if (artifact.getId() == null) {
                         continue;
                     }
-                    if (artifact.getArtifactId() == null) {
-                        continue;
-                    }
-                    Artifact foundArtifact = referenceInventory.
-                            findArtifact(artifact.getGroupId(), artifact.getArtifactId());
+                    Artifact foundArtifact = referenceInventory.findArtifact(artifact, true);
                     // if not found try to match current using the find current strategies
                     // this supports to manipulate the match based on the content in the
                     // reference inventory.
                     if (foundArtifact == null) {
-                        foundArtifact = referenceInventory.findCurrent(artifact);
+                        foundArtifact = referenceInventory.findArtifactClassificationAgnostic(artifact);
                     }
                     if (foundArtifact != null) {
                         artifact.setPreviousVersion(foundArtifact.getVersion());

@@ -16,7 +16,7 @@
                         <row>
                             <entry colname="COLSPEC0" valign="top">Component</entry>
                             <entry colname="COLSPEC1" valign="top">File(s)</entry>
-                            <entry colname="COLSPEC2" valign="top">License</entry>
+                            <entry colname="COLSPEC2" valign="top">Associated License(s)</entry>
                         </row>
                     </thead>
 

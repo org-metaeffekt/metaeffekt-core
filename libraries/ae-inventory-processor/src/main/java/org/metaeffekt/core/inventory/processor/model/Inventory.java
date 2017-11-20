@@ -338,6 +338,36 @@ public class Inventory {
         return new ArrayList<>(map.values());
     }
 
+    public List<ArtifactLicenseData> evaluateComponents(String effectiveLicense) {
+        final Map<String, ArtifactLicenseData> map = new LinkedHashMap<>();
+        for (final Artifact artifact : artifacts) {
+            String artifactLicense = artifact.getLicense();
+            if (artifactLicense != null) {
+                artifactLicense = artifactLicense.trim();
+                // find a matching LMD instance
+                LicenseMetaData match = findMatchingLicenseMetaData(
+                        artifact.getComponent(), artifactLicense, artifact.getVersion());
+
+                if (match == null) {
+                    match = new LicenseMetaData();
+                    match.setLicense(artifactLicense);
+                }
+
+                if (match != null && matches(effectiveLicense, match)) {
+                    String qualifier = new StringBuilder(artifactLicense).append("-").
+                            append(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
+                    ArtifactLicenseData artifactLicenseData = map.get(qualifier);
+                    if (artifactLicenseData == null) {
+                        artifactLicenseData = new ArtifactLicenseData(artifact.getComponent(), artifact.getVersion(), match);
+                        map.put(qualifier, artifactLicenseData);
+                    }
+                    artifactLicenseData.add(artifact);
+                }
+            }
+        }
+        return new ArrayList<>(map.values());
+    }
+
     private boolean matches(String effectiveLicense, LicenseMetaData match) {
         List<String> licenses = Arrays.asList(match.deriveLicenseInEffect().split("\\|"));
         return licenses.contains(effectiveLicense);
@@ -400,9 +430,8 @@ public class Inventory {
     public String getLicenseFolder(String license) {
         if (StringUtils.hasText(license)) {
             return LicenseMetaData.deriveLicenseFolderName(license.trim());
-        } else {
-            return null;
         }
+        return null;
     }
 
     public void dumpAsFile(File file) {
@@ -540,7 +569,7 @@ public class Inventory {
             }
         }
 
-        List<Component> sortedByComponent = new ArrayList<Component>(componentNames);
+        List<Component> sortedByComponent = new ArrayList<>(componentNames);
         Collections.sort(sortedByComponent, new Comparator<Component>() {
             @Override
             public int compare(Component o1, Component o2) {

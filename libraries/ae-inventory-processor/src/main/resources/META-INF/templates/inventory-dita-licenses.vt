@@ -2,29 +2,47 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_third-party-license-summary" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>Licenses in Effect</title>
-    <body>
-        <table otherprops="wide" id="table_third-party-license-summary" >
-            <title>Licenses in Effect</title>
-            <tgroup cols="1">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
-                <thead>
-                    <row>
-                        <entry colname="COLSPEC0" valign="top">License</entry>
-                    </row>
-                </thead>
-                <tbody> 
 #foreach($license in $inventory.evaluateLicenses(false))
-                    <row>
-    #set($folder=$inventory.getLicenseFolder($license))
-    #if($folder)
-                            <entry><xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref></entry>
-    #else
-                            <entry>$license.trim()</entry>
-    #end
-                    </row>
+#set($folder=$inventory.getLicenseFolder($license))
+#set($group=$inventory.evaluateComponents($license))
+#if(!$group.isEmpty())
+<topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
+    <title>$license</title>
+    <body>
+        <p>
+            #if($folder)
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+            #end
+        </p>
+        <p>
+            <table otherprops="wide">
+                <title>Components under $license.trim()</title>
+                <tgroup cols="2">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="80*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC1" valign="top">Version</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+#foreach($artifactLicenseData in $group)
+                        <row>
+                            <entry>
+                                 $artifactLicenseData.componentName
+                             </entry>
+                            <entry>
+                                <codeph>$artifactLicenseData.componentVersion</codeph>
+                            </entry>
+                        </row>
 #end
-                </tbody>
-            </tgroup>
-        </table>
+#end
+                    </tbody>
+                </tgroup>
+            </table>
+        </p>
     </body>
+</topic>
+#end
 </topic>

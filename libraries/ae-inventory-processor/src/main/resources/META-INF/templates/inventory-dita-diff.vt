@@ -5,16 +5,14 @@
     <body>
         <table otherprops="wide" id="table_third-party-version-diff">
             <title>Third-Party Version Upgrades</title>
-            <tgroup cols="4">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
-                <colspec colname="COLSPEC1" colnum="2" colwidth="30*" />
-                <colspec colname="COLSPEC2" colnum="3" colwidth="20*" />
-                <colspec colname="COLSPEC3" colnum="4" colwidth="20*" />
+            <tgroup cols="3">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
+                <colspec colname="COLSPEC2" colnum="3" colwidth="25*" />
 
                 <thead>
                     <row>
-                        <entry colname="COLSPEC0" valign="top">Group Id</entry>
-                        <entry colname="COLSPEC1" valign="top">Artifact Id</entry>
+                        <entry colname="COLSPEC0" valign="top">File</entry>
                         <entry colname="COLSPEC2" valign="top">Version</entry>
                         <entry colname="COLSPEC3" valign="top">Previous Version</entry>
                     </row>
@@ -23,8 +21,10 @@
                 <tbody>            
 #foreach($artifact in $inventory.getArtifacts())#if($artifact.getGroupId() || $artifact.getArtifactId())        
                     <row>
-                        <entry>#if($artifact.getGroupId())$artifact.getGroupId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</entry>
-                        <entry>#if($artifact.getArtifactId())$artifact.getArtifactId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</entry>
+                        <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>#end
+
+<codeph>#if($artifact.getId())$artifact.getId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph>#if($artifact.getGroupId())</lines>#end
+                        </entry>
                         <entry><codeph>#if($artifact.getVersion())$artifact.getVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
                         <entry><codeph>#if($artifact.getPreviousVersion())$artifact.getPreviousVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
                     </row>
