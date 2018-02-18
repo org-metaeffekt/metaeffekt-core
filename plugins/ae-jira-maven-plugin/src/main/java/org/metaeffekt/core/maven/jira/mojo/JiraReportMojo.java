@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,6 @@ public class JiraReportMojo extends AbstractJiraRestMojo {
         try {
             // velocity can only process files under the configured TEMPLATE_ROOT folder
             // so using the Maven project basedir as template root allows to access all subfolders
-            String basePath = getBaseDir();
             TemplateProcessor processor = new TemplateProcessor(source.getAbsolutePath());
 
             // scan for velocity templates

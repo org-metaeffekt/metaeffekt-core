@@ -3,14 +3,13 @@
     xmlns="http://maven.apache.org/POM/4.0.0"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-jira-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
 
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.15.0</version>
         <relativePath>../</relativePath>
     </parent>
 

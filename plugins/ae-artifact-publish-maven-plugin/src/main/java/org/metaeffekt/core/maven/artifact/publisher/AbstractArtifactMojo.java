@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,15 @@
  */
 package org.metaeffekt.core.maven.artifact.publisher;
 
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Copy;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.MavenConstants;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Abstract mojo common to all artifact mojos.

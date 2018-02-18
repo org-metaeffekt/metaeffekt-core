@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Jar;
 import org.codehaus.plexus.archiver.Archiver;
-import org.codehaus.plexus.archiver.ArchiverException;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
-import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 
 import org.metaeffekt.core.common.kernel.annotation.PublicAnnotationAnalyser;
@@ -135,7 +131,6 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
         archiver.setOutputFile(apiJar);
         archive.setForced(true);
         try {
-            File contentDirectory = classesDirectory;
             Iterator<FileSet> iterFiles = filesets.iterator();
             while (iterFiles.hasNext()) {
                 FileSet fs = iterFiles.next();

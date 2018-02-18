@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
@@ -94,13 +93,6 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
      * @parameter default-value="false"
      */
     private boolean skipPomPackagingProjectExecution;
-    
-    /**
-     * @parameter default-value="${session}"
-     * @required
-     * @readonly
-     */
-    private MavenSession mavenSession;
     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

@@ -6,7 +6,7 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
-    <version>HEAD-SNAPSHOT</version>
+    <version>0.15.0</version>
     <packaging>pom</packaging>
 
     <name>metaeffekt-core</name>
@@ -51,12 +51,16 @@
 
         <artifact.inventory.version>0.2-SNAPSHOT</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
-        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
+        <ae.core.version>0.15.0</ae.core.version>
 
         <organization>metaeffekt.org</organization>
 
         <license.identifier>Apache License 2.0</license.identifier>
         <license.file>/META-INF/LICENSE</license.file>
+        
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.jdk>1.8</maven.compiler.jdk>
     </properties>
 
     <modules>
@@ -72,6 +76,16 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.6.2</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                    </configuration>
+                </plugin>
+            
                 <plugin>
                     <groupId>org.metaeffekt.core</groupId>
                     <!-- FIXME: rename plugin -->
@@ -130,6 +144,40 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.0.1</version>
+                </plugin>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.metaeffekt.core
+                                        </groupId>
+                                        <artifactId>
+                                            ae-inventory-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [HEAD-SNAPSHOT,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>
+                                                create-pom-report
+                                            </goal>
+                                            <goal>create-directory-report</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

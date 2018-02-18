@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,14 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.apache.commons.collections.map.LRUMap;
-import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Node;
-import org.dom4j.io.SAXReader;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 
 public abstract class AbstractMavenCentralProcessor extends AbstractInventoryProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractMavenCentralProcessor.class);
 
     public static final String PROXY_HOST = "proxy.host";
     public static final String PROXY_PORT = "proxy.port";
@@ -69,8 +50,8 @@ public abstract class AbstractMavenCentralProcessor extends AbstractInventoryPro
     protected HttpGet createGetRequest() {
         String proxyHost = getProperties().getProperty(PROXY_HOST);
         String proxyPort = getProperties().getProperty(PROXY_PORT);
-        String proxyUsername = getProperties().getProperty(PROXY_USERNAME);
-        String proxyPassword = getProperties().getProperty(PROXY_PASSWORD);
+        // String proxyUsername = getProperties().getProperty(PROXY_USERNAME);
+        // String proxyPassword = getProperties().getProperty(PROXY_PASSWORD);
         HttpGet request = new HttpGet("/");
         if (proxyHost != null && proxyPort != null) {
             HttpHost proxy = new HttpHost(proxyHost, Integer.valueOf(proxyPort), "http");

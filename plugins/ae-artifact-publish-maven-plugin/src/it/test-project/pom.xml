@@ -27,18 +27,18 @@
               <goals>
                 <goal>publish-artifact</goal>
               </goals>
-	          <configuration>
-	          	<classifier>api</classifier>
-	            <filesets>
-	              <fileset>
-	                <directory>${basedir}/target/classes</directory>
-	                <includes>
-	                  <include>**/*Service*.class</include>
-	                </includes>
-	                <followSymlinks>false</followSymlinks>
-	               </fileset>
-	             </filesets>
-	           </configuration>
+              <configuration>
+                  <classifier>api</classifier>
+                <filesets>
+                  <fileset>
+                    <directory>${basedir}/target/classes</directory>
+                    <includes>
+                      <include>**/*Service*.class</include>
+                    </includes>
+                    <followSymlinks>false</followSymlinks>
+                   </fileset>
+                 </filesets>
+               </configuration>
             </execution>
 
             <execution>
@@ -47,27 +47,27 @@
               <goals>
                 <goal>publish-artifact</goal>
               </goals>
-	          <configuration>
-	          	<classifier>mysources</classifier>
-	            <filesets>
-	              <fileset>
-	                <directory>${basedir}/src/main</directory>
-	                <outputDirectory>test-output-dir</outputDirectory>
-	                <includes>
-	                  <include>**/*</include>
-	                </includes>
-	                <followSymlinks>false</followSymlinks>
-	               </fileset>
-	              <fileset>
-	                <directory>${basedir}/src</directory>
-	                <outputDirectory>test-nested-output-dir</outputDirectory>
-	                <includes>
-	                  <include>**/*</include>
-	                </includes>
-	                <followSymlinks>false</followSymlinks>
-	               </fileset>
-	             </filesets>
-	           </configuration>
+              <configuration>
+                  <classifier>mysources</classifier>
+                <filesets>
+                  <fileset>
+                    <directory>${basedir}/src/main</directory>
+                    <outputDirectory>test-output-dir</outputDirectory>
+                    <includes>
+                      <include>**/*</include>
+                    </includes>
+                    <followSymlinks>false</followSymlinks>
+                   </fileset>
+                  <fileset>
+                    <directory>${basedir}/src</directory>
+                    <outputDirectory>test-nested-output-dir</outputDirectory>
+                    <includes>
+                      <include>**/*</include>
+                    </includes>
+                    <followSymlinks>false</followSymlinks>
+                   </fileset>
+                 </filesets>
+               </configuration>
             </execution>
           </executions>
 

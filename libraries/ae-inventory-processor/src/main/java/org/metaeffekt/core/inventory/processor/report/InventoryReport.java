@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -560,7 +560,7 @@ public class InventoryReport {
     public boolean evaluateNotices(Inventory projectInventory, List<String> licenses) {
         boolean missingNotice = false;
         final List<LicenseMetaData> licenseMetaDataList = projectInventory.getLicenseMetaData();
-        final Set<String> licensesRequiringNotice = new HashSet();
+        final Set<String> licensesRequiringNotice = new HashSet<>();
         for (String license : licenses) {
             for (LicenseMetaData licenseMetaData : licenseMetaDataList) {
                 if (licenseMetaData.getLicense().equalsIgnoreCase(license)) {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.Properties;
 @org.junit.Ignore
 public class InitialRepositoryTest {
 
-    private static final String GLOBAL_INVENTORY = "src/test/resources/ae-core-artifact-inventory.xls";
     private static final String SOURCE_INVENTORY = "/Volumes/USB/lcm/input/artifact-inventory-thirdparty-license_verification.xls";
     private static final String TARGET_INVENTORY = "/Volumes/USB/lcm/out/out-inventory.xls";
 
@@ -40,7 +39,6 @@ public class InitialRepositoryTest {
         File targetFolder = new File("/Volumes/USB/lcm/out");
         targetFolder.mkdirs();
 
-        File globalFile = new File(GLOBAL_INVENTORY);
         File sourceFile = new File(SOURCE_INVENTORY);
         File targetFile = new File(TARGET_INVENTORY);
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2017 the original author or authors.
+ * Copyright 2009-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,6 @@ public class MavenAntProjectAdapterTest {
         Assert.assertTrue(new String(err.toByteArray()).contains("Hello Error"));
     }
 
-    @SuppressWarnings("unchecked")
     @Test(expected = EscalationException.class)
     public void testVerboseEscalatedToError() {
         LoggingProjectAdapter adapter = new LoggingProjectAdapter();
@@ -85,7 +84,6 @@ public class MavenAntProjectAdapterTest {
         Assert.assertTrue(new String(err.toByteArray()).contains("Hello escalated Error [verbose]"));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testVerboseEscalatedToWarn() {
         LoggingProjectAdapter adapter = new LoggingProjectAdapter();
