@@ -25,8 +25,20 @@ import org.springframework.util.StringUtils;
  */
 public class LicenseMetaData {
 
+    /**
+     * @deprecated Use retained instead
+     */
+    @Deprecated
     public static final String SOURCE_CATEGORY_ADDITIONAL = "additional";
+
+    /**
+     * @deprecated Use annex instead
+     */
+    @Deprecated
     public static final String SOURCE_CATEGORY_EXTENDED = "extended";
+
+    public static final String SOURCE_CATEGORY_RETAINED = "retained";
+    public static final String SOURCE_CATEGORY_ANNEX = "annex";
 
     private String component;
 
@@ -42,9 +54,9 @@ public class LicenseMetaData {
 
     /**
      * The sourceCategory specifies whether source code for the artifacts associated with this component must be included
-     * either in the 'extended distribution' or the 'additional sources' archive. To include the source code in the
-     * extended distribution specify the value 'extended'; to include the source code in the additional sources specify
-     * 'additional'. Other values are currently not supported. If no information is provided no source code is to
+     * either in the 'software distribution annex' or the 'retained sources' archive. To include the source code in the
+     * distribution annex specify the value 'annex'; to include the source code in the additional sources specify
+     * 'retained'. Other values are currently not supported. If no information is provided no source code is to
      * be inlcuded in any archive.
      */
     private String sourceCategory;

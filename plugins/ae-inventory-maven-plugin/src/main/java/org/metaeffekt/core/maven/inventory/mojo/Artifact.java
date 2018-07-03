@@ -15,13 +15,13 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
+
 
 /**
  * Support class to support complex types in the plugin configuration in the POMs.
  * 
  * @author Karsten Klein
  */
-public class Artifact extends DefaultArtifact {
+public class Artifact extends org.metaeffekt.core.inventory.processor.model.Artifact {
     
 }

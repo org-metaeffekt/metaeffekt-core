@@ -49,9 +49,11 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <artifact.inventory.version>0.2-SNAPSHOT</artifact.inventory.version>
-        <artifact.inventory.enabled>true</artifact.inventory.enabled>
         <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
+        <ae.core.version_last>${ae.core.version}</ae.core.version_last>
+
+        <artifact.inventory.version>${ae.core.version}</artifact.inventory.version>
+        <artifact.inventory.enabled>true</artifact.inventory.enabled>
 
         <organization>metaeffekt.org</organization>
 
@@ -90,7 +92,7 @@
                     <groupId>org.metaeffekt.core</groupId>
                     <!-- FIXME: rename plugin -->
                     <artifactId>ae-version-maven-plugin</artifactId>
-                    <version>0.2.0</version>
+                    <version>${ae.core.version_last}</version>
                     <configuration>
                         <includes>**/pom.xml</includes>
                         <excludes>**/src/test/resources/**</excludes>

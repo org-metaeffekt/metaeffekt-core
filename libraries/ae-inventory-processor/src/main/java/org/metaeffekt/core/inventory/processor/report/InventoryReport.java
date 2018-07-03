@@ -314,7 +314,7 @@ public class InventoryReport {
                         comment = "[recommended version: " + similar.getVersion() + "]";
                     }
                     if (similar != null) {
-                        foundArtifact = new DefaultArtifact(artifact);
+                        foundArtifact = new Artifact(artifact);
 
                         // the found artifact has at least id, version, artifactId (may be inferred),
                         // and groupId set. We merge the remaining content of the similar artifact
@@ -337,8 +337,7 @@ public class InventoryReport {
                         foundArtifact.setSecurityCategory(similar.getSecurityCategory());
                         foundArtifact.setUrl(similar.getUrl());
                         foundArtifact.setSecurityRelevant(similar.isSecurityRelevant());
-                        foundArtifact.setReported(true);
-                        foundArtifact.setVersionReported(false);
+                        foundArtifact.setVerified(false);
                         foundArtifact.setGroupId(similar.getGroupId());
 
                         if (!StringUtils.hasText(artifact.getVersion())) {
@@ -373,11 +372,11 @@ public class InventoryReport {
                 Artifact reportArtifact = artifact;
                 if (foundArtifact != null) {
                     // ids may vary; we try to preserve the id here
-                    DefaultArtifact copy = new DefaultArtifact(foundArtifact);
+                    Artifact copy = new Artifact(foundArtifact);
                     copy.setId(artifact.getId());
 
                     if (ASTERISK.equals(foundArtifact.getVersion())) {
-                        copy.setVersionReported(false);
+                        copy.setVerified(false);
 
                         // in this case we also need to managed the version
                         int index = foundArtifact.getId().indexOf("*");
@@ -385,9 +384,8 @@ public class InventoryReport {
                             artifact.getId().length() - foundArtifact.getId().length() + index + 1);
                         copy.setVersion(version);
                     } else {
-                        copy.setVersionReported(true);
+                        copy.setVerified(true);
                     }
-                    copy.setReported(true);
 
                     // override flags (the original data does not include context)
                     copy.setRelevant(artifact.isRelevant());
@@ -650,7 +648,7 @@ public class InventoryReport {
                 final LicenseMetaData matchingLicenseMetaData = projectInventory.
                         findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, artifact.getVersion());
 
-                boolean isArtifactVersionSpecific = artifact.isVersionReported();
+                boolean isArtifactVersionSpecific = artifact.isVerified();
                 boolean isSourceLicenseDataVersionSpecific = matchingLicenseMetaData == null ? isArtifactVersionSpecific :
                     !matchingLicenseMetaData.getVersion().equals("*");
 

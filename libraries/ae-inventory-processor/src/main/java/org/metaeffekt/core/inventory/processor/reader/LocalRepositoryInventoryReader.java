@@ -17,7 +17,7 @@ package org.metaeffekt.core.inventory.processor.reader;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
@@ -52,7 +52,7 @@ public class LocalRepositoryInventoryReader {
             String[] splitPath = path.split("\\/");
 
             if (splitPath.length > 3) {
-                Artifact artifact = new DefaultArtifact();
+                Artifact artifact = new Artifact();
                 int index = splitPath.length - 1;
                 artifact.setId(splitPath[index--]);
                 artifact.setVersion(splitPath[index--]);

@@ -18,7 +18,7 @@ package org.metaeffekt.core.inventory.processor;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
 
 import java.io.File;
@@ -47,7 +47,7 @@ public class InventoryScanReportTest {
         report.setTargetInventoryPath("C:/dev/tmp/bomscan/report.xls");
 
         List<Artifact> addOnArtifacts = new ArrayList<Artifact>();
-        DefaultArtifact apacheAnt = new DefaultArtifact();
+        Artifact apacheAnt = new Artifact();
         apacheAnt.setArtifactId("apache-ant-1.8.2.zip");
         apacheAnt.setComponent("Apache Ant");
         apacheAnt.setVersion("1.8.2");

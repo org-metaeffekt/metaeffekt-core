@@ -66,7 +66,9 @@ public abstract class AbstractXlsInventoryReader {
         while (rows.hasNext()) {
             HSSFRow row = (HSSFRow) rows.next();
             Artifact artifact = readArtifactMetaData(row);
-            artifacts.add(artifact);
+            if (artifact != null) {
+                artifacts.add(artifact);
+            }
         }
 
         for (int i = 0; i < 15; i++) {
@@ -100,7 +102,9 @@ public abstract class AbstractXlsInventoryReader {
                 while (rows.hasNext()) {
                     HSSFRow row = (HSSFRow) rows.next();
                     LicenseMetaData licenseMetaData = readLicenseMetaData(row);
-                    licenseMetaDatas.add(licenseMetaData);
+                    if (licenseMetaData != null) {
+                        licenseMetaDatas.add(licenseMetaData);
+                    }
                 }
             }
 

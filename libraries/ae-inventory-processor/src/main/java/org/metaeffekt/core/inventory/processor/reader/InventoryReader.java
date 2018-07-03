@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor.reader;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.springframework.util.StringUtils;
 
@@ -29,15 +28,13 @@ import java.util.Set;
 
 public class InventoryReader extends AbstractXlsInventoryReader {
 
+    private Map<Integer, String> artifactColumnMap = new HashMap<>();
     private Map<Integer, String> columnMap = new HashMap<>();
 
     @Override
     protected void readHeader(HSSFRow row) {
-        super.readHeader(row);
-
-        if (row.getPhysicalNumberOfCells() < 15) {
-            throw new IllegalArgumentException("Header does not contain not all relevant information. " +
-                    row.getPhysicalNumberOfCells());
+        for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
+            artifactColumnMap.put(i, row.getCell(i).getStringCellValue());
         }
     }
 
@@ -48,112 +45,76 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         }
     }
 
+    @Override
     protected Artifact readArtifactMetaData(HSSFRow row) {
-        Artifact artifact = new DefaultArtifact();
+        Artifact artifact = new Artifact();
         Set<String> projects = new LinkedHashSet<String>();
         artifact.setProjects(projects);
-        artifact.setReported(true);
 
-        int i = 0;
+        for (int i = 0; i < artifactColumnMap.size(); i++) {
+            final String columnName = artifactColumnMap.get(i);
+            final HSSFCell myCell = row.getCell(i);
+            final String value = myCell != null ? myCell.toString() : null;
 
-        // component
-        HSSFCell myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setId(myCell.toString());
-        }
-
-        // name
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setComponent(myCell.toString());
-        }
-
-        // groupId
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setGroupId(myCell.toString());
-        }
-
-        // version
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setVersion(myCell.toString());
-        }
-
-        // latest available version
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setLatestAvailableVersion(myCell.toString());
-        }
-
-        // license
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setLicense(myCell.toString());
-        }
-
-        // security relevant
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setSecurityRelevant("X".equalsIgnoreCase(myCell.toString()));
-        }
-
-        // security category
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setSecurityCategory(myCell.toString());
-        }
-
-        // classification
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setClassification(myCell.toString());
-        }
-
-        // classification
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setComment(myCell.toString());
-        }
-
-        // license url 
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setUrl(myCell.toString());
-        }
-
-        // project list
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            String projectString = myCell.toString();
-            if (StringUtils.hasText(projectString)) {
-                projectString = projectString.trim();
-                String[] split = projectString.split(",");
-                for (int j = 0; j < split.length; j++) {
-                    projects.add(split[j].trim());
+            if (columnName.equalsIgnoreCase("id")) {
+                artifact.setId(value);
+            }
+            if (columnName.equalsIgnoreCase("checksum")) {
+                artifact.setChecksum(value);
+            }
+            if (columnName.equalsIgnoreCase("component") || columnName.equalsIgnoreCase("component / group")) {
+                artifact.setComponent(value);
+            }
+            if (columnName.equalsIgnoreCase("group id")) {
+                artifact.setGroupId(value);
+            }
+            if (columnName.equalsIgnoreCase("version")) {
+                artifact.setVersion(value);
+            }
+            if (columnName.equalsIgnoreCase("license")) {
+                artifact.setLicense(value);
+            }
+            if (columnName.equalsIgnoreCase("latest version")) {
+                artifact.setLatestAvailableVersion(value);
+            }
+            if (columnName.equalsIgnoreCase("security relevance")) {
+                artifact.setSecurityRelevant("X".equalsIgnoreCase(value));
+            }
+            if (columnName.equalsIgnoreCase("security category")) {
+                artifact.setSecurityCategory(value);
+            }
+            if (columnName.equalsIgnoreCase("vulnerability")) {
+                artifact.setVulnerability(value);
+            }
+            if (columnName.equalsIgnoreCase("classification")) {
+                artifact.setClassification(value);
+            }
+            if (columnName.equalsIgnoreCase("comment")) {
+                artifact.setComment(value);
+            }
+            if (columnName.equalsIgnoreCase("analysis")) {
+                artifact.setAnalysis(value);
+            }
+            if (columnName.equalsIgnoreCase("url")) {
+                artifact.setUrl(value);
+            }
+            if (columnName.equalsIgnoreCase("projects")) {
+                String projectString = value;
+                if (StringUtils.hasText(projectString)) {
+                    projectString = projectString.trim();
+                    String[] split = projectString.split(",");
+                    for (int j = 0; j < split.length; j++) {
+                        projects.add(split[j].trim());
+                    }
                 }
             }
         }
 
-        // used
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setUsed("X".equalsIgnoreCase(myCell.toString()));
+        if (artifact.isValid()) {
+            return artifact;
         }
 
-        // reported (protex)
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setReported("X".equalsIgnoreCase(myCell.toString()));
-        }
-
-        // version reported explicitly (protex)
-        myCell = row.getCell(i++);
-        if (myCell != null) {
-            artifact.setVersionReported("X".equalsIgnoreCase(myCell.toString()));
-        }
-
-        return artifact;
+        return null;
     }
 
     @Override
@@ -192,7 +153,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
             return licenseMetaData;
         }
 
-        return licenseMetaData;
+        return null;
     }
 
 }

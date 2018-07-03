@@ -15,12 +15,11 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
@@ -136,29 +135,29 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
     private Inventory createInventoryFromPom() {
         Inventory inventory = new Inventory();
         for (Object obj : getProject().getTestArtifacts()) {
-            Artifact mavenArtifact = (Artifact) obj;
+            org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, null, null);
         }
         for (Object obj : getProject().getDependencyArtifacts()) {
-            Artifact mavenArtifact = (Artifact) obj;
+            org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, null, null);
         }
         for (Object obj : getProject().getCompileArtifacts()) {
-            Artifact mavenArtifact = (Artifact) obj;
+            org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, null, null);
         }
         for (Object obj : getProject().getRuntimeArtifacts()) {
-            Artifact mavenArtifact = (Artifact) obj;
+            org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, null, null);
         }
         for (Object obj : getProject().getArtifacts()) {
-            Artifact mavenArtifact = (Artifact) obj;
+            org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, null, null);
         }
         
         // plugins are treated a little differently (type is lost)
         for (Object obj : getProject().getPluginArtifacts()) {
-            Artifact mavenArtifact = (Artifact) obj;
+            org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, includePlugins, managePlugins);
         }
         
@@ -167,8 +166,9 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
         return inventory;
     }
 
-    protected void addArtifactIfNecessary(Inventory inventory, Artifact mavenArtifact, Boolean relevant, Boolean managed) {
-        DefaultArtifact artifact = createInventoryArtifact(mavenArtifact);
+    protected void addArtifactIfNecessary(Inventory inventory,
+                                          org.apache.maven.artifact.Artifact mavenArtifact, Boolean relevant, Boolean managed) {
+        Artifact artifact = createInventoryArtifact(mavenArtifact);
         
         inventory.getArtifacts().add(artifact);
 
@@ -229,8 +229,8 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
         }
     }
     
-    protected DefaultArtifact createInventoryArtifact(Artifact mavenArtifact) {
-        DefaultArtifact artifact = new DefaultArtifact();
+    protected Artifact createInventoryArtifact(org.apache.maven.artifact.Artifact mavenArtifact) {
+        Artifact artifact = new Artifact();
         artifact.setArtifactId(mavenArtifact.getArtifactId());
         artifact.setGroupId(mavenArtifact.getGroupId());
         artifact.setVersion(mavenArtifact.getVersion());

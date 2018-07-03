@@ -21,7 +21,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import java.io.File;
 import java.util.HashSet;
@@ -95,7 +95,7 @@ public class InventoryScanReport extends InventoryReport {
                 File unpackedFile = unpackIfPossible(scanDir, files[i], false);
                 if (unpackedFile == null) {
                     // add new unknown artifact
-                    Artifact newArtifact = new DefaultArtifact();
+                    Artifact newArtifact = new Artifact();
                     newArtifact.setId(id);
                     newArtifact.addProject(idFullPath);
                     scanInventory.getArtifacts().add(newArtifact);
@@ -106,7 +106,7 @@ public class InventoryScanReport extends InventoryReport {
                 artifact.addProject(files[i]);
 
                 // we use the plain id to continue. The rest is sorted out by the report.
-                DefaultArtifact copy = new DefaultArtifact();
+                Artifact copy = new Artifact();
                 copy.setId(id);
                 scanInventory.getArtifacts().add(copy);
                 copy.addProject(idFullPath);

@@ -17,9 +17,6 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
@@ -29,9 +26,13 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
+
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
@@ -85,18 +86,16 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     private File inventoryPath;
 
     /**
-     * Sources for selected artifacts are downloaded to this folder as part of the extended distribution.
-     *
-     * @parameter expression="${project.build.directory}/extended-distribution/sources"
+     * Sources for selected artifacts are downloaded to this folder as part of the distribution annex.
      */
-    @Parameter(defaultValue = "${project.build.directory}/extended-distribution/sources")
-    private File extendedDistributionSourcePath;
+    @Parameter(defaultValue = "${project.build.directory}/software-distribution-annex/sources")
+    private File softwareDistributionAnnexSourcePath;
 
     /**
-     * Sources for selected artifacts are downloaded to this folder as part of the additional sources.
+     * Sources for selected artifacts are downloaded to this folder as part of the retained sources.
      */
-    @Parameter(defaultValue = "${project.build.directory}/additional-sources/sources")
-    private File additionalSourcesSourcePath;
+    @Parameter(defaultValue = "${project.build.directory}/retained-sources/sources")
+    private File retainedSourcesSourcePath;
 
     /**
      * Some source files may not be located at the expected preset location. This mapping allows to map a file to an
@@ -143,10 +142,12 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
                             String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
                             switch (sourceCategory) {
                                 case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
-                                    downloadArtifact(artifact, additionalSourcesSourcePath);
+                                case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
+                                    downloadArtifact(artifact, retainedSourcesSourcePath);
                                     break;
                                 case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
-                                    downloadArtifact(artifact, extendedDistributionSourcePath);
+                                case LicenseMetaData.SOURCE_CATEGORY_ANNEX:                              
+                                    downloadArtifact(artifact, softwareDistributionAnnexSourcePath);
                                     break;
                                 default:
                                     throw new MojoExecutionException(
@@ -165,7 +166,7 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     }
 
     private void downloadArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact, File targetPath) throws IOException, MojoFailureException {
-        Artifact sourceArtifact = resolveSourceArtifact(artifact);
+        org.apache.maven.artifact.Artifact sourceArtifact = resolveSourceArtifact(artifact);
         if (sourceArtifact != null) {
             FileUtils.copyFile(sourceArtifact.getFile(), new File(targetPath, sourceArtifact.getFile().getName()));
         }
@@ -179,7 +180,7 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
         }
     }
 
-    private Artifact resolveSourceArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact) throws MojoFailureException {
+    private org.apache.maven.artifact.Artifact resolveSourceArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact) throws MojoFailureException {
         try {
             artifact.deriveArtifactId();
 
@@ -211,8 +212,8 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             appendPart(sourceCoordinates, classifier);
             appendPart(sourceCoordinates, type);
 
-            ArtifactHandler handler = new DefaultArtifactHandler(type);
-            Artifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
+            DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
+            DefaultArtifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
                     VersionRange.createFromVersionSpec(version), "runtime", type, classifier, handler);
             getLog().info("Resolving " + sourceArtifact);
 

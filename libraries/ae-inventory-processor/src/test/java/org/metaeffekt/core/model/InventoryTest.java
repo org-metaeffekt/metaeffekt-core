@@ -18,14 +18,14 @@ package org.metaeffekt.core.model;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 public class InventoryTest {
     @Test
     public void testFindCurrent() {
         Inventory inventory = new Inventory();
-        final DefaultArtifact artifact = new DefaultArtifact();
+        final Artifact artifact = new Artifact();
         artifact.setLicense("L");
         artifact.setComponent("Test Component");
         artifact.setClassification("current");
@@ -35,7 +35,7 @@ public class InventoryTest {
         artifact.deriveArtifactId();
         inventory.getArtifacts().add(artifact);
 
-        final DefaultArtifact candidate = new DefaultArtifact();
+        final Artifact candidate = new Artifact();
         candidate.setLicense("L");
         candidate.setComponent("Test Component");
         candidate.setGroupId("org.test");
@@ -50,7 +50,7 @@ public class InventoryTest {
     @Test
     public void testFindClassificationAgnostic() {
         Inventory inventory = new Inventory();
-        final DefaultArtifact artifact = new DefaultArtifact();
+        final Artifact artifact = new Artifact();
         artifact.setLicense("L");
         artifact.setComponent("Test Component");
         artifact.setClassification("any");
@@ -60,7 +60,7 @@ public class InventoryTest {
         artifact.deriveArtifactId();
         inventory.getArtifacts().add(artifact);
 
-        final DefaultArtifact candidate = new DefaultArtifact();
+        final Artifact candidate = new Artifact();
         candidate.setLicense("L");
         candidate.setComponent("Test Component");
         candidate.setClassification("any");
@@ -71,5 +71,26 @@ public class InventoryTest {
 
         Assert.assertNull(inventory.findArtifact(candidate));
         Assert.assertNotNull(inventory.findArtifactClassificationAgnostic(candidate));
+    }
+
+    @Test
+    public void testUnderscoreSupport() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test_1.0.0.jar");
+        artifact.setVersion("1.0.0");
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setVersion("1.0.0");
+        candidate.setId("test-1.0.0.jar");
+        candidate.deriveArtifactId();
+
+        Assert.assertEquals("test", artifact.getArtifactId());
+
+        // while the artifacts are equivalent with respect to GAV details they remain different by id.
+        Assert.assertNull(inventory.findArtifact("test-1.0.0.jar"));
+        Assert.assertNotNull(inventory.findArtifact("test_1.0.0.jar"));
     }
 }

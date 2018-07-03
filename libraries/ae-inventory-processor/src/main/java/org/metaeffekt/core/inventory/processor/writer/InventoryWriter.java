@@ -68,7 +68,10 @@ public class InventoryWriter {
         myCell.setCellValue(new HSSFRichTextString("Id"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Component / Group"));
+        myCell.setCellValue(new HSSFRichTextString("Checksum"));
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("Component"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Group Id"));
@@ -89,6 +92,9 @@ public class InventoryWriter {
         myCell.setCellValue(new HSSFRichTextString("Security Category"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("Vulnerability"));
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Classification"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
@@ -101,13 +107,9 @@ public class InventoryWriter {
         myCell.setCellValue(new HSSFRichTextString("Projects"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Used"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Verified"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Version Verified"));
+
+        int numCol = cellNum;
 
         for (Artifact artifact : inventory.getArtifacts()) {
             myRow = mySheet.createRow(rowNum++);
@@ -115,6 +117,8 @@ public class InventoryWriter {
             cellNum = 0;
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getId()));
+            myCell = myRow.createCell(cellNum++);
+            myCell.setCellValue(new HSSFRichTextString(artifact.getChecksum()));
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getComponent()));
             myCell = myRow.createCell(cellNum++);
@@ -130,6 +134,8 @@ public class InventoryWriter {
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getSecurityCategory()));
             myCell = myRow.createCell(cellNum++);
+            myCell.setCellValue(new HSSFRichTextString(artifact.getVulnerability()));
+            myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getClassification()));
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getComment()));
@@ -140,14 +146,11 @@ public class InventoryWriter {
             projects = projects.substring(1, projects.length() - 1);
             myCell.setCellValue(new HSSFRichTextString(projects));
             myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.isUsed() ? "X" : ""));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.isReported() ? "X" : ""));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.isVersionReported() ? "X" : ""));
+            myCell.setCellValue(new HSSFRichTextString(artifact.isVerified() ? "X" : ""));
         }
 
-        for (int i = 0; i < 15; i++) {
+        // adjust with of cells
+        for (int i = 0; i <= numCol; i++) {
             Integer width = (Integer) inventory.getContextMap().get("artifacts.column[" + i + "].width");
             if (width != null) {
                 mySheet.setColumnWidth(i, width);

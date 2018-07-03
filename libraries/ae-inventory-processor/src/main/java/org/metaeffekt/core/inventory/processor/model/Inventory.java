@@ -130,6 +130,25 @@ public class Inventory {
         return null;
     }
 
+    public Artifact findArtifactByIdAndChecksum(String id, String checksum) {
+        if (!StringUtils.hasText(id) || !StringUtils.hasText(checksum)) {
+            return null;
+        }
+        String trimmedId = id.trim();
+        String trimmedChecksum = checksum.trim();
+        for (Artifact candidate : getArtifacts()) {
+            if (candidate.getId() == null || candidate.getChecksum() == null) {
+                continue;
+            }
+            if (trimmedId.equalsIgnoreCase(candidate.getId().trim())) {
+                if (trimmedChecksum.equalsIgnoreCase(candidate.getChecksum().trim())) {
+                    return candidate;
+                }
+            }
+        }
+        return null;
+    }
+
     public Artifact findArtifact(String id) {
         for (Artifact candidate : getArtifacts()) {
             if (matchesOnId(id, candidate)) {

@@ -20,7 +20,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.DefaultArtifact;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -54,7 +54,7 @@ public class ExternalRepositoryReportTest {
         inventory.getArtifacts().removeAll(artifacts);
         for (Artifact artifact: artifacts) {
             if (!artifact.getId().contains("*")) {
-                final DefaultArtifact candidate = new DefaultArtifact();
+                final Artifact candidate = new Artifact();
                 candidate.setId(artifact.getId());
                 candidate.deriveArtifactId();
                 inventory.getArtifacts().add(candidate);
@@ -62,7 +62,7 @@ public class ExternalRepositoryReportTest {
         }
         inventory.getLicenseMetaData().clear();
 
-        final DefaultArtifact candidate = new DefaultArtifact();
+        final Artifact candidate = new Artifact();
         candidate.setId("effluxlib-1.3.83.jar");
         candidate.deriveArtifactId();
         inventory.getArtifacts().add(candidate);
@@ -110,7 +110,7 @@ public class ExternalRepositoryReportTest {
         final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
         processor.process(inventory);
 
-        final DefaultArtifact candidate = new DefaultArtifact();
+        final Artifact candidate = new Artifact();
         candidate.setLicense("L");
         candidate.setGroupId("org.springframework");
         candidate.setVersion("4.2.9.RELEASE");
@@ -130,7 +130,7 @@ public class ExternalRepositoryReportTest {
                     Assert.assertEquals(artifact.getId(), "jar", artifact.getType());
                 }
 
-                DefaultArtifact artifact1 = new DefaultArtifact();
+                Artifact artifact1 = new Artifact();
                 artifact1.setId(artifact.getId());
                 Assert.assertNull(inventory.findArtifact(artifact1));
                 Assert.assertNull(inventory.findArtifact(artifact1, false));
@@ -161,7 +161,7 @@ public class ExternalRepositoryReportTest {
         ValidateInventoryProcessor validateInventoryProcessor = new ValidateInventoryProcessor(properties);
         validateInventoryProcessor.process(inventory);
 
-        final DefaultArtifact candidate = new DefaultArtifact();
+        final Artifact candidate = new Artifact();
         candidate.setId("effluxlib-1.8.83.jar");
         candidate.deriveArtifactId();
 
