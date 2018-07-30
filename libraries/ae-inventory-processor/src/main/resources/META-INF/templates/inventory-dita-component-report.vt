@@ -4,7 +4,8 @@
     <title>Third-Party Components</title>
     <body>
         <p>
-
+#set($components=$inventory.evaluateComponents())
+#if(!$components.isEmpty())
             <table otherprops="wide" id="table_third-party-components">
                 <title>Third-Party Components</title>
                 <tgroup cols="3">
@@ -22,7 +23,7 @@
 
                     <tbody>
 
-#foreach($component in $inventory.evaluateComponents())
+#foreach($component in $components)
 
     #set($group=$inventory.evaluateComponent($component, true))
 
@@ -50,6 +51,7 @@
                     </tbody>
                 </tgroup>
             </table>
+#end
         </p>
     </body>
 

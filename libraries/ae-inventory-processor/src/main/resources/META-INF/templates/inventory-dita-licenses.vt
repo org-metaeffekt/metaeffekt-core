@@ -18,7 +18,7 @@
             <table otherprops="wide">
                 <title>Components under $license.trim()</title>
                 <tgroup cols="2">
-                    <colspec colname="COLSPEC0" colnum="1" colwidth="80*" />
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
                     <thead>
                         <row>
@@ -33,7 +33,7 @@
                                  $artifactLicenseData.componentName
                              </entry>
                             <entry>
-                                <codeph>$artifactLicenseData.componentVersion</codeph>
+                                <codeph>#if($artifactLicenseData.componentVersion)$artifactLicenseData.componentVersion.trim().replaceAll("\.", ".&#8203;")#end</codeph>
                             </entry>
                         </row>
 #end

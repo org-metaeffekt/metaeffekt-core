@@ -35,11 +35,21 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(org.metaeffekt.core.inventory.processor.ValidateInventoryProcessor.class);
 
+    /**
+     * In this folder the license files are expected. The folder needs only to contain the licenses beloning to the
+     * artifacts in the inventory that is validated. In this folder missing structures are managed as proposals. This
+     * means that empty folders are created if a license or component-related information is expected. Folders are
+     * removed if they are not required and only if they contain no further information (empty folders).
+     */
     public static final String LICENSES_DIR = "licenses.path";
 
     /**
      * Allows that the folder creations activities are performed in a different path that the path the license
-     * information is read from.
+     * information is read from. Validation is performed against both LICENSES_DIR and LICENSES_TARGET_DIR.
+     *
+     * This aspect supports the inheritance of inventories. While the target folder is meant to contain the complete
+     * set of licenses resulting from the inheritance, the LICENSES_DIR is only expected to provide content of the
+     * entries from the inventory (and not it's parent).
      */
     public static final String LICENSES_TARGET_DIR = "licenses.target.path";
     public static final String CREATE_LICENSE_FOLDERS = "create.license.folders";
@@ -91,7 +101,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     missingFields = true;
                 }
 
-                if (StringUtils.isBlank(license)) {
+                if (StringUtils.isBlank(componentName)) {
                     LOG.error(format("Artifact '%s' without component. Proposal: add component / group name.", artifact.getId()));
                     missingFields = true;
                 }
@@ -231,7 +241,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                 String licenseComponent = file + "/" + component;
                 if (!componentsFromInventory.contains(licenseComponent)) {
                     if (manageComponentFolders && isEmptyFolder(baseDir, licenseComponent)) {
-                        removeFolder(targetDir, licenseComponent);
+                        removeFolder(baseDir, licenseComponent);
                     } else {
                         LOG.error(format("Component folder '%s' does not match any artifact (not banned, not internal) in the inventory. Proposal: remove the folder.", licenseComponent));
                         error = true;
@@ -244,7 +254,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         for (String file : licenseDirectories) {
             if (!licenseFoldersFromInventory.contains(file)) {
                 if (manageLicenseFolders && isEmptyFolder(targetDir, file)) {
-                    removeFolder(targetDir, file);
+                    removeFolder(baseDir, file);
                     licenseFoldersFromDirectory.remove(file);
                 } else {
                     LOG.error(format("License folder '%s' does not match any artifact license / effective license in inventory. Proposal: remove license folder.", file));
@@ -258,7 +268,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             if (!licenseFoldersFromDirectory.contains(file)) {
                 if (manageLicenseFolders) {
                     if (!new File(baseDir, file).exists()) {
-                        createFolder(targetDir, file);
+                        createFolder(baseDir, file);
                     }
                 } else {
                     LOG.error("License folder missing: " + file);
@@ -269,7 +279,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         // check whether the license folder contains any files
         for (String file : licenseFoldersFromInventory) {
-            if (isEmptyFolder(baseDir, file)) {
+            if (isEmptyFolder(baseDir, file) && isEmptyFolder(targetDir, file)) {
                 LOG.error(format("License folder '%s' does not contain any license or notice files. Proposal: add license and/or notice to the folder.", file));
                 error = true;
             }
@@ -278,7 +288,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         // create the appropriate folders for licenses
         for (String licenseFolder : licenseFoldersFromInventory) {
             if (manageLicenseFolders && !new File(baseDir, licenseFolder).exists()) {
-                File folder = new File(new File(targetDir), licenseFolder);
+                File folder = new File(new File(baseDir), licenseFolder);
                 folder.mkdirs();
             }
         }
@@ -288,7 +298,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             final File componentFolder = new File(new File(baseDir), component);
             if (!componentFolder.exists()) {
                 if (manageComponentFolders) {
-                    createFolder(targetDir, component);
+                    createFolder(baseDir, component);
                 } else {
                     LOG.error(format("Component folder '%s' does not exist. Proposal: add component specific folder.", component));
                     error = true;
@@ -298,7 +308,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         // check whether component folder is empty
         for (String component : componentsFromInventory) {
-            if (isEmptyFolder(baseDir, component)) {
+            if (isEmptyFolder(baseDir, component) && isEmptyFolder(targetDir, component )) {
                 LOG.error(format("Component folder '%s' does not contain any license or notice files. Proposal: add component specific license and/or notice to the folder.", component));
                 error = true;
             }
@@ -400,16 +410,16 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         }
     }
 
-    private void createFolder(String targetDir, String file) {
-        final File componentFolder = new File(new File(targetDir), file);
+    private void createFolder(String folder, String file) {
+        final File componentFolder = new File(new File(folder), file);
         componentFolder.mkdirs();
     }
 
-    private void removeFolder(String targetDir, String file) {
-        final File folder = new File(new File(targetDir), file);
+    private void removeFolder(String folder, String file) {
+        final File dir = new File(new File(folder), file);
 
         Delete delete = new Delete();
-        delete.setDir(folder);
+        delete.setDir(dir);
         delete.execute();
     }
 
@@ -484,4 +494,5 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         }
         return new String[0];
     }
+
 }
