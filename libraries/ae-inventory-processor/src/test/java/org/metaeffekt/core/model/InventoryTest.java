@@ -112,6 +112,6 @@ public class InventoryTest {
 
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
         Assert.assertTrue(matchedArtifact != null);
-        Assert.assertTrue(matchedArtifact.getVersion().equalsIgnoreCase("1.0.0."));
+        Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
     }
 }
