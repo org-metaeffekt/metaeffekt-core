@@ -642,9 +642,11 @@ public class InventoryReport {
                     continue;
                 }
 
-                if (artifact.getVersion() != null && artifact.getVersion().contains(ASTERISK)) {
-                    throw new IllegalStateException(String.format("The reported artifact has a wildcard version: %s/%s", artifact.getId(), artifact.getVersion()));
-                }
+                // FIXME: this check is only valid, when the input inventory only contains scan results; not applicable
+                //  for BOMs in the workbench or with an unresolved inventory as input
+                // if (artifact.getVersion() != null && artifact.getVersion().contains(ASTERISK)) {
+                //    throw new IllegalStateException(String.format("The reported artifact has a wildcard version: %s/%s", artifact.getId(), artifact.getVersion()));
+                // }
 
                 String sourceLicense = artifact.getLicense();
 

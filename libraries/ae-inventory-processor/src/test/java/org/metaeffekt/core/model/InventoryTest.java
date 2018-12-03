@@ -114,4 +114,24 @@ public class InventoryTest {
         Assert.assertTrue(matchedArtifact != null);
         Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
     }
+
+    @Test
+    public void testWildcardMatch_AsteriskAsPrefix() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId(ASTERISK + "test.jar");
+        artifact.setVersion(ASTERISK);
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setVersion("1.0.0");
+        candidate.setId("1.0.0.test.jar");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact != null);
+        Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
+    }
+
 }
