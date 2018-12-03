@@ -88,7 +88,7 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     /**
      * Sources for selected artifacts are downloaded to this folder as part of the distribution annex.
      */
-    @Parameter(defaultValue = "${project.build.directory}/software-distribution-annex/sources")
+    @Parameter(defaultValue = "${project.build.directory}/annex/sources")
     private File softwareDistributionAnnexSourcePath;
 
     /**
