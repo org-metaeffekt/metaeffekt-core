@@ -23,11 +23,16 @@ import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
 public class InventoryScanReport extends InventoryReport {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InventoryScanReport.class);
 
     private File inputDirectory;
 
@@ -147,44 +152,55 @@ public class InventoryScanReport extends InventoryReport {
 
         final String extension = FilenameUtils.getExtension(archive.getName()).toLowerCase();
 
-
         // try unzip
-        if (zipExtensions.contains(extension)) {
-            Expand expandTask = new Expand();
-            expandTask.setProject(project);
-            File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
-            targetFolder.mkdirs();
-            expandTask.setDest(targetFolder);
-            expandTask.setSrc(archive);
-            expandTask.execute();
-            deleteArchive(archive);
-            return targetFolder;
+        try {
+            if (zipExtensions.contains(extension)) {
+                Expand expandTask = new Expand();
+                expandTask.setProject(project);
+                File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
+                targetFolder.mkdirs();
+                expandTask.setDest(targetFolder);
+                expandTask.setSrc(archive);
+                expandTask.execute();
+                deleteArchive(archive);
+                return targetFolder;
+            }
+        } catch (Exception e) {
+            LOG.error("Cannot unzip " + archive.getAbsolutePath());
         }
 
         // try gunzip
-        if (gzipExtensions.contains(extension)) {
-            GUnzip expandTask = new GUnzip();
-            expandTask.setProject(project);
-            File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
-            targetFolder.mkdirs();
-            expandTask.setDest(targetFolder);
-            expandTask.setSrc(archive);
-            expandTask.execute();
-            deleteArchive(archive);
-            return targetFolder;
+        try {
+            if (gzipExtensions.contains(extension)) {
+                GUnzip expandTask = new GUnzip();
+                expandTask.setProject(project);
+                File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
+                targetFolder.mkdirs();
+                expandTask.setDest(targetFolder);
+                expandTask.setSrc(archive);
+                expandTask.execute();
+                deleteArchive(archive);
+                return targetFolder;
+            }
+        } catch (Exception e) {
+            LOG.error("Cannot gunzip " + archive.getAbsolutePath());
         }
 
         // try untar
-        if (tarExtensions.contains(extension)) {
-            Untar expandTask = new Untar();
-            expandTask.setProject(project);
-            File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
-            targetFolder.mkdirs();
-            expandTask.setDest(targetFolder);
-            expandTask.setSrc(archive);
-            expandTask.execute();
-            deleteArchive(archive);
-            return targetFolder;
+        try  {
+            if (tarExtensions.contains(extension)) {
+                Untar expandTask = new Untar();
+                expandTask.setProject(project);
+                File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
+                targetFolder.mkdirs();
+                expandTask.setDest(targetFolder);
+                expandTask.setSrc(archive);
+                expandTask.execute();
+                deleteArchive(archive);
+                return targetFolder;
+            }
+        } catch (Exception e) {
+            LOG.error("Cannot untar " + archive.getAbsolutePath());
         }
 
         return null;

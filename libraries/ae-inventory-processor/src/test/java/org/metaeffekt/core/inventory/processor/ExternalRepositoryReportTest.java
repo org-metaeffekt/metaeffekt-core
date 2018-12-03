@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
+
 @Ignore
 public class ExternalRepositoryReportTest {
 
@@ -53,7 +55,7 @@ public class ExternalRepositoryReportTest {
         final List<Artifact> artifacts = new ArrayList<>(inventory.getArtifacts());
         inventory.getArtifacts().removeAll(artifacts);
         for (Artifact artifact: artifacts) {
-            if (!artifact.getId().contains("*")) {
+            if (!artifact.getId().contains(ASTERISK)) {
                 final Artifact candidate = new Artifact();
                 candidate.setId(artifact.getId());
                 candidate.deriveArtifactId();

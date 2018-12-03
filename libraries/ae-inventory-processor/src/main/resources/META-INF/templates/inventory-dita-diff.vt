@@ -21,12 +21,12 @@
                 <tbody>            
 #foreach($artifact in $inventory.getArtifacts())#if($artifact.getGroupId() || $artifact.getArtifactId())        
                     <row>
-                        <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>#end
+                        <entry>#if($artifact.getGroupId())<lines><i>$report.xmlEscape($artifact.getGroupId()) / $report.xmlEscape($artifact.getArtifactId())</i>#end
 
-<codeph>#if($artifact.getId())$artifact.getId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph>#if($artifact.getGroupId())</lines>#end
+<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
                         </entry>
-                        <entry><codeph>#if($artifact.getVersion())$artifact.getVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
-                        <entry><codeph>#if($artifact.getPreviousVersion())$artifact.getPreviousVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
+                        <entry><codeph>$report.xmlEscape($artifact.getVersion())</codeph></entry>
+                        <entry><codeph>$report.xmlEscape($artifact.getPreviousVersion())</codeph></entry>
                     </row>
 #end#end
                 </tbody>

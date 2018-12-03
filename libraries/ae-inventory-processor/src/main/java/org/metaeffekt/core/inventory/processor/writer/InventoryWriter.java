@@ -28,6 +28,7 @@ import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.*;
 
 public class InventoryWriter {
 
@@ -109,6 +110,21 @@ public class InventoryWriter {
         myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Verified"));
 
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (Artifact artifact : inventory.getArtifacts()) {
+            attributes.addAll(artifact.getAttributes());
+        }
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        for (String key : ordered) {
+            myCell = myRow.createCell(cellNum++);
+            myCell.setCellStyle(headerStyle);
+            myCell.setCellValue(new HSSFRichTextString(key));
+        }
+
         int numCol = cellNum;
 
         for (Artifact artifact : inventory.getArtifacts()) {
@@ -147,6 +163,11 @@ public class InventoryWriter {
             myCell.setCellValue(new HSSFRichTextString(projects));
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.isVerified() ? "X" : ""));
+
+            for (String key : ordered) {
+                myCell = myRow.createCell(cellNum++);
+                myCell.setCellValue(new HSSFRichTextString(artifact.get(key)));
+            }
         }
 
         // adjust with of cells

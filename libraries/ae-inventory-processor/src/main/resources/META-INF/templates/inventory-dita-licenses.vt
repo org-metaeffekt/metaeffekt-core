@@ -33,7 +33,7 @@
                                  $artifactLicenseData.componentName
                              </entry>
                             <entry>
-                                <codeph>#if($artifactLicenseData.componentVersion)$artifactLicenseData.componentVersion.trim().replaceAll("\.", ".&#8203;")#end</codeph>
+                                <codeph>$report.xmlEscapeGAV($artifactLicenseData.componentVersion)</codeph>
                             </entry>
                         </row>
 #end

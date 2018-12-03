@@ -23,9 +23,9 @@
                     <row>
                         <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>#end
 
-<codeph>#if($artifact.getId())$artifact.getId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph>#if($artifact.getGroupId())</lines>#end
+<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
                         </entry>
-                        <entry><codeph>#if($artifact.getVersion())$artifact.getVersion().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph></entry>
+                        <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
                         
                         #set($license=$artifact.getLicense())
                         #if($license)

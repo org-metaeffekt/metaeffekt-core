@@ -57,4 +57,6 @@ public abstract class AbstractInventoryProcessor implements InventoryProcessor {
                 getProperty(FAIL_ON_ERROR, Boolean.TRUE.toString()));
     }
 
+
+
 }

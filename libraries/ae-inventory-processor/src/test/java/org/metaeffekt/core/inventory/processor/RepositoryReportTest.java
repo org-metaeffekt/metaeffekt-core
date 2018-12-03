@@ -16,6 +16,8 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
@@ -131,6 +133,19 @@ public class RepositoryReportTest {
 
         artifactLicenseData = report.getLastProjectInventory().evaluateNotices("G License (with sub-components)");
         assertTrue(artifactLicenseData.isEmpty());
+    }
+
+    @Test
+    public void testStringEscaping() {
+
+        InventoryReport inventoryReport = new InventoryReport();
+
+        Assert.assertEquals("this&amp;that.&#8203;those-&#8203;these_&#8203;which",
+                inventoryReport.xmlEscapeArtifactId("this&that.those-these_which"));
+
+
+        Assert.assertEquals("&nbsp;", inventoryReport.xmlEscapeArtifactId(null));
+
     }
 
 }

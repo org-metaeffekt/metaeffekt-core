@@ -19,6 +19,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,9 +36,6 @@ public class Inventory {
     public static final String CLASSIFICATION_CURRENT = "current";
 
     private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
-    private static final String STRING_EMPTY = "";
-    private static final String ASTERISK = "*";
-    private static final char DELIMITER_COLON = ':';
 
     private List<Artifact> artifacts = new ArrayList<Artifact>();
 
@@ -206,17 +204,17 @@ public class Inventory {
 
         // check the ids match (allow wildcard)
         if (ASTERISK.equals(candidate.getVersion())) {
-            final int index = candidate.getId().indexOf(ASTERISK);
+            // check the wildcard is really used in the candidate id
+            final int index = candidateId.indexOf(ASTERISK);
             if (index != -1) {
-                String prefix = candidate.getId().substring(0, index - 1);
-                String suffix = candidate.getId().substring(index + 1);
+                String prefix = candidateId.substring(0, index);
+                String suffix = candidateId.substring(index + 1);
                 if (id.startsWith(prefix) && id.endsWith(suffix)) {
                     return true;
                 }
             }
         }
 
-        // FIXME: id matching must be supported by checksum
         return false;
     }
 

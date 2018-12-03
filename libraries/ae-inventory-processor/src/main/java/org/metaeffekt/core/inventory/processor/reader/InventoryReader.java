@@ -34,14 +34,19 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected void readHeader(HSSFRow row) {
         for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
-            artifactColumnMap.put(i, row.getCell(i).getStringCellValue());
+            HSSFCell cell = row.getCell(i);
+            String id = cell != null ? cell.getStringCellValue() : "Column " + (i + 1);
+            artifactColumnMap.put(i, id);
         }
     }
 
     @Override
     protected void readLicenseMetaDataHeader(HSSFRow row) {
         for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
-            columnMap.put(i, row.getCell(i).getStringCellValue());
+            HSSFCell cell = row.getCell(i);
+            if (cell != null) {
+                columnMap.put(i, cell.getStringCellValue());
+            }
         }
     }
 
@@ -58,45 +63,63 @@ public class InventoryReader extends AbstractXlsInventoryReader {
 
             if (columnName.equalsIgnoreCase("id")) {
                 artifact.setId(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("checksum")) {
                 artifact.setChecksum(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("component") || columnName.equalsIgnoreCase("component / group")) {
                 artifact.setComponent(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("group id")) {
                 artifact.setGroupId(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("version")) {
                 artifact.setVersion(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("license")) {
                 artifact.setLicense(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("latest version")) {
                 artifact.setLatestAvailableVersion(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("security relevance")) {
                 artifact.setSecurityRelevant("X".equalsIgnoreCase(value));
+                continue;
             }
             if (columnName.equalsIgnoreCase("security category")) {
                 artifact.setSecurityCategory(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("vulnerability")) {
                 artifact.setVulnerability(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("classification")) {
                 artifact.setClassification(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("comment")) {
                 artifact.setComment(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("analysis")) {
                 artifact.setAnalysis(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("url")) {
                 artifact.setUrl(value);
+                continue;
+            }
+            if (columnName.equalsIgnoreCase("verified")) {
+                artifact.setVerified("X".equalsIgnoreCase(value));
+                continue;
             }
             if (columnName.equalsIgnoreCase("projects")) {
                 String projectString = value;
@@ -107,6 +130,12 @@ public class InventoryReader extends AbstractXlsInventoryReader {
                         projects.add(split[j].trim());
                     }
                 }
+                continue;
+            }
+
+            // if the column in not known we store the content in the key/value store
+            if (value != null) {
+                artifact.set(columnName, value.trim());
             }
         }
 

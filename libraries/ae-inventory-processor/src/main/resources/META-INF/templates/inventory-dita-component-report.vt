@@ -30,10 +30,10 @@
     #if($inventory.hasConcreteArtifacts($group))
 
                 <row>
-                    <entry>#if($component.getGroup())$component.getGroup().trim()#else&nbsp;#end</entry>
+                    <entry>$report.xmlEscapeComponentName($component.getGroup())</entry>
 
                     <entry>
-                        <lines>#foreach($artifact in $group)#if($artifact.getId())<codeph>$artifact.getId().trim().replaceAll("\.", ".&#8203;")</codeph>
+                        <lines>#foreach($artifact in $group)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
 #end#end</lines>
                     </entry>
 

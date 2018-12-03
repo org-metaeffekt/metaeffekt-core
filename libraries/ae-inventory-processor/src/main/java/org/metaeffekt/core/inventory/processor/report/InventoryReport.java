@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -38,6 +39,8 @@ import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.util.*;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
 public class InventoryReport {
 
@@ -65,7 +68,6 @@ public class InventoryReport {
     private static final String MAVEN_POM_TEMPLATE =  "/META-INF/templates/inventory-pom-xml.vt";
 
     private static final Map<String, File> STATIC_FILE_MAP = Collections.synchronizedMap(new HashMap<>());
-    public static final String ASTERISK = "*";
 
     private String globalInventoryPath;
 
@@ -233,6 +235,7 @@ public class InventoryReport {
             String classifier = "";
             String comment = "";
 
+            String artifactFileId = artifact.getId();
             if (foundArtifact != null) {
                 comment = foundArtifact.getComment();
 
@@ -341,7 +344,7 @@ public class InventoryReport {
                         foundArtifact.setGroupId(similar.getGroupId());
 
                         if (!StringUtils.hasText(artifact.getVersion())) {
-                            String version = artifact.getId();
+                            String version = artifactFileId;
                             version = version.replace(similar.getArtifactId() + "-", "");
                             if (StringUtils.hasText(similar.getClassifier())) {
                                 version = version.replace("-" + similar.getClassifier() + ".", ".");
@@ -373,16 +376,23 @@ public class InventoryReport {
                 if (foundArtifact != null) {
                     // ids may vary; we try to preserve the id here
                     Artifact copy = new Artifact(foundArtifact);
-                    copy.setId(artifact.getId());
+                    copy.setId(artifactFileId);
 
                     if (ASTERISK.equals(foundArtifact.getVersion())) {
                         copy.setVerified(false);
 
-                        // in this case we also need to managed the version
-                        int index = foundArtifact.getId().indexOf("*");
-                        String version = artifact.getId().substring(index,
-                            artifact.getId().length() - foundArtifact.getId().length() + index + 1);
-                        copy.setVersion(version);
+                        // in this case we also need to manage the version
+                        final String id = foundArtifact.getId();
+                        try {
+                            int index = id.indexOf(ASTERISK);
+                            String prefix = id.substring(0, index);
+                            String suffix = id.substring(index + 1);
+                            String version = artifactFileId.substring(prefix.length(),
+                                    artifactFileId.length() - suffix.length());
+                            copy.setVersion(version);
+                        } catch (Exception e) {
+                            LOG.error("Cannot extract version from artifact {}.", id);
+                        }
                     } else {
                         copy.setVerified(true);
                     }
@@ -632,6 +642,10 @@ public class InventoryReport {
                     continue;
                 }
 
+                if (artifact.getVersion() != null && artifact.getVersion().contains(ASTERISK)) {
+                    throw new IllegalStateException(String.format("The reported artifact has a wildcard version: %s/%s", artifact.getId(), artifact.getVersion()));
+                }
+
                 String sourceLicense = artifact.getLicense();
 
                 // without source license, no license meta data, no license texts / notices
@@ -639,12 +653,12 @@ public class InventoryReport {
                     continue;
                 }
 
-                // copy source license folder
+                // copy source license folder (license-name-specific only)
                 String licenseFolderName = LicenseMetaData.deriveLicenseFolderName(sourceLicense);
                 missingLicenseFile |= checkAndCopyLicenseFolder(licenseFolderName, licenseFolderName,
                     false, reportedLicenseFolders);
 
-                // try to resolve license meta data if available
+                // try to resolve component license meta data if available
                 final LicenseMetaData matchingLicenseMetaData = projectInventory.
                         findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, artifact.getVersion());
 
@@ -763,7 +777,7 @@ public class InventoryReport {
         copy.setProject(new Project());
         FileSet fileSet = new FileSet();
         fileSet.setDir(new File(licenseSourceDir, licenseFolder));
-        fileSet.setIncludes("*");
+        fileSet.setIncludes(ASTERISK);
         copy.setIncludeEmptyDirs(false);
         copy.setFailOnError(true);
         copy.setOverwrite(true);
@@ -795,6 +809,8 @@ public class InventoryReport {
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", projectInventory.getFilteredInventory());
         context.put("report", this);
+        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
+
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString());
@@ -1039,6 +1055,32 @@ public class InventoryReport {
 
     public void setRepositoryExcludes(String[] localRepositoryExcludes) {
         this.repositoryExcludes = localRepositoryExcludes;
+    }
+
+    public String xmlEscapeArtifactId(String artifactFileId) {
+        return xmlEscapeName(artifactFileId);
+    }
+
+    public String xmlEscapeComponentName(String componentName) {
+        return xmlEscapeName(componentName);
+    }
+
+    public String xmlEscapeGAV(String gavElement) {
+        return xmlEscapeName(gavElement);
+    }
+
+    private String xmlEscapeName(String artifactFileId) {
+        if (artifactFileId == null) return "&nbsp;";
+
+        // espace the remainder
+        String escaped = StringEscapeUtils.escapeXml(artifactFileId.trim());
+
+        // support line wrapping
+        escaped = escaped.replaceAll("\\.", ".&#8203;");
+        escaped = escaped.replaceAll("\\-", "-&#8203;");
+        escaped = escaped.replaceAll("\\_", "_&#8203;");
+
+        return escaped;
     }
 
 

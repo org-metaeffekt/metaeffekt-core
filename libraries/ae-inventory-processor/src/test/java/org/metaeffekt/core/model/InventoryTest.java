@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
+import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
+
 public class InventoryTest {
     @Test
     public void testFindCurrent() {
@@ -92,5 +94,24 @@ public class InventoryTest {
         // while the artifacts are equivalent with respect to GAV details they remain different by id.
         Assert.assertNull(inventory.findArtifact("test-1.0.0.jar"));
         Assert.assertNotNull(inventory.findArtifact("test_1.0.0.jar"));
+    }
+
+    @Test
+    public void testWildcardMatch() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test-" + ASTERISK + ".jar");
+        artifact.setVersion(ASTERISK);
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setVersion("1.0.0");
+        candidate.setId("test-1.0.0.jar");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact != null);
+        Assert.assertTrue(matchedArtifact.getVersion().equalsIgnoreCase("1.0.0."));
     }
 }

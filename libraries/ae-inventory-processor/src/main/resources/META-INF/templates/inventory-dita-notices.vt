@@ -14,7 +14,7 @@
                 <section>
                     <title>$artifactLicenseData.componentName - <codeph>$artifactLicenseData.componentVersion</codeph></title>
                     <p>
-                        <table otherprops="wide" id="table_license_notice_$artifactLicenseData.deriveId()">
+                        <table otherprops="wide">
                             <tgroup cols="2">
                                 <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
                                 <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
@@ -29,9 +29,9 @@
     <row>
         <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>#end
 
-<codeph>#if($artifact.getId())$artifact.getId().trim().replaceAll("\.", ".&#8203;")#else&nbsp;#end</codeph>#if($artifact.getGroupId())</lines>#end
+<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
         </entry>
-        <entry><codeph>#if($artifact.getVersion())$artifact.getVersion().trim().replaceAll("\.", ".&#8203;")#end</codeph></entry>
+        <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
         #set($license=$artifact.getLicense())
     </row>
 #end

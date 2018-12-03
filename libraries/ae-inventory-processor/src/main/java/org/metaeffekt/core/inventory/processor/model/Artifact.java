@@ -17,9 +17,7 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Artifact {
 
@@ -27,6 +25,9 @@ public class Artifact {
     private static final char DELIMITER_DOT = '.';
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
+
+    // map to store key values pairs.
+    private Map<String, String> attributeMap = new HashMap<>();
 
     // component of the artifact (uncontrolled)
     private String component;
@@ -603,6 +604,33 @@ public class Artifact {
     public boolean isValid() {
         // an artifact requires at least an id or component
         return StringUtils.hasText(getId()) || StringUtils.hasText(getComponent());
+    }
+
+    public String get(String key) {
+        return get(key, null);
+    }
+
+    public String get(String key, String defaultValue) {
+        if (key == null) return null;
+        String currentValue = attributeMap.get(key);
+        return (currentValue != null) ? currentValue : defaultValue;
+    }
+
+    public void set(String key, String value) {
+        attributeMap.put(key, value);
+    }
+
+    public void append(String key, String value, String delimiter) {
+        String currentValue = get(key);
+        if (currentValue == null) {
+            set(key, value);
+        } else {
+            set(key, currentValue + delimiter + value);
+        }
+    }
+
+    public Set<String> getAttributes() {
+        return attributeMap.keySet();
     }
 
 }

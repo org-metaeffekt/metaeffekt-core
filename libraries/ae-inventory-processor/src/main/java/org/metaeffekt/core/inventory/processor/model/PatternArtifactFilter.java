@@ -18,6 +18,8 @@ package org.metaeffekt.core.inventory.processor.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
+
 
 public class PatternArtifactFilter implements ArtifactFilter {
 
@@ -69,7 +71,7 @@ public class PatternArtifactFilter implements ArtifactFilter {
 
         for (int i = 0; i < patternElements.length; i++) {
             String pe = patternElements[i];
-            if (!"*".equalsIgnoreCase(pe) && dependencyElements[i] != null) {
+            if (!ASTERISK.equalsIgnoreCase(pe) && dependencyElements[i] != null) {
                 // indication or a regular expression
                 if (pe.startsWith("^")) {
                     if (!dependencyElements[i].matches(pe)) {

@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
 
+import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
+
 /**
  * {@link LicenseMetaData} contains relevant meta data to evaluate notices with regards to the used licenses in a
  * component.
@@ -149,7 +151,11 @@ public class LicenseMetaData {
     }
 
     public String deriveQualifier() {
-        return new StringBuilder(getComponent()).append("-").append(getLicense()).append("-").append(getVersion()).toString();
+        StringBuilder sb = new StringBuilder(getComponent()).append("-").append(getLicense());
+        if (!ASTERISK.equalsIgnoreCase(getVersion().trim())) {
+            sb.append("-").append(getVersion());
+        }
+        return sb.toString();
     }
 
     public String deriveLicenseInEffect() {
