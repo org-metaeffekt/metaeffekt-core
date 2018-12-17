@@ -16,7 +16,6 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.project.MavenProject;
-
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
 
@@ -35,5 +34,22 @@ public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProject
     public MavenProject getProject() {
         return project;
     }
+
+    protected <T> T createInstanceOf(String className, Class<T> type) {
+        if (className == null) return null;
+        try {
+            Class<?> instanceClass = Class.forName(className);
+            return (T) instanceClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Cannot access class: " + className, e);
+        } catch (InstantiationException e) {
+            throw new IllegalStateException("Cannot instantiate class: " + className, e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException("Cannot instantiate class: " + className, e);
+        } catch (ClassCastException e) {
+            throw new IllegalStateException("Instantiated class not of expected type " + type + ", : " + className, e);
+        }
+    }
+
 
 }

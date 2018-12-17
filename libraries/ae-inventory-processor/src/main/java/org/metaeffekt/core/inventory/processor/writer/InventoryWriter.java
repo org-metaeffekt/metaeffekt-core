@@ -51,7 +51,6 @@ public class InventoryWriter {
     private void writeArtifacts(Inventory inventory, HSSFWorkbook myWorkBook) {
         HSSFSheet mySheet = myWorkBook.createSheet("Artifact Inventory");
         mySheet.createFreezePane(0, 1);
-        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, 14));
         mySheet.setDefaultColumnWidth(20);
 
         HSSFRow myRow = null;
@@ -178,6 +177,7 @@ public class InventoryWriter {
             }
         }
 
+        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
     }
 
     private HSSFCellStyle createHeaderStyle(HSSFWorkbook myWorkBook) {

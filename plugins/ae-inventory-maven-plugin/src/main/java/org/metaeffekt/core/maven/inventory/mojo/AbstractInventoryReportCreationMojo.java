@@ -15,18 +15,17 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import java.io.File;
-import java.util.List;
-
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
+
+import java.io.File;
+import java.util.List;
 
 /**
  * Abstract mojo. Base class for reporting mojos.

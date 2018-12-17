@@ -31,22 +31,27 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
+import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Mojo dedicated to automated downloading sources. For each artifact in the provided inventory the license meta data
+ * Mojo dedicated to automated aggregation of sources. For each artifact in the provided inventory the license meta data
  * is evaluated. Using the source category of the license meta data it is determined whether and whereto download the
  * source artifacts.
  */
-@Mojo( name = "download-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES )
-public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
+@Mojo( name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES )
+public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
     /**
      * The ArtifactResolver to be used.
@@ -67,6 +72,12 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     private java.util.List remoteRepositories;
 
     /**
+     * A list of repositories, where the source archives for the included artifacts can be loaded from.
+     */
+    @Parameter(required = true)
+    private List<SourceRepository> sourceRepositories;
+
+    /**
      * The Maven project.
      */
     @Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -77,6 +88,9 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
      */
     @Parameter(defaultValue = "false")
     private boolean skip;
+
+    @Parameter(defaultValue = "false")
+    private boolean includeAllSources;
 
     /**
      * The inventory path points to the filtered artifact inventory. Usually this is the output from a previous scan
@@ -130,30 +144,41 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
                 throw new MojoExecutionException("Parameter 'inventoryPath' does not point to valid inventory file: " + inventoryPath);
             }
 
+            // materialize configuration
+            List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
+            for (SourceRepository sourceRepository : sourceRepositories) {
+                sourceRepository.dumpConfig(getLog(), "");
+                delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate());
+            }
+
             try {
+                getLog().info("Loading inventory: " + inventoryPath);
                 Inventory inventory = new InventoryReader().readInventory(inventoryPath);
 
                 // iterate the license meta data and evaluate source category; we assume the license meta data was
                 // filtered.
                 for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
                     LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
-                    if (licenseMetaData != null) {
-                        if (StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
-                            String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
-                            switch (sourceCategory) {
-                                case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
-                                case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
-                                    downloadArtifact(artifact, retainedSourcesSourcePath);
-                                    break;
-                                case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
-                                case LicenseMetaData.SOURCE_CATEGORY_ANNEX:                              
-                                    downloadArtifact(artifact, softwareDistributionAnnexSourcePath);
-                                    break;
-                                default:
-                                    throw new MojoExecutionException(
-                                            String.format("Source category of license meta data for %s unknown: '%s'",
-                                                    licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
-                            }
+                    if (licenseMetaData != null && StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
+                        String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
+                        switch (sourceCategory) {
+                            case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
+                            case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
+                                downloadArtifact(artifact, inventory, retainedSourcesSourcePath, delegateArtifactSourceRepositories);
+                                break;
+                            case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
+                            case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
+                                downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories);
+                                break;
+                            default:
+                                throw new MojoExecutionException(
+                                        String.format("Source category of license meta data for %s unknown: '%s'",
+                                                licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
+                        }
+                    } else {
+                        // if license meta data or no source category annotation is given, we evaluate includeAllSources
+                        if (includeAllSources) {
+                            downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories);
                         }
                     }
                 }
@@ -165,15 +190,94 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
         }
     }
 
-    private void downloadArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact, File targetPath) throws IOException, MojoFailureException {
-        org.apache.maven.artifact.Artifact sourceArtifact = resolveSourceArtifact(artifact);
-        if (sourceArtifact != null) {
-            FileUtils.copyFile(sourceArtifact.getFile(), new File(targetPath, sourceArtifact.getFile().getName()));
+
+
+    private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath, List<ArtifactSourceRepository> sourceRepositories) throws IOException, MojoFailureException {
+        String component = artifact.getComponent();
+        String artifactVersion = artifact.getVersion();
+
+        LicenseMetaData lmd = inventory.findMatchingLicenseMetaData(artifact);
+
+        String associatedLicense = artifact.getLicense();
+        String effectiveLicense = associatedLicense;
+        if (lmd != null && lmd.deriveLicenseInEffect() != null) {
+            effectiveLicense = lmd.deriveLicenseInEffect();
         }
+
+        ArtifactSourceRepository matchingSourceRepository = null;
+        for (ArtifactSourceRepository sourceRepository : sourceRepositories) {
+            ArtifactPattern artifactGroup = sourceRepository.findMatchingArtifactGroup(artifact.getId(), component, artifactVersion, effectiveLicense);
+            if (artifactGroup != null) {
+                matchingSourceRepository = sourceRepository;
+                break;
+            }
+        }
+
+        List<File> files = new ArrayList<>();
+
+        if (matchingSourceRepository != null) {
+            if (matchingSourceRepository.getSourceArchiveResolver() == null) {
+                if (!matchingSourceRepository.isIgnoreMatches()) {
+                    getLog().warn(String.format("Skipped resolving sources for artifact '%s'.", createArtifactRepresentation(artifact, inventory)));
+                }
+                return;
+            }
+            files.addAll(matchingSourceRepository.resolveSourceArchive(artifact, targetPath));
+            if (files.isEmpty()) {
+                logOrFailOn(String.format("No sources resolved for artifact '%s', while matching source repository was: '%s'",
+                    createArtifactRepresentation(artifact, inventory), matchingSourceRepository.getId()));
+            } else {
+                for (File file : files) {
+                    // copy file to target folder if necessary
+                    File destFile = new File(targetPath, matchingSourceRepository.getTargetFolder() + "/" + file.getName());
+                    if (!destFile.exists()) {
+                        FileUtils.copyFile(file, destFile);
+                    }
+                }
+            }
+        } else {
+            logOrFailOn(String.format("No sources resolved for artifact '%s', no matching source repository identified.",
+                createArtifactRepresentation(artifact, inventory)));
+        }
+
+        if (files.isEmpty()) {
+            logOrFailOn(String.format("Cannot resolve sources for '%s'.", createArtifactRepresentation(artifact, inventory)));
+        }
+
+    }
+
+    private Object createArtifactRepresentation(Artifact artifact, Inventory inventory) {
+        StringBuilder sb = new StringBuilder();
+        if (artifact.getId() != null) {
+            sb.append(artifact.getId());
+        }
+        sb.append(':');
+        if (artifact.getComponent() != null) {
+            sb.append(artifact.getComponent());
+        }
+        sb.append(':');
+        if (artifact.getVersion() != null) {
+            sb.append(artifact.getVersion());
+        }
+        sb.append(':');
+        if (inventory != null) {
+            LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
+            if (licenseMetaData != null) {
+                if (licenseMetaData.deriveLicenseInEffect() != null) {
+                    sb.append(licenseMetaData.deriveLicenseInEffect());
+                }
+            } else {
+                if (artifact.getLicense() != null) {
+                    sb.append(artifact.getLicense());
+                }
+            }
+        }
+        return sb;
     }
 
     private void logOrFailOn(String message) throws MojoFailureException {
         if (failOnMissingSources) {
+            getLog().error(message);
             throw new MojoFailureException(message);
         } else {
             getLog().warn(message);
@@ -225,13 +329,22 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             if (result != null && result.isSuccess()) {
                 return result.getArtifacts().iterator().next();
             } else {
-                logOrFailOn(String.format("Cannot resolve sources for [%s] with source parameters [%s].",
-                        artifact.createStringRepresentation(), sourceCoordinates.toString()));
                 return null;
-
             }
         } catch (InvalidVersionSpecificationException e) {
-            throw new MojoFailureException(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private void logMissingSource(String message, Exception e) {
+        if (failOnMissingSources) {
+            if (e != null) {
+                getLog().error(message, e);
+            } else {
+                getLog().error(message);
+            }
+        } else {
+            getLog().error(message);
         }
     }
 

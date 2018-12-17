@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import java.io.File;
-
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
+
+import java.io.File;
 
 /**
  * Creates a report by scanning a folder in the file system.

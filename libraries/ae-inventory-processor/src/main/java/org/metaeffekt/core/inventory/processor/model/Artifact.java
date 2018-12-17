@@ -617,7 +617,11 @@ public class Artifact {
     }
 
     public void set(String key, String value) {
-        attributeMap.put(key, value);
+        if (value == null) {
+            attributeMap.remove(key);
+        } else {
+            attributeMap.put(key, value);
+        }
     }
 
     public void append(String key, String value, String delimiter) {

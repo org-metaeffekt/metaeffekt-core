@@ -15,19 +15,18 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
+import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
+import org.metaeffekt.core.inventory.processor.InventoryProcessor;
+import org.metaeffekt.core.inventory.processor.InventoryUpdate;
+import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
-import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
-import org.metaeffekt.core.inventory.processor.InventoryProcessor;
-import org.metaeffekt.core.inventory.processor.InventoryUpdate;
 
 /**
  * Mojo dedicated to automated inventory updates and consolidation.
@@ -80,40 +79,21 @@ public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
             if (processors != null) {
                 for (Processor processorConfig : processors) {
                     if (!processorConfig.isSkip()) {
-                        try {
-                            Class<?> processorClass = 
-                                Class.forName(processorConfig.getClassName());
-                            
-                            AbstractInventoryProcessor processor = 
-                                (AbstractInventoryProcessor) processorClass.newInstance();
-                            
-                            Properties aggregrateProperties = new Properties();
-                            aggregrateProperties.putAll(System.getProperties());
-                            aggregrateProperties.putAll(getProject().getProperties());
-                            
-                            if (this.properties != null) {
-                                aggregrateProperties.putAll(this.properties);
-                            }                    
-                            if (processorConfig.getProperties() != null) {
-                                aggregrateProperties.putAll(processorConfig.getProperties());
-                            }
-                            
-                            processor.setProperties(aggregrateProperties);
-                            
-                            inventoryProcessors.add(processor);
-                        } catch (ClassNotFoundException e) {
-                            throw new MojoExecutionException("Cannot access inventory processor class: " + 
-                                processorConfig.getClassName(), e);
-                        } catch (InstantiationException e) {
-                            throw new MojoExecutionException("Cannot instantiate processor class: " + 
-                                processorConfig.getClassName(), e);
-                        } catch (IllegalAccessException e) {
-                            throw new MojoExecutionException("Cannot instantiate processor class: " + 
-                                processorConfig.getClassName(), e);
-                        } catch (ClassCastException e) {
-                            throw new MojoExecutionException("Instantiated class not of expected type InventoryProcessor: " + 
-                                    processorConfig.getClassName(), e);
+                        Object instance = createInstanceOf(processorConfig.getClassName(), AbstractInventoryProcessor.class);
+                        AbstractInventoryProcessor processor = (AbstractInventoryProcessor) instance;
+
+                        Properties aggregrateProperties = new Properties();
+                        aggregrateProperties.putAll(System.getProperties());
+                        aggregrateProperties.putAll(getProject().getProperties());
+                        if (this.properties != null) {
+                            aggregrateProperties.putAll(this.properties);
                         }
+                        if (processorConfig.getProperties() != null) {
+                            aggregrateProperties.putAll(processorConfig.getProperties());
+                        }
+
+                        processor.setProperties(aggregrateProperties);
+                        inventoryProcessors.add(processor);
                     }
                 }
             }
@@ -141,5 +121,6 @@ public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
             MavenLogAdapter.release();
         }
     }
+
 
 }

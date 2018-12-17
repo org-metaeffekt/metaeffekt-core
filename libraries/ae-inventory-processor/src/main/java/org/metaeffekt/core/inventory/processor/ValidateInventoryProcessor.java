@@ -55,6 +55,10 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
     public static final String LICENSES_TARGET_DIR = "licenses.target.path";
     public static final String CREATE_LICENSE_FOLDERS = "create.license.folders";
     public static final String CREATE_COMPONENT_FOLDERS = "create.component.folders";
+
+    public static final String DELETE_LICENSE_FOLDERS = "delete.license.folders";
+    public static final String DELETE_COMPONENT_FOLDERS = "delete.component.folders";
+
     public static final String SEPARATOR = "/";
 
     public ValidateInventoryProcessor() {
@@ -81,6 +85,12 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         final boolean manageComponentFolders = Boolean.parseBoolean(getProperties().
                 getProperty(CREATE_COMPONENT_FOLDERS, FALSE.toString()));
+
+        final boolean deleteLicenseFolders = Boolean.parseBoolean(getProperties().
+                getProperty(DELETE_LICENSE_FOLDERS, FALSE.toString()));
+
+        final boolean deleteComponentFolders = Boolean.parseBoolean(getProperties().
+                getProperty(DELETE_COMPONENT_FOLDERS, FALSE.toString()));
 
         final List<String> licenseFoldersFromInventory = new ArrayList<>();
         final List<String> componentsFromInventory = new ArrayList<>();
@@ -254,7 +264,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             for (String component : componentDirectories) {
                 String licenseComponent = file + SEPARATOR + component;
                 if (!componentsFromInventory.contains(licenseComponent)) {
-                    if (manageComponentFolders && isEmptyFolder(baseDir, licenseComponent)) {
+                    if ((manageComponentFolders && isEmptyFolder(baseDir, licenseComponent)) || deleteComponentFolders ) {
                         removeFolder(baseDir, licenseComponent);
                     } else {
                         log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory. Proposal: remove the folder.", index++, licenseComponent));
@@ -267,7 +277,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         // check whether license exists in inventory
         for (String file : licenseDirectories) {
             if (!licenseFoldersFromInventory.contains(file)) {
-                if (manageLicenseFolders && isEmptyFolder(targetDir, file)) {
+                if ((manageLicenseFolders && isEmptyFolder(targetDir, file)) || deleteLicenseFolders) {
                     removeFolder(baseDir, file);
                     licenseFoldersFromDirectory.remove(file);
                 } else {

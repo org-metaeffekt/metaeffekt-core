@@ -17,11 +17,10 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 /**
  * Creates a report for the dependencies listed in the pom.

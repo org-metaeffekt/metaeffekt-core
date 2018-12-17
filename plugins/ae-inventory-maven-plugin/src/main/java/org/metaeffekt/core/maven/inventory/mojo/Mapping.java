@@ -46,4 +46,8 @@ public class Mapping {
         this.mappings.add(string);
     }
 
+    public List<String> getMappings() {
+        return mappings;
+    }
+
 }
