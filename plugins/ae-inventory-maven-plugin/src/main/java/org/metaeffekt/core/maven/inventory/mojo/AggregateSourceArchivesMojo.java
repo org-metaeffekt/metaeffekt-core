@@ -37,6 +37,7 @@ import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
 import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
+import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
@@ -44,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Mojo dedicated to automated aggregation of sources. For each artifact in the provided inventory the license meta data
@@ -53,6 +55,7 @@ import java.util.List;
 @Mojo( name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES )
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
+    public static final String DELIMITER_NEWLINE = String.format("%n");
     /**
      * The ArtifactResolver to be used.
      */
@@ -190,8 +193,6 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
         }
     }
 
-
-
     private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath, List<ArtifactSourceRepository> sourceRepositories) throws IOException, MojoFailureException {
         String component = artifact.getComponent();
         String artifactVersion = artifact.getVersion();
@@ -213,35 +214,48 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             }
         }
 
-        List<File> files = new ArrayList<>();
+
+        final Object artifactRepresentation = createArtifactRepresentation(artifact, inventory);
 
         if (matchingSourceRepository != null) {
+            // early exit for explicitly ignored artifacts
             if (matchingSourceRepository.getSourceArchiveResolver() == null) {
                 if (!matchingSourceRepository.isIgnoreMatches()) {
-                    getLog().warn(String.format("Skipped resolving sources for artifact '%s'.", createArtifactRepresentation(artifact, inventory)));
+                    getLog().warn(String.format("Skipped resolving sources for artifact '%s'.", artifactRepresentation));
                 }
                 return;
             }
-            files.addAll(matchingSourceRepository.resolveSourceArchive(artifact, targetPath));
-            if (files.isEmpty()) {
+
+            // resolve
+            getLog().info(String.format("Resolving source artifacts for '%s'", artifactRepresentation));
+            SourceArchiveResolverResult result = matchingSourceRepository.resolveSourceArchive(artifact, targetPath);
+
+            if (result.isEmpty()) {
+                if (!result.getAttemptedResourceLocations().isEmpty()) {
+                    logOrFailOn(String.format("Attempted resource locations:"), false);
+                    for (String s : result.getAttemptedResourceLocations()) {
+                        logOrFailOn(s, false);
+                    }
+                } else {
+                    logOrFailOn("No resource location mapped.", false);
+                }
                 logOrFailOn(String.format("No sources resolved for artifact '%s', while matching source repository was: '%s'",
-                    createArtifactRepresentation(artifact, inventory), matchingSourceRepository.getId()));
+                        artifactRepresentation, matchingSourceRepository.getId()), true);
+                return;
             } else {
-                for (File file : files) {
+                for (File file : result.getFiles()) {
                     // copy file to target folder if necessary
                     File destFile = new File(targetPath, matchingSourceRepository.getTargetFolder() + "/" + file.getName());
                     if (!destFile.exists()) {
                         FileUtils.copyFile(file, destFile);
                     }
                 }
+                return;
             }
         } else {
             logOrFailOn(String.format("No sources resolved for artifact '%s', no matching source repository identified.",
-                createArtifactRepresentation(artifact, inventory)));
-        }
-
-        if (files.isEmpty()) {
-            logOrFailOn(String.format("Cannot resolve sources for '%s'.", createArtifactRepresentation(artifact, inventory)));
+                    artifactRepresentation), true);
+            return;
         }
 
     }
@@ -275,10 +289,12 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
         return sb;
     }
 
-    private void logOrFailOn(String message) throws MojoFailureException {
+    private void logOrFailOn(String message, boolean failInCase) throws MojoFailureException {
         if (failOnMissingSources) {
             getLog().error(message);
-            throw new MojoFailureException(message);
+            if (failInCase) {
+                throw new MojoFailureException(message);
+            }
         } else {
             getLog().warn(message);
         }

@@ -30,9 +30,8 @@ public interface SourceArchiveResolver {
      * Resolve the source archive for a given artifact and provide a File instance that points to the file.
      * @param artifact The {@link Artifact} for which the source is to be resolved.
      * @param targetDir The proposed target directory.
-     * @return The File where to find the Artifact in the local accessible file system. <code>null</code> in case
-     * the source archive was not resolved.
+     * @return The {@link SourceArchiveResolverResult}.
      */
-    List<File> resolveArtifactSourceArchive(Artifact artifact, File targetDir);
+    SourceArchiveResolverResult resolveArtifactSourceArchive(Artifact artifact, File targetDir);
 
 }

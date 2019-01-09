@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.resolver;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.springframework.core.io.FileSystemResourceLoader;
 import org.springframework.core.io.Resource;
@@ -22,6 +23,9 @@ import org.springframework.core.io.ResourceLoader;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,20 +42,21 @@ public abstract class AbstractMirrorSourceArchiveResolver implements SourceArchi
     private UriResolver uriResolver;
 
     @Override
-    public List<File> resolveArtifactSourceArchive(Artifact artifact, File targetDir) {
+    public SourceArchiveResolverResult resolveArtifactSourceArchive(Artifact artifact, File targetDir) {
         List<String> sourceIds = matchAndReplace(artifact);
 
         if (sourceIds == null && !sourceIds.isEmpty()) {
             return null;
         }
 
-        List<File> resolvedFiles = new ArrayList<>();
+        SourceArchiveResolverResult result = new SourceArchiveResolverResult();
 
         String hitMirrorBaseUrl = null;
 
         for (String mirrorUrl : mirrorBaseUrls) {
             for (String sourceId : sourceIds) {
                 String sourceArchiveUrl = mirrorUrl + sourceId;
+                sourceArchiveUrl = encodeUrl(sourceArchiveUrl);
 
                 File file = new File(targetDir, sourceId);
 
@@ -66,22 +71,27 @@ public abstract class AbstractMirrorSourceArchiveResolver implements SourceArchi
                 }
 
                 if (file != null && file.exists()) {
-                    resolvedFiles.add(file);
+                    result.addFile(file, sourceArchiveUrl);
                     hitMirrorBaseUrl = mirrorUrl;
                     break;
+                } else {
+                    result.addAttemptedResourceLocation(sourceArchiveUrl);
                 }
-
             }
         }
 
         // if we have a hit...
-        if (!resolvedFiles.isEmpty()) {
+        if (!result.isEmpty()) {
             // we reprioritize the mirrorBaseUrl by moving it at first position
             mirrorBaseUrls.remove(hitMirrorBaseUrl);
             mirrorBaseUrls.add(0, hitMirrorBaseUrl);
         }
 
-        return resolvedFiles;
+        return result;
+    }
+
+    private String encodeUrl(String sourceArchiveUrl) {
+        return sourceArchiveUrl.replace(" ", "%20");
     }
 
     protected abstract List<String> matchAndReplace(Artifact artifact);

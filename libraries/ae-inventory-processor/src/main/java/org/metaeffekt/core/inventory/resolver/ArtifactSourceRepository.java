@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.resolver;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
+import javax.xml.transform.Source;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -44,12 +45,12 @@ public class ArtifactSourceRepository extends ArtifactPatternMatcher {
         this.id = id;
     }
 
-    public List<File> resolveSourceArchive(Artifact artifact, File targetDir) {
+    public SourceArchiveResolverResult resolveSourceArchive(Artifact artifact, File targetDir) {
         if (sourceArchiveResolver != null) {
             File effectiveTargetDir = new File(targetDir, targetFolder);
             return sourceArchiveResolver.resolveArtifactSourceArchive(artifact, effectiveTargetDir);
         }
-        return Collections.emptyList();
+        return new SourceArchiveResolverResult();
     }
 
     public SourceArchiveResolver getSourceArchiveResolver() {

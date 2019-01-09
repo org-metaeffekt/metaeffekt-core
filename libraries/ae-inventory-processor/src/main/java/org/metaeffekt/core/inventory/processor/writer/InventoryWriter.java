@@ -169,13 +169,13 @@ public class InventoryWriter {
             }
         }
 
-        // adjust with of cells
+        /** adjust with of cells
         for (int i = 0; i <= numCol; i++) {
             Integer width = (Integer) inventory.getContextMap().get("artifacts.column[" + i + "].width");
             if (width != null) {
-                mySheet.setColumnWidth(i, width);
+                mySheet.setColumnWidth(i, Math.min(width, 255));
             }
-        }
+        }*/
 
         mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
     }
@@ -260,12 +260,14 @@ public class InventoryWriter {
             myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getComment()));
         }
 
+        /**
         for (int i = 0; i < 6; i++) {
             Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
             if (width != null) {
-                mySheet.setColumnWidth(i, width);
+                mySheet.setColumnWidth(i, Math.min(width, 255));
             }
         }
+         */
 
     }
 

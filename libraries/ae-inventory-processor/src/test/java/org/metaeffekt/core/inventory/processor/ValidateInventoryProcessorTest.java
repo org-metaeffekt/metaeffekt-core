@@ -41,16 +41,11 @@ public class ValidateInventoryProcessorTest {
 
     @Test
     public void testInventoryProcessor() throws IOException {
+        File baseDir = new File("XXX");
+        Inventory commonInventory = new InventoryReader().readInventory(new File(baseDir, "XXX"));
+        Inventory customerCommonInventory = new InventoryReader().readInventory(new File(baseDir, "XXX"));
 
-
-        File baseDir = new File("/Volumes/metaeffekt-admin/2018-12-05_backup_S-DIT");
-
-        Inventory commonInventory = new InventoryReader().readInventory(new File(
-                baseDir, "ae-workbench-input/common/inventory/ae-artifact-inventory.xls"));
-        Inventory customerCommonInventory = new InventoryReader().readInventory(new File(
-                baseDir, "ae-workbench-input/S-DIT/common/inventory/s-dit-artifact-inventory.xls"));
-
-        File inventoryFile = new File(baseDir, "ae-workbench-output/S-DIT/S-DIT-002/venus/UPDATE_artifact-inventory.xls");
+        File inventoryFile = new File(baseDir, "XXX");
         Inventory projectCommonInventory = new InventoryReader().readInventory(inventoryFile);
         Inventory inventory = projectCommonInventory;
 
