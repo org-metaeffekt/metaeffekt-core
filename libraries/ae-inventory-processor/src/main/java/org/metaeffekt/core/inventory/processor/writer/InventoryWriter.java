@@ -198,7 +198,6 @@ public class InventoryWriter {
     private void writeNotices(Inventory inventory, HSSFWorkbook myWorkBook) {
         HSSFSheet mySheet = myWorkBook.createSheet("License Notices");
         mySheet.createFreezePane(0, 1);
-        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, 4));
         mySheet.setDefaultColumnWidth(80);
 
         HSSFRow myRow = null;
@@ -233,6 +232,23 @@ public class InventoryWriter {
         myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Comment"));
 
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
+            attributes.addAll(licenseMetaData.getAttributes());
+        }
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        for (String key : ordered) {
+            myCell = myRow.createCell(cellNum++);
+            myCell.setCellStyle(headerStyle);
+            myCell.setCellValue(new HSSFRichTextString(key));
+        }
+
+        int numCol = cellNum;
+
         for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
             myRow = mySheet.createRow(rowNum++);
 
@@ -258,6 +274,11 @@ public class InventoryWriter {
 
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getComment()));
+
+            for (String key : ordered) {
+                myCell = myRow.createCell(cellNum++);
+                myCell.setCellValue(new HSSFRichTextString(licenseMetaData.get(key)));
+            }
         }
 
         /**
@@ -268,6 +289,8 @@ public class InventoryWriter {
             }
         }
          */
+
+        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
 
     }
 

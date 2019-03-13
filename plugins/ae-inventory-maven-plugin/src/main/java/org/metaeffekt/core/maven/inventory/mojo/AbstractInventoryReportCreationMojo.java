@@ -141,7 +141,12 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter expression="${project.artifactId}-artifact-report.dita"
      */
     private String targetDitaArtifactReportPath;
-    
+
+    /**
+     * @parameter expression="${project.artifactId}-package-report.dita"
+     */
+    private String targetDitaPackageReportPath;
+
     /**
      * @parameter expression="${project.artifactId}-component-report.dita"
      */
@@ -214,6 +219,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         if (enableDita) {
             report.setTargetDitaDiffPath(createDitaPath(targetDitaDiffPath));
             report.setTargetDitaReportPath(createDitaPath(targetDitaArtifactReportPath));
+            report.setTargetDitaPackageReportPath(createDitaPath(targetDitaPackageReportPath));
             report.setTargetDitaComponentReportPath(createDitaPath(targetDitaComponentReportPath));
             report.setTargetDitaLicenseReportPath(createDitaPath(targetDitaLicenseReportPath));
             report.setTargetDitaNoticeReportPath(createDitaPath(targetDitaNoticeReportPath));

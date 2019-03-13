@@ -50,6 +50,10 @@ public class InventoryReport {
     private static final String DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE =
             "/META-INF/templates/inventory-dita-report.vt";
 
+    // package summaries (maven centric)
+    private static final String DITA_MAVEN_PACKAGE_REPORT_TEMPLATE =
+            "/META-INF/templates/inventory-dita-package-report.vt";
+
     // artifacts summaries (component centric)
     private static final String DITA_COMPONENT_ARTIFACT_REPORT_TEMPLATE =
             "/META-INF/templates/inventory-dita-component-report.vt";
@@ -79,6 +83,7 @@ public class InventoryReport {
 
     private String targetInventoryPath;
     private String targetDitaReportPath;
+    private String targetDitaPackageReportPath;
     private String targetDitaComponentReportPath;
     private String targetDitaDiffPath;
     private String targetDitaLicenseReportPath;
@@ -466,6 +471,7 @@ public class InventoryReport {
 
         // write reports
         writeArtifactReport(projectInventory);
+        writePackageReport(projectInventory);
         writeComponentReport(projectInventory);
         writeDiffReport(referenceInventory, projectInventory);
         writeObligationSummary(projectInventory);
@@ -562,6 +568,13 @@ public class InventoryReport {
         if (targetDitaReportPath != null) {
             produceDita(projectInventory, DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE, new File(
                     targetDitaReportPath));
+        }
+    }
+
+    protected void writePackageReport(Inventory projectInventory) throws Exception {
+        if (targetDitaPackageReportPath != null) {
+            produceDita(projectInventory, DITA_MAVEN_PACKAGE_REPORT_TEMPLATE, new File(
+                    targetDitaPackageReportPath));
         }
     }
 
@@ -1085,5 +1098,7 @@ public class InventoryReport {
         return escaped;
     }
 
-
+    public void setTargetDitaPackageReportPath(String targetDitaPackageReportPath) {
+        this.targetDitaPackageReportPath = targetDitaPackageReportPath;
+    }
 }

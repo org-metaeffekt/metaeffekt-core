@@ -476,6 +476,8 @@ public class Inventory {
         licenseId = licenseId.replace("(", "_");
         licenseId = licenseId.replace(")", "_");
         licenseId = licenseId.replace(" ", "-");
+        licenseId = licenseId.replace("\"", "");
+        licenseId = licenseId.replace("'", "");
         int length = -1;
         while (length != licenseId.length()) {
             length = licenseId.length();
@@ -595,25 +597,36 @@ public class Inventory {
         return sortedByComponent;
     }
 
-    public List<Artifact> evaluateComponent(Component component,
-                                            boolean includeLicensesWithArtifactsOnly) {
-        List<Artifact> artifactsForComponent = new ArrayList<Artifact>();
+    public List<List<Artifact>> evaluateComponent(Component component, boolean includeLicensesWithArtifactsOnly) {
+        List<Artifact> artifactsForComponent = new ArrayList<>();
         for (Artifact artifact : getArtifacts()) {
             if (component.group != null && component.group.equals(artifact.getComponent())) {
                 if (component.license != null && component.license.equals(artifact.getLicense())) {
-
                     if (!StringUtils.hasText(artifact.getArtifactId())) {
                         if (includeLicensesWithArtifactsOnly) {
                             continue;
                         }
                     }
-
                     artifactsForComponent.add(artifact);
                 }
             }
         }
         sortArtifacts(artifactsForComponent);
-        return artifactsForComponent;
+
+        // rearrange components into groups of max 60
+        List<List<Artifact>> groups = new ArrayList<>();
+        List<Artifact> currentGroup = new ArrayList<>();
+        groups.add(currentGroup);
+        for (Artifact artifact : artifactsForComponent) {
+            currentGroup.add(artifact);
+
+            if (currentGroup.size() >= 60) {
+                currentGroup = new ArrayList<>();
+                groups.add(currentGroup);
+            }
+        }
+
+        return groups;
     }
 
     public List<Artifact> evaluateLicense(String licenseName,

@@ -25,13 +25,14 @@
 
 #foreach($component in $components)
 
-    #set($group=$inventory.evaluateComponent($component, true))
+    #set($groups=$inventory.evaluateComponent($component, true))
+
+    #foreach($group in $groups)
 
     #if($inventory.hasConcreteArtifacts($group))
 
                 <row>
                     <entry>$report.xmlEscapeComponentName($component.getGroup())</entry>
-
                     <entry>
                         <lines>#foreach($artifact in $group)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
 #end#end</lines>
@@ -45,7 +46,7 @@
                         <entry>#if($license)$license.trim()#else&nbsp;#end</entry>
                     #end
                 </row>
-
+    #end
     #end
 #end
                     </tbody>

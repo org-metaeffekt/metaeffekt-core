@@ -25,7 +25,7 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
  *
  * @author Karsten Klein
  */
-public class LicenseMetaData {
+public class LicenseMetaData extends AbstractModelBase {
 
     /**
      * @deprecated Use retained instead
@@ -62,6 +62,23 @@ public class LicenseMetaData {
      * be inlcuded in any archive.
      */
     private String sourceCategory;
+
+    /**
+     * Default constructor.
+     */
+    public LicenseMetaData() {
+        super();
+    }
+
+    public LicenseMetaData(LicenseMetaData licenseMetaData) {
+        super(licenseMetaData);
+        this.component = licenseMetaData.component;
+        this.version = licenseMetaData.version;
+        this.license = licenseMetaData.license;
+        this.licenseInEffect = licenseMetaData.licenseInEffect;
+        this.notice = licenseMetaData.notice;
+        this.comment = licenseMetaData.comment;
+    }
 
     // FIXME: we should also copy the folder with the license in effect
     public static String deriveLicenseFolderName(String license) {

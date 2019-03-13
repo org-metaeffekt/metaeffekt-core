@@ -157,24 +157,36 @@ public class InventoryReader extends AbstractXlsInventoryReader {
 
             if (columnName.equalsIgnoreCase("component")) {
                 licenseMetaData.setComponent(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("version")) {
                 licenseMetaData.setVersion(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("license")) {
                 licenseMetaData.setLicense(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("license in effect")) {
                 licenseMetaData.setLicenseInEffect(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("license notice") || columnName.equalsIgnoreCase("text")) {
                 licenseMetaData.setNotice(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("comment")) {
                 licenseMetaData.setComment(value);
+                continue;
             }
             if (columnName.equalsIgnoreCase("source category")) {
                 licenseMetaData.setSourceCategory(value);
+                continue;
+            }
+
+            // if the column in not known we store the content in the key/value store
+            if (value != null) {
+                licenseMetaData.set(columnName, value.trim());
             }
         }
 
