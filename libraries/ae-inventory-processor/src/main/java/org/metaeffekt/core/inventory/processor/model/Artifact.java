@@ -559,6 +559,40 @@ public class Artifact extends AbstractModelBase {
         return true;
     }
 
+    /**
+     * Checks whether the artifact is internal. Internal artifacts require a license association, but
+     * no component folder or license notice. Nevertheless, a component folder and/or license notice
+     * can already be provided.
+     *
+     * The internal flag may be used to mark artifacts that are identified for associated licenses.
+     *
+     * @return
+     */
+    public boolean isInternal() {
+        String classification = getClassification();
+        if (!StringUtils.isEmpty(classification)) {
+            if (classification.contains("internal")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the artifact is banned. Banned artifacts are allowed to have incomplete meta data.
+     *
+     * @return
+     */
+    public boolean isBanned() {
+        String classification = getClassification();
+        if (!StringUtils.isEmpty(classification)) {
+            if (classification.contains("banned")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getChecksum() {
         return checksum;
     }

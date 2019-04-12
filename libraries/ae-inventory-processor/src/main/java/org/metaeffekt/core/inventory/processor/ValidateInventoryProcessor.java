@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.Delete;
-import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
@@ -104,33 +103,50 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         for (Artifact artifact : inventory.getArtifacts()) {
             artifact.deriveArtifactId();
 
-            if (artifact.isEnabledForDistribution()) {
-                final String license = artifact.getLicense();
-                final String componentName = artifact.getComponent();
-                final String version = artifact.getVersion();
+            // check for '|' in associated license
+            if (!StringUtils.isBlank(artifact.getLicense())) {
+                if (artifact.getLicense().contains("|")) {
+                    log(format("%04d: Artifact '%s' associated license contains '|'.", index++, artifact.getId()));
+                    log(format("      Proposal: correct associated license."));
+                    error = true;
+                    continue;
+                }
+            }
+
+            final String license = artifact.getLicense();
+            final String componentName = artifact.getComponent();
+            final String version = artifact.getVersion();
+
+            if (!artifact.isBanned()) {
+                // default meta information is required
 
                 boolean missingFields = false;
                 if (StringUtils.isBlank(license)) {
-                    log(format("%04d: Artifact '%s' without license. Proposal: add license association.", index++, artifact.getId()));
+                    log(format("%04d: Artifact '%s' without license.", index++, artifact.getId()));
+                    log(format("      Proposal: add license association."));
                     missingFields = true;
                 }
 
                 if (StringUtils.isBlank(componentName)) {
-                    log(format("%04d: Artifact '%s' without component. Proposal: add component / group name.", index++, artifact.getId()));
+                    log(format("%04d: Artifact '%s' without component.", index++, artifact.getId()));
+                    log(format("      Proposal: add component / group name."));
                     missingFields = true;
                 }
 
                 if (StringUtils.isBlank(version)) {
-                    log(format("%04d: Artifact '%s' without version. Proposal: add version.", index++, artifact.getId()));
+                    log(format("%04d: Artifact '%s' without version.", index++, artifact.getId()));
+                    log(format("      Proposal: add version."));
                     missingFields = true;
                 }
                 if (missingFields) {
                     error = true;
                     continue;
                 }
+            }
+
+            if (artifact.isEnabledForDistribution()) {
 
                 List<String> splitLicense = getSplitLicenses(license, "\\|");
-
                 for (String singleLicense : splitLicense) {
                     String licenseFolder = inventory.getLicenseFolder(singleLicense);
                     if (!licenseFoldersFromInventory.contains(licenseFolder)) {
@@ -187,21 +203,36 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     licenseMetaDataFromArtifacts.add(matchingLicenseMetaData.deriveQualifier());
                     licensesRequiringNotice.add(matchingLicenseMetaData.getLicense());
                 }
+
+                // associated licenses with '+' or ',' require explanation in a notice.
+                if (matchingLicenseMetaData == null) {
+                    if (artifact.getLicense().contains("+") || artifact.getLicense().contains(",")) {
+                        licensesRequiringNotice.add(artifact.getLicense());
+                    } else if (artifact.getLicense().contains(",")) {
+                        licensesRequiringNotice.add(artifact.getLicense());
+                    }
+                }
             }
         }
 
         // check whether we have duplicate ids
         for (Artifact artifact : inventory.getArtifacts()) {
+            String artifactChecksum = normalizedChecksum(artifact);
+
             if (StringUtils.isNotBlank(artifact.getId())) {
                 Set<Artifact> alreadyReported = new HashSet<>();
                 if (!alreadyReported.contains(artifact)) {
                     Artifact duplicateArtifact = inventory.findMatchingId(artifact);
                     if (duplicateArtifact != null) {
-                        log(format("%04d: Duplicate artifact detected: %s / %s. Proposal: remove duplicate artifacts from inventory.",
-                                index++, artifact.getId() + "-" + artifact.createStringRepresentation(),
-                                duplicateArtifact.getId() + "-" + duplicateArtifact.createStringRepresentation()));
-                        alreadyReported.add(duplicateArtifact);
-                        error = true;
+                        String duplicateChecksum = normalizedChecksum(duplicateArtifact);
+                        // artifacts with different checksum are not reported
+                        if (Objects.equals(artifactChecksum, duplicateChecksum)) {
+                            log(format("%04d: Duplicate artifact detected: %s / %s.",
+                                    index++, artifact.getId(), duplicateArtifact.getId()));
+                            log(format("      Proposal: remove duplicate artifacts from inventory."));
+                            alreadyReported.add(duplicateArtifact);
+                            error = true;
+                        }
                     }
                 }
             }
@@ -240,9 +271,9 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
                 if (matchingLicenseMetaData == null) {
                     if (licensesRequiringNotice.contains(artifact.getLicense())) {
-                        log(format("%04d: Artifact '%s', component '%s' with license '%s' requires a license notice. " +
-                                "Proposal: add license notice to notices in inventory.",
+                        log(format("%04d: Artifact '%s', component '%s' with license '%s' requires a license notice. ",
                                 index++, artifact.getId(), artifact.getComponent(), artifact.getLicense()));
+                        log(format("      Proposal: add license notice to notices in inventory."));
                         error = true;
                     }
                 }
@@ -267,7 +298,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     if ((manageComponentFolders && isEmptyFolder(baseDir, licenseComponent)) || deleteComponentFolders ) {
                         removeFolder(baseDir, licenseComponent);
                     } else {
-                        log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory. Proposal: remove the folder.", index++, licenseComponent));
+                        log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, licenseComponent));
+                        log(format("      Proposal: remove the folder."));
                         error = true;
                     }
                 }
@@ -281,7 +313,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     removeFolder(baseDir, file);
                     licenseFoldersFromDirectory.remove(file);
                 } else {
-                    log(format("%04d: License folder '%s' does not match any artifact license / effective license in inventory. Proposal: remove license folder.", index++, file));
+                    log(format("%04d: License folder '%s' does not match any artifact license / effective license in inventory.", index++, file));
+                    log(format("      Proposal: remove license folder."));
                     error = true;
                 }
             }
@@ -296,6 +329,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     }
                 } else {
                     log(format("%04d: License folder missing: %s", index++, file));
+                    log(format("      Proposal: add license folder."));
                     error = true;
                 }
             }
@@ -304,7 +338,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         // check whether the license folder contains any files
         for (String file : licenseFoldersFromInventory) {
             if (isEmptyFolder(baseDir, file) && isEmptyFolder(targetDir, file)) {
-                log(format("%04d: License folder '%s' does not contain any license or notice files. Proposal: add license and/or notice to the folder.", index++, file));
+                log(format("%04d: License folder '%s' does not contain any license or notice files.", index++, file));
+                log(format("      Proposal: add license and/or notice to the folder."));
                 error = true;
             }
         }
@@ -324,7 +359,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                 if (manageComponentFolders) {
                     createFolder(baseDir, component);
                 } else {
-                    log(format("%04d: Component folder '%s' does not exist. Proposal: add component specific folder.", index++, component));
+                    log(format("%04d: Component folder '%s' does not exist.", index++, component));
+                    log(format("      Proposal: add component specific folder."));
                     error = true;
                 }
             }
@@ -333,7 +369,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         // check whether component folder is empty
         for (String component : componentsFromInventory) {
             if (isEmptyFolder(baseDir, component) && isEmptyFolder(targetDir, component )) {
-                log(format("%04d: Component folder '%s' does not contain any license or notice files. Proposal: add component specific license and/or notice to the folder.", index++, component));
+                log(format("%04d: Component folder '%s' does not contain any license or notice files.", index++, component));
+                log(format("      Proposal: add component specific license and/or notice to the folder."));
                 error = true;
             }
         }
@@ -346,7 +383,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             refSb.append(licenseMetaData.getLicense());
 
             if (!licenseReferenceFromInventory.contains(refSb.toString())) {
-                log(format("%04d: License notice '%s' not used in inventory. Proposal: remove the license notice from the inventory.", index++, refSb.toString()));
+                log(format("%04d: License notice '%s' not used in inventory.", index++, refSb.toString()));
+                log(format("      Proposal: remove the license notice from the inventory."));
                 error = true;
             }
 
@@ -355,16 +393,25 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                 switch (sourceCategory) {
                     case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
                     case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
-                        LOG.warn(format("%04d: Source category '%s' deprecated. Proposal: change source category to " +
-                                "'annex' or 'retained'.", index++, licenseMetaData.getSourceCategory()));
-
+                        LOG.warn(format("%04d: Source category '%s' deprecated.", index++, licenseMetaData.getSourceCategory()));
+                        log(format("      Proposal: change source category to 'annex' or 'retained'."));
                     case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
                     case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
                         break;
                     default:
-                        log(format("%04d: Source category '%s' not supported. Proposal: change source category to " +
-                                "'annex' or 'retained' or remove the value.", index++, licenseMetaData.getSourceCategory()));
+                        log(format("%04d: Source category '%s' not supported.", index++, licenseMetaData.getSourceCategory()));
+                        log(format("      Proposal: change source category to 'annex' or 'retained' or remove the value."));
                         error = true;
+                }
+            }
+
+            String effectiveLicense = licenseMetaData.deriveLicenseInEffect();
+            if (!StringUtils.isBlank(effectiveLicense)) {
+                if (effectiveLicense.contains(",")) {
+                    log(format("%04d: Effective license of '%s' contains ','.", index++,
+                            licenseMetaData.deriveQualifier()));
+                    log(format("      Proposal: replace ',' by '|'."));
+                    error = true;
                 }
             }
         }
@@ -383,8 +430,9 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                             candidateLicense = candidateLicense.trim();
                         }
                         if (!license.equals(candidateLicense)) {
-                            log(format("%04d: Component '%s' in version '%s' does not have a unique license association: '%s' <> '%s'. See '%s'. Proposal: split component.",
-                                    index++, artifact.getComponent(), artifact.getVersion(), license, candidateLicense, candidateArtifact.getId()));
+                            log(format("%04d: Component '%s' in version '%s' does not have a unique license association: '%s' <> '%s'.",
+                                    index++, artifact.getComponent(), artifact.getVersion(), license, candidateLicense));
+                            log(format("      Proposal: split component."));
                             error = true;
                         }
                     }
@@ -400,9 +448,9 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             final String groupId = artifact.getGroupId();
             if (StringUtils.isNotBlank(groupId) && version != null && id != null && !id.contains(version)) {
                 log(format("%04d: Version information inconsistent. " +
-                                "Mismatch between version and artifact file name. Version '%s' not contained in '%s'. " +
-                                "Proposal: fix artifact file name to include correct version or remove the group id in case it is not a maven-managed artifact.",
+                                "Mismatch between version and artifact file name. Version '%s' not contained in '%s'. ",
                         index++, artifact.getVersion(), id));
+                log(format("      Proposal: fix artifact file name to include correct version or remove the group id in case it is not a maven-managed artifact."));
                 error = true;
             }
         }
@@ -412,10 +460,13 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             String notice = licenseMetaData.getNotice();
             if (StringUtils.isBlank(notice)) {
                 log(format("%04d: Empty license notice for '%s'.", index++, licenseMetaData.deriveQualifier()));
+                log(format("      Proposal: validate/add license notice content."));
                 error = true;
             }
 
             error |= validateElement(licenseMetaData, notice, "p");
+            error |= validateElement(licenseMetaData, notice, "codeph");
+            error |= validateElement(licenseMetaData, notice, "filename");
             error |= validateElement(licenseMetaData, notice, "i");
             error |= validateElement(licenseMetaData, notice, "li");
             error |= validateElement(licenseMetaData, notice, "ol");
@@ -427,11 +478,25 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             error |= validateNotContained(licenseMetaData, notice, " .</");
             // validateNotContained(licenseMetaData, notice, "> ");
             error |= validateNotContained(licenseMetaData, notice, "IS\"WITHOUT");
+
+            // detect obvious typos
+            error |= validateNotContained(licenseMetaData, notice, "infromation");
+            error |= validateNotContained(licenseMetaData, notice, "Infromation");
+            error |= validateNotContained(licenseMetaData, notice, "sofware");
+            error |= validateNotContained(licenseMetaData, notice, "Sofware");
         }
 
         if (error && isFailOnError()) {
             throw new IllegalStateException("Validation error detected. See previous log output.");
         }
+    }
+
+    private String normalizedChecksum(Artifact artifact) {
+        String normalizedChecksum = artifact.getChecksum();
+        if (StringUtils.isBlank(normalizedChecksum)) {
+            normalizedChecksum = null;
+        }
+        return normalizedChecksum;
     }
 
     private void createFolder(String folder, String file) {
