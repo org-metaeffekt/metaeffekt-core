@@ -18,8 +18,6 @@ package org.metaeffekt.core.inventory.resolver;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Interface for resolving source archives.

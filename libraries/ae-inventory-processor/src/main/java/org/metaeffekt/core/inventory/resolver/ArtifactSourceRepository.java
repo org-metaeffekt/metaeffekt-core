@@ -17,10 +17,7 @@ package org.metaeffekt.core.inventory.resolver;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
-import javax.xml.transform.Source;
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * An artifacts source repository aggregates information where source archives can be resolved. In addition the

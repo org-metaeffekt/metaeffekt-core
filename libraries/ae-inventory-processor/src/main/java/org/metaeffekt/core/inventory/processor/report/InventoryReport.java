@@ -15,8 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -26,19 +24,26 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ArtifactFilter;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.reader.LocalRepositoryInventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
@@ -62,8 +67,7 @@ public class InventoryReport {
     private static final String DITA_DIFF_TEMPLATE = "/META-INF/templates/inventory-dita-diff.vt";
 
     // license summary
-    private static final String DITA_LICENSE_TEMPLATE =
-            "/META-INF/templates/inventory-dita-licenses.vt";
+    private static final String DITA_LICENSE_TEMPLATE = "/META-INF/templates/inventory-dita-licenses.vt";
 
     // notice summary
     private static final String DITA_NOTICE_TEMPLATE = "/META-INF/templates/inventory-dita-notices.vt";
@@ -71,17 +75,39 @@ public class InventoryReport {
     // generating a pom from the inventory
     private static final String MAVEN_POM_TEMPLATE =  "/META-INF/templates/inventory-pom-xml.vt";
 
-    private static final Map<String, File> STATIC_FILE_MAP = Collections.synchronizedMap(new HashMap<>());
+    /**
+     * The reference inventory is a complete file structure. referenceInventoryDir is the root folder.
+     */
+    private File referenceInventoryDir;
 
-    private String globalInventoryPath;
+    /**
+     * Include pattern for reference inventory in the file structure. Relative to referenceInventoryDir.
+     */
+    private String referenceInventoryIncludes;
 
-    // The reference inventory is used for version diffs.
-    private String referenceInventoryPath;
+    /**
+     * Path to the component details. Relative to referenceInventoryDir.
+     */
+    private String referenceComponentPath;
 
-    private String repositoryPath;
-    private Inventory repositoryInventory;
+    /**
+     * Path to the license details. Relative to referenceInventoryDir.
+     */
+    private String referenceLicensePath;
 
+
+    // The diff inventory is used for version diffs.
+    private File diffInventoryFile;
+
+    /**
+     * The target directories,
+     */
+
+    private File targetInventoryDir;
     private String targetInventoryPath;
+    private File targetComponentDir;
+    private File targetLicenseDir;
+
     private String targetDitaReportPath;
     private String targetDitaPackageReportPath;
     private String targetDitaComponentReportPath;
@@ -91,6 +117,10 @@ public class InventoryReport {
     private String targetMavenPomPath;
 
     private String projectName = "local project";
+
+    /**
+     * Fields to control the report for inventory governance.
+     */
     private boolean failOnError = true;
     private boolean failOnBanned = true;
     private boolean failOnDowngrade = true;
@@ -100,67 +130,51 @@ public class InventoryReport {
     private boolean failOnInternal = true;
     private boolean failOnUpgrade = true;
     private boolean failOnMissingLicense = true;
+    private boolean failOnMissingLicenseFile = true;
+    private boolean failOnMissingNotice = true;
+
     private ArtifactFilter artifactFilter;
-    private String licenseSourcePath;
-    private String licenseTargetPath;
+
+
     /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
      * to be configured to match the relative path from the documentation to the licenses.
      */
     private String relativeLicensePath = "licenses";
+
     private List<Artifact> addOnArtifacts;
-    private boolean failOnMissingLicenseFile = true;
-    private boolean failOnMissingNotice = true;
+
+    // FIXME: do we want to support this?
     private transient Inventory lastProjectInventory;
 
+    /**
+     * The repository path for which to create the report.
+     */
+    private String repositoryPath;
     private String[] repositoryIncludes = new String[]{"**/*"};
-
     private String[] repositoryExcludes = new String[]{
             "**/*.pom", "**/*.sha1", "**/*.xml",
             "**/*.repositories", "**/*.jar-not-available"
     };
 
-    public static Resource inferPathFile(String path) throws IOException {
-        File file = new File(path);
-        if (file.exists()) {
-            return new FileSystemResource(path);
-        } else {
-            // We have an issue with concurrent updates of the file during a reactor build.
-            // For a VM we therefore copy the content once to a temporary file and then
-            // (for all usages of the same path) use the copy instead of the classpath resource.
-            File tmpfile;
-            synchronized (STATIC_FILE_MAP) {
-                tmpfile = STATIC_FILE_MAP.get(path);
-                if (tmpfile == null || !tmpfile.exists()) {
-                    tmpfile = File.createTempFile("inventory", null);
-                    ClassPathResource classPathResource = new ClassPathResource(path);
-                    InputStream in = null;
-                    FileOutputStream out = null;
-                    try {
-                        out = new FileOutputStream(tmpfile);
-                        in = classPathResource.getInputStream();
-                        IOUtils.copy(in, out);
-                    } finally {
-                        IOUtils.closeQuietly(in);
-                        IOUtils.closeQuietly(out);
-                    }
-                    STATIC_FILE_MAP.put(path, tmpfile);
-                    tmpfile.deleteOnExit();
-                }
-            }
-            return new FileSystemResource(tmpfile);
-        }
-    }
+    /**
+     * The repository inventory for which to create the report. Alternative for repositoryPath.
+     */
+    private Inventory repositoryInventory;
+
+    /**
+     * Default {@link ReportContext}.
+     */
+    private ReportContext reportContext = new ReportContext("default", null, null);
 
     public boolean createReport() throws Exception {
-
         LOG.info("****************************************************************");
         LOG.info("* Creating Inventory Report for project {} *", getProjectName());
         LOG.info("****************************************************************");
 
         File repositoryFile = repositoryPath != null ? new File(repositoryPath) : null;
 
-        Inventory globalInventory = globalInventoryPath == null ? new Inventory() : readGlobalInventory();
+        Inventory globalInventory = readGlobalInventory();
 
         // read local repository
         Inventory localRepositoryInventory;
@@ -171,8 +185,7 @@ public class InventoryReport {
                     new LocalRepositoryInventoryReader();
             localRepositoryInventoryReader.setIncludes(repositoryIncludes);
             localRepositoryInventoryReader.setExcludes(repositoryExcludes);
-            localRepositoryInventory =
-                    localRepositoryInventoryReader.readInventory(repositoryFile, projectName);
+            localRepositoryInventory = localRepositoryInventoryReader.readInventory(repositoryFile, projectName);
         }
 
         // insert (potentially incomplete) artifacts for reporting
@@ -185,14 +198,17 @@ public class InventoryReport {
         return createReport(globalInventory, localRepositoryInventory);
     }
 
+    protected Inventory readGlobalInventory() throws IOException {
+        return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
+    }
+
     protected boolean createReport(Inventory globalInventory, Inventory localInventory) throws Exception {
-        Inventory referenceInventory = null;
-        File referenceInventoryFile = referenceInventoryPath != null ? new File(referenceInventoryPath) : null;
-        File targetInventoryFile = targetInventoryPath != null ? new File(targetInventoryPath) : null;
+        Inventory diffInventory = null;
+        File targetInventoryFile = targetInventoryDir != null ? new File(targetInventoryDir, targetInventoryPath) : null;
 
         // read the reference file if specified
-        if (referenceInventoryFile != null) {
-            referenceInventory = new InventoryReader().readInventory(referenceInventoryFile);
+        if (diffInventoryFile != null) {
+            diffInventory = new InventoryReader().readInventory(diffInventoryFile);
         }
 
         Inventory projectInventory = new Inventory();
@@ -470,14 +486,14 @@ public class InventoryReport {
         projectInventory.filterLicenseMetaData();
 
         // write reports
-        writeArtifactReport(projectInventory);
-        writePackageReport(projectInventory);
-        writeComponentReport(projectInventory);
-        writeDiffReport(referenceInventory, projectInventory);
-        writeObligationSummary(projectInventory);
-        writeLicenseSummary(projectInventory);
+        writeArtifactReport(projectInventory, reportContext);
+        writePackageReport(projectInventory, reportContext);
+        writeComponentReport(projectInventory, reportContext);
+        writeDiffReport(diffInventory, projectInventory, reportContext);
+        writeObligationSummary(projectInventory, reportContext);
+        writeLicenseSummary(projectInventory, reportContext);
 
-        writeMavenPom(projectInventory);
+        writeMavenPom(projectInventory, reportContext);
 
         // evaluate licenses only for managed artifacts
         List<String> licenses = projectInventory.evaluateLicenses(false, true);
@@ -543,38 +559,24 @@ public class InventoryReport {
         return true;
     }
 
-    protected Inventory readGlobalInventory() throws IOException, FileNotFoundException {
-        Resource globalInventoryResource = inferPathFile(globalInventoryPath);
-
-        // read global inventory with manual managed meta data
-        InputStream in = globalInventoryResource.getInputStream();
-        Inventory globalInventory = null;
-        try {
-            globalInventory = new InventoryReader().readInventory(in);
-        } finally {
-            in.close();
-        }
-        return globalInventory;
-    }
-
-    protected void writeComponentReport(Inventory projectInventory) throws Exception {
+    protected void writeComponentReport(Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetDitaComponentReportPath != null) {
             produceDita(projectInventory, DITA_COMPONENT_ARTIFACT_REPORT_TEMPLATE, new File(
-                    targetDitaComponentReportPath));
+                    targetDitaComponentReportPath), reportContext);
         }
     }
 
-    protected void writeArtifactReport(Inventory projectInventory) throws Exception {
+    protected void writeArtifactReport(Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetDitaReportPath != null) {
             produceDita(projectInventory, DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE, new File(
-                    targetDitaReportPath));
+                    targetDitaReportPath), reportContext);
         }
     }
 
-    protected void writePackageReport(Inventory projectInventory) throws Exception {
+    protected void writePackageReport(Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetDitaPackageReportPath != null) {
             produceDita(projectInventory, DITA_MAVEN_PACKAGE_REPORT_TEMPLATE, new File(
-                    targetDitaPackageReportPath));
+                    targetDitaPackageReportPath), reportContext);
         }
     }
 
@@ -613,20 +615,29 @@ public class InventoryReport {
         return missingNotice;
     }
 
-    private boolean checkAndCopyLicenseFolder(String licenseFolderName, String targetLicenseFolder,
-          boolean derived, Set<String> reportedLicenseFolders) {
-        File sourceDir = new File(licenseSourcePath);
-        File targetDir = new File(licenseTargetPath);
-        File derivedFile = new File(sourceDir, licenseFolderName);
+    /**
+     * Checks whether the required folders and files exist.
+     *
+     * @param licenseFolderName
+     * @param targetDir
+     * @param reportedLicenseFolders
+     *
+     * @return true if all information is available.
+     */
+    private boolean checkAndCopyLicenseFolder(String licenseFolderName, File targetDir,
+          Set<String> reportedLicenseFolders) {
+
+        File sourceLicenseRootDir = new File(getGlobalInventoryDir(), referenceLicensePath);
+
+        File derivedFile = new File(sourceLicenseRootDir, licenseFolderName);
         if (derivedFile.exists()) {
-            copyLicense(sourceDir, licenseFolderName, targetLicenseFolder, targetDir);
+            copyFolderContent(sourceLicenseRootDir, licenseFolderName, targetDir);
         } else {
             if (!reportedLicenseFolders.contains(licenseFolderName)) {
-                final String derivedText = derived ? "derived " : "";
                 if (failOnMissingLicenseFile) {
-                    LOG.error("No {}license file in folder '{}'", derivedText, licenseFolderName);
+                    LOG.error("No license file in folder '{}'", licenseFolderName);
                 } else {
-                    LOG.warn("No {}license file in folder '{}'", derivedText, licenseFolderName);
+                    LOG.warn("No license file in folder '{}'", licenseFolderName);
                 }
                 reportedLicenseFolders.add(licenseFolderName);
                 return true;
@@ -635,117 +646,117 @@ public class InventoryReport {
         return false;
     }
 
-    public boolean evaluateLicenseFiles(Inventory projectInventory) {
-        Set<String> reportedLicenseFolders = new HashSet<>();
-        boolean missingLicenseFile = false;
-        if (licenseTargetPath != null && licenseSourcePath != null) {
-            // copy all touched licenses to the given folder
-            File sourceDir = new File(licenseSourcePath);
-            if (!sourceDir.exists()) {
-                sourceDir.mkdirs();
+    private boolean checkAndCopyComponentFolder(String componentFolderName, File targetDir,
+            Set<String> reportedLicenseFolders) {
+
+        File sourceComponentRootDir = new File(getGlobalInventoryDir(), referenceComponentPath);
+
+        File derivedFile = new File(sourceComponentRootDir, componentFolderName);
+        if (derivedFile.exists()) {
+            copyFolderContent(sourceComponentRootDir, componentFolderName, targetDir);
+        } else {
+            if (!reportedLicenseFolders.contains(componentFolderName)) {
+                if (failOnMissingLicenseFile) {
+                    LOG.error("No component-specific license file in folder '{}'", componentFolderName);
+                } else {
+                    LOG.warn("No component-specific license file in folder '{}'", componentFolderName);
+                }
+                reportedLicenseFolders.add(componentFolderName);
+                return true;
             }
-            File targetDir = new File(licenseTargetPath);
-            if (!targetDir.exists()) {
-                targetDir.mkdirs();
+        }
+        return false;
+    }
+
+    private boolean evaluateLicenseFiles(Inventory projectInventory) {
+        Set<String> reportedSourceFolders = new HashSet<>();
+        boolean missingFiles = false;
+
+        for (Artifact artifact : projectInventory.getArtifacts()) {
+            // skip artifact which are not ready for distribution
+            if (!artifact.isEnabledForDistribution()) {
+                continue;
             }
 
-            for (Artifact artifact : projectInventory.getArtifacts()) {
-                // skip artifact which are not ready for distribution
-                if (!artifact.isEnabledForDistribution()) {
-                    continue;
-                }
+            String sourceLicense = artifact.getLicense();
 
-                // FIXME: this check is only valid, when the input inventory only contains scan results; not applicable
-                //  for BOMs in the workbench or with an unresolved inventory as input
-                // if (artifact.getVersion() != null && artifact.getVersion().contains(ASTERISK)) {
-                //    throw new IllegalStateException(String.format("The reported artifact has a wildcard version: %s/%s", artifact.getId(), artifact.getVersion()));
-                // }
+            // without source license, no license meta data, no license texts / notices
+            if (!StringUtils.hasText(sourceLicense)) {
+                continue;
+            }
 
-                String sourceLicense = artifact.getLicense();
+            boolean isArtifactVersionWildcard = ASTERISK.equalsIgnoreCase(artifact.getVersion());
 
-                // without source license, no license meta data, no license texts / notices
-                if (!StringUtils.hasText(sourceLicense)) {
-                    continue;
-                }
+            // try to resolve component license meta data if available
+            final LicenseMetaData matchingLicenseMetaData = projectInventory.
+                    findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, artifact.getVersion());
 
-                // copy source license folder (license-name-specific only)
-                String licenseFolderName = LicenseMetaData.deriveLicenseFolderName(sourceLicense);
-                missingLicenseFile |= checkAndCopyLicenseFolder(licenseFolderName, licenseFolderName,
-                    false, reportedLicenseFolders);
+            // derive effective (license) and version
+            String effectiveLicense = artifact.getLicense();
+            boolean isMetaDataVersionWildcard = false;
+            if (matchingLicenseMetaData != null) {
+                effectiveLicense = matchingLicenseMetaData.deriveLicenseInEffect();
+                isMetaDataVersionWildcard = ASTERISK.equalsIgnoreCase(matchingLicenseMetaData.getVersion());
+            }
+            effectiveLicense = effectiveLicense.replaceAll("/s*,/s*", "|");
 
-                // try to resolve component license meta data if available
-                final LicenseMetaData matchingLicenseMetaData = projectInventory.
-                        findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, artifact.getVersion());
+            final String componentFolderName = LicenseMetaData.deriveComponentFolderName(artifact.getComponent());
+            final String versionUnspecificPath = componentFolderName;
+            final String versionSpecificPath = componentFolderName + "-" + artifact.getVersion();
 
-                boolean isArtifactVersionSpecific = artifact.isVerified();
-                boolean isSourceLicenseDataVersionSpecific = matchingLicenseMetaData == null ? isArtifactVersionSpecific :
-                    !matchingLicenseMetaData.getVersion().equals("*");
+            // determine source path on license meta data level the version in wildcard; we derived all versions
+            // have the same license; one notice for all; one source folder for all
+            final String sourcePath = isMetaDataVersionWildcard ? versionUnspecificPath : versionSpecificPath;
 
-                // copy derived, component-specific source license folder
-                if (artifact.getComponent() != null) {
-                    String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getComponent());
-                    String versionUnspecificPath =  licenseFolderName + "/" + componentFolderName;
-                    String versionSpecificPath = versionUnspecificPath + "-" + artifact.getVersion();
+            // determine target path (always artifact version centric; no information may be available)
+            final String targetPath = isArtifactVersionWildcard ? versionUnspecificPath : versionSpecificPath;
 
-                    if (!isArtifactVersionSpecific && !isSourceLicenseDataVersionSpecific) {
-                        missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath,
-                                versionSpecificPath, true, reportedLicenseFolders);
-                    } else {
-                        missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath,
-                                versionSpecificPath, true, reportedLicenseFolders);
-                    }
-                }
+            // copy touched components to target component folder
+            if (targetComponentDir != null) {
+                missingFiles |= checkAndCopyComponentFolder(sourcePath,
+                        new File(targetComponentDir, targetPath), reportedSourceFolders);
+            }
 
-                // support for license mapping / effective licenses in license meta data
-                if (matchingLicenseMetaData != null) {
-                    final String[] effectiveLicenses = matchingLicenseMetaData.deriveLicenseInEffect().split("\\|");
-                    for (String licenseInEffect : effectiveLicenses) {
-                        String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
+            // now sort component folders into the effective license folders
+            if (targetLicenseDir != null) {
+                final String[] effectiveLicenses = effectiveLicense.split("\\|");
+                for (String licenseInEffect : effectiveLicenses) {
+                    String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
 
-                        // in any case copy the component/version unspecific license folder
-                        checkAndCopyLicenseFolder(effectiveLicenseFolderName, effectiveLicenseFolderName, false, reportedLicenseFolders);
+                    // in any case copy the license license folder
+                    missingFiles |= checkAndCopyLicenseFolder(effectiveLicenseFolderName,
+                            new File(targetLicenseDir, effectiveLicenseFolderName), reportedSourceFolders);
 
-                        String componentFolderName = LicenseMetaData.deriveLicenseFolderName(artifact.getComponent());
-                        String versionUnspecificPath =  licenseFolderName + "/" + componentFolderName;
-                        String versionSpecificPath = versionUnspecificPath + "-" + artifact.getVersion();
-
-                        String versionUnspecificTargetPath =  effectiveLicenseFolderName + "/" + componentFolderName;
-                        String versionSpecificTargetPath = versionUnspecificTargetPath + "-" + artifact.getVersion();
-
-                        if (!isArtifactVersionSpecific && !isSourceLicenseDataVersionSpecific) {
-                            missingLicenseFile |= checkAndCopyLicenseFolder(versionUnspecificPath,
-                                    versionSpecificTargetPath, true, reportedLicenseFolders);
-                        } else {
-                            missingLicenseFile |= checkAndCopyLicenseFolder(versionSpecificPath,
-                                    versionSpecificTargetPath, true, reportedLicenseFolders);
-                        }
-                    }
+                    // copy the component folder into the effective license folder
+                    File licenseTargetDir = new File(targetLicenseDir, effectiveLicenseFolderName);
+                    missingFiles |= checkAndCopyComponentFolder(sourcePath,
+                            new File(licenseTargetDir, targetPath), reportedSourceFolders);
                 }
             }
         }
-        return missingLicenseFile;
+        return missingFiles;
     }
 
-    protected void writeLicenseSummary(Inventory projectInventory) throws Exception {
+    protected void writeLicenseSummary(Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetDitaLicenseReportPath != null) {
             produceDita(projectInventory, DITA_LICENSE_TEMPLATE, new File(
-                    targetDitaLicenseReportPath));
+                    targetDitaLicenseReportPath), reportContext);
         }
     }
 
-    protected void writeObligationSummary(Inventory projectInventory) throws Exception {
+    protected void writeObligationSummary(Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetDitaNoticeReportPath != null) {
-            produceDita(projectInventory, DITA_NOTICE_TEMPLATE, new File(targetDitaNoticeReportPath));
+            produceDita(projectInventory, DITA_NOTICE_TEMPLATE, new File(targetDitaNoticeReportPath), reportContext);
         }
     }
 
-    protected void writeMavenPom(Inventory projectInventory) throws Exception {
+    protected void writeMavenPom(Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetMavenPomPath != null) {
-            produceDita(projectInventory, MAVEN_POM_TEMPLATE, new File(targetMavenPomPath));
+            produceDita(projectInventory, MAVEN_POM_TEMPLATE, new File(targetMavenPomPath), reportContext);
         }
     }
 
-    protected void writeDiffReport(Inventory referenceInventory, Inventory projectInventory) throws Exception {
+    protected void writeDiffReport(Inventory referenceInventory, Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetDitaDiffPath != null) {
             if (referenceInventory != null) {
                 for (Artifact artifact : projectInventory.getArtifacts()) {
@@ -774,39 +785,38 @@ public class InventoryReport {
                 }
             }
 
-            produceDita(filteredInventory, DITA_DIFF_TEMPLATE, new File(targetDitaDiffPath));
+            produceDita(filteredInventory, DITA_DIFF_TEMPLATE, new File(targetDitaDiffPath), reportContext);
         }
     }
 
     /**
-     * Copies all files located in licenseSourceDir/licenseFolder to targetDir. No subdirectories are
+     * Copies all files located in sourceRootDir/sourcePath to targetRootDir. No subdirectories are
      * copied.
      *
-     * @param licenseSourceDir
-     * @param licenseFolder
-     * @param targetLicenseFolder
+     * @param sourceRootDir
+     * @param sourcePath
      * @param targetDir
      */
-    private void copyLicense(File licenseSourceDir, String licenseFolder, String targetLicenseFolder, File targetDir) {
+    private void copyFolderContent(File sourceRootDir, String sourcePath, File targetDir) {
         Copy copy = new Copy();
         copy.setProject(new Project());
         FileSet fileSet = new FileSet();
-        fileSet.setDir(new File(licenseSourceDir, licenseFolder));
-        fileSet.setIncludes(ASTERISK);
+        fileSet.setDir(new File(sourceRootDir, sourcePath));
+        fileSet.setIncludes("**/*");
         copy.setIncludeEmptyDirs(false);
         copy.setFailOnError(true);
         copy.setOverwrite(true);
         copy.addFileset(fileSet);
-        copy.setTodir(new File(targetDir, targetLicenseFolder));
+        copy.setTodir(targetDir);
         copy.perform();
 
         // verify something was copied
-        if (!new File(licenseSourceDir, licenseFolder).exists()) {
-            throw new IllegalStateException("File copied, but not available in target location");
+        if (!new File(sourceRootDir, sourcePath).exists()) {
+            throw new IllegalStateException("Files copied, but no result in found in target location");
         }
     }
 
-    private void produceDita(Inventory projectInventory, String templateResourcePath, File target)
+    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext)
             throws Exception {
         String ENCODING_UTF_8 = "UTF-8";
         Properties properties = new Properties();
@@ -826,25 +836,19 @@ public class InventoryReport {
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
 
+        context.put("reportContext", reportContext);
+
         template.merge(context, sw);
 
-        FileUtils.write(target, sw.toString());
+        FileUtils.write(target, sw.toString(), "UTF-8");
     }
 
-    public String getGlobalInventoryPath() {
-        return globalInventoryPath;
+    public File getDiffInventoryFile() {
+        return diffInventoryFile;
     }
 
-    public void setGlobalInventoryPath(String globalInventoryPath) {
-        this.globalInventoryPath = globalInventoryPath;
-    }
-
-    public String getReferenceInventoryPath() {
-        return referenceInventoryPath;
-    }
-
-    public void setReferenceInventoryPath(String referenceInventoryPath) {
-        this.referenceInventoryPath = referenceInventoryPath;
+    public void setDiffInventoryFile(File diffInventoryFile) {
+        this.diffInventoryFile = diffInventoryFile;
     }
 
     public String getRepositoryPath() {
@@ -1003,20 +1007,36 @@ public class InventoryReport {
         this.artifactFilter = artifactFilter;
     }
 
-    public String getLicenseTargetPath() {
-        return licenseTargetPath;
+    public File getTargetLicenseDir() {
+        return targetLicenseDir;
     }
 
-    public void setLicenseTargetPath(String licenseTargetPath) {
-        this.licenseTargetPath = licenseTargetPath;
+    public File getTargetComponentDir() {
+        return targetComponentDir;
     }
 
-    public String getLicenseSourcePath() {
-        return licenseSourcePath;
+    public void setTargetComponentDir(File targetComponentPath) {
+        this.targetComponentDir = targetComponentPath;
     }
 
-    public void setLicenseSourcePath(String licenseSourcePath) {
-        this.licenseSourcePath = licenseSourcePath;
+    public void setTargetLicenseDir(File targetLicensePath) {
+        this.targetLicenseDir = targetLicensePath;
+    }
+
+    public String getReferenceLicensePath() {
+        return referenceLicensePath;
+    }
+
+    public void setReferenceLicensePath(String referenceLicensePath) {
+        this.referenceLicensePath = referenceLicensePath;
+    }
+
+    public String getReferenceComponentPath() {
+        return referenceComponentPath;
+    }
+
+    public void setReferenceComponentPath(String referenceComponentPath) {
+        this.referenceComponentPath = referenceComponentPath;
     }
 
     public String getRelativeLicensePath() {
@@ -1092,13 +1112,45 @@ public class InventoryReport {
 
         // support line wrapping
         escaped = escaped.replaceAll("\\.", ".&#8203;");
-        escaped = escaped.replaceAll("\\-", "-&#8203;");
-        escaped = escaped.replaceAll("\\_", "_&#8203;");
+        escaped = escaped.replaceAll("-", "-&#8203;");
+        escaped = escaped.replaceAll("_", "_&#8203;");
 
         return escaped;
     }
 
     public void setTargetDitaPackageReportPath(String targetDitaPackageReportPath) {
         this.targetDitaPackageReportPath = targetDitaPackageReportPath;
+    }
+
+    public File getGlobalInventoryDir() {
+        return referenceInventoryDir;
+    }
+
+    public void setReferenceInventoryDir(File globalInventoryDir) {
+        this.referenceInventoryDir = globalInventoryDir;
+    }
+
+    public String getReferenceInventoryIncludes() {
+        return referenceInventoryIncludes;
+    }
+
+    public void setReferenceInventoryIncludes(String referenceInventoryIncludes) {
+        this.referenceInventoryIncludes = referenceInventoryIncludes;
+    }
+
+    public File getTargetInventoryDir() {
+        return targetInventoryDir;
+    }
+
+    public void setTargetInventoryDir(File targetInventoryDir) {
+        this.targetInventoryDir = targetInventoryDir;
+    }
+
+    public ReportContext getReportContext() {
+        return reportContext;
+    }
+
+    public void setReportContext(ReportContext reportContext) {
+        this.reportContext = reportContext;
     }
 }

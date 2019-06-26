@@ -15,13 +15,6 @@
  */
 package org.metaeffekt.core.maven.jira.util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
@@ -31,6 +24,9 @@ import org.codehaus.jackson.map.SerializationConfig.Feature;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.POJONode;
+
+import java.io.IOException;
+import java.util.*;
 
 /** Transformer to convert between object trees and the string representation of JSON data. */
 public class JsonTransformer {

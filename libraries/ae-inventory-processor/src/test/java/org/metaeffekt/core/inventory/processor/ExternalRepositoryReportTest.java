@@ -15,160 +15,65 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-
-import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
 @Ignore
 public class ExternalRepositoryReportTest {
 
-    private static final String INVENTORY = "/Users/kklein/workspace/metaeffekt-inventory/src/main/resources/inventory/artifact-inventory.xls";
-    private static final String LICENSES_FOLDER = "/Users/kklein/workspace/metaeffekt-inventory/src/main/resources/licenses";
-    public static final String TARGET_FOLDER = "target/test-external";
-
-    @Test
-    public void testInventoryReport() throws Exception {
-
-        InventoryReport report = new InventoryReport();
-        report.setFailOnUnknown(false);
-        report.setFailOnUnknownVersion(false);
-        report.setGlobalInventoryPath(INVENTORY);
-
-        final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
-
-        // apply modifications to simulate defined cases.
-        final List<Artifact> artifacts = new ArrayList<>(inventory.getArtifacts());
-        inventory.getArtifacts().removeAll(artifacts);
-        for (Artifact artifact: artifacts) {
-            if (!artifact.getId().contains(ASTERISK)) {
-                final Artifact candidate = new Artifact();
-                candidate.setId(artifact.getId());
-                candidate.deriveArtifactId();
-                inventory.getArtifacts().add(candidate);
-            }
-        }
-        inventory.getLicenseMetaData().clear();
-
-        final Artifact candidate = new Artifact();
-        candidate.setId("effluxlib-1.3.83.jar");
-        candidate.deriveArtifactId();
-        inventory.getArtifacts().add(candidate);
-
-        report.setRepositoryInventory(inventory);
-
-        PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
-        artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
-        report.setArtifactFilter(artifactFilter);
-
-        File target = new File(TARGET_FOLDER);
-        target.mkdirs();
-        File licenseReport = new File(target, "license.dita");
-        File componentReport = new File(target, "component-report.dita");
-        File noticeReport = new File(target, "notice.dita");
-        File artifactReport = new File(target, "artifacts.dita");
-        File mavenPom = new File(target, "ae-pom.xml");
-
-        report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
-        report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
-        report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
-        report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
-        report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
-
-        report.setTargetInventoryPath(new File(TARGET_FOLDER, "inventory.xls").getPath());
-
-        report.setLicenseSourcePath(LICENSES_FOLDER);
-        report.setLicenseTargetPath(new File(target, "licenses").getAbsolutePath());
-
-        report.createReport();
-
-        Inventory resultInventory = new InventoryReader().readInventory(new File(report.getTargetInventoryPath()));
-
-        final Artifact artifact = resultInventory.findArtifact(candidate.getId());
-        Assert.assertNotNull(artifact);
-        Assert.assertEquals(artifact.getId(), candidate.getId());
-        Assert.assertEquals("effluxlib-1.3.83.jar", artifact.getId());
-        Assert.assertEquals("1.3.83", artifact.getVersion());
-
-    }
-
-    @Test
-    public void testInventory() throws IOException {
-        UpdateVersionRecommendationProcessor processor = new UpdateVersionRecommendationProcessor();
-        final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
-        processor.process(inventory);
-
-        final Artifact candidate = new Artifact();
-        candidate.setLicense("L");
-        candidate.setGroupId("org.springframework");
-        candidate.setVersion("4.2.9.RELEASE");
-        candidate.setId("spring-aop-4.2.9.RELEASE.jar");
-        candidate.deriveArtifactId();
-
-        Assert.assertNull(inventory.findArtifact(candidate));
-        final Artifact artifactClassificationAgnostic = inventory.findArtifactClassificationAgnostic(candidate);
-        Assert.assertNotNull(artifactClassificationAgnostic);
-        System.out.println(artifactClassificationAgnostic);
-
-
-        // test that any artifact can be addressed by id only (relevant for scan based bom generation)
-        for (Artifact artifact : inventory.getArtifacts()) {
-            if (artifact.getId() != null) {
-                if (artifact.getId().endsWith(".jar")) {
-                    Assert.assertEquals(artifact.getId(), "jar", artifact.getType());
-                }
-
-                Artifact artifact1 = new Artifact();
-                artifact1.setId(artifact.getId());
-                Assert.assertNull(inventory.findArtifact(artifact1));
-                Assert.assertNull(inventory.findArtifact(artifact1, false));
-                Assert.assertNotNull(inventory.findArtifact(artifact1, true));
-
-                if (StringUtils.isNotBlank(artifact.getGroupId())) {
-                    // note: type and classifier are inferred from id
-                    artifact1.setGroupId(artifact.getGroupId());
-                    artifact1.setVersion(artifact.getVersion());
-                    artifact1.deriveArtifactId();
-                    System.out.println(artifact);
-                    Assert.assertNotNull(inventory.findArtifact(artifact1, false));
-                }
-            }
-        }
-    }
+    private static final File INVENTORY_DIR = new File("/Users/kklein/workspace/spring-boot-example/inventory/src/main/resources");
+    private static final String INVENTORY_INCLUDES = "inventory/*.xls";
+    private static final String LICENSE_FOLDER = "licenses";
+    private static final String COMPONENT_FOLDER = "components";
 
     @Test
     public void testValidateInventoryProcessor() throws IOException {
-        final Inventory inventory = new InventoryReader().readInventory(new File(INVENTORY));
+        final Inventory inventory = InventoryUtils.readInventory(INVENTORY_DIR, INVENTORY_INCLUDES);
 
         Properties properties = new Properties();
-        properties.setProperty(ValidateInventoryProcessor.LICENSES_DIR, LICENSES_FOLDER);
-
-        // MavenCentralGroupIdProcessor groupIdProcessor = new MavenCentralGroupIdProcessor(properties);
-        // groupIdProcessor.process(inventory);
+        properties.setProperty(ValidateInventoryProcessor.LICENSES_DIR, new File(INVENTORY_DIR, LICENSE_FOLDER).getAbsolutePath());
+        properties.setProperty(ValidateInventoryProcessor.COMPONENTS_DIR, new File(INVENTORY_DIR, COMPONENT_FOLDER).getAbsolutePath());
 
         ValidateInventoryProcessor validateInventoryProcessor = new ValidateInventoryProcessor(properties);
         validateInventoryProcessor.process(inventory);
+    }
 
-        final Artifact candidate = new Artifact();
-        candidate.setId("effluxlib-1.8.83.jar");
-        candidate.deriveArtifactId();
+    @Ignore
+    @Test
+    public void testValidateInventoryProcessor_WorkbenchInput() throws IOException {
+        boolean enableDeleteObsolete = false;
 
-        Artifact found = inventory.findArtifact(candidate.getId());
-        Assert.assertNotNull(found);
+        final File inventoryDir = new File("/Users/kklein/workspace/ae-workbench-input/common");
+        final Inventory inventory = InventoryUtils.readInventory(inventoryDir, INVENTORY_INCLUDES);
+
+        File licensesDir = new File(inventoryDir, LICENSE_FOLDER);
+        File componentsDir = new File(inventoryDir, COMPONENT_FOLDER);
+
+        Properties properties = new Properties();
+
+        properties.setProperty(ValidateInventoryProcessor.LICENSES_DIR, licensesDir.getPath());
+//        properties.setProperty(ValidateInventoryProcessor.LICENSES_TARGET_DIR, licensesTargetDir.getPath());
+
+        properties.setProperty(ValidateInventoryProcessor.COMPONENTS_DIR, componentsDir.getPath());
+//        properties.setProperty(ValidateInventoryProcessor.COMPONENTS_TARGET_DIR, componentsTargetDir.getPath());
+
+        properties.setProperty(ValidateInventoryProcessor.FAIL_ON_ERROR, Boolean.TRUE.toString());
+        properties.setProperty(ValidateInventoryProcessor.CREATE_LICENSE_FOLDERS, Boolean.TRUE.toString());
+        properties.setProperty(ValidateInventoryProcessor.CREATE_COMPONENT_FOLDERS, Boolean.TRUE.toString());
+
+        if (enableDeleteObsolete) {
+            properties.setProperty(ValidateInventoryProcessor.DELETE_LICENSE_FOLDERS, Boolean.TRUE.toString());
+            properties.setProperty(ValidateInventoryProcessor.DELETE_COMPONENT_FOLDERS, Boolean.TRUE.toString());
+        }
+
+        ValidateInventoryProcessor validateInventoryProcessor = new ValidateInventoryProcessor(properties);
+        validateInventoryProcessor.process(inventory);
     }
 
 }

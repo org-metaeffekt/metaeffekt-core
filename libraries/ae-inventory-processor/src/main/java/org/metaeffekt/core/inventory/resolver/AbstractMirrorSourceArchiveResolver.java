@@ -15,18 +15,9 @@
  */
 package org.metaeffekt.core.inventory.resolver;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.springframework.core.io.FileSystemResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

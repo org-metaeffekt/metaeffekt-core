@@ -134,7 +134,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
             }
 
             // if the column in not known we store the content in the key/value store
-            if (value != null) {
+            if (StringUtils.hasText(value)) {
                 artifact.set(columnName, value.trim());
             }
         }

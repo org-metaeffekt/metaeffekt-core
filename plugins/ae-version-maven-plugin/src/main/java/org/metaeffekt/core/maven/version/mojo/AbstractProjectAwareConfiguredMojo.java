@@ -16,7 +16,6 @@
 package org.metaeffekt.core.maven.version.mojo;
 
 import org.apache.maven.project.MavenProject;
-
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
 

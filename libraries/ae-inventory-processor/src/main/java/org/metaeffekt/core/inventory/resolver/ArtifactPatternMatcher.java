@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.resolver;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**

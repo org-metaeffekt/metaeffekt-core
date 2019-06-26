@@ -15,14 +15,14 @@
  */
 package org.metaeffekt.core.maven.jira.template;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.io.FileUtils;
 
 public class TemplateConfigurationParser {
 

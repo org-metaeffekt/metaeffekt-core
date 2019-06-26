@@ -32,7 +32,8 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.List;
+import java.util.Properties;
 
 public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor {
 

@@ -80,10 +80,14 @@ public class LicenseMetaData extends AbstractModelBase {
         this.comment = licenseMetaData.comment;
     }
 
-    // FIXME: we should also copy the folder with the license in effect
     public static String deriveLicenseFolderName(String license) {
         if (license == null) return null;
         return normalizeId(license);
+    }
+
+    public static String deriveComponentFolderName(String componentName) {
+        if (componentName == null) return null;
+        return normalizeId(componentName);
     }
 
     public static String normalizeId(String string) {

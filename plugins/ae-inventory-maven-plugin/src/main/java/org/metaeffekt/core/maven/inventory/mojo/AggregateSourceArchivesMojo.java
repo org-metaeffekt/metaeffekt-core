@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Mojo dedicated to automated aggregation of sources. For each artifact in the provided inventory the license meta data
@@ -56,6 +55,7 @@ import java.util.stream.Collectors;
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
     public static final String DELIMITER_NEWLINE = String.format("%n");
+
     /**
      * The ArtifactResolver to be used.
      */

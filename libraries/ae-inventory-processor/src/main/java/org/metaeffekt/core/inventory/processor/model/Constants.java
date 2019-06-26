@@ -22,6 +22,9 @@ public final class Constants {
     public static final String STRING_EMPTY = "";
 
     public static final char DELIMITER_COLON = ':';
+    public static final char DELIMITER_DASH = '-';
+    public static final char DELIMITER_PIPE = '|';
+    public static final char DELIMITER_COMMA = ',';
 
     protected Constants() {};
 

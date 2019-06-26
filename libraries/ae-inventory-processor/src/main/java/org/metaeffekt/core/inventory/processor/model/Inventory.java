@@ -19,11 +19,12 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
-import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
  * Class representing an inventory of artifact and license meta data. The implementation
@@ -923,16 +924,13 @@ public class Inventory {
         final Map<String, Artifact> currentArtifactMap = new HashMap<>();
         for (Artifact artifact : getArtifacts()) {
             artifact.deriveArtifactId();
-            String qualifier = artifact.getId();
-            if (qualifier != null) {
-                currentArtifactMap.put(qualifier, artifact);
-            }
+            String artifactQualifier = artifact.deriveQualifier();
+            currentArtifactMap.put(artifactQualifier, artifact);
         }
         for (Artifact artifact : inputInventory.getArtifacts()) {
             artifact.deriveArtifactId();
-            String qualifier = artifact.getId();
-            // NOTE: the qualifier will be extended by the checksum once we have it.
-            if (qualifier != null && currentArtifactMap.containsKey(qualifier)) {
+            String qualifier = artifact.deriveQualifier();
+            if (currentArtifactMap.containsKey(qualifier)) {
                 // overwrite; the current inventory contains the artifact.
                 if (infoOnOverwrite) {
                     Artifact currentArtifact = currentArtifactMap.get(qualifier);

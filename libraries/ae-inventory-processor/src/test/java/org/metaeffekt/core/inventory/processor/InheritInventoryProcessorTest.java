@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 

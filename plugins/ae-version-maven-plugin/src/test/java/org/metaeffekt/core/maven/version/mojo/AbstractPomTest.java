@@ -15,11 +15,6 @@
  */
 package org.metaeffekt.core.maven.version.mojo;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
@@ -27,8 +22,12 @@ import org.apache.tools.ant.types.FileSet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.metaeffekt.core.common.kernel.ant.log.LoggingProjectAdapter;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public abstract class AbstractPomTest {

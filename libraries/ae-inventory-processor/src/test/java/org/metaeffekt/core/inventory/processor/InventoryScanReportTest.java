@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
 
 import java.io.File;
@@ -27,8 +26,10 @@ import java.util.List;
 
 public class InventoryScanReportTest {
 
-    private static final String GLOBAL_INVENTORY =
-            "../../inventory/src/main/resources/META-INF/ae-core-artifact-inventory.xls";
+    private static final File GLOBAL_INVENTORY_DIR = new File(
+            "../../inventory/src/main/resources/META-INF/");
+    private static final String GLOBAL_INVENTORY_INCLUDES =
+            "ae-core-artifact-inventory.xls";
 
     /**
      * Local test based on sample artifact. Ignored in general build.
@@ -41,7 +42,8 @@ public class InventoryScanReportTest {
     @Ignore
     public void testInventory() throws Exception {
         InventoryScanReport report = new InventoryScanReport();
-        report.setGlobalInventoryPath(GLOBAL_INVENTORY);
+        report.setReferenceInventoryDir(GLOBAL_INVENTORY_DIR);
+        report.setReferenceInventoryIncludes(GLOBAL_INVENTORY_INCLUDES);
         report.setInputDirectory(new File("C:/dev/tmp/bominput"));
         report.setScanDirectory(new File("C:/dev/tmp/bomscan"));
         report.setTargetInventoryPath("C:/dev/tmp/bomscan/report.xls");
@@ -65,7 +67,9 @@ public class InventoryScanReportTest {
     public void testProjectInventory() throws Exception {
 
         InventoryScanReport report = new InventoryScanReport();
-        report.setGlobalInventoryPath(GLOBAL_INVENTORY);
+        report.setReferenceInventoryDir(GLOBAL_INVENTORY_DIR);
+        report.setReferenceInventoryIncludes(GLOBAL_INVENTORY_INCLUDES);
+
         report.setInputDirectory(new File("--somewhere--"));
         report.setScanDirectory(new File("target/bomscan"));
         report.setTargetInventoryPath("target/report.xls");

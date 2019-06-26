@@ -20,7 +20,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.metaeffekt.core.inventory.processor.AbstractInventoryProcessor;
 
 import java.util.Properties;
 

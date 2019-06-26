@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_third-party-license-summary" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>Licenses in Effect</title>
+<topic id="tpc_license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
 #foreach($license in $inventory.evaluateLicenses(false))
 #set($folder=$inventory.getLicenseFolder($license))
 #set($group=$inventory.evaluateComponents($license))
@@ -16,7 +16,7 @@
         </p>
         <p>
             <table otherprops="wide">
-                <title>Components under $license.trim()</title>
+                <title>Components under $license.trim()$reportContext.inContextOf()</title>
                 <tgroup cols="2">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />

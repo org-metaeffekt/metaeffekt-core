@@ -42,13 +42,44 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private ArtifactRepository localRepository;
 
     /**
+     * The root inventory dir.
+     *
      * @parameter
      * @required
      */
-    private String sourceInventoryPath;
+    private File sourceInventoryDir;
 
     /**
-     * @parameter expression="${project.build.directory}/inventory/${project.artifactId}-${project.version}-inventory.xls"
+     * Includes of the source inventory; relative to the sourceInventoryDir.
+     *
+     * @parameter default-value="*.xls*"
+     * @required
+     */
+    private String sourceInventoryIncludes;
+
+    /**
+     * Location of components relative to the sourceInventoryDir.
+     *
+     * @parameter default-value="components"
+     * @required
+     */
+    private String sourceComponentPath;
+
+    /**
+     * Location of licenses relative to the sourceInventoryDir.
+     *
+     * @parameter default-value="licenses"
+     * @required
+     */
+    private String sourceLicensePath;
+
+    /**
+     * @parameter expression="${project.build.directory}/inventory"
+     */
+    private File targetInventoryDir;
+
+    /**
+     * @parameter expression="${project.artifactId}-${project.version}-inventory.xls"
      */
     private String targetInventoryPath;
 
@@ -125,7 +156,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter
      */
-    private String referenceInventoryPath;
+    private File diffInventoryFile;
 
     /**
      * @parameter default-value="false"
@@ -170,13 +201,13 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter
      */
-    private String licenseTargetPath;
+    private File targetLicenseDir;
 
     /**
      * @parameter
      */
-    private String licenseSourcePath;
-    
+    private File targetComponentDir;
+
     /**
      * @parameter default-value="licenses"
      */
@@ -199,22 +230,35 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     }
 
     protected void configureInventoryReport(InventoryReport report) {
-        report.setFailOnDevelopment(isFailOnDevelopment());
-        report.setFailOnError(isFailOnError());
-        report.setFailOnBanned(isFailOnBanned());
-        report.setFailOnDowngrade(isFailOnDowngrade());
-        report.setFailOnInternal(isFailOnInternal());
-        report.setFailOnUnknown(isFailOnUnknown());
-        report.setFailOnUnknownVersion(isFailOnUnknownVersion());
-        report.setFailOnUpgrade(isFailOnUpgrade());
-        report.setFailOnMissingLicense(isFailOnMissingLicense());
-        report.setFailOnMissingLicenseFile(isFailOnMissingLicenseFile());
-        report.setFailOnMissingNotice(isFailOnMissingNotice());
-        report.setGlobalInventoryPath(getSourceInventoryPath());
-        report.setProjectName(getProjectName());
-        report.setTargetInventoryPath(getTargetInventoryPath());
-        
-        report.setReferenceInventoryPath(referenceInventoryPath);
+        report.setProjectName(projectName);
+
+        // report control
+        report.setFailOnDevelopment(failOnDevelopment);
+        report.setFailOnError(failOnError);
+        report.setFailOnBanned(failOnBanned);
+        report.setFailOnDowngrade(failOnDowngrade);
+        report.setFailOnInternal(failOnInternal);
+        report.setFailOnUnknown(failOnUnknown);
+        report.setFailOnUnknownVersion(failOnUnknownVersion);
+        report.setFailOnUpgrade(failOnUpgrade);
+        report.setFailOnMissingLicense(failOnMissingLicense);
+        report.setFailOnMissingLicenseFile(failOnMissingLicenseFile);
+        report.setFailOnMissingNotice(failOnMissingNotice);
+
+        // source inventory settings
+        report.setReferenceInventoryDir(sourceInventoryDir);
+        report.setReferenceInventoryIncludes(sourceInventoryIncludes);
+        report.setReferenceLicensePath(sourceLicensePath);
+        report.setReferenceComponentPath(sourceComponentPath);
+
+        // target inventory settings
+        report.setTargetInventoryDir(targetInventoryDir);
+        report.setTargetInventoryPath(targetInventoryPath);
+        report.setTargetLicenseDir(targetLicenseDir);
+        report.setTargetComponentDir(targetComponentDir);
+
+        // diff settings
+        report.setDiffInventoryFile(diffInventoryFile);
         
         if (enableDita) {
             report.setTargetDitaDiffPath(createDitaPath(targetDitaDiffPath));
@@ -225,10 +269,8 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             report.setTargetDitaNoticeReportPath(createDitaPath(targetDitaNoticeReportPath));
         }
         
-        report.setLicenseSourcePath(licenseSourcePath);
-        report.setLicenseTargetPath(licenseTargetPath);
         report.setRelativeLicensePath(relativeLicensePath);
-        
+
         report.setAddOnArtifacts(addOnArtifacts);
 
         if (artifactExcludes != null) {
@@ -277,14 +319,6 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             MavenLogAdapter.release();
         }
     }
-    
-    public String getReferenceInventoryPath() {
-        return referenceInventoryPath;
-    }
-
-    public void setReferenceInventoryPath(String referenceInventoryPath) {
-        this.referenceInventoryPath = referenceInventoryPath;
-    }
 
     public String getTargetDitaArtifactReportPath() {
         return targetDitaArtifactReportPath;
@@ -325,14 +359,6 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
     public void setLocalRepository(ArtifactRepository localRepository) {
         this.localRepository = localRepository;
-    }
-
-    public String getSourceInventoryPath() {
-        return sourceInventoryPath;
-    }
-
-    public void setSourceInventoryPath(String sourceInventoryPath) {
-        this.sourceInventoryPath = sourceInventoryPath;
     }
 
     public String getTargetInventoryPath() {
@@ -454,5 +480,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     public void setFailOnMissingNotice(boolean failOnMissingNotice) {
         this.failOnMissingNotice = failOnMissingNotice;
     }
+
+
 
 }

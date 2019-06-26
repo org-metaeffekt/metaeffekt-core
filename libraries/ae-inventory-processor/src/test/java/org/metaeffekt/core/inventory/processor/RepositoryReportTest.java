@@ -16,13 +16,13 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.inventory.processor.report.ReportContext;
 
 import java.io.File;
 import java.util.List;
@@ -34,61 +34,85 @@ public class RepositoryReportTest {
 
     public static final String TARGET_FOLDER = "target/test-inventory-01";
 
-    private static final String INVENTORY = "src/test/resources/test-inventory-01/inventory/artifact-inventory.xls";
-    private static final String LICENSES_FOLDER = "src/test/resources/test-inventory-01/licenses";
+    private static final File INVENTORY_DIR = new File("src/test/resources/test-inventory-01");
+    private static final String INVENTORY_INCLUDES = "*.xls";
+    private static final String LICENSES_PATH = "licenses";
+    private static final String COMPONENTS_PATH = "components";
+
     public static final String UTF_8 = "UTF-8";
 
     @Test
     public void testInventoryReport() throws Exception {
 
         InventoryReport report = new InventoryReport();
+
+        report.setReportContext(new ReportContext("test", "Test", "Test Context"));
+
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
-        report.setGlobalInventoryPath(INVENTORY);
-        report.setRepositoryInventory(new InventoryReader().readInventory(new File(INVENTORY)));
+        report.setReferenceInventoryDir(INVENTORY_DIR);
+        report.setReferenceInventoryIncludes(INVENTORY_INCLUDES);
+        report.setReferenceLicensePath(LICENSES_PATH);
+        report.setReferenceComponentPath(COMPONENTS_PATH);
+
+        report.setRepositoryInventory(InventoryUtils.readInventory(INVENTORY_DIR, INVENTORY_INCLUDES));
+
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);
 
         File target = new File(TARGET_FOLDER);
         target.mkdirs();
-        File licenseReport = new File(target, "license.dita");
-        File componentReport = new File(target, "component-report.dita");
-        File noticeReport = new File(target, "notice.dita");
-        File artifactReport = new File(target, "artifacts.dita");
-        File mavenPom = new File(target, "ae-pom.xml");
+
+        File reportTarget = new File(target, "report");
+        reportTarget.mkdirs();
+
+        File licenseReport = new File(reportTarget, "license.dita");
+        File componentReport = new File(reportTarget, "component-report.dita");
+        File noticeReport = new File(reportTarget, "notice.dita");
+        File artifactReport = new File(reportTarget, "artifacts.dita");
+        File packageReport = new File(reportTarget, "packages.dita");
+        File mavenPom = new File(reportTarget, "ae-pom.xml");
+
+        report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
+        report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
+        report.setTargetDitaPackageReportPath(packageReport.getAbsolutePath());
 
         report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
         report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
-        report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
-        report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
         report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
 
-        report.setLicenseSourcePath(LICENSES_FOLDER);
-        final File targetLicensesFolder = new File(target, "licenses");
-        report.setLicenseTargetPath(targetLicensesFolder.getAbsolutePath());
+        final File targetLicensesDir = new File(target, "licenses");
+        final File targetComponentDir = new File(target, "components");
+        report.setTargetLicenseDir(targetLicensesDir);
+        report.setTargetComponentDir(targetComponentDir);
 
         final boolean valid = report.createReport();
 
         assertTrue(valid);
-        assertTrue(targetLicensesFolder.exists());
+        assertTrue(targetLicensesDir.exists());
 
         // check first-level license folders are created as expected
-        assertTrue(new File(targetLicensesFolder, "A-License").exists());
-        assertTrue(new File(targetLicensesFolder, "A-License-B-License").exists());
-        assertTrue(new File(targetLicensesFolder, "B-License").exists());
-        assertTrue(new File(targetLicensesFolder, "D-License").exists());
-        assertTrue(new File(targetLicensesFolder, "G-License-(with-sub-components)").exists());
-        assertFalse(new File(targetLicensesFolder, "T-License").exists());
+        assertTrue(new File(targetLicensesDir, "A-License").exists());
+        assertTrue(new File(targetLicensesDir, "B-License").exists());
+        assertTrue(new File(targetLicensesDir, "D-License").exists());
+        assertFalse(new File(targetLicensesDir, "T-License").exists());
 
         // check multiple licensed artifacts are multiplied to the different license folders
-        assertTrue(new File(targetLicensesFolder, "A-License-B-License/AlphaBeta-Component-1.0.0").exists());
-        assertTrue(new File(targetLicensesFolder, "A-License/AlphaBeta-Component-1.0.0").exists());
+        assertTrue(new File(targetLicensesDir, "A-License/AlphaBeta-Component-1.0.0").exists());
+        assertTrue(new File(targetComponentDir, "AlphaBeta-Component-1.0.0").exists());
 
         // check license information is multiplied for sub-components
-        assertTrue(new File(targetLicensesFolder, "G-License-(with-sub-components)/Gamma-Component-1.0.0").exists());
-        assertTrue(new File(targetLicensesFolder, "A-License/Gamma-Component-1.0.0").exists());
-        assertTrue(new File(targetLicensesFolder, "B-License/Gamma-Component-1.0.0").exists());
+        assertTrue(new File(targetLicensesDir, "A-License/Gamma-Component-1.0.0").exists());
+        assertTrue(new File(targetLicensesDir, "B-License/Gamma-Component-1.0.0").exists());
+        assertTrue(new File(targetComponentDir, "Gamma-Component-1.0.0").exists());
+
+        // check license information is multiplied for sub-components
+        assertTrue(new File(targetLicensesDir, "A-License/Omega-Component").exists());
+        assertTrue(new File(targetLicensesDir, "B-License/Omega-Component").exists());
+        assertTrue(new File(targetComponentDir, "Omega-Component").exists());
+
+        assertTrue(new File(targetComponentDir, "Sigma-Component-1.0.0").exists());
 
         // check generated DITA files contain the appropriate details
         String artifacts = FileUtils.readFileToString(artifactReport, UTF_8);

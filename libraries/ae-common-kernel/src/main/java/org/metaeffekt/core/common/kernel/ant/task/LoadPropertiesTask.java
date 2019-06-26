@@ -15,14 +15,14 @@
  */
 package org.metaeffekt.core.common.kernel.ant.task;
 
-import java.io.File;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.metaeffekt.core.common.kernel.ant.util.PropertyUtils;
+
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
 
 public class LoadPropertiesTask extends Task {
 

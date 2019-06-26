@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.resolver;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  * Abstraction for resolving files from an URI.

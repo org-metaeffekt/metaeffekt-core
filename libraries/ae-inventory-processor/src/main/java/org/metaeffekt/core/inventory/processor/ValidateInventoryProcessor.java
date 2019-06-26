@@ -43,6 +43,10 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
      */
     public static final String LICENSES_DIR = "licenses.path";
 
+    public static final String COMPONENTS_DIR = "components.path";
+
+    public static final String COMPONENTS_TARGET_DIR = "components.target.path";
+
     /**
      * Allows that the folder creations activities are performed in a different path that the path the license
      * information is read from. Validation is performed against both LICENSES_DIR and LICENSES_TARGET_DIR.
@@ -52,6 +56,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
      * entries from the inventory (and not it's parent).
      */
     public static final String LICENSES_TARGET_DIR = "licenses.target.path";
+
     public static final String CREATE_LICENSE_FOLDERS = "create.license.folders";
     public static final String CREATE_COMPONENT_FOLDERS = "create.component.folders";
 
@@ -59,6 +64,11 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
     public static final String DELETE_COMPONENT_FOLDERS = "delete.component.folders";
 
     public static final String SEPARATOR = "/";
+
+    /**
+     * Support to mark artifacts as matched by wildcard
+     */
+    public static final String KEY_WILDCARD_MATCH = "WILDCARD-MATCH";
 
     public ValidateInventoryProcessor() {
         super();
@@ -72,12 +82,18 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
     public void process(Inventory inventory) {
         boolean error = false;
 
-        final String baseDir = getProperties().getProperty(LICENSES_DIR);
-        if (baseDir == null) {
+        final String licensesBaseDir = getProperties().getProperty(LICENSES_DIR);
+        if (licensesBaseDir == null) {
             throw new IllegalStateException(format("Property '%s' must be set.", LICENSES_DIR));
         }
 
-        final String targetDir = getProperties().getProperty(LICENSES_TARGET_DIR, baseDir);
+        final String componentsBaseDir = getProperties().getProperty(COMPONENTS_DIR);
+        if (componentsBaseDir == null) {
+            throw new IllegalStateException(format("Property '%s' must be set.", COMPONENTS_DIR));
+        }
+
+        final String licensesTargetDir = getProperties().getProperty(LICENSES_TARGET_DIR, licensesBaseDir);
+        final String componentsTargetDir = getProperties().getProperty(COMPONENTS_TARGET_DIR, licensesBaseDir);
 
         final boolean manageLicenseFolders = Boolean.parseBoolean(getProperties().
                 getProperty(CREATE_LICENSE_FOLDERS, FALSE.toString()));
@@ -146,7 +162,27 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
             if (artifact.isEnabledForDistribution()) {
 
-                List<String> splitLicense = getSplitLicenses(license, "\\|");
+                List<String> splitLicenseCand = getSplitLicenses(license, "[\\|,\\+]");
+
+                List<String> splitLicense = new ArrayList<>();
+                for (String singleLicense : splitLicenseCand) {
+                    String converted = singleLicense;
+
+                    // remove addons that do not affect the license content
+                    converted = converted.replace("(or any later version)", "");
+                    converted = converted.replace("or any later version", "");
+                    converted = converted.replace("(with subcomponents)", "");
+                    converted = converted.replace("(with-subcomponents)", "");
+                    converted = converted.trim();
+
+                    // identify licenses without version
+                    boolean undefined = converted.contains("(undefined)");
+
+                    if (!undefined && !splitLicense.contains(converted)) {
+                        splitLicense.add(converted);
+                    }
+                }
+
                 for (String singleLicense : splitLicense) {
                     String licenseFolder = inventory.getLicenseFolder(singleLicense);
                     if (!licenseFoldersFromInventory.contains(licenseFolder)) {
@@ -155,10 +191,12 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                 }
 
                 if (StringUtils.isNotBlank(componentName)) {
+
+                    boolean wildcardMatch = Boolean.valueOf(artifact.get(KEY_WILDCARD_MATCH, FALSE.toString()));
+                    LicenseMetaData matchingLMD = inventory.findMatchingLicenseMetaData(artifact);
+
                     StringBuilder sb = new StringBuilder();
-                    sb.append(LicenseMetaData.normalizeId(license));
-                    sb.append("/");
-                    if (version.equals(ASTERISK)) {
+                    if (ASTERISK.equals(version) || wildcardMatch) {
                         sb.append(LicenseMetaData.normalizeId(componentName));
                     } else {
                         sb.append(LicenseMetaData.normalizeId(componentName + "-" + version));
@@ -280,28 +318,30 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             }
         }
 
-        // 1st level is the license level
-        final String[] licenseDirectories = scanForDirectories(baseDir);
+        // 1st level is the license/component level
+        final String[] licenseDirectories = scanForDirectories(licensesBaseDir);
+        final String[] componentDirectories = scanForDirectories(componentsBaseDir);
 
         final Set<String> licenseFoldersFromDirectory = new HashSet<>();
         for (String file : licenseDirectories) {
             licenseFoldersFromDirectory.add(file);
         }
 
-        // iterate component level for each license folder
-        for (String file : licenseFoldersFromInventory) {
+        final Set<String> componentFoldersFromDirectory = new HashSet<>();
+        for (String file : componentDirectories) {
+            componentFoldersFromDirectory.add(file);
+        }
+
+        // iterate component level for each component folder
+        for (String component : componentFoldersFromDirectory) {
             // check whether this folder is required
-            final String[] componentDirectories = scanForDirectories(new File(new File(baseDir), file).getPath());
-            for (String component : componentDirectories) {
-                String licenseComponent = file + SEPARATOR + component;
-                if (!componentsFromInventory.contains(licenseComponent)) {
-                    if ((manageComponentFolders && isEmptyFolder(baseDir, licenseComponent)) || deleteComponentFolders ) {
-                        removeFolder(baseDir, licenseComponent);
-                    } else {
-                        log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, licenseComponent));
-                        log(format("      Proposal: remove the folder."));
-                        error = true;
-                    }
+            if (!componentsFromInventory.contains(component)) {
+                if ((manageComponentFolders && isEmptyFolder(componentsBaseDir, component)) || deleteComponentFolders ) {
+                    removeFolder(componentsBaseDir, component);
+                } else {
+                    log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, component));
+                    log(format("      Proposal: remove the folder."));
+                    error = true;
                 }
             }
         }
@@ -309,8 +349,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         // check whether license exists in inventory
         for (String file : licenseDirectories) {
             if (!licenseFoldersFromInventory.contains(file)) {
-                if ((manageLicenseFolders && isEmptyFolder(targetDir, file)) || deleteLicenseFolders) {
-                    removeFolder(baseDir, file);
+                if ((manageLicenseFolders && isEmptyFolder(licensesTargetDir, file)) || deleteLicenseFolders) {
+                    removeFolder(licensesBaseDir, file);
                     licenseFoldersFromDirectory.remove(file);
                 } else {
                     log(format("%04d: License folder '%s' does not match any artifact license / effective license in inventory.", index++, file));
@@ -324,8 +364,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         for (String file : licenseFoldersFromInventory) {
             if (!licenseFoldersFromDirectory.contains(file)) {
                 if (manageLicenseFolders) {
-                    if (!new File(baseDir, file).exists()) {
-                        createFolder(baseDir, file);
+                    if (!new File(licensesBaseDir, file).exists() && !new File(licensesTargetDir, file).exists()) {
+                        createFolder(licensesBaseDir, file);
                     }
                 } else {
                     log(format("%04d: License folder missing: %s", index++, file));
@@ -337,27 +377,19 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         // check whether the license folder contains any files
         for (String file : licenseFoldersFromInventory) {
-            if (isEmptyFolder(baseDir, file) && isEmptyFolder(targetDir, file)) {
+            if (isEmptyFolder(licensesBaseDir, file) && isEmptyFolder(licensesTargetDir, file)) {
                 log(format("%04d: License folder '%s' does not contain any license or notice files.", index++, file));
-                log(format("      Proposal: add license and/or notice to the folder."));
+                log(format("      Proposal: add license to the license folder."));
                 error = true;
-            }
-        }
-
-        // create the appropriate folders for licenses
-        for (String licenseFolder : licenseFoldersFromInventory) {
-            if (manageLicenseFolders && !new File(baseDir, licenseFolder).exists()) {
-                File folder = new File(new File(baseDir), licenseFolder);
-                folder.mkdirs();
             }
         }
 
         // check that all component folders exist is missing
         for (String component : componentsFromInventory) {
-            final File componentFolder = new File(new File(baseDir), component);
-            if (!componentFolder.exists()) {
+            final File componentFolder = new File(componentsBaseDir, component);
+            if (!componentFolder.exists() && !new File(componentsTargetDir, component).exists()) {
                 if (manageComponentFolders) {
-                    createFolder(baseDir, component);
+                    createFolder(componentsBaseDir, component);
                 } else {
                     log(format("%04d: Component folder '%s' does not exist.", index++, component));
                     log(format("      Proposal: add component specific folder."));
@@ -368,9 +400,9 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         // check whether component folder is empty
         for (String component : componentsFromInventory) {
-            if (isEmptyFolder(baseDir, component) && isEmptyFolder(targetDir, component )) {
+            if (isEmptyFolder(componentsBaseDir, component) && isEmptyFolder(componentsTargetDir, component )) {
                 log(format("%04d: Component folder '%s' does not contain any license or notice files.", index++, component));
-                log(format("      Proposal: add component specific license and/or notice to the folder."));
+                log(format("      Proposal: add component specific license and/or notice to the component folder."));
                 error = true;
             }
         }
@@ -517,7 +549,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
     private boolean isEmptyFolder(String baseDir, String file) {
         final File folder = new File(new File(baseDir), file);
-        return hasFiles(folder.getPath());
+        return !hasFiles(folder.getPath());
     }
 
     private boolean validateElement(LicenseMetaData licenseMetaData, String notice, String element) {
@@ -581,7 +613,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             directoryScanner.setIncludes(new String[] {ASTERISK});
             directoryScanner.setExcludes(new String[] {"." + ASTERISK});
             directoryScanner.scan();
-            return directoryScanner.getIncludedFilesCount() == 0;
+            return directoryScanner.getIncludedFilesCount() > 0;
         }
         return false;
     }

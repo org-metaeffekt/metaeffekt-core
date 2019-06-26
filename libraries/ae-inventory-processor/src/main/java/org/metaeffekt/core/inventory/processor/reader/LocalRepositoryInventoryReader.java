@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.reader;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;

@@ -44,7 +44,7 @@
 #end
 #if(!$externalDependencies.dependencies.isEmpty())
       <section>
-         <title>Third-Party Dependencies $projectName</title>
+         <title>Dependencies $projectName</title>
          <p>
             There are dependencies to the following third-party artifacts:
          </p>

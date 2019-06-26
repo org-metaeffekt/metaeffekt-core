@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
@@ -64,7 +64,9 @@ public class InitialRepositoryTest {
         InventoryReport report = new InventoryReport();
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
-        report.setGlobalInventoryPath(TARGET_INVENTORY);
+
+        report.setReferenceInventoryDir(new File(TARGET_INVENTORY).getParentFile());
+        report.setReferenceInventoryIncludes(new File(TARGET_INVENTORY).getName());
         report.setRepositoryInventory(inventory);
         //PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         // artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");

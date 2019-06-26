@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.maven.version.mojo;
 
-import java.io.File;
-import java.util.Map;
-
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.taskdefs.optional.ReplaceRegExp;
-
 import org.metaeffekt.core.common.kernel.ant.log.LoggingProjectAdapter;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  * Class supporting the version replacement in POMs.

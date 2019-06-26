@@ -30,7 +30,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 

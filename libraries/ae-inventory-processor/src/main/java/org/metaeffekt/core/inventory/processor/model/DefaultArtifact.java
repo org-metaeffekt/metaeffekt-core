@@ -15,12 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.springframework.util.StringUtils;
-
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 /**
  * @deprecated Use Artifact directly.
  */

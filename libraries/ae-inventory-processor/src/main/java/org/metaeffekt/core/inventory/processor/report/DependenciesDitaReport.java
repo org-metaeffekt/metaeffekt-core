@@ -22,18 +22,20 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.DependencyData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 import java.io.*;
 import java.util.*;
 
 public class DependenciesDitaReport {
+
 
     private static final String DITA_REPORT_TEMPLATE =
             "/META-INF/templates/dependencies-dita-report.vt";
@@ -53,23 +55,15 @@ public class DependenciesDitaReport {
 
     private String internalArtifactPrefix = "ae-";
 
+
     public void createReport() throws Exception {
         if (sourceInventoryPath != null) {
-            Resource inventoryResource = InventoryReport.inferPathFile(sourceInventoryPath);
-            InputStream in = inventoryResource.getInputStream();
-            sourceInventory = null;
-            try {
-                sourceInventory = new InventoryReader().readInventory(in);
-            } catch (IOException e) {
-                LOG.error("Could not find sourceInventoryPath: {}", sourceInventoryPath);
-                // continue without sourceInventory, third party module names will not be resolved
-            } finally {
-                in.close();
-            }
+            File file = new File(sourceInventoryPath);
+            sourceInventory = InventoryUtils.readInventory(file.getParentFile(), file.getName());
         }
 
         if (artifactNameMappingPath != null) {
-            Resource mappingResource = InventoryReport.inferPathFile(artifactNameMappingPath);
+            Resource mappingResource = new ClassPathResource(artifactNameMappingPath);
             artifactNameMapping = new Properties();
             try {
                 InputStream is = mappingResource.getInputStream();
@@ -127,6 +121,8 @@ public class DependenciesDitaReport {
                 targetDitaReportPath));
 
     }
+
+
 
     private String resolveName(String artifactId) {
         if (artifactNameMapping != null) {

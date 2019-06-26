@@ -21,7 +21,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

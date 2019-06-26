@@ -15,14 +15,7 @@
  */
 package org.metaeffekt.core.maven.api.publisher;
 
-import java.io.File;
-import java.lang.annotation.Annotation;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.execution.MavenSession;
@@ -34,10 +27,16 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
-import org.apache.maven.archiver.MavenArchiveConfiguration;
-
 import org.metaeffekt.core.common.kernel.annotation.PublicAnnotationAnalyser;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
+
+import java.io.File;
+import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Create and promote API extensions to the maven repository.

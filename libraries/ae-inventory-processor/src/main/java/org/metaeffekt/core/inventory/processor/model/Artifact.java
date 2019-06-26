@@ -17,7 +17,9 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class Artifact extends AbstractModelBase {
 
@@ -327,6 +329,43 @@ public class Artifact extends AbstractModelBase {
             this.latestAvailableVersion = a.getLatestAvailableVersion();
         }
 
+    }
+
+    /**
+     * Derive a qualifier that uniquely represents an artifact.
+     *
+     * @return The derived artifact qualifier.
+     */
+    public String deriveQualifier() {
+        if (!StringUtils.hasText(getId())) {
+            // support artifacts with out id (e.g. a folder)
+            StringBuilder sb = new StringBuilder();
+            if (StringUtils.hasText(getComponent())) {
+                sb.append(getId().trim());
+            }
+            sb.append("-");
+            if (StringUtils.hasText(getChecksum())) {
+                sb.append(getChecksum().trim());
+            }
+            sb.append("-");
+            if (StringUtils.hasText(getVersion())) {
+                sb.append(getVersion().trim());
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        if (StringUtils.hasText(getId())) {
+            sb.append(getId().trim());
+        }
+        sb.append("-");
+        if (StringUtils.hasText(getChecksum())) {
+            sb.append(getChecksum().trim());
+        }
+        sb.append("-");
+        if (StringUtils.hasText(getVersion())) {
+            sb.append(getVersion().trim());
+        }
+        return sb.toString();
     }
 
     public void deriveArtifactId() {

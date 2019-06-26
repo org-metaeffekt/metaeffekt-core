@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_third-party-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>Third-Party Components</title>
+<topic id="tpc_components-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Components", true)</title>
     <body>
         <p>
 #set($components=$inventory.evaluateComponents())
 #if(!$components.isEmpty())
-            <table otherprops="wide" id="table_third-party-components">
-                <title>Third-Party Components</title>
+            <table otherprops="wide" id="table_components">
+                <title>Components$reportContext.inContextOf()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="55*" />

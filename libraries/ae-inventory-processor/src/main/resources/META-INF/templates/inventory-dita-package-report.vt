@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_third-party-jars" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>Packages</title>
+<topic id="tpc_packages-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Packages", true)</title>
     <body>
-        <table otherprops="wide" id="table_third-party-jars">
-            <title>Packages and Artifacts</title>
+        <table otherprops="wide" id="table_packages">
+            <title>Packages$reportContext.inContextOf()</title>
             <tgroup cols="3">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="30*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
@@ -22,16 +22,19 @@
 #foreach($artifact in $inventory.getArtifacts())#if($inventory.hasConcreteArtifacts($artifact))
                     <row>
                         <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>#end
-
 <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
                         </entry>
-                        <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
+                        <entry>
+                            <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
+                        </entry>
                         
                         #set($license=$artifact.getLicense())
                         #if($license)
                             #set($folder=$inventory.getLicenseFolder($license))
                             #if($folder) 
-                                <entry><xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref></entry>
+                                <entry>
+                                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+                                </entry>
                             #else
                                 <entry>$license.trim()</entry>
                             #end

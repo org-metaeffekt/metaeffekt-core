@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.maven.version.mojo;
 
-import java.io.File;
-import java.util.Map;
-
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-
-import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
+import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  * Updates the versions in a maven project and all included POMs.

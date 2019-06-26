@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-plugin-management-pom</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.21.0</version>
         <relativePath>../poms/ae-core-plugin-management-pom</relativePath>
     </parent>
 
@@ -69,6 +69,7 @@
                             <className>org.metaeffekt.core.inventory.processor.ValidateInventoryProcessor</className>
                             <properties>
                                 <licenses.path>${project.build.directory}/classes/META-INF/licenses</licenses.path>
+                                <components.path>${project.build.directory}/classes/META-INF/components</components.path>
                                 <create.license.folders>true</create.license.folders>
                                 <create.component.folders>true</create.component.folders>
                                 <failOnError>true</failOnError>
