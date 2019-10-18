@@ -18,13 +18,24 @@ package org.metaeffekt.core.inventory.processor.model;
 public final class Constants {
 
     public static final String ASTERISK = "*";
+    public static final String VERSION_PLACHOLDER_PREFIX = "${";
+    public static final String VERSION_PLACHOLDER_SUFFIX = "}";
 
     public static final String STRING_EMPTY = "";
+    public static final String STRING_TRUE = Boolean.TRUE.toString();
+    public static final String STRING_FALSE = Boolean.FALSE.toString();
 
     public static final char DELIMITER_COLON = ':';
     public static final char DELIMITER_DASH = '-';
     public static final char DELIMITER_PIPE = '|';
     public static final char DELIMITER_COMMA = ',';
+
+    /**
+     * Support to mark artifacts as matched by wildcard. This is usually transient information. The wildcard information
+     * is lost, when resolving the version. Therefore the fact that an artifact was matched using wildcards is held
+     * using this key.
+     */
+    public static final String KEY_WILDCARD_MATCH = "WILDCARD-MATCH";
 
     protected Constants() {};
 

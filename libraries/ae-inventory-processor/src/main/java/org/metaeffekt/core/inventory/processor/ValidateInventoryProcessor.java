@@ -30,6 +30,10 @@ import java.util.*;
 import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
+import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_SUFFIX;
+import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_PREFIX;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_WILDCARD_MATCH;
+import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_FALSE;
 
 public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
@@ -65,11 +69,6 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
     public static final String SEPARATOR = "/";
 
-    /**
-     * Support to mark artifacts as matched by wildcard
-     */
-    public static final String KEY_WILDCARD_MATCH = "WILDCARD-MATCH";
-
     public ValidateInventoryProcessor() {
         super();
     }
@@ -96,16 +95,16 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         final String componentsTargetDir = getProperties().getProperty(COMPONENTS_TARGET_DIR, licensesBaseDir);
 
         final boolean manageLicenseFolders = Boolean.parseBoolean(getProperties().
-                getProperty(CREATE_LICENSE_FOLDERS, FALSE.toString()));
+                getProperty(CREATE_LICENSE_FOLDERS, STRING_FALSE));
 
         final boolean manageComponentFolders = Boolean.parseBoolean(getProperties().
-                getProperty(CREATE_COMPONENT_FOLDERS, FALSE.toString()));
+                getProperty(CREATE_COMPONENT_FOLDERS, STRING_FALSE));
 
         final boolean deleteLicenseFolders = Boolean.parseBoolean(getProperties().
-                getProperty(DELETE_LICENSE_FOLDERS, FALSE.toString()));
+                getProperty(DELETE_LICENSE_FOLDERS, STRING_FALSE));
 
         final boolean deleteComponentFolders = Boolean.parseBoolean(getProperties().
-                getProperty(DELETE_COMPONENT_FOLDERS, FALSE.toString()));
+                getProperty(DELETE_COMPONENT_FOLDERS, STRING_FALSE));
 
         final List<String> licenseFoldersFromInventory = new ArrayList<>();
         final List<String> componentsFromInventory = new ArrayList<>();
@@ -191,12 +190,14 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                 }
 
                 if (StringUtils.isNotBlank(componentName)) {
+                    boolean wildcardMatchPropagation = Boolean.valueOf(artifact.get(KEY_WILDCARD_MATCH, STRING_FALSE));
 
-                    boolean wildcardMatch = Boolean.valueOf(artifact.get(KEY_WILDCARD_MATCH, FALSE.toString()));
-                    LicenseMetaData matchingLMD = inventory.findMatchingLicenseMetaData(artifact);
+                    boolean wildcardMatch = ASTERISK.equals(version);
+                    boolean placeholderMatch = version != null &&
+                        version.startsWith(VERSION_PLACHOLDER_PREFIX) && version.endsWith(VERSION_PLACHOLDER_SUFFIX);
 
                     StringBuilder sb = new StringBuilder();
-                    if (ASTERISK.equals(version) || wildcardMatch) {
+                    if (wildcardMatch || wildcardMatchPropagation || placeholderMatch) {
                         sb.append(LicenseMetaData.normalizeId(componentName));
                     } else {
                         sb.append(LicenseMetaData.normalizeId(componentName + "-" + version));

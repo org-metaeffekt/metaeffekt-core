@@ -25,10 +25,7 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ArtifactFilter;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.reader.LocalRepositoryInventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -46,6 +43,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
+import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_PREFIX;
+import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_SUFFIX;
+import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_TRUE;
 
 public class InventoryReport {
 
@@ -402,7 +402,8 @@ public class InventoryReport {
                     if (ASTERISK.equals(foundArtifact.getVersion())) {
                         copy.setVerified(false);
 
-                        // in this case we also need to manage the version
+                        // in this case we also need to manage the version (and replace the wildcard with the concrete
+                        // version)
                         final String id = foundArtifact.getId();
                         try {
                             int index = id.indexOf(ASTERISK);
@@ -411,8 +412,10 @@ public class InventoryReport {
                             String version = artifactFileId.substring(prefix.length(),
                                     artifactFileId.length() - suffix.length());
                             copy.setVersion(version);
+                            copy.set(Constants.KEY_WILDCARD_MATCH, STRING_TRUE);
                         } catch (Exception e) {
-                            LOG.error("Cannot extract version from artifact {}.", id);
+                            LOG.error("Cannot extract version from artifact {}. To express that no version information " +
+                                    "is available use a different version keyword such as 'undefined'.", id);
                         }
                     } else {
                         copy.setVerified(true);
@@ -685,11 +688,19 @@ public class InventoryReport {
                 continue;
             }
 
-            boolean isArtifactVersionWildcard = ASTERISK.equalsIgnoreCase(artifact.getVersion());
+            final String version = artifact.getVersion();
+            boolean isArtifactVersionWildcard =
+                    // when a wildcard version was not resolved
+                    ASTERISK.equalsIgnoreCase(version) ||
+                    // when a wildcard version was resolved and the artifact was marked
+                    STRING_TRUE.equalsIgnoreCase(artifact.get(Constants.KEY_WILDCARD_MATCH)) ||
+                    // when (unresolved) version placeholders are used
+                    (version != null && version.startsWith(VERSION_PLACHOLDER_PREFIX) &&
+                            version.endsWith(VERSION_PLACHOLDER_SUFFIX));
 
             // try to resolve component license meta data if available
             final LicenseMetaData matchingLicenseMetaData = projectInventory.
-                    findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, artifact.getVersion());
+                    findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, version);
 
             // derive effective (license) and version
             String effectiveLicense = artifact.getLicense();
@@ -702,11 +713,12 @@ public class InventoryReport {
 
             final String componentFolderName = LicenseMetaData.deriveComponentFolderName(artifact.getComponent());
             final String versionUnspecificPath = componentFolderName;
-            final String versionSpecificPath = componentFolderName + "-" + artifact.getVersion();
+            final String versionSpecificPath = componentFolderName + "-" + version;
 
             // determine source path on license meta data level the version in wildcard; we derived all versions
             // have the same license; one notice for all; one source folder for all
-            final String sourcePath = isMetaDataVersionWildcard ? versionUnspecificPath : versionSpecificPath;
+            final String sourcePath = (isMetaDataVersionWildcard || isArtifactVersionWildcard) ?
+                    versionUnspecificPath : versionSpecificPath;
 
             // determine target path (always artifact version centric; no information may be available)
             final String targetPath = isArtifactVersionWildcard ? versionUnspecificPath : versionSpecificPath;

@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_TRUE;
+
 public abstract class AbstractInventoryProcessor implements InventoryProcessor {
 
     public static final String FAIL_ON_ERROR = "failOnError";
@@ -26,7 +28,7 @@ public abstract class AbstractInventoryProcessor implements InventoryProcessor {
     /**
      * The contextMap stores results are intermediate computations.
      */
-    private final Map<String, Object> contextMap = new HashMap<String, Object>();
+    private final Map<String, Object> contextMap = new HashMap<>();
 
     /**
      * Properties can be used to configure the processor.
@@ -53,8 +55,7 @@ public abstract class AbstractInventoryProcessor implements InventoryProcessor {
     }
 
     public boolean isFailOnError() {
-        return Boolean.parseBoolean(getProperties().
-                getProperty(FAIL_ON_ERROR, Boolean.TRUE.toString()));
+        return Boolean.parseBoolean(getProperties().getProperty(FAIL_ON_ERROR, STRING_TRUE));
     }
 
 

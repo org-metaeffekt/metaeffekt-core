@@ -15,6 +15,7 @@
                     <title>$artifactLicenseData.componentName - <codeph>$artifactLicenseData.componentVersion</codeph></title>
                     <p>
                         <table otherprops="wide">
+                            <title>$artifactLicenseData.componentName - <codeph>$artifactLicenseData.componentVersion Artifacts</codeph>$reportContext.inContextOf()</title>
                             <tgroup cols="2">
                                 <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
                                 <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />

@@ -90,9 +90,9 @@ public class InventoryScanReport extends InventoryReport {
         for (int i = 0; i < files.length; i++) {
             final String id = new File(files[i]).getName();
             final String idFullPath = new File(scanDir, files[i]).getPath();
-            Artifact artifact = globalInventory.findArtifact(id);
+            Artifact artifact = globalInventory.findArtifact(id, true);
             if (artifact == null) {
-                artifact = globalInventory.findArtifact(idFullPath);
+                artifact = globalInventory.findArtifact(idFullPath, true);
             }
             if (artifact == null) {
                 // unknown or requires expansion

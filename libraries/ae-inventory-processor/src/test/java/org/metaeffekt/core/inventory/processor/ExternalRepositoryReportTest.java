@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_TRUE;
+
 @Ignore
 public class ExternalRepositoryReportTest {
 
@@ -63,13 +65,13 @@ public class ExternalRepositoryReportTest {
         properties.setProperty(ValidateInventoryProcessor.COMPONENTS_DIR, componentsDir.getPath());
 //        properties.setProperty(ValidateInventoryProcessor.COMPONENTS_TARGET_DIR, componentsTargetDir.getPath());
 
-        properties.setProperty(ValidateInventoryProcessor.FAIL_ON_ERROR, Boolean.TRUE.toString());
-        properties.setProperty(ValidateInventoryProcessor.CREATE_LICENSE_FOLDERS, Boolean.TRUE.toString());
-        properties.setProperty(ValidateInventoryProcessor.CREATE_COMPONENT_FOLDERS, Boolean.TRUE.toString());
+        properties.setProperty(ValidateInventoryProcessor.FAIL_ON_ERROR, STRING_TRUE);
+        properties.setProperty(ValidateInventoryProcessor.CREATE_LICENSE_FOLDERS, STRING_TRUE);
+        properties.setProperty(ValidateInventoryProcessor.CREATE_COMPONENT_FOLDERS, STRING_TRUE);
 
         if (enableDeleteObsolete) {
-            properties.setProperty(ValidateInventoryProcessor.DELETE_LICENSE_FOLDERS, Boolean.TRUE.toString());
-            properties.setProperty(ValidateInventoryProcessor.DELETE_COMPONENT_FOLDERS, Boolean.TRUE.toString());
+            properties.setProperty(ValidateInventoryProcessor.DELETE_LICENSE_FOLDERS, STRING_TRUE);
+            properties.setProperty(ValidateInventoryProcessor.DELETE_COMPONENT_FOLDERS, STRING_TRUE);
         }
 
         ValidateInventoryProcessor validateInventoryProcessor = new ValidateInventoryProcessor(properties);

@@ -19,7 +19,7 @@
         <module>ae-core-plugin-dependency-management-pom</module>
     </modules>
 
-    <!-- FIXME: reduce to the local minimum -->
+    <!-- FIXME: reduce to the required minimum -->
     <properties>
         <ant.contrib.version>1.0b3</ant.contrib.version>
         <ant.version>1.10.1</ant.version>
@@ -31,7 +31,7 @@
         <commons.collections.version>3.2.2</commons.collections.version>
         <commons.exec.version>1.3</commons.exec.version>
         <commons.fileupload.version>1.3.3</commons.fileupload.version>
-        <commons.compress.version>1.16</commons.compress.version>
+        <commons.compress.version>1.19</commons.compress.version>
         <dom4j.version>1.6.1</dom4j.version>
         <easymock.version>3.4</easymock.version>
         <findbugs.version>3.0.1</findbugs.version>

@@ -111,8 +111,6 @@ public class Inventory {
     public Artifact findArtifact(Artifact artifact, boolean fuzzy) {
         for (Artifact candidate : getArtifacts()) {
             candidate.deriveArtifactId();
-        }
-        for (Artifact candidate : getArtifacts()) {
             if (matchesOnMavenProperties(artifact, candidate)) {
                 return candidate;
             }
@@ -149,9 +147,25 @@ public class Inventory {
     }
 
     public Artifact findArtifact(String id) {
+        return findArtifact(id, false);
+    }
+
+    public Artifact findArtifact(String id, boolean matchWildcards) {
+        if (id == null) return null;
+
+        // 1st pass: check for exact match
         for (Artifact candidate : getArtifacts()) {
-            if (matchesOnId(id, candidate)) {
+            if (id.equals(candidate.getId())) {
                 return candidate;
+            }
+        }
+
+        // 2nd pass: allow wildcard matches
+        if (matchWildcards) {
+            for (Artifact candidate : getArtifacts()) {
+                if (matchesOnId(id, candidate)) {
+                    return candidate;
+                }
             }
         }
         return null;
@@ -215,6 +229,8 @@ public class Inventory {
                 }
             }
         }
+
+        // NOTE: in this case, no VERSION_PLACEHOLDER agnostic match is appropriate
 
         return false;
     }
@@ -401,6 +417,9 @@ public class Inventory {
     public LicenseMetaData findMatchingLicenseMetaData(String component, String license, String version) {
         LicenseMetaData match = null;
         for (LicenseMetaData lmd : licenseMetaData) {
+
+            // NOTE: for artifacts with VERSION_PLACEHOLDER we expect that the license metadata is provided with ASTERISK.
+
             if (lmd.getLicense().equals(license) &&
                     (lmd.getVersion().equals(version) || lmd.getVersion().equals(ASTERISK)) &&
                     (lmd.getComponent().equals(component) || lmd.getComponent().equals(ASTERISK))) {
