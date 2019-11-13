@@ -169,32 +169,32 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private String targetDitaPath;
 
     /**
-     * @parameter expression="${project.artifactId}-artifact-report.dita"
+     * @parameter expression="tpc_${project.artifactId}-artifact-report.dita"
      */
     private String targetDitaArtifactReportPath;
 
     /**
-     * @parameter expression="${project.artifactId}-package-report.dita"
+     * @parameter expression="tpc_${project.artifactId}-package-report.dita"
      */
     private String targetDitaPackageReportPath;
 
     /**
-     * @parameter expression="${project.artifactId}-component-report.dita"
+     * @parameter expression="tpc_${project.artifactId}-component-report.dita"
      */
     private String targetDitaComponentReportPath;
 
     /**
-     * @parameter expression="${project.artifactId}-diff.dita"
+     * @parameter expression="tpc_${project.artifactId}-diff.dita"
      */
     private String targetDitaDiffPath;
 
     /**
-     * @parameter expression="${project.artifactId}-licenses.dita"
+     * @parameter expression="tpc_${project.artifactId}-licenses.dita"
      */
     private String targetDitaLicenseReportPath;
 
     /**
-     * @parameter expression="${project.artifactId}-notices.dita"
+     * @parameter expression="tpc_${project.artifactId}-notices.dita"
      */
     private String targetDitaNoticeReportPath;
     

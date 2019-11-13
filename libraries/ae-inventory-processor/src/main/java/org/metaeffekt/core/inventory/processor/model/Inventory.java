@@ -387,8 +387,10 @@ public class Inventory {
                 }
 
                 if (match != null && matches(effectiveLicense, match)) {
-                    String qualifier = new StringBuilder(artifactLicense).append("-").
-                            append(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
+                    // only version and name must be used here
+                    // there may be multiple entries (if validation for the component is disabled), but that
+                    // is not of interest here (we need just representatives for documentation).
+                    String qualifier = new StringBuilder(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
                     ArtifactLicenseData artifactLicenseData = map.get(qualifier);
                     if (artifactLicenseData == null) {
                         artifactLicenseData = new ArtifactLicenseData(artifact.getComponent(), artifact.getVersion(), match);

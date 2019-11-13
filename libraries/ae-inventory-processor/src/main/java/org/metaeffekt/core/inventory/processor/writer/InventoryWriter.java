@@ -159,6 +159,11 @@ public class InventoryWriter {
             myCell = myRow.createCell(cellNum++);
             String projects = artifact.getProjects().toString();
             projects = projects.substring(1, projects.length() - 1);
+            // limit projects length; can be massive if the same name is used several times
+            if (projects.length() > 2096) {
+                projects = projects.substring(0, Math.min(projects.length(), 2096));
+                projects = projects + "...";
+            }
             myCell.setCellValue(new HSSFRichTextString(projects));
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.isVerified() ? "X" : ""));

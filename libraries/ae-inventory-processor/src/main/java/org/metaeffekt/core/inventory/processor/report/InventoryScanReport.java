@@ -115,7 +115,7 @@ public class InventoryScanReport extends InventoryReport {
                 scanInventory.getArtifacts().add(copy);
                 copy.addProject(idFullPath);
 
-                // in case the artifact contain the scan classification we try to unpack and scan in depth
+                // in case the artifact contains the scan classification we try to unpack and scan in depth
                 if (artifact.getClassification().contains("scan")) {
                     File unpackedFile = unpackIfPossible(scanDir, files[i], true);
                     if (unpackedFile != null) {
@@ -137,6 +137,10 @@ public class InventoryScanReport extends InventoryReport {
         Set<String> zipExtensions = new HashSet<String>();
         zipExtensions.add("war");
         zipExtensions.add("zip");
+        zipExtensions.add("ear");
+        zipExtensions.add("sar");
+        zipExtensions.add("rar");
+
         if (includeJarExtension) {
             zipExtensions.add("jar");
         }

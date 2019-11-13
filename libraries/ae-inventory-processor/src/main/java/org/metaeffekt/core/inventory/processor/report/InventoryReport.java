@@ -517,7 +517,7 @@ public class InventoryReport {
                 new InventoryWriter().writeInventory(projectInventory, targetInventoryFile);
                 LOG.info("Report inventory written to {}.", getTargetInventoryPath());
             } catch (Exception e) {
-                LOG.error("Unable to write inventory to {}. Skipping write.", getTargetInventoryPath());
+                LOG.error("Unable to write inventory to {}. Skipping write.", getTargetInventoryPath(), e);
             }
         }
 
