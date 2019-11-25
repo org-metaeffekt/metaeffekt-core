@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 
@@ -37,6 +38,7 @@ public class InventoryWriter {
 
         writeArtifacts(inventory, myWorkBook);
         writeNotices(inventory, myWorkBook);
+        writeComponentPatterns(inventory, myWorkBook);
 
         FileOutputStream out = new FileOutputStream(file);
         try {
@@ -200,10 +202,61 @@ public class InventoryWriter {
         return headerStyle;
     }
 
+    private void writeComponentPatterns(Inventory inventory, HSSFWorkbook myWorkBook) {
+        HSSFSheet mySheet = myWorkBook.createSheet("Component Patterns");
+        mySheet.createFreezePane(0, 1);
+        mySheet.setDefaultColumnWidth(20);
+
+        HSSFRow myRow = null;
+        HSSFCell myCell = null;
+
+        int rowNum = 0;
+
+        myRow = mySheet.createRow(rowNum++);
+
+        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+
+        int cellNum = 0;
+
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (ComponentPatternData cpd : inventory.getComponentPatternData()) {
+            attributes.addAll(cpd.getAttributes());
+        }
+
+        attributes.removeAll(ComponentPatternData.CORE_ATTRIBUTES);
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        List<String> finalOrder = new ArrayList<>(ComponentPatternData.CORE_ATTRIBUTES);
+        finalOrder.addAll(ordered);
+
+        for (String key : finalOrder) {
+            myCell = myRow.createCell(cellNum++);
+            myCell.setCellStyle(headerStyle);
+            myCell.setCellValue(new HSSFRichTextString(key));
+        }
+
+        int numCol = cellNum;
+
+        for (ComponentPatternData cpd : inventory.getComponentPatternData()) {
+            myRow = mySheet.createRow(rowNum++);
+            cellNum = 0;
+            for (String key : finalOrder) {
+                myCell = myRow.createCell(cellNum++);
+                myCell.setCellValue(new HSSFRichTextString(cpd.get(key)));
+            }
+        }
+
+        mySheet.setAutoFilter(new CellRangeAddress(0, mySheet.getLastRowNum(), 0, numCol - 1));
+    }
+
+
     private void writeNotices(Inventory inventory, HSSFWorkbook myWorkBook) {
         HSSFSheet mySheet = myWorkBook.createSheet("License Notices");
         mySheet.createFreezePane(0, 1);
-        mySheet.setDefaultColumnWidth(80);
+        mySheet.setDefaultColumnWidth(20);
 
         HSSFRow myRow = null;
         HSSFCell myCell = null;

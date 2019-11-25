@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.reader;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.springframework.util.StringUtils;
 
@@ -29,23 +30,29 @@ import java.util.Set;
 public class InventoryReader extends AbstractXlsInventoryReader {
 
     private Map<Integer, String> artifactColumnMap = new HashMap<>();
-    private Map<Integer, String> columnMap = new HashMap<>();
+    private Map<Integer, String> licenseMetaDataColumnMap = new HashMap<>();
+    private Map<Integer, String> componentPatternDataColumnMap = new HashMap<>();
 
     @Override
-    protected void readHeader(HSSFRow row) {
-        for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
-            HSSFCell cell = row.getCell(i);
-            String id = cell != null ? cell.getStringCellValue() : "Column " + (i + 1);
-            artifactColumnMap.put(i, id);
-        }
+    protected void readArtifactHeader(HSSFRow row) {
+        parseColumns(row, artifactColumnMap);
     }
 
     @Override
     protected void readLicenseMetaDataHeader(HSSFRow row) {
+        parseColumns(row, licenseMetaDataColumnMap);
+    }
+
+    @Override
+    protected void readComponentPatternDataHeader(HSSFRow row) {
+        parseColumns(row, componentPatternDataColumnMap);
+    }
+
+    protected void parseColumns(HSSFRow row, Map<Integer, String> map) {
         for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
             HSSFCell cell = row.getCell(i);
             if (cell != null) {
-                columnMap.put(i, cell.getStringCellValue());
+                map.put(i, cell.getStringCellValue());
             }
         }
     }
@@ -53,11 +60,11 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected Artifact readArtifactMetaData(HSSFRow row) {
         Artifact artifact = new Artifact();
-        Set<String> projects = new LinkedHashSet<String>();
+        Set<String> projects = new LinkedHashSet<>();
         artifact.setProjects(projects);
 
         for (int i = 0; i < artifactColumnMap.size(); i++) {
-            final String columnName = artifactColumnMap.get(i);
+            final String columnName = artifactColumnMap.get(i).trim();
             final HSSFCell myCell = row.getCell(i);
             final String value = myCell != null ? myCell.toString() : null;
 
@@ -69,7 +76,8 @@ public class InventoryReader extends AbstractXlsInventoryReader {
                 artifact.setChecksum(value);
                 continue;
             }
-            if (columnName.equalsIgnoreCase("component") || columnName.equalsIgnoreCase("component / group")) {
+            if (columnName.equalsIgnoreCase("component") ||
+                    columnName.equalsIgnoreCase("component / group")) {
                 artifact.setComponent(value);
                 continue;
             }
@@ -150,8 +158,8 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     protected LicenseMetaData readLicenseMetaData(HSSFRow row) {
         final LicenseMetaData licenseMetaData = new LicenseMetaData();
 
-        for (int i = 0; i < columnMap.size(); i++) {
-            final String columnName = columnMap.get(i);
+        for (int i = 0; i < licenseMetaDataColumnMap.size(); i++) {
+            final String columnName = licenseMetaDataColumnMap.get(i).trim();
             final HSSFCell myCell = row.getCell(i);
             final String value = myCell != null ? myCell.toString() : null;
 
@@ -192,6 +200,26 @@ public class InventoryReader extends AbstractXlsInventoryReader {
 
         if (licenseMetaData.isValid()) {
             return licenseMetaData;
+        }
+
+        return null;
+    }
+
+    @Override
+    protected ComponentPatternData readComponentPatternData(HSSFRow row) {
+        final ComponentPatternData componentPatternData = new ComponentPatternData();
+        Map<Integer, String> map = this.componentPatternDataColumnMap;
+        for (int i = 0; i < map.size(); i++) {
+            final String columnName = map.get(i).trim();
+            final HSSFCell myCell = row.getCell(i);
+            final String value = myCell != null ? myCell.toString() : null;
+            if (value != null) {
+                componentPatternData.set(columnName, value.trim());
+            }
+        }
+
+        if (componentPatternData.isValid()) {
+            return componentPatternData;
         }
 
         return null;

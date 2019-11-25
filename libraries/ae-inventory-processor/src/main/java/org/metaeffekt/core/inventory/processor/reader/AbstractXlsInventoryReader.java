@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 
@@ -48,19 +49,22 @@ public abstract class AbstractXlsInventoryReader {
 
         readArtifactMetaData(myWorkBook, inventory);
         readLicenseMetaData(myWorkBook, inventory);
+        readComponentPatternData(myWorkBook, inventory);
 
         return inventory;
     }
 
-    protected void readArtifactMetaData(HSSFWorkbook myWorkBook, Inventory inventory) {
-        HSSFSheet mySheet = myWorkBook.getSheetAt(0);
-        Iterator<?> rows = mySheet.rowIterator();
+    protected void readArtifactMetaData(HSSFWorkbook workbook, Inventory inventory) {
+        HSSFSheet sheet = workbook.getSheet("Artifact Inventory");
+        if (sheet == null) return;
+
+        Iterator<?> rows = sheet.rowIterator();
 
         List<Artifact> artifacts = new ArrayList<Artifact>();
         inventory.setArtifacts(artifacts);
 
         if (rows.hasNext()) {
-            readHeader((HSSFRow) rows.next());
+            readArtifactHeader((HSSFRow) rows.next());
         }
 
         while (rows.hasNext()) {
@@ -72,12 +76,42 @@ public abstract class AbstractXlsInventoryReader {
         }
 
         for (int i = 0; i < 15; i++) {
-            int width = mySheet.getColumnWidth(i);
+            int width = sheet.getColumnWidth(i);
             inventory.getContextMap().put("artifacts.column[" + i + "].width", width);
         }
     }
 
-    protected void readHeader(HSSFRow row) {
+
+    protected void readComponentPatternData(HSSFWorkbook workBook, Inventory inventory) {
+        HSSFSheet sheet = workBook.getSheet("Component Patterns");
+        if (sheet == null) return;
+        Iterator<?> rows = sheet.rowIterator();
+
+        List<ComponentPatternData> componentPatternData = new ArrayList<>();
+        inventory.setComponentPatternData(componentPatternData);
+
+        if (rows.hasNext()) {
+            readComponentPatternDataHeader((HSSFRow) rows.next());
+        }
+
+        int columns = 0;
+
+        while (rows.hasNext()) {
+            HSSFRow row = (HSSFRow) rows.next();
+            ComponentPatternData cpd = readComponentPatternData(row);
+            if (cpd != null) {
+                componentPatternData.add(cpd);
+                columns = cpd.numAttributes();
+            }
+        }
+
+        for (int i = 0; i < columns; i++) {
+            int width = sheet.getColumnWidth(i);
+            inventory.getContextMap().put("patterns.column[" + i + "].width", width);
+        }
+    }
+
+    protected void readArtifactHeader(HSSFRow row) {
         // default implementation does nothing
     }
 
@@ -85,37 +119,45 @@ public abstract class AbstractXlsInventoryReader {
         // default implementation does nothing
     }
 
-    protected void readLicenseMetaData(HSSFWorkbook myWorkBook, Inventory inventory) {
-        if (myWorkBook.getNumberOfSheets() > 1) {
-            HSSFSheet mySheet = myWorkBook.getSheetAt(1);
-            if (mySheet != null) {
-                Iterator<?> rows = mySheet.rowIterator();
+    protected void readComponentPatternDataHeader(HSSFRow row) {
+        // default implementation does nothing
+    }
 
-                List<LicenseMetaData> licenseMetaDatas = new ArrayList<LicenseMetaData>();
-                inventory.setLicenseMetaData(licenseMetaDatas);
+    protected void readLicenseMetaData(HSSFWorkbook workbook, Inventory inventory) {
+        HSSFSheet sheet = workbook.getSheet("License Notices");
+        if (sheet == null) sheet = workbook.getSheet("Obligation Notices");
+        if (sheet == null) sheet = workbook.getSheet("Component Notices");
+        if (sheet == null) return;
 
-                // skip first line being the header
-                if (rows.hasNext()) {
-                    readLicenseMetaDataHeader((HSSFRow) rows.next());
-                }
+        Iterator<?> rows = sheet.rowIterator();
 
-                while (rows.hasNext()) {
-                    HSSFRow row = (HSSFRow) rows.next();
-                    LicenseMetaData licenseMetaData = readLicenseMetaData(row);
-                    if (licenseMetaData != null) {
-                        licenseMetaDatas.add(licenseMetaData);
-                    }
-                }
+        List<LicenseMetaData> licenseMetaDatas = new ArrayList<LicenseMetaData>();
+        inventory.setLicenseMetaData(licenseMetaDatas);
+
+        // skip first line being the header
+        if (rows.hasNext()) {
+            readLicenseMetaDataHeader((HSSFRow) rows.next());
+        }
+
+        while (rows.hasNext()) {
+            HSSFRow row = (HSSFRow) rows.next();
+            LicenseMetaData licenseMetaData = readLicenseMetaData(row);
+            if (licenseMetaData != null) {
+                licenseMetaDatas.add(licenseMetaData);
             }
+        }
 
-            for (int i = 0; i < 5; i++) {
-                int width = mySheet.getColumnWidth(i);
-                inventory.getContextMap().put("obligations.column[" + i + "].width", width);
-            }
+        for (int i = 0; i < 5; i++) {
+            int width = sheet.getColumnWidth(i);
+            inventory.getContextMap().put("obligations.column[" + i + "].width", width);
         }
     }
 
     protected LicenseMetaData readLicenseMetaData(HSSFRow row) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected ComponentPatternData readComponentPatternData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
 

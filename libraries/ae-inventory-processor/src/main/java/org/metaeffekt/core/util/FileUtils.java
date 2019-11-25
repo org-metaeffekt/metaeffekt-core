@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.metaeffekt.core.util;
 
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Checksum;
 
 import java.io.File;
 
@@ -25,6 +27,7 @@ import java.io.File;
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
+    public static final String VAR_CHECKSUM = "checksum";
 
     /**
      * Scans the given baseDir for files matching the includes and excludes.
@@ -47,4 +50,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return EMPTY_STRING_ARRAY;
     }
 
+    public static String computeChecksum(File file) {
+        // FIXME: currently we use the Ant checksum means (may be not very efficient)
+        Checksum checksum = new Checksum();
+        checksum.setProject(new Project());
+        checksum.setFile(file);
+        checksum.setProperty(VAR_CHECKSUM);
+        checksum.execute();
+        return checksum.getProject().getProperty(VAR_CHECKSUM);
+    }
 }

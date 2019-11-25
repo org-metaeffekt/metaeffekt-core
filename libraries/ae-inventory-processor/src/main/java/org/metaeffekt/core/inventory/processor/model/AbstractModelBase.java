@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,10 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractModelBase {
+
+    public interface Attribute {
+        String getKey();
+    }
 
     // map to store key values pairs.
     private Map<String, String> attributeMap = new HashMap<>();
@@ -60,5 +64,21 @@ public abstract class AbstractModelBase {
 
     public Set<String> getAttributes() {
         return attributeMap.keySet();
+    }
+
+    public String get(ComponentPatternData.Attribute attribute, String defaultValue) {
+        return get(attribute.getKey(), defaultValue);
+    }
+
+    public String get(ComponentPatternData.Attribute attribute) {
+        return get(attribute.getKey());
+    }
+
+    public void set(ComponentPatternData.Attribute attribute, String value) {
+        set(attribute.getKey(), value);
+    }
+
+    public int numAttributes() {
+        return attributeMap.size();
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -167,9 +172,29 @@ public class RepositoryReportTest {
         Assert.assertEquals("this&amp;that.&#8203;those-&#8203;these_&#8203;which",
                 inventoryReport.xmlEscapeArtifactId("this&that.those-these_which"));
 
-
         Assert.assertEquals("&nbsp;", inventoryReport.xmlEscapeArtifactId(null));
-
     }
 
+    @Test
+    public void testComponentPatterns() throws IOException {
+        File inventoryFile = new File(INVENTORY_DIR, "artifact-inventory.xls");
+        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
+
+        Assert.assertNotNull(inventory.getComponentPatternData());
+        Assert.assertEquals(2, inventory.getComponentPatternData().size());
+
+        Assert.assertEquals("org/metaeffekt/core/**/*", inventory.getComponentPatternData().get(0).deriveQualifier());
+        Assert.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes:0.21.0:org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
+
+        File targetFile = new File("target/test-inventory.xls");
+        new InventoryWriter().writeInventory(inventory, targetFile);
+    }
+
+
+    @Test
+    public void testAntPatternMatcher() {
+        String path = "/Users/kklein/workspace/spring-boot-example/documentation/spring-boot-war/target/bomscan/spring-boot-sample-war-1.5.4.RELEASE-war/org/springframework/boot/loader/LaunchedURLClassLoader.class";
+        AntPathMatcher matcher = new AntPathMatcher();
+        Assert.assertTrue(matcher.match("/**/org/springframework/boot/loader/**/*", path));
+    }
 }

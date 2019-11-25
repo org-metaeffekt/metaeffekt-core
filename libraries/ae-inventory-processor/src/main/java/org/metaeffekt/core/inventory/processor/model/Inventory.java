@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2018 the original author or authors.
+ * Copyright 2009-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,13 +38,15 @@ public class Inventory {
 
     private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
 
-    private List<Artifact> artifacts = new ArrayList<Artifact>();
+    private List<Artifact> artifacts = new ArrayList<>();
 
-    private List<LicenseMetaData> licenseMetaData = new ArrayList<LicenseMetaData>();
+    private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
 
-    private Map<String, String> licenseNameMap = new HashMap<String, String>();
+    private List<ComponentPatternData> componentPatternData = new ArrayList<>();
 
-    private Map<String, String> componentNameMap = new HashMap<String, String>();
+    private Map<String, String> licenseNameMap = new HashMap<>();
+
+    private Map<String, String> componentNameMap = new HashMap<>();
 
     private Map<String, Object> contextMap = new HashMap<>();
 
@@ -939,7 +941,7 @@ public class Inventory {
      * @param inputInventory Input inventory with artifact information.
      * @param infoOnOverwrite Logs information on overwrites when active.
      */
-    public void inheritArifacts(Inventory inputInventory, boolean infoOnOverwrite) {
+    public void inheritArtifacts(Inventory inputInventory, boolean infoOnOverwrite) {
         // Iterate through all artifacts in the input repository. If the artifact is present in the current repository
         // then skip (but log some information); otherwise add the artifact to current.
         final Map<String, Artifact> currentArtifactMap = new HashMap<>();
@@ -970,6 +972,44 @@ public class Inventory {
                 getArtifacts().add(artifact);
             }
         }
+    }
+
+    public void inheritComponentPatterns(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, ComponentPatternData> localCpds = new HashMap<>();
+        for (ComponentPatternData cpd : getComponentPatternData()) {
+            String artifactQualifier = cpd.deriveQualifier();
+            localCpds.put(artifactQualifier, cpd);
+        }
+        for (ComponentPatternData cpd : inputInventory.getComponentPatternData()) {
+            String qualifier = cpd.deriveQualifier();
+            if (localCpds.containsKey(qualifier)) {
+                // overwrite; the localCpds inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    ComponentPatternData localCpd = localCpds.get(qualifier);
+                    if (cpd.createCompareStringRepresentation().equals(
+                            localCpd.createCompareStringRepresentation())) {
+                        LOG.info("Component pattern {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Component pattern %s overwritten. %n  %s%n  %s", qualifier,
+                                cpd.createCompareStringRepresentation(),
+                                localCpd.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                // add the artifact
+                getComponentPatternData().add(cpd);
+            }
+
+        }
+    }
+
+    public void setComponentPatternData(List<ComponentPatternData> componentPatternData) {
+        this.componentPatternData = componentPatternData;
+    }
+
+    public List<ComponentPatternData> getComponentPatternData() {
+        return this.componentPatternData;
     }
 
 }
