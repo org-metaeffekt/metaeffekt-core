@@ -17,11 +17,13 @@ package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
+import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
@@ -49,18 +51,21 @@ public class RepositoryReportTest {
     @Test
     public void testInventoryReport() throws Exception {
 
+        File inventoryDir = INVENTORY_DIR;
+        String inventoryIncludes = INVENTORY_INCLUDES;
+
         InventoryReport report = new InventoryReport();
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
-        report.setReferenceInventoryDir(INVENTORY_DIR);
-        report.setReferenceInventoryIncludes(INVENTORY_INCLUDES);
+        report.setReferenceInventoryDir(inventoryDir);
+        report.setReferenceInventoryIncludes(inventoryIncludes);
         report.setReferenceLicensePath(LICENSES_PATH);
         report.setReferenceComponentPath(COMPONENTS_PATH);
 
-        report.setRepositoryInventory(InventoryUtils.readInventory(INVENTORY_DIR, INVENTORY_INCLUDES));
+        report.setRepositoryInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
 
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
@@ -77,6 +82,7 @@ public class RepositoryReportTest {
         File noticeReport = new File(reportTarget, "notice.dita");
         File artifactReport = new File(reportTarget, "artifacts.dita");
         File packageReport = new File(reportTarget, "packages.dita");
+        File vulnerabilityReport = new File(reportTarget, "vulnerability.dita");
         File mavenPom = new File(reportTarget, "ae-pom.xml");
 
         report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
@@ -85,6 +91,7 @@ public class RepositoryReportTest {
 
         report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
         report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
+        report.setTargetDitaVulnerabilityReportPath(vulnerabilityReport.getAbsolutePath());
         report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
 
         final File targetLicensesDir = new File(target, "licenses");
@@ -190,11 +197,88 @@ public class RepositoryReportTest {
         new InventoryWriter().writeInventory(inventory, targetFile);
     }
 
+    @Test
+    public void testVulnerabilityMetaData() throws IOException {
+        File inventoryFile = new File(INVENTORY_DIR, "artifact-inventory.xls");
+        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
+
+        Assert.assertNotNull(inventory.getVulnerabilityMetaData());
+        Assert.assertEquals(2, inventory.getComponentPatternData().size());
+
+        List<VulnerabilityMetaData> applicableVulnerabilities = VulnerabilityMetaData.filterApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
+        Assert.assertEquals(3, applicableVulnerabilities.size());
+
+        System.out.println("Applicable:");
+        applicableVulnerabilities.stream().map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE)).forEach(System.out::println);
+
+        List<VulnerabilityMetaData> notApplicableVulnerabilities = VulnerabilityMetaData.filterNotApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
+        Assert.assertEquals(10, notApplicableVulnerabilities.size());
+
+        List<VulnerabilityMetaData> insignificantVulnerabilities = VulnerabilityMetaData.filterInsignificantVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
+        Assert.assertEquals(3, insignificantVulnerabilities.size());
+
+        System.out.println("Not Applicable:");
+        notApplicableVulnerabilities.stream().map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE)).forEach(System.out::println);
+
+        File targetFile = new File("target/test-inventory.xls");
+        new InventoryWriter().writeInventory(inventory, targetFile);
+    }
 
     @Test
     public void testAntPatternMatcher() {
         String path = "/Users/kklein/workspace/spring-boot-example/documentation/spring-boot-war/target/bomscan/spring-boot-sample-war-1.5.4.RELEASE-war/org/springframework/boot/loader/LaunchedURLClassLoader.class";
         AntPathMatcher matcher = new AntPathMatcher();
         Assert.assertTrue(matcher.match("/**/org/springframework/boot/loader/**/*", path));
+    }
+
+    @Ignore
+    @Test
+    public void testCreateTestReport() throws Exception {
+        createReport(new File("<some-inventory>"), "*.xls");
+    }
+
+    private boolean createReport(File inventoryDir, String inventoryIncludes) throws Exception {
+        InventoryReport report = new InventoryReport();
+
+        report.setReportContext(new ReportContext("test", "Test", "Test Context"));
+
+        report.setFailOnUnknown(false);
+        report.setFailOnUnknownVersion(false);
+        report.setReferenceInventoryDir(inventoryDir);
+        report.setReferenceInventoryIncludes(inventoryIncludes);
+        report.setReferenceLicensePath(new File(inventoryDir, "licenses").getAbsolutePath());
+        report.setReferenceComponentPath(new File(inventoryDir, "components").getAbsolutePath());
+
+        report.setRepositoryInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
+
+        File target = new File(TARGET_FOLDER);
+        target.mkdirs();
+
+        File reportTarget = new File(target, "report");
+        reportTarget.mkdirs();
+
+        File licenseReport = new File(reportTarget, "license.dita");
+        File componentReport = new File(reportTarget, "component-report.dita");
+        File noticeReport = new File(reportTarget, "notice.dita");
+        File artifactReport = new File(reportTarget, "artifacts.dita");
+        File packageReport = new File(reportTarget, "packages.dita");
+        File vulnerabilityReport = new File(reportTarget, "vulnerability.dita");
+        File mavenPom = new File(reportTarget, "ae-pom.xml");
+
+        report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
+        report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
+        report.setTargetDitaPackageReportPath(packageReport.getAbsolutePath());
+
+        report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
+        report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
+        report.setTargetDitaVulnerabilityReportPath(vulnerabilityReport.getAbsolutePath());
+        report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
+
+        final File targetLicensesDir = new File(target, "licenses");
+        final File targetComponentDir = new File(target, "components");
+        report.setTargetLicenseDir(targetLicensesDir);
+        report.setTargetComponentDir(targetComponentDir);
+
+        return report.createReport();
     }
 }

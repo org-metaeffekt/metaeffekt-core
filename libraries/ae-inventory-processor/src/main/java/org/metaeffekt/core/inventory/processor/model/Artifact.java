@@ -105,6 +105,7 @@ public class Artifact extends AbstractModelBase {
         this.securityRelevant = artifact.isSecurityRelevant();
         this.securityCategory = artifact.getSecurityCategory();
         this.classification = artifact.getClassification();
+        this.vulnerability = artifact.getVulnerability();
 
         this.projects = new LinkedHashSet<String>(artifact.getProjects());
 

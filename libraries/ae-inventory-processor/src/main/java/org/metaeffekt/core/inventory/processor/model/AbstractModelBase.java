@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import org.springframework.util.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -66,19 +68,18 @@ public abstract class AbstractModelBase {
         return attributeMap.keySet();
     }
 
-    public String get(ComponentPatternData.Attribute attribute, String defaultValue) {
-        return get(attribute.getKey(), defaultValue);
-    }
-
-    public String get(ComponentPatternData.Attribute attribute) {
-        return get(attribute.getKey());
-    }
-
-    public void set(ComponentPatternData.Attribute attribute, String value) {
-        set(attribute.getKey(), value);
-    }
-
     public int numAttributes() {
         return attributeMap.size();
     }
+
+    public float getFloat(String key, float defaultValue) {
+        String stringValue = get(key);
+        if (stringValue == null) return defaultValue;
+        try {
+            return Float.parseFloat(stringValue);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
 }

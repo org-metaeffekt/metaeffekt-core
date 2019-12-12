@@ -117,6 +117,9 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
 
         // merge component patterns
         multiProjectInventory.inheritComponentPatterns(inventory, false);
+
+        // merge vulnerabilities
+        multiProjectInventory.inheritVulnerabilityMetaData(inventory, false);
     }
 
     private void writeMultiProjectInventory(Inventory multiProjectInventory, File inventory) throws IOException {

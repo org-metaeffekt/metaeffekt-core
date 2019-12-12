@@ -37,10 +37,8 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_PREFIX;
@@ -52,16 +50,13 @@ public class InventoryReport {
     private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
 
     // artifacts summaries (maven centric)
-    private static final String DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE =
-            "/META-INF/templates/inventory-dita-report.vt";
+    private static final String DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE = "/META-INF/templates/inventory-dita-report.vt";
 
     // package summaries (maven centric)
-    private static final String DITA_MAVEN_PACKAGE_REPORT_TEMPLATE =
-            "/META-INF/templates/inventory-dita-package-report.vt";
+    private static final String DITA_MAVEN_PACKAGE_REPORT_TEMPLATE = "/META-INF/templates/inventory-dita-package-report.vt";
 
     // artifacts summaries (component centric)
-    private static final String DITA_COMPONENT_ARTIFACT_REPORT_TEMPLATE =
-            "/META-INF/templates/inventory-dita-component-report.vt";
+    private static final String DITA_COMPONENT_ARTIFACT_REPORT_TEMPLATE = "/META-INF/templates/inventory-dita-component-report.vt";
 
     // version diff
     private static final String DITA_DIFF_TEMPLATE = "/META-INF/templates/inventory-dita-diff.vt";
@@ -71,6 +66,9 @@ public class InventoryReport {
 
     // notice summary
     private static final String DITA_NOTICE_TEMPLATE = "/META-INF/templates/inventory-dita-notices.vt";
+
+    // vulnerability summary
+    private static final String DITA_VULNERABILITY_TEMPLATE = "/META-INF/templates/inventory-dita-vulnerabilities.vt";
 
     // generating a pom from the inventory
     private static final String MAVEN_POM_TEMPLATE =  "/META-INF/templates/inventory-pom-xml.vt";
@@ -108,12 +106,14 @@ public class InventoryReport {
     private File targetComponentDir;
     private File targetLicenseDir;
 
+    // FIXME: fix the substructure; provide only the parent path
     private String targetDitaReportPath;
     private String targetDitaPackageReportPath;
     private String targetDitaComponentReportPath;
     private String targetDitaDiffPath;
     private String targetDitaLicenseReportPath;
     private String targetDitaNoticeReportPath;
+    private String targetDitaVulnerabilityReportPath;
     private String targetMavenPomPath;
 
     private String projectName = "local project";
@@ -132,6 +132,8 @@ public class InventoryReport {
     private boolean failOnMissingLicense = true;
     private boolean failOnMissingLicenseFile = true;
     private boolean failOnMissingNotice = true;
+
+    private float vulnerabilityScoreThreshold = 7.0f;
 
     private ArtifactFilter artifactFilter;
 
@@ -366,6 +368,7 @@ public class InventoryReport {
                         foundArtifact.setSecurityRelevant(similar.isSecurityRelevant());
                         foundArtifact.setVerified(false);
                         foundArtifact.setGroupId(similar.getGroupId());
+                        foundArtifact.setVulnerability(similar.getVulnerability());
 
                         if (!StringUtils.hasText(artifact.getVersion())) {
                             String version = artifactFileId;
@@ -491,6 +494,13 @@ public class InventoryReport {
         projectInventory.inheritLicenseMetaData(globalInventory, false);
         projectInventory.filterLicenseMetaData();
 
+        // transfer available vulnerability information
+        projectInventory.inheritVulnerabilityMetaData(globalInventory, false);
+
+        // filter the vulnerability metadata to only cover the items remaining in the inventory
+        projectInventory.filterVulnerabilityMetaData();
+
+
         // write reports
         writeArtifactReport(projectInventory, reportContext);
         writePackageReport(projectInventory, reportContext);
@@ -498,6 +508,7 @@ public class InventoryReport {
         writeDiffReport(diffInventory, projectInventory, reportContext);
         writeObligationSummary(projectInventory, reportContext);
         writeLicenseSummary(projectInventory, reportContext);
+        writeVulnerabilitySummary(projectInventory, reportContext);
 
         writeMavenPom(projectInventory, reportContext);
 
@@ -765,6 +776,16 @@ public class InventoryReport {
         }
     }
 
+    protected void writeVulnerabilitySummary(Inventory projectInventory, ReportContext reportContext) {
+        if (targetDitaVulnerabilityReportPath != null) {
+            try {
+                produceDita(projectInventory, DITA_VULNERABILITY_TEMPLATE, new File(targetDitaVulnerabilityReportPath), reportContext);
+            } catch (Exception e) {
+                LOG.error(e.getMessage(), e);
+            }
+        }
+    }
+
     protected void writeMavenPom(Inventory projectInventory, ReportContext reportContext) throws Exception {
         if (targetMavenPomPath != null) {
             produceDita(projectInventory, MAVEN_POM_TEMPLATE, new File(targetMavenPomPath), reportContext);
@@ -850,6 +871,7 @@ public class InventoryReport {
         context.put("inventory", projectInventory.getFilteredInventory());
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
+        context.put("Float", Float.class);
 
         context.put("reportContext", reportContext);
 
@@ -1107,6 +1129,11 @@ public class InventoryReport {
         this.repositoryExcludes = localRepositoryExcludes;
     }
 
+
+    public String xmlEscapeString(String string) {
+        return xmlEscapeName(string);
+    }
+
     public String xmlEscapeArtifactId(String artifactFileId) {
         return xmlEscapeName(artifactFileId);
     }
@@ -1129,6 +1156,7 @@ public class InventoryReport {
         escaped = escaped.replaceAll("\\.", ".&#8203;");
         escaped = escaped.replaceAll("-", "-&#8203;");
         escaped = escaped.replaceAll("_", "_&#8203;");
+        escaped = escaped.replaceAll(":", ":&#8203;");
 
         return escaped;
     }
@@ -1168,4 +1196,21 @@ public class InventoryReport {
     public void setReportContext(ReportContext reportContext) {
         this.reportContext = reportContext;
     }
+
+    public void setTargetDitaVulnerabilityReportPath(String path) {
+        this.targetDitaVulnerabilityReportPath = path;
+    }
+
+    public String getTargetDitaPackageReportPath() {
+        return targetDitaPackageReportPath;
+    }
+
+    public float getVulnerabilityScoreThreshold() {
+        return vulnerabilityScoreThreshold;
+    }
+
+    public void setVulnerabilityScoreThreshold(float vulnerabilityScoreThreshold) {
+        this.vulnerabilityScoreThreshold = vulnerabilityScoreThreshold;
+    }
+
 }

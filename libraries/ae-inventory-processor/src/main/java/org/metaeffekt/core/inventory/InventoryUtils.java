@@ -75,6 +75,7 @@ public abstract class InventoryUtils {
             aggregateInventory.inheritArtifacts(inventory, true);
             aggregateInventory.inheritLicenseMetaData(inventory, true);
             aggregateInventory.inheritComponentPatterns(inventory, true);
+            aggregateInventory.inheritVulnerabilityMetaData(inventory, true);
         }
         return aggregateInventory;
     }

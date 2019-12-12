@@ -16,15 +16,15 @@
 package org.metaeffekt.core.inventory.processor.writer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
+import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,6 +39,7 @@ public class InventoryWriter {
         writeArtifacts(inventory, myWorkBook);
         writeNotices(inventory, myWorkBook);
         writeComponentPatterns(inventory, myWorkBook);
+        writeVulnerabilities(inventory, myWorkBook);
 
         FileOutputStream out = new FileOutputStream(file);
         try {
@@ -352,4 +353,82 @@ public class InventoryWriter {
 
     }
 
+
+    private void writeVulnerabilities(Inventory inventory, HSSFWorkbook myWorkBook) {
+        HSSFSheet sheet = myWorkBook.createSheet("Vulnerabilities");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
+
+        HSSFRow row = null;
+        HSSFCell cell = null;
+
+        int rowNum = 0;
+
+        row = sheet.createRow(rowNum++);
+
+        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+
+        int cellNum = 0;
+
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData()) {
+            attributes.addAll(vmd.getAttributes());
+        }
+
+        attributes.removeAll(VulnerabilityMetaData.CORE_ATTRIBUTES);
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        List<String> finalOrder = new ArrayList<>(VulnerabilityMetaData.CORE_ATTRIBUTES);
+        finalOrder.addAll(ordered);
+
+        for (String key : finalOrder) {
+            cell = row.createCell(cellNum++);
+            cell.setCellStyle(headerStyle);
+            cell.setCellValue(new HSSFRichTextString(key));
+        }
+
+        int numCol = cellNum;
+
+        for (VulnerabilityMetaData cpd : inventory.getVulnerabilityMetaData()) {
+            row = sheet.createRow(rowNum++);
+            cellNum = 0;
+            for (String key : finalOrder) {
+                cell = row.createCell(cellNum++);
+                String value = cpd.get(key);
+
+                VulnerabilityMetaData.Attribute attribute = VulnerabilityMetaData.Attribute.match(key);
+                if (attribute != null) {
+                    switch (attribute) {
+                        case MAX_SCORE:
+                        case V3_SCORE:
+                        case V2_SCORE:
+                            if (value != null && !value.isEmpty()) {
+                                try {
+                                    cell.setCellValue(Double.valueOf(value));
+                                } catch (NumberFormatException e) {
+                                    cell.setCellValue(value);
+                                }
+                            }
+                            break;
+                        case URL:
+                            cell.setCellValue(new HSSFRichTextString(value));
+                            Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
+                            link.setAddress(value);
+                            cell.setHyperlink(link);
+                            break;
+                        default:
+                            cell.setCellValue(new HSSFRichTextString(value));
+                            break;
+                    }
+                } else {
+                    cell.setCellValue(new HSSFRichTextString(value));
+                }
+            }
+        }
+
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
+    }
 }

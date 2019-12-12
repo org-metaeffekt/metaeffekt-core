@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -43,6 +44,8 @@ public class Inventory {
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
 
     private List<ComponentPatternData> componentPatternData = new ArrayList<>();
+
+    private List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
 
     private Map<String, String> licenseNameMap = new HashMap<>();
 
@@ -835,6 +838,7 @@ public class Inventory {
         filteredInventory.setContextMap(getContextMap());
         filteredInventory.setLicenseMetaData(getLicenseMetaData());
         filteredInventory.setLicenseNameMap(getLicenseNameMap());
+        filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         return filteredInventory;
     }
 
@@ -1000,8 +1004,57 @@ public class Inventory {
                 // add the artifact
                 getComponentPatternData().add(cpd);
             }
-
         }
+    }
+
+    public void inheritVulnerabilityMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, VulnerabilityMetaData> localVmds = new HashMap<>();
+        for (VulnerabilityMetaData vmd : getVulnerabilityMetaData()) {
+            String artifactQualifier = vmd.deriveQualifier();
+            localVmds.put(artifactQualifier, vmd);
+        }
+        for (VulnerabilityMetaData vmd : inputInventory.getVulnerabilityMetaData()) {
+            String qualifier = vmd.deriveQualifier();
+            if (localVmds.containsKey(qualifier)) {
+                // overwrite; the localVmds inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    VulnerabilityMetaData localVmd = localVmds.get(qualifier);
+                    if (vmd.createCompareStringRepresentation().equals(
+                            localVmd.createCompareStringRepresentation())) {
+                        LOG.info("Vulnerability metadata {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Vulnerability metadata %s overwritten. %n  %s%n  %s", qualifier,
+                                vmd.createCompareStringRepresentation(),
+                                localVmd.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                // add the artifact
+                getVulnerabilityMetaData().add(vmd);
+            }
+        }
+    }
+
+    public void filterVulnerabilityMetaData() {
+        Set<String> coveredVulnerabilityIds = new HashSet<>();
+        for (Artifact artifact : artifacts) {
+            String v = artifact.getVulnerability();
+            splitCommaSeparated(v).stream().
+                    map(this::toPlainCVE).
+                    filter(Objects::nonNull).
+                    forEach(cve -> coveredVulnerabilityIds.add(cve));
+        }
+        LOG.debug("Covered vulnerabilities: {}", coveredVulnerabilityIds);
+        List<VulnerabilityMetaData> forDeletion = new ArrayList<>();
+        for (VulnerabilityMetaData vmd : getVulnerabilityMetaData()) {
+            if (!coveredVulnerabilityIds.contains(vmd.get(VulnerabilityMetaData.Attribute.NAME))) {
+                forDeletion.add(vmd);
+            }
+        }
+        LOG.debug("Removing vulnerability metadata for: {}",
+            forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", ")));
+        getVulnerabilityMetaData().removeAll(forDeletion);
     }
 
     public void setComponentPatternData(List<ComponentPatternData> componentPatternData) {
@@ -1010,6 +1063,41 @@ public class Inventory {
 
     public List<ComponentPatternData> getComponentPatternData() {
         return this.componentPatternData;
+    }
+
+    public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData) {
+        this.vulnerabilityMetaData = vulnerabilityMetaData;
+    }
+
+    public List<VulnerabilityMetaData> getVulnerabilityMetaData() {
+        return vulnerabilityMetaData;
+    }
+
+    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
+        return VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
+    }
+
+    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold) {
+        return VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
+    }
+
+    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
+        return VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
+    }
+
+
+
+    // helpers
+
+    private Set<String> splitCommaSeparated(String string) {
+        if (string == null) return Collections.EMPTY_SET;
+        return Arrays.stream(string.split(",")).map(String::trim).collect(Collectors.toSet());
+    }
+
+    private String toPlainCVE(String cve) {
+        if (StringUtils.isEmpty(cve)) return null;
+        int index = cve.indexOf(" ");
+        return index == -1 ? cve : cve.substring(0, index);
     }
 
 }

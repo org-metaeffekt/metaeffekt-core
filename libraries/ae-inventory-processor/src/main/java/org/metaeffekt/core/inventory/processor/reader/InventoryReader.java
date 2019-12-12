@@ -20,6 +20,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
+import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
@@ -32,6 +33,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     private Map<Integer, String> artifactColumnMap = new HashMap<>();
     private Map<Integer, String> licenseMetaDataColumnMap = new HashMap<>();
     private Map<Integer, String> componentPatternDataColumnMap = new HashMap<>();
+    private Map<Integer, String> vulnerabilityMetaDataColumnMap = new HashMap<>();
 
     @Override
     protected void readArtifactHeader(HSSFRow row) {
@@ -220,6 +222,32 @@ public class InventoryReader extends AbstractXlsInventoryReader {
 
         if (componentPatternData.isValid()) {
             return componentPatternData;
+        }
+
+        return null;
+    }
+
+    @Override
+    protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
+        parseColumns(row, vulnerabilityMetaDataColumnMap);
+    }
+
+
+    @Override
+    protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
+        final VulnerabilityMetaData vulnerabilityMetaData = new VulnerabilityMetaData();
+        Map<Integer, String> map = this.vulnerabilityMetaDataColumnMap;
+        for (int i = 0; i < map.size(); i++) {
+            final String columnName = map.get(i).trim();
+            final HSSFCell myCell = row.getCell(i);
+            final String value = myCell != null ? myCell.toString() : null;
+            if (value != null) {
+                vulnerabilityMetaData.set(columnName, value.trim());
+            }
+        }
+
+        if (vulnerabilityMetaData.isValid()) {
+            return vulnerabilityMetaData;
         }
 
         return null;

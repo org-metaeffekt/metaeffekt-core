@@ -197,7 +197,12 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter expression="tpc_${project.artifactId}-notices.dita"
      */
     private String targetDitaNoticeReportPath;
-    
+
+    /**
+     * @parameter expression="tpc_${project.artifactId}-vulnerability.dita"
+     */
+    private String targetDitaVulnerabilityReportPath;
+
     /**
      * @parameter
      */
@@ -222,6 +227,12 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="false"
      */
     private boolean skip;
+
+
+    /**
+     * @parameter default-value="7.0"
+     */
+    private String vulnerabilityScoreThreshold;
     
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         InventoryReport report = new InventoryReport();
@@ -257,6 +268,9 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setTargetLicenseDir(targetLicenseDir);
         report.setTargetComponentDir(targetComponentDir);
 
+        // vulnerability settings
+        report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
+
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
         
@@ -267,6 +281,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             report.setTargetDitaComponentReportPath(createDitaPath(targetDitaComponentReportPath));
             report.setTargetDitaLicenseReportPath(createDitaPath(targetDitaLicenseReportPath));
             report.setTargetDitaNoticeReportPath(createDitaPath(targetDitaNoticeReportPath));
+            report.setTargetDitaVulnerabilityReportPath(createDitaPath(targetDitaVulnerabilityReportPath));
         }
         
         report.setRelativeLicensePath(relativeLicensePath);
@@ -304,10 +319,9 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
                 getLog().info("Plugin execution skipped.");
                 return;
             }
-            
-            InventoryReport report = initializeInventoryReport();
-            boolean success = false;
+            boolean success;
             try {
+                InventoryReport report = initializeInventoryReport();
                 success = report.createReport();
             } catch (Exception e) {
                 throw new MojoExecutionException(e.getMessage(), e);
@@ -319,168 +333,5 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             MavenLogAdapter.release();
         }
     }
-
-    public String getTargetDitaArtifactReportPath() {
-        return targetDitaArtifactReportPath;
-    }
-
-    public void setTargetDitaArtifactReportPath(String targetDitaReportPath) {
-        this.targetDitaArtifactReportPath = targetDitaReportPath;
-    }
-
-    public String getTargetDitaDiffPath() {
-        return targetDitaDiffPath;
-    }
-
-    public void setTargetDitaDiffPath(String targetDitaDiffPath) {
-        this.targetDitaDiffPath = targetDitaDiffPath;
-    }
-
-    
-    public String getTargetDitaLicenseReportPath() {
-        return targetDitaLicenseReportPath;
-    }
-    
-    public void setTargetDitaLicenseReportPath(String targetDitaLicenseReportPath) {
-        this.targetDitaLicenseReportPath = targetDitaLicenseReportPath;
-    }
-    
-    public String getTargetDitaNoticeReportPath() {
-        return targetDitaNoticeReportPath;
-    }
-    
-    public void setTargetDitaNoticeReportPath(String targetDitaObligationReportPath) {
-        this.targetDitaNoticeReportPath = targetDitaObligationReportPath;
-    }
-
-    public ArtifactRepository getLocalRepository() {
-        return localRepository;
-    }
-
-    public void setLocalRepository(ArtifactRepository localRepository) {
-        this.localRepository = localRepository;
-    }
-
-    public String getTargetInventoryPath() {
-        return targetInventoryPath;
-    }
-
-    public void setTargetInventoryPath(String targetInventoryPath) {
-        this.targetInventoryPath = targetInventoryPath;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-    public boolean isFailOnError() {
-        return failOnError;
-    }
-
-    public void setFailOnError(boolean failOnError) {
-        this.failOnError = failOnError;
-    }
-
-    public boolean isFailOnBanned() {
-        return failOnBanned;
-    }
-
-    public void setFailOnBanned(boolean failOnBanned) {
-        this.failOnBanned = failOnBanned;
-    }
-
-    public boolean isFailOnUnknown() {
-        return failOnUnknown;
-    }
-
-    public void setFailOnUnknown(boolean failOnUnknown) {
-        this.failOnUnknown = failOnUnknown;
-    }
-    
-    public boolean isFailOnUnknownVersion() {
-        return failOnUnknownVersion;
-    }
-
-    public void setFailOnUnknownVersion(boolean failOnUnknownVersion) {
-        this.failOnUnknownVersion = failOnUnknownVersion;
-    }
-
-    public boolean isFailOnDevelopment() {
-        return failOnDevelopment;
-    }
-
-    public void setFailOnDevelopment(boolean failOnDevelopment) {
-        this.failOnDevelopment = failOnDevelopment;
-    }
-
-    public boolean isFailOnDowngrade() {
-        return failOnDowngrade;
-    }
-
-    public void setFailOnDowngrade(boolean failOnDowngrade) {
-        this.failOnDowngrade = failOnDowngrade;
-    }
-
-    public boolean isFailOnInternal() {
-        return failOnInternal;
-    }
-
-    public void setFailOnInternal(boolean failOnInternal) {
-        this.failOnInternal = failOnInternal;
-    }
-
-    public boolean isFailOnUpgrade() {
-        return failOnUpgrade;
-    }
-
-    public void setFailOnUpgrade(boolean failOnUpgrade) {
-        this.failOnUpgrade = failOnUpgrade;
-    }
-
-    public boolean isFailOnMissingLicense() {
-        return failOnMissingLicense;
-    }
-
-    public void setFailOnMissingLicense(boolean failOnMissingLicense) {
-        this.failOnMissingLicense = failOnMissingLicense;
-    }
-
-    public String getArtifactExcludes() {
-        return artifactExcludes;
-    }
-
-    public void setArtifactExcludes(String artifactFilterIncludes) {
-        this.artifactExcludes = artifactFilterIncludes;
-    }
-
-    public String getArtifactIncludes() {
-        return artifactIncludes;
-    }
-
-    public void setArtifactIncludes(String artifactFilterExcludes) {
-        this.artifactIncludes = artifactFilterExcludes;
-    }
-    
-    public boolean isFailOnMissingLicenseFile() {
-        return failOnMissingLicenseFile;
-    }
-    
-    public void setFailOnMissingLicenseFile(boolean failOnMissingLicenseFile) {
-        this.failOnMissingLicenseFile = failOnMissingLicenseFile;
-    }
-    
-    public boolean isFailOnMissingNotice() {
-        return failOnMissingNotice;
-    }
-
-    public void setFailOnMissingNotice(boolean failOnMissingNotice) {
-        this.failOnMissingNotice = failOnMissingNotice;
-    }
-
-
 
 }

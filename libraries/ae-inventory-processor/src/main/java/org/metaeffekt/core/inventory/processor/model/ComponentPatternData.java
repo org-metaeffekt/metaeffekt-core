@@ -102,4 +102,16 @@ public class ComponentPatternData extends AbstractModelBase {
         return sb.toString();
     }
 
+    public String get(Attribute attribute, String defaultValue) {
+        return get(attribute.getKey(), defaultValue);
+    }
+
+    public String get(Attribute attribute) {
+        return get(attribute.getKey());
+    }
+
+    public void set(Attribute attribute, String value) {
+        set(attribute.getKey(), value);
+    }
+
 }
