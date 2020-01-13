@@ -27,6 +27,8 @@ import java.io.File;
 public class FileUtils extends org.apache.commons.io.FileUtils {
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
+
+    public static final String ENCODING_UTF_8 = "UTF-8";
     public static final String VAR_CHECKSUM = "checksum";
 
     /**

@@ -1,0 +1,187 @@
+package org.metaeffekt.core.maven.inventory.extractor;
+
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.util.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
+
+    public static final String FILE_PACKAGES_APK_TXT = "packages_apk.txt";
+
+    @Override
+    public boolean applies(File analysisDir) {
+        return new File(analysisDir, FILE_PACKAGES_APK_TXT).exists();
+    }
+
+    public Inventory extractInventory(File analysisDir, String inventoryId) throws IOException {
+        List<String> packages = parsePackages(analysisDir);
+
+        Inventory inventory = new Inventory();
+        initializeInventory(packages, inventory);
+
+        String issue = FileUtils.readFileToString(new File(analysisDir, "issue.txt"), "UTF-8");
+        issue = issue.replace("Welcome to ", "");
+        issue = issue.replace("Kernel \\r on an \\m (\\l)", "");
+        issue = issue.replace("\\S\nKernel \\r on an \\m", "");
+        issue = issue.replace(" \\n \\l", "");
+        issue = issue.trim();
+        String release = FileUtils.readFileToString(new File(analysisDir, "release.txt"), "UTF-8");
+        if (!issue.contains(release)) {
+            issue = issue + " (" + release.trim() + ")";
+        }
+        issue = issue.trim();
+
+        for (Artifact artifact : inventory.getArtifacts()) {
+            String id = artifact.getId();
+            artifact.set("Container", analysisDir.getName());
+            artifact.set("Issue", issue);
+
+            String path = "packages/" + id + "_apk.txt";
+            File packageDetailsFile = new File(analysisDir, path);
+
+            if (!packageDetailsFile.exists()) {
+                throw new IllegalStateException(String.format("Expected package file %s does not exist.", id));
+            }
+
+            List<String> lines = FileUtils.readLines(packageDetailsFile, FileUtils.ENCODING_UTF_8);
+            extractVersion(id, artifact, lines);
+            extractLicense(artifact, lines);
+            extractUrl(artifact, lines);
+
+            artifact.set(InventoryExtractor.KEY_ATTRIBUTE_SOURCE_PROJECT, inventoryId);
+            artifact.set(InventoryExtractor.KEY_ATTRIBUTE_TYPE, InventoryExtractor.TYPE_PACKAGE);
+        }
+
+        for (Artifact artifact : inventory.getArtifacts()) {
+            File shareFolder = new File(analysisDir, FOLDER_USR_SHARE_DOC);
+            File packageFolder = new File(shareFolder, artifact.getId());
+
+            if (packageFolder.exists()) {
+                PackageReference packageReference = new PackageReference();
+                Artifact analysis = packageReference.createArtifact(analysisDir);
+            }
+
+        }
+
+        return inventory;
+    }
+
+    public void initializeInventory(List<String> packages, Inventory inventory) {
+        // initialize the inventory with just the package names
+        for (String packageDescriptor : packages) {
+            Artifact artifact = new Artifact();
+            artifact.setId(packageDescriptor);
+            artifact.setComponent(packageDescriptor);
+
+            inventory.getArtifacts().add(artifact);
+        }
+    }
+
+    public void extractUrl(Artifact artifact, List<String> lines) {
+        {
+            int urlIndex = getIndex(lines, "URL         :");
+            if (urlIndex != -1) {
+                String url = lines.get(urlIndex).substring("URL         :".length() + 1).trim();
+                if (!StringUtils.isEmpty(url)) {
+                    artifact.setUrl(url);
+                    return;
+                }
+            }
+        }
+
+        {
+            int homepageIndex = getIndex(lines, "Homepage:");
+            if (homepageIndex != -1) {
+                String url = lines.get(homepageIndex).substring("Homepage:".length() + 1).trim();
+                if (!StringUtils.isEmpty(url)) {
+                    artifact.setUrl(url);
+                    return;
+                }
+            }
+        }
+
+        int webpageIndex = getIndex(lines, "webpage:");
+        if (webpageIndex != -1) {
+            String url = lines.get(webpageIndex + 1);
+            artifact.setUrl(url);
+        }
+    }
+
+    public List<String> parsePackages(File benchOutput) throws IOException {
+        File packageFile = new File(benchOutput, FILE_PACKAGES_APK_TXT);
+        return FileUtils.readLines(packageFile, FileUtils.ENCODING_UTF_8);
+    }
+
+    public int getIndex(List<String> lines, String key) {
+        int index = -1;
+        for (String line : lines) {
+            index ++;
+            if (line.contains(key)) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public void extractLicense(Artifact artifact, List<String> lines) {
+        int licenseIndex = getIndex(lines, "License     :");
+        if (licenseIndex != -1) {
+            String license = lines.get(licenseIndex).substring("License     :".length() + 1).trim();
+            if (!StringUtils.isEmpty(license)) {
+                artifact.set(KEY_DERIVED_LICENSE_PACKAGE, license);
+                return;
+            }
+        }
+
+
+        int lIndex = getIndex(lines, "license:");
+        if (lIndex != -1) {
+            String licenseExtract = lines.get(lIndex + 1);
+            licenseExtract = licenseExtract.replace(" and ", " ");
+            licenseExtract = licenseExtract.replace(" ", ", ");
+            artifact.set(KEY_DERIVED_LICENSE_PACKAGE, licenseExtract);
+        }
+    }
+
+    public void extractVersion(String id, Artifact artifact, List<String> lines) {
+        {
+            int vIndex = getIndex(lines, "Version     :");
+            if (vIndex != -1) {
+                String versionExtract = lines.get(vIndex);
+                versionExtract = versionExtract.substring("Version     :".length() + 1).trim();
+                artifact.setVersion(versionExtract);
+                artifact.setId(id + "-" + versionExtract);
+                return;
+            }
+        }
+
+        {
+            int vIndex = getIndex(lines, "Version:");
+            if (vIndex != -1) {
+                String versionExtract = lines.get(vIndex);
+                versionExtract = versionExtract.substring("Version:".length() + 1).trim();
+                artifact.setVersion(versionExtract);
+                artifact.setId(id + "-" + versionExtract);
+                return;
+            }
+        }
+
+        // from the first line we read the version
+        int dIndex = getIndex(lines, "description:");
+        if (dIndex != -1) {
+            String versionExtract = lines.get(dIndex);
+            if (!versionExtract.startsWith(id) || !versionExtract.contains(" description:")) {
+                throw new IllegalStateException(String.format("Format assertion not matched: %s", versionExtract));
+            }
+            versionExtract = versionExtract.substring(id.length() + 1, versionExtract.indexOf(" description:"));
+            artifact.setVersion(versionExtract);
+            artifact.setId(id + "-" + versionExtract);
+        }
+    }
+
+}

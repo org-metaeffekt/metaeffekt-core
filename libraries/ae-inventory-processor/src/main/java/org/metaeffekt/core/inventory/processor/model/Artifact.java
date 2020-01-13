@@ -265,6 +265,8 @@ public class Artifact extends AbstractModelBase {
     }
 
     public void merge(Artifact a) {
+        // merge attributes
+        super.merge(a);
 
         if (!StringUtils.hasText(this.id)) {
             this.id = a.getId();
@@ -331,6 +333,7 @@ public class Artifact extends AbstractModelBase {
         }
 
     }
+
 
     /**
      * Derive a qualifier that uniquely represents an artifact.

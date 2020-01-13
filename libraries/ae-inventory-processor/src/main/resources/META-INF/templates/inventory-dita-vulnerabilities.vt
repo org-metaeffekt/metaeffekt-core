@@ -75,7 +75,7 @@
 #set($vulnerabilities=$inventory.getNotApplicableVulnerabilityMetaData($threshold))
 #if($vulnerabilities.isEmpty())
         <p>
-            No vulnerabilities have not been identified, that are not applicable in this context.
+            No vulnerabilities have been identified, which are regarded inapplicable in this context.
         </p>
 #else
         <p>

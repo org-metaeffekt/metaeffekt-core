@@ -64,6 +64,15 @@ public abstract class AbstractModelBase {
         }
     }
 
+    protected void merge(AbstractModelBase a) {
+        for (String key : a.getAttributes()) {
+            String value = get(key);
+            if (!StringUtils.hasText(value)) {
+                set(key, a.get(key));
+            }
+        }
+    }
+
     public Set<String> getAttributes() {
         return attributeMap.keySet();
     }
