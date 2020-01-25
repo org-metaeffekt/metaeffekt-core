@@ -16,10 +16,7 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Attr;
 
-import javax.smartcardio.ATR;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -38,8 +35,15 @@ public class Artifact extends AbstractModelBase {
         COMPONENT("Component"),
         CHECKSUM("Checksum"),
         VERSION("Version"),
+
+        // latest available version
+        LATEST_VERSION("Latest Version"),
         CLASSIFICATION("Classification"),
         LICENSE("License"),
+        GROUPID("Group Id"),
+
+        // comments (and hints)
+        COMMENT("Comment"),
 
         // url of the project pages
         URL("URL"),
@@ -66,25 +70,13 @@ public class Artifact extends AbstractModelBase {
     private boolean verified;
 
     // list of project the artifacts is used by (source: protex)
-    private Set<String> projects = new LinkedHashSet<String>();
-
-    // comments
-    private String comment;
-
-    // additional hints and comments regarding the analysis
-    private String analysis;
-
-    // artifact id in repository
-    private String artifactId;
-
-    // group id in repository
-    private String groupId;
-
-    // latest available version
-    private String latestAvailableVersion;
+    private Set<String> projects = new LinkedHashSet<>();
 
     // field required for diff tooling
     private String previousVersion;
+
+    // artifact id (derived from id and version)
+    private transient String artifactId;
 
     /**
      * Relevant means "reportRelevant" meaning that the artifact and its metadata needs to be included in the build.
@@ -109,14 +101,10 @@ public class Artifact extends AbstractModelBase {
 
         this.projects = new LinkedHashSet<String>(artifact.getProjects());
 
-        this.comment = artifact.getComment();
-        this.groupId = artifact.getGroupId();
+        // copy transient attributes
         this.artifactId = artifact.getArtifactId();
-        this.latestAvailableVersion = artifact.getLatestAvailableVersion();
-
         this.relevant = artifact.isRelevant();
         this.managed = artifact.isManaged();
-
     }
     
     public Set<String> getProjects() {
@@ -129,64 +117,60 @@ public class Artifact extends AbstractModelBase {
 
     
     public String getComponent() {
-        return get(Attribute.COMPONENT.getKey());
+        return get(Attribute.COMPONENT);
     }
 
     public void setComponent(String component) {
-        set(Attribute.COMPONENT.getKey(), component);
+        set(Attribute.COMPONENT, component);
     }
 
     public String getGroupId() {
-        return groupId;
+        return get(Attribute.GROUPID);
     }
 
     public void setGroupId(String groupId) {
-        if (StringUtils.hasText(groupId)) {
-            this.groupId = groupId;
-        } else {
-            groupId = null;
-        }
+        set(Attribute.GROUPID, groupId);
     }
 
     public String getId() {
-        return get(Attribute.ID.getKey());
+        return get(Attribute.ID);
     }
 
     public void setId(String id) {
-        set(Attribute.ID.getKey(), id);
+        set(Attribute.ID, id);
     }
 
     
     public String getVersion() {
-        return get(Attribute.VERSION.getKey());
+        return get(Attribute.VERSION);
     }
     
     public void setVersion(String version) {
-        set(Attribute.VERSION.getKey(), version);
+        set(Attribute.VERSION, version);
     }
 
     public String getLicense() {
-        return get(Attribute.LICENSE.getKey());
+        return get(Attribute.LICENSE);
     }
 
     public void setLicense(String license) {
-        set(Attribute.LICENSE.getKey(), license);
+        set(Attribute.LICENSE, license);
     }
 
     public String getUrl() {
-        return get(Attribute.URL.getKey());
+        return get(Attribute.URL);
     }
 
     public void setUrl(String url) {
-        set(Attribute.URL.getKey(), url);
+        set(Attribute.URL, url);
     }
 
     public String getClassification() {
-        return get(Attribute.CLASSIFICATION.getKey());
+        return get(Attribute.CLASSIFICATION);
     }
 
     public void setClassification(String classification) {
-        set(Attribute.CLASSIFICATION.getKey(), classification);
+        set(Attribute.CLASSIFICATION, classification);
     }
 
     public boolean isVerified() {
@@ -206,19 +190,19 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String getComment() {
-        return comment;
+        return get(Attribute.COMMENT);
     }
 
     public void setComment(String comment) {
-        this.comment = comment;
+        set(Attribute.COMMENT, comment);
     }
 
-    public String getLatestAvailableVersion() {
-        return latestAvailableVersion;
+    public String getLatestVersion() {
+        return get(Attribute.LATEST_VERSION);
     }
 
-    public void setLatestAvailableVersion(String latestAvailableVersion) {
-        this.latestAvailableVersion = latestAvailableVersion;
+    public void setLatestVersion(String latestAvailableVersion) {
+        set(Attribute.LATEST_VERSION, latestAvailableVersion);
     }
 
     public String getPreviousVersion() {
@@ -241,32 +225,14 @@ public class Artifact extends AbstractModelBase {
         // merge attributes
         super.merge(a);
 
-        this.verified |= a.isVerified();
-
         this.projects.addAll(a.getProjects());
 
-        if (!StringUtils.hasText(this.comment)) {
-            this.comment = a.getComment();
-        }
-
-        if (!this.verified) {
-            this.verified = a.isVerified();
-        }
-
-        if (!StringUtils.hasText(this.groupId)) {
-            this.groupId = a.getGroupId();
-        }
+        this.verified |= a.isVerified();
 
         if (!StringUtils.hasText(this.artifactId)) {
             this.artifactId = a.getArtifactId();
         }
-
-        if (!StringUtils.hasText(this.latestAvailableVersion)) {
-            this.latestAvailableVersion = a.getLatestAvailableVersion();
-        }
-
     }
-
 
     /**
      * Derive a qualifier that uniquely represents an artifact.
@@ -349,7 +315,7 @@ public class Artifact extends AbstractModelBase {
     
     public String createStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
-        if (groupId != null) {
+        if (getGroupId() != null) {
             artifactRepresentation.append(getGroupId());
         }
         artifactRepresentation.append(DELIMITER_COLON);
@@ -492,15 +458,13 @@ public class Artifact extends AbstractModelBase {
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getLicense()));
         artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(getLatestAvailableVersion()));
+        artifactRepresentation.append(normalize(getLatestVersion()));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getComment()));
         artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(getAnalysis()));
+        artifactRepresentation.append(normalize(get(Attribute.SECURITY_CATEGORY)));
         artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(get(Attribute.SECURITY_CATEGORY.getKey())));
-        artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(get(Attribute.SECURITY_RELEVANT.getKey())));
+        artifactRepresentation.append(normalize(get(Attribute.SECURITY_RELEVANT)));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getVulnerability()));
         return artifactRepresentation.toString();
@@ -574,11 +538,11 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String getChecksum() {
-        return get(Attribute.CHECKSUM.getKey());
+        return get(Attribute.CHECKSUM);
     }
 
     public void setChecksum(String checksum) {
-        set(Attribute.CHECKSUM.getKey(), checksum);
+        set(Attribute.CHECKSUM, checksum);
     }
 
     public boolean isRelevant() {
@@ -598,19 +562,11 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String getVulnerability() {
-        return get(Attribute.VULNERABILITY.getKey());
+        return get(Attribute.VULNERABILITY);
     }
 
     public void setVulnerability(String vulnerability) {
-        set(Attribute.VULNERABILITY.getKey(), vulnerability);
-    }
-
-    public String getAnalysis() {
-        return analysis;
-    }
-
-    public void setAnalysis(String analysis) {
-        this.analysis = analysis;
+        set(Attribute.VULNERABILITY, vulnerability);
     }
 
     public boolean isValid() {

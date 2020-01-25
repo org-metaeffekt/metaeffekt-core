@@ -97,7 +97,8 @@ public class ComponentPatternData extends AbstractModelBase {
             if (sb.length() > 0) {
                 sb.append(":");
             }
-            sb.append(get(attributeKey));
+            String value = get(attributeKey);
+            sb.append(value == null ? "" : value);
         }
         return sb.toString();
     }

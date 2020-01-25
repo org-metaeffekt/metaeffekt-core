@@ -78,23 +78,11 @@ public class InventoryReader extends AbstractXlsInventoryReader {
                 continue;
             }
 
-
-            if (columnName.equalsIgnoreCase("group id")) {
-                artifact.setGroupId(value);
-                continue;
-            }
             if (columnName.equalsIgnoreCase("latest version")) {
-                artifact.setLatestAvailableVersion(value);
+                artifact.setLatestVersion(value);
                 continue;
             }
-            if (columnName.equalsIgnoreCase("comment")) {
-                artifact.setComment(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("analysis")) {
-                artifact.setAnalysis(value);
-                continue;
-            }
+
             if (columnName.equalsIgnoreCase("verified")) {
                 artifact.setVerified("X".equalsIgnoreCase(value));
                 continue;

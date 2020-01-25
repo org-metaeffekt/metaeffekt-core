@@ -359,7 +359,7 @@ public class InventoryReport {
 
                         foundArtifact.setComment(commentAggregation.toString());
                         foundArtifact.setComponent(similar.getComponent());
-                        foundArtifact.setLatestAvailableVersion(similar.getLatestAvailableVersion());
+                        foundArtifact.setLatestVersion(similar.getLatestVersion());
                         foundArtifact.setLicense(similar.getLicense());
                         foundArtifact.set(Artifact.Attribute.SECURITY_CATEGORY,
                                 similar.get(Artifact.Attribute.SECURITY_CATEGORY));

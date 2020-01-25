@@ -48,7 +48,7 @@ public abstract class AbstractModelBase {
     }
 
     public void set(String key, String value) {
-        if (value == null) {
+        if (StringUtils.isEmpty(value)) {
             attributeMap.remove(key);
         } else {
             attributeMap.put(key, value);

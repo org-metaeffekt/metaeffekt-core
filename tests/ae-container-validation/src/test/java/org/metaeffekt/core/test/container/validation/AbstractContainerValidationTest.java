@@ -82,7 +82,7 @@ public abstract class AbstractContainerValidationTest {
 
         // no additional version information set
         nullOrEmpty("Latest version must not be set " + artifact.getId(),
-                artifact.getLatestAvailableVersion());
+                artifact.getLatestVersion());
     }
 
     /**

@@ -20,7 +20,6 @@ import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -66,21 +65,6 @@ public class InventoryWriter {
         HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
 
         int cellNum = 0;
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Group Id"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Latest Version"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Comment"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Projects"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Verified"));
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
@@ -97,18 +81,25 @@ public class InventoryWriter {
             myCell.setCellValue(new HSSFRichTextString(key));
         }
 
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("Projects"));
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("Verified"));
+
         int numCol = cellNum;
 
         for (Artifact artifact : inventory.getArtifacts()) {
             myRow = mySheet.createRow(rowNum++);
 
             cellNum = 0;
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getGroupId()));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getLatestAvailableVersion()));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getComment()));
+
+            for (String key : ordered) {
+                myCell = myRow.createCell(cellNum++);
+                myCell.setCellValue(new HSSFRichTextString(artifact.get(key)));
+            }
+
             myCell = myRow.createCell(cellNum++);
             String projects = artifact.getProjects().toString();
             projects = projects.substring(1, projects.length() - 1);
@@ -118,13 +109,9 @@ public class InventoryWriter {
                 projects = projects + "...";
             }
             myCell.setCellValue(new HSSFRichTextString(projects));
+
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.isVerified() ? "X" : ""));
-
-            for (String key : ordered) {
-                myCell = myRow.createCell(cellNum++);
-                myCell.setCellValue(new HSSFRichTextString(artifact.get(key)));
-            }
         }
 
         mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));

@@ -70,7 +70,7 @@ public class MavenCentralVersionProcessor extends AbstractMavenCentralProcessor 
                     if (index != -1) {
                         artifactId = artifactId.substring(0, index);
                     }
-                    if (!overwriteVersion && StringUtils.hasText(artifact.getLatestAvailableVersion())) {
+                    if (!overwriteVersion && StringUtils.hasText(artifact.getLatestVersion())) {
                         continue;
                     }
 
@@ -223,7 +223,7 @@ public class MavenCentralVersionProcessor extends AbstractMavenCentralProcessor 
                 }
             }
             LOG.info("Latest version: {}", latestVersions);
-            artifact.setLatestAvailableVersion(latestVersions);
+            artifact.setLatestVersion(latestVersions);
         }
     }
 
