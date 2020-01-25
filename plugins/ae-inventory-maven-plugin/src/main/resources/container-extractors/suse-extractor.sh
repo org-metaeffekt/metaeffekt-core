@@ -21,9 +21,9 @@ do
 done
 
 mkdir -p /analysis/usr-share-doc/
-cp -rf /usr/share/doc/packages/* /analysis/usr-share-doc/ || true
+cp --no-preserve=mode -rf /usr/share/doc/packages/* /analysis/usr-share-doc/ || true
 
 mkdir -p /analysis/usr-share-licenses/
-cp -rf /usr/share/licenses/* /analysis/usr-share-licenses/ || true
+cp --no-preserve=mode -rf /usr/share/licenses/* /analysis/usr-share-licenses/ || true
 
 find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/files.txt
