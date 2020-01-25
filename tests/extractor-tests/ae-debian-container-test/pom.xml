@@ -14,7 +14,6 @@
 
     <properties>
         <image.id>postgres:11.5</image.id>
-        <image.os>debian</image.os>
     </properties>
 
     <build>

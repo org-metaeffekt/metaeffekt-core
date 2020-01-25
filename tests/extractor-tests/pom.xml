@@ -17,6 +17,7 @@
         <artifact.inventory.enabled>false</artifact.inventory.enabled>
 
         <ae.extractor.analysis.dir>${project.build.directory}/analysis</ae.extractor.analysis.dir>
+        <ae.extractor.script>/container-extractors/extract.sh</ae.extractor.script>
     </properties>
 
     <modules>
@@ -102,7 +103,7 @@
                                     <argument>-v</argument>
                                     <argument>${project.build.directory}/analysis/:/analysis</argument>
                                     <argument>--entrypoint</argument>
-                                    <argument>/container-extractors/${image.os}-extractor.sh</argument>
+                                    <argument>${ae.extractor.script}</argument>
                                     <argument>${image.id}</argument>
                                 </arguments>
                                 <outputFile>${project.build.directory}/analysis/docker.out.txt</outputFile>

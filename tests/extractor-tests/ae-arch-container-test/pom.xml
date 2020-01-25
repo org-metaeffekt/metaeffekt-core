@@ -14,7 +14,6 @@
 
     <properties>
         <image.id>archlinux:latest</image.id>
-        <image.os>arch</image.os>
     </properties>
 
     <build>

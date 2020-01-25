@@ -14,7 +14,6 @@
 
     <properties>
         <image.id>centos:latest</image.id>
-        <image.os>centos</image.os>
     </properties>
 
     <build>
