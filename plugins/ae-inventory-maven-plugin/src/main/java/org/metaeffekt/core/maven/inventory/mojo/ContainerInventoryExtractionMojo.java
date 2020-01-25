@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,14 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.maven.inventory.extractor.*;
+import org.metaeffekt.core.util.FileUtils;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -36,11 +40,14 @@ import java.util.*;
 @Mojo( name = "extract-container-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
 public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
 
-    @Parameter(defaultValue="${project.build.directory}/analysis")
+    @Parameter(required = true, defaultValue="${ae.extractor.analysis.dir}")
     protected File analysisDir;
 
     @Parameter(defaultValue = "false")
     protected boolean filterPackagesWithoutVersion = false;
+
+    @Parameter
+    protected String[] excludes;
 
     private InventoryExtractor[] inventoryExtractors = new InventoryExtractor[] {
         new DebianInventoryExtractor(),
@@ -60,6 +67,24 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             // write inventory
             targetInventoryFile.getParentFile().mkdirs();
             new InventoryWriter().writeInventory(inventory, targetInventoryFile);
+
+            // write not covered file list
+            StringBuilder sb = new StringBuilder();
+            for (Artifact artifact : inventory.getArtifacts()) {
+                if (InventoryExtractor.TYPE_FILE.equalsIgnoreCase(
+                    artifact.get(InventoryExtractor.KEY_ATTRIBUTE_TYPE))) {
+                    Set<String> projects = artifact.getProjects();
+                    if (projects != null) {
+                        for (String project : projects) {
+                            if (sb.length() > 0) {
+                                sb.append(Constants.DELIMITER_NEWLINE);
+                            }
+                            sb.append(project);
+                        }
+                    }
+                }
+            }
+            FileUtils.write(new File(analysisDir, "filtered-files.txt"), sb.toString(), FileUtils.ENCODING_UTF_8);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
@@ -75,7 +100,8 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         extractor.validate(analysisDir);
 
         // finally we run the extraction
-        return extractor.extractInventory(analysisDir, artifactInventoryId);
+        return extractor.extractInventory(analysisDir,
+                artifactInventoryId, excludes == null ? Collections.EMPTY_LIST : Arrays.asList(excludes));
     }
 
     private void filterInventory(Inventory inventory) {

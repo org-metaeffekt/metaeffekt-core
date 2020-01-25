@@ -1,12 +1,14 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.tools.ant.DirectoryScanner;
+import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,22 +22,72 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     public static final String FOLDER_USR_SHARE_DOC = "usr-share-doc";
     public static final String FOLDER_USR_SHARE_LICENSE = "usr-share-license";
 
+
+    public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException {
+        String issue = extractIssue(analysisDir);
+
+        // use specific inventory implementation to extract inventory
+        Inventory inventory = new Inventory();
+
+        extendInventory(analysisDir, inventory);
+
+        extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
+
+        for (Artifact artifact : inventory.getArtifacts()) {
+            artifact.set(InventoryExtractor.KEY_ATTRIBUTE_SOURCE_PROJECT, inventoryId);
+            // TODO extract container id
+            // artifact.set(KEY_ATTRIBUTE_CONTAINER, analysisDir.getName());
+            artifact.set(KEY_ATTRIBUTE_ISSUE, issue);
+        }
+
+        return inventory;
+    }
+
+    private void extendNotCoveredFiles(File analysisDir, Inventory inventory, List<String> excludePatterns) throws IOException {
+        List<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
+        for (String file : notCoveredFiles) {
+            Artifact artifact = new Artifact();
+            artifact.setId(new File(file).getName());
+            artifact.addProject(file);
+            artifact.set(KEY_ATTRIBUTE_TYPE, TYPE_FILE);
+            inventory.getArtifacts().add(artifact);
+        }
+    }
+
+    protected abstract void extendInventory(File analysisDir, Inventory inventory) throws IOException;
+
+    protected String extractIssue(File analysisDir) throws IOException {
+        String issue = FileUtils.readFileToString(new File(analysisDir, "issue.txt"), "UTF-8");
+        issue = issue.replace("Welcome to ", "");
+        issue = issue.replace("Kernel \\r on an \\m (\\l)", "");
+        issue = issue.replace("\\S\nKernel \\r on an \\m", "");
+        issue = issue.replace(" \\n \\l", "");
+        issue = issue.replace(" - Kernel %r (%t).", "");
+        issue = issue.trim();
+        String release = FileUtils.readFileToString(new File(analysisDir, "release.txt"), "UTF-8");
+        if (!issue.contains(release)) {
+            issue = issue + " (" + release.trim() + ")";
+        }
+        issue = issue.trim();
+        return issue;
+    }
+
     /**
      * Anticipates a directory for each package in packagesDocDir. The directory contains the
      * package name only (no other attribute is derived).
      *
      * @param analysisDir The analysisDir.
      * @param packagesDocDir The specific (one out of potentially many) packageDocDir.
-     * @param nameToPackageReferenceMap The resulting {@link PackageReference} instances are added to the map.
+     * @param nameToPackageReferenceMap The resulting {@link PackageInfo} instances are added to the map.
      */
-    protected static void packagesFromDocumentationDir(File analysisDir, File packagesDocDir, Map<String, PackageReference> nameToPackageReferenceMap) {
+    protected static void packagesFromDocumentationDir(File analysisDir, File packagesDocDir, Map<String, PackageInfo> nameToPackageReferenceMap) {
         if (packagesDocDir.exists()) {
             DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(packagesDocDir);
             scanner.setIncludes(new String[]{"*"});
             scanner.scan();
             for (String path : scanner.getIncludedDirectories()) {
-                PackageReference packageReference = new PackageReference();
+                PackageInfo packageReference = new PackageInfo();
 
                 // here no version is added, since such information is not available
                 // currently the whole process is only for validating that there is no
@@ -47,14 +99,13 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         }
     }
 
-    protected void addOrMerge(File analysisDir, Inventory inventory, String inventoryId, PackageReference p) {
+    protected void addOrMerge(File analysisDir, Inventory inventory, PackageInfo p) {
         Artifact derivedFromPackage = p.createArtifact(analysisDir);
         Artifact referenceArtifact = inventory.findArtifact(derivedFromPackage.getId());
         if (referenceArtifact != null && derivedFromPackage.getVersion().equalsIgnoreCase(referenceArtifact.getVersion())) {
             // already added --> merge
             referenceArtifact.merge(derivedFromPackage);
         } else {
-            derivedFromPackage.set(KEY_ATTRIBUTE_SOURCE_PROJECT, inventoryId);
             derivedFromPackage.set(KEY_ATTRIBUTE_TYPE, TYPE_PACKAGE);
             inventory.getArtifacts().add(derivedFromPackage);
         }
@@ -89,4 +140,5 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
                     String.format("Unable to reed file %s.", file.getPath()));
         }
     }
+
 }

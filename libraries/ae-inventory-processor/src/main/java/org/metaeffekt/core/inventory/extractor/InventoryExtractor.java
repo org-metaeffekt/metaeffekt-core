@@ -1,0 +1,72 @@
+/**
+ * Copyright 2009-2020 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.metaeffekt.core.inventory.extractor;
+
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+/**
+ * Interface common to all {@link InventoryExtractor}s.
+ */
+public interface InventoryExtractor {
+
+    String KEY_DERIVED_LICENSE_PACKAGE = "Specified Package License";
+
+    String KEY_ATTRIBUTE_SUMMARY = "Summary";
+    String KEY_ATTRIBUTE_DESCRIPTION = "Description";
+    String KEY_ATTRIBUTE_ARCHITECTURE = "Architecture";
+    String KEY_ATTRIBUTE_TYPE = "Type";
+    String KEY_ATTRIBUTE_SOURCE_PROJECT = "Source Project";
+
+    String KEY_ATTRIBUTE_CONTAINER = "Container";
+    String KEY_ATTRIBUTE_ISSUE = "Issue";
+
+    String TYPE_PACKAGE = "package";
+    String TYPE_FILE = "file";
+
+    /**
+     * Checks whether the extractor is applicable to the content in analysisDir.
+     *
+     * @param analysisDir The analysisDir.
+     * @return
+     */
+    boolean applies(File analysisDir);
+
+    /**
+     * Validates that the content in analysisDir is as anticipated.
+     *
+     * @param analysisDir The analysisDir.
+     * @return
+     *
+     * @Throws IllegalStateException
+     */
+    void validate(File analysisDir) throws IllegalStateException;
+
+    /**
+     * Extract an inventory from the information aggregated in analysisDir.
+     *
+     * @param analysisDir The analysisDir.
+     * @param inventoryId The identifier or discriminator for the inventory.
+     * @param excludePatterns List of exclude patterns (ant style).
+     * @return The extracted inventory.
+     * @throws IOException
+     */
+    Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException;
+
+}

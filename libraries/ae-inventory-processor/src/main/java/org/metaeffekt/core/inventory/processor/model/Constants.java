@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public final class Constants {
     public static final char DELIMITER_DASH = '-';
     public static final char DELIMITER_PIPE = '|';
     public static final char DELIMITER_COMMA = ',';
+    public static final String DELIMITER_NEWLINE = String.format("%n");
 
     /**
      * Support to mark artifacts as matched by wildcard. This is usually transient information. The wildcard information

@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,11 +149,24 @@ public class DirectoryInventoryScan {
 
         for (File file : files) {
             final String id = file.getName();
+            final String checksum = FileUtils.computeChecksum(file);
             final String idFullPath = file.getPath();
-            Artifact artifact = globalInventory.findArtifact(id, true);
+            Artifact artifact = globalInventory.findArtifact(id, checksum);
+
+            if (artifact == null) {
+                globalInventory.findArtifact(idFullPath, checksum);
+            }
+
+            // match on file name
+            if (artifact == null) {
+                globalInventory.findArtifact(id, true);
+            }
+
+            // match on file path
             if (artifact == null) {
                 artifact = globalInventory.findArtifact(idFullPath, true);
             }
+
             if (artifact == null) {
                 // unknown or requires expansion
                 File unpackedFile = unpackIfPossible(file, false);
@@ -161,6 +174,7 @@ public class DirectoryInventoryScan {
                     // add new unknown artifact
                     Artifact newArtifact = new Artifact();
                     newArtifact.setId(id);
+                    newArtifact.setChecksum(checksum);
                     newArtifact.addProject(idFullPath);
                     scanInventory.getArtifacts().add(newArtifact);
                 } else {
@@ -172,6 +186,7 @@ public class DirectoryInventoryScan {
                 // we use the plain id to continue. The rest is sorted out by the report.
                 Artifact copy = new Artifact();
                 copy.setId(id);
+                copy.setChecksum(checksum);
                 scanInventory.getArtifacts().add(copy);
                 copy.addProject(idFullPath);
 

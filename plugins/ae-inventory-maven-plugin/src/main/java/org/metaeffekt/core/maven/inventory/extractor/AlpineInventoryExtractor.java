@@ -1,6 +1,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -18,28 +19,14 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
         return new File(analysisDir, FILE_PACKAGES_APK_TXT).exists();
     }
 
-    public Inventory extractInventory(File analysisDir, String inventoryId) throws IOException {
+    @Override
+    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
         List<String> packages = parsePackages(analysisDir);
 
-        Inventory inventory = new Inventory();
         initializeInventory(packages, inventory);
-
-        String issue = FileUtils.readFileToString(new File(analysisDir, "issue.txt"), "UTF-8");
-        issue = issue.replace("Welcome to ", "");
-        issue = issue.replace("Kernel \\r on an \\m (\\l)", "");
-        issue = issue.replace("\\S\nKernel \\r on an \\m", "");
-        issue = issue.replace(" \\n \\l", "");
-        issue = issue.trim();
-        String release = FileUtils.readFileToString(new File(analysisDir, "release.txt"), "UTF-8");
-        if (!issue.contains(release)) {
-            issue = issue + " (" + release.trim() + ")";
-        }
-        issue = issue.trim();
 
         for (Artifact artifact : inventory.getArtifacts()) {
             String id = artifact.getId();
-            artifact.set("Container", analysisDir.getName());
-            artifact.set("Issue", issue);
 
             String path = "packages/" + id + "_apk.txt";
             File packageDetailsFile = new File(analysisDir, path);
@@ -53,7 +40,6 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
             extractLicense(artifact, lines);
             extractUrl(artifact, lines);
 
-            artifact.set(InventoryExtractor.KEY_ATTRIBUTE_SOURCE_PROJECT, inventoryId);
             artifact.set(InventoryExtractor.KEY_ATTRIBUTE_TYPE, InventoryExtractor.TYPE_PACKAGE);
         }
 
@@ -62,13 +48,11 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
             File packageFolder = new File(shareFolder, artifact.getId());
 
             if (packageFolder.exists()) {
-                PackageReference packageReference = new PackageReference();
+                PackageInfo packageReference = new PackageInfo();
                 Artifact analysis = packageReference.createArtifact(analysisDir);
             }
 
         }
-
-        return inventory;
     }
 
     public void initializeInventory(List<String> packages, Inventory inventory) {
@@ -171,7 +155,6 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
             }
         }
 
-        // from the first line we read the version
         int dIndex = getIndex(lines, "description:");
         if (dIndex != -1) {
             String versionExtract = lines.get(dIndex);

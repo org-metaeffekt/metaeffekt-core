@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory;
 
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.DependenciesDitaReport;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import static org.springframework.util.StringUtils.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,6 +90,33 @@ public abstract class InventoryUtils {
         } catch (IOException e) {
             throw new IOException(String.format("Unable to read inventory from classpath: {}/{}", inventoryBaseDir, inventoryIncludes), e);
         }
+    }
+
+    public static List<String> tokenizeLicense(String license, boolean reorder, boolean commaSeparatorOnly) {
+        if (license != null) {
+            String[] licenseParts = commaSeparatorOnly ?
+                    license.split(",") :
+                    license.split("[,\\|\\+]");
+            List<String> licenses = Arrays.stream(licenseParts).
+                    map(String::trim).
+                    filter(s -> !isEmpty(s)).
+                    distinct().
+                    collect(Collectors.toList());
+
+            if (reorder) {
+                Collections.sort(licenses, String.CASE_INSENSITIVE_ORDER);
+            }
+            return licenses;
+        }
+        return Collections.emptyList();
+    }
+
+    public static String joinLicenses(Collection<String> licenses) {
+        return licenses.stream().collect(Collectors.joining(" ,"));
+    }
+
+    public static String joinEffectiveLicenses(Collection<String> licenses) {
+        return licenses.stream().collect(Collectors.joining("|"));
     }
 
 }

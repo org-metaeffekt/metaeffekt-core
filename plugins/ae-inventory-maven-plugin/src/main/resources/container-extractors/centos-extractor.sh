@@ -1,5 +1,6 @@
 #!/bin/sh
 mkdir -p /analysis/packages
+mkdir -p /analysis/files
 
 uname -a > /analysis/uname.txt
 cat /etc/issue > /analysis/issue.txt
@@ -15,7 +16,7 @@ packagenames=`cat /analysis/packages_rpm-name-only.txt`
 for package in $packagenames
 do
   rpm -qi $package > /analysis/packages/${package}_rpm.txt
-  rpm -qa --qf 'License     : %{LICENSE}\n' $package >> /analysis/packages/${package}_rpm.txt
+  rpm -q --filesbypkg ${package} | sed 's/[^/]*//' | sort > /analysis/files/${package}_files.txt
 done
 
 mkdir -p /analysis/usr-share-doc/

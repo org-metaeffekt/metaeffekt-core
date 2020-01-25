@@ -1,7 +1,9 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,19 +29,15 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId) throws IOException {
-        Inventory inventory = new Inventory();
-
+    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
         // find packages from the provided inputs
-        List<PackageReference> packageReferences = scan(analysisDir);
+        List<PackageInfo> packageReferences = scan(analysisDir);
 
-        packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, inventoryId, p));
-
-        return inventory;
+        packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
-    public static List<PackageReference> scan(File analysisDir) throws IOException {
-        Map<String, PackageReference> nameToPackageReferenceMap = new HashMap<>();
+    public List<PackageInfo> scan(File analysisDir) throws IOException {
+        Map<String, PackageInfo> nameToPackageReferenceMap = new HashMap<>();
 
         // generate package list from files in dir
         packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), nameToPackageReferenceMap);
@@ -50,10 +48,29 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
         // generate (complementary) package list from scripts output
         parseDebianPackageList(analysisDir, nameToPackageReferenceMap);
 
+        // add additional details from package metadata files
+        parseDebianPackageFiles(analysisDir, nameToPackageReferenceMap);
+
         return new ArrayList<>(nameToPackageReferenceMap.values());
     }
 
-    private static void parseDebianPackageList(File shareDir, Map<String, PackageReference> nameToPackageReferenceMap) throws IOException {
+    private void parseDebianPackageFiles(File analysisDir, Map<String,PackageInfo> nameToPackageReferenceMap) throws IOException {
+        for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
+            PackageInfo packageInfo = entry.getValue();
+            String packageId = entry.getKey();
+            File packageFile = new File(analysisDir, "packages/" + packageId + "_apt.txt");
+            if (packageFile.exists()) {
+                List<String> fileContentLines = FileUtils.readLines(packageFile, FileUtils.ENCODING_UTF_8);
+
+                packageInfo.url = ParsingUtils.getValue(fileContentLines, "Homepage:");
+                packageInfo.description = ParsingUtils.getValue(fileContentLines, "Description:");
+            } else {
+                System.out.println("File " + packageFile + " does not exist.");
+            }
+        }
+    }
+
+    private static void parseDebianPackageList(File shareDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
         File dpkgPackagesFile = new File(shareDir, "packages_dpkg.txt");
         String packageFile = FileUtils.readFileToString(dpkgPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFile.split("\\n");
@@ -77,9 +94,9 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
                     name = name.substring(0, name.indexOf(SEPARATOR_COLON));
                 }
 
-                PackageReference packageReference = nameToPackageReferenceMap.get(name);
+                PackageInfo packageReference = nameToPackageReferenceMap.get(name);
                 if (packageReference == null) {
-                    packageReference = new PackageReference();
+                    packageReference = new PackageInfo();
                     nameToPackageReferenceMap.put(name, packageReference);
                 }
 

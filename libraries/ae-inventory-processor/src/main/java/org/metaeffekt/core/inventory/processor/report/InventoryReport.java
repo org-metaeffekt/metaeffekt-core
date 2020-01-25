@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,14 @@ import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_PREFIX;
@@ -49,29 +50,13 @@ public class InventoryReport {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
 
-    // artifacts summaries (maven centric)
-    private static final String DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE = "/META-INF/templates/inventory-dita-report.vt";
-
-    // package summaries (maven centric)
-    private static final String DITA_MAVEN_PACKAGE_REPORT_TEMPLATE = "/META-INF/templates/inventory-dita-package-report.vt";
-
-    // artifacts summaries (component centric)
-    private static final String DITA_COMPONENT_ARTIFACT_REPORT_TEMPLATE = "/META-INF/templates/inventory-dita-component-report.vt";
-
-    // version diff
-    private static final String DITA_DIFF_TEMPLATE = "/META-INF/templates/inventory-dita-diff.vt";
-
-    // license summary
-    private static final String DITA_LICENSE_TEMPLATE = "/META-INF/templates/inventory-dita-licenses.vt";
-
-    // notice summary
-    private static final String DITA_NOTICE_TEMPLATE = "/META-INF/templates/inventory-dita-notices.vt";
-
-    // vulnerability summary
-    private static final String DITA_VULNERABILITY_TEMPLATE = "/META-INF/templates/inventory-dita-vulnerabilities.vt";
-
-    // generating a pom from the inventory
-    private static final String MAVEN_POM_TEMPLATE =  "/META-INF/templates/inventory-pom-xml.vt";
+    private static final String REPORT_TEMPLATE_DIR = "/META-INF/templates";
+    private static final String SEPARATOR_SLASH = "/";
+    private static final String PATTERN_ANY_VT = "**/*.vt";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
+    public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
     /**
      * The reference inventory is a complete file structure. referenceInventoryDir is the root folder.
@@ -93,29 +78,38 @@ public class InventoryReport {
      */
     private String referenceLicensePath;
 
+    /**
+     * The target path where to produce the reports.
+     */
+    private File targetReportDir;
 
     // The diff inventory is used for version diffs.
     private File diffInventoryFile;
 
+    // FIXME; dir / path ambiguity
     /**
-     * The target directories,
+     * The target directory for inventories.
      */
-
     private File targetInventoryDir;
+
+    /**
+     * The target directory for inventories.
+     */
     private String targetInventoryPath;
+
+    /**
+     * The directory where components are aggregated.
+     */
     private File targetComponentDir;
+
+    /**
+     * The directory where licenses are aggregated.
+     */
     private File targetLicenseDir;
 
-    // FIXME: fix the substructure; provide only the parent path
-    private String targetDitaReportPath;
-    private String targetDitaPackageReportPath;
-    private String targetDitaComponentReportPath;
-    private String targetDitaDiffPath;
-    private String targetDitaLicenseReportPath;
-    private String targetDitaNoticeReportPath;
-    private String targetDitaVulnerabilityReportPath;
-    private String targetMavenPomPath;
-
+    /**
+     * Project name initialized with default value.
+     */
     private String projectName = "local project";
 
     /**
@@ -137,6 +131,10 @@ public class InventoryReport {
 
     private ArtifactFilter artifactFilter;
 
+    private boolean inventoryBomReportEnabled = false;
+    private boolean inventoryDiffReportEnabled = false;
+    private boolean inventoryPomEnabled = false;
+    private boolean inventoryVulnerabilityReportEnabled = false;
 
     /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
@@ -146,7 +144,7 @@ public class InventoryReport {
 
     private List<Artifact> addOnArtifacts;
 
-    // FIXME: do we want to support this?
+    // FIXME: do we want to support this? This is for aggregating information in a reactor project.
     private transient Inventory lastProjectInventory;
 
     /**
@@ -502,15 +500,21 @@ public class InventoryReport {
 
 
         // write reports
-        writeArtifactReport(projectInventory, reportContext);
-        writePackageReport(projectInventory, reportContext);
-        writeComponentReport(projectInventory, reportContext);
-        writeDiffReport(diffInventory, projectInventory, reportContext);
-        writeObligationSummary(projectInventory, reportContext);
-        writeLicenseSummary(projectInventory, reportContext);
-        writeVulnerabilitySummary(projectInventory, reportContext);
+        if (inventoryBomReportEnabled) {
+            writeReports(projectInventory, TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
+        }
 
-        writeMavenPom(projectInventory, reportContext);
+        if (inventoryDiffReportEnabled) {
+            writeDiffReport(diffInventory, projectInventory, reportContext);
+        }
+
+        if (inventoryVulnerabilityReportEnabled) {
+            writeReports(projectInventory, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
+        }
+
+        if (inventoryPomEnabled) {
+            writeReports(projectInventory, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
+        }
 
         // evaluate licenses only for managed artifacts
         List<String> licenses = projectInventory.evaluateLicenses(false, true);
@@ -576,24 +580,19 @@ public class InventoryReport {
         return true;
     }
 
-    protected void writeComponentReport(Inventory projectInventory, ReportContext reportContext) throws Exception {
-        if (targetDitaComponentReportPath != null) {
-            produceDita(projectInventory, DITA_COMPONENT_ARTIFACT_REPORT_TEMPLATE, new File(
-                    targetDitaComponentReportPath), reportContext);
-        }
-    }
+    protected void writeReports(Inventory projectInventory, String templateGroup, ReportContext reportContext) throws Exception {
+        final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+        final String vtClasspathResourcePattern = REPORT_TEMPLATE_DIR + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
+        final Resource[] resources = resolver.getResources(vtClasspathResourcePattern);
+        final Resource parentResource = resolver.getResource(REPORT_TEMPLATE_DIR);
+        final String parentPath = parentResource.getURI().toASCIIString();
+        for (Resource r : resources) {
+            String filePath = r.getURI().toASCIIString();
+            filePath = REPORT_TEMPLATE_DIR + filePath.replace(parentPath, "");
+            String targetFileName = r.getFilename().replace(".vt", "");
 
-    protected void writeArtifactReport(Inventory projectInventory, ReportContext reportContext) throws Exception {
-        if (targetDitaReportPath != null) {
-            produceDita(projectInventory, DITA_MAVEN_ARTIFACT_REPORT_TEMPLATE, new File(
-                    targetDitaReportPath), reportContext);
-        }
-    }
-
-    protected void writePackageReport(Inventory projectInventory, ReportContext reportContext) throws Exception {
-        if (targetDitaPackageReportPath != null) {
-            produceDita(projectInventory, DITA_MAVEN_PACKAGE_REPORT_TEMPLATE, new File(
-                    targetDitaPackageReportPath), reportContext);
+            final File targetReportPath = new File(this.targetReportDir, targetFileName);
+            produceDita(projectInventory, filePath, targetReportPath, reportContext);
         }
     }
 
@@ -763,66 +762,35 @@ public class InventoryReport {
         return missingFiles;
     }
 
-    protected void writeLicenseSummary(Inventory projectInventory, ReportContext reportContext) throws Exception {
-        if (targetDitaLicenseReportPath != null) {
-            produceDita(projectInventory, DITA_LICENSE_TEMPLATE, new File(
-                    targetDitaLicenseReportPath), reportContext);
-        }
-    }
-
-    protected void writeObligationSummary(Inventory projectInventory, ReportContext reportContext) throws Exception {
-        if (targetDitaNoticeReportPath != null) {
-            produceDita(projectInventory, DITA_NOTICE_TEMPLATE, new File(targetDitaNoticeReportPath), reportContext);
-        }
-    }
-
-    protected void writeVulnerabilitySummary(Inventory projectInventory, ReportContext reportContext) {
-        if (targetDitaVulnerabilityReportPath != null) {
-            try {
-                produceDita(projectInventory, DITA_VULNERABILITY_TEMPLATE, new File(targetDitaVulnerabilityReportPath), reportContext);
-            } catch (Exception e) {
-                LOG.error(e.getMessage(), e);
-            }
-        }
-    }
-
-    protected void writeMavenPom(Inventory projectInventory, ReportContext reportContext) throws Exception {
-        if (targetMavenPomPath != null) {
-            produceDita(projectInventory, MAVEN_POM_TEMPLATE, new File(targetMavenPomPath), reportContext);
-        }
-    }
-
     protected void writeDiffReport(Inventory referenceInventory, Inventory projectInventory, ReportContext reportContext) throws Exception {
-        if (targetDitaDiffPath != null) {
-            if (referenceInventory != null) {
-                for (Artifact artifact : projectInventory.getArtifacts()) {
-                    if (artifact.getId() == null) {
-                        continue;
-                    }
-                    Artifact foundArtifact = referenceInventory.findArtifact(artifact, true);
-                    // if not found try to match current using the find current strategies
-                    // this supports to manipulate the match based on the content in the
-                    // reference inventory.
-                    if (foundArtifact == null) {
-                        foundArtifact = referenceInventory.findArtifactClassificationAgnostic(artifact);
-                    }
-                    if (foundArtifact != null) {
-                        artifact.setPreviousVersion(foundArtifact.getVersion());
-                    }
-                }
-            }
-
-            // filter all artifacts were the version did not change
-            Inventory filteredInventory = new Inventory();
+        if (referenceInventory != null) {
             for (Artifact artifact : projectInventory.getArtifacts()) {
-                if (artifact.getVersion() != null &&
-                        !artifact.getVersion().trim().equals(artifact.getPreviousVersion())) {
-                    filteredInventory.getArtifacts().add(artifact);
+                if (artifact.getId() == null) {
+                    continue;
+                }
+                Artifact foundArtifact = referenceInventory.findArtifact(artifact, true);
+                // if not found try to match current using the find current strategies
+                // this supports to manipulate the match based on the content in the
+                // reference inventory.
+                if (foundArtifact == null) {
+                    foundArtifact = referenceInventory.findArtifactClassificationAgnostic(artifact);
+                }
+                if (foundArtifact != null) {
+                    artifact.setPreviousVersion(foundArtifact.getVersion());
                 }
             }
-
-            produceDita(filteredInventory, DITA_DIFF_TEMPLATE, new File(targetDitaDiffPath), reportContext);
         }
+
+        // filter all artifacts were the version did not change
+        Inventory filteredInventory = new Inventory();
+        for (Artifact artifact : projectInventory.getArtifacts()) {
+            if (artifact.getVersion() != null &&
+                    !artifact.getVersion().trim().equals(artifact.getPreviousVersion())) {
+                filteredInventory.getArtifacts().add(artifact);
+            }
+        }
+
+        writeReports(filteredInventory, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
     }
 
     /**
@@ -902,50 +870,6 @@ public class InventoryReport {
 
     public void setTargetInventoryPath(String targetInventoryPath) {
         this.targetInventoryPath = targetInventoryPath;
-    }
-
-    public String getTargetDitaReportPath() {
-        return targetDitaReportPath;
-    }
-
-    public void setTargetDitaReportPath(String targetDitaReportPath) {
-        this.targetDitaReportPath = targetDitaReportPath;
-    }
-
-    public String getTargetDitaComponentReportPath() {
-        return targetDitaComponentReportPath;
-    }
-
-    public void setTargetDitaComponentReportPath(String targetDitaComponentReportPath) {
-        this.targetDitaComponentReportPath = targetDitaComponentReportPath;
-    }
-
-    public void setTargetMavenPomPath(String targetMavenPomPath) {
-        this.targetMavenPomPath = targetMavenPomPath;
-    }
-
-    public String getTargetDitaDiffPath() {
-        return targetDitaDiffPath;
-    }
-
-    public void setTargetDitaDiffPath(String targetDitaDiffPath) {
-        this.targetDitaDiffPath = targetDitaDiffPath;
-    }
-
-    public String getTargetDitaLicenseReportPath() {
-        return targetDitaLicenseReportPath;
-    }
-
-    public void setTargetDitaLicenseReportPath(String targetDitaLicenseReportPath) {
-        this.targetDitaLicenseReportPath = targetDitaLicenseReportPath;
-    }
-
-    public String getTargetDitaNoticeReportPath() {
-        return targetDitaNoticeReportPath;
-    }
-
-    public void setTargetDitaNoticeReportPath(String targetDitaObligationReportPath) {
-        this.targetDitaNoticeReportPath = targetDitaObligationReportPath;
     }
 
     public String getProjectName() {
@@ -1161,10 +1085,6 @@ public class InventoryReport {
         return escaped;
     }
 
-    public void setTargetDitaPackageReportPath(String targetDitaPackageReportPath) {
-        this.targetDitaPackageReportPath = targetDitaPackageReportPath;
-    }
-
     public File getGlobalInventoryDir() {
         return referenceInventoryDir;
     }
@@ -1197,14 +1117,6 @@ public class InventoryReport {
         this.reportContext = reportContext;
     }
 
-    public void setTargetDitaVulnerabilityReportPath(String path) {
-        this.targetDitaVulnerabilityReportPath = path;
-    }
-
-    public String getTargetDitaPackageReportPath() {
-        return targetDitaPackageReportPath;
-    }
-
     public float getVulnerabilityScoreThreshold() {
         return vulnerabilityScoreThreshold;
     }
@@ -1213,4 +1125,59 @@ public class InventoryReport {
         this.vulnerabilityScoreThreshold = vulnerabilityScoreThreshold;
     }
 
+    public void setTargetReportDir(File reportTarget) {
+        this.targetReportDir = reportTarget;
+    }
+
+    public File getReferenceInventoryDir() {
+        return referenceInventoryDir;
+    }
+
+    public File getTargetReportDir() {
+        return targetReportDir;
+    }
+
+    public boolean isFailOnMissingLicenseFile() {
+        return failOnMissingLicenseFile;
+    }
+
+    public boolean isFailOnMissingNotice() {
+        return failOnMissingNotice;
+    }
+
+    public boolean isInventoryBomReportEnabled() {
+        return inventoryBomReportEnabled;
+    }
+
+    public void setInventoryBomReportEnabled(boolean inventoryBomReportEnabled) {
+        this.inventoryBomReportEnabled = inventoryBomReportEnabled;
+    }
+
+    public boolean isInventoryDiffReportEnabled() {
+        return inventoryDiffReportEnabled;
+    }
+
+    public void setInventoryDiffReportEnabled(boolean inventoryDiffReportEnabled) {
+        this.inventoryDiffReportEnabled = inventoryDiffReportEnabled;
+    }
+
+    public boolean isInventoryPomEnabled() {
+        return inventoryPomEnabled;
+    }
+
+    public void setInventoryPomEnabled(boolean inventoryPomEnabled) {
+        this.inventoryPomEnabled = inventoryPomEnabled;
+    }
+
+    public boolean isInventoryVulnerabilityReportEnabled() {
+        return inventoryVulnerabilityReportEnabled;
+    }
+
+    public void setInventoryVulnerabilityReportEnabled(boolean inventoryVulnerabilityReportEnabled) {
+        this.inventoryVulnerabilityReportEnabled = inventoryVulnerabilityReportEnabled;
+    }
+
+    public void setLastProjectInventory(Inventory lastProjectInventory) {
+        this.lastProjectInventory = lastProjectInventory;
+    }
 }

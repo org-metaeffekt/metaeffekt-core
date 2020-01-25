@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-container-extractor-container-tests</artifactId>
+        <version>HEAD-SNAPSHOT</version>
+    </parent>
+
+	<artifactId>ae-arch-container-test</artifactId>
+	<packaging>jar</packaging>
+
+    <properties>
+        <image.id>archlinux:latest</image.id>
+        <image.os>arch</image.os>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-inventory-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>extract-container-inventory</goal>
+                        </goals>
+                        <phase>process-test-resources</phase>
+                        <configuration>
+                            <excludes>
+                                <exclude>/sys/devices/**/*</exclude>
+                                <exclude>/var/cache/ldconfig/**/*</exclude>
+                                <exclude>/var/log/**/*</exclude>
+                                <exclude>/var/lib/pacman/**/*</exclude>
+                                <exclude>/sys/**/*</exclude>
+                                <exclude>/proc/**/*</exclude>
+                                <exclude>/root/.*</exclude>
+                                <exclude>/etc/**/*</exclude>
+                                <exclude>/.dockerenv</exclude>
+                                <exclude>/usr/lib/locale/locale-archive</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

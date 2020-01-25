@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 
-public class InheritInventoryProcessor extends AbstractInventoryProcessor {
-
-    public static final String INPUT_INVENTORY = "input.inventory.path";
+public class InheritInventoryProcessor extends AbstractInputInventoryBasedProcessor {
 
     public InheritInventoryProcessor() {
         super();
@@ -42,24 +40,6 @@ public class InheritInventoryProcessor extends AbstractInventoryProcessor {
         inventory.inheritLicenseMetaData(inputInventory, true);
         inventory.inheritComponentPatterns(inputInventory, true);
         inventory.inheritVulnerabilityMetaData(inputInventory, true);
-    }
-
-    protected Inventory loadInputInventory() {
-        final String inventoryFileName = getProperties().getProperty(INPUT_INVENTORY);
-
-        if (inventoryFileName == null) {
-            throw new IllegalArgumentException("Please specify the '" + INPUT_INVENTORY + "' property.");
-        }
-
-        File inventoryFile = new File(inventoryFileName);
-
-        Inventory inputInventory;
-        try {
-            inputInventory = new InventoryReader().readInventory(inventoryFile);
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot load inventory.", e);
-        }
-        return inputInventory;
     }
 
 }

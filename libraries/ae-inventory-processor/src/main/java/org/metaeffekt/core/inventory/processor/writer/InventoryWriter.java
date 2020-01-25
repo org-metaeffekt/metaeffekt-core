@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,19 +68,7 @@ public class InventoryWriter {
         int cellNum = 0;
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Id"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Checksum"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Component"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Group Id"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Version"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("Latest Version"));
@@ -134,15 +122,7 @@ public class InventoryWriter {
 
             cellNum = 0;
             myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getId()));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getChecksum()));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getComponent()));
-            myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getGroupId()));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.getVersion()));
             myCell = myRow.createCell(cellNum++);
             myCell.setCellValue(new HSSFRichTextString(artifact.getLatestAvailableVersion()));
             myCell = myRow.createCell(cellNum++);
@@ -176,14 +156,6 @@ public class InventoryWriter {
                 myCell.setCellValue(new HSSFRichTextString(artifact.get(key)));
             }
         }
-
-        /** adjust with of cells
-        for (int i = 0; i <= numCol; i++) {
-            Integer width = (Integer) inventory.getContextMap().get("artifacts.column[" + i + "].width");
-            if (width != null) {
-                mySheet.setColumnWidth(i, Math.min(width, 255));
-            }
-        }*/
 
         mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
     }
@@ -269,12 +241,6 @@ public class InventoryWriter {
         HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
 
         int cellNum = 0;
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Component"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Version"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("License"));

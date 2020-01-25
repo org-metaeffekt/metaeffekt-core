@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,30 +74,24 @@ public class RepositoryReportTest {
         File target = new File(TARGET_FOLDER);
         target.mkdirs();
 
-        File reportTarget = new File(target, "report");
-        reportTarget.mkdirs();
+        File targetReportPath = new File(target, "report");
+        targetReportPath.mkdirs();
 
-        File licenseReport = new File(reportTarget, "license.dita");
-        File componentReport = new File(reportTarget, "component-report.dita");
-        File noticeReport = new File(reportTarget, "notice.dita");
-        File artifactReport = new File(reportTarget, "artifacts.dita");
-        File packageReport = new File(reportTarget, "packages.dita");
-        File vulnerabilityReport = new File(reportTarget, "vulnerability.dita");
-        File mavenPom = new File(reportTarget, "ae-pom.xml");
-
-        report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
-        report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
-        report.setTargetDitaPackageReportPath(packageReport.getAbsolutePath());
-
-        report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
-        report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
-        report.setTargetDitaVulnerabilityReportPath(vulnerabilityReport.getAbsolutePath());
-        report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
+        File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
+        File componentReport = new File(targetReportPath, "tpc_inventory-component-report.dita");
+        File noticeReport = new File(targetReportPath, "tpc_inventory-notices.dita");
+        File artifactReport = new File(targetReportPath, "tpc_inventory-artifact-report.dita");
 
         final File targetLicensesDir = new File(target, "licenses");
         final File targetComponentDir = new File(target, "components");
         report.setTargetLicenseDir(targetLicensesDir);
         report.setTargetComponentDir(targetComponentDir);
+        report.setTargetReportDir(targetReportPath);
+
+        report.setInventoryBomReportEnabled(true);
+        report.setInventoryPomEnabled(true);
+        report.setInventoryDiffReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(true);
 
         final boolean valid = report.createReport();
 
@@ -256,23 +250,6 @@ public class RepositoryReportTest {
 
         File reportTarget = new File(target, "report");
         reportTarget.mkdirs();
-
-        File licenseReport = new File(reportTarget, "license.dita");
-        File componentReport = new File(reportTarget, "component-report.dita");
-        File noticeReport = new File(reportTarget, "notice.dita");
-        File artifactReport = new File(reportTarget, "artifacts.dita");
-        File packageReport = new File(reportTarget, "packages.dita");
-        File vulnerabilityReport = new File(reportTarget, "vulnerability.dita");
-        File mavenPom = new File(reportTarget, "ae-pom.xml");
-
-        report.setTargetDitaReportPath(artifactReport.getAbsolutePath());
-        report.setTargetDitaComponentReportPath(componentReport.getAbsolutePath());
-        report.setTargetDitaPackageReportPath(packageReport.getAbsolutePath());
-
-        report.setTargetDitaLicenseReportPath(licenseReport.getAbsolutePath());
-        report.setTargetDitaNoticeReportPath(noticeReport.getAbsolutePath());
-        report.setTargetDitaVulnerabilityReportPath(vulnerabilityReport.getAbsolutePath());
-        report.setTargetMavenPomPath(mavenPom.getAbsolutePath());
 
         final File targetLicensesDir = new File(target, "licenses");
         final File targetComponentDir = new File(target, "components");

@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,47 +161,27 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter default-value="false"
      */
-    private boolean enableDita;
-    
-    /**
-     * @parameter expression="${basedir}/src/main/dita/gen"
-     */
-    private String targetDitaPath;
+    private boolean enableBomReport;
 
     /**
-     * @parameter expression="tpc_${project.artifactId}-artifact-report.dita"
+     * @parameter default-value="false"
      */
-    private String targetDitaArtifactReportPath;
+    private boolean enablePomReport;
 
     /**
-     * @parameter expression="tpc_${project.artifactId}-package-report.dita"
+     * @parameter default-value="false"
      */
-    private String targetDitaPackageReportPath;
+    private boolean enableDiffReport;
 
     /**
-     * @parameter expression="tpc_${project.artifactId}-component-report.dita"
+     * @parameter default-value="false"
      */
-    private String targetDitaComponentReportPath;
+    private boolean enableVulnerabilityReport;
 
     /**
-     * @parameter expression="tpc_${project.artifactId}-diff.dita"
+     * @parameter expression="${basedir}/src/main/dita/${project.artifactId}/gen"
      */
-    private String targetDitaDiffPath;
-
-    /**
-     * @parameter expression="tpc_${project.artifactId}-licenses.dita"
-     */
-    private String targetDitaLicenseReportPath;
-
-    /**
-     * @parameter expression="tpc_${project.artifactId}-notices.dita"
-     */
-    private String targetDitaNoticeReportPath;
-
-    /**
-     * @parameter expression="tpc_${project.artifactId}-vulnerability.dita"
-     */
-    private String targetDitaVulnerabilityReportPath;
+    private File targetReportDir;
 
     /**
      * @parameter
@@ -227,7 +207,6 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="false"
      */
     private boolean skip;
-
 
     /**
      * @parameter default-value="7.0"
@@ -273,17 +252,14 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
-        
-        if (enableDita) {
-            report.setTargetDitaDiffPath(createDitaPath(targetDitaDiffPath));
-            report.setTargetDitaReportPath(createDitaPath(targetDitaArtifactReportPath));
-            report.setTargetDitaPackageReportPath(createDitaPath(targetDitaPackageReportPath));
-            report.setTargetDitaComponentReportPath(createDitaPath(targetDitaComponentReportPath));
-            report.setTargetDitaLicenseReportPath(createDitaPath(targetDitaLicenseReportPath));
-            report.setTargetDitaNoticeReportPath(createDitaPath(targetDitaNoticeReportPath));
-            report.setTargetDitaVulnerabilityReportPath(createDitaPath(targetDitaVulnerabilityReportPath));
-        }
-        
+
+        report.setInventoryPomEnabled(enablePomReport);
+        report.setInventoryDiffReportEnabled(enableDiffReport);
+        report.setInventoryBomReportEnabled(enableBomReport);
+        report.setInventoryVulnerabilityReportEnabled(enableVulnerabilityReport);
+
+        report.setTargetReportDir(targetReportDir);
+
         report.setRelativeLicensePath(relativeLicensePath);
 
         report.setAddOnArtifacts(addOnArtifacts);
@@ -298,10 +274,6 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             }
             report.setArtifactFilter(artifactFilter);
         }
-    }
-
-    private String createDitaPath(String relativePath) {
-        return new File(targetDitaPath, relativePath).getPath();
     }
 
     @Override

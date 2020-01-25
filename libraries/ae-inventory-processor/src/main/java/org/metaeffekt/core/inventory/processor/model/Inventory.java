@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,6 +149,17 @@ public class Inventory {
             }
         }
         return null;
+    }
+
+    public List<Artifact> findAllWithId(String id) {
+        List<Artifact> artifacts = new ArrayList<>();
+        if (id == null) throw new IllegalStateException("Artifact id must not be null.");
+        for (Artifact artifact : getArtifacts()) {
+            if (id.equals(artifact.getId())) {
+                artifacts.add(artifact);
+            }
+        }
+        return artifacts;
     }
 
     public Artifact findArtifact(String id) {

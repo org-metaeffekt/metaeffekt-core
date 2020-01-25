@@ -20,19 +20,14 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     @Override
-    public Inventory extractInventory(File analysisDir, String inventoryId) throws IOException {
-        Inventory inventory = new Inventory();
-
+    public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
         // find packages from the provided inputs
-        List<PackageReference> packageReferences = scan(analysisDir);
-
-        packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, inventoryId, p));
-
-        return inventory;
+        List<PackageInfo> packageReferences = scan(analysisDir);
+        packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 
-    public static List<PackageReference> scan(File analysisDir) throws IOException {
-        Map<String, PackageReference> nameToPackageReferenceMap = new HashMap<>();
+    public List<PackageInfo> scan(File analysisDir) throws IOException {
+        Map<String, PackageInfo> nameToPackageReferenceMap = new HashMap<>();
 
         // generate package list from files in dir
         packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), nameToPackageReferenceMap);
@@ -43,11 +38,32 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
         // generate (complementary) package list from scripts output
         parseRpmPackageList(analysisDir, nameToPackageReferenceMap);
 
+        // add additional details from package metadata files
+        parseRpmPackageFiles(analysisDir, nameToPackageReferenceMap);
+
         return new ArrayList<>(nameToPackageReferenceMap.values());
     }
 
+    private void parseRpmPackageFiles(File analysisDir, Map<String,PackageInfo> nameToPackageReferenceMap) throws IOException {
+        for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
+            PackageInfo packageInfo = entry.getValue();
+            String packageId = entry.getKey();
+            File packageFile = new File(analysisDir, "packages/" + packageId + "_rpm.txt");
+            if (packageFile.exists()) {
+                List<String> fileContentLines = FileUtils.readLines(packageFile, FileUtils.ENCODING_UTF_8);
 
-    public static void parseRpmPackageList(File shareDir, Map<String, PackageReference> nameToPackageReferenceMap) throws IOException {
+                packageInfo.url = ParsingUtils.getValue(fileContentLines, "URL         :");
+                packageInfo.summary = ParsingUtils.getValue(fileContentLines, "Summary     :");
+                packageInfo.description = ParsingUtils.getValue(fileContentLines, "Description :");
+                packageInfo.arch = ParsingUtils.getValue(fileContentLines, "Architecture:");
+            } else {
+                System.out.println("File " + packageFile + " does not exist.");
+            }
+        }
+    }
+
+
+    public void parseRpmPackageList(File shareDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
         File rpmPackagesFile = new File(shareDir, FILE_PACKAGES_RPM_TXT);
         String packageFileContent = FileUtils.readFileToString(rpmPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFileContent.split("\\n");
@@ -59,23 +75,24 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
             String name = elements[1].trim();
             String version = elements[2].trim();
 
-            PackageReference packageReference = nameToPackageReferenceMap.get(name);
+            PackageInfo packageInfo = nameToPackageReferenceMap.get(name);
 
-            if (packageReference == null) {
-                packageReference = new PackageReference();
-                nameToPackageReferenceMap.put(name + "-" + version, packageReference);
+            if (packageInfo == null) {
+                packageInfo = new PackageInfo();
+                nameToPackageReferenceMap.put(name, packageInfo);
             }
 
-            packageReference.component = name;
-            packageReference.version = version;
-            packageReference.id = name + "-" + version;
-            packageReference.license = elements[3].trim();
+            packageInfo.version = version;
+            packageInfo.id = name + "-" + version;
+            packageInfo.component = name;
+            packageInfo.version = version;
+            packageInfo.license = elements[3].trim();
             if (elements.length > 4)
-                packageReference.url = elements[4].trim();
+                packageInfo.url = elements[4].trim();
             if (elements.length > 5)
-                packageReference.arch = elements[5].trim();
+                packageInfo.arch = elements[5].trim();
             if (elements.length > 6)
-                packageReference.description = elements[6].trim();
+                packageInfo.description = elements[6].trim();
         }
     }
 

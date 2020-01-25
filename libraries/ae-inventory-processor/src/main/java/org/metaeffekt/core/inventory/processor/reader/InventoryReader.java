@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,25 +70,15 @@ public class InventoryReader extends AbstractXlsInventoryReader {
             final HSSFCell myCell = row.getCell(i);
             final String value = myCell != null ? myCell.toString() : null;
 
-            if (columnName.equalsIgnoreCase("id")) {
-                artifact.setId(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("checksum")) {
-                artifact.setChecksum(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("component") ||
-                    columnName.equalsIgnoreCase("component / group")) {
-                artifact.setComponent(value);
+            // compatibility
+            if (columnName.equalsIgnoreCase("component / group")) {
+                if (StringUtils.isEmpty(artifact.getComponent())) {
+                    artifact.setComponent(value);
+                }
                 continue;
             }
             if (columnName.equalsIgnoreCase("group id")) {
                 artifact.setGroupId(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("version")) {
-                artifact.setVersion(value);
                 continue;
             }
             if (columnName.equalsIgnoreCase("license")) {
@@ -173,6 +163,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
                 licenseMetaData.setVersion(value);
                 continue;
             }
+
             if (columnName.equalsIgnoreCase("license")) {
                 licenseMetaData.setLicense(value);
                 continue;

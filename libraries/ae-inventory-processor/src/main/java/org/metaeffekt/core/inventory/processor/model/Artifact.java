@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2019 the original author or authors.
+ * Copyright 2009-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,22 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
-    // component of the artifact (uncontrolled)
-    private String component;
-
-    // id of the artifact (file component)
-    private String id;
-
-    private String checksum;
-
-    private String version;
+    /**
+     * Core attributes to support component patterns.
+     */
+    public enum Attribute implements AbstractModelBase.Attribute {
+        ID("Id"),
+        COMPONENT("Component"),
+        CHECKSUM("Checksum"),
+        VERSION("Version");
+        private String key;
+        Attribute(String key) {
+            this.key = key;
+        }
+        public String getKey() {
+            return key;
+        }
+    }
 
     private String license;
 
@@ -97,9 +104,6 @@ public class Artifact extends AbstractModelBase {
      */
     public Artifact(Artifact artifact) {
         super(artifact);
-        this.id = artifact.getId();
-        this.component = artifact.getComponent();
-        this.version = artifact.getVersion();
         this.license = artifact.getLicense();
         this.url = artifact.getUrl();
         this.securityRelevant = artifact.isSecurityRelevant();
@@ -129,12 +133,11 @@ public class Artifact extends AbstractModelBase {
 
     
     public String getComponent() {
-        return component;
+        return get(Attribute.COMPONENT.getKey());
     }
 
-    
-    public void setComponent(String name) {
-        this.component = name;
+    public void setComponent(String component) {
+        set(Attribute.COMPONENT.getKey(), component);
     }
 
     public String getGroupId() {
@@ -150,25 +153,22 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String getId() {
-        return id;
+        return get(Attribute.ID.getKey());
     }
 
-    
     public void setId(String id) {
-        this.id = id;
+        set(Attribute.ID.getKey(), id);
     }
 
     
     public String getVersion() {
-        return version;
+        return get(Attribute.VERSION.getKey());
     }
-
     
     public void setVersion(String version) {
-        this.version = version;
+        set(Attribute.VERSION.getKey(), version);
     }
 
-    
     public String getLicense() {
         return license;
     }
@@ -250,7 +250,7 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String toString() {
-        return "Artifact id: " + id + ", component: " + component + ", version: " + version
+        return "Artifact id: " + getId() + ", component: " + getComponent() + ", version: " + getVersion()
                 + " securityCatergory: " + securityCategory;
     }
 
@@ -267,22 +267,6 @@ public class Artifact extends AbstractModelBase {
     public void merge(Artifact a) {
         // merge attributes
         super.merge(a);
-
-        if (!StringUtils.hasText(this.id)) {
-            this.id = a.getId();
-        }
-
-        if (!StringUtils.hasText(this.checksum)) {
-            this.checksum = a.getChecksum();
-        }
-
-        if (!StringUtils.hasText(this.component)) {
-            this.component = a.getComponent();
-        }
-
-        if (!StringUtils.hasText(this.version)) {
-            this.version = a.getVersion();
-        }
 
         if (!StringUtils.hasText(this.license)) {
             this.license = a.getLicense();
@@ -341,11 +325,12 @@ public class Artifact extends AbstractModelBase {
      * @return The derived artifact qualifier.
      */
     public String deriveQualifier() {
-        if (!StringUtils.hasText(getId())) {
+        String id = getId();
+        if (!StringUtils.hasText(id)) {
             // support artifacts with out id (e.g. a folder)
             StringBuilder sb = new StringBuilder();
             if (StringUtils.hasText(getComponent())) {
-                sb.append(getId().trim());
+                sb.append(getComponent().trim());
             }
             sb.append("-");
             if (StringUtils.hasText(getChecksum())) {
@@ -358,8 +343,8 @@ public class Artifact extends AbstractModelBase {
         }
 
         StringBuilder sb = new StringBuilder();
-        if (StringUtils.hasText(getId())) {
-            sb.append(getId().trim());
+        if (StringUtils.hasText(id)) {
+            sb.append(id.trim());
         }
         sb.append("-");
         if (StringUtils.hasText(getChecksum())) {
@@ -423,7 +408,7 @@ public class Artifact extends AbstractModelBase {
             artifactRepresentation.append(getArtifactId());
         }
         artifactRepresentation.append(DELIMITER_COLON);
-        if (version != null) {
+        if (getVersion() != null) {
             artifactRepresentation.append(getVersion());
         }
         if (getClassifier() != null) {
@@ -432,7 +417,7 @@ public class Artifact extends AbstractModelBase {
         }
         artifactRepresentation.append(DELIMITER_COLON);
         // skip type if no information was derived
-        if (id != null && !id.equals(artifactId)) {
+        if (getId() != null && !getId().equals(artifactId)) {
             artifactRepresentation.append(getType());
         }
         return artifactRepresentation.toString();
@@ -440,6 +425,7 @@ public class Artifact extends AbstractModelBase {
 
     private String inferTypeFromId() {
         String type = null;
+        String id = getId();
         if (id != null) {
             String classifier = inferClassifierFromId();
             String version = inferVersionFromId();
@@ -515,14 +501,16 @@ public class Artifact extends AbstractModelBase {
     }
 
     private String inferClassifierFromId() {
+        final String id = getId();
         if (id != null) {
             // get rid of anything right to version
+            final String version = getVersion();
             int versionIndex = id.indexOf(DELIMITER_DASH + version + DELIMITER_DASH);
             if (versionIndex < 0) {
                 // no version, no classifier
                 return null;
             }
-            String classifierAndType = id.substring(versionIndex+version.length() + 2);
+            String classifierAndType = id.substring(versionIndex + version.length() + 2);
             // get rid of trailing .{type}
             int index = classifierAndType.indexOf(DELIMITER_DOT);
             if (index != -1) {
@@ -637,11 +625,11 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String getChecksum() {
-        return checksum;
+        return get(Attribute.CHECKSUM.getKey());
     }
 
     public void setChecksum(String checksum) {
-        this.checksum = checksum;
+        set(Attribute.CHECKSUM.getKey(), checksum);
     }
 
     public boolean isRelevant() {

@@ -10,15 +10,11 @@
         <version>HEAD-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
-    
+
     <modules>
         <module>ae-example-module</module>
-        <module>ae-arch-container-test</module>
-        <module>ae-alpine-container-test</module>
-        <module>ae-centos-container-test</module>
-        <module>ae-debian-container-test</module>
-        <module>ae-ubuntu-container-test</module>
-        <module>ae-suse-container-test</module>
+        <module>ae-container-validation</module>
+        <module>extractor-tests</module>
     </modules>
 
     <build>

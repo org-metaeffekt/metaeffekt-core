@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
+
+<body>
+    <table id="LicensesInEffect" otherprops="wide">
+        <title>Licenses in Effect$reportContext.inContextOf()</title>
+        <tgroup cols="2">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+            <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
+            <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">License in Effect</entry>
+                    <entry colname="COLSPEC1" valign="top">Number of Components</entry>
+                </row>
+            </thead>
+            <tbody>
+#foreach($license in $inventory.evaluateLicenses(false))
+#set($folder=$inventory.getLicenseFolder($license))
+#set($group=$inventory.evaluateComponents($license))
+                <row>
+                    <entry>
+                        <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+                     </entry>
+                    <entry>
+                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                            <codeph>$group.size()</codeph>
+                        </xref>
+                    </entry>
+                </row>
+#end
+            </tbody>
+        </tgroup>
+    </table>
+    <p>
+        Table <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect</xref>
+        provides an overview of the licenses in effect. In the following paragraphs the individual components are listed
+        for each effective license.
+    </p>
+    <p>
+        Please note, that a component may be subject to several licenses in effect.
+    </p>
+</body>
+
+
+#foreach($license in $inventory.evaluateLicenses(false))
+#set($folder=$inventory.getLicenseFolder($license))
+#set($group=$inventory.evaluateComponents($license))
+#if(!$group.isEmpty())
+<topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
+    <title>$license</title>
+    <body>
+        <p>
+            #if($folder)
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+            #end
+        </p>
+        <p>
+            <table otherprops="wide">
+                <title>Components under $license.trim()$reportContext.inContextOf()</title>
+                <tgroup cols="2">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC1" valign="top">Version</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+#foreach($artifactLicenseData in $group)
+                        <row>
+                            <entry>
+                                 $artifactLicenseData.componentName
+                             </entry>
+                            <entry>
+                                <codeph>$report.xmlEscapeGAV($artifactLicenseData.componentVersion)</codeph>
+                            </entry>
+                        </row>
+#end
+#end
+                    </tbody>
+                </tgroup>
+            </table>
+        </p>
+    </body>
+</topic>
+#end
+</topic>
