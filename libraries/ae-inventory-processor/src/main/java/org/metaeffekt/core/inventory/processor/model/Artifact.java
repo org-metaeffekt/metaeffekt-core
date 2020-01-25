@@ -16,7 +16,9 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
+import org.w3c.dom.Attr;
 
+import javax.smartcardio.ATR;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -35,7 +37,22 @@ public class Artifact extends AbstractModelBase {
         ID("Id"),
         COMPONENT("Component"),
         CHECKSUM("Checksum"),
-        VERSION("Version");
+        VERSION("Version"),
+        CLASSIFICATION("Classification"),
+        LICENSE("License"),
+
+        // url of the project pages
+        URL("URL"),
+
+        // indicates whether the artifact is security relevant and needs to be upgraded asap
+        SECURITY_RELEVANT("Security Relevance"),
+
+        // if the artifact is security relevant is is classified into a security category
+        SECURITY_CATEGORY("Security Relevance"),
+
+        // vulnerability information
+        VULNERABILITY("Vulnerability");
+
         private String key;
         Attribute(String key) {
             this.key = key;
@@ -45,25 +62,10 @@ public class Artifact extends AbstractModelBase {
         }
     }
 
-    private String license;
-
-    private String classification;
-
-    // url of the project home page
-    private String url;
-
-    // indicates whether the artifact is security relevant and needs to be upgraded asap
-    private boolean securityRelevant;
-
-    // if the artifact is security relevant is is classified into a security category
-    private String securityCategory;
-
     // indicated whether the artifact was verified
     private boolean verified;
 
-    private String vulnerability;
-
-    // list of project the aritfacts is used by (source: protex)
+    // list of project the artifacts is used by (source: protex)
     private Set<String> projects = new LinkedHashSet<String>();
 
     // comments
@@ -104,12 +106,6 @@ public class Artifact extends AbstractModelBase {
      */
     public Artifact(Artifact artifact) {
         super(artifact);
-        this.license = artifact.getLicense();
-        this.url = artifact.getUrl();
-        this.securityRelevant = artifact.isSecurityRelevant();
-        this.securityCategory = artifact.getSecurityCategory();
-        this.classification = artifact.getClassification();
-        this.vulnerability = artifact.getVulnerability();
 
         this.projects = new LinkedHashSet<String>(artifact.getProjects());
 
@@ -170,43 +166,27 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String getLicense() {
-        return license;
+        return get(Attribute.LICENSE.getKey());
     }
 
     public void setLicense(String license) {
-        this.license = license;
+        set(Attribute.LICENSE.getKey(), license);
     }
 
     public String getUrl() {
-        return url;
+        return get(Attribute.URL.getKey());
     }
 
     public void setUrl(String url) {
-        this.url = url;
+        set(Attribute.URL.getKey(), url);
     }
 
-    public boolean isSecurityRelevant() {
-        return securityRelevant;
-    }
-
-    public void setSecurityRelevant(boolean securityRelevant) {
-        this.securityRelevant = securityRelevant;
-    }
-
-    public String getSecurityCategory() {
-        return securityCategory;
-    }
-
-    public void setSecurityCategory(String securityCategory) {
-        this.securityCategory = securityCategory;
-    }
-    
     public String getClassification() {
-        return classification;
+        return get(Attribute.CLASSIFICATION.getKey());
     }
 
     public void setClassification(String classification) {
-        this.classification = classification;
+        set(Attribute.CLASSIFICATION.getKey(), classification);
     }
 
     public boolean isVerified() {
@@ -250,43 +230,16 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String toString() {
-        return "Artifact id: " + getId() + ", component: " + getComponent() + ", version: " + getVersion()
-                + " securityCatergory: " + securityCategory;
+        return "Artifact id: " + getId() + ", component: " + getComponent() + ", version: " + getVersion();
     }
 
     public void addProject(String project) {
         projects.add(project);
     }
 
-    public void addProjects(Collection<String> projects) {
-        if (projects != null) {
-            this.projects.addAll(projects);
-        }
-    }
-
     public void merge(Artifact a) {
         // merge attributes
         super.merge(a);
-
-        if (!StringUtils.hasText(this.license)) {
-            this.license = a.getLicense();
-        }
-
-        if (!StringUtils.hasText(this.url)) {
-            this.url = a.getUrl();
-        }
-
-        if (!this.securityRelevant) {
-            this.securityRelevant = a.isSecurityRelevant();
-        }
-
-        if (!StringUtils.hasText(this.securityCategory)) {
-            this.securityCategory = a.getSecurityCategory();
-        }
-
-        if (!StringUtils.hasText(this.vulnerability)) {
-            this.vulnerability = a.getVulnerability();
-        }
 
         this.verified |= a.isVerified();
 
@@ -298,10 +251,6 @@ public class Artifact extends AbstractModelBase {
 
         if (!this.verified) {
             this.verified = a.isVerified();
-        }
-
-        if (!StringUtils.hasText(this.classification)) {
-            this.classification = a.getClassification();
         }
 
         if (!StringUtils.hasText(this.groupId)) {
@@ -549,9 +498,9 @@ public class Artifact extends AbstractModelBase {
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getAnalysis()));
         artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(getSecurityCategory()));
+        artifactRepresentation.append(normalize(get(Attribute.SECURITY_CATEGORY.getKey())));
         artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(isSecurityRelevant()));
+        artifactRepresentation.append(normalize(get(Attribute.SECURITY_RELEVANT.getKey())));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getVulnerability()));
         return artifactRepresentation.toString();
@@ -649,11 +598,11 @@ public class Artifact extends AbstractModelBase {
     }
 
     public String getVulnerability() {
-        return vulnerability;
+        return get(Attribute.VULNERABILITY.getKey());
     }
 
     public void setVulnerability(String vulnerability) {
-        this.vulnerability = vulnerability;
+        set(Attribute.VULNERABILITY.getKey(), vulnerability);
     }
 
     public String getAnalysis() {
@@ -669,6 +618,16 @@ public class Artifact extends AbstractModelBase {
         return StringUtils.hasText(getId()) || StringUtils.hasText(getComponent());
     }
 
+    public String get(Attribute attribute, String defaultValue) {
+        return get(attribute.getKey(), defaultValue);
+    }
 
+    public String get(Attribute attribute) {
+        return get(attribute.getKey());
+    }
+
+    public void set(Attribute attribute, String value) {
+        set(attribute.getKey(), value);
+    }
 
 }

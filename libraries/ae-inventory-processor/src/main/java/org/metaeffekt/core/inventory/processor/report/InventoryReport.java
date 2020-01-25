@@ -361,9 +361,11 @@ public class InventoryReport {
                         foundArtifact.setComponent(similar.getComponent());
                         foundArtifact.setLatestAvailableVersion(similar.getLatestAvailableVersion());
                         foundArtifact.setLicense(similar.getLicense());
-                        foundArtifact.setSecurityCategory(similar.getSecurityCategory());
+                        foundArtifact.set(Artifact.Attribute.SECURITY_CATEGORY,
+                                similar.get(Artifact.Attribute.SECURITY_CATEGORY));
                         foundArtifact.setUrl(similar.getUrl());
-                        foundArtifact.setSecurityRelevant(similar.isSecurityRelevant());
+                        foundArtifact.set(Artifact.Attribute.SECURITY_RELEVANT,
+                                similar.get(Artifact.Attribute.SECURITY_RELEVANT));
                         foundArtifact.setVerified(false);
                         foundArtifact.setGroupId(similar.getGroupId());
                         foundArtifact.setVulnerability(similar.getVulnerability());

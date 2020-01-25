@@ -44,6 +44,7 @@
                         </goals>
                         <phase>process-test-resources</phase>
                         <configuration>
+                            <filterPackagesWithoutVersion>true</filterPackagesWithoutVersion>
                             <excludes>
                                 <exclude>/sys/devices/**/*</exclude>
                                 <exclude>/var/cache/ldconfig/**/*</exclude>

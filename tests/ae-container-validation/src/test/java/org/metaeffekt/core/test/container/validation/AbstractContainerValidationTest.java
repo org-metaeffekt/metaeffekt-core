@@ -97,16 +97,10 @@ public abstract class AbstractContainerValidationTest {
     }
 
     protected void notNullOrEmpty(String message, String value) {
-        if (value != null) {
-            assertFalse(message, value.isEmpty());
-        }
-        assertNotNull(message);
+        assertTrue(message, !StringUtils.isEmpty(value));
     }
 
     protected void nullOrEmpty(String message, String value) {
-        if (value != null) {
-            assertEquals(message, "", value);
-        }
-        assertNotNull(message, value);
+        assertTrue(message, StringUtils.isEmpty(value));
     }
 }

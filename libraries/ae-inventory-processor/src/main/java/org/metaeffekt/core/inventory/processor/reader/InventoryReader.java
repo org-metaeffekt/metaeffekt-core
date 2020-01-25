@@ -77,32 +77,14 @@ public class InventoryReader extends AbstractXlsInventoryReader {
                 }
                 continue;
             }
+
+
             if (columnName.equalsIgnoreCase("group id")) {
                 artifact.setGroupId(value);
                 continue;
             }
-            if (columnName.equalsIgnoreCase("license")) {
-                artifact.setLicense(value);
-                continue;
-            }
             if (columnName.equalsIgnoreCase("latest version")) {
                 artifact.setLatestAvailableVersion(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("security relevance")) {
-                artifact.setSecurityRelevant("X".equalsIgnoreCase(value));
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("security category")) {
-                artifact.setSecurityCategory(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("vulnerability")) {
-                artifact.setVulnerability(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("classification")) {
-                artifact.setClassification(value);
                 continue;
             }
             if (columnName.equalsIgnoreCase("comment")) {
@@ -111,10 +93,6 @@ public class InventoryReader extends AbstractXlsInventoryReader {
             }
             if (columnName.equalsIgnoreCase("analysis")) {
                 artifact.setAnalysis(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("url")) {
-                artifact.setUrl(value);
                 continue;
             }
             if (columnName.equalsIgnoreCase("verified")) {
