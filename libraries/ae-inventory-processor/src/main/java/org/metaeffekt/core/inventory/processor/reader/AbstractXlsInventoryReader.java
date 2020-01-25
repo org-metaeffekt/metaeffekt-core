@@ -23,6 +23,7 @@ import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -62,20 +63,15 @@ public abstract class AbstractXlsInventoryReader {
         inventory.setArtifacts(artifacts);
 
         if (rows.hasNext()) {
-            readArtifactHeader((HSSFRow) rows.next());
-        }
-
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            Artifact artifact = readArtifactMetaData(row);
-            if (artifact != null) {
-                artifacts.add(artifact);
+            List<String> columns = readArtifactHeader((HSSFRow) rows.next());
+            while (rows.hasNext()) {
+                HSSFRow row = (HSSFRow) rows.next();
+                Artifact artifact = readArtifactMetaData(row);
+                if (artifact != null) {
+                    artifacts.add(artifact);
+                }
             }
-        }
-
-        for (int i = 0; i < 15; i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("artifacts.column[" + i + "].width", width);
+            inventory.getContextMap().put("artifact-column-list", columns);
         }
     }
 
@@ -139,8 +135,9 @@ public abstract class AbstractXlsInventoryReader {
     }
 
 
-    protected void readArtifactHeader(HSSFRow row) {
+    protected List<String> readArtifactHeader(HSSFRow row) {
         // default implementation does nothing
+        return Collections.emptyList();
     }
 
     protected void readLicenseMetaDataHeader(HSSFRow row) {

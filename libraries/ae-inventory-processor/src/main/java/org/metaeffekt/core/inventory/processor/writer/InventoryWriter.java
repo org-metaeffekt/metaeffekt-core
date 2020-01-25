@@ -32,6 +32,24 @@ import java.util.*;
 
 public class InventoryWriter {
 
+    private Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[] {
+        Artifact.Attribute.ID,
+        Artifact.Attribute.CHECKSUM,
+        Artifact.Attribute.COMPONENT,
+        Artifact.Attribute.GROUPID,
+        Artifact.Attribute.VERSION,
+        Artifact.Attribute.LATEST_VERSION,
+        Artifact.Attribute.LICENSE,
+        Artifact.Attribute.CLASSIFICATION,
+        Artifact.Attribute.SECURITY_RELEVANT,
+        Artifact.Attribute.SECURITY_CATEGORY,
+        Artifact.Attribute.VULNERABILITY,
+        Artifact.Attribute.COMMENT,
+        Artifact.Attribute.URL,
+        Artifact.Attribute.PROJECTS,
+        Artifact.Attribute.VERIFIED
+    };
+
     public void writeInventory(Inventory inventory, File file) throws IOException {
         HSSFWorkbook myWorkBook = new HSSFWorkbook();
 
@@ -55,16 +73,11 @@ public class InventoryWriter {
         mySheet.createFreezePane(0, 1);
         mySheet.setDefaultColumnWidth(20);
 
-        HSSFRow myRow = null;
-        HSSFCell myCell = null;
-
         int rowNum = 0;
 
-        myRow = mySheet.createRow(rowNum++);
-
+        // create header row
+        HSSFRow headerRow = mySheet.createRow(rowNum++);
         HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
-
-        int cellNum = 0;
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
@@ -72,49 +85,66 @@ public class InventoryWriter {
             attributes.addAll(artifact.getAttributes());
         }
 
+        List<String> contextColumnList = (List<String>)
+            inventory.getContextMap().get("artifact-column-list");
+        if (contextColumnList != null) {
+            attributes.addAll(contextColumnList);
+        }
+
+        // add minimum columns
+        attributes.add(Artifact.Attribute.ID.getKey());
+        attributes.add(Artifact.Attribute.COMPONENT.getKey());
+        attributes.add(Artifact.Attribute.VERSION.getKey());
+
+        // impose context or default order
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
+        int insertIndex = 0;
+        if (contextColumnList != null) {
+            for (String key : contextColumnList) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        } else {
+            for (Artifact.Attribute a : artifactColumnOrder) {
+                String key = a.getKey();
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        }
 
+        // fill header row
+        int cellNum = 0;
         for (String key : ordered) {
-            myCell = myRow.createCell(cellNum++);
+            HSSFCell myCell = headerRow.createCell(cellNum++);
             myCell.setCellStyle(headerStyle);
             myCell.setCellValue(new HSSFRichTextString(key));
         }
 
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Projects"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Verified"));
-
-        int numCol = cellNum;
-
+        // create data rows
         for (Artifact artifact : inventory.getArtifacts()) {
-            myRow = mySheet.createRow(rowNum++);
-
+            HSSFRow dataRow = mySheet.createRow(rowNum++);
             cellNum = 0;
-
             for (String key : ordered) {
-                myCell = myRow.createCell(cellNum++);
-                myCell.setCellValue(new HSSFRichTextString(artifact.get(key)));
+                HSSFCell myCell = dataRow.createCell(cellNum++);
+                String value = artifact.get(key);
+                if (value != null && value.length() > 2096) {
+                    // FIXME: log something
+                    value = value.substring(0, Math.min(value.length(), 2096));
+                    value = value + "...";
+                }
+                myCell.setCellValue(new HSSFRichTextString(value));
             }
-
-            myCell = myRow.createCell(cellNum++);
-            String projects = artifact.getProjects().toString();
-            projects = projects.substring(1, projects.length() - 1);
-            // limit projects length; can be massive if the same name is used several times
-            if (projects.length() > 2096) {
-                projects = projects.substring(0, Math.min(projects.length(), 2096));
-                projects = projects + "...";
-            }
-            myCell.setCellValue(new HSSFRichTextString(projects));
-
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(artifact.isVerified() ? "X" : ""));
         }
 
-        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
+        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, ordered.size() - 1));
+    }
+
+    private int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
+        if (attributesSet.contains(key)) {
+            orderedAttributesList.remove(key);
+            orderedAttributesList.add(insertIndex, key);
+            insertIndex++;
+        }
+        return insertIndex;
     }
 
     private HSSFCellStyle createHeaderStyle(HSSFWorkbook myWorkBook) {
@@ -198,6 +228,12 @@ public class InventoryWriter {
         HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
 
         int cellNum = 0;
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("Component"));
+        myCell = myRow.createCell(cellNum++);
+        myCell.setCellStyle(headerStyle);
+        myCell.setCellValue(new HSSFRichTextString("Version"));
         myCell = myRow.createCell(cellNum++);
         myCell.setCellStyle(headerStyle);
         myCell.setCellValue(new HSSFRichTextString("License"));

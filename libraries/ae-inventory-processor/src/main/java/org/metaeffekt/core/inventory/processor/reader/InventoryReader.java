@@ -23,21 +23,19 @@ import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class InventoryReader extends AbstractXlsInventoryReader {
 
     private Map<Integer, String> artifactColumnMap = new HashMap<>();
+
     private Map<Integer, String> licenseMetaDataColumnMap = new HashMap<>();
     private Map<Integer, String> componentPatternDataColumnMap = new HashMap<>();
     private Map<Integer, String> vulnerabilityMetaDataColumnMap = new HashMap<>();
 
     @Override
-    protected void readArtifactHeader(HSSFRow row) {
-        parseColumns(row, artifactColumnMap);
+    protected List<String> readArtifactHeader(HSSFRow row) {
+        return parseColumns(row, artifactColumnMap);
     }
 
     @Override
@@ -50,13 +48,17 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         parseColumns(row, componentPatternDataColumnMap);
     }
 
-    protected void parseColumns(HSSFRow row, Map<Integer, String> map) {
+    protected List<String> parseColumns(HSSFRow row, Map<Integer, String> map) {
+        List<String> columnList = new ArrayList<>();
         for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
             HSSFCell cell = row.getCell(i);
             if (cell != null) {
-                map.put(i, cell.getStringCellValue());
+                String value = cell.getStringCellValue();
+                map.put(i, value);
+                columnList.add(value);
             }
         }
+        return columnList;
     }
 
     @Override
@@ -74,27 +76,6 @@ public class InventoryReader extends AbstractXlsInventoryReader {
             if (columnName.equalsIgnoreCase("component / group")) {
                 if (StringUtils.isEmpty(artifact.getComponent())) {
                     artifact.setComponent(value);
-                }
-                continue;
-            }
-
-            if (columnName.equalsIgnoreCase("latest version")) {
-                artifact.setLatestVersion(value);
-                continue;
-            }
-
-            if (columnName.equalsIgnoreCase("verified")) {
-                artifact.setVerified("X".equalsIgnoreCase(value));
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("projects")) {
-                String projectString = value;
-                if (StringUtils.hasText(projectString)) {
-                    projectString = projectString.trim();
-                    String[] split = projectString.split(",");
-                    for (int j = 0; j < split.length; j++) {
-                        projects.add(split[j].trim());
-                    }
                 }
                 continue;
             }

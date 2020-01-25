@@ -17,8 +17,11 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
 
@@ -55,7 +58,13 @@ public class Artifact extends AbstractModelBase {
         SECURITY_CATEGORY("Security Relevance"),
 
         // vulnerability information
-        VULNERABILITY("Vulnerability");
+        VULNERABILITY("Vulnerability"),
+
+        // FIXME: rename to locations
+        // project locations
+        PROJECTS("Projects"),
+
+        VERIFIED("Verified");
 
         private String key;
         Attribute(String key) {
@@ -66,14 +75,7 @@ public class Artifact extends AbstractModelBase {
         }
     }
 
-    // indicated whether the artifact was verified
-    private boolean verified;
 
-    // list of project the artifacts is used by (source: protex)
-    private Set<String> projects = new LinkedHashSet<>();
-
-    // field required for diff tooling
-    private String previousVersion;
 
     // artifact id (derived from id and version)
     private transient String artifactId;
@@ -99,8 +101,6 @@ public class Artifact extends AbstractModelBase {
     public Artifact(Artifact artifact) {
         super(artifact);
 
-        this.projects = new LinkedHashSet<String>(artifact.getProjects());
-
         // copy transient attributes
         this.artifactId = artifact.getArtifactId();
         this.relevant = artifact.isRelevant();
@@ -108,13 +108,17 @@ public class Artifact extends AbstractModelBase {
     }
     
     public Set<String> getProjects() {
-        return projects;
+        String projectsString = get(Attribute.PROJECTS);
+        if (StringUtils.isEmpty(projectsString)) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(projectsString.split(",")).
+            map(String::trim).collect(Collectors.toSet());
     }
     
     public void setProjects(Set<String> project) {
-        this.projects = project;
+        set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(" ,")));
     }
-
     
     public String getComponent() {
         return get(Attribute.COMPONENT);
@@ -174,11 +178,11 @@ public class Artifact extends AbstractModelBase {
     }
 
     public boolean isVerified() {
-        return verified;
+        return "X".equalsIgnoreCase(get(Attribute.VERIFIED));
     }
 
     public void setVerified(boolean verified) {
-        this.verified = verified;
+        set(Attribute.VERIFIED, verified ? "X" : null);
     }
 
     public String getArtifactId() {
@@ -205,33 +209,24 @@ public class Artifact extends AbstractModelBase {
         set(Attribute.LATEST_VERSION, latestAvailableVersion);
     }
 
-    public String getPreviousVersion() {
-        return previousVersion;
-    }
-
-    public void setPreviousVersion(String previousVersion) {
-        this.previousVersion = previousVersion;
-    }
-
     public String toString() {
         return "Artifact id: " + getId() + ", component: " + getComponent() + ", version: " + getVersion();
     }
 
     public void addProject(String project) {
-        projects.add(project);
+        append(Attribute.PROJECTS.getKey(), project, ", ");
     }
 
     public void merge(Artifact a) {
+        append(Attribute.PROJECTS.getKey(), a.get(Attribute.PROJECTS), ", ");
+        if (a.isVerified()) {
+            setVerified(true);
+        }
+
         // merge attributes
         super.merge(a);
 
-        this.projects.addAll(a.getProjects());
-
-        this.verified |= a.isVerified();
-
-        if (!StringUtils.hasText(this.artifactId)) {
-            this.artifactId = a.getArtifactId();
-        }
+        deriveArtifactId();
     }
 
     /**
@@ -584,6 +579,10 @@ public class Artifact extends AbstractModelBase {
 
     public void set(Attribute attribute, String value) {
         set(attribute.getKey(), value);
+    }
+
+    public void append(Attribute attribute, String value, String delimiter) {
+        append(attribute.getKey(), value, delimiter);
     }
 
 }

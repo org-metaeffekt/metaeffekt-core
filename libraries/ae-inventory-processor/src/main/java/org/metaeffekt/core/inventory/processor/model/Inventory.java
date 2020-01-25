@@ -360,7 +360,6 @@ public class Inventory {
      * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
-     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
@@ -374,7 +373,7 @@ public class Inventory {
                         artifact.getComponent(), artifactLicense, artifact.getVersion());
                 if (match != null && matches(effectiveLicense, match)) {
                     String qualifier = new StringBuilder(artifactLicense).append("-").
-                        append(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
+                            append(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
                     ArtifactLicenseData artifactLicenseData = map.get(qualifier);
                     if (artifactLicenseData == null) {
                         artifactLicenseData = new ArtifactLicenseData(artifact.getComponent(), artifact.getVersion(), match);
@@ -428,9 +427,9 @@ public class Inventory {
      * Iterates through the license metadata to find a match for the given component and license parameters.
      *
      * @param component The component.
-     * @param license The license name.
+     * @param license   The license name.
      * @return A matching {@link LicenseMetaData} instance if available. In case multiple
-     *         can be matched an {@link IllegalStateException} is thrown.
+     * can be matched an {@link IllegalStateException} is thrown.
      */
     public LicenseMetaData findMatchingLicenseMetaData(String component, String license, String version) {
         LicenseMetaData match = null;
@@ -446,7 +445,7 @@ public class Inventory {
                     // this means that the license data is inconsistent and has overlaps. This must
                     // be resolved in the underlying meta data.
                     throw new IllegalStateException("Multiple matches for license " + license
-                        + ". Meta data inconsistent. Please correct license meta data to resolve inconsistencies.");
+                            + ". Meta data inconsistent. Please correct license meta data to resolve inconsistencies.");
                 }
                 match = lmd;
             }
@@ -459,7 +458,7 @@ public class Inventory {
      *
      * @param artifact The artifact to look for {@link LicenseMetaData}.
      * @return The found {@link LicenseMetaData} or <code>null</code> when no matching {@link LicenseMetaData} could be
-     *      found.
+     * found.
      */
     public LicenseMetaData findMatchingLicenseMetaData(Artifact artifact) {
         return findMatchingLicenseMetaData(artifact.getComponent(), artifact.getLicense(), artifact.getVersion());
@@ -948,12 +947,11 @@ public class Inventory {
     }
 
 
-
     /**
      * Inherits the artifacts from the specified inputInventory. Local artifacts with the same qualifier have
      * priority.
      *
-     * @param inputInventory Input inventory with artifact information.
+     * @param inputInventory  Input inventory with artifact information.
      * @param infoOnOverwrite Logs information on overwrites when active.
      */
     public void inheritArtifacts(Inventory inputInventory, boolean infoOnOverwrite) {
@@ -978,8 +976,8 @@ public class Inventory {
                                 "Consider removing the overwrite.", qualifier);
                     } else {
                         LOG.info(String.format("Artifact %s overwritten. %n  %s%n  %s", qualifier,
-                            artifact.createCompareStringRepresentation(),
-                            currentArtifact.createCompareStringRepresentation()));
+                                artifact.createCompareStringRepresentation(),
+                                currentArtifact.createCompareStringRepresentation()));
                     }
                 }
             } else {
@@ -1064,7 +1062,7 @@ public class Inventory {
             }
         }
         LOG.debug("Removing vulnerability metadata for: {}",
-            forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", ")));
+                forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", ")));
         getVulnerabilityMetaData().removeAll(forDeletion);
     }
 
@@ -1095,7 +1093,6 @@ public class Inventory {
     public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
         return VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
     }
-
 
 
     // helpers

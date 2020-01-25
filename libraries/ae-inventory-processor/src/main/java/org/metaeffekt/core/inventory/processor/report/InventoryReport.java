@@ -53,10 +53,13 @@ public class InventoryReport {
     private static final String REPORT_TEMPLATE_DIR = "/META-INF/templates";
     private static final String SEPARATOR_SLASH = "/";
     private static final String PATTERN_ANY_VT = "**/*.vt";
+
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
+
+    public static final String KEY_PREVIOUS_VERSION = "Previous Version";
 
     /**
      * The reference inventory is a complete file structure. referenceInventoryDir is the root folder.
@@ -778,7 +781,7 @@ public class InventoryReport {
                     foundArtifact = referenceInventory.findArtifactClassificationAgnostic(artifact);
                 }
                 if (foundArtifact != null) {
-                    artifact.setPreviousVersion(foundArtifact.getVersion());
+                    artifact.set(KEY_PREVIOUS_VERSION, foundArtifact.getVersion());
                 }
             }
         }
@@ -787,7 +790,7 @@ public class InventoryReport {
         Inventory filteredInventory = new Inventory();
         for (Artifact artifact : projectInventory.getArtifacts()) {
             if (artifact.getVersion() != null &&
-                    !artifact.getVersion().trim().equals(artifact.getPreviousVersion())) {
+                    !artifact.getVersion().trim().equals(artifact.get(KEY_PREVIOUS_VERSION))) {
                 filteredInventory.getArtifacts().add(artifact);
             }
         }
