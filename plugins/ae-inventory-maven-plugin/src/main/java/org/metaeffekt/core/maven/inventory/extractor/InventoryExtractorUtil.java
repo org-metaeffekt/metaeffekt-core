@@ -1,6 +1,8 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 
@@ -10,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class InventoryExtractorUtil {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InventoryExtractorUtil.class);
 
     private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
@@ -52,8 +56,7 @@ public abstract class InventoryExtractorUtil {
                 }
                 boolean removed = fileList.remove(convertedFile);
                 if (!removed) {
-                    // TODO: log
-                    // getLog().debug("File specified in package file list not matched: " + convertedFile);
+                    LOG.debug("File specified in package file list not matched: {}", convertedFile);
                 }
             }
         }

@@ -79,6 +79,9 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                             if (sb.length() > 0) {
                                 sb.append(DELIMITER_NEWLINE);
                             }
+                            if (!project.startsWith("/")) {
+                                sb.append("/");
+                            }
                             sb.append(project);
                         }
                     }

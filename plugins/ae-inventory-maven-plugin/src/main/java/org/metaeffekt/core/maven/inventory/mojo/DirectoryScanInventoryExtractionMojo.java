@@ -32,7 +32,7 @@ import java.io.IOException;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_SOURCE_PROJECT;
 
 /**
- * Extracts a container inventory from pre-porcessed container information.
+ * Extracts a container inventory from pre-processed container information.
  */
 @Mojo( name = "extract-scan-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
 public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
@@ -67,6 +67,7 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
             Inventory sourceInventory = InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
 
             DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, sourceInventory);
+
             Inventory inventory = scan.createScanInventory();
 
             for (Artifact artifact : inventory.getArtifacts()) {

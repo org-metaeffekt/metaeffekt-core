@@ -2,6 +2,8 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public class DebianInventoryExtractor extends AbstractInventoryExtractor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(DebianInventoryExtractor.class);
 
     public static final String FILE_PACKAGES_DPKG_TXT = "packages_dpkg.txt";
 
@@ -63,7 +67,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.url = ParsingUtils.getValue(fileContentLines, "Homepage:");
                 packageInfo.description = ParsingUtils.getValue(fileContentLines, "Description:");
             } else {
-                System.out.println("File " + packageFile + " does not exist.");
+                LOG.info("File {} does not exist.", packageFile);
             }
         }
     }

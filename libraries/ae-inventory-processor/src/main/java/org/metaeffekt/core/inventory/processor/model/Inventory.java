@@ -35,9 +35,15 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  */
 public class Inventory {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
+
     public static final String CLASSIFICATION_CURRENT = "current";
 
-    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
+    // Components are structured by context. This is the package context.
+    public static final String COMPONENT_CONTEXT_PACKAGE = "package";
+
+    // Components are structured by context. This is the artifact context.
+    public static final String COMPONENT_CONTEXT_ARTIFACT = "artifact";
 
     private List<Artifact> artifacts = new ArrayList<>();
 
@@ -470,11 +476,11 @@ public class Inventory {
     }
 
     public List<Artifact> getArtifacts(String context) {
-        if ("package".equalsIgnoreCase(context)) {
+        if (COMPONENT_CONTEXT_PACKAGE.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(a -> isPackageType(a))
                 .collect(Collectors.toList());
         }
-        if ("artifact".equalsIgnoreCase(context)) {
+        if (COMPONENT_CONTEXT_ARTIFACT.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(
                     a -> isArtifactType(a))
                     .collect(Collectors.toList());
@@ -647,11 +653,11 @@ public class Inventory {
         // only evaluate artifacts (no packages, no npm modules)
         for (Artifact artifact : getArtifacts(context)) {
             final Component component = createComponent(artifact);
-            Component alreadyExistingComponent = nameComponentMap.get(component.getName());
+            Component alreadyExistingComponent = nameComponentMap.get(component.getQualifier());
             if (alreadyExistingComponent != null) {
                 alreadyExistingComponent.add(artifact);
             } else {
-                nameComponentMap.put(component.getName(), component);
+                nameComponentMap.put(component.getQualifier(), component);
                 component.add(artifact);
             }
         }
@@ -932,6 +938,10 @@ public class Inventory {
 
         public String getOriginalComponentName() {
             return originalComponentName;
+        }
+
+        public String getQualifier() {
+            return toString();
         }
     }
 

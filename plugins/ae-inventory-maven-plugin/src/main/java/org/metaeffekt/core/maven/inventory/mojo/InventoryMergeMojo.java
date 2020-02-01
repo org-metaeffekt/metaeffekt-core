@@ -34,6 +34,7 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
             Inventory sourceInv = new InventoryReader().readInventory(sourceInventory);
             Inventory targetInv = new InventoryReader().readInventory(targetInventory);
 
+            // complete artifacts in targetInv with checksums
             for (Artifact artifact : targetInv.getArtifacts()) {
                 List<Artifact> candidates = sourceInv.findAllWithId(artifact.getId());
 
@@ -46,6 +47,14 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
                 }
                 for (Artifact match : matches) {
                     artifact.setChecksum(match.getChecksum());
+                }
+            }
+
+            // add not covered artifacts from sourceInv in targetInv
+            for (Artifact artifact : sourceInv.getArtifacts()) {
+                Artifact candidate = targetInv.findArtifactByIdAndChecksum(artifact.getId(), artifact.getChecksum());
+                if (candidate == null) {
+                    targetInv.getArtifacts().add(artifact);
                 }
             }
 

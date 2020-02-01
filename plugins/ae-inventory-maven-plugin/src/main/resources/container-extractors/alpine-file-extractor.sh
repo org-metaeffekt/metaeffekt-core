@@ -8,6 +8,6 @@ files=`cat /analysis/filtered-files.txt`
 
 for file in $files
 do
-    cp --no-preserve=mode --parents $file /analysis/extracted-files || cp --parents $file /analysis/extracted-files
+    cp --parents $file /analysis/extracted-files
 done
 

@@ -39,11 +39,15 @@ public class DirectoryInventoryScan {
 
     public static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
+    public static final String HINT_SCAN = "scan";
+
     private Inventory globalInventory;
     private String[] scanIncludes;
     private String[] scanExcludes;
     private File inputDirectory;
     private File scanDirectory;
+
+    private boolean enableImplicitUnpack = true;
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory, String[] scanIncludes, String[] scanExcludes, Inventory globalInventory) {
         this.inputDirectory = inputDirectory;
@@ -96,22 +100,23 @@ public class DirectoryInventoryScan {
 
         List<ComponentPatternData> matchedComponentDataOnAnchor = new ArrayList<>();
         for (ComponentPatternData cpd : globalInventory.getComponentPatternData()) {
-            LOG.debug("Checking CPD: {}", cpd.createCompareStringRepresentation());
+            LOG.info("Checking component pattern: {}", cpd.createCompareStringRepresentation());
             String versionAnchor = File.separatorChar + cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR);
             String anchorChecksum = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM);
             for (File file : files) {
                 if (file.getPath().endsWith(versionAnchor)) {
-                    LOG.debug("Found anchor: {}", file.getPath());
                     String checksum = FileUtils.computeChecksum(file);
                     ComponentPatternData copyCpd = new ComponentPatternData(cpd);
                     if (!anchorChecksum.equalsIgnoreCase(Constants.ASTERISK) &&
                             !anchorChecksum.equals(checksum)) {
                         LOG.warn("Anchor checksum mismatch: " + file.getPath());
+                        LOG.warn("Expected checksum :{}; actual file checksum: {}", anchorChecksum, checksum);
                         // since the checksum does not match we modify the CPD with a missing version.
                         // this will cause a validation message later, but will give the user enough information
                         // to cure the inventory.
                         copyCpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, "unknown");
                     }
+
                     copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
                     matchedComponentDataOnAnchor.add(copyCpd);
                     scanInventory.getComponentPatternData().add(copyCpd);
@@ -168,9 +173,19 @@ public class DirectoryInventoryScan {
             }
 
             if (artifact == null) {
-                // unknown or requires expansion
-                File unpackedFile = unpackIfPossible(file, false);
-                if (unpackedFile == null) {
+
+                boolean unpacked = false;
+
+                if (enableImplicitUnpack) {
+                    // unknown or requires expansion
+                    File unpackedFile = unpackIfPossible(file, false);
+                    if (unpackedFile != null) {
+                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);
+                        unpacked = true;
+                    }
+                }
+
+                if (!unpacked) {
                     // add new unknown artifact
                     Artifact newArtifact = new Artifact();
                     newArtifact.setId(id);
@@ -178,7 +193,7 @@ public class DirectoryInventoryScan {
                     newArtifact.addProject(FileUtils.asRelativePath(scanDir, file));
                     scanInventory.getArtifacts().add(newArtifact);
                 } else {
-                    scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);
+                    // NOTE: we should add the unpacked artifact level anyway; need to understand implications
                 }
             } else {
                 artifact.addProject(FileUtils.asRelativePath(scanBaseDir, file));
@@ -191,7 +206,7 @@ public class DirectoryInventoryScan {
                 scanInventory.getArtifacts().add(copy);
 
                 // in case the artifact contains the scan classification we try to unpack and scan in depth
-                if (artifact.getClassification().contains("scan")) {
+                if (artifact.getClassification().contains(HINT_SCAN)) {
                     File unpackedFile = unpackIfPossible(file, true);
                     if (unpackedFile != null) {
                         scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);
@@ -204,6 +219,10 @@ public class DirectoryInventoryScan {
     }
 
     private File unpackIfPossible(File archive, boolean includeJarExtension) {
+
+        System.out.println("Unpacking " + archive.getAbsolutePath());
+
+
         final Project project = new Project();
         project.setBaseDir(archive.getParentFile());
 
@@ -300,6 +319,10 @@ public class DirectoryInventoryScan {
         scanner.setExcludes(scanExcludes);
         scanner.scan();
         return scanner.getIncludedFiles();
+    }
+
+    public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {
+        this.enableImplicitUnpack = enableImplicitUnpack;
     }
 
 }

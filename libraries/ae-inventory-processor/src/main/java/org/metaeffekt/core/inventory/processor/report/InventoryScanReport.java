@@ -33,11 +33,16 @@ public class InventoryScanReport extends InventoryReport {
 
     private String[] scanExcludes;
 
+    private boolean enableImplicitUnpack = true;
+
     @Override
     public boolean createReport() throws Exception {
         Inventory globalInventory = readGlobalInventory();
 
-        DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory);
+        DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
+                inputDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory);
+        directoryScan.setEnableImplicitUnpack(enableImplicitUnpack);
+
         Inventory scanInventory = directoryScan.createScanInventory();
 
         // insert (potentially incomplete) artifacts for reporting
@@ -82,6 +87,14 @@ public class InventoryScanReport extends InventoryReport {
 
     public void setScanExcludes(String[] scanExcludes) {
         this.scanExcludes = scanExcludes;
+    }
+
+    public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {
+        this.enableImplicitUnpack = enableImplicitUnpack;
+    }
+
+    public boolean isEnableImplicitUnpack() {
+        return enableImplicitUnpack;
     }
 
 }

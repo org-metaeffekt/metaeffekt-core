@@ -135,7 +135,7 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
             try {
                 new InventoryReader().readInventory(inventory);
             } catch (IOException e) {
-                System.err.println("Inventory file corrupted after save. Please analyze and report this"
+                getLog().error("Inventory file corrupted after save. Please analyze and report this"
                     + " error.");
                 inventory.deleteOnExit();
             }

@@ -26,7 +26,7 @@ public class CentOSFileFilterTest extends AbstractContainerFileFilterTest {
         excludePatterns.add("/.dockerenv");
         excludePatterns.add("/usr/lib/locale/locale-archive");
 
-        assertFilesFiltered(analysisDir, excludePatterns, 47);
+        assertFilesFiltered(analysisDir, excludePatterns, 48);
     }
 
 }

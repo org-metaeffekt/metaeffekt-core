@@ -12,16 +12,16 @@
 #foreach($artifactLicenseData in $name)
 
                 <section>
-                    <title>$artifactLicenseData.componentName - <codeph>$artifactLicenseData.componentVersion</codeph></title>
+                    <title>Component $artifactLicenseData.componentName (<codeph>$artifactLicenseData.componentVersion</codeph>)</title>
                     <p>
                         <table otherprops="wide">
-                            <title>$artifactLicenseData.componentName - <codeph>$artifactLicenseData.componentVersion Artifacts</codeph>$reportContext.inContextOf()</title>
+                            <title>Component $artifactLicenseData.componentName (<codeph>$artifactLicenseData.componentVersion)</codeph>$reportContext.inContextOf()</title>
                             <tgroup cols="2">
                                 <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
                                 <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
                                 <thead>
                                     <row>
-                                        <entry colname="COLSPEC0" valign="top">File</entry>
+                                        <entry colname="COLSPEC0" valign="top">File / Package / Web Module</entry>
                                         <entry colname="COLSPEC1" valign="top">Version</entry>
                                     </row>
                                 </thead>

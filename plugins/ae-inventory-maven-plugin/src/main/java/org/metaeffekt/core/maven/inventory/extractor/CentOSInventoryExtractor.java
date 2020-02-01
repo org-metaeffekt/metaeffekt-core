@@ -2,6 +2,8 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CentOSInventoryExtractor.class);
 
     public static final String FILE_PACKAGES_RPM_TXT = "packages_rpm.txt";
 
@@ -57,7 +61,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.description = ParsingUtils.getValue(fileContentLines, "Description :");
                 packageInfo.arch = ParsingUtils.getValue(fileContentLines, "Architecture:");
             } else {
-                System.out.println("File " + packageFile + " does not exist.");
+                LOG.info("File {} does not exist.", packageFile);
             }
         }
     }

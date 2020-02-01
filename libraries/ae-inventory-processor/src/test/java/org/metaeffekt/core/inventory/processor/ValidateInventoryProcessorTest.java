@@ -96,19 +96,19 @@ public class ValidateInventoryProcessorTest {
                     URLConnection urlConnection = url.openConnection();
                     String contentEncoding = urlConnection.getContentType();
                     if (contentEncoding.contains("application/java-archive") || contentEncoding.contains("application/x-java-archive")) {
-                        System.out.println(url);
+                        LOG.info("URL: {}", url);
                         found = true;
                         break;
                     } else {
                         if (contentEncoding.contains("text/html")) {
                             // ignore
                         } else {
-                            System.err.println("Don't know: " + contentEncoding);
+                            LOG.error("Don't know encoding: {}", contentEncoding);
                         }
                     }
                 }
                 if (!found) {
-                    System.err.println("Cannot find source for " + sourceId);
+                    LOG.error("Cannot find source for {}.", sourceId);
                 }
             }
         }

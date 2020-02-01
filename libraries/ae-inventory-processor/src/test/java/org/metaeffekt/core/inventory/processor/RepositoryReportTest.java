@@ -28,6 +28,9 @@ import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.inventory.resolver.ComponentSourceArchiveResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
@@ -38,6 +41,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class RepositoryReportTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RepositoryReportTest.class);
 
     public static final String TARGET_FOLDER = "target/test-inventory-01";
 
@@ -202,8 +207,10 @@ public class RepositoryReportTest {
         List<VulnerabilityMetaData> applicableVulnerabilities = VulnerabilityMetaData.filterApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
         Assert.assertEquals(3, applicableVulnerabilities.size());
 
-        System.out.println("Applicable:");
-        applicableVulnerabilities.stream().map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE)).forEach(System.out::println);
+        LOG.info("Applicable:");
+        applicableVulnerabilities.stream()
+            .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
+            .forEach(LOG::info);
 
         List<VulnerabilityMetaData> notApplicableVulnerabilities = VulnerabilityMetaData.filterNotApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
         Assert.assertEquals(10, notApplicableVulnerabilities.size());
@@ -211,8 +218,10 @@ public class RepositoryReportTest {
         List<VulnerabilityMetaData> insignificantVulnerabilities = VulnerabilityMetaData.filterInsignificantVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
         Assert.assertEquals(3, insignificantVulnerabilities.size());
 
-        System.out.println("Not Applicable:");
-        notApplicableVulnerabilities.stream().map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE)).forEach(System.out::println);
+        LOG.info("Not Applicable:");
+        notApplicableVulnerabilities.stream()
+            .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
+            .forEach(LOG::info);
 
         File targetFile = new File("target/test-inventory.xls");
         new InventoryWriter().writeInventory(inventory, targetFile);

@@ -227,8 +227,8 @@ public class InventoryReport {
 
         boolean missingLicense = false;
 
-        for (Artifact artifact : list) {
-            artifact.deriveArtifactId();
+        for (Artifact localArtifact : list) {
+            localArtifact.deriveArtifactId();
 
             boolean localError = false;
             boolean localBanned = false;
@@ -242,29 +242,32 @@ public class InventoryReport {
 
             boolean localMissingLicense = false;
 
-            Artifact foundArtifact = globalInventory.findArtifact(artifact);
-
-            if (foundArtifact == null) {
-                foundArtifact = globalInventory.findArtifact(artifact, true);
+            Artifact matchedReferenceArtifact =
+                globalInventory.findArtifactByIdAndChecksum(localArtifact.getId(), localArtifact.getChecksum());
+            if (matchedReferenceArtifact == null) {
+                matchedReferenceArtifact = globalInventory.findArtifact(localArtifact);
+            }
+            if (matchedReferenceArtifact == null) {
+                matchedReferenceArtifact = globalInventory.findArtifact(localArtifact, true);
             }
 
-            LOG.debug("Query for artifact:" + artifact);
-            LOG.debug("Result artifact:   " + foundArtifact);
+            LOG.debug("Query for local artifact:" + localArtifact);
+            LOG.debug("Mateched referecne artifact:   " + matchedReferenceArtifact);
 
             String classifier = "";
             String comment = "";
 
-            String artifactFileId = artifact.getId();
-            if (foundArtifact != null) {
-                comment = foundArtifact.getComment();
+            String artifactFileId = localArtifact.getId();
+            if (matchedReferenceArtifact != null) {
+                comment = matchedReferenceArtifact.getComment();
 
                 // in case the group id does not contain anything we
-                // infer the group id from the artifact from the repository. Better than nothing.
-                if (!StringUtils.hasText(foundArtifact.getGroupId())) {
-                    foundArtifact.setGroupId(artifact.getGroupId());
+                // infer the group id from the localArtifact from the repository. Better than nothing.
+                if (!StringUtils.hasText(matchedReferenceArtifact.getGroupId())) {
+                    matchedReferenceArtifact.setGroupId(localArtifact.getGroupId());
                 }
 
-                String classification = foundArtifact.getClassification();
+                String classification = matchedReferenceArtifact.getClassification();
                 localWarn = true;
                 if (classification != null) {
                     if (classification.contains("upgrade")) {
@@ -315,7 +318,7 @@ public class InventoryReport {
                         localWarn = false;
                     }
                 }
-                if (!StringUtils.hasText(foundArtifact.getLicense())) {
+                if (!StringUtils.hasText(matchedReferenceArtifact.getLicense())) {
                     classifier += "[no license]";
                     localMissingLicense = true;
                     if (failOnMissingLicense) {
@@ -323,85 +326,24 @@ public class InventoryReport {
                     }
                 }
             } else {
-                // branch: no exact match found
-                if (artifactFilter == null || !artifactFilter.filter(artifact)) {
-
-                    // try to find a similar artifact:
-                    Artifact similar = globalInventory.findCurrent(artifact);
-                    if (similar == null) {
-                        // no current found, in this case we accept any artifact with matching attributes
-                        // excluding version
-                        similar = globalInventory.findArtifactClassificationAgnostic(artifact);
-                    } else {
-                        comment = "[recommended version: " + similar.getVersion() + "]";
-                    }
-                    if (similar != null) {
-                        foundArtifact = new Artifact(artifact);
-
-                        // the found artifact has at least id, version, artifactId (may be inferred),
-                        // and groupId set. We merge the remaining content of the similar artifact
-
-                        StringBuffer commentAggregation = new StringBuffer();
-                        if (StringUtils.hasText(similar.getComment())) {
-                            commentAggregation.append(similar.getComment().trim());
-                        }
-                        if (StringUtils.hasText(comment)) {
-                            if (commentAggregation.length() > 0) {
-                                commentAggregation.append(" ");
-                            }
-                            commentAggregation.append(comment.trim());
-                        }
-
-                        foundArtifact.setComment(commentAggregation.toString());
-                        foundArtifact.setComponent(similar.getComponent());
-                        foundArtifact.setLatestVersion(similar.getLatestVersion());
-                        foundArtifact.setLicense(similar.getLicense());
-                        foundArtifact.setVerified(false);
-
-                        // take care of the remaining attributed
-                        foundArtifact.merge(similar);
-
-                        if (!StringUtils.hasText(artifact.getVersion())) {
-                            String version = artifactFileId;
-                            version = version.replace(similar.getArtifactId() + "-", "");
-                            if (StringUtils.hasText(similar.getClassifier())) {
-                                version = version.replace("-" + similar.getClassifier() + ".", ".");
-                            }
-                            version = version.replace("." + similar.getType(), "");
-                            foundArtifact.setVersion(version);
-                        }
-
-                        // mark artifacts using classification
-                        foundArtifact.setClassification("unknown version");
-
-                        classifier = "[unknown version]";
-                        localUnknownVersion = true;
-                        if (failOnUnknownVersion) {
-                            localError = true;
-                        }
-                    } else {
-                        classifier += "[unknown]";
-                        localUnknown = true;
-                        if (failOnUnknown) {
-                            localError = true;
-                        }
-                    }
+                localUnknown = true;
+                if (failOnUnknown) {
+                    localError = true;
                 }
             }
 
-            if (artifactFilter == null || !artifactFilter.filter(artifact)) {
-                Artifact reportArtifact = artifact;
-                if (foundArtifact != null) {
+            if (artifactFilter == null || !artifactFilter.filter(localArtifact)) {
+                Artifact reportArtifact = localArtifact;
+                if (matchedReferenceArtifact != null) {
                     // ids may vary; we try to preserve the id here
-                    Artifact copy = new Artifact(foundArtifact);
+                    Artifact copy = new Artifact(matchedReferenceArtifact);
                     copy.setId(artifactFileId);
 
-                    if (ASTERISK.equals(foundArtifact.getVersion())) {
+                    if (ASTERISK.equals(matchedReferenceArtifact.getVersion())) {
                         copy.setVerified(false);
 
-                        // in this case we also need to manage the version (and replace the wildcard with the concrete
-                        // version)
-                        final String id = foundArtifact.getId();
+                        // in this case we also to manage the version (and replace the wildcard with the concrete version)
+                        final String id = matchedReferenceArtifact.getId();
                         try {
                             int index = id.indexOf(ASTERISK);
                             String prefix = id.substring(0, index);
@@ -411,7 +353,7 @@ public class InventoryReport {
                             copy.setVersion(version);
                             copy.set(Constants.KEY_WILDCARD_MATCH, STRING_TRUE);
                         } catch (Exception e) {
-                            LOG.error("Cannot extract version from artifact {}. To express that no version information " +
+                            LOG.error("Cannot extract version from localArtifact {}. To express that no version information " +
                                     "is available use a different version keyword such as 'undefined'.", id);
                         }
                     } else {
@@ -419,15 +361,23 @@ public class InventoryReport {
                     }
 
                     // override flags (the original data does not include context)
-                    copy.setRelevant(artifact.isRelevant());
-                    copy.setManaged(artifact.isManaged());
-                    copy.setProjects(artifact.getProjects());
-
+                    copy.setRelevant(localArtifact.isRelevant());
+                    copy.setManaged(localArtifact.isManaged());
+                    copy.setProjects(localArtifact.getProjects());
                     projectInventory.getArtifacts().add(copy);
 
-                    reportArtifact = foundArtifact;
+                    // handle checksum
+                    if (StringUtils.isEmpty(copy.getChecksum())) {
+                        copy.setChecksum(localArtifact.getChecksum());
+                    } else {
+                        if (!copy.getChecksum().equalsIgnoreCase(localArtifact.getChecksum())) {
+                            throw new IllegalStateException(String.format("Checksum mismatch for %s.", localArtifact.getId()));
+                        }
+                    }
+
+                    reportArtifact = matchedReferenceArtifact;
                 } else {
-                    projectInventory.getArtifacts().add(artifact);
+                    projectInventory.getArtifacts().add(localArtifact);
                 }
 
                 if (classifier.length() > 0) {
@@ -435,7 +385,7 @@ public class InventoryReport {
                     if (StringUtils.hasText(comment)) {
                         comment = "- " + comment;
                     }
-                    if (artifact.isRelevant() || artifact.isManaged()) {
+                    if (localArtifact.isRelevant() || localArtifact.isManaged()) {
                         final String messagePattern = "{} {} {}";
                         if (localError) {
                             LOG.error(messagePattern, classifier, artifactQualifier, comment);
@@ -446,7 +396,7 @@ public class InventoryReport {
                         }
                     } else {
                         if (classifier.contains("[hint]")) {
-                            if (!artifact.isRelevant()) {
+                            if (!localArtifact.isRelevant()) {
                                 final String messagePattern = "{} {} {} (not relevant for report)";
                                 LOG.info(messagePattern, classifier, artifactQualifier, comment);
                             } else {
@@ -457,8 +407,8 @@ public class InventoryReport {
                     }
                 }
 
-                // escalate the error only in case the artifact is relevant for reporting
-                if (artifact.isManaged()) {
+                // escalate the error only in case the localArtifact is relevant for reporting
+                if (localArtifact.isManaged()) {
                     error |= localError;
                     banned |= localBanned;
                     unknown |= localUnknown;

@@ -534,13 +534,10 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
     private void removeFolder(String folder, String file) {
         final File dir = new File(new File(folder), file);
-
         Delete delete = new Delete();
         delete.setDir(dir);
         delete.setIncludeEmptyDirs(true);
         delete.execute();
-
-        System.err.println("Deleting " + file);
     }
 
     private boolean isEmptyFolder(String baseDir, String file) {
