@@ -22,7 +22,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -33,6 +32,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
  * Extracts an inventory from node package information.
@@ -58,7 +59,6 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
 
     public static final String SEPARATOR_AT = "@";
 
-    public static final String TYPE_NODEJS_MODULE = "nodejs-module";
 
     @Parameter(defaultValue="${project.build.directory}/analysis/dependency-tree_prod.json", required = true )
     private File dependencyTreeJson;
@@ -160,8 +160,8 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
         artifact.setVersion(version);
         artifact.setComponent(name);
         artifact.setUrl(sourceUrl);
-        artifact.set(InventoryExtractor.KEY_ATTRIBUTE_TYPE, TYPE_NODEJS_MODULE);
-        artifact.set(InventoryExtractor.KEY_ATTRIBUTE_SOURCE_PROJECT, sourceId);
+        artifact.set(KEY_TYPE, ARTIFACT_TYPE_NODEJS_MODULE);
+        artifact.set(KEY_SOURCE_PROJECT, sourceId);
         return artifact;
     }
 

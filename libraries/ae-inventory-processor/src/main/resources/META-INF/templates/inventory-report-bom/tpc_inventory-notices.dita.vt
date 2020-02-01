@@ -3,13 +3,13 @@
 <topic id="tpc_notices-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("License Notices", true)</title>
 #foreach($license in $inventory.evaluateLicenses(false))
-#set($group=$inventory.evaluateNotices($license))
-#if(!$group.isEmpty())
+#set($name=$inventory.evaluateNotices($license))
+#if(!$name.isEmpty())
         <topic id="tpc_license_$inventory.deriveLicenseId($license)">
             <title>$license</title>
             <body>
 
-#foreach($artifactLicenseData in $group)
+#foreach($artifactLicenseData in $name)
 
                 <section>
                     <title>$artifactLicenseData.componentName - <codeph>$artifactLicenseData.componentVersion</codeph></title>

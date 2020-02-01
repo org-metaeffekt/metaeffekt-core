@@ -27,7 +27,6 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.reader.LocalRepositoryInventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
@@ -39,12 +38,12 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
-import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
-import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_PREFIX;
-import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_SUFFIX;
-import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_TRUE;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public class InventoryReport {
 
@@ -151,19 +150,9 @@ public class InventoryReport {
     private transient Inventory lastProjectInventory;
 
     /**
-     * The repository path for which to create the report.
+     * The inventory for which to create the report.
      */
-    private String repositoryPath;
-    private String[] repositoryIncludes = new String[]{"**/*"};
-    private String[] repositoryExcludes = new String[]{
-            "**/*.pom", "**/*.sha1", "**/*.xml",
-            "**/*.repositories", "**/*.jar-not-available"
-    };
-
-    /**
-     * The repository inventory for which to create the report. Alternative for repositoryPath.
-     */
-    private Inventory repositoryInventory;
+    private Inventory inventory;
 
     /**
      * Default {@link ReportContext}.
@@ -175,20 +164,14 @@ public class InventoryReport {
         LOG.info("* Creating Inventory Report for project {} *", getProjectName());
         LOG.info("****************************************************************");
 
-        File repositoryFile = repositoryPath != null ? new File(repositoryPath) : null;
-
         Inventory globalInventory = readGlobalInventory();
 
         // read local repository
         Inventory localRepositoryInventory;
-        if (this.repositoryInventory != null) {
-            localRepositoryInventory = this.repositoryInventory;
+        if (this.inventory != null) {
+            localRepositoryInventory = this.inventory;
         } else {
-            LocalRepositoryInventoryReader localRepositoryInventoryReader =
-                    new LocalRepositoryInventoryReader();
-            localRepositoryInventoryReader.setIncludes(repositoryIncludes);
-            localRepositoryInventoryReader.setExcludes(repositoryExcludes);
-            localRepositoryInventory = localRepositoryInventoryReader.readInventory(repositoryFile, projectName);
+            localRepositoryInventory = new Inventory();
         }
 
         // insert (potentially incomplete) artifacts for reporting
@@ -196,6 +179,15 @@ public class InventoryReport {
         // report, which are not covered by the repository.
         if (addOnArtifacts != null) {
             localRepositoryInventory.getArtifacts().addAll(addOnArtifacts);
+        }
+
+        // WORKAROUND
+        // if the given repository already contains LMD content we take it into the the global inventory
+        for (LicenseMetaData lmd : localRepositoryInventory.getLicenseMetaData()) {
+            LicenseMetaData globalLmd = globalInventory.findMatchingLicenseMetaData(lmd.getComponent(), lmd.getLicense(), lmd.getVersion());
+            if (globalLmd == null) {
+                globalInventory.getLicenseMetaData().add(lmd);
+            }
         }
 
         return createReport(globalInventory, localRepositoryInventory);
@@ -364,14 +356,10 @@ public class InventoryReport {
                         foundArtifact.setComponent(similar.getComponent());
                         foundArtifact.setLatestVersion(similar.getLatestVersion());
                         foundArtifact.setLicense(similar.getLicense());
-                        foundArtifact.set(Artifact.Attribute.SECURITY_CATEGORY,
-                                similar.get(Artifact.Attribute.SECURITY_CATEGORY));
-                        foundArtifact.setUrl(similar.getUrl());
-                        foundArtifact.set(Artifact.Attribute.SECURITY_RELEVANT,
-                                similar.get(Artifact.Attribute.SECURITY_RELEVANT));
                         foundArtifact.setVerified(false);
-                        foundArtifact.setGroupId(similar.getGroupId());
-                        foundArtifact.setVulnerability(similar.getVulnerability());
+
+                        // take care of the remaining attributed
+                        foundArtifact.merge(similar);
 
                         if (!StringUtils.hasText(artifact.getVersion())) {
                             String version = artifactFileId;
@@ -433,6 +421,7 @@ public class InventoryReport {
                     // override flags (the original data does not include context)
                     copy.setRelevant(artifact.isRelevant());
                     copy.setManaged(artifact.isManaged());
+                    copy.setProjects(artifact.getProjects());
 
                     projectInventory.getArtifacts().add(copy);
 
@@ -861,14 +850,6 @@ public class InventoryReport {
         this.diffInventoryFile = diffInventoryFile;
     }
 
-    public String getRepositoryPath() {
-        return repositoryPath;
-    }
-
-    public void setRepositoryPath(String repositoryPath) {
-        this.repositoryPath = repositoryPath;
-    }
-
     public String getTargetInventoryPath() {
         return targetInventoryPath;
     }
@@ -957,12 +938,12 @@ public class InventoryReport {
         this.failOnMissingLicense = failOnMissingLicense;
     }
 
-    public Inventory getRepositoryInventory() {
-        return repositoryInventory;
+    public Inventory getInventory() {
+        return inventory;
     }
 
-    public void setRepositoryInventory(Inventory repositoryInventory) {
-        this.repositoryInventory = repositoryInventory;
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
     }
 
     public ArtifactFilter getArtifactFilter() {
@@ -1041,23 +1022,6 @@ public class InventoryReport {
     public void setFailOnMissingNotice(boolean failOnMissingNotice) {
         this.failOnMissingNotice = failOnMissingNotice;
     }
-
-    public String[] getRepositoryIncludes() {
-        return repositoryIncludes;
-    }
-
-    public void setRepositoryIncludes(String[] localRepositoryIncludes) {
-        this.repositoryIncludes = localRepositoryIncludes;
-    }
-
-    public String[] getRepositoryExcludes() {
-        return repositoryExcludes;
-    }
-
-    public void setRepositoryExcludes(String[] localRepositoryExcludes) {
-        this.repositoryExcludes = localRepositoryExcludes;
-    }
-
 
     public String xmlEscapeString(String string) {
         return xmlEscapeName(string);

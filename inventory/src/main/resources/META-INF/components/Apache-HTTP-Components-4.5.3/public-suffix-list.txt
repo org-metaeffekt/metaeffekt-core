@@ -84,7 +84,7 @@ fuel.aero
 gliding.aero
 government.aero
 groundhandling.aero
-group.aero
+name.aero
 hanggliding.aero
 homebuilt.aero
 insurance.aero
@@ -8163,8 +8163,8 @@ gripe
 // grocery : 2016-06-16 Wal-Mart Stores, Inc.
 grocery
 
-// group : 2014-08-15 Romeo Town, LLC
-group
+// name : 2014-08-15 Romeo Town, LLC
+name
 
 // guardian : 2015-07-30 The Guardian Life Insurance Company of America
 guardian

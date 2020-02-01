@@ -20,19 +20,19 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.maven.inventory.extractor.*;
 import org.metaeffekt.core.util.FileUtils;
-import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
  * Extracts a container inventory from pre-porcessed container information.
@@ -71,13 +71,13 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             // write not covered file list
             StringBuilder sb = new StringBuilder();
             for (Artifact artifact : inventory.getArtifacts()) {
-                if (InventoryExtractor.TYPE_FILE.equalsIgnoreCase(
-                    artifact.get(InventoryExtractor.KEY_ATTRIBUTE_TYPE))) {
+                if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(
+                    artifact.get(KEY_TYPE))) {
                     Set<String> projects = artifact.getProjects();
                     if (projects != null) {
                         for (String project : projects) {
                             if (sb.length() > 0) {
-                                sb.append(Constants.DELIMITER_NEWLINE);
+                                sb.append(DELIMITER_NEWLINE);
                             }
                             sb.append(project);
                         }
@@ -107,7 +107,9 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     private void filterInventory(Inventory inventory) {
         List<Artifact> toBeDeleted = new ArrayList<>();
         for (Artifact artifact : inventory.getArtifacts()) {
-            if (filterPackagesWithoutVersion && StringUtils.isEmpty(artifact.getVersion())) {
+            if (filterPackagesWithoutVersion &&
+                    Constants.ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(artifact.get(Constants.KEY_TYPE))&&
+                    StringUtils.isEmpty(artifact.getVersion())) {
                 toBeDeleted.add(artifact);
             }
         }

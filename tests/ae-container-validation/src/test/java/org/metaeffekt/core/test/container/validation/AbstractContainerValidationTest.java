@@ -10,8 +10,9 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.junit.Assert.*;
-import static org.metaeffekt.core.inventory.extractor.InventoryExtractor.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public abstract class AbstractContainerValidationTest {
 
@@ -39,11 +40,11 @@ public abstract class AbstractContainerValidationTest {
     protected void assertAttributes(Artifact artifact) {
         assertCommonAttributes(artifact);
 
-        if (TYPE_PACKAGE.equalsIgnoreCase(artifact.get(KEY_ATTRIBUTE_TYPE))) {
+        if (ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
             assertCommonPackageAttributes(artifact);
         }
 
-        if (TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_ATTRIBUTE_TYPE))) {
+        if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
             assertCommonFileAttributes(artifact);
         }
 
@@ -69,12 +70,9 @@ public abstract class AbstractContainerValidationTest {
     }
 
     protected void assertCommonAttributes(Artifact artifact) {
-        notNullOrEmpty("Id not set for artifact " + artifact.createStringRepresentation(),
-                artifact.getId());
-        notNullOrEmpty(KEY_ATTRIBUTE_SOURCE_PROJECT + " not set for " + artifact.getId(),
-                artifact.get(KEY_ATTRIBUTE_SOURCE_PROJECT));
-        notNullOrEmpty(KEY_ATTRIBUTE_TYPE + " not set for " + artifact.getId(),
-                artifact.get(KEY_ATTRIBUTE_TYPE));
+        notNullOrEmpty("Id not set for artifact " + artifact.createStringRepresentation(), artifact.getId());
+        notNullOrEmpty(KEY_SOURCE_PROJECT + " not set for " + artifact.getId(), artifact.get(KEY_SOURCE_PROJECT));
+        notNullOrEmpty(KEY_TYPE + " not set for " + artifact.getId(), artifact.get(KEY_TYPE));
 
         // no license information curated yet
         nullOrEmpty("License must not be set " + artifact.getId(),
@@ -91,7 +89,7 @@ public abstract class AbstractContainerValidationTest {
      * @param artifact
      */
     protected void assertArtifactAttributes(Artifact artifact) {
-        if (Objects.equals(artifact.get(KEY_ATTRIBUTE_TYPE), TYPE_PACKAGE)) {
+        if (Objects.equals(artifact.get(KEY_TYPE), ARTIFACT_TYPE_PACKAGE)) {
             assertNotNull(artifact.get(KEY_DERIVED_LICENSE_PACKAGE));
         }
     }

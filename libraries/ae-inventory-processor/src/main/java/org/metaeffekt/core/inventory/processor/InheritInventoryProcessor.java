@@ -16,10 +16,7 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Properties;
 
 

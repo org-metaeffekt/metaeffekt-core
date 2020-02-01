@@ -64,7 +64,7 @@ public class CombinedInventoryReportCreationMojo extends AbstractInventoryReport
                 inventory.getArtifacts().addAll(i.getArtifacts());
             }
 
-            report.setRepositoryInventory(inventory);
+            report.setInventory(inventory);
 
             return report;
         } catch (IOException ex) {

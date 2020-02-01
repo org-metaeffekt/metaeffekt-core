@@ -1,7 +1,6 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -9,6 +8,8 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
 
@@ -40,7 +41,7 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
             extractLicense(artifact, lines);
             extractUrl(artifact, lines);
 
-            artifact.set(InventoryExtractor.KEY_ATTRIBUTE_TYPE, InventoryExtractor.TYPE_PACKAGE);
+            artifact.set(KEY_TYPE, ARTIFACT_TYPE_PACKAGE);
         }
 
         for (Artifact artifact : inventory.getArtifacts()) {

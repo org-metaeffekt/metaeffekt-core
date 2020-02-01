@@ -37,7 +37,7 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
             for (Artifact artifact : targetInv.getArtifacts()) {
                 List<Artifact> candidates = sourceInv.findAllWithId(artifact.getId());
 
-                // matches match on id an project location
+                // matches match on id and project location
                 List<Artifact> matches = new ArrayList<>();
                 for (Artifact candidate : candidates) {
                     if (matches(artifact, candidate)) {

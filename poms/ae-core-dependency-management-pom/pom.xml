@@ -258,7 +258,7 @@
                 <scope>runtime</scope>
                 <exclusions>
                     <exclusion>
-                        <!-- exclusion of ant in old group id -->
+                        <!-- exclusion of ant in old name id -->
                         <groupId>ant</groupId>
                         <artifactId>ant</artifactId>
                     </exclusion>

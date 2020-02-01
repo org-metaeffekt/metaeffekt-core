@@ -81,14 +81,14 @@ public class DirectoryInventoryScan {
         Inventory scanInventory = new Inventory();
 
         // process scanning
-        scanDirectory(scanDirectory, scanIncludes, scanExcludes, globalInventory, scanInventory);
+        scanDirectory(scanDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory, scanInventory);
 
         scanInventory.mergeDuplicates();
 
         return scanInventory;
     }
 
-    private void scanDirectory(File scanDir, final String[] scanIncludes, final String[] scanExcludes, Inventory globalInventory, Inventory scanInventory) {
+    private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes, Inventory globalInventory, Inventory scanInventory) {
         final String[] filesArray = scanDirectory(scanDir, scanIncludes, scanExcludes);
 
         List<File> files = new ArrayList<>();
@@ -121,7 +121,7 @@ public class DirectoryInventoryScan {
                     derivedArtifact.setId(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_PART));
                     derivedArtifact.setComponent(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_NAME));
                     derivedArtifact.setVersion(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
-                    derivedArtifact.addProject(file.getPath());
+                    derivedArtifact.addProject(FileUtils.asRelativePath(scanBaseDir, file));
                     scanInventory.getArtifacts().add(derivedArtifact);
                 }
             }
@@ -175,26 +175,26 @@ public class DirectoryInventoryScan {
                     Artifact newArtifact = new Artifact();
                     newArtifact.setId(id);
                     newArtifact.setChecksum(checksum);
-                    newArtifact.addProject(idFullPath);
+                    newArtifact.addProject(FileUtils.asRelativePath(scanDir, file));
                     scanInventory.getArtifacts().add(newArtifact);
                 } else {
-                    scanDirectory(unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);
+                    scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);
                 }
             } else {
-                artifact.addProject(file.getPath());
+                artifact.addProject(FileUtils.asRelativePath(scanBaseDir, file));
 
                 // we use the plain id to continue. The rest is sorted out by the report.
                 Artifact copy = new Artifact();
                 copy.setId(id);
                 copy.setChecksum(checksum);
+                copy.addProject(FileUtils.asRelativePath(scanBaseDir, file));
                 scanInventory.getArtifacts().add(copy);
-                copy.addProject(idFullPath);
 
                 // in case the artifact contains the scan classification we try to unpack and scan in depth
                 if (artifact.getClassification().contains("scan")) {
                     File unpackedFile = unpackIfPossible(file, true);
                     if (unpackedFile != null) {
-                        scanDirectory(unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);
+                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);
                     } else {
                         throw new IllegalStateException("The artifact with id " + artifact.getId() + " was classified to be scanned in-depth, but cannot be unpacked");
                     }

@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor.report;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
 

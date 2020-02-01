@@ -15,10 +15,11 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
-import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.io.File;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
  * Simple container to aggregate information of an package.
@@ -38,14 +39,13 @@ class PackageInfo {
         Artifact artifact = new Artifact();
         artifact.setId(id);
         artifact.setComponent(component);
-        artifact.addProject(shareDir.getAbsolutePath());
         artifact.setVersion(version);
 
-        artifact.set(InventoryExtractor.KEY_ATTRIBUTE_ARCHITECTURE, arch);
-        artifact.set(InventoryExtractor.KEY_ATTRIBUTE_SUMMARY, summary);
-        artifact.set(InventoryExtractor.KEY_ATTRIBUTE_DESCRIPTION, description);
+        artifact.set(KEY_ARCHITECTURE, arch);
+        artifact.set(KEY_SUMMARY, summary);
+        artifact.set(KEY_DESCRIPTION, description);
         artifact.setUrl(url);
-        artifact.set(InventoryExtractor.KEY_DERIVED_LICENSE_PACKAGE, license);
+        artifact.set(KEY_DERIVED_LICENSE_PACKAGE, license);
         return artifact;
     }
 

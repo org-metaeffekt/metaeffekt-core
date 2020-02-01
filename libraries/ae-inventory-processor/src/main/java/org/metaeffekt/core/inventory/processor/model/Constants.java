@@ -38,6 +38,22 @@ public final class Constants {
      */
     public static final String KEY_WILDCARD_MATCH = "WILDCARD-MATCH";
 
+    public static final String KEY_DERIVED_LICENSE_PACKAGE = "Specified Package License";
+
+    public static final String KEY_SUMMARY = "Summary";
+    public static final String KEY_DESCRIPTION = "Description";
+    public static final String KEY_ARCHITECTURE = "Architecture";
+    public static final String KEY_TYPE = "Type";
+    public static final String KEY_SOURCE_PROJECT = "Source Project";
+
+    public static final String KEY_CONTAINER = "Container";
+    public static final String KEY_ISSUE = "Issue";
+
+    public static final String ARTIFACT_TYPE_PACKAGE = "package";
+    public static final String ARTIFACT_TYPE_FILE = "file";
+    public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
+
+
     protected Constants() {};
 
 }

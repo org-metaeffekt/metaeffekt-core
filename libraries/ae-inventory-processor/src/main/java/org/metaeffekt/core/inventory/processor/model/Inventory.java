@@ -314,7 +314,8 @@ public class Inventory {
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
-        Set<String> licenses = new HashSet<String>();
+        final Set<String> licenses = new HashSet();
+
         for (Artifact artifact : getArtifacts()) {
             // not relevant artifact licenses must not be included
             if (!artifact.isRelevant()) {
@@ -468,6 +469,32 @@ public class Inventory {
         return artifacts;
     }
 
+    public List<Artifact> getArtifacts(String context) {
+        if ("package".equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(a -> isPackageType(a))
+                .collect(Collectors.toList());
+        }
+        if ("artifact".equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                    a -> isArtifactType(a))
+                    .collect(Collectors.toList());
+        }
+        throw new IllegalStateException("Artifact context '" + context + "' not supported.");
+    }
+
+    private boolean isPackageType(Artifact a) {
+        String type = a.get(KEY_TYPE);
+        return ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(type);
+    }
+
+    private boolean isArtifactType(Artifact a) {
+        String type = a.get(KEY_TYPE);
+        if (StringUtils.isEmpty(type)) return true;
+        if (ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return false;
+        return true;
+    }
+
     public void setArtifacts(List<Artifact> artifacts) {
         this.artifacts = artifacts;
     }
@@ -615,16 +642,21 @@ public class Inventory {
         return STRING_EMPTY;
     }
 
-    public List<Component> evaluateComponents() {
-        Set<Component> componentNames = new HashSet<Component>();
-        for (Artifact artifact : getArtifacts()) {
-            if (StringUtils.hasText(artifact.getComponent())) {
-                final Component component = createComponent(artifact);
-                componentNames.add(component);
+    public List<Component> evaluateComponentsInContext(String context) {
+        Map<String, Component> nameComponentMap = new HashMap<>();
+        // only evaluate artifacts (no packages, no npm modules)
+        for (Artifact artifact : getArtifacts(context)) {
+            final Component component = createComponent(artifact);
+            Component alreadyExistingComponent = nameComponentMap.get(component.getName());
+            if (alreadyExistingComponent != null) {
+                alreadyExistingComponent.add(artifact);
+            } else {
+                nameComponentMap.put(component.getName(), component);
+                component.add(artifact);
             }
         }
 
-        List<Component> sortedByComponent = new ArrayList<>(componentNames);
+        List<Component> sortedByComponent = new ArrayList<>(nameComponentMap.values());
         Collections.sort(sortedByComponent, new Comparator<Component>() {
             @Override
             public int compare(Component o1, Component o2) {
@@ -635,19 +667,7 @@ public class Inventory {
     }
 
     public List<List<Artifact>> evaluateComponent(Component component, boolean includeLicensesWithArtifactsOnly) {
-        List<Artifact> artifactsForComponent = new ArrayList<>();
-        for (Artifact artifact : getArtifacts()) {
-            if (component.group != null && component.group.equals(artifact.getComponent())) {
-                if (component.license != null && component.license.equals(artifact.getLicense())) {
-                    if (!StringUtils.hasText(artifact.getArtifactId())) {
-                        if (includeLicensesWithArtifactsOnly) {
-                            continue;
-                        }
-                    }
-                    artifactsForComponent.add(artifact);
-                }
-            }
-        }
+        List<Artifact> artifactsForComponent = new ArrayList<>(component.getArtifacts());
         sortArtifacts(artifactsForComponent);
 
         // rearrange components into groups of max 60
@@ -656,13 +676,11 @@ public class Inventory {
         groups.add(currentGroup);
         for (Artifact artifact : artifactsForComponent) {
             currentGroup.add(artifact);
-
             if (currentGroup.size() >= 60) {
                 currentGroup = new ArrayList<>();
                 groups.add(currentGroup);
             }
         }
-
         return groups;
     }
 
@@ -853,16 +871,30 @@ public class Inventory {
     }
 
     public Component createComponent(Artifact artifact) {
-        return new Component(artifact.getComponent(), artifact.getLicense());
+        String componentName = artifact.getComponent();
+        if (StringUtils.isEmpty(componentName)) {
+            componentName = artifact.getId();
+            String version = artifact.getVersion();
+            if (!StringUtils.isEmpty(version)) {
+                if (componentName.contains("-" + version)) {
+                    componentName = componentName.substring(0, componentName.indexOf("-" + version));
+                }
+            }
+        }
+        return new Component(componentName, artifact.getComponent(), artifact.getLicense());
     }
 
     public class Component {
-        private String group;
+        private String name;
         private String license;
+        private String originalComponentName;
 
-        public Component(String group, String license) {
-            this.group = group;
+        private List<Artifact> artifacts = new ArrayList<>();
+
+        public Component(String name, String originalComponentName, String license) {
+            this.name = name;
             this.license = license;
+            this.originalComponentName = originalComponentName;
         }
 
         @Override
@@ -877,25 +909,29 @@ public class Inventory {
             return false;
         }
 
+        public List<Artifact> getArtifacts() {
+            return artifacts;
+        }
+
+        public void add(Artifact artifact) {
+            artifacts.add(artifact);
+        }
+
         @Override
         public String toString() {
-            return STRING_EMPTY + group + "/" + license;
+            return STRING_EMPTY + name + "/" + license;
         }
 
-        public String getGroup() {
-            return group;
-        }
-
-        public void setGroup(String group) {
-            this.group = group;
+        public String getName() {
+            return name;
         }
 
         public String getLicense() {
             return license;
         }
 
-        public void setLicense(String license) {
-            this.license = license;
+        public String getOriginalComponentName() {
+            return originalComponentName;
         }
     }
 

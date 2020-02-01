@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -24,17 +25,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-public class InferInventoryProcessorTest {
+public class InferMetaDataProcessorTest {
 
+    @Ignore
     @Test
     public void testInfer() throws IOException {
 
-        File inventoryFile = new File("/Users/kklein/workspace/metaeffekt-container-annex/documentation/annex/target/inventory-container/analysis/ae-container-extractor-inventory.xls");
+        File inventoryFile = new File("/Users/kklein/workspace/metaeffekt-container-annex/documentation/ae-container-annex/target/inventory-container/analysis/ae-container-extractor-inventory.xls");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
         Properties properties = new Properties();
-        properties.setProperty(InferenceInventoryProcessor.INPUT_INVENTORY, inventoryFile.getAbsolutePath());
-        InferenceInventoryProcessor p = new InferenceInventoryProcessor(properties);
+        properties.setProperty(InferMetaDataProcessor.INPUT_INVENTORY, inventoryFile.getAbsolutePath());
+        InferMetaDataProcessor p = new InferMetaDataProcessor(properties);
 
         p.process(inventory);
 

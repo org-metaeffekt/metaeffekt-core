@@ -25,10 +25,11 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_SOURCE_PROJECT;
 
 /**
  * Extracts a container inventory from pre-porcessed container information.
@@ -69,7 +70,7 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
             Inventory inventory = scan.createScanInventory();
 
             for (Artifact artifact : inventory.getArtifacts()) {
-                artifact.set(InventoryExtractor.KEY_ATTRIBUTE_SOURCE_PROJECT, artifactInventoryId);
+                artifact.set(KEY_SOURCE_PROJECT, artifactInventoryId);
             }
 
             // write inventory

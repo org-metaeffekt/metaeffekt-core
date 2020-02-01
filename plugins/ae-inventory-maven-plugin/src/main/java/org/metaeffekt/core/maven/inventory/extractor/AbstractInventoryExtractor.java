@@ -1,7 +1,6 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.apache.tools.ant.DirectoryScanner;
-import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -10,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
  * The {@link org.metaeffekt.core.maven.inventory.mojo.ContainerInventoryExtractionMojo} expects
@@ -34,10 +35,10 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
 
         for (Artifact artifact : inventory.getArtifacts()) {
-            artifact.set(InventoryExtractor.KEY_ATTRIBUTE_SOURCE_PROJECT, inventoryId);
+            artifact.set(KEY_SOURCE_PROJECT, inventoryId);
             // TODO extract container id
             // artifact.set(KEY_ATTRIBUTE_CONTAINER, analysisDir.getName());
-            artifact.set(KEY_ATTRIBUTE_ISSUE, issue);
+            artifact.set(KEY_ISSUE, issue);
         }
 
         return inventory;
@@ -45,11 +46,13 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
     private void extendNotCoveredFiles(File analysisDir, Inventory inventory, List<String> excludePatterns) throws IOException {
         List<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
-        for (String file : notCoveredFiles) {
+        for (String fileName : notCoveredFiles) {
             Artifact artifact = new Artifact();
-            artifact.setId(new File(file).getName());
-            artifact.addProject(file);
-            artifact.set(KEY_ATTRIBUTE_TYPE, TYPE_FILE);
+            File file = new File(fileName);
+            artifact.setId(file.getName());
+            // file.getPath() is the absolute path in the container
+            artifact.addProject(file.getPath().substring(1));
+            artifact.set(KEY_TYPE, ARTIFACT_TYPE_FILE);
             inventory.getArtifacts().add(artifact);
         }
     }
@@ -106,7 +109,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
             // already added --> merge
             referenceArtifact.merge(derivedFromPackage);
         } else {
-            derivedFromPackage.set(KEY_ATTRIBUTE_TYPE, TYPE_PACKAGE);
+            derivedFromPackage.set(KEY_TYPE, ARTIFACT_TYPE_PACKAGE);
             inventory.getArtifacts().add(derivedFromPackage);
         }
     }

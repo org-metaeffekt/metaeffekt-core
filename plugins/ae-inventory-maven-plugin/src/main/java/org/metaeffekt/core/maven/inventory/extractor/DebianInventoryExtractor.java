@@ -1,9 +1,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

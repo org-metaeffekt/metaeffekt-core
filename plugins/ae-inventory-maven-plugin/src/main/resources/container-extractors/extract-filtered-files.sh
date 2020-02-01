@@ -1,13 +1,6 @@
 #!/bin/sh
 
-# Copy all files listed in /analysis/filtered-files.txt to /analysis/extracted-files
-
-mkdir -p /analysis/extracted-files
-
-files=`cat /analysis/filtered-files.txt`
-
-for file in $files
-do
-    cp --no-preserve=mode --parents $file /analysis/extracted-files
-done
-
+command -v apk && /container-extractors/alpine-file-extractor.sh || true
+command -v dpkg && /container-extractors/generic-file-extractor.sh || true
+command -v pacman && /container-extractors/generic-file-extractor.sh || true
+command -v rpm && /container-extractors/generic-file-extractor.sh || true

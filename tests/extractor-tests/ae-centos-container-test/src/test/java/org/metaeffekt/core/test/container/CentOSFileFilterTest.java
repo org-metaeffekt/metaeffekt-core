@@ -1,10 +1,7 @@
 package org.metaeffekt.core.test.container;
 
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.test.container.validation.AbstractContainerFileFilterTest;
-import org.metaeffekt.core.util.FileUtils;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

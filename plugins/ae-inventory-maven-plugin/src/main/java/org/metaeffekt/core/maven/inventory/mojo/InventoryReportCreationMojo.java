@@ -43,7 +43,7 @@ public class InventoryReportCreationMojo extends AbstractInventoryReportCreation
         configureInventoryReport(report);
 
         try {
-            report.setRepositoryInventory(new InventoryReader().readInventory(inventory));
+            report.setInventory(new InventoryReader().readInventory(inventory));
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot create inventory report.", e);
         }

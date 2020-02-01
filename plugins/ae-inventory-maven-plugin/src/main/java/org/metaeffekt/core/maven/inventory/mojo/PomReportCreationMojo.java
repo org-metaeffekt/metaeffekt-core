@@ -103,7 +103,7 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
         InventoryReport report = initializeInventoryReport();
         Inventory inventory = createInventoryFromPom();
-        report.setRepositoryInventory(inventory);
+        report.setInventory(inventory);
 
         boolean success = false;
         try {

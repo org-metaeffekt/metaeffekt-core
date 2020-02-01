@@ -1,15 +1,7 @@
 package org.metaeffekt.core.test.container;
 
-import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.report.DependenciesDitaReport;
 import org.metaeffekt.core.test.container.validation.AbstractContainerFileFilterTest;
-import org.metaeffekt.core.test.container.validation.AbstractContainerValidationTest;
-import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

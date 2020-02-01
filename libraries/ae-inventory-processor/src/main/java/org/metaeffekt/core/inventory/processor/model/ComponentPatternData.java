@@ -17,10 +17,7 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Class to capture component patterns for matching artifacts during scans.

@@ -20,6 +20,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.LinkedHashSet;
 
 /**
  * FileUtils extension.
@@ -61,4 +63,53 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         checksum.execute();
         return checksum.getProject().getProperty(VAR_CHECKSUM);
     }
+
+    public static String asRelativePath(String workingDirPath, String filePath) throws IOException {
+        File file = new File(filePath).getCanonicalFile();
+        File workingDirFile = new File(workingDirPath).getCanonicalFile();
+        return asRelativePath(workingDirFile, file);
+    }
+
+    public static String asRelativePath(File workingDirFile, File file) {
+        final LinkedHashSet<File> set = new LinkedHashSet<>();
+        File commonBaseDir = workingDirFile;
+        set.add(commonBaseDir);
+
+        // decompose the working dir in separate files
+        while (commonBaseDir.getParentFile() != null) {
+            set.add(commonBaseDir.getParentFile());
+            commonBaseDir = commonBaseDir.getParentFile();
+        }
+
+        // walk down the file path until common base dir is found
+        commonBaseDir = file;
+        String path = "";
+        while (commonBaseDir != null && !set.contains(commonBaseDir)) {
+            if (path.length() > 0) {
+                path = commonBaseDir.getName() + "/" + path;
+            } else {
+                path = commonBaseDir.getName();
+            }
+            commonBaseDir = commonBaseDir.getParentFile();
+        }
+
+        // see on which index the common base path lies
+        int index = 0;
+        for (File pos : set) {
+            if (pos.equals(commonBaseDir)) {
+                break;
+            }
+            index ++;
+        }
+
+        // move up the path until common base path is reached
+        String relativePath = "";
+        for (int i = 0; i < index; i++) {
+            relativePath = "../" + relativePath;
+        }
+
+        // and append the path composed earlier
+        return relativePath + path;
+    }
+
 }

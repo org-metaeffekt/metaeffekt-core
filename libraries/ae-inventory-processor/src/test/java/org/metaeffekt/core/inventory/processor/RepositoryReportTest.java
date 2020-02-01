@@ -65,7 +65,7 @@ public class RepositoryReportTest {
         report.setReferenceLicensePath(LICENSES_PATH);
         report.setReferenceComponentPath(COMPONENTS_PATH);
 
-        report.setRepositoryInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
+        report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
 
         PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
@@ -128,7 +128,7 @@ public class RepositoryReportTest {
         assertTrue(artifacts.contains("<xref href=\"licenses/G-License-(with-sub-components)/\" type=\"html\" scope=\"external\">G License (with sub-components)</xref>"));
         assertTrue(artifacts.contains("<xref href=\"licenses/D-License/\" type=\"html\" scope=\"external\">D License</xref>"));
 
-        String components = FileUtils.readFileToString(componentReport, UTF_8);
+        String components = FileUtils.readFileToString(artifactReport, UTF_8);
         assertTrue(components.contains("<xref href=\"licenses/A-License/\" type=\"html\" scope=\"external\">A License</xref>"));
         assertTrue(components.contains("<xref href=\"licenses/B-License/\" type=\"html\" scope=\"external\">B License</xref>"));
         assertTrue(components.contains("<xref href=\"licenses/A-License-B-License/\" type=\"html\" scope=\"external\">A License + B License</xref>"));
@@ -243,7 +243,7 @@ public class RepositoryReportTest {
         report.setReferenceLicensePath(new File(inventoryDir, "licenses").getAbsolutePath());
         report.setReferenceComponentPath(new File(inventoryDir, "components").getAbsolutePath());
 
-        report.setRepositoryInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
+        report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
 
         File target = new File(TARGET_FOLDER);
         target.mkdirs();

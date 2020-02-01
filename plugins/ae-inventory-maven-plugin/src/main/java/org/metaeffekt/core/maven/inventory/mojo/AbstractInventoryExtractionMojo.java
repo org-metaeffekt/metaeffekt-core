@@ -16,7 +16,6 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugins.annotations.Parameter;
-import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
 import java.io.File;
 

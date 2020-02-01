@@ -16,32 +16,31 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.extractor.InventoryExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import static org.springframework.util.StringUtils.*;
+import org.springframework.util.Assert;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import static org.springframework.util.StringUtils.isEmpty;
 
-public class InferenceInventoryProcessor extends AbstractInputInventoryBasedProcessor {
 
-    public InferenceInventoryProcessor() {
+public class InferMetaDataProcessor extends AbstractInputInventoryBasedProcessor {
+
+    public InferMetaDataProcessor() {
         super();
     }
 
-    public InferenceInventoryProcessor(Properties properties) {
+    public InferMetaDataProcessor(Properties properties) {
         super(properties);
     }
 
     @Override
     public void process(Inventory inventory) {
-        final Inventory inputInventory = loadInputInventory();
+        // final Inventory inputInventory = loadInputInventory();
 
         adoptPackageSpecifiedLicense(inventory);
 
@@ -52,21 +51,43 @@ public class InferenceInventoryProcessor extends AbstractInputInventoryBasedProc
 
     private void inferLicenseMetaData(Inventory inventory) {
         for (Artifact artifact : inventory.getArtifacts()) {
-            if (!isEmpty(artifact.getLicense()) &&
+            String license = artifact.getLicense();
+            if (!isEmpty(license) &&
                     !isEmpty(artifact.getComponent()) &&
                     !isEmpty(artifact.getVersion())) {
-                List<String> licenses = InventoryUtils.tokenizeLicense(artifact.getLicense(), true, true);
+
+                String normalizedLicense = license.replaceAll(" AND ", ", ");
+                normalizedLicense = normalizedLicense.replaceAll(" and ", ", ");
+                // archlinux uses two spaces as separator
+                normalizedLicense = normalizedLicense.replaceAll("  ", ", ");
+
+
+                List<String> licenses = InventoryUtils.tokenizeLicense(normalizedLicense, true, true);
                 if (licenses.size() > 1) {
                     LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
                     if (licenseMetaData == null) {
                         licenseMetaData = new LicenseMetaData();
                         licenseMetaData.setComponent(artifact.getComponent());
                         licenseMetaData.setVersion(artifact.getVersion());
-                        licenseMetaData.setLicense(artifact.getLicense());
+                        licenseMetaData.setLicense(license);
                         licenseMetaData.setLicenseInEffect(InventoryUtils.joinEffectiveLicenses(licenses));
                         licenseMetaData.setNotice("TODO: validate and explain licenses in effect; classify component");
                         inventory.getLicenseMetaData().add(licenseMetaData);
                     }
+
+                    Assert.notNull(inventory.findMatchingLicenseMetaData(artifact), "cannot find just added meta data");
+                } else if (licenses.size() == 1 && licenses.get(0).contains(" OR ")) {
+                    LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
+                    if (licenseMetaData == null) {
+                        licenseMetaData = new LicenseMetaData();
+                        licenseMetaData.setComponent(artifact.getComponent());
+                        licenseMetaData.setVersion(artifact.getVersion());
+                        licenseMetaData.setLicense(license);
+                        licenseMetaData.setLicenseInEffect(license);
+                        licenseMetaData.setNotice("TODO: choose and explain licenses in effect; classify component");
+                        inventory.getLicenseMetaData().add(licenseMetaData);
+                    }
+
                 }
             }
         }
@@ -75,8 +96,8 @@ public class InferenceInventoryProcessor extends AbstractInputInventoryBasedProc
     private void adoptPackageSpecifiedLicense(Inventory inventory) {
         for (Artifact artifact : inventory.getArtifacts()) {
             if (isEmpty(artifact.getLicense())) {
-                String derivedPackageLicense = artifact.get(InventoryExtractor.KEY_DERIVED_LICENSE_PACKAGE);
-                if (isEmpty(derivedPackageLicense)) {
+                String derivedPackageLicense = artifact.get(Constants.KEY_DERIVED_LICENSE_PACKAGE);
+                if (!isEmpty(derivedPackageLicense)) {
                     artifact.setLicense(derivedPackageLicense);
                 }
             }

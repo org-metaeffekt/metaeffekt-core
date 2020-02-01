@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.extractor;
+package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
@@ -25,20 +25,6 @@ import java.util.List;
  * Interface common to all {@link InventoryExtractor}s.
  */
 public interface InventoryExtractor {
-
-    String KEY_DERIVED_LICENSE_PACKAGE = "Specified Package License";
-
-    String KEY_ATTRIBUTE_SUMMARY = "Summary";
-    String KEY_ATTRIBUTE_DESCRIPTION = "Description";
-    String KEY_ATTRIBUTE_ARCHITECTURE = "Architecture";
-    String KEY_ATTRIBUTE_TYPE = "Type";
-    String KEY_ATTRIBUTE_SOURCE_PROJECT = "Source Project";
-
-    String KEY_ATTRIBUTE_CONTAINER = "Container";
-    String KEY_ATTRIBUTE_ISSUE = "Issue";
-
-    String TYPE_PACKAGE = "package";
-    String TYPE_FILE = "file";
 
     /**
      * Checks whether the extractor is applicable to the content in analysisDir.

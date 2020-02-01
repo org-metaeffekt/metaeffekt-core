@@ -27,13 +27,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.*;
 
-import static java.lang.Boolean.FALSE;
 import static java.lang.String.format;
-import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
-import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_SUFFIX;
-import static org.metaeffekt.core.inventory.processor.model.Constants.VERSION_PLACHOLDER_PREFIX;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_WILDCARD_MATCH;
-import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_FALSE;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 

@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory;
 
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.DependenciesDitaReport;
@@ -24,13 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import static org.springframework.util.StringUtils.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.springframework.util.StringUtils.isEmpty;
 
 /**
  * Utilities for dealing with Inventories.
@@ -100,6 +103,12 @@ public abstract class InventoryUtils {
             List<String> licenses = Arrays.stream(licenseParts).
                     map(String::trim).
                     filter(s -> !isEmpty(s)).
+                    map(s -> {
+                        if (s.startsWith("(") && s.endsWith(")")) {
+                            return s.substring(1, s.length() - 2);
+                        }
+                        return s;
+                    }).
                     distinct().
                     collect(Collectors.toList());
 

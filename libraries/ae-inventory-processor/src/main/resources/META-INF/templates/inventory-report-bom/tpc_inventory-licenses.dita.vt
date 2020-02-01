@@ -18,14 +18,14 @@
             <tbody>
 #foreach($license in $inventory.evaluateLicenses(false))
 #set($folder=$inventory.getLicenseFolder($license))
-#set($group=$inventory.evaluateComponents($license))
+#set($name=$inventory.evaluateComponents($license))
                 <row>
                     <entry>
                         <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
                      </entry>
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            <codeph>$group.size()</codeph>
+                            <codeph>$name.size()</codeph>
                         </xref>
                     </entry>
                 </row>
@@ -46,8 +46,8 @@
 
 #foreach($license in $inventory.evaluateLicenses(false))
 #set($folder=$inventory.getLicenseFolder($license))
-#set($group=$inventory.evaluateComponents($license))
-#if(!$group.isEmpty())
+#set($name=$inventory.evaluateComponents($license))
+#if(!$name.isEmpty())
 <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
     <title>$license</title>
     <body>
@@ -69,7 +69,7 @@
                         </row>
                     </thead>
                     <tbody>
-#foreach($artifactLicenseData in $group)
+#foreach($artifactLicenseData in $name)
                         <row>
                             <entry>
                                  $artifactLicenseData.componentName
