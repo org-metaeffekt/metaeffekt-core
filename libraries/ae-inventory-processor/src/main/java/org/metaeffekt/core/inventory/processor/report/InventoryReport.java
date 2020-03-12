@@ -251,8 +251,8 @@ public class InventoryReport {
                 matchedReferenceArtifact = globalInventory.findArtifact(localArtifact, true);
             }
 
-            LOG.debug("Query for local artifact:" + localArtifact);
-            LOG.debug("Mateched referecne artifact:   " + matchedReferenceArtifact);
+            LOG.debug("Query for local artifact: " + localArtifact);
+            LOG.debug("Matched reference artifact: " + matchedReferenceArtifact);
 
             String classifier = "";
             String comment = "";
@@ -629,7 +629,8 @@ public class InventoryReport {
     }
 
     private boolean evaluateLicenseFiles(Inventory projectInventory) {
-        Set<String> reportedSourceFolders = new HashSet<>();
+        final Set<String> reportedSourceFolders = new HashSet<>();
+
         boolean missingFiles = false;
 
         for (Artifact artifact : projectInventory.getArtifacts()) {
@@ -659,7 +660,7 @@ public class InventoryReport {
             final LicenseMetaData matchingLicenseMetaData = projectInventory.
                     findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, version);
 
-            // derive effective (license) and version
+            // derive effective licenses
             String effectiveLicense = artifact.getLicense();
             boolean isMetaDataVersionWildcard = false;
             if (matchingLicenseMetaData != null) {
@@ -668,7 +669,10 @@ public class InventoryReport {
             }
             effectiveLicense = effectiveLicense.replaceAll("/s*,/s*", "|");
 
+            // derive component folder
             final String componentFolderName = LicenseMetaData.deriveComponentFolderName(artifact.getComponent());
+
+            // derive version (unspecific, specific)
             final String versionUnspecificPath = componentFolderName;
             final String versionSpecificPath = componentFolderName + "-" + version;
 
@@ -690,14 +694,14 @@ public class InventoryReport {
             if (targetLicenseDir != null) {
                 final String[] effectiveLicenses = effectiveLicense.split("\\|");
                 for (String licenseInEffect : effectiveLicenses) {
-                    String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
+                    final String effectiveLicenseFolderName = LicenseMetaData.deriveLicenseFolderName(licenseInEffect);
 
                     // in any case copy the license license folder
                     missingFiles |= checkAndCopyLicenseFolder(effectiveLicenseFolderName,
                             new File(targetLicenseDir, effectiveLicenseFolderName), reportedSourceFolders);
 
                     // copy the component folder into the effective license folder
-                    File licenseTargetDir = new File(targetLicenseDir, effectiveLicenseFolderName);
+                    final File licenseTargetDir = new File(targetLicenseDir, effectiveLicenseFolderName);
                     missingFiles |= checkAndCopyComponentFolder(sourcePath,
                             new File(licenseTargetDir, targetPath), reportedSourceFolders);
                 }

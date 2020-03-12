@@ -79,12 +79,12 @@
                             </entry>
                         </row>
 #end
-#end
                     </tbody>
                 </tgroup>
             </table>
         </p>
     </body>
 </topic>
+#end
 #end
 </topic>

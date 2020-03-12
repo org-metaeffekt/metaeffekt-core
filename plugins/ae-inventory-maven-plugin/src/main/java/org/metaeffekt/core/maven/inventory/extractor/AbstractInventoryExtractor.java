@@ -105,13 +105,20 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     protected void addOrMerge(File analysisDir, Inventory inventory, PackageInfo p) {
         Artifact derivedFromPackage = p.createArtifact(analysisDir);
         Artifact referenceArtifact = inventory.findArtifact(derivedFromPackage.getId());
-        if (referenceArtifact != null && derivedFromPackage.getVersion().equalsIgnoreCase(referenceArtifact.getVersion())) {
+        if (versionEquals(derivedFromPackage, referenceArtifact)) {
             // already added --> merge
             referenceArtifact.merge(derivedFromPackage);
         } else {
             derivedFromPackage.set(KEY_TYPE, ARTIFACT_TYPE_PACKAGE);
             inventory.getArtifacts().add(derivedFromPackage);
         }
+    }
+
+    private boolean versionEquals(Artifact derivedFromPackage, Artifact referenceArtifact) {
+        if (derivedFromPackage != null && derivedFromPackage.getVersion() != null && referenceArtifact != null) {
+            return derivedFromPackage.getVersion().equals(referenceArtifact.getVersion());
+        }
+        return false;
     }
 
     @Override

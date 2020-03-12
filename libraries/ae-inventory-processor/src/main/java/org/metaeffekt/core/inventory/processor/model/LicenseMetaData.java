@@ -143,6 +143,18 @@ public class LicenseMetaData extends AbstractModelBase {
         return notice;
     }
 
+    // FIXME: limitation of excel
+    public String getCompleteNotice() {
+        StringBuilder sb = new StringBuilder(notice);
+        int index = 1;
+        while (get("Notice (split-" + index + ")") != null) {
+            String s = get("Notice (split-" + index + ")");
+            sb.append(s);
+            index++;
+        }
+        return sb.toString();
+    }
+
     public void setNotice(String notice) {
         this.notice = notice;
     }

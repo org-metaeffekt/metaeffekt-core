@@ -45,6 +45,9 @@ public class Inventory {
     // Components are structured by context. This is the artifact context.
     public static final String COMPONENT_CONTEXT_ARTIFACT = "artifact";
 
+    // Components are structured by context. This is the web module context.
+    public static final String COMPONENT_CONTEXT_WEBMODULE = "web-module";
+
     private List<Artifact> artifacts = new ArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
@@ -123,7 +126,9 @@ public class Inventory {
         for (Artifact candidate : getArtifacts()) {
             candidate.deriveArtifactId();
             if (matchesOnMavenProperties(artifact, candidate)) {
-                return candidate;
+                if (matchesChecksumOrChecksumsIncomplete(artifact, candidate)) {
+                    return candidate;
+                }
             }
         }
 
@@ -131,11 +136,26 @@ public class Inventory {
         if (fuzzy) {
             for (Artifact candidate : getArtifacts()) {
                 if (matchesOnId(artifact.getId(), candidate)) {
-                    return candidate;
+                    if (matchesChecksumOrChecksumsIncomplete(artifact, candidate)) {
+                        return candidate;
+                    }
                 }
             }
         }
         return null;
+    }
+
+    private boolean matchesChecksumOrChecksumsIncomplete(Artifact artifact, Artifact candidate) {
+        String left = artifact.getChecksum();
+        String right = candidate.getChecksum();
+        if (!StringUtils.hasText(left)) {
+            return true;
+        }
+        if (!StringUtils.hasText(right)) {
+            return true;
+        }
+        if (left.equals(right)) return true;
+        return false;
     }
 
     public Artifact findArtifactByIdAndChecksum(String id, String checksum) {
@@ -393,11 +413,59 @@ public class Inventory {
         return new ArrayList<>(map.values());
     }
 
+    public List<LicenseMetaData> evaluateComponentsWithLicenseMetaData() {
+        List<LicenseMetaData> licenseMetaDataList = new ArrayList<>();
+        Set<String> qualifiers = new HashSet<>();
+        // evaluate all artifacts
+        for (Artifact artifact : getArtifacts()) {
+            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact);
+            if (matchingLicenseMetaData != null) {
+                final String qualifier = matchingLicenseMetaData.deriveQualifier();
+                if (!qualifiers.contains(qualifier)) {
+                    licenseMetaDataList.add(matchingLicenseMetaData);
+                    qualifiers.add(qualifier);
+                }
+            }
+        }
+
+        Collections.sort(licenseMetaDataList, new Comparator<LicenseMetaData>() {
+            @Override
+            public int compare(LicenseMetaData o1, LicenseMetaData o2) {
+                String c1 = o1.getComponent() + "-" + o1.getVersion();
+                String c2 = o2.getComponent() + "-" + o2.getVersion();
+                return c1.toLowerCase().compareTo(c2.toLowerCase());
+            }
+        });
+        return licenseMetaDataList;
+
+    }
+
+    public List<Artifact> evaluateArtifactsInComponent(LicenseMetaData licenseMetaData) {
+        List<Artifact> artifacts = new ArrayList<>();
+        for (Artifact artifact : getArtifacts()) {
+            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact);
+            if (matchingLicenseMetaData == licenseMetaData) {
+                artifacts.add(artifact);
+            }
+        }
+        Collections.sort(artifacts, new Comparator<Artifact>() {
+            @Override
+            public int compare(Artifact o1, Artifact o2) {
+                String c1 = o1.getId() + "-" + o1.getVersion();
+                String c2 = o2.getId() + "-" + o2.getVersion();
+                return c1.toLowerCase().compareTo(c2.toLowerCase());
+            }
+        });
+        return artifacts;
+    }
+
     public List<ArtifactLicenseData> evaluateComponents(String effectiveLicense) {
         final Map<String, ArtifactLicenseData> map = new LinkedHashMap<>();
         for (final Artifact artifact : artifacts) {
             String artifactLicense = artifact.getLicense();
-            if (artifactLicense != null) {
+            if (StringUtils.hasText(artifact.getLicense()) &&
+                StringUtils.hasText(artifact.getVersion()) &&
+                StringUtils.hasText(artifact.getComponent())){
                 artifactLicense = artifactLicense.trim();
                 // find a matching LMD instance
                 LicenseMetaData match = findMatchingLicenseMetaData(
@@ -485,6 +553,11 @@ public class Inventory {
                     a -> isArtifactType(a))
                     .collect(Collectors.toList());
         }
+        if (COMPONENT_CONTEXT_WEBMODULE.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                    a -> isWebModuleType(a))
+                    .collect(Collectors.toList());
+        }
         throw new IllegalStateException("Artifact context '" + context + "' not supported.");
     }
 
@@ -499,6 +572,13 @@ public class Inventory {
         if (ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(type)) return false;
         if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return false;
         return true;
+    }
+
+    private boolean isWebModuleType(Artifact a) {
+        String type = a.get(KEY_TYPE);
+        if (StringUtils.isEmpty(type)) return false;
+        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return true;
+        return false;
     }
 
     public void setArtifacts(List<Artifact> artifacts) {
@@ -540,6 +620,13 @@ public class Inventory {
             return null;
         return removeSpecialCharacters(license);
     }
+
+    public String deriveLicenseId(LicenseMetaData licenseMetaData) {
+        if (licenseMetaData == null)
+            return null;
+        return removeSpecialCharacters(licenseMetaData.getComponent() + "-" + licenseMetaData.getVersion());
+    }
+
 
     private String removeSpecialCharacters(String license) {
         String licenseId = LicenseMetaData.deriveLicenseFolderName(license);
@@ -650,7 +737,7 @@ public class Inventory {
 
     public List<Component> evaluateComponentsInContext(String context) {
         Map<String, Component> nameComponentMap = new HashMap<>();
-        // only evaluate artifacts (no packages, no npm modules)
+        // only evaluate artifacts for the given context
         for (Artifact artifact : getArtifacts(context)) {
             final Component component = createComponent(artifact);
             Component alreadyExistingComponent = nameComponentMap.get(component.getQualifier());
@@ -890,6 +977,15 @@ public class Inventory {
         return new Component(componentName, artifact.getComponent(), artifact.getLicense());
     }
 
+    /**
+     * Component data. Please note that the component per-se does not have a version, but a license.
+     * Artifacts (with various versions) can be added to the component. When evaluating the
+     * LicenseMetaData for a component the version (on artifact level) is still important.
+     * FIXME:
+     * - add an optional component version to the artifacts or identify the component with version
+     * - alternatively add a component version on license meta data level; rationale: an artifact can
+     *   belong in the same version can belong to several components.
+     */
     public class Component {
         private String name;
         private String license;

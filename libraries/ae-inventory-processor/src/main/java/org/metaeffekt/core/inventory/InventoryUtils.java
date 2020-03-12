@@ -121,7 +121,7 @@ public abstract class InventoryUtils {
     }
 
     public static String joinLicenses(Collection<String> licenses) {
-        return licenses.stream().collect(Collectors.joining(" ,"));
+        return licenses.stream().collect(Collectors.joining(", "));
     }
 
     public static String joinEffectiveLicenses(Collection<String> licenses) {

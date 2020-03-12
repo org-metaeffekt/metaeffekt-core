@@ -126,9 +126,9 @@ public class InventoryWriter {
             for (String key : ordered) {
                 HSSFCell myCell = dataRow.createCell(cellNum++);
                 String value = artifact.get(key);
-                if (value != null && value.length() > 2096) {
+                if (value != null && value.length() > 32760) {
                     // FIXME: log something
-                    value = value.substring(0, Math.min(value.length(), 2096));
+                    value = value.substring(0, Math.min(value.length(), 32760));
                     value = value + "...";
                 }
                 myCell.setCellValue(new HSSFRichTextString(value));

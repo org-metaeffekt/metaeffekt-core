@@ -159,12 +159,12 @@ public class DirectoryInventoryScan {
             Artifact artifact = globalInventory.findArtifact(id, checksum);
 
             if (artifact == null) {
-                globalInventory.findArtifact(idFullPath, checksum);
+                artifact = globalInventory.findArtifact(idFullPath, checksum);
             }
 
             // match on file name
             if (artifact == null) {
-                globalInventory.findArtifact(id, true);
+                artifact = globalInventory.findArtifact(id, true);
             }
 
             // match on file path
@@ -206,7 +206,7 @@ public class DirectoryInventoryScan {
                 scanInventory.getArtifacts().add(copy);
 
                 // in case the artifact contains the scan classification we try to unpack and scan in depth
-                if (artifact.getClassification().contains(HINT_SCAN)) {
+                if (StringUtils.hasText(artifact.getClassification()) && artifact.getClassification().contains(HINT_SCAN)) {
                     File unpackedFile = unpackIfPossible(file, true);
                     if (unpackedFile != null) {
                         scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, globalInventory, scanInventory);

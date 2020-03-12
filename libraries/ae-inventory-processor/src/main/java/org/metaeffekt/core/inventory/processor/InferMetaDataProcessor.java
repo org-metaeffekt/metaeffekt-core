@@ -61,7 +61,6 @@ public class InferMetaDataProcessor extends AbstractInputInventoryBasedProcessor
                 // archlinux uses two spaces as separator
                 normalizedLicense = normalizedLicense.replaceAll("  ", ", ");
 
-
                 List<String> licenses = InventoryUtils.tokenizeLicense(normalizedLicense, true, true);
                 if (licenses.size() > 1) {
                     LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
@@ -74,7 +73,6 @@ public class InferMetaDataProcessor extends AbstractInputInventoryBasedProcessor
                         licenseMetaData.setNotice("TODO: validate and explain licenses in effect; classify component");
                         inventory.getLicenseMetaData().add(licenseMetaData);
                     }
-
                     Assert.notNull(inventory.findMatchingLicenseMetaData(artifact), "cannot find just added meta data");
                 } else if (licenses.size() == 1 && licenses.get(0).contains(" OR ")) {
                     LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
@@ -87,7 +85,6 @@ public class InferMetaDataProcessor extends AbstractInputInventoryBasedProcessor
                         licenseMetaData.setNotice("TODO: choose and explain licenses in effect; classify component");
                         inventory.getLicenseMetaData().add(licenseMetaData);
                     }
-
                 }
             }
         }

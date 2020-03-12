@@ -380,7 +380,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             }
         }
 
-        // check that all component folders exist is missing
+        // check that all component folders exist
         for (String component : componentsFromInventory) {
             final File componentFolder = new File(componentsBaseDir, component);
             if (!componentFolder.exists() && !new File(componentsTargetDir, component).exists()) {

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_package-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>$reportContext.combinedTitle("Package", true)</title>
+<topic id="tpc_packages-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Packages", true)</title>
     <body>
 #set($components=$inventory.evaluateComponentsInContext("package"))
 #if($components.isEmpty())
@@ -23,8 +23,8 @@
                     <thead>
                         <row>
                             <entry colname="COLSPEC0" valign="top">Component</entry>
-                            <entry colname="COLSPEC1" valign="top">Package(s)</entry>
-                            <entry colname="COLSPEC3" valign="top">Associated License(s)</entry>
+                            <entry colname="COLSPEC1" valign="top">Packages</entry>
+                            <entry colname="COLSPEC2" valign="top">Associated License(s)</entry>
                         </row>
                     </thead>
 
@@ -42,7 +42,7 @@
                     #set($license=$name.get(0).getLicense())
                     #set($folder=$inventory.getLicenseFolder($license))
                     #if($folder)
-                        <entry><xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref></entry>
+                        <entry>$license.trim()</entry>
                     #else
                         <entry>#if($license)$license.trim()#else&nbsp;#end</entry>
                     #end

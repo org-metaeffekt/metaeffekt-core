@@ -2,49 +2,46 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_notices-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("License Notices", true)</title>
-#foreach($license in $inventory.evaluateLicenses(false))
-#set($name=$inventory.evaluateNotices($license))
-#if(!$name.isEmpty())
-        <topic id="tpc_license_$inventory.deriveLicenseId($license)">
-            <title>$license</title>
-            <body>
-
-#foreach($artifactLicenseData in $name)
-
-                <section>
-                    <title>Component $artifactLicenseData.componentName (<codeph>$artifactLicenseData.componentVersion</codeph>)</title>
-                    <p>
-                        <table otherprops="wide">
-                            <title>Component $artifactLicenseData.componentName (<codeph>$artifactLicenseData.componentVersion)</codeph>$reportContext.inContextOf()</title>
-                            <tgroup cols="2">
-                                <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
-                                <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
-                                <thead>
-                                    <row>
-                                        <entry colname="COLSPEC0" valign="top">File / Package / Web Module</entry>
-                                        <entry colname="COLSPEC1" valign="top">Version</entry>
-                                    </row>
-                                </thead>
-                                <tbody>
-#foreach($artifact in $artifactLicenseData.artifacts)
+#set($licenseMetaDataList=$inventory.evaluateComponentsWithLicenseMetaData())
+#if($licenseMetaDataList.isEmpty())
+    <body>
+        No component with license notices covered.
+    </body>
+#else
+#foreach($licenseMetaData in $licenseMetaDataList)
+    <topic id="tpc_component_notice_$inventory.deriveLicenseId($licenseMetaData)">
+        <title>Component $licenseMetaData.component</title>
+        <body>
+            <p>
+                <table otherprops="wide">
+                    <title>Component notice $licenseMetaData.component$reportContext.inContextOf()</title>
+                    <tgroup cols="2">
+                        <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+                        <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
+                        <thead>
+                            <row>
+                                <entry colname="COLSPEC0" valign="top">File / Package / Web Module</entry>
+                                <entry colname="COLSPEC1" valign="top">Version</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+#foreach($artifact in $inventory.evaluateArtifactsInComponent($licenseMetaData))
     <row>
-        <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>#end
-
+        <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
+#end
 <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
         </entry>
         <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
-        #set($license=$artifact.getLicense())
     </row>
 #end
-                                </tbody>
-                            </tgroup>
-                        </table>
-                    </p>
-#if($artifactLicenseData.licenseMetaData.getNotice())$artifactLicenseData.licenseMetaData.getNotice().trim()#else&nbsp;#end
-                </section>
-#end
-            </body>
-        </topic>
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+#set($notice=$licenseMetaData.getCompleteNotice())
+#if($notice)$notice.trim()#else&nbsp;#end
+        </body>
+    </topic>
 #end
 #end
 </topic>
