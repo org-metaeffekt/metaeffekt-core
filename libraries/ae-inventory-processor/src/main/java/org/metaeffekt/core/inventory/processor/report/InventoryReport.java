@@ -326,6 +326,7 @@ public class InventoryReport {
                     }
                 }
             } else {
+                classifier += "[unknown]";
                 localUnknown = true;
                 if (failOnUnknown) {
                     localError = true;
@@ -354,7 +355,7 @@ public class InventoryReport {
                             copy.set(Constants.KEY_WILDCARD_MATCH, STRING_TRUE);
                         } catch (Exception e) {
                             LOG.error("Cannot extract version from localArtifact {}. To express that no version information " +
-                                    "is available use a different version keyword such as 'undefined'.", id);
+                                    "is available use a different version keyword such as 'undefined' or 'unspecific'.", id);
                         }
                     } else {
                         copy.setVerified(true);
@@ -378,8 +379,10 @@ public class InventoryReport {
                     reportArtifact = matchedReferenceArtifact;
                 } else {
                     projectInventory.getArtifacts().add(localArtifact);
+                    localArtifact.setManaged(true);
                 }
 
+                // log information
                 if (classifier.length() > 0) {
                     String artifactQualifier = reportArtifact.createStringRepresentation();
                     if (StringUtils.hasText(comment)) {
@@ -639,10 +642,14 @@ public class InventoryReport {
                 continue;
             }
 
-            String sourceLicense = artifact.getLicense();
+            final String componentName = artifact.getComponent();
+            final String sourceLicense = artifact.getLicense();
 
             // without source license, no license meta data, no license texts / notices
             if (!StringUtils.hasText(sourceLicense)) {
+                continue;
+            }
+            if (!StringUtils.hasText(componentName)) {
                 continue;
             }
 
@@ -658,19 +665,22 @@ public class InventoryReport {
 
             // try to resolve component license meta data if available
             final LicenseMetaData matchingLicenseMetaData = projectInventory.
-                    findMatchingLicenseMetaData(artifact.getComponent(), sourceLicense, version);
+                    findMatchingLicenseMetaData(componentName, sourceLicense, version);
 
             // derive effective licenses
             String effectiveLicense = artifact.getLicense();
             boolean isMetaDataVersionWildcard = false;
             if (matchingLicenseMetaData != null) {
                 effectiveLicense = matchingLicenseMetaData.deriveLicenseInEffect();
-                isMetaDataVersionWildcard = ASTERISK.equalsIgnoreCase(matchingLicenseMetaData.getVersion());
+
+                // NOTE: whether the version-specific component folder is used sololy dependeds on the version
+                // attached to the artifact. A wildcard on LMD-level has different semantics. Therefore
+                // the matchingLicenseMetaData.getVersion() is not relevant here.
             }
             effectiveLicense = effectiveLicense.replaceAll("/s*,/s*", "|");
 
             // derive component folder
-            final String componentFolderName = LicenseMetaData.deriveComponentFolderName(artifact.getComponent());
+            final String componentFolderName = LicenseMetaData.deriveComponentFolderName(componentName);
 
             // derive version (unspecific, specific)
             final String versionUnspecificPath = componentFolderName;

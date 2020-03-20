@@ -219,9 +219,7 @@ public class DirectoryInventoryScan {
     }
 
     private File unpackIfPossible(File archive, boolean includeJarExtension) {
-
-        System.out.println("Unpacking " + archive.getAbsolutePath());
-
+        LOG.info("Expanding {}", archive.getAbsolutePath());
 
         final Project project = new Project();
         project.setBaseDir(archive.getParentFile());
