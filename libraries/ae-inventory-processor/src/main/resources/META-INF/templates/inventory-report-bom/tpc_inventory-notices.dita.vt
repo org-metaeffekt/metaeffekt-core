@@ -2,19 +2,20 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_notices-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("License Notices", true)</title>
-#set($licenseMetaDataList=$inventory.evaluateComponentsWithLicenseMetaData())
-#if($licenseMetaDataList.isEmpty())
+#set($componentNoticeList=$inventory.evaluateComponentNotices())
+#if($componentNoticeList.isEmpty())
     <body>
         No component with license notices covered.
     </body>
 #else
-#foreach($licenseMetaData in $licenseMetaDataList)
-    <topic id="tpc_component_notice_$inventory.deriveLicenseId($licenseMetaData)">
-        <title>Component $licenseMetaData.component</title>
+#foreach($componentNotice in $componentNoticeList)
+    <topic id="tpc_component_notice_$inventory.deriveLicenseId($componentNotice.getComponentName())">
+        <title>Component $componentNotice.getComponentName()</title>
         <body>
+#foreach($artifactNotice in $componentNotice.getArtifactNotices())
             <p>
                 <table otherprops="wide">
-                    <title>Component notice $licenseMetaData.component$reportContext.inContextOf()</title>
+                    <title>Component notice $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
                     <tgroup cols="2">
                         <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
                         <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
@@ -25,7 +26,7 @@
                             </row>
                         </thead>
                         <tbody>
-#foreach($artifact in $inventory.evaluateArtifactsInComponent($licenseMetaData))
+#foreach($artifact in $artifactNotice.getArtifacts())
     <row>
         <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
 #end
@@ -38,8 +39,9 @@
                     </tgroup>
                 </table>
             </p>
-#set($notice=$licenseMetaData.getCompleteNotice())
+#set($notice=$artifactNotice.getNotice())
 #if($notice)$notice.trim()#else&nbsp;#end
+#end
         </body>
     </topic>
 #end

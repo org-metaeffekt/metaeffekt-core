@@ -413,50 +413,40 @@ public class Inventory {
         return new ArrayList<>(map.values());
     }
 
-    public List<LicenseMetaData> evaluateComponentsWithLicenseMetaData() {
-        List<LicenseMetaData> licenseMetaDataList = new ArrayList<>();
-        Set<String> qualifiers = new HashSet<>();
+    /**
+     * Used by tpc_inventory-notices.dita.vt.
+     *
+     * @return
+     */
+    public List<ComponentNotice> evaluateComponentNotices() {
+        List<ComponentNotice> componentNotices = new ArrayList<>();
+
+        Map<String, ComponentNotice> componentNameComponentNoticeMap = new HashMap<>();
+
         // evaluate all artifacts
         for (Artifact artifact : getArtifacts()) {
             final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact);
             if (matchingLicenseMetaData != null) {
-                final String qualifier = matchingLicenseMetaData.deriveQualifier();
-                if (!qualifiers.contains(qualifier)) {
-                    licenseMetaDataList.add(matchingLicenseMetaData);
-                    qualifiers.add(qualifier);
+                final String componentName = matchingLicenseMetaData.getComponent();
+                if (componentName == null) continue;
+                ComponentNotice componentNotice = componentNameComponentNoticeMap.get(componentName);
+                if (componentNotice == null) {
+                    componentNotice = new ComponentNotice(componentName);
+                    componentNameComponentNoticeMap.put(componentName, componentNotice);
+                    componentNotices.add(componentNotice);
                 }
+
+                componentNotice.add(artifact, matchingLicenseMetaData);
             }
         }
 
-        Collections.sort(licenseMetaDataList, new Comparator<LicenseMetaData>() {
+        Collections.sort(componentNotices, new Comparator<ComponentNotice>() {
             @Override
-            public int compare(LicenseMetaData o1, LicenseMetaData o2) {
-                String c1 = o1.getComponent() + "-" + o1.getVersion();
-                String c2 = o2.getComponent() + "-" + o2.getVersion();
-                return c1.toLowerCase().compareTo(c2.toLowerCase());
+            public int compare(ComponentNotice cn1, ComponentNotice cn2) {
+                return cn1.getComponentName().compareToIgnoreCase(cn2.getComponentName());
             }
         });
-        return licenseMetaDataList;
-
-    }
-
-    public List<Artifact> evaluateArtifactsInComponent(LicenseMetaData licenseMetaData) {
-        List<Artifact> artifacts = new ArrayList<>();
-        for (Artifact artifact : getArtifacts()) {
-            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact);
-            if (matchingLicenseMetaData == licenseMetaData) {
-                artifacts.add(artifact);
-            }
-        }
-        Collections.sort(artifacts, new Comparator<Artifact>() {
-            @Override
-            public int compare(Artifact o1, Artifact o2) {
-                String c1 = o1.getId() + "-" + o1.getVersion();
-                String c2 = o2.getId() + "-" + o2.getVersion();
-                return c1.toLowerCase().compareTo(c2.toLowerCase());
-            }
-        });
-        return artifacts;
+        return componentNotices;
     }
 
     public List<ArtifactLicenseData> evaluateComponents(String effectiveLicense) {
@@ -490,7 +480,13 @@ public class Inventory {
                 }
             }
         }
-        return new ArrayList<>(map.values());
+        final ArrayList<ArtifactLicenseData> artifactLicenseData = new ArrayList<>(map.values());
+        Collections.sort(artifactLicenseData, (o1, o2) -> Objects.compare(artifactSortString(o1), artifactSortString(o2), String::compareToIgnoreCase));
+        return artifactLicenseData;
+    }
+
+    private String artifactSortString(ArtifactLicenseData o1) {
+        return o1.getComponentName() + "-" + o1.getComponentVersion();
     }
 
     private boolean matches(String effectiveLicense, LicenseMetaData match) {
