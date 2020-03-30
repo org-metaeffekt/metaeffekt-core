@@ -18,9 +18,13 @@ package org.metaeffekt.core.inventory.processor;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +82,57 @@ public class InventoryScanReportTest {
         report.setScanExcludes(new String[]{"-nothing-"});
 
         report.createReport();
+    }
+
+    @Ignore
+    @Test
+    public void inventoryScanReport() throws Exception {
+        final InventoryScanReport report = setupReport();
+
+        report.createReport();
+
+    }
+
+    private InventoryScanReport setupReport() {
+        final InventoryScanReport report = new InventoryScanReport();
+
+        report.setReferenceInventoryDir(new File("XXX/inventory/src/main/resources"));
+        report.setReferenceInventoryIncludes("**/*.xls");
+        report.setReferenceComponentPath("XXX/inventory/src/main/resources/components");
+        report.setReferenceLicensePath("XXX/inventory/src/main/resources/licenses");
+
+        final File inputDir = new File("XXX/target/contents");
+        final File scanDir = new File("XXX/target/bomscan");
+
+        final String[] scanIncludes = new String[] {"**/*"};
+        final String[] scanExcludes = new String[] {"--none--"};
+
+        report.setInputDirectory(inputDir);
+        report.setScanDirectory(scanDir);
+        report.setScanExcludes(scanExcludes);
+        report.setScanIncludes(scanIncludes);
+
+        report.setTargetInventoryDir(new File("target"));
+        report.setTargetInventoryPath("result-inventory.xls");
+        return report;
+    }
+
+    @Ignore
+    @Test
+    public void createReportFromScannedInventory() throws Exception  {
+        Inventory scanInventory = new InventoryReader().readInventory(new File("target/scan-inventory.xls"));
+
+        final InventoryScanReport report = setupReport();
+
+        report.createReport(null, scanInventory);
+
+        Inventory resultInventory = new InventoryReader().readInventory(new File("target/result-inventory.xls"));
+
+        for (Artifact artifact : resultInventory.getArtifacts()) {
+            if (artifact.getId().contains("Java Runtime")) {
+                System.out.println(artifact.createCompareStringRepresentation());
+            }
+        }
     }
 
 }

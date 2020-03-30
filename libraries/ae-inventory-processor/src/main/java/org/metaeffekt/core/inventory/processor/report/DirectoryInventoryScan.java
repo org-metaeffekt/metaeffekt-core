@@ -92,59 +92,80 @@ public class DirectoryInventoryScan {
         return scanInventory;
     }
 
+    private static class MatchResult {
+        ComponentPatternData componentPatternData;
+        File anchorFile;
+        MatchResult(ComponentPatternData componentPatternData, File anchorFile) {
+            this.componentPatternData = componentPatternData;
+            this.anchorFile = anchorFile;
+        }
+    }
+
     private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes, Inventory globalInventory, Inventory scanInventory) {
         final String[] filesArray = scanDirectory(scanDir, scanIncludes, scanExcludes);
 
         List<File> files = new ArrayList<>();
         Arrays.stream(filesArray).map(f -> new File(scanDir, f)).forEach(f -> files.add(f));
 
-        List<ComponentPatternData> matchedComponentDataOnAnchor = new ArrayList<>();
+        List<MatchResult> matchedComponentDataOnAnchor = new ArrayList<>();
         for (ComponentPatternData cpd : globalInventory.getComponentPatternData()) {
-            LOG.info("Checking component pattern: {}", cpd.createCompareStringRepresentation());
+            LOG.debug("Checking component pattern: {}", cpd.createCompareStringRepresentation());
             String versionAnchor = File.separatorChar + cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR);
             String anchorChecksum = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM);
             for (File file : files) {
-                if (file.getPath().endsWith(versionAnchor)) {
-                    String checksum = FileUtils.computeChecksum(file);
-                    ComponentPatternData copyCpd = new ComponentPatternData(cpd);
+                if (normalizePath(file.getPath()).endsWith(normalizePath(versionAnchor))) {
+                    final String checksum = FileUtils.computeChecksum(file);
+                    final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
                     if (!anchorChecksum.equalsIgnoreCase(Constants.ASTERISK) &&
                             !anchorChecksum.equals(checksum)) {
-                        LOG.warn("Anchor checksum mismatch: " + file.getPath());
-                        LOG.warn("Expected checksum :{}; actual file checksum: {}", anchorChecksum, checksum);
-                        // since the checksum does not match we modify the CPD with a missing version.
-                        // this will cause a validation message later, but will give the user enough information
-                        // to cure the inventory.
-                        copyCpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, "unknown");
+                        LOG.debug("Anchor checksum mismatch: " + file.getPath());
+                        LOG.debug("Expected checksum :{}; actual file checksum: {}", anchorChecksum, checksum);
+                    }  else {
+                        copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+                        matchedComponentDataOnAnchor.add(new MatchResult(copyCpd, file));
+
+                        // derive artifact from matched component
+                        Artifact derivedArtifact = new Artifact();
+                        derivedArtifact.setId(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_PART));
+                        derivedArtifact.setComponent(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_NAME));
+                        derivedArtifact.setVersion(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
+                        derivedArtifact.addProject(FileUtils.asRelativePath(scanBaseDir, file));
+                        scanInventory.getArtifacts().add(derivedArtifact);
                     }
-
-                    copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
-                    matchedComponentDataOnAnchor.add(copyCpd);
-                    scanInventory.getComponentPatternData().add(copyCpd);
-
-                    // derive artifact from matched component
-                    Artifact derivedArtifact = new Artifact();
-                    derivedArtifact.setId(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_PART));
-                    derivedArtifact.setComponent(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_NAME));
-                    derivedArtifact.setVersion(copyCpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
-                    derivedArtifact.addProject(FileUtils.asRelativePath(scanBaseDir, file));
-                    scanInventory.getArtifacts().add(derivedArtifact);
                 }
             }
         }
 
         // remove the matched file covered by the matched components
-        for (ComponentPatternData cpd : matchedComponentDataOnAnchor) {
-            String includePattern = File.separatorChar + cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN);
+        for (MatchResult matchResult : matchedComponentDataOnAnchor) {
+            ComponentPatternData cpd = matchResult.componentPatternData;
+            File anchorFile = matchResult.anchorFile;
+
+            String versionAnchor = normalizePath(cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR));
+
+            File relativeRoot = anchorFile.getParentFile();
+            while (!new File(relativeRoot, versionAnchor).exists()) {
+                if (relativeRoot.getParentFile() == null) {
+                    relativeRoot = scanBaseDir;
+                    break;
+                }
+                relativeRoot = relativeRoot.getParentFile();
+            }
+
+
+            String baseDir = FileUtils.asRelativePath(scanBaseDir, relativeRoot);
+
+            String includePattern = baseDir + File.separatorChar + cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN);
             String excludePattern = cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN);
             String modifiedExcludePattern = File.separatorChar + excludePattern;
 
             List<File> matchedFiles = new ArrayList<>();
             for (File file : files) {
-                String path = file.getPath();
+                String path = FileUtils.asRelativePath(scanBaseDir, file);
                 if (ANT_PATH_MATCHER.match(includePattern, path)) {
                     if (StringUtils.isEmpty(excludePattern) ||
                             !ANT_PATH_MATCHER.match(modifiedExcludePattern, path)) {
-                        LOG.debug("Filtered component file: {}", file);
+                        LOG.debug("Filtered component file: {} for component pattern {}", file, cpd.deriveQualifier());
                         matchedFiles.add(file);
                     }
                 }
@@ -156,24 +177,29 @@ public class DirectoryInventoryScan {
             final String id = file.getName();
             final String checksum = FileUtils.computeChecksum(file);
             final String idFullPath = file.getPath();
-            Artifact artifact = globalInventory.findArtifact(id, checksum);
+            Artifact artifact = globalInventory.findArtifactByIdAndChecksum(id, checksum);
 
             if (artifact == null) {
-                artifact = globalInventory.findArtifact(idFullPath, checksum);
+                artifact = globalInventory.findArtifactByIdAndChecksum(idFullPath, checksum);
             }
 
             // match on file name
             if (artifact == null) {
                 artifact = globalInventory.findArtifact(id, true);
+                if (!matchesChecksumIfAvailable(artifact, checksum)) {
+                    artifact = null;
+                }
             }
 
             // match on file path
             if (artifact == null) {
                 artifact = globalInventory.findArtifact(idFullPath, true);
+                if (!matchesChecksumIfAvailable(artifact, checksum)) {
+                    artifact = null;
+                }
             }
 
             if (artifact == null) {
-
                 boolean unpacked = false;
 
                 if (enableImplicitUnpack) {
@@ -218,8 +244,20 @@ public class DirectoryInventoryScan {
         }
     }
 
+    private String normalizePath(String path) {
+        final String normalizedPath = path.replace("\\", File.separator);
+        return normalizedPath.replace("/", File.separator);
+    }
+
+    private boolean matchesChecksumIfAvailable(Artifact artifact, String checksum) {
+        if (artifact == null) return false;
+        final String artifactChecksum = artifact.getChecksum();
+        if (!StringUtils.hasText(artifactChecksum)) return true; // no checksum available
+        return artifactChecksum.equals(checksum);
+    }
+
     private File unpackIfPossible(File archive, boolean includeJarExtension) {
-        LOG.info("Expanding {}", archive.getAbsolutePath());
+        LOG.debug("Expanding {}", archive.getAbsolutePath());
 
         final Project project = new Project();
         project.setBaseDir(archive.getParentFile());

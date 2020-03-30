@@ -45,6 +45,13 @@ public class InventoryScanReport extends InventoryReport {
 
         Inventory scanInventory = directoryScan.createScanInventory();
 
+        return createReport(globalInventory, scanInventory);
+    }
+
+    @Override
+    public boolean createReport(Inventory globalInventory, Inventory scanInventory) throws Exception {
+        if (globalInventory == null) globalInventory = readGlobalInventory();
+
         // insert (potentially incomplete) artifacts for reporting
         // this supports adding licenses and obligations into the
         // report, which are not covered by the repository.
@@ -53,9 +60,8 @@ public class InventoryScanReport extends InventoryReport {
         }
 
         // produce reports and write files to disk
-        return createReport(globalInventory, scanInventory);
+        return super.createReport(globalInventory, scanInventory);
     }
-
 
     public File getScanDirectory() {
         return scanDirectory;

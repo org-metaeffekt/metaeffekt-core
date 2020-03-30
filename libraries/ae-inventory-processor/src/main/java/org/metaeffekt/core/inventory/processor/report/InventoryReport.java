@@ -209,7 +209,7 @@ public class InventoryReport {
         Inventory projectInventory = new Inventory();
         this.lastProjectInventory = projectInventory;
 
-        // transfer component patterns from scan inventory
+        // transfer component patterns from scan inventory (these may include wildcard checksum replacments)
         projectInventory.inheritComponentPatterns(localInventory, false);
 
         localInventory.sortArtifacts();
@@ -242,8 +242,7 @@ public class InventoryReport {
 
             boolean localMissingLicense = false;
 
-            Artifact matchedReferenceArtifact =
-                globalInventory.findArtifactByIdAndChecksum(localArtifact.getId(), localArtifact.getChecksum());
+            Artifact matchedReferenceArtifact = globalInventory.findArtifactByIdAndChecksum(localArtifact.getId(), localArtifact.getChecksum());
             if (matchedReferenceArtifact == null) {
                 matchedReferenceArtifact = globalInventory.findArtifact(localArtifact);
             }
@@ -444,7 +443,6 @@ public class InventoryReport {
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         projectInventory.filterVulnerabilityMetaData();
-
 
         // write reports
         if (inventoryBomReportEnabled) {

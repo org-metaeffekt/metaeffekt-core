@@ -252,6 +252,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         // check whether we have duplicate ids
         for (Artifact artifact : inventory.getArtifacts()) {
             String artifactChecksum = normalizedChecksum(artifact);
+            String artifactVersion = normalizedVersion(artifact);
 
             if (StringUtils.isNotBlank(artifact.getId())) {
                 Set<Artifact> alreadyReported = new HashSet<>();
@@ -259,14 +260,25 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     Artifact duplicateArtifact = inventory.findMatchingId(artifact);
                     if (duplicateArtifact != null) {
                         String duplicateChecksum = normalizedChecksum(duplicateArtifact);
+                        String duplicateVersion = normalizedVersion(duplicateArtifact);
+
                         // artifacts with different checksum are not reported
-                        if (Objects.equals(artifactChecksum, duplicateChecksum)) {
-                            log(format("%04d: Duplicate artifact detected: %s / %s.",
-                                    index++, artifact.getId(), duplicateArtifact.getId()));
-                            log(format("      Proposal: remove duplicate artifacts from inventory."));
-                            alreadyReported.add(duplicateArtifact);
-                            error = true;
+                        if (!Objects.equals(artifactChecksum, duplicateChecksum)) {
+                            continue;
                         }
+
+                        // artifacts with different version are not reported (as long as they don't have (identical) checksums)
+                        if (!Objects.equals(artifactVersion, duplicateVersion)) {
+                            if (StringUtils.isEmpty(artifactChecksum)) {
+                                continue;
+                            }
+                        }
+
+                        log(format("%04d: Duplicate artifact detected: %s / %s.",
+                                index++, artifact.getId(), duplicateArtifact.getId()));
+                        log(format("      Proposal: remove duplicate artifacts from inventory."));
+                        alreadyReported.add(duplicateArtifact);
+                        error = true;
                     }
                 }
             }
@@ -517,6 +529,14 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         if (error && isFailOnError()) {
             throw new IllegalStateException("Validation error detected. See previous log output.");
         }
+    }
+
+    private String normalizedVersion(Artifact artifact) {
+        String normalizedVersion = artifact.getVersion();
+        if (StringUtils.isBlank(normalizedVersion)) {
+            normalizedVersion = null;
+        }
+        return normalizedVersion;
     }
 
     private String normalizedChecksum(Artifact artifact) {

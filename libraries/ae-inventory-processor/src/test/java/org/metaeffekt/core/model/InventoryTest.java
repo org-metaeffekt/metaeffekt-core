@@ -116,6 +116,117 @@ public class InventoryTest {
     }
 
     @Test
+    public void testMatch_withVersion() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test-1.0.0.jar");
+        artifact.setVersion("1.0.0");
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setVersion("1.0.0");
+        candidate.setId("test-1.0.0.jar");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact != null);
+        Assert.assertEquals(matchedArtifact.getVersion(), "1.0.0");
+    }
+
+    @Test
+    public void testMatch_withoutVersion() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test-1.0.0.jar");
+        artifact.setVersion("1.0.0");
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setId("test-1.0.0.jar");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact != null);
+        Assert.assertEquals(matchedArtifact.getVersion(), "1.0.0");
+    }
+
+    @Test
+    public void testMatch_withChecksumDifference() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test-1.0.0.jar");
+        artifact.setChecksum("A");
+        artifact.setVersion("1.0.0");
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setId("test-1.0.0.jar");
+        candidate.setVersion("1.0.0");
+        candidate.setChecksum("B");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact == null);
+    }
+
+    @Test
+    public void testMatch_withVersionDifference() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test-1.0.0.jar");
+        artifact.setVersion("1.0.0");
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setId("test-1.0.0.jar");
+        candidate.setVersion("1.0.1");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact == null);
+    }
+
+    @Test
+    public void testMatch_withVersionDifferencePlaceholder() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test.jar");
+        artifact.setVersion("${PROJECTVERSION}");
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setId("test.jar");
+        candidate.setVersion("1");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact == null);
+    }
+
+    @Test
+    public void testMatch_withVersionDifferencePlaceholderBOth() {
+        Inventory inventory = new Inventory();
+        final Artifact artifact = new Artifact();
+        artifact.setId("test.jar");
+        artifact.setVersion("${PROJECTVERSION}");
+        artifact.deriveArtifactId();
+        inventory.getArtifacts().add(artifact);
+
+        final Artifact candidate = new Artifact();
+        candidate.setId("test.jar");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact != null);
+        Assert.assertEquals(matchedArtifact.getVersion(), "${PROJECTVERSION}");
+    }
+
+    @Test
     public void testWildcardMatch_AsteriskAsPrefix() {
         Inventory inventory = new Inventory();
         final Artifact artifact = new Artifact();

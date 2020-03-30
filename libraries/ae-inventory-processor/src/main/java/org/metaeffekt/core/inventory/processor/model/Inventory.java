@@ -84,16 +84,23 @@ public class Inventory {
     }
 
     public void mergeDuplicates() {
-        Map<String, Set<Artifact>> artifactMap = new HashMap<String, Set<Artifact>>();
+        Map<String, Set<Artifact>> artifactMap = new HashMap<>();
 
         for (Artifact artifact : artifacts) {
             artifact.deriveArtifactId();
 
+            // in case no id is provided (legacy case) we use the component name as id.
             String key = artifact.getId();
             if (!StringUtils.hasText(key)) {
                 key = artifact.getComponent();
             }
 
+            // append checksum (may be null)
+            if (StringUtils.hasText(artifact.getChecksum())) {
+                key += "^" + artifact.getChecksum();
+            }
+
+            // append version and groupid
             if (StringUtils.hasText(key)) {
                 key += "^" + artifact.getVersion() + "^" + artifact.getGroupId();
                 Set<Artifact> set = artifactMap.get(key);
@@ -145,17 +152,45 @@ public class Inventory {
         return null;
     }
 
-    private boolean matchesChecksumOrChecksumsIncomplete(Artifact artifact, Artifact candidate) {
-        String left = artifact.getChecksum();
-        String right = candidate.getChecksum();
-        if (!StringUtils.hasText(left)) {
-            return true;
-        }
-        if (!StringUtils.hasText(right)) {
-            return true;
-        }
-        if (left.equals(right)) return true;
+    private boolean isVariableVersion(String version) {
+        if (isWildcardVersion(version)) return true;
+        if (version == null) return true;
+        if (StringUtils.isEmpty(version)) return true;
+        if (version.startsWith("$")) return true;
         return false;
+    }
+
+    private boolean matchesChecksumOrChecksumsIncomplete(Artifact artifact, Artifact candidate) {
+        String leftChecksum = artifact.getChecksum();
+        String rightChecksum = candidate.getChecksum();
+
+        String leftVersion = artifact.getVersion();
+        String rightVersion = candidate.getVersion();
+
+        // check version constellation
+        if (!Objects.equals(rightVersion, leftVersion)) {
+            // if the versions are not equal they are either variable
+            if (!isVariableVersion(leftVersion) && !isVariableVersion(rightVersion)) {
+                return false;
+            }
+            if (isVariableVersion(rightVersion) && !isVariableVersion(leftVersion)) {
+                if (!isWildcardVersion(rightVersion)) return false;
+            }
+        }
+
+        // now compare checksums
+        if (!StringUtils.hasText(leftChecksum)) {
+            return true;
+        }
+        if (!StringUtils.hasText(rightChecksum)) {
+            return true;
+        }
+        if (leftChecksum.equals(rightChecksum)) return true;
+        return false;
+    }
+
+    private boolean isWildcardVersion(String rightVersion) {
+        return "*".equals(rightVersion);
     }
 
     public Artifact findArtifactByIdAndChecksum(String id, String checksum) {

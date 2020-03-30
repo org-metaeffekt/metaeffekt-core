@@ -187,7 +187,7 @@ public class RepositoryReportTest {
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
         Assert.assertNotNull(inventory.getComponentPatternData());
-        Assert.assertEquals(2, inventory.getComponentPatternData().size());
+        Assert.assertEquals(4, inventory.getComponentPatternData().size());
 
         Assert.assertEquals("org/metaeffekt/core/**/*", inventory.getComponentPatternData().get(0).deriveQualifier());
         Assert.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes:0.21.0:org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
@@ -202,7 +202,7 @@ public class RepositoryReportTest {
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
         Assert.assertNotNull(inventory.getVulnerabilityMetaData());
-        Assert.assertEquals(2, inventory.getComponentPatternData().size());
+        Assert.assertEquals(16, inventory.getVulnerabilityMetaData().size());
 
         List<VulnerabilityMetaData> applicableVulnerabilities = VulnerabilityMetaData.filterApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
         Assert.assertEquals(3, applicableVulnerabilities.size());
