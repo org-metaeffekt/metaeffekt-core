@@ -155,9 +155,9 @@ public class DirectoryInventoryScan {
 
             String baseDir = FileUtils.asRelativePath(scanBaseDir, relativeRoot);
 
-            String includePattern = baseDir + File.separatorChar + cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN);
-            String excludePattern = cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN);
-            String modifiedExcludePattern = File.separatorChar + excludePattern;
+            String includePattern = normalizePathToLinux(baseDir + File.separatorChar + cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
+            String excludePattern = normalizePathToLinux(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
+            String modifiedExcludePattern = normalizePathToLinux(File.separatorChar + excludePattern);
 
             List<File> matchedFiles = new ArrayList<>();
             for (File file : files) {
@@ -245,8 +245,14 @@ public class DirectoryInventoryScan {
     }
 
     private String normalizePath(String path) {
+        if (path == null) return null;
         final String normalizedPath = path.replace("\\", File.separator);
         return normalizedPath.replace("/", File.separator);
+    }
+
+    private String normalizePathToLinux(String path) {
+        if (path == null) return null;
+        return path.replace("\\", "/");
     }
 
     private boolean matchesChecksumIfAvailable(Artifact artifact, String checksum) {
