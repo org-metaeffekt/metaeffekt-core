@@ -102,9 +102,14 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                 getProperty(DELETE_COMPONENT_FOLDERS, STRING_FALSE));
 
         final List<String> licenseFoldersFromInventory = new ArrayList<>();
-        final List<String> componentsFromInventory = new ArrayList<>();
+
+        // the component folders derived from the inventory
+        final List<String> componentFoldersFromInventory = new ArrayList<>();
+
         final List<String> licenseReferenceFromInventory = new ArrayList<>();
+
         final Set<String> licenseMetaDataFromArtifacts = new HashSet<>();
+
         final Set<String> licensesRequiringNotice = new HashSet<>();
 
         int index = 1;
@@ -186,19 +191,18 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
                 if (StringUtils.isNotBlank(componentName)) {
                     boolean wildcardMatchPropagation = Boolean.valueOf(artifact.get(KEY_WILDCARD_MATCH, STRING_FALSE));
-
                     boolean wildcardMatch = ASTERISK.equals(version);
                     boolean placeholderMatch = version != null &&
                         version.startsWith(VERSION_PLACHOLDER_PREFIX) && version.endsWith(VERSION_PLACHOLDER_SUFFIX);
 
-                    StringBuilder sb = new StringBuilder();
+                    String componentFolder;
                     if (wildcardMatch || wildcardMatchPropagation || placeholderMatch) {
-                        sb.append(LicenseMetaData.normalizeId(componentName));
+                        componentFolder = LicenseMetaData.deriveComponentFolderName(componentName);
                     } else {
-                        sb.append(LicenseMetaData.normalizeId(componentName + "-" + version));
+                        componentFolder = LicenseMetaData.deriveComponentFolderName(componentName, version);
                     }
-                    if (!componentsFromInventory.contains(sb.toString())) {
-                        componentsFromInventory.add(sb.toString());
+                    if (!componentFoldersFromInventory.contains(componentFolder)) {
+                        componentFoldersFromInventory.add(componentFolder);
                     }
 
                     // Add string representation using given version (including wildcard)
@@ -341,13 +345,13 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         }
 
         // iterate component level for each component folder
-        for (String component : componentFoldersFromDirectory) {
+        for (String componentFolder : componentFoldersFromDirectory) {
             // check whether this folder is required
-            if (!componentsFromInventory.contains(component)) {
-                if ((manageComponentFolders && isEmptyFolder(componentsBaseDir, component)) || deleteComponentFolders ) {
-                    removeFolder(componentsBaseDir, component);
+            if (!componentFoldersFromInventory.contains(componentFolder)) {
+                if ((manageComponentFolders && isEmptyFolder(componentsBaseDir, componentFolder)) || deleteComponentFolders ) {
+                    removeFolder(componentsBaseDir, componentFolder);
                 } else {
-                    log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, component));
+                    log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, componentFolder));
                     log(format("      Proposal: remove the folder."));
                     error = true;
                 }
@@ -393,7 +397,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         }
 
         // check that all component folders exist
-        for (String component : componentsFromInventory) {
+        for (String component : componentFoldersFromInventory) {
             final File componentFolder = new File(componentsBaseDir, component);
             if (!componentFolder.exists() && !new File(componentsTargetDir, component).exists()) {
                 if (manageComponentFolders) {
@@ -407,7 +411,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         }
 
         // check whether component folder is empty
-        for (String component : componentsFromInventory) {
+        for (String component : componentFoldersFromInventory) {
             if (isEmptyFolder(componentsBaseDir, component) && isEmptyFolder(componentsTargetDir, component )) {
                 log(format("%04d: Component folder '%s' does not contain any license or notice files.", index++, component));
                 log(format("      Proposal: add component specific license and/or notice to the component folder."));

@@ -216,7 +216,7 @@ public class DirectoryInventoryScan {
                     Artifact newArtifact = new Artifact();
                     newArtifact.setId(id);
                     newArtifact.setChecksum(checksum);
-                    newArtifact.addProject(FileUtils.asRelativePath(scanDir, file));
+                    newArtifact.addProject(FileUtils.asRelativePath(scanBaseDir, file));
                     scanInventory.getArtifacts().add(newArtifact);
                 } else {
                     // NOTE: we should add the unpacked artifact level anyway; need to understand implications

@@ -90,6 +90,12 @@ public class LicenseMetaData extends AbstractModelBase {
         return normalizeId(componentName);
     }
 
+    public static String deriveComponentFolderName(String componentName, String version) {
+        if (componentName == null) return null;
+        if (StringUtils.isEmpty(version)) return deriveComponentFolderName(componentName);
+        return normalizeId(componentName + "-" + version);
+    }
+
     public static String normalizeId(String string) {
         String result = string.replace(" ", "-");
         result = result.replace("+", "");
