@@ -115,6 +115,34 @@ public class InventoryTest {
         Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
     }
 
+
+    @Test
+    public void testSpecificWildcardMatch() {
+        Inventory inventory = new Inventory();
+
+        final Artifact artifact1 = new Artifact();
+        artifact1.setId("test-" + ASTERISK + ".jar");
+        artifact1.setVersion(ASTERISK);
+        artifact1.deriveArtifactId();
+
+        final Artifact artifact2 = new Artifact();
+        artifact2.setId("test-lib-" + ASTERISK + ".jar");
+        artifact2.setVersion(ASTERISK);
+        artifact2.deriveArtifactId();
+
+        inventory.getArtifacts().add(artifact1);
+        inventory.getArtifacts().add(artifact2);
+
+        final Artifact candidate = new Artifact();
+        candidate.setVersion("1.0.0");
+        candidate.setId("test-lib-1.0.0.jar");
+        candidate.deriveArtifactId();
+
+        Artifact matchedArtifact = inventory.findArtifact(candidate, true);
+        Assert.assertTrue(matchedArtifact != null);
+        Assert.assertEquals(matchedArtifact.getId(), "test-lib-" + ASTERISK + ".jar");
+    }
+
     @Test
     public void testMatch_withVersion() {
         Inventory inventory = new Inventory();
@@ -209,7 +237,7 @@ public class InventoryTest {
     }
 
     @Test
-    public void testMatch_withVersionDifferencePlaceholderBOth() {
+    public void testMatch_withVersionDifferencePlaceholderBoth() {
         Inventory inventory = new Inventory();
         final Artifact artifact = new Artifact();
         artifact.setId("test.jar");

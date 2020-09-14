@@ -139,16 +139,22 @@ public class Inventory {
             }
         }
 
-        // the pure match on id is required to support filesystem scans (no maven metadata available)
+        // fuzzy check allows wildcards
         if (fuzzy) {
+
+            // the pure match on id is required to support filesystem scans (no maven metadata available)
             for (Artifact candidate : getArtifacts()) {
-                if (matchesOnId(artifact.getId(), candidate)) {
+                if (matchesOnId(artifact.getId(), candidate, false)) {
                     if (matchesChecksumOrChecksumsIncomplete(artifact, candidate)) {
                         return candidate;
                     }
                 }
             }
+
+            // pass with wildcards enabled
+            return findArtifactMatchingId(artifact.getId());
         }
+
         return null;
     }
 
@@ -240,7 +246,7 @@ public class Inventory {
         // 2nd pass: allow wildcard matches
         if (matchWildcards) {
             for (Artifact candidate : getArtifacts()) {
-                if (matchesOnId(id, candidate)) {
+                if (matchesOnId(id, candidate, true)) {
                     return candidate;
                 }
             }
@@ -248,8 +254,32 @@ public class Inventory {
         return null;
     }
 
+    /**
+     * Anticipates only wildcard matches.
+     *
+     * @param artifactId The artifact id to match.
+     *
+     * @return The best matched artifact or <code>null</code>.
+     */
+    private Artifact findArtifactMatchingId(String artifactId) {
+        int maximumMatchLength = -1;
+        Artifact longestIdMatchCandidate = null;
+        for (Artifact candidate : getArtifacts()) {
+            if (matchesOnId(artifactId, candidate, true)) {
+                int idLength = candidate.getId().length();
+                if (candidate.getId().contains("*") && StringUtils.isEmpty(candidate.getChecksum())) {
+                    if (idLength > maximumMatchLength) {
+                        longestIdMatchCandidate = candidate;
+                        maximumMatchLength = idLength;
+                    }
+                }
+            }
+        }
+        return longestIdMatchCandidate;
+    }
+
     private boolean matchesOnMavenProperties(Artifact artifact, Artifact candidate) {
-        if (!matchesOnId(artifact.getId(), candidate)) {
+        if (!matchesOnId(artifact.getId(), candidate, false)) {
             return false;
         }
         if (!matchesOnType(artifact, candidate)) {
@@ -276,7 +306,7 @@ public class Inventory {
         return true;
     }
 
-    protected boolean matchesOnId(String id, Artifact candidate) {
+    protected boolean matchesOnId(String id, Artifact candidate, boolean allowWildcards) {
         final String candidateId = candidate.getId();
 
         if (id == null && candidateId == null) {
@@ -295,7 +325,7 @@ public class Inventory {
         }
 
         // check the ids match (allow wildcard)
-        if (ASTERISK.equals(candidate.getVersion())) {
+        if (allowWildcards && ASTERISK.equals(candidate.getVersion())) {
             // check the wildcard is really used in the candidate id
             final int index = candidateId.indexOf(ASTERISK);
             if (index != -1) {
@@ -550,8 +580,8 @@ public class Inventory {
                     // in case match is not null we have found two matching license meta data elements
                     // this means that the license data is inconsistent and has overlaps. This must
                     // be resolved in the underlying meta data.
-                    throw new IllegalStateException("Multiple matches for license " + license
-                            + ". Meta data inconsistent. Please correct license meta data to resolve inconsistencies.");
+                    throw new IllegalStateException(String.format("Multiple matches for component:version:license: %s|%s|%s." +
+                            " Meta data inconsistent. Please correct license meta data to resolve inconsistencies.", component, version, license));
                 }
                 match = lmd;
             }
@@ -1279,6 +1309,20 @@ public class Inventory {
         if (StringUtils.isEmpty(cve)) return null;
         int index = cve.indexOf(" ");
         return index == -1 ? cve : cve.substring(0, index);
+    }
+
+    public String getEffectiveLicense(Artifact artifact) {
+        if (artifact == null) return null;
+        String effectiveLicense = artifact.getLicense();
+        if (StringUtils.isEmpty(artifact.getComponent())) return effectiveLicense;
+        if (StringUtils.isEmpty(artifact.getVersion())) return effectiveLicense;
+        if (StringUtils.isEmpty(artifact.getLicense())) return effectiveLicense;
+        LicenseMetaData licenseMetaData = findMatchingLicenseMetaData(artifact);
+        if (licenseMetaData == null) return effectiveLicense;
+        effectiveLicense = licenseMetaData.deriveLicenseInEffect();
+        if (StringUtils.isEmpty(effectiveLicense)) return null;
+        effectiveLicense = effectiveLicense.replace("|", ", ");
+        return effectiveLicense;
     }
 
 }

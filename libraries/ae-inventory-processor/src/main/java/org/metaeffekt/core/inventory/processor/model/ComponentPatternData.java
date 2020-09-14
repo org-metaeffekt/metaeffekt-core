@@ -79,7 +79,9 @@ public class ComponentPatternData extends AbstractModelBase {
      */
     public String deriveQualifier() {
         StringBuilder sb = new StringBuilder();
-        sb.append(get(Attribute.INCLUDE_PATTERN));
+        sb.append(get(Attribute.INCLUDE_PATTERN)).append("-");
+        sb.append(get(Attribute.VERSION_ANCHOR)).append("-");
+        sb.append(get(Attribute.VERSION_ANCHOR_CHECKSUM));
         return sb.toString();
     }
 

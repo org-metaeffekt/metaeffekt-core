@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_packages-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Packages", true)</title>
+    <body>
+#set($components=$inventory.evaluateComponentsInContext("package"))
+#if($components.isEmpty())
+        <p>
+            There are no individual <abbreviated-form keyref="package"/>.
+        </p>
+#else
+        <p>
+            The following table lists all <abbreviated-form keyref="package"/> included in the software covered by
+            this document. The list is organized by components to group the packages.
+        </p>
+        <p>
+            <table otherprops="wide" id="table_packages">
+                <title>Packages$reportContext.inContextOf()</title>
+                <tgroup cols="3">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="15*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="35*" />
+                    <colspec colname="COLSPEC2" colnum="3" colwidth="30*" />
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC1" valign="top">Packages</entry>
+                            <entry colname="COLSPEC2" valign="top">Associated License(s)</entry>
+                        </row>
+                    </thead>
+
+                    <tbody>
+
+#foreach($component in $components)
+    #set($groups=$inventory.evaluateComponent($component, true))
+    #foreach($name in $groups)
+                <row>
+                    <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
+                    <entry>
+                        <lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+#end#end</lines>
+                    </entry>
+                    #set($license=$name.get(0).getLicense())
+                    #set($folder=$inventory.getLicenseFolder($license))
+                    #if($folder)
+                        <entry>$license.trim()</entry>
+                    #else
+                        <entry>#if($license)$license.trim()#else&nbsp;#end</entry>
+                    #end
+                </row>
+    #end
+#end
+                    </tbody>
+                </tgroup>
+            </table>
+        </p>
+#end
+    </body>
+</topic>

@@ -122,14 +122,17 @@ public class InventoryScanReportTest {
     public void createReportFromScannedInventory() throws Exception  {
         Inventory scanInventory = new InventoryReader().readInventory(new File("target/scan-inventory.xls"));
 
+        File inventoryFile = new File("<path-to-inventory.xls>");
+        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
+
         final InventoryScanReport report = setupReport();
 
-        report.createReport(null, scanInventory);
+        report.createReport(inventory, scanInventory);
 
         Inventory resultInventory = new InventoryReader().readInventory(new File("target/result-inventory.xls"));
 
         for (Artifact artifact : resultInventory.getArtifacts()) {
-            if (artifact.getId().contains("Java Runtime")) {
+            if (artifact.getId().contains("gdp")) {
                 System.out.println(artifact.createCompareStringRepresentation());
             }
         }

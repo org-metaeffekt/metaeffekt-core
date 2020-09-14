@@ -81,6 +81,11 @@ public class DirectoryInventoryScan {
         copy.setTodir(scanDirectory);
         copy.execute();
 
+        return performScan();
+
+    }
+
+    public Inventory performScan() {
         // initialize inventories
         Inventory scanInventory = new Inventory();
 
@@ -101,23 +106,52 @@ public class DirectoryInventoryScan {
         }
     }
 
+    /**
+     * Scans the directory recursively.
+     *
+     * All paths are relative to the scanBaseDir.
+     *
+     * @param scanBaseDir The scan base dir. Always the same root folder. Also for the recursion.
+     * @param scanDir The scan dir. Changes with the recursion.
+     * @param scanIncludes
+     * @param scanExcludes
+     * @param globalInventory
+     * @param scanInventory
+     */
     private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes, Inventory globalInventory, Inventory scanInventory) {
         final String[] filesArray = scanDirectory(scanDir, scanIncludes, scanExcludes);
 
-        List<File> files = new ArrayList<>();
+        // collect all files as list
+        final List<File> files = new ArrayList<>();
         Arrays.stream(filesArray).map(f -> new File(scanDir, f)).forEach(f -> files.add(f));
 
-        List<MatchResult> matchedComponentDataOnAnchor = new ArrayList<>();
+        // match version anchors; results in matchedComponentDataOnAnchor
+        final List<MatchResult> matchedComponentDataOnAnchor = new ArrayList<>();
         for (ComponentPatternData cpd : globalInventory.getComponentPatternData()) {
             LOG.debug("Checking component pattern: {}", cpd.createCompareStringRepresentation());
-            String versionAnchor = File.separatorChar + cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR);
-            String anchorChecksum = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM);
+
+            final String anchorChecksum = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM);
+            final String versionAnchor = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR);
+            final String normalizedVersionAnchor = normalizePath(versionAnchor);
+
+            if (versionAnchor == null) {
+                throw new IllegalStateException(String.format("The version anchor of component pattern [%s] must be defined.",
+                        cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN)));
+            }
+            if (anchorChecksum == null) {
+                throw new IllegalStateException(String.format("The version anchor checksum of component pattern [%s] must be defined.",
+                        cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN)));
+            }
+
+            final boolean isVersionAnchorPattern = versionAnchor.contains("*");
+
             for (File file : files) {
-                if (normalizePath(file.getPath()).endsWith(normalizePath(versionAnchor))) {
+                final String normalizedPath = normalizePath(FileUtils.asRelativePath(scanBaseDir, file));
+                if ((!isVersionAnchorPattern && normalizedPath.endsWith(normalizedVersionAnchor) ) ||
+                        (isVersionAnchorPattern && ANT_PATH_MATCHER.match(normalizedVersionAnchor, normalizedPath))) {
                     final String checksum = FileUtils.computeChecksum(file);
                     final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
-                    if (!anchorChecksum.equalsIgnoreCase(Constants.ASTERISK) &&
-                            !anchorChecksum.equals(checksum)) {
+                    if (!anchorChecksum.equalsIgnoreCase(Constants.ASTERISK) && !anchorChecksum.equals(checksum)) {
                         LOG.debug("Anchor checksum mismatch: " + file.getPath());
                         LOG.debug("Expected checksum :{}; actual file checksum: {}", anchorChecksum, checksum);
                     }  else {
@@ -143,28 +177,35 @@ public class DirectoryInventoryScan {
 
             String versionAnchor = normalizePath(cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR));
 
-            File relativeRoot = anchorFile.getParentFile();
-            while (!new File(relativeRoot, versionAnchor).exists()) {
-                if (relativeRoot.getParentFile() == null) {
-                    relativeRoot = scanBaseDir;
-                    break;
+            String baseDir;
+            if (versionAnchor.contains("*")) {
+                // version anchor is a pattern; the context strategy does not apply; the patterns must contain
+                // sufficient context
+                baseDir = "";
+            } else {
+                File relativeRoot = anchorFile.getParentFile();
+                while (!new File(relativeRoot, versionAnchor).exists()) {
+                    if (relativeRoot.getParentFile() == null) {
+                        relativeRoot = scanBaseDir;
+                        break;
+                    }
+                    relativeRoot = relativeRoot.getParentFile();
                 }
-                relativeRoot = relativeRoot.getParentFile();
+                baseDir = FileUtils.asRelativePath(scanBaseDir, relativeRoot);
             }
 
+            String normalizedIncludePattern = baseDir.isEmpty() ?
+                    normalizePathToLinux(cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN)) :
+                    normalizePathToLinux(baseDir + File.separatorChar + cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
+            String normalizedExcludePattern =
+                    normalizePathToLinux(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
 
-            String baseDir = FileUtils.asRelativePath(scanBaseDir, relativeRoot);
-
-            String includePattern = normalizePathToLinux(baseDir + File.separatorChar + cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
-            String excludePattern = normalizePathToLinux(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
-            String modifiedExcludePattern = normalizePathToLinux(File.separatorChar + excludePattern);
-
-            List<File> matchedFiles = new ArrayList<>();
+            final List<File> matchedFiles = new ArrayList<>();
             for (File file : files) {
-                String path = FileUtils.asRelativePath(scanBaseDir, file);
-                if (ANT_PATH_MATCHER.match(includePattern, path)) {
-                    if (StringUtils.isEmpty(excludePattern) ||
-                            !ANT_PATH_MATCHER.match(modifiedExcludePattern, path)) {
+                String normalizedPath = normalizePath(FileUtils.asRelativePath(scanBaseDir, file));
+                if (ANT_PATH_MATCHER.match(normalizedIncludePattern, normalizedPath)) {
+                    if (StringUtils.isEmpty(normalizedExcludePattern) ||
+                            !ANT_PATH_MATCHER.match(normalizedExcludePattern, normalizedPath)) {
                         LOG.debug("Filtered component file: {} for component pattern {}", file, cpd.deriveQualifier());
                         matchedFiles.add(file);
                     }

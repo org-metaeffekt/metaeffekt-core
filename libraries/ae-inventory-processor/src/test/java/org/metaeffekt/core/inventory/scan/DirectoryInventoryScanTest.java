@@ -16,11 +16,13 @@
 package org.metaeffekt.core.inventory.scan;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +56,29 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(resultInventory.findArtifact("A Files")).isNotNull();
         Assertions.assertThat(resultInventory.findArtifact("b.txt")).isNull();
         Assertions.assertThat(resultInventory.findArtifact("B Files")).isNotNull();
+    }
+
+    @Ignore
+    @Test
+    public void testScanExtractedFiles_External() throws IOException {
+        File inputDir = new File("<project.dir>/external-resources");
+        File scanDir = new File("<project.dir>/target/scan");
+        String[] scanIncludes = new String[] {"**/*"};
+        String[] scanExcludes = new String[] {"--none--"};
+        File inventoryFile = new File("<project.baseDir>/inventory/src/main/resources/inventory/artifact-inventory.xls");
+        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
+
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
+
+        scan.setEnableImplicitUnpack(true);
+        final Inventory resultInventory = scan.createScanInventory();
+
+        for (Artifact a : resultInventory.getArtifacts()) {
+            System.out.println(a.getId() + " - " + a.getVersion() + " - " + a.getProjects());
+        }
+
+        new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
+
     }
 
 }

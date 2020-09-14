@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_webmodules-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>$reportContext.combinedTitle("Web Modules", true)</title>
+    <title>$reportContext.combinedTitle("Webmodule", true)</title>
     <body>
 #set($components=$inventory.evaluateComponentsInContext("web-module"))
 #if($components.isEmpty())
         <p>
-            There are no individual <abbreviated-form keyref="web-module"/>.
+            Keine <abbreviated-form keyref="web-module"/>.
         </p>
 #else
         <p>
-            The following table lists all <abbreviated-form keyref="web-module"/> included in the software covered by
-            this document.
+            Die nachfolgende Tabelle f&#252;hrt alle in der Software beinhalteten <abbreviated-form keyref="web-module"/> auf.
+            Die Tabelle ist nach Komponenten organisiert um die Webmodule zu gruppieren.
         </p>
         <p>
             <table otherprops="wide" id="table_web_modules">
-                <title>Artifacts$reportContext.inContextOf()</title>
+                <title>Webmodul$reportContext.inContextOf()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="15*" />
-                    <colspec colname="COLSPEC1" colnum="2" colwidth="45*" />
-                    <colspec colname="COLSPEC2" colnum="3" colwidth="20*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="35*" />
+                    <colspec colname="COLSPEC2" colnum="3" colwidth="30*" />
                     <thead>
                         <row>
-                            <entry colname="COLSPEC0" valign="top">Component</entry>
-                            <entry colname="COLSPEC1" valign="top">Web Module(s)</entry>
-                            <entry colname="COLSPEC2" valign="top">Associated License(s)</entry>
+                            <entry colname="COLSPEC0" valign="top">Komponente</entry>
+                            <entry colname="COLSPEC1" valign="top">Webmodul(e)</entry>
+                            <entry colname="COLSPEC2" valign="top">Effektive Lizenz(en)</entry>
                         </row>
                     </thead>
 
@@ -39,12 +39,12 @@
                         <lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
 #end#end</lines>
                     </entry>
-                    #set($license=$name.get(0).getLicense())
+                    #set($license=$inventory.getEffectiveLicense($name.get(0)))
                     #set($folder=$inventory.getLicenseFolder($license))
                     #if($folder)
-                        <entry>$license.trim()</entry>
+                        <entry>$report.xmlEscapeString($license.trim())</entry>
                     #else
-                        <entry>#if($license)$license.trim()#else&nbsp;#end</entry>
+                        <entry>#if($license)$report.xmlEscapeString($license.trim())#else&nbsp;#end</entry>
                     #end
                 </row>
     #end

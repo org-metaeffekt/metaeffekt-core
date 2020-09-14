@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_notices-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("License Notices", true)</title>
+#set($componentNoticeList=$inventory.evaluateComponentNotices())
+#if($componentNoticeList.isEmpty())
+    <body>
+        No component with license notices covered.
+    </body>
+#else
+#foreach($componentNotice in $componentNoticeList)
+    <topic id="tpc_component_notice_$inventory.deriveLicenseId($componentNotice.getComponentName())">
+        <title>Component $componentNotice.getComponentName()</title>
+        <body>
+#foreach($artifactNotice in $componentNotice.getArtifactNotices())
+            <p>
+                <table otherprops="wide">
+                    <title>Component notice $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
+                    <tgroup cols="2">
+                        <colspec colname="COLSPEC0" colnum="1" colwidth="60*" />
+                        <colspec colname="COLSPEC1" colnum="2" colwidth="40*" />
+                        <thead>
+                            <row>
+                                <entry colname="COLSPEC0" valign="top">File / Package / Web Module</entry>
+                                <entry colname="COLSPEC1" valign="top">Version</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+#foreach($artifact in $artifactNotice.getArtifacts())
+    <row>
+        <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
+#end
+<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
+        </entry>
+        <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
+    </row>
+#end
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+#set($notice=$artifactNotice.getNotice())
+#if($notice)$notice.trim()#else&nbsp;#end
+#end
+        </body>
+    </topic>
+#end
+#end
+</topic>

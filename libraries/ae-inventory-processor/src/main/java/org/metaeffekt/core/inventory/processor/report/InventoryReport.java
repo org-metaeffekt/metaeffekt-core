@@ -49,9 +49,12 @@ public class InventoryReport {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
 
-    private static final String REPORT_TEMPLATE_DIR = "/META-INF/templates";
     private static final String SEPARATOR_SLASH = "/";
     private static final String PATTERN_ANY_VT = "**/*.vt";
+
+    private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
+
+    private static final String TEMPLATES_TECHNICAL_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH  + "technical";
 
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
@@ -158,6 +161,8 @@ public class InventoryReport {
      * Default {@link ReportContext}.
      */
     private ReportContext reportContext = new ReportContext("default", null, null);
+
+    private String templateLanguageSelector = "en";
 
     public boolean createReport() throws Exception {
         LOG.info("****************************************************************");
@@ -370,7 +375,7 @@ public class InventoryReport {
                     if (StringUtils.isEmpty(copy.getChecksum())) {
                         copy.setChecksum(localArtifact.getChecksum());
                     } else {
-                        if (!copy.getChecksum().equalsIgnoreCase(localArtifact.getChecksum())) {
+                        if (StringUtils.hasText(localArtifact.getChecksum()) && !copy.getChecksum().equalsIgnoreCase(localArtifact.getChecksum())) {
                             throw new IllegalStateException(String.format("Checksum mismatch for %s.", localArtifact.getId()));
                         }
                     }
@@ -446,7 +451,7 @@ public class InventoryReport {
 
         // write reports
         if (inventoryBomReportEnabled) {
-            writeReports(projectInventory, TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
         }
 
         if (inventoryDiffReportEnabled) {
@@ -454,11 +459,11 @@ public class InventoryReport {
         }
 
         if (inventoryVulnerabilityReportEnabled) {
-            writeReports(projectInventory, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
         }
 
         if (inventoryPomEnabled) {
-            writeReports(projectInventory, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
+            writeReports(projectInventory, TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -525,15 +530,19 @@ public class InventoryReport {
         return true;
     }
 
-    protected void writeReports(Inventory projectInventory, String templateGroup, ReportContext reportContext) throws Exception {
+    private String deriveTemplateBaseDir() {
+        return TEMPLATES_BASE_DIR + SEPARATOR_SLASH + getTemplateLanguageSelector();
+    }
+
+    protected void writeReports(Inventory projectInventory, String templateBaseDir, String templateGroup, ReportContext reportContext) throws Exception {
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        final String vtClasspathResourcePattern = REPORT_TEMPLATE_DIR + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
+        final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
         final Resource[] resources = resolver.getResources(vtClasspathResourcePattern);
-        final Resource parentResource = resolver.getResource(REPORT_TEMPLATE_DIR);
+        final Resource parentResource = resolver.getResource(templateBaseDir);
         final String parentPath = parentResource.getURI().toASCIIString();
         for (Resource r : resources) {
             String filePath = r.getURI().toASCIIString();
-            filePath = REPORT_TEMPLATE_DIR + filePath.replace(parentPath, "");
+            filePath = templateBaseDir + filePath.replace(parentPath, "");
             String targetFileName = r.getFilename().replace(".vt", "");
 
             final File targetReportPath = new File(this.targetReportDir, targetFileName);
@@ -677,20 +686,17 @@ public class InventoryReport {
             }
             effectiveLicense = effectiveLicense.replaceAll("/s*,/s*", "|");
 
-            // derive component folder
-            final String componentFolderName = LicenseMetaData.deriveComponentFolderName(componentName);
-
             // derive version (unspecific, specific)
-            final String versionUnspecificPath = componentFolderName;
-            final String versionSpecificPath = componentFolderName + "-" + version;
+            final String versionUnspecificComponentFolder = LicenseMetaData.deriveComponentFolderName(componentName);
+            final String versionSpecificComponentFolder = LicenseMetaData.deriveComponentFolderName(componentName, version);
 
             // determine source path on license meta data level the version in wildcard; we derived all versions
             // have the same license; one notice for all; one source folder for all
             final String sourcePath = (isMetaDataVersionWildcard || isArtifactVersionWildcard) ?
-                    versionUnspecificPath : versionSpecificPath;
+                    versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
             // determine target path (always artifact version centric; no information may be available)
-            final String targetPath = isArtifactVersionWildcard ? versionUnspecificPath : versionSpecificPath;
+            final String targetPath = isArtifactVersionWildcard ? versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
             // copy touched components to target component folder
             if (targetComponentDir != null) {
@@ -746,7 +752,7 @@ public class InventoryReport {
             }
         }
 
-        writeReports(filteredInventory, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
+        writeReports(filteredInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
     }
 
     /**
@@ -1012,6 +1018,7 @@ public class InventoryReport {
         escaped = escaped.replaceAll("-", "-&#8203;");
         escaped = escaped.replaceAll("_", "_&#8203;");
         escaped = escaped.replaceAll(":", ":&#8203;");
+        escaped = escaped.replaceAll("([^&]+)#", "$1#&#8203;");
 
         return escaped;
     }
@@ -1110,5 +1117,13 @@ public class InventoryReport {
 
     public void setLastProjectInventory(Inventory lastProjectInventory) {
         this.lastProjectInventory = lastProjectInventory;
+    }
+
+    public void setTemplateLanguageSelector(String templateLanguageSelector) {
+        this.templateLanguageSelector = templateLanguageSelector;
+    }
+
+    public String getTemplateLanguageSelector() {
+        return templateLanguageSelector;
     }
 }

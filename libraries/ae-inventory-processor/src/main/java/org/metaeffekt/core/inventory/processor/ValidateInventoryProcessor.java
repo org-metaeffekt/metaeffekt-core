@@ -311,7 +311,6 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             }
         }
 
-
         // check whether all artifacts which require a license notice have a license notice.
         for (Artifact artifact : inventory.getArtifacts()) {
             artifact.deriveArtifactId();
@@ -463,10 +462,20 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         // verify unique match of licenses within one component
         for (Artifact artifact : inventory.getArtifacts()) {
             String license = artifact.getLicense();
+
+            if (StringUtils.isEmpty(artifact.getComponent())) continue;
+            if (StringUtils.isEmpty(artifact.getVersion())) continue;
+            if (StringUtils.isEmpty(license)) continue;
+
             if (StringUtils.isNotBlank(license)) {
                 license = license.trim();
                 String componentRef = artifact.getComponent() + SEPARATOR + artifact.getVersion();
                 for (Artifact candidateArtifact : inventory.getArtifacts()) {
+
+                    if (StringUtils.isEmpty(candidateArtifact.getComponent())) continue;
+                    if (StringUtils.isEmpty(candidateArtifact.getVersion())) continue;
+                    if (StringUtils.isEmpty(candidateArtifact.getLicense())) continue;
+
                     String candiateComponentRef = candidateArtifact.getComponent() + SEPARATOR + candidateArtifact.getVersion();
                     if (componentRef.equals(candiateComponentRef)) {
                         String candidateLicense = candidateArtifact.getLicense();
@@ -516,6 +525,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             error |= validateElement(licenseMetaData, notice, "ol");
             error |= validateElement(licenseMetaData, notice, "ul");
             error |= validateElement(licenseMetaData, notice, "strong");
+            error |= validateElement(licenseMetaData, notice, "line");
+            error |= validateElement(licenseMetaData, notice, "lines");
 
             error |= validateEvenCount(licenseMetaData, notice, "\"");
 

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
+    <title>$reportContext.combinedTitle("Effektive Lizenzen", true)</title>
 
 <body>
     <table id="LicensesInEffect" otherprops="wide">
-        <title>Licenses in Effect$reportContext.inContextOf()</title>
+        <title>Effektive Lizenzen$reportContext.inContextOf()</title>
         <tgroup cols="2">
             <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
             <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
             <thead>
                 <row>
-                    <entry colname="COLSPEC0" valign="top">License in Effect</entry>
-                    <entry colname="COLSPEC1" valign="top">Number of Components</entry>
+                    <entry colname="COLSPEC0" valign="top">Effektive Lizenz</entry>
+                    <entry colname="COLSPEC1" valign="top">Anzahl der Komponenten</entry>
                 </row>
             </thead>
             <tbody>
@@ -21,7 +21,7 @@
 #set($name=$inventory.evaluateComponents($license))
                 <row>
                     <entry>
-                        <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+                        <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$report.xmlEscapeString($license.trim())</xref>
                      </entry>
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
@@ -34,37 +34,37 @@
         </tgroup>
     </table>
     <p>
-        Table <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect</xref>
-        provides an overview of the licenses in effect. In the following paragraphs the individual components are listed
-        for each effective license.
+        Die Tabelle <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Effektive Lizenzen</xref>
+        beinhaltet die effektiven Lizenzen im &#220;berblick.
+        Im nachfolgenden Kapitel werden alle relevanten Komponenten und Subkomponenten zugeh&#246;rig zu ihren effektiven
+        Lizenzen aufgelistet.
     </p>
     <p>
-        Please note, that a component may be subject to several licenses in effect.
+        Es ist zu ber&#252;cksichtigen, dass eine Komponente mehreren effektiven Lizenzen zugeordnet sein kann.
     </p>
 </body>
-
 
 #foreach($license in $inventory.evaluateLicenses(false))
 #set($folder=$inventory.getLicenseFolder($license))
 #set($name=$inventory.evaluateComponents($license))
 #if(!$name.isEmpty())
 <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
-    <title>$license</title>
+    <title>$report.xmlEscapeString($license)</title>
     <body>
         <p>
             #if($folder)
-                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$report.xmlEscapeString($license.trim())</xref>
             #end
         </p>
         <p>
             <table otherprops="wide">
-                <title>Components under $license.trim()$reportContext.inContextOf()</title>
+                <title>Komponenten unter $report.xmlEscapeString($license.trim())$reportContext.inContextOf()</title>
                 <tgroup cols="2">
-                    <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
-                    <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="60*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="40*" />
                     <thead>
                         <row>
-                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC0" valign="top">Komponente</entry>
                             <entry colname="COLSPEC1" valign="top">Version</entry>
                         </row>
                     </thead>
@@ -72,7 +72,7 @@
 #foreach($artifactLicenseData in $name)
                         <row>
                             <entry>
-                                 $artifactLicenseData.componentName
+                                 $report.xmlEscapeString($artifactLicenseData.componentName)
                              </entry>
                             <entry>
                                 <codeph>$report.xmlEscapeGAV($artifactLicenseData.componentVersion)</codeph>

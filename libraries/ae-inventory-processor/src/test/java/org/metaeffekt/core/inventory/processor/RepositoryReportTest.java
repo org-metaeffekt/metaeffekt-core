@@ -20,10 +20,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
@@ -178,6 +175,9 @@ public class RepositoryReportTest {
         Assert.assertEquals("this&amp;that.&#8203;those-&#8203;these_&#8203;which",
                 inventoryReport.xmlEscapeArtifactId("this&that.those-these_which"));
 
+        Assert.assertEquals("this#&#8203;that",
+                inventoryReport.xmlEscapeArtifactId("this#that"));
+
         Assert.assertEquals("&nbsp;", inventoryReport.xmlEscapeArtifactId(null));
     }
 
@@ -189,7 +189,7 @@ public class RepositoryReportTest {
         Assert.assertNotNull(inventory.getComponentPatternData());
         Assert.assertEquals(4, inventory.getComponentPatternData().size());
 
-        Assert.assertEquals("org/metaeffekt/core/**/*", inventory.getComponentPatternData().get(0).deriveQualifier());
+        Assert.assertEquals("org/metaeffekt/core/**/*-org/metaeffekt.core/Inventory.class-ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).deriveQualifier());
         Assert.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes:0.21.0:org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
 
         File targetFile = new File("target/test-inventory.xls");

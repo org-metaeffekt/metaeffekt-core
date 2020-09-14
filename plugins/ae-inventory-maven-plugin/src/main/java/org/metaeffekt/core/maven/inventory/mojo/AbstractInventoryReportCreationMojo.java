@@ -212,7 +212,12 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="7.0"
      */
     private String vulnerabilityScoreThreshold;
-    
+
+    /**
+     * @parameter default-value="en"
+     */
+    private String templateLanguageSelector;
+
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         InventoryReport report = new InventoryReport();
         configureInventoryReport(report);
@@ -263,6 +268,9 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setRelativeLicensePath(relativeLicensePath);
 
         report.setAddOnArtifacts(addOnArtifacts);
+
+        // enable to select language
+        report.setTemplateLanguageSelector(templateLanguageSelector);
 
         if (artifactExcludes != null) {
             PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
