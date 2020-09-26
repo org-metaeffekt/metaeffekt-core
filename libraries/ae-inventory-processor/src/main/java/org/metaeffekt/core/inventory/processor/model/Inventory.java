@@ -835,7 +835,41 @@ public class Inventory {
                 groups.add(currentGroup);
             }
         }
+
+        // if the last group did not receive any artifacts we remove it
+        if (currentGroup.isEmpty()) {
+            groups.remove(currentGroup);
+        }
+
         return groups;
+    }
+
+    /**
+     * Used by templates to check whether a notice for the given component is available.
+     *
+     * @param component
+     *
+     * @return Indicated whether a notice is available or not.
+     */
+    public boolean hasNotice(Component component) {
+        if (component == null) return false;
+        return hasNotice(component.artifacts);
+    }
+
+    public boolean hasNotice(ArtifactLicenseData ald) {
+        if (ald == null) return false;
+        return hasNotice(ald.getArtifacts());
+    }
+
+    private boolean hasNotice(List<Artifact> artifacts) {
+        if (artifacts == null) return false;
+        for (final Artifact artifact : artifacts) {
+            final LicenseMetaData licenseMetaData = findMatchingLicenseMetaData(artifact);
+            if (licenseMetaData != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Artifact> evaluateLicense(String licenseName,

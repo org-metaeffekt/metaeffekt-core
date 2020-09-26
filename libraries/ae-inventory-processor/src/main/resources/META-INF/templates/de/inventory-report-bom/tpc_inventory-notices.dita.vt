@@ -13,6 +13,12 @@
         <title>$report.xmlEscapeString($componentNotice.getComponentName())</title>
         <body>
 #foreach($artifactNotice in $componentNotice.getArtifactNotices())
+
+## insert notice
+#set($notice=$artifactNotice.getNotice())
+#if($notice)$notice.trim()#else&nbsp;#end
+
+## insert table
             <p>
                 <table otherprops="wide">
                     <title>Lizenzhinweis $report.xmlEscapeString($componentNotice.getComponentName())$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
@@ -39,8 +45,8 @@
                     </tgroup>
                 </table>
             </p>
-#set($notice=$artifactNotice.getNotice())
-#if($notice)$notice.trim()#else&nbsp;#end
+## insert table END
+
 #end
         </body>
     </topic>

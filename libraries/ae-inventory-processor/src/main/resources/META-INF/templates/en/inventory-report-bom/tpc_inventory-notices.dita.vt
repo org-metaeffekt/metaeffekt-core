@@ -13,9 +13,15 @@
         <title>Component $componentNotice.getComponentName()</title>
         <body>
 #foreach($artifactNotice in $componentNotice.getArtifactNotices())
+
+## insert notice
+#set($notice=$artifactNotice.getNotice())
+#if($notice)$notice.trim()#else&nbsp;#end
+
+## insert table
             <p>
                 <table otherprops="wide">
-                    <title>Component notice $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
+                    <title>Artifacts of component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
                     <tgroup cols="2">
                         <colspec colname="COLSPEC0" colnum="1" colwidth="60*" />
                         <colspec colname="COLSPEC1" colnum="2" colwidth="40*" />
@@ -39,8 +45,8 @@
                     </tgroup>
                 </table>
             </p>
-#set($notice=$artifactNotice.getNotice())
-#if($notice)$notice.trim()#else&nbsp;#end
+## insert table END
+
 #end
         </body>
     </topic>

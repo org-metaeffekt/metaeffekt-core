@@ -15,10 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -582,6 +584,16 @@ public class Artifact extends AbstractModelBase {
 
     public void append(Attribute attribute, String value, String delimiter) {
         append(attribute.getKey(), value, delimiter);
+    }
+
+    /**
+     * Return the tokenized license string.
+     *
+     * @return List of individual licenses.
+     */
+    public List<String> getLicenses() {
+        if (!StringUtils.hasText(getLicense())) return Collections.EMPTY_LIST;
+        return InventoryUtils.tokenizeLicense(getLicense(), true, true);
     }
 
 }

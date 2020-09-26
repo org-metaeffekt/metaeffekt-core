@@ -4,6 +4,14 @@
     <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
 
 <body>
+    <p>
+        Table <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect</xref>
+        provides an overview of the licenses in effect. In the following paragraphs the individual components are listed
+        for each effective license.
+    </p>
+    <p>
+        Please note, that a component may be subject to several licenses in effect.
+    </p>
     <table id="LicensesInEffect" otherprops="wide">
         <title>Licenses in Effect$reportContext.inContextOf()</title>
         <tgroup cols="2">
@@ -21,7 +29,9 @@
 #set($name=$inventory.evaluateComponents($license))
                 <row>
                     <entry>
-                        <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+                        <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                            $report.xmlEscapeString($license.trim())
+                        </xref>
                      </entry>
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
@@ -33,14 +43,6 @@
             </tbody>
         </tgroup>
     </table>
-    <p>
-        Table <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect</xref>
-        provides an overview of the licenses in effect. In the following paragraphs the individual components are listed
-        for each effective license.
-    </p>
-    <p>
-        Please note, that a component may be subject to several licenses in effect.
-    </p>
 </body>
 
 
@@ -49,11 +51,13 @@
 #set($name=$inventory.evaluateComponents($license))
 #if(!$name.isEmpty())
 <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
-    <title>$license</title>
+    <title>$report.xmlEscapeString($license)</title>
     <body>
         <p>
+            The following table lists all components that are licensed or contains subcomponents under $license.
             #if($folder)
-                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license.trim()</xref>
+                Information with respect to the license or contract can be found in
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license [annex link]</xref>.
             #end
         </p>
         <p>
@@ -70,10 +74,19 @@
                     </thead>
                     <tbody>
 #foreach($artifactLicenseData in $name)
+#set($hasNotice=$inventory.hasNotice($artifactLicenseData))
                         <row>
-                            <entry>
-                                 $artifactLicenseData.componentName
-                             </entry>
+                            #if($hasNotice)
+                                <entry>
+                                    <xref href="tpc_inventory-notices.dita#tpc_component_notice_$inventory.deriveLicenseId($artifactLicenseData.componentName)" type="topic">
+                                        $report.xmlEscapeString($artifactLicenseData.componentName)
+                                    </xref>
+                                </entry>
+                            #else
+                                <entry>
+                                     $report.xmlEscapeString($artifactLicenseData.componentName)
+                                 </entry>
+                            #end
                             <entry>
                                 <codeph>$report.xmlEscapeGAV($artifactLicenseData.componentVersion)</codeph>
                             </entry>

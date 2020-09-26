@@ -4,6 +4,7 @@
     <title>$reportContext.combinedTitle("Artifacts", true)</title>
     <body>
 #set($components=$inventory.evaluateComponentsInContext("artifact"))
+#set($licensesInEffect=$inventory.evaluateLicenses(false))
 #if($components.isEmpty())
         <p>
             There are no individual <abbreviated-form keyref="artifact"/>.
@@ -33,18 +34,37 @@
 #foreach($component in $components)
     #set($groups=$inventory.evaluateComponent($component, true))
     #foreach($name in $groups)
+        #set($hasNotice=$inventory.hasNotice($component))
                 <row>
-                    <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
+                    #if($hasNotice)
+                        <entry>
+                            <xref href="tpc_inventory-notices.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)" type="topic">
+                                $report.xmlEscapeComponentName($component.getOriginalComponentName())
+                            </xref>
+                        </entry>
+                    #else
+                        <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
+                    #end
                     <entry>
                         <lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
 #end#end</lines>
                     </entry>
-                    #set($license=$name.get(0).getLicense())
-                    #set($folder=$inventory.getLicenseFolder($license))
-                    #if($folder)
-                        <entry>$license.trim()</entry>
+                    #set($licenses=$name.get(0).getLicenses())
+                    #set($licensesAsString=$name.get(0).getLicense())
+                    #if($licenses.isEmpty())
+                        <entry>&nbsp;</entry>
                     #else
-                        <entry>#if($license)$license.trim()#else&nbsp;#end</entry>
+                    <entry>
+                        #set($comma=false)
+                        #foreach($license in $licenses)
+                            #if($comma), #end#set($comma=true)
+                            #if($licensesInEffect.contains($license))
+                                <xref href="tpc_inventory-licenses.dita#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">$license</xref>
+                            #else
+                                $license
+                            #end
+                        #end
+                    </entry>
                     #end
                 </row>
     #end
