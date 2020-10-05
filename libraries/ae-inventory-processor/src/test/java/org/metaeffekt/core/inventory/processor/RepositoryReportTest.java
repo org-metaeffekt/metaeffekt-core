@@ -123,27 +123,6 @@ public class RepositoryReportTest {
         assertTrue(new File(targetComponentDir, "Sigma-Component-1.0.0").exists());
 
         // check generated DITA files contain the appropriate details
-        String artifacts = FileUtils.readFileToString(artifactReport, UTF_8);
-/**        assertTrue(artifacts.contains("<xref href=\"licenses/A-License/\" type=\"html\" scope=\"external\">A License</xref>"));
-        assertTrue(artifacts.contains("<xref href=\"licenses/B-License/\" type=\"html\" scope=\"external\">B License</xref>"));
-        assertTrue(artifacts.contains("<xref href=\"licenses/A-License-B-License/\" type=\"html\" scope=\"external\">A License + B License</xref>"));
-        assertTrue(artifacts.contains("<xref href=\"licenses/G-License-(with-sub-components)/\" type=\"html\" scope=\"external\">G License (with sub-components)</xref>"));
-        assertTrue(artifacts.contains("<xref href=\"licenses/D-License/\" type=\"html\" scope=\"external\">D License</xref>"));
-
-        String components = FileUtils.readFileToString(artifactReport, UTF_8);
-        assertTrue(components.contains("<xref href=\"licenses/A-License/\" type=\"html\" scope=\"external\">A License</xref>"));
-        assertTrue(components.contains("<xref href=\"licenses/B-License/\" type=\"html\" scope=\"external\">B License</xref>"));
-        assertTrue(components.contains("<xref href=\"licenses/A-License-B-License/\" type=\"html\" scope=\"external\">A License + B License</xref>"));
-        assertTrue(components.contains("<xref href=\"licenses/G-License-(with-sub-components)/\" type=\"html\" scope=\"external\">G License (with sub-components)</xref>"));
-        assertTrue(components.contains("<xref href=\"licenses/D-License/\" type=\"html\" scope=\"external\">D License</xref>"));
- */
-        String licenses = FileUtils.readFileToString(licenseReport, UTF_8);
-        assertTrue(licenses.contains("<xref href=\"licenses/A-License/\" type=\"html\" scope=\"external\">A License</xref>"));
-        assertTrue(licenses.contains("<xref href=\"licenses/B-License/\" type=\"html\" scope=\"external\">B License</xref>"));
-        assertTrue(licenses.contains("<xref href=\"licenses/D-License/\" type=\"html\" scope=\"external\">D License</xref>"));
-        assertFalse(licenses.contains("<xref href=\"licenses/A-License-B-License/\" type=\"html\" scope=\"external\">A License + B License</xref>"));
-        assertFalse(licenses.contains("<xref href=\"licenses/G-License-(with-sub-components)/\" type=\"html\" scope=\"external\">G License (with sub-components)</xref>"));
-
         String notices = FileUtils.readFileToString(noticeReport, UTF_8);
         assertTrue(notices.contains("Notice for Alpha component licensed under A License."));
         assertTrue(notices.contains("Notice for Beta component licensed under B License."));

@@ -27,11 +27,14 @@ public class ComponentNotice {
 
     private final String componentName;
 
+    private String license;
+
     private final Map<String, ArtifactNotice> noticeArtifactNoticeMap;
 
-    public ComponentNotice(String componentName) {
+    public ComponentNotice(String componentName, String license) {
         this.componentName = componentName;
         this.noticeArtifactNoticeMap = new HashMap<>();
+        this.license = license;
     }
 
     public String getComponentName() {
@@ -47,11 +50,24 @@ public class ComponentNotice {
 
     public boolean add(Artifact artifact, LicenseMetaData licenseMetaData) {
         String notice = licenseMetaData.getCompleteNotice();
-        if (notice == null) return false;
+        if (notice == null) notice = "";
 
         ArtifactNotice artifactNotice = noticeArtifactNoticeMap.get(notice);
         if (artifactNotice == null) {
             String discriminator = deriveDiscriminator(licenseMetaData);
+            artifactNotice = new ArtifactNotice(notice, discriminator);
+            license = licenseMetaData.getLicense();
+            noticeArtifactNoticeMap.put(notice, artifactNotice);
+        }
+
+        return artifactNotice.add(artifact);
+    }
+
+    public boolean add(Artifact artifact) {
+        final String notice = "";
+        ArtifactNotice artifactNotice = noticeArtifactNoticeMap.get(notice);
+        if (artifactNotice == null) {
+            String discriminator = "";
             artifactNotice = new ArtifactNotice(notice, discriminator);
             noticeArtifactNoticeMap.put(notice, artifactNotice);
         }
@@ -63,5 +79,9 @@ public class ComponentNotice {
         String discriminator = licenseMetaData.get("Discriminator");
         discriminator = discriminator == null ? discriminator = "" : " " + discriminator;
         return discriminator;
+    }
+
+    public String getLicense() {
+        return license;
     }
 }

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.io.FileUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -496,12 +497,23 @@ public class Inventory {
                 if (componentName == null) continue;
                 ComponentNotice componentNotice = componentNameComponentNoticeMap.get(componentName);
                 if (componentNotice == null) {
-                    componentNotice = new ComponentNotice(componentName);
+                    componentNotice = new ComponentNotice(componentName, artifact.getLicense());
                     componentNameComponentNoticeMap.put(componentName, componentNotice);
                     componentNotices.add(componentNotice);
                 }
-
                 componentNotice.add(artifact, matchingLicenseMetaData);
+            } else {
+                // with this branch we generate default notices to cover all components
+                final String componentName = artifact.getComponent();
+                if (componentName == null) continue;
+                ComponentNotice componentNotice = componentNameComponentNoticeMap.get(componentName);
+                if (componentNotice == null) {
+                    componentNotice = new ComponentNotice(componentName, artifact.getLicense());
+                    componentNameComponentNoticeMap.put(componentName, componentNotice);
+                    componentNotices.add(componentNotice);
+                }
+                componentNotice.add(artifact);
+
             }
         }
 
@@ -852,13 +864,15 @@ public class Inventory {
      * @return Indicated whether a notice is available or not.
      */
     public boolean hasNotice(Component component) {
-        if (component == null) return false;
-        return hasNotice(component.artifacts);
+        return true;
+//        if (component == null) return false;
+//        return hasNotice(component.artifacts);
     }
 
     public boolean hasNotice(ArtifactLicenseData ald) {
-        if (ald == null) return false;
-        return hasNotice(ald.getArtifacts());
+        return true;
+//        if (ald == null) return false;
+//        return hasNotice(ald.getArtifacts());
     }
 
     private boolean hasNotice(List<Artifact> artifacts) {
@@ -1357,6 +1371,11 @@ public class Inventory {
         if (StringUtils.isEmpty(effectiveLicense)) return null;
         effectiveLicense = effectiveLicense.replace("|", ", ");
         return effectiveLicense;
+    }
+
+    public List<String> getEffectiveLicenses(Artifact artifact) {
+        String effectiveLicense = getEffectiveLicense(artifact);
+        return InventoryUtils.tokenizeLicense(effectiveLicense, true, true);
     }
 
 }

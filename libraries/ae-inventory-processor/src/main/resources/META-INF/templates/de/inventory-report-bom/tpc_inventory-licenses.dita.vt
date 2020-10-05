@@ -57,8 +57,8 @@
             Die folgende Tabelle stellt alle Komponenten oder Komponenten mit Unterkomponenten
             unter $license zusammen.
             #if($folder)
-                Informationen zu den Bestimmungen der Lizenz oder Vertrags können in
-                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license [annex link]</xref>
+                Informationen zu den Bestimmungen der Lizenz oder Vertrags k&#246;nnen in
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license [extern]</xref>
                 eingesehen werden.
             #end
         </p>

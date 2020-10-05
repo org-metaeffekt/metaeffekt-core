@@ -4,6 +4,7 @@
     <title>$reportContext.combinedTitle("Artefakte", true)</title>
     <body>
 #set($components=$inventory.evaluateComponentsInContext("artifact"))
+#set($licensesInEffect=$inventory.evaluateLicenses(false))
 #if($components.isEmpty())
         <p>
             Keine <abbreviated-form keyref="artifact"/>.
@@ -53,16 +54,9 @@
                     #if($licenses.isEmpty())
                         <entry>&nbsp;</entry>
                     #else
-                    <entry>
-                        #set($comma=false)
-                        #foreach($license in $licenses)
-                            #if($comma), #end#set($comma=true)
-                            #if($licensesInEffect.contains($license))
-                                <xref href="tpc_inventory-licenses.dita#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">$license</xref>
-                    #else
-                                $license
-                            #end
-                        #end
+                    #set($comma=false)
+                    <entry>## all in one line to not introduce whitespaces before a comma
+                        #foreach($license in $licenses)#if($comma), #end#set($comma=true)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-licenses.dita#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">$report.xmlEscapeString($license)</xref>#else$report.xmlEscapeString($license)#end#end
                     </entry>
                     #end
                 </row>

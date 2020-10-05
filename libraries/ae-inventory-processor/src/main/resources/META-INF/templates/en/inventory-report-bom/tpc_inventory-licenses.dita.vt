@@ -57,7 +57,7 @@
             The following table lists all components that are licensed or contains subcomponents under $license.
             #if($folder)
                 Information with respect to the license or contract can be found in
-                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license [annex link]</xref>.
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license [external]</xref>.
             #end
         </p>
         <p>

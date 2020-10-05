@@ -33,18 +33,30 @@
 #foreach($component in $components)
     #set($groups=$inventory.evaluateComponent($component, true))
     #foreach($name in $groups)
+        #set($hasNotice=$inventory.hasNotice($component))
                 <row>
+                    #if($hasNotice)
+                        <entry>
+                            <xref href="tpc_inventory-notices.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)" type="topic">
+                                $report.xmlEscapeComponentName($component.getOriginalComponentName())
+                            </xref>
+                        </entry>
+                    #else
                     <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
+                    #end
                     <entry>
                         <lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
 #end#end</lines>
                     </entry>
-                    #set($license=$inventory.getEffectiveLicense($name.get(0)))
-                    #set($folder=$inventory.getLicenseFolder($license))
-                    #if($folder)
-                        <entry>$license.trim()</entry>
+                    #set($licenses=$inventory.getEffectiveLicenses($name.get(0)))
+                    #set($licensesAsString=$inventory.getEffectiveLicense($name.get(0)))
+                    #if($licenses.isEmpty())
+                        <entry>&nbsp;</entry>
                     #else
-                        <entry>#if($license)$license.trim()#else&nbsp;#end</entry>
+                    #set($comma=false)
+                    <entry>## all in one line to not introduce whitespaces before a comma
+                        #foreach($license in $licenses)#if($comma), #end#set($comma=true)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-licenses.dita#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">$report.xmlEscapeString($license)</xref>#else$report.xmlEscapeString($license)#end#end
+                    </entry>
                     #end
                 </row>
     #end
