@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.30.0</version>
     </parent>
 
     <modules>

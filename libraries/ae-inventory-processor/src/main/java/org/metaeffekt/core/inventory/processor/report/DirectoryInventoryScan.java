@@ -202,7 +202,7 @@ public class DirectoryInventoryScan {
 
             final List<File> matchedFiles = new ArrayList<>();
             for (File file : files) {
-                String normalizedPath = normalizePath(FileUtils.asRelativePath(scanBaseDir, file));
+                String normalizedPath = normalizePathToLinux(FileUtils.asRelativePath(scanBaseDir, file));
                 if (ANT_PATH_MATCHER.match(normalizedIncludePattern, normalizedPath)) {
                     if (StringUtils.isEmpty(normalizedExcludePattern) ||
                             !ANT_PATH_MATCHER.match(normalizedExcludePattern, normalizedPath)) {
