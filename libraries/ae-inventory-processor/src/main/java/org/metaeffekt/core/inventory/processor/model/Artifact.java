@@ -215,6 +215,8 @@ public class Artifact extends AbstractModelBase {
     }
 
     public void addProject(String project) {
+        if (getProjects() != null && getProjects().contains(project)) return;
+
         append(Attribute.PROJECTS.getKey(), project, ", ");
     }
 

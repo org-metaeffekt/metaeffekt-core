@@ -527,6 +527,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             error |= validateElement(licenseMetaData, notice, "strong");
             error |= validateElement(licenseMetaData, notice, "line");
             error |= validateElement(licenseMetaData, notice, "lines");
+            error |= validateElement(licenseMetaData, notice, "lq");
+            error |= validateElement(licenseMetaData, notice, "b");
 
             error |= validateEvenCount(licenseMetaData, notice, "\"");
 

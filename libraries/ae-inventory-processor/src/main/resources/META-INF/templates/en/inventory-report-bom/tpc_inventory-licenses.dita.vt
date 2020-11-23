@@ -45,7 +45,6 @@
     </table>
 </body>
 
-
 #foreach($license in $inventory.evaluateLicenses(false))
 #set($folder=$inventory.getLicenseFolder($license))
 #set($name=$inventory.evaluateComponents($license))
@@ -63,34 +62,43 @@
         <p>
             <table otherprops="wide">
                 <title>Components under $license.trim()$reportContext.inContextOf()</title>
-                <tgroup cols="2">
-                    <colspec colname="COLSPEC0" colnum="1" colwidth="60*" />
-                    <colspec colname="COLSPEC1" colnum="2" colwidth="40*" />
+                <tgroup cols="3">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="60*" />
+                    <colspec colname="COLSPEC2" colnum="3" colwidth="20*" />
                     <thead>
                         <row>
                             <entry colname="COLSPEC0" valign="top">Component</entry>
-                            <entry colname="COLSPEC1" valign="top">Version</entry>
+                            <entry colname="COLSPEC1" valign="top">Artifact / Package / Web Module</entry>
+                            <entry colname="COLSPEC2" valign="top">Version</entry>
                         </row>
                     </thead>
                     <tbody>
 #foreach($artifactLicenseData in $name)
 #set($hasNotice=$inventory.hasNotice($artifactLicenseData))
+#foreach($artifact in $artifactLicenseData.getArtifacts())
+                        #set($rows=$artifactLicenseData.getArtifacts().size())
+                        #set($rows=$rows - 1)
                         <row>
-                            #if($hasNotice)
-                                <entry>
+                            <entry>
+                                #if($hasNotice)
                                     <xref href="tpc_inventory-notices.dita#tpc_component_notice_$inventory.deriveLicenseId($artifactLicenseData.componentName)" type="topic">
                                         $report.xmlEscapeString($artifactLicenseData.componentName)
                                     </xref>
-                                </entry>
-                            #else
-                                <entry>
-                                     $report.xmlEscapeString($artifactLicenseData.componentName)
-                                 </entry>
-                            #end
+                                #else
+                                    $report.xmlEscapeString($artifactLicenseData.componentName)
+                                #end
+                            </entry>
+                            <entry>
+                                <lines>#if($artifact.getGroupId())<line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                                #end
+                                <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>
+                            </entry>
                             <entry>
                                 <codeph>$report.xmlEscapeGAV($artifactLicenseData.componentVersion)</codeph>
                             </entry>
                         </row>
+#end
 #end
                     </tbody>
                 </tgroup>

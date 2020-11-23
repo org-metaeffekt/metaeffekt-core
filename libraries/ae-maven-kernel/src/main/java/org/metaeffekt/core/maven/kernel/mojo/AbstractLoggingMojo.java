@@ -22,7 +22,7 @@ import org.apache.maven.plugin.MojoFailureException;
 public abstract class AbstractLoggingMojo extends AbstractMojo {
 
     /**
-     *
+     * Execute mojo logic.
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

@@ -18,9 +18,12 @@ package org.metaeffekt.core.util;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
+import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 /**
@@ -109,7 +112,33 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
 
         // and append the path composed earlier
-        return relativePath + path;
+        relativePath += path;
+        if (relativePath.trim().isEmpty()) {
+           return Constants.DOT;
+        }
+        return relativePath;
+    }
+
+    private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
+    public static final boolean matches(final String normalizedPattern, final String normalizedPath) {
+        if (normalizedPattern == null) return true;
+        if (normalizedPath == null) return false;
+
+        if (!normalizedPattern.contains(",")) {
+            return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
+        }
+        final String[] patterns = normalizedPattern.split(",");
+        for (final String pattern : patterns) {
+            if (ANT_PATH_MATCHER.match(pattern.trim(), normalizedPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String normalizePathToLinux(String path) {
+        if (path == null) return null;
+        return path.replace("\\", "/");
     }
 
 }

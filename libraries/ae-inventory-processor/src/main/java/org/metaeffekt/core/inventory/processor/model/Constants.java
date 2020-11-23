@@ -20,6 +20,9 @@ public final class Constants {
     public static final String ASTERISK = "*";
     public static final String VERSION_PLACHOLDER_PREFIX = "${";
     public static final String VERSION_PLACHOLDER_SUFFIX = "}";
+    public static final String DOT = ".";
+    public static final String SLASH = "/";
+    public static final String DOT_SLASH = DOT + SLASH;
 
     public static final String STRING_EMPTY = "";
     public static final String STRING_TRUE = Boolean.TRUE.toString();

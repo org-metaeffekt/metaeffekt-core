@@ -132,7 +132,7 @@ public class InventoryScanReportTest {
         Inventory resultInventory = new InventoryReader().readInventory(new File("target/result-inventory.xls"));
 
         for (Artifact artifact : resultInventory.getArtifacts()) {
-            if (artifact.getId().contains("gdp")) {
+            if (artifact.getId().contains("<id>")) {
                 System.out.println(artifact.createCompareStringRepresentation());
             }
         }

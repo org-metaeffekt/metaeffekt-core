@@ -35,6 +35,7 @@ public class DirectoryInventoryScanTest {
         File scanDir = new File("target/test-scan");
         String[] scanIncludes = new String[] {"**/*"};
         String[] scanExcludes = new String[] {"--none--"};
+
         File inventoryFile = new File("src/test/resources/test-inventory-01/artifact-inventory.xls");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
@@ -42,6 +43,8 @@ public class DirectoryInventoryScanTest {
 
         scan.setEnableImplicitUnpack(false);
         final Inventory resultInventory = scan.createScanInventory();
+
+        new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory.xls"));
 
         for (Artifact a : resultInventory.getArtifacts()) {
             System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getProjects());
@@ -56,6 +59,7 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(resultInventory.findArtifact("A Files")).isNotNull();
         Assertions.assertThat(resultInventory.findArtifact("b.txt")).isNull();
         Assertions.assertThat(resultInventory.findArtifact("B Files")).isNotNull();
+        Assertions.assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").getProjects()).hasSize(1);
     }
 
     @Ignore
@@ -78,7 +82,6 @@ public class DirectoryInventoryScanTest {
         }
 
         new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
-
     }
 
 }

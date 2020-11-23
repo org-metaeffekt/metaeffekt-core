@@ -40,6 +40,8 @@ public class ComponentPatternData extends AbstractModelBase {
         COMPONENT_NAME("Component Name"),
         COMPONENT_PART("Component Part"),
         COMPONENT_VERSION("Component Version"),
+
+        // version anchors must not be null; these are primarily for matching
         VERSION_ANCHOR("Version Anchor"),
         VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum");
 
