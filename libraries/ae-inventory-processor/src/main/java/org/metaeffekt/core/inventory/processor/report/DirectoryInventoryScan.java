@@ -107,9 +107,20 @@ public class DirectoryInventoryScan {
     private static class MatchResult {
         ComponentPatternData componentPatternData;
         File anchorFile;
-        MatchResult(ComponentPatternData componentPatternData, File anchorFile) {
+        File baseDir;
+        MatchResult(ComponentPatternData componentPatternData, File anchorFile, File baseDir) {
             this.componentPatternData = componentPatternData;
             this.anchorFile = anchorFile;
+            this.baseDir = baseDir;
+        }
+
+        Artifact deriveArtifact(File scanBaseDir) {
+            final Artifact derivedArtifact = new Artifact();
+            derivedArtifact.setId(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_PART));
+            derivedArtifact.setComponent(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME));
+            derivedArtifact.setVersion(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
+            derivedArtifact.addProject(asRelativePath(scanBaseDir, baseDir));
+            return derivedArtifact;
         }
     }
 
@@ -135,9 +146,26 @@ public class DirectoryInventoryScan {
 
         final List<MatchResult> matchedComponentPatterns = matchComponentPatterns(files, scanBaseDir, scanDir, referenceInventory, scanInventory);
 
-        filterFilesMatchedByComponentPatterns(files, scanBaseDir, matchedComponentPatterns);
+        final List<MatchResult> matchResultsWithoutFileMatches = new ArrayList<>();
+        filterFilesMatchedByComponentPatterns(files, scanBaseDir, matchedComponentPatterns, matchResultsWithoutFileMatches);
 
+        // we need to remove those match results, which did not match file. Such match results may be cause by
+        // generic anchor matches and wildcard anchor checksums.
+        if (!matchResultsWithoutFileMatches.isEmpty()) {
+            matchedComponentPatterns.removeAll(matchResultsWithoutFileMatches);
+        }
+
+        // add artifacts representing the component patterns
+        deriveAddonArtifactsFromMatchResult(scanBaseDir, scanDir, matchedComponentPatterns, scanInventory);
+
+        // add the files not covered by component patterns
         populateInventoryWithScannedFiles(scanBaseDir, scanIncludes, scanExcludes, referenceInventory, scanInventory, files);
+    }
+
+    private void deriveAddonArtifactsFromMatchResult(File scanBaseDir, File scanDir, List<MatchResult> componentPatterns, Inventory scanInventory) {
+        for (MatchResult matchResult : componentPatterns) {
+            scanInventory.getArtifacts().add(matchResult.deriveArtifact(scanBaseDir));
+        }
     }
 
     private List<MatchResult> matchComponentPatterns(Set<File> files, File scanBaseDir, File scanDir, Inventory referenceInventory, Inventory scanInventory) {
@@ -180,10 +208,7 @@ public class DirectoryInventoryScan {
 
                 final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
                 copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, Constants.ASTERISK);
-                matchedComponentPatterns.add(new MatchResult(copyCpd, scanDir));
-
-                // derive artifact from matched component
-                scanInventory.getArtifacts().add(deriveArtifact(scanBaseDir, scanDir, copyCpd));
+                matchedComponentPatterns.add(new MatchResult(copyCpd, scanDir, scanDir));
 
                 // continue with next component pattern (otherwise this would produce a hugh amount of matched patterns)
                 continue;
@@ -206,25 +231,12 @@ public class DirectoryInventoryScan {
                     }  else {
                         final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
                         copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, fileChecksumOrAsterisk);
-                        matchedComponentPatterns.add(new MatchResult(copyCpd, file));
-
-                        // derive artifact from matched component
-                        scanInventory.getArtifacts().add(deriveArtifact(
-                                scanBaseDir, computeComponentBaseDir(scanBaseDir, file, normalizedVersionAnchor), copyCpd));
+                        matchedComponentPatterns.add(new MatchResult(copyCpd, file, computeComponentBaseDir(scanBaseDir, file, normalizedVersionAnchor)));
                     }
                 }
             }
         }
         return matchedComponentPatterns;
-    }
-
-    private Artifact deriveArtifact(File scanBaseDir, File scanDir, ComponentPatternData componentPatternData) {
-        final Artifact derivedArtifact = new Artifact();
-        derivedArtifact.setId(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_PART));
-        derivedArtifact.setComponent(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME));
-        derivedArtifact.setVersion(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
-        derivedArtifact.addProject(asRelativePath(scanBaseDir, scanDir));
-        return derivedArtifact;
     }
 
     private void populateInventoryWithScannedFiles(File scanBaseDir, String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory, Inventory scanInventory, Set<File> files) {
@@ -299,7 +311,7 @@ public class DirectoryInventoryScan {
         }
     }
 
-    private void filterFilesMatchedByComponentPatterns(Set<File> files, File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor) {
+    private void filterFilesMatchedByComponentPatterns(Set<File> files, File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches) {
         // remove the matched file covered by the matched components
         for (MatchResult matchResult : matchedComponentDataOnAnchor) {
             final ComponentPatternData cpd = matchResult.componentPatternData;
@@ -324,7 +336,12 @@ public class DirectoryInventoryScan {
                     }
                 }
             }
-            files.removeAll(matchedFiles);
+
+            if (matchedFiles.isEmpty()) {
+                matchResultsWithoutFileMatches.add(matchResult);
+            } else {
+                files.removeAll(matchedFiles);
+            }
         }
     }
 
