@@ -286,6 +286,7 @@
                     <plugin>
                         <groupId>org.metaeffekt.core</groupId>
                         <artifactId>ae-version-maven-plugin</artifactId>
+                        <version>0.24.0</version>
                     </plugin>
                 </plugins>
             </build>
