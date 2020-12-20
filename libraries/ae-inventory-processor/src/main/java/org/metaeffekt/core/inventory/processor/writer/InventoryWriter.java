@@ -141,7 +141,7 @@ public class InventoryWriter {
     private int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
         if (attributesSet.contains(key)) {
             orderedAttributesList.remove(key);
-            orderedAttributesList.add(insertIndex, key);
+            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
             insertIndex++;
         }
         return insertIndex;
