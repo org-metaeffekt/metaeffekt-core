@@ -33,8 +33,11 @@ public abstract class AbstractContainerValidationTest {
 
         inventory.getArtifacts().stream().forEach(this::assertAttributes);
 
-        assertTrue(new File(analysisDir, "files.txt").exists());
-        assertTrue(new File(analysisDir, "files").exists());
+        assertTrue(new File(analysisDir, "filesystem/files.txt").exists());
+        assertTrue(new File(analysisDir, "filesystem/folders.txt").exists());
+        assertTrue(new File(analysisDir, "filesystem/symlinks.txt").exists());
+        assertTrue(new File(analysisDir, "package-meta").exists());
+        assertTrue(new File(analysisDir, "package-files").exists());
     }
 
     protected void assertAttributes(Artifact artifact) {

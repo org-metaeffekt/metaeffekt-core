@@ -26,7 +26,7 @@ public class UbuntuFileFilterTest extends AbstractContainerFileFilterTest {
         excludePatterns.add("/.dockerenv");
         excludePatterns.add("/usr/lib/locale/locale-archive");
 
-        assertFilesFiltered(analysisDir, excludePatterns, 28);
+        assertFilesFiltered(analysisDir, excludePatterns, 30);
     }
 
 }

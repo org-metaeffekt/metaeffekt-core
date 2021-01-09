@@ -29,7 +29,7 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
         for (Artifact artifact : inventory.getArtifacts()) {
             String id = artifact.getId();
 
-            String path = "packages/" + id + "_apk.txt";
+            String path = "package-meta/" + id + "_apk.txt";
             File packageDetailsFile = new File(analysisDir, path);
 
             if (!packageDetailsFile.exists()) {

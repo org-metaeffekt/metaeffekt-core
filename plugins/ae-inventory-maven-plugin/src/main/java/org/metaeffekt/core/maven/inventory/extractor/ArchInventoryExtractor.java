@@ -52,7 +52,7 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             String name = entry.getKey();
             PackageInfo p = entry.getValue();
-            File file = new File(analysisDir, "packages/" + name + "_arch.txt");
+            File file = new File(analysisDir, "package-meta/" + name + "_arch.txt");
             if (file.exists()) {
                 List<String> content = FileUtils.readLines(file, FileUtils.ENCODING_UTF_8);
                 for (String line : content) {

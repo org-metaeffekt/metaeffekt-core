@@ -124,9 +124,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     @Override
     public void validate(File analysisDir) throws IllegalStateException {
         // here the common aspects are validated
-        validateFileExists(new File(analysisDir, "files.txt"));
-        validateFileHasContent(new File(analysisDir, "issue.txt"));
-        validateFileExists(new File(analysisDir, "release.txt"));
+        validateFileExists(new File(analysisDir, "filesystem/files.txt"));
         validateFileHasContent(new File(analysisDir, "uname.txt"));
     }
 

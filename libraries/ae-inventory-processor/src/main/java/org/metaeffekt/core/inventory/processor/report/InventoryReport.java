@@ -132,6 +132,11 @@ public class InventoryReport {
     private boolean failOnMissingLicenseFile = true;
     private boolean failOnMissingNotice = true;
 
+    /**
+     * Default to false for compatibility reasons
+     */
+    private boolean failOnMissingComponentFiles = false;
+
     private float vulnerabilityScoreThreshold = 7.0f;
 
     private ArtifactFilter artifactFilter;
@@ -626,7 +631,7 @@ public class InventoryReport {
             copyFolderContent(sourceComponentRootDir, componentFolderName, targetDir);
         } else {
             if (!reportedLicenseFolders.contains(componentFolderName)) {
-                if (failOnMissingLicenseFile) {
+                if (failOnMissingComponentFiles) {
                     LOG.error("No component-specific license file in folder '{}'", componentFolderName);
                 } else {
                     LOG.warn("No component-specific license file in folder '{}'", componentFolderName);
@@ -1125,5 +1130,13 @@ public class InventoryReport {
 
     public String getTemplateLanguageSelector() {
         return templateLanguageSelector;
+    }
+
+    public void setFailOnMissingComponentFiles(boolean failOnMissingComponentFiles) {
+        this.failOnMissingComponentFiles = failOnMissingComponentFiles;
+    }
+
+    public boolean isFailOnMissingComponentFiles() {
+        return failOnMissingComponentFiles;
     }
 }

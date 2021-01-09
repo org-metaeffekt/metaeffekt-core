@@ -26,7 +26,7 @@ public class SuseFileFilterTest extends AbstractContainerFileFilterTest {
         excludePatterns.add("/.dockerenv");
         excludePatterns.add("/usr/lib/locale/locale-archive");
 
-        assertFilesFiltered(analysisDir, excludePatterns, 325);
+        assertFilesFiltered(analysisDir, excludePatterns, 299);
     }
 
 }

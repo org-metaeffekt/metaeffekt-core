@@ -1,0 +1,11 @@
+/.
+/usr
+/usr/share
+/usr/share/doc
+/usr/share/doc/pgdg-keyring
+/usr/share/doc/pgdg-keyring/changelog.gz
+/usr/share/doc/pgdg-keyring/copyright
+/usr/share/postgresql-common
+/usr/share/postgresql-common/pgdg
+/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc
+/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg

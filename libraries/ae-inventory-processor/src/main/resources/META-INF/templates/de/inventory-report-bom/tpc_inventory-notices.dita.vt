@@ -15,19 +15,6 @@
         <body>
 #foreach($artifactNotice in $componentNotice.getArtifactNotices())
 
-## insert notice
-#set($notice=$artifactNotice.getNotice())
-#if($notice.isEmpty())
-    <p>
-        Die hier detaillierte Software beinhaltet <b>$componentNotice.getComponentName()</b>.
-    </p>
-    <p>
-        Die vorliegenden Version von $componentNotice.getComponentName() unterliegen den Bestimmungen der $componentNotice.getLicense().
-    </p>
-#else
-    $notice.trim()
-#end
-
 ## insert table
             <p>
                 <table otherprops="wide">
@@ -68,6 +55,20 @@
                 </table>
             </p>
 ## insert table END
+
+## insert notice
+#set($notice=$artifactNotice.getNotice())
+#if($notice.isEmpty())
+    <p>
+        Die hier detaillierte Software beinhaltet <b>$report.xmlEscapeString($componentNotice.getComponentName())</b>.
+    </p>
+    <p>
+        Die vorliegenden Version von $report.xmlEscapeString($componentNotice.getComponentName()) unterliegen den
+        Bestimmungen der $componentNotice.getLicense().
+    </p>
+#else
+    $notice.trim()
+#end
 
 #end
         </body>

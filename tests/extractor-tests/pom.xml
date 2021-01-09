@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-plugin-management-pom</artifactId>
-        <version>0.32.1</version>
+        <version>HEAD-SNAPSHOT</version>
         <relativePath>../../poms/ae-core-plugin-management-pom</relativePath>
     </parent>
 
@@ -106,7 +106,7 @@
                                     <argument>${ae.extractor.script}</argument>
                                     <argument>${image.id}</argument>
                                 </arguments>
-                                <outputFile>${project.build.directory}/analysis/docker.out.txt</outputFile>
+                                <outputFile>${project.build.directory}/analysis/docker.extract.out.txt</outputFile>
                             </configuration>
                         </execution>
                         <execution>
@@ -129,7 +129,7 @@
                                     <argument>/container-extractors/extract-filtered-files.sh</argument>
                                     <argument>${image.id}</argument>
                                 </arguments>
-                                <outputFile>${project.build.directory}/analysis/docker.out.txt</outputFile>
+                                <outputFile>${project.build.directory}/analysis/docker.extract-files.out.txt</outputFile>
                             </configuration>
                         </execution>
                     </executions>

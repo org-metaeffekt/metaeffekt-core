@@ -1,6 +1,8 @@
 package org.metaeffekt.core.test.container;
 
+import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.maven.inventory.extractor.InventoryExtractorUtil;
 import org.metaeffekt.core.test.container.validation.AbstractContainerFileFilterTest;
 
 import java.io.File;

@@ -16,29 +16,44 @@
 # limitations under the License.
 #
 
-# create result folders (assuming sufficient permissions)
-mkdir -p /analysis/packages
-mkdir -p /analysis/files
+echo "Executing debian-extractor.sh"
 
-# collect general information on distribution
+# create folder structure in analysis folder
+mkdir -p /analysis/package-meta
+mkdir -p /analysis/package-files
+mkdir -p /analysis/filesystem
+
+# generate list of all files (excluding the analysis folders; excluding symlinks)
+find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/filesystem/files.txt
+find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type d | sort > /analysis/filesystem/folders.txt
+find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type l | sort > /analysis/filesystem/links.txt
+
+# analyse symbolic links
+rm -f /analysis/filesystem/symlinks.txt
+touch /analysis/filesystem/symlinks.txt
+filelist=`cat /analysis/filesystem/links.txt`
+for file in $filelist
+do
+  echo "$file --> `readlink $file`" >> /analysis/filesystem/symlinks.txt
+done
+
+# examine distributions metadata
 uname -a > /analysis/uname.txt
 cat /etc/issue > /analysis/issue.txt
 cat /etc/debian_version > /analysis/release.txt
 
 # list packages names (no version included)
-apt list | sort > /analysis/packages_apt.txt
 dpkg -l | sort > /analysis/packages_dpkg.txt
 
 # list packages (names only)
 cat /analysis/packages_dpkg.txt | grep ^ii | awk '{print $2}' | sed 's/:amd64//' | sort > /analysis/packages_dpkg-name-only.txt
 
+# query package metadata and covered files
 packagenames=`cat /analysis/packages_dpkg-name-only.txt`
-
-# collect package meta data
 for package in $packagenames
 do
-  apt show $package  > /analysis/packages/${package}_apt.txt
-  dpkg -L $package  > /analysis/files/${package}_files.txt
+  apt show $package  > /analysis/package-meta/${package}_apt.txt
+  dpkg -L $package  > /analysis/package-files/${package}_files.txt
 done
 
 # copy /usr/share/doc/
@@ -48,6 +63,3 @@ cp --no-preserve=mode -rf /usr/share/doc/* /analysis/usr-share-doc/
 # copy /usr/share/common-licenses
 mkdir -p /analysis/usr-share-common-licenses/
 cp --no-preserve=mode -rf /usr/share/common-licenses/* /analysis/usr-share-common-licenses/
-
-# generate list of all files (excluding the analysis folders)
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/files.txt

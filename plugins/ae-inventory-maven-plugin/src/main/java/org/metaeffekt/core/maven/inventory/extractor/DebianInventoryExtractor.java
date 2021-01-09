@@ -60,7 +60,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = entry.getKey();
-            File packageFile = new File(analysisDir, "packages/" + packageId + "_apt.txt");
+            File packageFile = new File(analysisDir, "package-meta/" + packageId + "_apt.txt");
             if (packageFile.exists()) {
                 List<String> fileContentLines = FileUtils.readLines(packageFile, FileUtils.ENCODING_UTF_8);
 

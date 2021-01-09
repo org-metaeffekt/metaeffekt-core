@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright 2020 the original author or authors.
+# Copyright 2020 metaeffekt GmbH.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,28 @@
 # limitations under the License.
 #
 
-mkdir -p /analysis/packages
-mkdir -p /analysis/files
+echo "Executing centos-extractor.sh"
 
+# create folder structure in analysis folder
+mkdir -p /analysis/package-meta
+mkdir -p /analysis/package-files
+mkdir -p /analysis/filesystem
+
+# generate list of all files (excluding the analysis folders; excluding symlinks)
+find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/filesystem/files.txt
+find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type d | sort > /analysis/filesystem/folders.txt
+find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type l | sort > /analysis/filesystem/links.txt
+
+# analyse symbolic links
+rm -f /analysis/filesystem/symlinks.txt
+touch /analysis/filesystem/symlinks.txt
+filelist=`cat /analysis/filesystem/links.txt`
+for file in $filelist
+do
+  echo "$file --> `readlink $file`" >> /analysis/filesystem/symlinks.txt
+done
+
+# examine distributions metadata
 uname -a > /analysis/uname.txt
 cat /etc/issue > /analysis/issue.txt
 cat /etc/centos-release > /analysis/release.txt
@@ -28,12 +47,12 @@ rpm -qa --qf '| %{NAME} | %{VERSION} | %{LICENSE} |\n' | sort > /analysis/packag
 # list packages names (no version included)
 rpm -qa --qf '%{NAME}\n' | sort > /analysis/packages_rpm-name-only.txt
 
+# query package metadata and covered files
 packagenames=`cat /analysis/packages_rpm-name-only.txt`
-
 for package in $packagenames
 do
-  rpm -qi $package > /analysis/packages/${package}_rpm.txt
-  rpm -q --filesbypkg ${package} | sed 's/[^/]*//' | sort > /analysis/files/${package}_files.txt
+  rpm -qi $package > /analysis/package-meta/${package}_rpm.txt
+  rpm -q --filesbypkg ${package} | sed 's/[^/]*//' | sort > /analysis/package-files/${package}_files.txt
 done
 
 mkdir -p /analysis/usr-share-doc/
@@ -41,5 +60,3 @@ cp --no-preserve=mode -rf /usr/share/doc/* /analysis/usr-share-doc/ || true
 
 mkdir -p /analysis/usr-share-licenses/
 cp --no-preserve=mode -rf /usr/share/licenses/* /analysis/usr-share-licenses/ || true
-
-find / ! -path "/analysis/*" ! -path "/container-extractors/*" -type f | sort > /analysis/files.txt

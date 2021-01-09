@@ -4,6 +4,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +53,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = entry.getKey();
-            File packageFile = new File(analysisDir, "packages/" + packageId + "_rpm.txt");
+            File packageFile = new File(analysisDir, "package-meta/" + packageId + "_rpm.txt");
             if (packageFile.exists()) {
                 List<String> fileContentLines = FileUtils.readLines(packageFile, FileUtils.ENCODING_UTF_8);
 
@@ -73,6 +74,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
         String[] lines = packageFileContent.split("\\n");
 
         for (String line : lines) {
+            if (StringUtils.isEmpty(line)) continue;
 
             String[] elements = line.split("\\|");
 

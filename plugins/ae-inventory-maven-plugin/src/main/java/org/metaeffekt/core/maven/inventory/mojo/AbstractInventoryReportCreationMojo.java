@@ -144,6 +144,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean failOnMissingNotice;
 
     /**
+     * @parameter default-value="false"
+     */
+    private boolean failOnMissingComponentFiles;
+
+    /**
      * @parameter
      */
     private String artifactExcludes;
@@ -238,6 +243,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setFailOnUpgrade(failOnUpgrade);
         report.setFailOnMissingLicense(failOnMissingLicense);
         report.setFailOnMissingLicenseFile(failOnMissingLicenseFile);
+        report.setFailOnMissingComponentFiles(failOnMissingComponentFiles);
         report.setFailOnMissingNotice(failOnMissingNotice);
 
         // source inventory settings
