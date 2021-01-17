@@ -18,7 +18,7 @@
 
 echo "Executing alpine-extractor.sh"
 
-# create folder structure in analysis folder
+# create folder structure in analysis folder (assuming sufficient permissions)
 mkdir -p /analysis/package-meta
 mkdir -p /analysis/package-files
 mkdir -p /analysis/filesystem

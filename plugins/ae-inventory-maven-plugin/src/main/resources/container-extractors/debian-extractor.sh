@@ -18,7 +18,7 @@
 
 echo "Executing debian-extractor.sh"
 
-# create folder structure in analysis folder
+# create folder structure in analysis folder (assuming sufficient permissions)
 mkdir -p /analysis/package-meta
 mkdir -p /analysis/package-files
 mkdir -p /analysis/filesystem
@@ -56,10 +56,16 @@ do
   dpkg -L $package  > /analysis/package-files/${package}_files.txt
 done
 
-# copy /usr/share/doc/
+# copy resources in /usr/share/doc/
 mkdir -p /analysis/usr-share-doc/
-cp --no-preserve=mode -rf /usr/share/doc/* /analysis/usr-share-doc/
+cp --no-preserve=mode -rf /usr/share/doc/* /analysis/usr-share-doc/ || true
 
-# copy /usr/share/common-licenses
+# copy resources in /usr/share/common-licenses
 mkdir -p /analysis/usr-share-common-licenses/
-cp --no-preserve=mode -rf /usr/share/common-licenses/* /analysis/usr-share-common-licenses/
+cp --no-preserve=mode -rf /usr/share/common-licenses/* /analysis/usr-share-common-licenses/ || true
+
+# if docker is installed dump the image list
+command -v docker && docker images > /analysis/docker-images.txt || true
+
+# adapt ownership of extracted files to match folder creator user and group
+chown `stat -c '%u' /analysis`:`stat -c '%g' /analysis` -R /analysis
