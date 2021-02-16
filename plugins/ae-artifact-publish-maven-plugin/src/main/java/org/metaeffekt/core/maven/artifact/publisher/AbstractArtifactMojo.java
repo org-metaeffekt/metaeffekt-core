@@ -76,13 +76,12 @@ public abstract class AbstractArtifactMojo extends AbstractProjectAwareMojo {
 
     protected File getArtifactFile(String classifier) {
         final String artifactName = computeArtifactName(classifier);
-        return new File(getProject().getBuild().getDirectory(), artifactName.toString());
+        return new File(getProject().getBuild().getDirectory(), artifactName);
     }
 
     protected File getTempDir(File artifactFile) {
-        File tempDir = new File(getProject().getBuild().getDirectory(), "publish-artifact-"
+        return new File(getProject().getBuild().getDirectory(), "publish-artifact-"
                 + artifactFile.getName());
-        return tempDir;
     }
 
     public String getType() {

@@ -23,7 +23,6 @@ import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 
 /**
@@ -120,7 +119,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
-    public static final boolean matches(final String normalizedPattern, final String normalizedPath) {
+    public static boolean matches(final String normalizedPattern, final String normalizedPath) {
         if (normalizedPattern == null) return true;
         if (normalizedPath == null) return false;
 

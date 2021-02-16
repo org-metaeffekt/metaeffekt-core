@@ -87,14 +87,12 @@ public class PublicAnnotationAnalyser {
     }
 
     private String extractClassFilenameWithoutExtension(File classpathRoot, File file) {
-        String className = file.getAbsolutePath()
+        return file.getAbsolutePath()
                 .substring(0, file.getAbsolutePath().length() - CLASS_SUFFIX.length())
                 .substring(classpathRoot.getAbsolutePath().length() + 1)
                 .replace('\\', '/');
-        return className;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     private boolean isPublicAnnotated(Class clz, Class<? extends Annotation> annotationClass) {
         if (clz == null) {
             return false;

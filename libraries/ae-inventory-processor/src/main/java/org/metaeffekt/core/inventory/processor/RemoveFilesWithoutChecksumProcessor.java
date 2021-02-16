@@ -15,19 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-
-import static org.springframework.util.StringUtils.isEmpty;
 
 
 public class RemoveFilesWithoutChecksumProcessor extends AbstractInputInventoryBasedProcessor {

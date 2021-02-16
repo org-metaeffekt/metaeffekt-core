@@ -3,7 +3,7 @@ package org.metaeffekt.core.test.container;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
-import org.metaeffekt.core.maven.inventory.extractor.InventoryExtractor;
+
 import org.metaeffekt.core.test.container.validation.AbstractContainerValidationTest;
 
 import java.io.File;

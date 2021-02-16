@@ -133,7 +133,7 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             try {
                 Inventory inventory = new InventoryReader().readInventory(inventoryPath);
 
-                // iterate the license meta data and evaluate source category; we assume the license meta data was
+                // iterate the license metadata and evaluate source category; we assume the license metadata was
                 // filtered.
                 for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
                     LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
@@ -212,16 +212,19 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             appendPart(sourceCoordinates, classifier);
             appendPart(sourceCoordinates, type);
 
-            DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
-            DefaultArtifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
+            final DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
+            final DefaultArtifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
                     VersionRange.createFromVersionSpec(version), "runtime", type, classifier, handler);
+
             getLog().info("Resolving " + sourceArtifact);
 
-            ArtifactResolutionRequest request = new ArtifactResolutionRequest();
+            final ArtifactResolutionRequest request = new ArtifactResolutionRequest();
             request.setArtifact(sourceArtifact);
             request.setLocalRepository(localRepository);
             request.setRemoteRepositories(remoteRepositories);
-            ArtifactResolutionResult result = resolver.resolve(request);
+
+            final ArtifactResolutionResult result = resolver.resolve(request);
+
             if (result != null && result.isSuccess()) {
                 return result.getArtifacts().iterator().next();
             } else {

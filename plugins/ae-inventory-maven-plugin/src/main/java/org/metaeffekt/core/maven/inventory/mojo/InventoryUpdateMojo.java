@@ -79,8 +79,7 @@ public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
             if (processors != null) {
                 for (Processor processorConfig : processors) {
                     if (!processorConfig.isSkip()) {
-                        Object instance = createInstanceOf(processorConfig.getClassName(), AbstractInventoryProcessor.class);
-                        AbstractInventoryProcessor processor = (AbstractInventoryProcessor) instance;
+                        AbstractInventoryProcessor processor = createInstanceOf(processorConfig.getClassName(), AbstractInventoryProcessor.class);
 
                         Properties aggregrateProperties = new Properties();
                         aggregrateProperties.putAll(System.getProperties());
@@ -121,6 +120,5 @@ public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
             MavenLogAdapter.release();
         }
     }
-
 
 }

@@ -39,7 +39,7 @@ public class MavenLogAdapter {
      *
      * @param log The {@link org.apache.maven.plugin.logging.Log} instance to use.
      */
-    public static final void initialize(Log log) {
+    public static void initialize(Log log) {
         LOGS.add(StaticLoggerBinder.getSingleton().getMavenLog());
         StaticLoggerBinder.getSingleton().setMavenLog(log);
     }
@@ -47,7 +47,7 @@ public class MavenLogAdapter {
     /**
      * Releases the current factory and re-installs the original factory.
      */
-    public static final void release() {
+    public static void release() {
         Log log = LOGS.get(LOGS.size() - 1);
         StaticLoggerBinder.getSingleton().setMavenLog(log);
     }

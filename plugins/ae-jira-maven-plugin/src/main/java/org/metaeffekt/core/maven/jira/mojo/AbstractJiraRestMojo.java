@@ -105,7 +105,7 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
         try {
             getLog().debug("fetching REST issue for key: " + key);
             String url = serverUrl + "/rest/api/latest/issue/" + key + "?fields=" + fields;
-            final HttpGet httpGet = new HttpGet(url.toString());
+            final HttpGet httpGet = new HttpGet(url);
             try (final CloseableHttpResponse response = getClient().execute(httpGet)) {
                 checkResponse(response, url);
                 final HttpEntity entity = response.getEntity();
@@ -133,7 +133,7 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
         requestData.put("fields", fields);
         String requestDataString = JsonTransformer.transform(requestData, false);
 
-        final HttpPost httpPost = new HttpPost(url.toString());
+        final HttpPost httpPost = new HttpPost(url);
         httpPost.setEntity(new StringEntity(requestDataString));
         final CloseableHttpResponse response = getClient().execute(httpPost);
         try {

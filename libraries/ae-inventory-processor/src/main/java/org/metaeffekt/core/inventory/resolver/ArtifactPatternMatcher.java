@@ -46,11 +46,11 @@ public class ArtifactPatternMatcher {
     }
 
     private boolean matches(String string, String pattern) {
-        if (string == null) return false;
+        final String matchString = string == null ? "" : string;
         if (pattern.startsWith("^")) {
-            return string.matches(pattern);
+            return matchString.matches(pattern);
         } else {
-            return string.equalsIgnoreCase(pattern);
+            return matchString.equalsIgnoreCase(pattern);
         }
     }
 

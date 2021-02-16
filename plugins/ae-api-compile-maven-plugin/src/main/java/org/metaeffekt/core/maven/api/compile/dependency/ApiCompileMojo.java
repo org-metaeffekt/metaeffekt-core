@@ -119,7 +119,7 @@ public class ApiCompileMojo extends CompilerMojo {
         }
         ArrayList processedClasspath = new ArrayList(super.getClasspathElements().size());
         for (int i = 0; i < super.getClasspathElements().size(); i++) {
-            String path = (String) super.getClasspathElements().get(i);
+            String path = super.getClasspathElements().get(i);
             if (apiArtifacts.containsKey(path)) {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug("Classpath substitution from '" + path + "' to '" + ((Artifact) apiArtifacts.get(path)).getFile().getPath());

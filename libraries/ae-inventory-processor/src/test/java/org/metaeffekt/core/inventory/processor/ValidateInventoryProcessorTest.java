@@ -45,8 +45,6 @@ public class ValidateInventoryProcessorTest {
         Inventory customerCommonInventory = new InventoryReader().readInventory(new File(baseDir, "XXX"));
 
         File inventoryFile = new File(baseDir, "XXX");
-        Inventory projectCommonInventory = new InventoryReader().readInventory(inventoryFile);
-        Inventory inventory = projectCommonInventory;
 
         List<String> mirrors = new ArrayList<>();
         mirrors.add("http://ftp.gnome.org/mirror/eclipse.org/rt/rap/3.1/R-20160607-1451/plugins/");
@@ -73,7 +71,7 @@ public class ValidateInventoryProcessorTest {
         mirrors.add("http://ftp.gnome.org/mirror/eclipse.org/buildship/updates/e46/releases/2.x/2.0.0.v20170111-1029/plugins/");
 
 
-        for (Artifact artifact : inventory.getArtifacts()) {
+        for (Artifact artifact : new InventoryReader().readInventory(inventoryFile).getArtifacts()) {
 
             if (!StringUtils.isEmpty(artifact.getLicense()) && artifact.getLicense().contains("Proprietary")) {
                 continue;

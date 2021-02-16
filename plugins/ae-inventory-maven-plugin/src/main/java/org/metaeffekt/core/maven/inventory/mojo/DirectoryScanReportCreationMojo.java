@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
 

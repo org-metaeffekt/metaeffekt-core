@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class AbstractContainerFileFilterTest {

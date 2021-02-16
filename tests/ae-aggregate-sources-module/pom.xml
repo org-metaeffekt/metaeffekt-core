@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>ae-aggregate-sources-module</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-core-plugin-management-pom</artifactId>
+        <version>HEAD-SNAPSHOT</version>
+        <relativePath>../../poms/ae-core-plugin-management-pom</relativePath>
+    </parent>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-inventory-maven-plugin</artifactId>
+                <version>${project.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>download-p2</id>
+                        <goals>
+                            <goal>aggregate-sources</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <includeAllSources>true</includeAllSources>
+                            <failOnMissingSources>true</failOnMissingSources>
+                            <inventoryPath>${project.basedir}/artifact-inventory.xls</inventoryPath>
+
+                            <!-- Source Repositories -->
+                            <sourceRepositories>
+
+                                <!-- When using includeAllSources we have to mark those artifacts, where explicitly no sources are
+                                     intended to be included. An exclude repository in other words.
+                                -->
+                                <sourceRepository>
+                                    <id>No Source Repository</id>
+
+                                    <!-- a source repository without resolver or mirror configuration will not perform
+                                         any aggregation. The ingnoreMatches flag only suppresses the message that
+                                         an artifact was skipped -->
+
+                                    <targetFolder>none</targetFolder>
+                                    <ignoreMatches>false</ignoreMatches>
+                                    <patterns>
+                                        <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
+                                        <pattern>^ignore-me-.*\.jar</pattern>
+                                    </patterns>
+                                </sourceRepository>
+
+                                <sourceRepository>
+                                    <id>Internal / External Eclipse Mirrors</id>
+                                    <targetFolder>Original OSS</targetFolder>
+                                    <patterns>
+                                        <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
+                                        <pattern>^org\.eclipse\..*_.*\.jar:^.*:^.*:^.*</pattern>
+                                    </patterns>
+                                    <eclipseMirror>
+                                        <mirrorUrls>
+                                            <url>https://builds.gradle.org:8001/eclipse/update-site/mirror/releases-rolling/features/</url>
+                                        </mirrorUrls>
+                                    </eclipseMirror>
+                                </sourceRepository>
+
+                                <sourceRepository>
+                                    <id>Internal / External Eclipse Mirrors</id>
+                                    <targetFolder>Original OSS</targetFolder>
+                                    <patterns>
+                                        <!-- patterns: "artifact:component:version:effectiveLicense"; Regular expressions start with '^' -->
+                                        <pattern>^.*?_.*\.jar</pattern>
+                                    </patterns>
+                                    <eclipseMirror>
+                                        <mirrorUrls>
+                                            <url>https://builds.gradle.org:8001/eclipse/update-site/mirror/releases-rolling/plugins/</url>
+                                        </mirrorUrls>
+                                    </eclipseMirror>
+                                </sourceRepository>
+
+                            </sourceRepositories>
+                        </configuration>
+
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-core-modules-dependency-management-pom</artifactId>
+                <version>${ae.core.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

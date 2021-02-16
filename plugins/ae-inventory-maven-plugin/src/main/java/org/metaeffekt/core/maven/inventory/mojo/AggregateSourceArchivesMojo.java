@@ -17,13 +17,6 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.DefaultArtifactHandler;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -47,7 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Mojo dedicated to automated aggregation of sources. For each artifact in the provided inventory the license meta data
+ * Mojo dedicated to automated aggregation of sources. For each artifact in the provided inventory the license metadata
  * is evaluated. Using the source category of the license meta data it is determined whether and whereto download the
  * source artifacts.
  */
@@ -61,18 +54,6 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
      */
     @Component
     private org.apache.maven.artifact.resolver.ArtifactResolver resolver;
-
-    /**
-     * The local Maven repository where artifacts are cached during the build process.
-     */
-    @Parameter(defaultValue="${localRepository}", readonly = true, required = true )
-    private ArtifactRepository localRepository;
-
-    /**
-     * A list of remote Maven repositories to be used for the compile run.
-     */
-    @Parameter(defaultValue="${project.remoteArtifactRepositories}")
-    private java.util.List remoteRepositories;
 
     /**
      * A list of repositories, where the source archives for the included artifacts can be loaded from.
@@ -92,6 +73,9 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
     @Parameter(defaultValue = "false")
     private boolean skip;
 
+    /**
+     * Boolean indicating whether all sources need to be included (except retained).
+     */
     @Parameter(defaultValue = "false")
     private boolean includeAllSources;
 
@@ -122,7 +106,9 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
     @Parameter
     private Mapping alternativeArtifactSourceMapping;
 
-
+    /**
+     * Indicates whether the process should fail on missing sources.
+     */
     @Parameter(defaultValue = "true")
     private boolean failOnMissingSources;
 
@@ -148,30 +134,35 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             }
 
             // materialize configuration
-            List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
+            final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
             for (SourceRepository sourceRepository : sourceRepositories) {
                 sourceRepository.dumpConfig(getLog(), "");
                 delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate());
             }
 
+            final ExecutionStatus executionStatus = new ExecutionStatus();
+
             try {
                 getLog().info("Loading inventory: " + inventoryPath);
-                Inventory inventory = new InventoryReader().readInventory(inventoryPath);
 
-                // iterate the license meta data and evaluate source category; we assume the license meta data was
+                final Inventory inventory = new InventoryReader().readInventory(inventoryPath);
+
+                // iterate the license metadata and evaluate source category; we assume the license metadata was
                 // filtered.
                 for (org.metaeffekt.core.inventory.processor.model.Artifact artifact : inventory.getArtifacts()) {
-                    LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
+                    final LicenseMetaData licenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
+
+                    // differentiate source category RETAINED and ANNEX
                     if (licenseMetaData != null && StringUtils.isNotBlank(licenseMetaData.getSourceCategory())) {
                         String sourceCategory = licenseMetaData.getSourceCategory().trim().toLowerCase();
                         switch (sourceCategory) {
                             case LicenseMetaData.SOURCE_CATEGORY_ADDITIONAL:
                             case LicenseMetaData.SOURCE_CATEGORY_RETAINED:
-                                downloadArtifact(artifact, inventory, retainedSourcesSourcePath, delegateArtifactSourceRepositories);
+                                downloadArtifact(artifact, inventory, retainedSourcesSourcePath, delegateArtifactSourceRepositories, executionStatus);
                                 break;
                             case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
                             case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
-                                downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories);
+                                downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus);
                                 break;
                             default:
                                 throw new MojoExecutionException(
@@ -179,12 +170,25 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
                                                 licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
                         }
                     } else {
-                        // if license meta data or no source category annotation is given, we evaluate includeAllSources
+                        // if license metadata or no source category annotation is given, we evaluate includeAllSources
                         if (includeAllSources) {
-                            downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories);
+                            downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus);
+                        } else {
+                            // in this case we skip the source download
                         }
                     }
                 }
+
+                if (executionStatus.isError()) {
+                    getLog().error("Source aggregation incomplete:");
+                    for (ExecutionStatusEntry entry : executionStatus.getEntries()) {
+                        if (entry.getSeverity() == ExecutionStatusEntry.SEVERITY.ERROR) {
+                            getLog().error(entry.getMessage());
+                        }
+                    }
+                    throw new MojoExecutionException("Aggregation of source artifacts failed. At least one source artifact was not retrieved.");
+                }
+
             } catch (IOException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
@@ -193,27 +197,11 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
         }
     }
 
-    private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath, List<ArtifactSourceRepository> sourceRepositories) throws IOException, MojoFailureException {
-        String component = artifact.getComponent();
-        String artifactVersion = artifact.getVersion();
+    private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath,
+          List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus) throws IOException, MojoFailureException {
 
-        LicenseMetaData lmd = inventory.findMatchingLicenseMetaData(artifact);
-
-        String associatedLicense = artifact.getLicense();
-        String effectiveLicense = associatedLicense;
-        if (lmd != null && lmd.deriveLicenseInEffect() != null) {
-            effectiveLicense = lmd.deriveLicenseInEffect();
-        }
-
-        ArtifactSourceRepository matchingSourceRepository = null;
-        for (ArtifactSourceRepository sourceRepository : sourceRepositories) {
-            ArtifactPattern artifactGroup = sourceRepository.findMatchingArtifactGroup(artifact.getId(), component, artifactVersion, effectiveLicense);
-            if (artifactGroup != null) {
-                matchingSourceRepository = sourceRepository;
-                break;
-            }
-        }
-
+        final ArtifactSourceRepository matchingSourceRepository =
+                findMatchingArtifactSourceRepository(artifact, inventory, sourceRepositories);
 
         final Object artifactRepresentation = createArtifactRepresentation(artifact, inventory);
 
@@ -221,7 +209,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             // early exit for explicitly ignored artifacts
             if (matchingSourceRepository.getSourceArchiveResolver() == null) {
                 if (!matchingSourceRepository.isIgnoreMatches()) {
-                    getLog().warn(String.format("Skipped resolving sources for artifact '%s'.", artifactRepresentation));
+                    getLog().info(String.format("Skipped resolving sources for artifact '%s'.", artifactRepresentation));
                 }
                 return;
             }
@@ -232,15 +220,15 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
             if (result.isEmpty()) {
                 if (!result.getAttemptedResourceLocations().isEmpty()) {
-                    logOrFailOn(String.format("Attempted resource locations:"), false);
+                    logOrFailOn(String.format("Attempted resource locations:"), false, executionStatus);
                     for (String s : result.getAttemptedResourceLocations()) {
-                        logOrFailOn(s, false);
+                        logOrFailOn(s, false, executionStatus);
                     }
                 } else {
-                    logOrFailOn("No resource location mapped.", false);
+                    logOrFailOn("No resource location mapped.", false, executionStatus);
                 }
                 logOrFailOn(String.format("No sources resolved for artifact '%s', while matching source repository was: '%s'",
-                        artifactRepresentation, matchingSourceRepository.getId()), true);
+                        artifactRepresentation, matchingSourceRepository.getId()), true, executionStatus);
                 return;
             } else {
                 for (File file : result.getFiles()) {
@@ -254,10 +242,31 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             }
         } else {
             logOrFailOn(String.format("No sources resolved for artifact '%s', no matching source repository identified.",
-                    artifactRepresentation), true);
+                    artifactRepresentation), true, executionStatus);
             return;
         }
 
+    }
+
+    private ArtifactSourceRepository findMatchingArtifactSourceRepository(Artifact artifact, Inventory inventory, List<ArtifactSourceRepository> sourceRepositories) {
+        final LicenseMetaData lmd = inventory.findMatchingLicenseMetaData(artifact);
+        final String component = artifact.getComponent();
+        final String artifactVersion = artifact.getVersion();
+
+        String effectiveLicense = artifact.getLicense();
+        if (lmd != null && lmd.deriveLicenseInEffect() != null) {
+            effectiveLicense = lmd.deriveLicenseInEffect();
+        }
+
+        ArtifactSourceRepository matchingSourceRepository = null;
+        for (ArtifactSourceRepository sourceRepository : sourceRepositories) {
+            ArtifactPattern artifactGroup = sourceRepository.findMatchingArtifactGroup(artifact.getId(), component, artifactVersion, effectiveLicense);
+            if (artifactGroup != null) {
+                matchingSourceRepository = sourceRepository;
+                break;
+            }
+        }
+        return matchingSourceRepository;
     }
 
     private Object createArtifactRepresentation(Artifact artifact, Inventory inventory) {
@@ -289,95 +298,16 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
         return sb;
     }
 
-    private void logOrFailOn(String message, boolean failInCase) throws MojoFailureException {
+    private void logOrFailOn(String message, boolean failInCase, ExecutionStatus executionStatus) throws MojoFailureException {
         if (failOnMissingSources) {
-            getLog().error(message);
             if (failInCase) {
-                throw new MojoFailureException(message);
+                executionStatus.error(message);
+            } else {
+                getLog().warn(message);
             }
         } else {
             getLog().warn(message);
         }
-    }
-
-    private org.apache.maven.artifact.Artifact resolveSourceArtifact(org.metaeffekt.core.inventory.processor.model.Artifact artifact) throws MojoFailureException {
-        try {
-            artifact.deriveArtifactId();
-
-            // preset for default source resolving
-            String groupId = artifact.getGroupId();
-            String artifactId = artifact.getArtifactId();
-            String version = artifact.getVersion();
-            String classifier = "sources";
-            String type = artifact.getType();
-
-            // enable mapping (by filename)
-            if (alternativeArtifactSourceMapping != null &&
-                    alternativeArtifactSourceMapping.getMap().containsKey(artifact.getId())) {
-                String mappedSource = alternativeArtifactSourceMapping.getMap().get(artifact.getId());
-                // FIXME: for uniqueness a checksum may be required here
-
-                String[] mappedSourceParts = mappedSource.split(":");
-                groupId = extractPart(mappedSourceParts, 0, groupId);
-                artifactId = extractPart(mappedSourceParts, 1, artifactId);
-                version = extractPart(mappedSourceParts, 2, version);
-                classifier = extractPart(mappedSourceParts, 3, classifier);
-                type = extractPart(mappedSourceParts, 4, type);
-            }
-
-            StringBuilder sourceCoordinates = new StringBuilder();
-            appendPart(sourceCoordinates, groupId);
-            appendPart(sourceCoordinates, artifactId);
-            appendPart(sourceCoordinates, version);
-            appendPart(sourceCoordinates, classifier);
-            appendPart(sourceCoordinates, type);
-
-            DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
-            DefaultArtifact sourceArtifact = new DefaultArtifact(groupId, artifactId,
-                    VersionRange.createFromVersionSpec(version), "runtime", type, classifier, handler);
-            getLog().info("Resolving " + sourceArtifact);
-
-            ArtifactResolutionRequest request = new ArtifactResolutionRequest();
-            request.setArtifact(sourceArtifact);
-            request.setLocalRepository(localRepository);
-            request.setRemoteRepositories(remoteRepositories);
-            ArtifactResolutionResult result = resolver.resolve(request);
-            if (result != null && result.isSuccess()) {
-                return result.getArtifacts().iterator().next();
-            } else {
-                return null;
-            }
-        } catch (InvalidVersionSpecificationException e) {
-            return null;
-        }
-    }
-
-    private void logMissingSource(String message, Exception e) {
-        if (failOnMissingSources) {
-            if (e != null) {
-                getLog().error(message, e);
-            } else {
-                getLog().error(message);
-            }
-        } else {
-            getLog().error(message);
-        }
-    }
-
-    private void appendPart(StringBuilder sourceCoordinates, String part) {
-        sourceCoordinates.append(part == null ? "" : part).append(":");
-    }
-
-    private String extractPart(String[] mappedSourceParts, int index, String defaultValue) {
-        if (mappedSourceParts.length > index && StringUtils.isNotBlank(mappedSourceParts[index])) {
-            final String value = mappedSourceParts[index].trim();
-            if (value.equals("-")) {
-                // value '-' indicates that the value is removed
-                return null;
-            }
-            return value;
-        }
-        return defaultValue;
     }
 
     @Override

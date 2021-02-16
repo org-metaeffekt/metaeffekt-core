@@ -28,7 +28,7 @@ public abstract class InventoryExtractorUtil {
      * @return List of files not covered by package file lists or exclude patterns.
      * @throws IOException
      */
-    public static final List<String> filterFileList(File analysisDir, List<String> excludePatterns) throws IOException {
+    public static List<String> filterFileList(File analysisDir, List<String> excludePatterns) throws IOException {
         final File filesFile = new File(analysisDir, "filesystem/files.txt");
         final File symbolicLinksFile = new File(analysisDir, "filesystem/symlinks.txt");
         final File foldersFile = new File(analysisDir, "filesystem/folders.txt");
