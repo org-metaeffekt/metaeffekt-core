@@ -57,8 +57,7 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
     public static final String INVENTORY_ATTRIBUTE_DERIVED_LICENSE_LICENSE_CHECKER = "Derived License (license-checker)";
     public static final String INVENTORY_ATTRIBUTE_PUBLISHER = "Publisher";
 
-    public static final String SEPARATOR_AT = "@";
-
+    public static final String SEPARATOR_DASH = "-";
 
     @Parameter(defaultValue="${project.build.directory}/analysis/dependency-tree_prod.json", required = true )
     private File dependencyTreeJson;
@@ -155,7 +154,7 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
 
     protected Artifact createPackageArtifact(String name, String version, String sourceUrl, String sourceId) {
         Artifact artifact = new Artifact();
-        String id = name + SEPARATOR_AT + version;
+        String id = name + SEPARATOR_DASH + version;
         artifact.setId(id);
         artifact.setVersion(version);
         artifact.setComponent(name);
