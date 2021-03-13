@@ -1,5 +1,5 @@
 /**
- * Copyright 2009-2020 the original author or authors.
+ * Copyright 2009-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package org.metaeffekt.core.inventory.processor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
@@ -218,8 +215,11 @@ public class RepositoryReportTest {
         final File reportDir = new File("target/test-inventory-02");
         createReport(inventoryDir, "*.xls", reportDir);
 
+        // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
         String packageReportEffective = FileUtils.readFileToString(packageReportEffectiveFile, FileUtils.ENCODING_UTF_8);
+
+        // check links from package report
         Assert.assertTrue(
                 "Expecting references to license chapter.",
                 packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0-test\""));
@@ -228,8 +228,12 @@ public class RepositoryReportTest {
         Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
         new InventoryWriter().writeInventory(inventory, new File(reportDir, "output_artifact-inventory.xls"));
 
-        Inventory rereadInventory = new InventoryReader().readInventory(new File(inventoryDir,"output_artifact-inventory.xls"));
+        // read rewritten
+        Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir,"output_artifact-inventory.xls"));
 
+        // check selected data in reread inventory
+        Assert.assertEquals("GPL-2.0", rereadInventory.
+                findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
 
     }
 
