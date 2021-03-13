@@ -112,8 +112,11 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
         multiProjectInventory.getArtifacts().addAll(inventory.getArtifacts());
         multiProjectInventory.mergeDuplicates();
 
-        // merge license metadata
+        // merge license notice metadata
         multiProjectInventory.inheritLicenseMetaData(inventory, false);
+
+        // merge license metadata
+        multiProjectInventory.inheritLicenseData(inventory, false);
 
         // merge component patterns
         multiProjectInventory.inheritComponentPatterns(inventory, false);

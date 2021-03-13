@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.metaeffekt.core</groupId>
+		<artifactId>ae-core</artifactId>
+		<version>HEAD-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>ae-simple-npm-extractor</artifactId>
+	<packaging>pom</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.metaeffekt.core</groupId>
+				<artifactId>ae-inventory-maven-plugin</artifactId>
+				<version>${ae.core.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>extract-node-inventory</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<!--
+							<productionOnly>false</productionOnly>
+							-->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

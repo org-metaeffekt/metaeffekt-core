@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
+
+<body>
+    <p>
+        Table <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect</xref>
+        provides an overview of the licenses in effect. In the following paragraphs the individual components are listed
+        for each effective license.
+    </p>
+    <p>
+        Please note, that a component may be subject to several licenses in effect.
+    </p>
+    <table id="LicensesInEffect" otherprops="wide">
+        <title>Licenses in Effect$reportContext.inContextOf()</title>
+        <tgroup cols="4">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+            <colspec colname="COLSPEC1" colnum="2" colwidth="27*" />
+            <colspec colname="COLSPEC2" colnum="3" colwidth="10*" />
+            <colspec colname="COLSPEC3" colnum="4" colwidth="13*" />
+            <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">License in Effect</entry>
+                    <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+                    <entry colname="COLSPEC2" valign="top">OSI approved</entry>
+                    <entry colname="COLSPEC3" valign="top">Number of Components</entry>
+                </row>
+            </thead>
+            <tbody>
+#foreach($license in $inventory.evaluateLicenses(false))
+#set($folder=$inventory.getLicenseFolder($license))
+#set($name=$inventory.evaluateComponents($license))
+#set($licenseData=$inventory.findMatchingLicenseData($license))
+                <row>
+                    <entry>
+                        <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                            $report.xmlEscapeString($license.trim())
+                        </xref>
+                    </entry>
+                    <entry>#if($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>#if($licenseData)#if($licenseData.is('OSI Approved'))yes#else&nbsp;#end#else&nbsp;#end</entry>
+                    <entry>
+                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                            <codeph>$name.size()</codeph>
+                        </xref>
+                    </entry>
+                </row>
+#end
+            </tbody>
+        </tgroup>
+    </table>
+</body>
+
+#foreach($license in $inventory.evaluateLicenses(false))
+#set($folder=$inventory.getLicenseFolder($license))
+#set($name=$inventory.evaluateComponents($license))
+#if(!$name.isEmpty())
+<topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
+    <title>$report.xmlEscapeString($license)</title>
+    <body>
+        <p>
+            The following table lists all components that are licensed or contains subcomponents under $license.
+            #if($folder)
+                Information with respect to the license or contract can be found in
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license [external]</xref>.
+            #end
+        </p>
+        <p>
+            <table otherprops="wide">
+                <title>Components under $license.trim()$reportContext.inContextOf()</title>
+                <tgroup cols="3">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="60*" />
+                    <colspec colname="COLSPEC2" colnum="3" colwidth="20*" />
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC1" valign="top">Artifact / Package / Web Module</entry>
+                            <entry colname="COLSPEC2" valign="top">Version</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+#foreach($artifactLicenseData in $name)
+#set($hasNotice=$inventory.hasNotice($artifactLicenseData))
+#foreach($artifact in $artifactLicenseData.getArtifacts())
+                        #set($rows=$artifactLicenseData.getArtifacts().size())
+                        #set($rows=$rows - 1)
+                        <row>
+                            <entry>
+                                #if($hasNotice)
+                                    <xref href="tpc_inventory-notices.dita#tpc_component_notice_$inventory.deriveLicenseId($artifactLicenseData.componentName)" type="topic">
+                                        $report.xmlEscapeString($artifactLicenseData.componentName)
+                                    </xref>
+                                #else
+                                    $report.xmlEscapeString($artifactLicenseData.componentName)
+                                #end
+                            </entry>
+                            <entry>
+                                <lines>#if($artifact.getGroupId())<line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                                #end
+                                <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>
+                            </entry>
+                            <entry>
+                                <codeph>$report.xmlEscapeGAV($artifactLicenseData.componentVersion)</codeph>
+                            </entry>
+                        </row>
+#end
+#end
+                    </tbody>
+                </tgroup>
+            </table>
+        </p>
+    </body>
+</topic>
+#end
+#end
+</topic>

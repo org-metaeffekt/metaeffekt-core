@@ -4,6 +4,7 @@
     <title>$reportContext.combinedTitle("Packages", true)</title>
     <body>
 #set($components=$inventory.evaluateComponentsInContext("package"))
+#set($licensesInEffect=$inventory.evaluateLicenses(false))
 #if($components.isEmpty())
         <p>
             There are no individual <abbreviated-form keyref="package"/>.

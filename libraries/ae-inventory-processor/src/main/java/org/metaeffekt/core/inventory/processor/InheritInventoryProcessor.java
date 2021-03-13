@@ -35,6 +35,7 @@ public class InheritInventoryProcessor extends AbstractInputInventoryBasedProces
         final Inventory inputInventory = loadInputInventory();
         inventory.inheritArtifacts(inputInventory, true);
         inventory.inheritLicenseMetaData(inputInventory, true);
+        inventory.inheritLicenseData(inputInventory, true);
         inventory.inheritComponentPatterns(inputInventory, true);
         inventory.inheritVulnerabilityMetaData(inputInventory, true);
     }

@@ -47,6 +47,7 @@ public abstract class AbstractXlsInventoryReader {
 
         readArtifactMetaData(workbook, inventory);
         readLicenseMetaData(workbook, inventory);
+        readLicenseData(workbook, inventory);
         readComponentPatternData(workbook, inventory);
         readVulnerabilityMetaData(workbook, inventory);
 
@@ -144,6 +145,10 @@ public abstract class AbstractXlsInventoryReader {
         // default implementation does nothing
     }
 
+    protected void readLicenseDataHeader(HSSFRow row) {
+        // default implementation does nothing
+    }
+
     protected void readComponentPatternDataHeader(HSSFRow row) {
         // default implementation does nothing
     }
@@ -182,14 +187,43 @@ public abstract class AbstractXlsInventoryReader {
         }
     }
 
+    protected void readLicenseData(HSSFWorkbook workbook, Inventory inventory) {
+        final HSSFSheet sheet = workbook.getSheet("Licenses");
+        if (sheet == null) return;
+
+        final Iterator<?> rows = sheet.rowIterator();
+
+        final List<LicenseData> licenseDatas = new ArrayList<LicenseData>();
+        inventory.setLicenseData(licenseDatas);
+
+        // skip first line being the header
+        if (rows.hasNext()) {
+            readLicenseDataHeader((HSSFRow) rows.next());
+        }
+
+        while (rows.hasNext()) {
+            HSSFRow row = (HSSFRow) rows.next();
+            LicenseData licenseData = readLicenseData(row);
+            if (licenseData != null) {
+                licenseDatas.add(licenseData);
+            }
+        }
+
+        for (int i = 0; i < sheet.getLastRowNum(); i++) {
+            int width = sheet.getColumnWidth(i);
+            inventory.getContextMap().put("licenses.column[" + i + "].width", width);
+        }
+    }
+
     protected LicenseMetaData readLicenseMetaData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
-
+    protected LicenseData readLicenseData(HSSFRow row) {
+        throw new UnsupportedOperationException();
+    }
     protected ComponentPatternData readComponentPatternData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
-
     protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }

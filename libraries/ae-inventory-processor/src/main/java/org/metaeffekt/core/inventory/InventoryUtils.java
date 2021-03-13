@@ -79,6 +79,7 @@ public abstract class InventoryUtils {
             Inventory inventory = reader.readInventory(new File(inventoryBaseDir, inventoryFile));
             aggregateInventory.inheritArtifacts(inventory, true);
             aggregateInventory.inheritLicenseMetaData(inventory, true);
+            aggregateInventory.inheritLicenseData(inventory, true);
             aggregateInventory.inheritComponentPatterns(inventory, true);
             aggregateInventory.inheritVulnerabilityMetaData(inventory, true);
         }

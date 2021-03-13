@@ -448,6 +448,8 @@ public class InventoryReport {
         projectInventory.inheritLicenseMetaData(globalInventory, false);
         projectInventory.filterLicenseMetaData();
 
+        projectInventory.inheritLicenseData(globalInventory, false);
+
         // transfer available vulnerability information
         projectInventory.inheritVulnerabilityMetaData(globalInventory, false);
 

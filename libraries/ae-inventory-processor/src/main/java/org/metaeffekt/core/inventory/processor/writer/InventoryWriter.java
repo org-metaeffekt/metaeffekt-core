@@ -57,6 +57,7 @@ public class InventoryWriter {
         writeNotices(inventory, myWorkBook);
         writeComponentPatterns(inventory, myWorkBook);
         writeVulnerabilities(inventory, myWorkBook);
+        writeLicenseData(inventory, myWorkBook);
 
         FileOutputStream out = new FileOutputStream(file);
         try {
@@ -65,7 +66,6 @@ public class InventoryWriter {
             out.flush();
             out.close();
         }
-
     }
 
     private void writeArtifacts(Inventory inventory, HSSFWorkbook myWorkBook) {
@@ -312,7 +312,6 @@ public class InventoryWriter {
 
     }
 
-
     private void writeVulnerabilities(Inventory inventory, HSSFWorkbook myWorkBook) {
         HSSFSheet sheet = myWorkBook.createSheet("Vulnerabilities");
         sheet.createFreezePane(0, 1);
@@ -390,4 +389,54 @@ public class InventoryWriter {
 
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
+
+    private void writeLicenseData(Inventory inventory, HSSFWorkbook myWorkBook) {
+        HSSFSheet sheet = myWorkBook.createSheet("Licenses");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
+
+        HSSFRow row = null;
+        HSSFCell cell = null;
+
+        int rowNum = 0;
+
+        row = sheet.createRow(rowNum++);
+
+        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+
+        int cellNum = 0;
+
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (LicenseData vmd : inventory.getLicenseData()) {
+            attributes.addAll(vmd.getAttributes());
+        }
+
+        attributes.removeAll(LicenseData.CORE_ATTRIBUTES);
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        List<String> finalOrder = new ArrayList<>(LicenseData.CORE_ATTRIBUTES);
+        finalOrder.addAll(ordered);
+
+        for (String key : finalOrder) {
+            cell = row.createCell(cellNum++);
+            cell.setCellStyle(headerStyle);
+            cell.setCellValue(new HSSFRichTextString(key));
+        }
+
+        int numCol = cellNum;
+
+        for (LicenseData cpd : inventory.getLicenseData()) {
+            row = sheet.createRow(rowNum++);
+            cellNum = 0;
+            for (String key : finalOrder) {
+                cell = row.createCell(cellNum++);
+                cell.setCellValue(new HSSFRichTextString(cpd.get(key)));
+            }
+        }
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
+    }
+
 }

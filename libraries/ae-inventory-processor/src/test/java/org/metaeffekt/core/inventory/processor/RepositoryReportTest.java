@@ -15,16 +15,18 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
+import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
@@ -39,8 +41,6 @@ import static org.junit.Assert.assertTrue;
 public class RepositoryReportTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(RepositoryReportTest.class);
-
-    public static final String TARGET_FOLDER = "target/test-inventory-01";
 
     private static final File INVENTORY_DIR = new File("src/test/resources/test-inventory-01");
     private static final String INVENTORY_INCLUDES = "*.xls";
@@ -72,7 +72,7 @@ public class RepositoryReportTest {
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);
 
-        File target = new File(TARGET_FOLDER);
+        File target = new File("target/test-inventory-01");
         target.mkdirs();
 
         File targetReportPath = new File(target, "report");
@@ -212,16 +212,34 @@ public class RepositoryReportTest {
         Assert.assertTrue(matcher.match("/**/org/springframework/boot/loader/**/*", path));
     }
 
-    @Ignore
     @Test
     public void testCreateTestReport() throws Exception {
-        createReport(new File("<some-inventory>"), "*.xls");
+        final File inventoryDir = new File("src/test/resources/test-inventory-02");
+        final File reportDir = new File("target/test-inventory-02");
+        createReport(inventoryDir, "*.xls", reportDir);
+
+        File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
+        String packageReportEffective = FileUtils.readFileToString(packageReportEffectiveFile, FileUtils.ENCODING_UTF_8);
+        Assert.assertTrue(
+                "Expecting references to license chapter.",
+                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0-test\""));
+
+        // read/write inventory
+        Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
+        new InventoryWriter().writeInventory(inventory, new File(reportDir, "output_artifact-inventory.xls"));
+
+        Inventory rereadInventory = new InventoryReader().readInventory(new File(inventoryDir,"output_artifact-inventory.xls"));
+
+
     }
 
-    private boolean createReport(File inventoryDir, String inventoryIncludes) throws Exception {
+    private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget) throws Exception {
         InventoryReport report = new InventoryReport();
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
+
+        report.setInventoryBomReportEnabled(true);
+        report.setInventoryVulnerabilityReportEnabled(true);
 
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
@@ -232,14 +250,12 @@ public class RepositoryReportTest {
 
         report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
 
-        File target = new File(TARGET_FOLDER);
-        target.mkdirs();
+        report.setTargetReportDir(new File(reportTarget, "report"));
 
-        File reportTarget = new File(target, "report");
         reportTarget.mkdirs();
 
-        final File targetLicensesDir = new File(target, "licenses");
-        final File targetComponentDir = new File(target, "components");
+        final File targetLicensesDir = new File(reportTarget, "licenses");
+        final File targetComponentDir = new File(reportTarget, "components");
         report.setTargetLicenseDir(targetLicensesDir);
         report.setTargetComponentDir(targetComponentDir);
 

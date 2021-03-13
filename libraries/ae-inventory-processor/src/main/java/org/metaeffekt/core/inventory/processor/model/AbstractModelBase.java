@@ -18,9 +18,14 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Abstract model base class. Support associating key and values as generic concept. Keys can be bound to enums specified
+ * by the subclass.
+ */
 public abstract class AbstractModelBase {
 
     public interface Attribute {
@@ -41,10 +46,43 @@ public abstract class AbstractModelBase {
         return get(key, null);
     }
 
+    /**
+     * Get the value associated with the given key. Use defaultValue, in case the key is not associated with any value.
+     *
+     * @param key The key to get the value for.
+     * @param defaultValue The default value to use, in case the key is not associated.
+     * @return The value associated with the key or defaultValue in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     */
     public String get(String key, String defaultValue) {
         if (key == null) return null;
-        String currentValue = attributeMap.get(key);
+        final String currentValue = attributeMap.get(key);
         return (currentValue != null) ? currentValue : defaultValue;
+    }
+
+    /**
+     * Function to check for a boolean value.
+     *
+     * @param key The key to get the boolean value for.
+     * @return The boolean value associated with the key. Returns <code>false</code> in case the associated value is
+     * not equivalent to <code>Boolean.TRUE</code> or in case key is <code>null</code>.
+     */
+    public boolean is(String key) {
+        return is(key, false);
+    }
+
+    /**
+     * Function to check for a boolean value.
+     *
+     * @param key The key to get the boolean value for.
+     * @param defaultValue he default value to use, in case the key is not associated.
+     * @return The boolean value associated with the key. Returns defaultValue in case the associated value is
+     * not equivalent to <code>Boolean.TRUE</code> and <code>false</code> in case key is <code>null</code>.
+     */
+    public boolean is(String key, boolean defaultValue) {
+        if (key == null) return defaultValue;
+        final String currentValue = attributeMap.get(key);
+        return (currentValue != null) ? Boolean.TRUE.toString().equalsIgnoreCase(currentValue) : defaultValue;
     }
 
     public void set(String key, String value) {
@@ -90,5 +128,18 @@ public abstract class AbstractModelBase {
             return defaultValue;
         }
     }
+
+    protected String createCompareStringRepresentation(List<String> attributeKeys) {
+        final StringBuilder sb = new StringBuilder();
+        for (final String attributeKey : attributeKeys) {
+            if (sb.length() > 0) {
+                sb.append(":");
+            }
+            final String value = get(attributeKey);
+            sb.append(value == null ? "" : value);
+        }
+        return sb.toString();
+    }
+
 
 }

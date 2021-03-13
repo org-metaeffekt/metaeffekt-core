@@ -55,6 +55,8 @@ public class Inventory {
 
     private List<ComponentPatternData> componentPatternData = new ArrayList<>();
 
+    private List<LicenseData> licenseData = new ArrayList<>();
+
     private List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
 
     private Map<String, String> licenseNameMap = new HashMap<>();
@@ -612,6 +614,24 @@ public class Inventory {
         return findMatchingLicenseMetaData(artifact.getComponent(), artifact.getLicense(), artifact.getVersion());
     }
 
+    /**
+     * Tries to find the {@link LicenseData} with the given canonicalName.
+     *
+     * @param canonicalName The canonical name.
+     * @return The found {@link LicenseData} instance or <code>null</code> in case no matching {@link LicenseData}
+     * instance was identified.
+     */
+    public LicenseData findMatchingLicenseData(String canonicalName) {
+        if (StringUtils.isEmpty(canonicalName)) return null;
+
+        for (LicenseData ld : licenseData) {
+            if (canonicalName.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
+                return ld;
+            }
+        }
+        return null;
+    }
+
     public List<Artifact> getArtifacts() {
         return artifacts;
     }
@@ -1067,6 +1087,7 @@ public class Inventory {
         filteredInventory.setComponentNameMap(getComponentNameMap());
         filteredInventory.setContextMap(getContextMap());
         filteredInventory.setLicenseMetaData(getLicenseMetaData());
+        filteredInventory.setLicenseData(getLicenseData());
         filteredInventory.setLicenseNameMap(getLicenseNameMap());
         filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         return filteredInventory;
@@ -1267,6 +1288,35 @@ public class Inventory {
         }
     }
 
+    public void inheritLicenseData(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, LicenseData> localLds = new HashMap<>();
+        for (LicenseData ld : getLicenseData()) {
+            String artifactQualifier = ld.deriveQualifier();
+            localLds.put(artifactQualifier, ld);
+        }
+        for (LicenseData ld : inputInventory.getLicenseData()) {
+            String qualifier = ld.deriveQualifier();
+            if (localLds.containsKey(qualifier)) {
+                // overwrite; the localLds inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    LicenseData localLd = localLds.get(qualifier);
+                    if (ld.createCompareStringRepresentation().equals(
+                            localLd.createCompareStringRepresentation())) {
+                        LOG.info("License data {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("License data %s overwritten. %n  %s%n  %s", qualifier,
+                                ld.createCompareStringRepresentation(),
+                                localLd.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                // add the artifact
+                getLicenseData().add(ld);
+            }
+        }
+    }
+
     public void inheritVulnerabilityMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
         final Map<String, VulnerabilityMetaData> localVmds = new HashMap<>();
         for (VulnerabilityMetaData vmd : getVulnerabilityMetaData()) {
@@ -1378,4 +1428,11 @@ public class Inventory {
         return InventoryUtils.tokenizeLicense(effectiveLicense, true, true);
     }
 
+    public void setLicenseData(List<LicenseData> licenseData) {
+        this.licenseData = licenseData;
+    }
+
+    public List<LicenseData> getLicenseData() {
+        return licenseData;
+    }
 }

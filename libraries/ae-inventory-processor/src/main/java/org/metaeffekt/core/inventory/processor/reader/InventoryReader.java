@@ -17,10 +17,7 @@ package org.metaeffekt.core.inventory.processor.reader;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.LicenseMetaData;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -30,6 +27,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     private Map<Integer, String> artifactColumnMap = new HashMap<>();
 
     private Map<Integer, String> licenseMetaDataColumnMap = new HashMap<>();
+    private Map<Integer, String> licenseDataColumnMap = new HashMap<>();
     private Map<Integer, String> componentPatternDataColumnMap = new HashMap<>();
     private Map<Integer, String> vulnerabilityMetaDataColumnMap = new HashMap<>();
 
@@ -41,6 +39,11 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected void readLicenseMetaDataHeader(HSSFRow row) {
         parseColumns(row, licenseMetaDataColumnMap);
+    }
+
+    @Override
+    protected void readLicenseDataHeader(HSSFRow row) {
+        parseColumns(row, licenseDataColumnMap);
     }
 
     @Override
@@ -165,6 +168,25 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         return null;
     }
 
+    @Override
+    protected LicenseData readLicenseData(HSSFRow row) {
+        final LicenseData licenseData = new LicenseData();
+        Map<Integer, String> map = this.licenseDataColumnMap;
+        for (int i = 0; i < map.size(); i++) {
+            final String columnName = map.get(i).trim();
+            final HSSFCell myCell = row.getCell(i);
+            final String value = myCell != null ? myCell.toString() : null;
+            if (value != null) {
+                licenseData.set(columnName, value.trim());
+            }
+        }
+
+        if (licenseData.isValid()) {
+            return licenseData;
+        }
+
+        return null;
+    }
     @Override
     protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
         parseColumns(row, vulnerabilityMetaDataColumnMap);
