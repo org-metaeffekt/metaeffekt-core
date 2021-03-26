@@ -21,20 +21,19 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
     public static final String FOLDER_USR_SHARE_DOC = "usr-share-doc";
-    public static final String FOLDER_USR_SHARE_LICENSE = "usr-share-license";
-
+    public static final String FOLDER_USR_SHARE_LICENSE = "usr-share-licenses";
 
     public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException {
-        String issue = extractIssue(analysisDir);
+        final String issue = extractIssue(analysisDir);
 
         // use specific inventory implementation to extract inventory
-        Inventory inventory = new Inventory();
+        final Inventory inventory = new Inventory();
 
         extendInventory(analysisDir, inventory);
 
         extendNotCoveredFiles(analysisDir, inventory, excludePatterns);
 
-        for (Artifact artifact : inventory.getArtifacts()) {
+        for (final Artifact artifact : inventory.getArtifacts()) {
             artifact.set(KEY_SOURCE_PROJECT, inventoryId);
             // TODO extract container id
             // artifact.set(KEY_ATTRIBUTE_CONTAINER, analysisDir.getName());
@@ -45,7 +44,8 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     }
 
     private void extendNotCoveredFiles(File analysisDir, Inventory inventory, List<String> excludePatterns) throws IOException {
-        List<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
+        if (excludePatterns.contains("**/*")) return;
+        final List<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
         for (String fileName : notCoveredFiles) {
             Artifact artifact = new Artifact();
             File file = new File(fileName);
@@ -76,30 +76,45 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     }
 
     /**
-     * Anticipates a directory for each package in packagesDocDir. The directory contains the
+     * Anticipates a directory for each package in packageDir. The directory contains the
      * package name only (no other attribute is derived).
      *
      * @param analysisDir The analysisDir.
-     * @param packagesDocDir The specific (one out of potentially many) packageDocDir.
-     * @param nameToPackageReferenceMap The resulting {@link PackageInfo} instances are added to the map.
+     * @param packageDir The specific (one out of potentially many) packageDocDir.
+     * @param idToPackageInfoMap The resulting {@link PackageInfo} instances are added to the map.
      */
-    protected static void packagesFromDocumentationDir(File analysisDir, File packagesDocDir, Map<String, PackageInfo> nameToPackageReferenceMap) {
-        if (packagesDocDir.exists()) {
+    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, Map<String,
+            PackageInfo> idToPackageInfoMap, boolean docDir) {
+        if (packageDir.exists()) {
             DirectoryScanner scanner = new DirectoryScanner();
-            scanner.setBasedir(packagesDocDir);
+            scanner.setBasedir(packageDir);
             scanner.setIncludes(new String[]{"*"});
             scanner.scan();
             for (String path : scanner.getIncludedDirectories()) {
-                PackageInfo packageReference = new PackageInfo();
 
-                // here no version is added, since such information is not available
-                // currently the whole process is only for validating that there is no
-                // extra content specified that is not available from the package manager.
-                packageReference.id = path;
-                packageReference.component = path;
-                nameToPackageReferenceMap.put(path, packageReference);
+                // check whether information already exists
+                PackageInfo packageInfo = idToPackageInfoMap.get(path);
+                if (packageInfo == null) {
+                    packageInfo = new PackageInfo();
+
+                    // path may include version; at this stage we do not differentiate
+                    packageInfo.name = path;
+                    packageInfo.id = path;
+                    packageInfo.component = path;
+                }
+                if (docDir) {
+                    packageInfo.documentationDir = new File(packageDir, path).getAbsolutePath();
+                } else {
+                    packageInfo.licenseDir = new File(packageDir, path).getAbsolutePath();
+                }
+                registerPackageInfo(packageInfo, idToPackageInfoMap);
             }
         }
+    }
+
+    protected static void registerPackageInfo(PackageInfo packageInfo, Map<String, PackageInfo> idToPackageInfoMap) {
+        idToPackageInfoMap.put(packageInfo.id, packageInfo);
+        idToPackageInfoMap.put(packageInfo.name, packageInfo);
     }
 
     protected void addOrMerge(File analysisDir, Inventory inventory, PackageInfo p) {

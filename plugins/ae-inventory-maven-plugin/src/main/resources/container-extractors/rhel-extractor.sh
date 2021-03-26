@@ -40,7 +40,8 @@ done
 # examine distributions metadata
 uname -a > /analysis/uname.txt
 cat /etc/issue > /analysis/issue.txt
-cat /etc/centos-release > /analysis/release.txt
+cat /etc/centos-release > /analysis/release.txt || true
+cat /etc/redhat-release > /analysis/release.txt || true
 
 # list packages
 rpm -qa --qf '| %{NAME} | %{VERSION} | %{LICENSE} |\n' | sort > /analysis/packages_rpm.txt

@@ -39,40 +39,41 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     public List<PackageInfo> scan(File analysisDir) throws IOException {
-        Map<String, PackageInfo> nameToPackageReferenceMap = new HashMap<>();
-
-        // generate package list from files in dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), nameToPackageReferenceMap);
-
-        // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), nameToPackageReferenceMap);
+        final Map<String, PackageInfo> packageInfoMap = new HashMap<>();
 
         // generate (complementary) package list from scripts output
-        parseDebianPackageList(analysisDir, nameToPackageReferenceMap);
+        parseDebianPackageList(analysisDir, packageInfoMap);
+
+        // generate package list from files in dir
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), packageInfoMap, true);
+
+        // generate package list from directories in dedicated licenses dir
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), packageInfoMap, false);
 
         // add additional details from package metadata files
-        parseDebianPackageFiles(analysisDir, nameToPackageReferenceMap);
+        parseDebianPackageFiles(analysisDir, packageInfoMap);
 
-        return new ArrayList<>(nameToPackageReferenceMap.values());
+        return new ArrayList<>(packageInfoMap.values());
     }
 
-    private void parseDebianPackageFiles(File analysisDir, Map<String,PackageInfo> nameToPackageReferenceMap) throws IOException {
-        for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
+    private void parseDebianPackageFiles(File analysisDir, Map<String,PackageInfo> idToPackageReferenceMap) throws IOException {
+        for (Map.Entry<String, PackageInfo> entry : idToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
-            String packageId = entry.getKey();
+            String packageId = packageInfo.name;
             File packageFile = new File(analysisDir, "package-meta/" + packageId + "_apt.txt");
             if (packageFile.exists()) {
                 List<String> fileContentLines = FileUtils.readLines(packageFile, FileUtils.ENCODING_UTF_8);
 
                 packageInfo.url = ParsingUtils.getValue(fileContentLines, "Homepage:");
                 packageInfo.description = ParsingUtils.getValue(fileContentLines, "Description:");
+                packageInfo.group = ParsingUtils.getValue(fileContentLines, "Source:");
             } else {
                 LOG.info("File {} does not exist.", packageFile);
             }
         }
     }
 
-    private static void parseDebianPackageList(File shareDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
+    private static void parseDebianPackageList(File shareDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         File dpkgPackagesFile = new File(shareDir, "packages_dpkg.txt");
         String packageFile = FileUtils.readFileToString(dpkgPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFile.split("\\n");
@@ -96,23 +97,25 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
                     name = name.substring(0, name.indexOf(SEPARATOR_COLON));
                 }
 
-                PackageInfo packageReference = nameToPackageReferenceMap.get(name);
-                if (packageReference == null) {
-                    packageReference = new PackageInfo();
-                    nameToPackageReferenceMap.put(name, packageReference);
+                PackageInfo packageInfo = idToPackageReferenceMap.get(name);
+                if (packageInfo == null) {
+                    packageInfo = new PackageInfo();
                 }
 
-                packageReference.component = name;
-                packageReference.version = line.substring(elementIndex[1], Math.min(line.length(), elementIndex[2])).trim();
-                packageReference.id = name + "-" + packageReference.version;
+                packageInfo.name = name;
+                packageInfo.component = name;
+                packageInfo.version = line.substring(elementIndex[1], Math.min(line.length(), elementIndex[2])).trim();
+                packageInfo.id = name + "-" + packageInfo.version;
 
                 if (elementIndex.length == 3) {
-                    packageReference.arch = line.substring(elementIndex[2], elementIndex[3]).trim();
-                    packageReference.description = line.substring(elementIndex[3], line.length()).trim();
+                    packageInfo.arch = line.substring(elementIndex[2], elementIndex[3]).trim();
+                    packageInfo.description = line.substring(elementIndex[3], line.length()).trim();
                 }
                 if (elementIndex.length == 2) {
-                    packageReference.description = line.substring(elementIndex[2], line.length()).trim();
+                    packageInfo.description = line.substring(elementIndex[2], line.length()).trim();
                 }
+
+                registerPackageInfo(packageInfo, idToPackageReferenceMap);
             }
         }
     }

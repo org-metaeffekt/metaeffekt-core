@@ -42,6 +42,9 @@ public final class Constants {
     public static final String KEY_WILDCARD_MATCH = "WILDCARD-MATCH";
 
     public static final String KEY_DERIVED_LICENSE_PACKAGE = "Specified Package License";
+    public static final String KEY_DOCUMENTATION_PATH_PACKAGE = "Package Documentation Path";
+    public static final String KEY_LICENSE_PATH_PACKAGE = "Package License Path";
+    public static final String KEY_GROUP_PACKAGE = "Package Group";
 
     public static final String KEY_SUMMARY = "Summary";
     public static final String KEY_DESCRIPTION = "Description";

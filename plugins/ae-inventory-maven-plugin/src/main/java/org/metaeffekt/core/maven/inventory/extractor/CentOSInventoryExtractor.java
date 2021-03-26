@@ -32,28 +32,40 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     public List<PackageInfo> scan(File analysisDir) throws IOException {
-        Map<String, PackageInfo> nameToPackageReferenceMap = new HashMap<>();
+        Map<String, PackageInfo> idToPackageReferenceMap = new HashMap<>();
 
-        // generate package list from files in dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), nameToPackageReferenceMap);
-
-        // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), nameToPackageReferenceMap);
+        // NOTE: primary content driver is the package list and package meta files
 
         // generate (complementary) package list from scripts output
-        parseRpmPackageList(analysisDir, nameToPackageReferenceMap);
+        parseRpmPackageList(analysisDir, idToPackageReferenceMap);
+
+        // NOTE: secondary content are the content in the doc and license folders
+
+        // generate package list from files in documentation dir
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), idToPackageReferenceMap, true);
+
+        // generate package list from directories in dedicated licenses dir
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), idToPackageReferenceMap, false);
 
         // add additional details from package metadata files
-        parseRpmPackageFiles(analysisDir, nameToPackageReferenceMap);
+        parseRpmPackageFiles(analysisDir, idToPackageReferenceMap);
 
-        return new ArrayList<>(nameToPackageReferenceMap.values());
+        return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
     private void parseRpmPackageFiles(File analysisDir, Map<String,PackageInfo> nameToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = entry.getKey();
+            String packageName = packageInfo.component;
+
+            // check with version; backward compatibility
             File packageFile = new File(analysisDir, "package-meta/" + packageId + "_rpm.txt");
+            if (!packageFile.exists()) {
+                // check without version
+                packageFile = new File(analysisDir, "package-meta/" + packageName + "_rpm.txt");
+            }
+
             if (packageFile.exists()) {
                 List<String> fileContentLines = FileUtils.readLines(packageFile, FileUtils.ENCODING_UTF_8);
 
@@ -68,7 +80,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
     }
 
 
-    public void parseRpmPackageList(File shareDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
+    public void parseRpmPackageList(File shareDir, Map<String, PackageInfo> idToPackageInfoMap) throws IOException {
         File rpmPackagesFile = new File(shareDir, FILE_PACKAGES_RPM_TXT);
         String packageFileContent = FileUtils.readFileToString(rpmPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFileContent.split("\\n");
@@ -81,11 +93,9 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
             String name = elements[1].trim();
             String version = elements[2].trim();
 
-            PackageInfo packageInfo = nameToPackageReferenceMap.get(name);
-
+            PackageInfo packageInfo = idToPackageInfoMap.get(name);
             if (packageInfo == null) {
                 packageInfo = new PackageInfo();
-                nameToPackageReferenceMap.put(name, packageInfo);
             }
 
             packageInfo.version = version;
@@ -99,6 +109,8 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
                 packageInfo.arch = elements[5].trim();
             if (elements.length > 6)
                 packageInfo.description = elements[6].trim();
+
+            registerPackageInfo(packageInfo, idToPackageInfoMap);
         }
     }
 

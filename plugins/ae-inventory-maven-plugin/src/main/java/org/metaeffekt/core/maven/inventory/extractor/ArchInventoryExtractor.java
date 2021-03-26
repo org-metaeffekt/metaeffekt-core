@@ -32,24 +32,24 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     public List<PackageInfo> scan(File analysisDir) throws IOException {
-        Map<String, PackageInfo> nameToPackageReferenceMap = new HashMap<>();
-
-        // generate package list from files in dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), nameToPackageReferenceMap);
-
-        // generate package list from directories in dedicated licenses dir
-        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), nameToPackageReferenceMap);
+        Map<String, PackageInfo> idToPackageReferenceMap = new HashMap<>();
 
         // generate (complementary) package list from scripts output
-        parseArchPackageList(analysisDir, nameToPackageReferenceMap);
+        parseArchPackageList(analysisDir, idToPackageReferenceMap);
 
-        parseArchPackages(analysisDir, nameToPackageReferenceMap);
+        // generate package list from files in dir
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_DOC), idToPackageReferenceMap, true);
 
-        return new ArrayList<>(nameToPackageReferenceMap.values());
+        // generate package list from directories in dedicated licenses dir
+        packagesFromDocumentationDir(analysisDir, new File(analysisDir, FOLDER_USR_SHARE_LICENSE), idToPackageReferenceMap, false);
+
+        parseArchPackages(analysisDir, idToPackageReferenceMap);
+
+        return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    private void parseArchPackages(File analysisDir, Map<String,PackageInfo> nameToPackageReferenceMap) throws  IOException {
-        for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
+    private void parseArchPackages(File analysisDir, Map<String,PackageInfo> idToPackageReferenceMap) throws  IOException {
+        for (Map.Entry<String, PackageInfo> entry : idToPackageReferenceMap.entrySet()) {
             String name = entry.getKey();
             PackageInfo p = entry.getValue();
             File file = new File(analysisDir, "package-meta/" + name + "_arch.txt");
@@ -77,7 +77,7 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
         }
     }
 
-    private void parseArchPackageList(File shareDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
+    private void parseArchPackageList(File shareDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         File archPackagesFile = new File(shareDir, FILE_PACKAGES_ARCH_TXT);
         String packageFile = FileUtils.readFileToString(archPackagesFile, FileUtils.ENCODING_UTF_8);
         String[] lines = packageFile.split("\\n");
@@ -88,14 +88,15 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
                 String name = line.substring(0, indexOfSpace);
                 String version = line.substring(indexOfSpace + 1);
 
-                PackageInfo p = nameToPackageReferenceMap.get(name);
+                PackageInfo p = idToPackageReferenceMap.get(name);
                 if (p == null) {
                     p = new PackageInfo();
-                    nameToPackageReferenceMap.put(name, p);
                 }
                 p.id = name + "-" + version;
                 p.component = name;
                 p.version = version;
+
+                registerPackageInfo(p, idToPackageReferenceMap);
             }
         }
     }

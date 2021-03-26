@@ -26,6 +26,8 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  */
 class PackageInfo {
 
+    String name;
+
     String id;
     String component;
     String version;
@@ -34,6 +36,9 @@ class PackageInfo {
     String description;
     String license;
     String url;
+    String documentationDir;
+    String licenseDir;
+    String group;
 
     public Artifact createArtifact(File shareDir) {
         Artifact artifact = new Artifact();
@@ -46,6 +51,9 @@ class PackageInfo {
         artifact.set(KEY_DESCRIPTION, description);
         artifact.setUrl(url);
         artifact.set(KEY_DERIVED_LICENSE_PACKAGE, license);
+        artifact.set(KEY_DOCUMENTATION_PATH_PACKAGE, documentationDir);
+        artifact.set(KEY_LICENSE_PATH_PACKAGE, licenseDir);
+        artifact.set(KEY_GROUP_PACKAGE, group);
         return artifact;
     }
 
