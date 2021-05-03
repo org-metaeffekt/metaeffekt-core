@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -1435,4 +1436,48 @@ public class Inventory {
     public List<LicenseData> getLicenseData() {
         return licenseData;
     }
+
+    public String getRepresentedLicenseName(String license){
+
+        for (LicenseData ld : getLicenseData()) {
+            if (license.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))){
+                if(ld.get(LicenseData.Attribute.REPRESENTED_AS) != null){
+                    return (ld.get(LicenseData.Attribute.REPRESENTED_AS));
+                }
+                else return license;
+            }
+        }
+        return license;
+    }
+
+    public List<String> getRepresentedLicenseNames(Boolean filtered){
+        List<String> representedLicenseNames = new ArrayList<>();
+        HashSet<String> rpl = new HashSet<>();
+        for (String license : evaluateLicenses(false)) {
+            representedLicenseNames.add(getRepresentedLicenseName(license));
+        }
+        if (filtered == true) return representedLicenseNames.stream().distinct().sorted().collect(Collectors.toList());
+            else return representedLicenseNames.stream().sorted().collect(Collectors.toList());
+    }
+
+    public List<String> getRepresentedEffectiveLicenses(String representedLicenseName){
+        List<String> representedEffectiveLicenses = new ArrayList<>();
+        InventoryReport inventoryReport = new InventoryReport();
+            for (LicenseData ld : getLicenseData()) {
+                if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
+                    if (representedLicenseName.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
+                        representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
+                    }
+                }
+            }
+            if (!representedEffectiveLicenses.isEmpty())
+                return representedEffectiveLicenses.stream().sorted().distinct().collect(Collectors.toList());
+
+            else{
+                representedEffectiveLicenses.add(representedLicenseName);
+                return representedEffectiveLicenses;
+            }
+    }
+
+
 }

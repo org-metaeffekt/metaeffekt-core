@@ -17,6 +17,7 @@ package org.metaeffekt.core.model;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 
 import static java.lang.Boolean.FALSE;
@@ -33,7 +34,13 @@ public class LicenseDataTest {
         ld.set(LicenseData.Attribute.COPYLEFT_TYPE, "limited");
 
         Assert.assertEquals("GNU Lesser General Public License 2.1-LGPL-2.1", ld.deriveQualifier());
-        Assert.assertEquals("GNU Lesser General Public License 2.1:LGPL-2.1:LGPL-2.1-only::limited:false",
+        Assert.assertEquals("GNU Lesser General Public License 2.1:LGPL-2.1:LGPL-2.1-only::limited:false:",
                 ld.createCompareStringRepresentation());
+
+        Inventory inventory = new Inventory();
+        inventory.getRepresentedLicenseNames(false).forEach(System.out::println);
+        //inventory.evaluateLicenses(false).forEach(System.out::println);
     }
+
+
 }

@@ -40,7 +40,8 @@ public class LicenseData extends AbstractModelBase {
         SPDX_ID("SPDX Id"),
         OSI_APPROVED("OSI Approved"),
         COPYLEFT_TYPE("Copyleft Type"),
-        COMMERCIAL("Commercial");
+        COMMERCIAL("Commercial"),
+        REPRESENTED_AS("RepresentedAs");
 
         private String key;
         Attribute(String key) {
@@ -60,6 +61,7 @@ public class LicenseData extends AbstractModelBase {
         CORE_ATTRIBUTES.add(Attribute.OSI_APPROVED.getKey());
         CORE_ATTRIBUTES.add(Attribute.COPYLEFT_TYPE.getKey());
         CORE_ATTRIBUTES.add(Attribute.COMMERCIAL.getKey());
+        CORE_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
     }
 
     /**
