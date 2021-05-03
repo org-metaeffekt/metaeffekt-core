@@ -1452,7 +1452,6 @@ public class Inventory {
 
     public List<String> getRepresentedLicenseNames(Boolean filtered){
         List<String> representedLicenseNames = new ArrayList<>();
-        HashSet<String> rpl = new HashSet<>();
         for (String license : evaluateLicenses(false)) {
             representedLicenseNames.add(getRepresentedLicenseName(license));
         }

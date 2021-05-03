@@ -1141,7 +1141,6 @@ public class InventoryReport {
     }
 
     public boolean isSubstructureRequired(String license){
-        int count = 0;
         for(LicenseData ld : inventory.getLicenseData()){
             if(license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS)) && !(license.equals(LicenseData.Attribute.CANONICAL_NAME))){
                 return true;
