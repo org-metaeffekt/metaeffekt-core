@@ -17,9 +17,11 @@ package org.metaeffekt.core.model;
 
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
@@ -271,6 +273,14 @@ public class InventoryTest {
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
         Assert.assertTrue(matchedArtifact != null);
         Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
+    }
+
+    @Ignore
+    @Test
+    public void testRPL(){
+        InventoryReport inventoryReport = new InventoryReport();
+        inventoryReport.isSubstructureRequired("GNU");
+
     }
 
 }

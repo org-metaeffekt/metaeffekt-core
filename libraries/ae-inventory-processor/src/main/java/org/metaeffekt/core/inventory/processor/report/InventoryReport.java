@@ -38,10 +38,8 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -1140,5 +1138,21 @@ public class InventoryReport {
 
     public boolean isFailOnMissingComponentFiles() {
         return failOnMissingComponentFiles;
+    }
+
+    public boolean isSubstructureRequired(String license){
+        for(LicenseData ld : inventory.getLicenseData()){
+            if(license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS)) && !(license.equals(LicenseData.Attribute.CANONICAL_NAME))){
+                return true;
+            }
+        }
+        return false;
+    }
+    public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense){
+        Set<String> componentNames = new HashSet<>();
+        for (String effectiveLicense : inventory.getRepresentedEffectiveLicenses(representedNameLicense)) {
+            inventory.evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
+        }
+        return componentNames;
     }
 }
