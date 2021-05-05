@@ -34,3 +34,6 @@ do
         cp --no-preserve=mode $file /analysis/extracted-files$dir || cp $file /analysis/extracted-files$dir
     fi
 done
+
+# adapt ownership of extracted files to match folder creator user and group
+chown `stat -c '%u' /analysis`:`stat -c '%g' /analysis` -R /analysis
