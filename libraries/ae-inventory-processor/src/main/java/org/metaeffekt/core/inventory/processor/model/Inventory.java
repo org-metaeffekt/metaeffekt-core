@@ -1461,21 +1461,35 @@ public class Inventory {
 
     public List<String> getRepresentedEffectiveLicenses(String representedLicenseName){
         List<String> representedEffectiveLicenses = new ArrayList<>();
-        InventoryReport inventoryReport = new InventoryReport();
-            for (LicenseData ld : getLicenseData()) {
-                if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
-                    if (representedLicenseName.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
-                        representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
-                    }
+        for (LicenseData ld : getLicenseData()) {
+            if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
+                if (representedLicenseName.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
+                    representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
                 }
             }
-            if (!representedEffectiveLicenses.isEmpty())
-                return representedEffectiveLicenses.stream().sorted().distinct().collect(Collectors.toList());
+        }
+        if (!representedEffectiveLicenses.isEmpty()) {
+            return representedEffectiveLicenses.stream().sorted().distinct().collect(Collectors.toList());
+        } else{
+            representedEffectiveLicenses.add(representedLicenseName);
+            return representedEffectiveLicenses;
+        }
+    }
 
-            else{
-                representedEffectiveLicenses.add(representedLicenseName);
-                return representedEffectiveLicenses;
+    public boolean isSubstructureRequired(String license){
+        for(LicenseData ld : getLicenseData()){
+            if(license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS)) && !(license.equals(LicenseData.Attribute.CANONICAL_NAME))){
+                return true;
             }
+        }
+        return false;
+    }
+    public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense){
+        Set<String> componentNames = new HashSet<>();
+        for (String effectiveLicense : getRepresentedEffectiveLicenses(representedNameLicense)) {
+            evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
+        }
+        return componentNames;
     }
 
 

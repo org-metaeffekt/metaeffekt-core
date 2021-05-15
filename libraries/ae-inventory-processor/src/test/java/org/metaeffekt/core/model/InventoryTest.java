@@ -275,12 +275,4 @@ public class InventoryTest {
         Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
     }
 
-    @Ignore
-    @Test
-    public void testRPL(){
-        InventoryReport inventoryReport = new InventoryReport();
-        inventoryReport.isSubstructureRequired("GNU");
-
-    }
-
 }

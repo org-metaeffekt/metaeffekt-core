@@ -31,7 +31,7 @@
             <tbody>
 #foreach($license in $inventory.getRepresentedLicenseNames(true))
 #set($folder=$inventory.getLicenseFolder($license))
-#set($name=$report.evaluateComponentsRepresentedLicense($license))
+#set($name=$inventory.evaluateComponentsRepresentedLicense($license))
 #set($licenseData=$inventory.findMatchingLicenseData($license))
                 <row>
                     <entry>
@@ -54,7 +54,7 @@
 </body>
 
 #foreach($license in $inventory.getRepresentedLicenseNames(true))
-        #if($report.isSubstructureRequired($license) == false)
+        #if($inventory.isSubstructureRequired($license) == false)
             <p>$license</p>
             #insertLicenseArtifactTopic($license)
         #else

@@ -27,7 +27,7 @@
             <tbody>
 #foreach($license in $inventory.getRepresentedLicenseNames(true))
 #set($folder=$inventory.getLicenseFolder($license))
-#set($name=$report.evaluateComponentsRepresentedLicense($license))
+#set($name=$inventory.evaluateComponentsRepresentedLicense($license))
                 <row>
                     <entry>
                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
@@ -46,7 +46,7 @@
     </table>
 </body>
     #foreach($license in $inventory.getRepresentedLicenseNames(true))
-        #if($report.isSubstructureRequired($license) == false)
+        #if($inventory.isSubstructureRequired($license) == false)
             #insertLicenseArtifactTopic($license)
         #else
             <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">

@@ -1140,19 +1140,4 @@ public class InventoryReport {
         return failOnMissingComponentFiles;
     }
 
-    public boolean isSubstructureRequired(String license){
-        for(LicenseData ld : inventory.getLicenseData()){
-            if(license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS)) && !(license.equals(LicenseData.Attribute.CANONICAL_NAME))){
-                return true;
-            }
-        }
-        return false;
-    }
-    public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense){
-        Set<String> componentNames = new HashSet<>();
-        for (String effectiveLicense : inventory.getRepresentedEffectiveLicenses(representedNameLicense)) {
-            inventory.evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
-        }
-        return componentNames;
-    }
 }
