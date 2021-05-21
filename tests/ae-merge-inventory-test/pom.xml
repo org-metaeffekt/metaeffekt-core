@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>ae-merge-inventory-test</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-core-plugin-management-pom</artifactId>
+        <version>0.37.0</version>
+        <relativePath>../../poms/ae-core-plugin-management-pom</relativePath>
+    </parent>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-inventory-maven-plugin</artifactId>
+                <version>${project.version}</version>
+
+                <executions>
+                    <execution>
+                        <!-- copies the source inventory in the target inventory -->
+                        <id>prepare-merge-inventories</id>
+                        <goals>
+                            <goal>merge-inventories</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <sourceInventory>${project.basedir}/src/test/resources/artifact-inventory-001.xls</sourceInventory>
+                            <targetInventory>${project.build.directory}/artifact-inventory-001.xls</targetInventory>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <!-- copies the source inventory in the target inventory -->
+                        <id>merge-inventories</id>
+                        <goals>
+                            <goal>merge-inventories</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <sourceInventory>${project.basedir}/src/test/resources/artifact-inventory-001.xls</sourceInventory>
+                            <targetInventory>${project.build.directory}/artifact-inventory-001.xls</targetInventory>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

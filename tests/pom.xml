@@ -7,13 +7,14 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.37.0</version>
         <relativePath>../</relativePath>
     </parent>
 
     <modules>
         <module>ae-example-module</module>
         <module>ae-container-validation</module>
+        <module>ae-merge-inventory-test</module>
     </modules>
 
     <build>

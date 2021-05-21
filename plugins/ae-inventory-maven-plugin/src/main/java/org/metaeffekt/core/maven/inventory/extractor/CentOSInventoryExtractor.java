@@ -101,6 +101,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
             packageInfo.version = version;
             packageInfo.id = name + "-" + version;
             packageInfo.component = name;
+            packageInfo.name = name;
             packageInfo.version = version;
             packageInfo.license = elements[3].trim();
             if (elements.length > 4)
