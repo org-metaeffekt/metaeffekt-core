@@ -34,6 +34,13 @@ import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.util.FileUtils.*;
 
+/*
+    Optimization potential
+    - Decouple file expansion from component pattern matching; produce intermediate inventory (indicating expanded artifacts)
+    - Execute component patterns in separate step (globally); can be executed independently
+    - The reference inventory (with wildcard artifacts and component patterns) could be extractor specific.
+ */
+
 public class DirectoryInventoryScan {
 
     private static final Logger LOG = LoggerFactory.getLogger(DirectoryInventoryScan.class);
@@ -119,6 +126,9 @@ public class DirectoryInventoryScan {
             derivedArtifact.setComponent(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME));
             derivedArtifact.setVersion(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
             derivedArtifact.addProject(asRelativePath(scanBaseDir, baseDir));
+
+            // also take over the type attribute
+            derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
             return derivedArtifact;
         }
     }
@@ -136,6 +146,7 @@ public class DirectoryInventoryScan {
      * @param scanInventory
      */
     private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes, Inventory referenceInventory, Inventory scanInventory) {
+        LOG.info("{}: scanning...", scanDir);
         // scan the directory using includes and excludes; scans the full tree (maybe not yet unwrapped)
         final String[] filesArray = scanDirectory(scanDir, scanIncludes, scanExcludes);
 
@@ -143,12 +154,20 @@ public class DirectoryInventoryScan {
         final Set<File> files = new HashSet<>();
         Arrays.stream(filesArray).map(f -> new File(scanDir, f)).forEach(files::add);
 
-        final List<MatchResult> matchedComponentPatterns = matchComponentPatterns(files, scanBaseDir, scanDir, referenceInventory, scanInventory);
+        final Map<File, String> normalizedFileMap = new HashMap<>();
+        for (File file : files) {
+            normalizedFileMap.put(file, normalizePathToLinux(asRelativePath(scanBaseDir, file)));
+        }
 
+        LOG.info("{}: matching component patterns", scanDir);
+        final List<MatchResult> matchedComponentPatterns =
+                matchComponentPatterns(files, normalizedFileMap, scanBaseDir, scanDir, referenceInventory, scanInventory);
+
+        LOG.info("{}: filtering matched files", scanDir);
         final List<MatchResult> matchResultsWithoutFileMatches = new ArrayList<>();
-        filterFilesMatchedByComponentPatterns(files, scanBaseDir, matchedComponentPatterns, matchResultsWithoutFileMatches);
+        filterFilesMatchedByComponentPatterns(files, normalizedFileMap, scanBaseDir, matchedComponentPatterns, matchResultsWithoutFileMatches);
 
-        // we need to remove those match results, which did not match file. Such match results may be cause by
+        // we need to remove those match results, which did not match any file. Such match results may be caused by
         // generic anchor matches and wildcard anchor checksums.
         if (!matchResultsWithoutFileMatches.isEmpty()) {
             matchedComponentPatterns.removeAll(matchResultsWithoutFileMatches);
@@ -158,7 +177,10 @@ public class DirectoryInventoryScan {
         deriveAddonArtifactsFromMatchResult(scanBaseDir, scanDir, matchedComponentPatterns, scanInventory);
 
         // add the files not covered by component patterns
+        LOG.info("{}: evaluating / recursing", scanDir);
         populateInventoryWithScannedFiles(scanBaseDir, scanIncludes, scanExcludes, referenceInventory, scanInventory, files);
+
+        LOG.info("{}: scanning completed.", scanDir);
     }
 
     private void deriveAddonArtifactsFromMatchResult(File scanBaseDir, File scanDir, List<MatchResult> componentPatterns, Inventory scanInventory) {
@@ -167,7 +189,7 @@ public class DirectoryInventoryScan {
         }
     }
 
-    private List<MatchResult> matchComponentPatterns(Set<File> files, File scanBaseDir, File scanDir, Inventory referenceInventory, Inventory scanInventory) {
+    private List<MatchResult> matchComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap, File scanBaseDir, File scanDir, Inventory referenceInventory, Inventory scanInventory) {
         // match component patterns using version anchor version anchors; results in matchedComponentPatterns
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
 
@@ -213,24 +235,35 @@ public class DirectoryInventoryScan {
                 continue;
             }
 
+            final String[] split = normalizedVersionAnchor.split("\\*");
+            List<String> quickCheck = Arrays.stream(split).sorted(Comparator.comparingInt(String::length)).collect(Collectors.toList());
+            String containsCheckString = quickCheck.get(quickCheck.size() - 1);
+
+            // TODO: we could determine a substring here that does not include any wildcard; must be quick
+            //  then we use the contains() to have a quick pre check, before computing the accurate match
+
             // check whether the version anchor path fragment matches one of the file paths
             for (final File file : files) {
                 // generate normalized path relative to scanBaseDir (important; not to scanDir, which may vary as we
                 // descend into the hierarchy on recursion)
-                final String normalizedPath = normalizePathToLinux(asRelativePath(scanBaseDir, file));
 
-                if (versionAnchorMatches(normalizedVersionAnchor, normalizedPath, isVersionAnchorPattern)) {
+                final String normalizedPath = normalizedFileMap.get(file);
 
-                    // on match infer the checksum of the file
-                    final String fileChecksumOrAsterisk = isVersionAnchorChecksumSpecific ? computeChecksum(file) : Constants.ASTERISK;
+                if (normalizedPath.contains(containsCheckString)) {
+                    if (versionAnchorMatches(normalizedVersionAnchor, normalizedPath, isVersionAnchorPattern)) {
 
-                    if (!anchorChecksum.equalsIgnoreCase(fileChecksumOrAsterisk)) {
-                        LOG.debug("Anchor fileChecksumOrAsterisk mismatch: " + file.getPath());
-                        LOG.debug("Expected fileChecksumOrAsterisk :{}; actual file fileChecksumOrAsterisk: {}", anchorChecksum, fileChecksumOrAsterisk);
-                    }  else {
-                        final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
-                        copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, fileChecksumOrAsterisk);
-                        matchedComponentPatterns.add(new MatchResult(copyCpd, file, computeComponentBaseDir(scanBaseDir, file, normalizedVersionAnchor)));
+                        // on match infer the checksum of the file
+                        final String fileChecksumOrAsterisk = isVersionAnchorChecksumSpecific ? computeChecksum(file) : Constants.ASTERISK;
+
+                        if (!anchorChecksum.equalsIgnoreCase(fileChecksumOrAsterisk)) {
+                            LOG.debug("Anchor fileChecksumOrAsterisk mismatch: " + file.getPath());
+                            LOG.debug("Expected fileChecksumOrAsterisk :{}; actual file fileChecksumOrAsterisk: {}", anchorChecksum, fileChecksumOrAsterisk);
+                        } else {
+                            final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
+                            copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, fileChecksumOrAsterisk);
+
+                            matchedComponentPatterns.add(new MatchResult(copyCpd, file, computeComponentBaseDir(scanBaseDir, file, normalizedVersionAnchor)));
+                        }
                     }
                 }
             }
@@ -310,7 +343,7 @@ public class DirectoryInventoryScan {
         }
     }
 
-    private void filterFilesMatchedByComponentPatterns(Set<File> files, File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches) {
+    private void filterFilesMatchedByComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap, File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches) {
         // remove the matched file covered by the matched components
         for (MatchResult matchResult : matchedComponentDataOnAnchor) {
             final ComponentPatternData cpd = matchResult.componentPatternData;
@@ -327,7 +360,7 @@ public class DirectoryInventoryScan {
 
             final List<File> matchedFiles = new ArrayList<>();
             for (final File file : files) {
-                final String normalizedPath = normalizePathToLinux(asRelativePath(scanBaseDir, file));
+                final String normalizedPath = normalizedFileMap.get(file);
                 if (matches(normalizedIncludePattern, normalizedPath)) {
                     if (StringUtils.isEmpty(normalizedExcludePattern) || !matches(normalizedExcludePattern, normalizedPath)) {
                         LOG.debug("Filtered component file: {} for component pattern {}", file, cpd.deriveQualifier());
