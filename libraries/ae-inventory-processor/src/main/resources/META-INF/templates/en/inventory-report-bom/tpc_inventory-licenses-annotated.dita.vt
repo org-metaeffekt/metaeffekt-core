@@ -49,10 +49,20 @@
                         #end
                     </entry>
                     <entry>#if($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
-                    <entry>#if($licenseData)#if($licenseData.is('OSI Approved'))yes#else&nbsp;#end#else&nbsp;#end</entry>
+                    <entry>
+                        #if ($inventory.isSubstructureRequired($license))
+                            #if($licenseData)#if($licenseData.is('OSI Approved'))(yes)#else&nbsp;#end#else&nbsp;#end
+                        #else
+                            #if($licenseData)#if($licenseData.is('OSI Approved'))yes#else&nbsp;#end#else&nbsp;#end
+                        #end
+                    </entry>
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            <codeph>$name.size()</codeph>
+                            #if ($inventory.isSubstructureRequired($license))
+                                <codeph>($name.size())</codeph>
+                            #else
+                                <codeph>$name.size()</codeph>
+                            #end
                         </xref>
                     </entry>
                 </row>

@@ -45,7 +45,11 @@
                      </entry>
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            <codeph>$name.size()</codeph>
+                            #if ($inventory.isSubstructureRequired($license))
+                                <codeph>($name.size())</codeph>
+                            #else
+                                <codeph>$name.size()</codeph>
+                            #end
                         </xref>
                     </entry>
                 </row>
