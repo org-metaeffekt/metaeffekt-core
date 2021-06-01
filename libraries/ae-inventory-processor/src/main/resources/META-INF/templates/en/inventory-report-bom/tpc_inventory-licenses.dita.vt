@@ -13,6 +13,9 @@
     <p>
         Please note, that a component may be subject to several licenses in effect.
     </p>
+    #if ($inventory.isFootnoteRequired($inventory.getRepresentedLicenseNames(true)))
+        <fn callout="*" id="id-footnote">License variations are represented as a single effective license. The concrete license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
+    #end
     <table id="LicensesInEffect" otherprops="wide">
         <title>Licenses in Effect$reportContext.inContextOf()</title>
         <tgroup cols="2">
@@ -30,9 +33,15 @@
 #set($name=$inventory.evaluateComponentsRepresentedLicense($license))
                 <row>
                     <entry>
+                        #if ($inventory.isSubstructureRequired($license))
+                            <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                                $report.xmlEscapeString($license.trim())<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
+                            </xref>
+                        #else
                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
                             $report.xmlEscapeString($license.trim())
                         </xref>
+                        #end
                      </entry>
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
@@ -54,9 +63,9 @@
                 <body>
                     <p>
                         $license is representative of all licenses with variations,
-                        characteristics and modifications of the original license. In this sub-chapter,
+                        characteristics and modifications of the original license template. In this subchapter,
                         all these license variations, which are represented by the $license,
-                        are shown individually.</p>
+                        are listed individually.</p>
                         #foreach($effLicense in $inventory.getRepresentedEffectiveLicenses($license))
                         #insertLicenseArtifactTopic($effLicense)
                         #end

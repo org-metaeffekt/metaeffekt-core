@@ -1491,6 +1491,10 @@ public class Inventory {
         }
         return componentNames;
     }
-
-
+    public boolean isFootnoteRequired(List<String> licenses){
+        for (String license: licenses) {
+            if(isSubstructureRequired(license)) return true;
+        }
+        return false;
+    }
 }
