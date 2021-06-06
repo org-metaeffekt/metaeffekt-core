@@ -11,7 +11,7 @@
 #else
 #foreach($componentNotice in $componentNoticeList)
     <topic id="tpc_component_notice_$inventory.deriveLicenseId($componentNotice.getComponentName())">
-        <title>Component $componentNotice.getComponentName()</title>
+        <title>$report.xmlEscapeString($componentNotice.getComponentName())</title>
         <body>
 #foreach($artifactNotice in $componentNotice.getArtifactNotices())
 
@@ -21,9 +21,11 @@
     <p>
         The herein covered software distribution contains <b>$componentNotice.getComponentName()</b>.
     </p>
+    #if($componentNotice.getLicense())
     <p>
         In the present version, $componentNotice.getComponentName() is subject to the terms of the $componentNotice.getLicense().
     </p>
+    #end
 #else
     $notice.trim()
 #end

@@ -34,9 +34,8 @@
                 <row>
                     <entry>
                         #if ($inventory.isSubstructureRequired($license))
-                            <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                                $report.xmlEscapeString($license.trim())<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
-                            </xref>
+                        <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                            $report.xmlEscapeString($license.trim())</xref><xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
                         #else
                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
                             $report.xmlEscapeString($license.trim())
@@ -45,11 +44,7 @@
                      </entry>
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            #if ($inventory.isSubstructureRequired($license))
-                                <codeph>($name.size())</codeph>
-                            #else
-                                <codeph>$name.size()</codeph>
-                            #end
+                            <codeph>$name.size()</codeph>
                         </xref>
                     </entry>
                 </row>

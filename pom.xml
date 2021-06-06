@@ -6,7 +6,7 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
-    <version>HEAD-SNAPSHOT</version>
+    <version>0.38.0</version>
     <packaging>pom</packaging>
 
     <name>metaeffekt-core</name>
@@ -49,7 +49,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
+        <ae.core.version>0.38.0</ae.core.version>
         <ae.core.version_last>${ae.core.version}</ae.core.version_last>
 
         <artifact.inventory.version>${ae.core.version}</artifact.inventory.version>
@@ -251,6 +251,7 @@
                         </executions>
                         <configuration>
                             <javadocVersion>1.8</javadocVersion>
+                            <release>8</release>
                             <additionalparam>-Xdoclint:none</additionalparam>
                             <bottom>
                                 Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
