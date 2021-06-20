@@ -191,6 +191,23 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
             String classifier = "sources";
             String type = artifact.getType();
 
+            if (isEmpty(groupId)) {
+                logOrFailOn("Cannot process " + artifact.getId() + " without group id.");
+                return null;
+            }
+            if (isEmpty(artifactId)) {
+                logOrFailOn("Cannot process " + artifact.getId() + " without artifact id.");
+                return null;
+            }
+            if (isEmpty(version)) {
+                logOrFailOn("Cannot process " + artifact.getId() + " without version.");
+                return null;
+            }
+            if (isEmpty(type)) {
+                logOrFailOn("Cannot process " + artifact.getId() + " without type.");
+                return null;
+            }
+
             // enable mapping (by filename)
             if (alternativeArtifactSourceMapping != null &&
                     alternativeArtifactSourceMapping.getMap().containsKey(artifact.getId())) {
@@ -236,6 +253,13 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
         } catch (InvalidVersionSpecificationException e) {
             throw new MojoFailureException(e.getMessage(), e);
         }
+    }
+
+    private boolean isEmpty(String string) {
+        if (string == null) return true;
+        if (string.isEmpty()) return true;
+        if (string.trim().isEmpty()) return true;
+        return false;
     }
 
     private void appendPart(StringBuilder sourceCoordinates, String part) {
