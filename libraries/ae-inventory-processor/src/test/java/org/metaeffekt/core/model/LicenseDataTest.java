@@ -26,7 +26,7 @@ public class LicenseDataTest {
 
     @Test
     public void testLicenseData() {
-        LicenseData ld = new LicenseData();
+        final LicenseData ld = new LicenseData();
         ld.set(LicenseData.Attribute.CANONICAL_NAME, "GNU Lesser General Public License 2.1");
         ld.set(LicenseData.Attribute.ID, "LGPL-2.1");
         ld.set(LicenseData.Attribute.SPDX_ID, "LGPL-2.1-only");
@@ -36,11 +36,6 @@ public class LicenseDataTest {
         Assert.assertEquals("GNU Lesser General Public License 2.1-LGPL-2.1", ld.deriveQualifier());
         Assert.assertEquals("GNU Lesser General Public License 2.1:LGPL-2.1:LGPL-2.1-only::limited:false:",
                 ld.createCompareStringRepresentation());
-
-        Inventory inventory = new Inventory();
-        inventory.getRepresentedLicenseNames(false).forEach(System.out::println);
-        //inventory.evaluateLicenses(false).forEach(System.out::println);
     }
-
 
 }

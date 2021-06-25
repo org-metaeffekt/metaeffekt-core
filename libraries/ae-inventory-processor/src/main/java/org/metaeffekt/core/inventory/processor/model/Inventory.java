@@ -546,7 +546,7 @@ public class Inventory {
                     match.setLicense(artifactLicense);
                 }
 
-                if (match != null && matches(effectiveLicense, match)) {
+                if (matches(effectiveLicense, match)) {
                     // only version and name must be used here
                     // there may be multiple entries (if validation for the component is disabled), but that
                     // is not of interest here (we need just representatives for documentation).
@@ -1450,17 +1450,17 @@ public class Inventory {
         return license;
     }
 
-    public List<String> getRepresentedLicenseNames(Boolean filtered){
-        List<String> representedLicenseNames = new ArrayList<>();
-        for (String license : evaluateLicenses(false)) {
+    public List<String> getRepresentedLicenseNames(List<String> effectiveLicenses){
+        final List<String> representedLicenseNames = new ArrayList<>();
+        for (String license : effectiveLicenses) {
             representedLicenseNames.add(getRepresentedLicenseName(license));
         }
-        if (filtered == true) return representedLicenseNames.stream().distinct().sorted().collect(Collectors.toList());
-            else return representedLicenseNames.stream().sorted().collect(Collectors.toList());
+        return representedLicenseNames.stream().distinct().sorted().collect(Collectors.toList());
     }
 
     public List<String> getRepresentedEffectiveLicenses(String representedLicenseName){
         List<String> representedEffectiveLicenses = new ArrayList<>();
+        representedEffectiveLicenses.add(representedLicenseName);
         for (LicenseData ld : getLicenseData()) {
             if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
                 if (representedLicenseName.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
@@ -1470,30 +1470,36 @@ public class Inventory {
         }
         if (!representedEffectiveLicenses.isEmpty()) {
             return representedEffectiveLicenses.stream().sorted().distinct().collect(Collectors.toList());
-        } else{
-            representedEffectiveLicenses.add(representedLicenseName);
+        } else {
             return representedEffectiveLicenses;
         }
     }
 
-    public boolean isSubstructureRequired(String license){
-        for(LicenseData ld : getLicenseData()){
-            if(license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS)) && !(license.equals(LicenseData.Attribute.CANONICAL_NAME))){
-                return true;
+    public boolean isSubstructureRequired(String license, List<String> effectiveLicenses) {
+        for (LicenseData ld : getLicenseData()) {
+            final String canonicalName = ld.get(LicenseData.Attribute.CANONICAL_NAME);
+            if (effectiveLicenses.contains(canonicalName)) {
+                if (license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
+                    return true;
+                }
             }
         }
         return false;
     }
+
     public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense){
-        Set<String> componentNames = new HashSet<>();
+        final Set<String> componentNames = new HashSet<>();
         for (String effectiveLicense : getRepresentedEffectiveLicenses(representedNameLicense)) {
             evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
         }
         return componentNames;
     }
+
     public boolean isFootnoteRequired(List<String> licenses){
         for (String license: licenses) {
-            if(isSubstructureRequired(license)) return true;
+            if (isSubstructureRequired(license, licenses)) {
+                return true;
+            }
         }
         return false;
     }

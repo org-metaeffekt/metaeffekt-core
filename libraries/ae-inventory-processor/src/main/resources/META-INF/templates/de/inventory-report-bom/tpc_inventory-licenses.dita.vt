@@ -31,7 +31,7 @@
                 <row>
                     <entry>
                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            $report.xmlEscapeString($license.trim())
+                            $report.xmlEscapeLicense($license)
                         </xref>
                      </entry>
                     <entry>
@@ -51,7 +51,7 @@
 #set($name=$inventory.evaluateComponents($license))
 #if(!$name.isEmpty())
 <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
-    <title>$report.xmlEscapeString($license)</title>
+    <title>$report.xmlEscapeLicense($license)</title>
     <body>
         <p>
             Die folgende Tabelle stellt alle Komponenten oder Komponenten mit Unterkomponenten
@@ -64,7 +64,7 @@
         </p>
         <p>
             <table otherprops="wide">
-                <title>Komponenten unter $report.xmlEscapeString($license.trim())$reportContext.inContextOf()</title>
+                <title>Komponenten unter $report.xmlEscapeLicense($license)$reportContext.inContextOf()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="60*" />

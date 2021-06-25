@@ -3,7 +3,8 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
-
+#set($effectiveLicenses=$inventory.evaluateLicenses(false))
+#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenseNames($effectiveLicenses))
 <body>
     <p>
         Table <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect</xref>
@@ -13,7 +14,7 @@
     <p>
         Please note, that a component may be subject to several licenses in effect.
     </p>
-    #if ($inventory.isFootnoteRequired($inventory.getRepresentedLicenseNames(true)))
+    #if ($inventory.isFootnoteRequired($effectiveLicenses))
         <fn callout="*" id="id-footnote">License variations are represented as a single effective license. The concrete license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
     #end
     <table id="LicensesInEffect" otherprops="wide">
@@ -28,23 +29,25 @@
                 </row>
             </thead>
             <tbody>
-#foreach($license in $inventory.getRepresentedLicenseNames(true))
+#foreach($license in $effectiveLicensesRepresented)
 #set($folder=$inventory.getLicenseFolder($license))
-#set($name=$inventory.evaluateComponentsRepresentedLicense($license))
+#set($group=$inventory.evaluateComponentsRepresentedLicense($license))
                 <row>
+#if ($inventory.isSubstructureRequired($license, $effectiveLicenses))
                     <entry>
-                        #if ($inventory.isSubstructureRequired($license))
                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            $report.xmlEscapeString($license.trim())</xref><xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
-                        #else
+                            $report.xmlEscapeLicense($license)</xref><xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
+                    </entry>
+#else
+                    <entry>
                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            $report.xmlEscapeString($license.trim())
+                            $report.xmlEscapeLicense($license)
                         </xref>
-                        #end
                      </entry>
+#end
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            <codeph>$name.size()</codeph>
+                            <codeph>$group.size()</codeph>
                         </xref>
                     </entry>
                 </row>
@@ -53,12 +56,13 @@
         </tgroup>
     </table>
 </body>
-    #foreach($license in $inventory.getRepresentedLicenseNames(true))
-        #if($inventory.isSubstructureRequired($license) == false)
+
+#foreach($license in $effectiveLicensesRepresented)
+        #if($inventory.isSubstructureRequired($license, $effectiveLicenses) == false)
             #insertLicenseArtifactTopic($license)
         #else
             <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
-                <title>$report.xmlEscapeString($license) Variants</title>
+                <title>$report.xmlEscapeLicense($license) Variants</title>
                 <body>
                     <p>
                         $license is representative of all licenses with variations,

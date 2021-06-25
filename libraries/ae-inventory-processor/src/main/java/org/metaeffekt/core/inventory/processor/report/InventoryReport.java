@@ -997,33 +997,39 @@ public class InventoryReport {
     }
 
     public String xmlEscapeString(String string) {
-        return xmlEscapeName(string);
+        return xmlEscapeName(string, true);
+    }
+
+    public String xmlEscapeLicense(String license) {
+        return xmlEscapeName(license, false);
     }
 
     public String xmlEscapeArtifactId(String artifactFileId) {
-        return xmlEscapeName(artifactFileId);
+        return xmlEscapeName(artifactFileId, true);
     }
 
     public String xmlEscapeComponentName(String componentName) {
-        return xmlEscapeName(componentName);
+        return xmlEscapeName(componentName, true);
     }
 
     public String xmlEscapeGAV(String gavElement) {
-        return xmlEscapeName(gavElement);
+        return xmlEscapeName(gavElement, true);
     }
 
-    private String xmlEscapeName(String artifactFileId) {
+    private String xmlEscapeName(String artifactFileId, boolean insertBreakingSpaces) {
         if (artifactFileId == null) return "&nbsp;";
 
         // espace the remainder
         String escaped = StringEscapeUtils.escapeXml(artifactFileId.trim());
 
-        // support line wrapping
-        escaped = escaped.replaceAll("\\.", ".&#8203;");
-        escaped = escaped.replaceAll("-", "-&#8203;");
-        escaped = escaped.replaceAll("_", "_&#8203;");
-        escaped = escaped.replaceAll(":", ":&#8203;");
-        escaped = escaped.replaceAll("([^&]+)#", "$1#&#8203;");
+        if (insertBreakingSpaces) {
+            // support line wrapping
+            escaped = escaped.replaceAll("\\.", ".&#8203;");
+            escaped = escaped.replaceAll("-", "-&#8203;");
+            escaped = escaped.replaceAll("_", "_&#8203;");
+            escaped = escaped.replaceAll(":", ":&#8203;");
+            escaped = escaped.replaceAll("([^&]+)#", "$1#&#8203;");
+        }
 
         return escaped;
     }

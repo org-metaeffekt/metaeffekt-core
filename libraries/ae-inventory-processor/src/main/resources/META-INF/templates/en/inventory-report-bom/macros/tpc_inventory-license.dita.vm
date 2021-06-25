@@ -3,7 +3,7 @@
         #set($name=$inventory.evaluateComponents($license))
         #if(!$name.isEmpty())
             <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
-                <title>$report.xmlEscapeString($license)</title>
+                <title>$report.xmlEscapeLicense($license)</title>
                 <body>
                     <p>
                         The following table lists all components that are licensed or contains subcomponents under $license.
