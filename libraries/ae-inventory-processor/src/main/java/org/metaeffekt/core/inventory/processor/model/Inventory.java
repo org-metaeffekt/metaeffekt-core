@@ -1476,12 +1476,16 @@ public class Inventory {
     }
 
     public boolean isSubstructureRequired(String license, List<String> effectiveLicenses) {
+        int counter = 0;
         for (LicenseData ld : getLicenseData()) {
             final String canonicalName = ld.get(LicenseData.Attribute.CANONICAL_NAME);
             if (effectiveLicenses.contains(canonicalName)) {
                 if (license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
-                    return true;
+                    counter++;
                 }
+            }
+            if (counter > 1) {
+                return true;
             }
         }
         return false;

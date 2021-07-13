@@ -72,7 +72,7 @@ public class PatternArtifactFilter implements ArtifactFilter {
         for (int i = 0; i < patternElements.length; i++) {
             String pe = patternElements[i];
             if (!ASTERISK.equalsIgnoreCase(pe) && dependencyElements[i] != null) {
-                // indication or a regular expression
+                // indication of a regular expression
                 if (pe.startsWith("^")) {
                     if (!dependencyElements[i].matches(pe)) {
                         return false;
