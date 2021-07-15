@@ -35,7 +35,7 @@
         <artifact.inventory.source.dir>/META-INF</artifact.inventory.source.dir>
         <artifact.inventory.source.includes>ae-core-artifact-inventory.xls</artifact.inventory.source.includes>
 
-        <ant.version>1.10.1</ant.version>
+        <ant.version>1.10.9</ant.version>
 
         <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
     </properties>
