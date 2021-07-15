@@ -47,7 +47,7 @@
         <jsch.version>0.1.54</jsch.version>
         <junit.version>4.12</junit.version>
         <plexus.utils.version>3.0.24</plexus.utils.version>
-        <poi.version>3.16</poi.version>
+        <poi.version>3.17</poi.version>
         <saxon.version>9.7.0-7</saxon.version>
         <slf4j.version>1.7.25</slf4j.version>
         <spring.framework.version>4.3.10.RELEASE</spring.framework.version>
