@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// @formatter-off
+
 /**
  * Package declaration containing package wide annotations.
  *
@@ -23,4 +23,3 @@
 package org.metaeffekt.core.common.kernel.annotation.mock.pack;
 
 import org.metaeffekt.core.common.kernel.annotation.mock.MyPublic;
-// @formatter-on

@@ -227,8 +227,6 @@
                         </executions>
                         <configuration>
                             <javadocVersion>1.8</javadocVersion>
-                            <!-- <release>8</release> -->
-                            <additionalparam>-Xdoclint:none</additionalparam>
                             <bottom>
                                 Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
                                 {currentYear} the original author or authors.
