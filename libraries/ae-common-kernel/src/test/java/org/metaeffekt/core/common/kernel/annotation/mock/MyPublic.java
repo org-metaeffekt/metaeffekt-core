@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Sample annotation. This annotation is replaceable to provide an upgrade path. 
+ * Sample annotation. This annotation is replaceable to provide an upgrade path.
  *
  * @author Karsten Klein
  */

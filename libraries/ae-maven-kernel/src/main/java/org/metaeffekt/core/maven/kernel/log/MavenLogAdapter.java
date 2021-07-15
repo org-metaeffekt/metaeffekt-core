@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The adapter enables to integrate commons logging with Maven Log. 
+ * The adapter enables to integrate commons logging with Maven Log.
  *
  * @author Karsten Klein
  */

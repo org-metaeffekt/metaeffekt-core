@@ -28,25 +28,25 @@ public abstract class AbstractJiraMojo extends AbstractProjectAwareMojo {
     /**
      * The Maven project.
      */
-    @Parameter(defaultValue="${project}", required=true, readonly=true)
+    @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject mavenProject;
 
     /**
      * The base URL of the Jira instance, the issues are retrieved from.
      */
-    @Parameter(required=true)
+    @Parameter(required = true)
     protected String serverUrl;
 
     /**
      * User for authentication with Jira.
      */
-    @Parameter(required=true)
+    @Parameter(required = true)
     protected String userName;
 
     /**
      * Password for authentication with Jira.
      */
-    @Parameter(required=true)
+    @Parameter(required = true)
     protected String userPassword;
 
     @Override

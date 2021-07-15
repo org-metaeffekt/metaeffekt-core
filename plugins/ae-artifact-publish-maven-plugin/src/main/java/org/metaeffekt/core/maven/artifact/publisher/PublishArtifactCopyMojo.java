@@ -27,7 +27,7 @@ import java.io.File;
  * Prepares the artifact creation by copying selected resources to a dedicated
  * folder structure.
  */
-@Mojo(name="publish-artifact-copy", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+@Mojo(name = "publish-artifact-copy", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class PublishArtifactCopyMojo extends AbstractArtifactMojo {
 
     /**
@@ -35,7 +35,7 @@ public class PublishArtifactCopyMojo extends AbstractArtifactMojo {
      */
     @Parameter
     private String sourceClassifier = null;
-    
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // exit if the project is pom only

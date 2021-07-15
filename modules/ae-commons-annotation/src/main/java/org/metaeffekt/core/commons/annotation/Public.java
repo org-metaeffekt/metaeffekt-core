@@ -26,10 +26,11 @@ import java.lang.annotation.Target;
  * Public packages and classes are part of the module's public API and are accessible for
  * module consumers.
  * Build tools can interpret this annotation within the build process.
- * 
+ *
  * @author Andreas Kaltenbach
  * @author Karsten Klein
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE})
-public @interface Public {}
+public @interface Public {
+}

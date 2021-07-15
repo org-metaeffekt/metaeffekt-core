@@ -16,7 +16,6 @@
 package org.metaeffekt.core.maven.version.mojo;
 
 
-
 public class UpdateVersionTask001Test extends AbstractPomTest {
 
     private static final String TARGET_PATH = "target/test/resources/example001";
@@ -31,5 +30,5 @@ public class UpdateVersionTask001Test extends AbstractPomTest {
     public String getSourcePath() {
         return SOURCE_PATH;
     }
-    
+
 }

@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * Class supporting the version replacement in POMs.
- * 
+ *
  * @author Karsten Klein
  */
 public class UpdateVersionTask {
@@ -99,13 +99,13 @@ public class UpdateVersionTask {
             replaceTask.setMatch("<parent>");
             replaceTask.setReplace("<parent_>");
             replaceTask.execute();
-            
+
             // mark all occurrences of <packaging>
             replaceTask = createRegExpTask(file, project, "sg");
             replaceTask.setMatch("<packaging>");
             replaceTask.setReplace("<packaging_>");
             replaceTask.execute();
-            
+
             // unmark first occurrance of <parent>
             replaceTask = createRegExpTask(file, project, "s");
             replaceTask.setMatch("(<parent_>)");
@@ -117,14 +117,14 @@ public class UpdateVersionTask {
             replaceTask.setMatch("(<packaging_>)");
             replaceTask.setReplace("<packaging>");
             replaceTask.execute();
-            
+
             // perform version replacements
             replaceTask = createRegExpTask(file, project, "s");
             replaceTask.setMatch("(<project [^>]*>.*<version>)" + VALID_VERSION
                     + "(</version>.*<parent>.*)");
             replaceTask.setReplace("\\1" + projectVersion + "\\2");
             replaceTask.execute();
-            
+
             replaceTask = createRegExpTask(file, project, "s");
             replaceTask.setMatch("(<project [^>]*>.*<version>)" + VALID_VERSION
                     + "(</version>.*<packaging>.*)");
@@ -136,13 +136,13 @@ public class UpdateVersionTask {
                     + "(</version>.*<!-- PROJECT-VERSION-MARKER -->.*)");
             replaceTask.setReplace("\\1" + projectVersion + "\\2");
             replaceTask.execute();
-            
+
             // NOTE: the latter replacement expects that every pom has a parent or a packaging tag 
             // AFTER the version element. In case this it not true no replacement will be performed.
             // In order to enforce a replacement one could simply change the order or provide a 
             // commented empty parent // tag <!-- <parent></parent> --> or by specifying a 
             // (redundant) packaging element (recommended).
-            
+
             // unmark all remaining <parent>
             replaceTask = createRegExpTask(file, project, "sg");
             replaceTask.setMatch("(<parent_>)");

@@ -17,7 +17,10 @@ public abstract class InventoryExtractorUtil {
     private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
     public static final String SEPARATOR_LINK_MAP = " --> ";
 
-    private InventoryExtractorUtil() {};
+    private InventoryExtractorUtil() {
+    }
+
+    ;
 
     /**
      * Filters the file list and outputs a list of files that is not covered by the packages.
@@ -26,7 +29,8 @@ public abstract class InventoryExtractorUtil {
      * @param excludePatterns Additional exclude patterns.
      *
      * @return List of files not covered by package file lists or exclude patterns.
-     * @throws IOException
+     *
+     * @throws IOException May throw an {@link IOException}.
      */
     public static List<String> filterFileList(File analysisDir, List<String> excludePatterns) throws IOException {
         final File filesFile = new File(analysisDir, "filesystem/files.txt");

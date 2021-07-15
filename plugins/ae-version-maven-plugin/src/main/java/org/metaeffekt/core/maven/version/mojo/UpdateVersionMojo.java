@@ -25,7 +25,7 @@ import java.util.Map;
 
 /**
  * Updates the versions in a maven project and all included POMs.
- * 
+ *
  * @goal update
  */
 public class UpdateVersionMojo extends AbstractProjectAwareConfiguredMojo {
@@ -71,7 +71,7 @@ public class UpdateVersionMojo extends AbstractProjectAwareConfiguredMojo {
         MavenLogAdapter.initialize(getLog());
         try {
             UpdateVersionTask task = new UpdateVersionTask();
-            
+
             task.setProjectPath(projectPath);
             task.setIncludes(ParameterConversionUtil.convertStringToStringArray(includes, ","));
             task.setExcludes(ParameterConversionUtil.convertStringToStringArray(excludes, ","));

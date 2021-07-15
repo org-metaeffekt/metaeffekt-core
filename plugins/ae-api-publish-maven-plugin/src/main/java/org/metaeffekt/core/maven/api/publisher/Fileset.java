@@ -20,5 +20,5 @@ public class Fileset extends org.apache.maven.model.FileSet {
 
     public void setFollowSymlinks(boolean b) {
     }
-    
+
 }

@@ -25,7 +25,7 @@ public class MappingTest {
     public void testMappingSplitCorrectly() {
         Mapping mapping = new Mapping();
         mapping.setMapping("TestKey-->TestValue");
-        
+
         Assert.assertEquals("TestValue", mapping.getMap().get("TestKey"));
     }
 

@@ -49,7 +49,7 @@ public class RemoteUriResolver extends AbstractRemoteAccess implements UriResolv
                 if (response.getStatusLine().getStatusCode() == 200) {
                     FileUtils.copyInputStreamToFile(response.getEntity().getContent(), destinationFile);
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 LOG.debug("Cannot download uri. Request timed out.", e);
             }
         } catch (Exception e) {

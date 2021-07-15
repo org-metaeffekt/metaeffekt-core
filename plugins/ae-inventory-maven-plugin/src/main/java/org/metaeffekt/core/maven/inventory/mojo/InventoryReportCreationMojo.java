@@ -24,7 +24,7 @@ import java.io.IOException;
 
 /**
  * Creates a report based on an existing inventory.
- * 
+ *
  * @goal create-inventory-report
  */
 public class InventoryReportCreationMojo extends AbstractInventoryReportCreationMojo {
@@ -34,7 +34,7 @@ public class InventoryReportCreationMojo extends AbstractInventoryReportCreation
      * @required
      */
     private File inventory;
-    
+
     @Override
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         InventoryReport report = new InventoryReport();

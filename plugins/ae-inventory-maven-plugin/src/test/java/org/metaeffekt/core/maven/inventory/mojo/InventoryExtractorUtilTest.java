@@ -103,7 +103,7 @@ public class InventoryExtractorUtilTest {
         List<String> filteredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
 
         LOG.debug("Filtered files size: {}", filteredFiles.size());
-        filteredFiles.forEach(LOG::info);
+        filteredFiles.forEach(LOG::debug);
 
         Assert.assertEquals(1644, filteredFiles.size());
     }

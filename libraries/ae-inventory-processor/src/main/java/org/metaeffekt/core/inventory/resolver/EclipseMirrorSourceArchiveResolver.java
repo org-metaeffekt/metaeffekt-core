@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class EclipseMirrorSourceArchiveResolver extends AbstractMirrorSourceArchiveResolver {
 
-    private String select= "([^_]*)(_)(.*)";
+    private String select = "([^_]*)(_)(.*)";
     private String replacement = "$1.source_$3";
 
     private File resolveFileUrl(String mirrorUrl) {

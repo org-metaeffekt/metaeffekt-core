@@ -85,7 +85,7 @@ public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor 
     }
 
 
-    private void updateGroupId(CloseableHttpClient client, HttpGet request,  Artifact artifact)
+    private void updateGroupId(CloseableHttpClient client, HttpGet request, Artifact artifact)
             throws IOException, HttpException, DocumentException, URISyntaxException {
 
         final String id = artifact.getId();

@@ -35,6 +35,7 @@ public class ParameterConversionUtil {
      *
      * @param string to separate. May be <code>null</code>.
      * @param delimiterRegExp that separates the string into several parts
+     *
      * @return A list of trimmed strings. Potentially empty, but never <code>null</code>.
      */
     public static List<String> convertStringToStringList(String string, String delimiterRegExp) {
@@ -57,6 +58,7 @@ public class ParameterConversionUtil {
      *
      * @param string to separate. May be <code>null</code>.
      * @param delimiterRegExp that separates the string into several parts
+     *
      * @return A list of trimmed strings. Potentially empty, but never <code>null</code>.
      */
     public static String[] convertStringToStringArray(String string, String delimiterRegExp) {

@@ -25,9 +25,9 @@ import java.util.Set;
 
 /**
  * <p>
- * The {@link LoggingProjectAdapter} bridges Ant and Commons Logging in 
+ * The {@link LoggingProjectAdapter} bridges Ant and Commons Logging in
  * respect to harmonize logging.
- *
+ * <p>
  * Since Ant and Commons Logging are not equivalent and specific to Ant tasks
  * an escalation mechanism is supported. In particular when Ant logs to
  * verbose level the message can be escalated to another log level and

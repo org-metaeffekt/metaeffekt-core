@@ -21,12 +21,12 @@ import org.junit.Test;
 
 /**
  * Simple test to check whether the {@link Public} annotation can be used on class level.
- * 
+ *
  * @author Karsten Klein
  */
 @Public
 public class PublicTest {
-    
+
     @Test
     public void testPublicAnnotationOnTestClass() {
         Assert.assertNotNull(PublicTest.class.getAnnotation(Public.class));

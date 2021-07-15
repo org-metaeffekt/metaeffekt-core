@@ -48,7 +48,7 @@ public class PropertyUtils {
         if (result == null) {
             result = System.getProperty(key);
         }
-        
+
         if (result != null)
             return ((String) result).trim();
         return null;

@@ -19,7 +19,7 @@ import java.util.List;
  * Merges inventories. Reference inventories are usually the target inventory. Otherwise this Mojo is intended to
  * be applied to inventories from the extraction process, only.
  */
-@Mojo( name = "merge-inventories", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
+@Mojo(name = "merge-inventories", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
 
     /**

@@ -41,6 +41,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      * @param baseDir The directory to scan.
      * @param includes The include patterns separated by ','.
      * @param excludes The exclude patterns separated by ','.
+     *
      * @return Array of file paths relative to baseDir.
      */
     public static String[] scanForFiles(File baseDir, String includes, String excludes) {
@@ -101,7 +102,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             if (pos.equals(commonBaseDir)) {
                 break;
             }
-            index ++;
+            index++;
         }
 
         // move up the path until common base path is reached
@@ -113,12 +114,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         // and append the path composed earlier
         relativePath += path;
         if (relativePath.trim().isEmpty()) {
-           return Constants.DOT;
+            return Constants.DOT;
         }
         return relativePath;
     }
 
     private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
+
     public static boolean matches(final String normalizedPattern, final String normalizedPath) {
         if (normalizedPattern == null) return true;
         if (normalizedPath == null) return false;

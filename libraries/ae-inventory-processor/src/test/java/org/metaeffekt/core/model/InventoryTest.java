@@ -17,11 +17,9 @@ package org.metaeffekt.core.model;
 
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 

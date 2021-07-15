@@ -29,7 +29,7 @@ import java.io.File;
  * Prepares the artifact creation by copying selected resources to a dedicated
  * folder structure.
  */
-@Mojo(name="publish-artifact-overwrite", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+@Mojo(name = "publish-artifact-overwrite", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
 
     /**
@@ -49,16 +49,16 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
      */
     @Parameter
     private String targetClassifier = null;
-    
+
     /**
      * Determines if the created artifact should be uploaded into the maven repository
      */
     @Parameter
     private boolean attachArtifact = false;
-    
+
     /**
      * @throws MojoExecutionException
-     * @throws MojoFailureException 
+     * @throws MojoFailureException
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -70,16 +70,16 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
         File srcArtifactFile = getArtifactFile(getSourceClassifier());
 
         // verify that the artifact exists
-        if(!srcArtifactFile.exists()){
-            getLog().info("No source artifact found for file: "+srcArtifactFile.getName());
+        if (!srcArtifactFile.exists()) {
+            getLog().info("No source artifact found for file: " + srcArtifactFile.getName());
             // do nothing, just skip it here.
             return;
         }
         File targetArtifactFile = getArtifactFile(getClassifier());
-        
+
         Project project = new Project();
         project.setBaseDir(new File(getProject().getBuild().getDirectory()));
-        
+
         if (srcArtifactFile.exists()) {
             Copy copy = new Copy();
             copy.setProject(project);
@@ -87,21 +87,21 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
             copy.setFile(srcArtifactFile);
             copy.setTofile(targetArtifactFile);
             copy.execute();
-            
+
             // we assume the orginal artifact is already attached
         }
-        
+
         // should it be uploaded into the maven repository?
-        if(attachArtifact){
+        if (attachArtifact) {
             attachArtifact(targetArtifactFile);
         }
-        
+
     }
 
     @Override
     public String getClassifier() {
-        if(getTargetClassifier() == null){
-            return super.getClassifier(); 
+        if (getTargetClassifier() == null) {
+            return super.getClassifier();
         } else {
             return getTargetClassifier();
         }
@@ -114,7 +114,7 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
     public void setSourceClassifier(String sourceClassifier) {
         this.sourceClassifier = sourceClassifier;
     }
-    
+
     public String getTargetClassifier() {
         return targetClassifier;
     }

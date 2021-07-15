@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 public class TemplateConfigurationParser {
 
     private static final Pattern PATTERN_DEFINITION =
-        Pattern.compile(".*##\\s+([A-Za-z][A-Za-z0-9_]+):\\s*(.*)");
+            Pattern.compile(".*##\\s+([A-Za-z][A-Za-z0-9_]+):\\s*(.*)");
 
     public static Map<String, String> parse(File file) throws IOException {
         Map<String, String> result = new HashMap<>();

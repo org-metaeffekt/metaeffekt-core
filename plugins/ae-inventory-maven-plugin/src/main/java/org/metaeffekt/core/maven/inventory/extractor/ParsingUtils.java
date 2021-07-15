@@ -10,7 +10,7 @@ public class ParsingUtils {
     protected static int getIndex(List<String> lines, String key) {
         int index = -1;
         for (String line : lines) {
-            index ++;
+            index++;
             if (line.startsWith(key)) {
                 return index;
             }
@@ -27,7 +27,7 @@ public class ParsingUtils {
         if (colonIndex < 0) return null;
         StringBuilder sb = new StringBuilder(line.substring(colonIndex + 1).trim());
         int lineIndex = index + 1;
-        while (lineIndex < lines.size() && !lines.get(lineIndex).contains(""+Constants.DELIMITER_COLON)) {
+        while (lineIndex < lines.size() && !lines.get(lineIndex).contains("" + Constants.DELIMITER_COLON)) {
             if (StringUtils.hasText(sb)) sb.append(Constants.DELIMITER_NEWLINE);
             line = lines.get(lineIndex).trim();
 

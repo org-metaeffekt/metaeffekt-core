@@ -19,10 +19,10 @@ package org.metaeffekt.core.maven.artifact.publisher;
 public class Fileset extends org.apache.maven.model.FileSet {
 
     private String outputDirectory;
-    
+
     public void setFollowSymlinks(boolean b) {
     }
-    
+
     public String getOutputDirectory() {
         return outputDirectory;
     }

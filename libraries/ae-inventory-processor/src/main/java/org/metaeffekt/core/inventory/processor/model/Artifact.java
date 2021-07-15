@@ -68,14 +68,15 @@ public class Artifact extends AbstractModelBase {
         VERIFIED("Verified");
 
         private String key;
+
         Attribute(String key) {
             this.key = key;
         }
+
         public String getKey() {
             return key;
         }
     }
-
 
 
     // artifact id (derived from id and version)
@@ -107,20 +108,20 @@ public class Artifact extends AbstractModelBase {
         this.relevant = artifact.isRelevant();
         this.managed = artifact.isManaged();
     }
-    
+
     public Set<String> getProjects() {
         String projectsString = get(Attribute.PROJECTS);
         if (StringUtils.isEmpty(projectsString)) {
             return Collections.emptySet();
         }
         return Arrays.stream(projectsString.split(",")).
-            map(String::trim).collect(Collectors.toSet());
+                map(String::trim).collect(Collectors.toSet());
     }
-    
+
     public void setProjects(Set<String> project) {
         set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(" ,")));
     }
-    
+
     public String getComponent() {
         return get(Attribute.COMPONENT);
     }
@@ -145,11 +146,11 @@ public class Artifact extends AbstractModelBase {
         set(Attribute.ID, id);
     }
 
-    
+
     public String getVersion() {
         return get(Attribute.VERSION);
     }
-    
+
     public void setVersion(String version) {
         set(Attribute.VERSION, version);
     }
@@ -286,8 +287,8 @@ public class Artifact extends AbstractModelBase {
      * Where the file component is constructed as artifactId-version[-classifier].type. The version therefore can be used to
      * separate the artifactId from the remaining pieces of the file component.
      *
-     * @param id
-     * @param version
+     * @param id The artifact id.
+     * @param version The version of the artifact.
      *
      * @return The derived artifact id or null, in case the version is not part of the file component.
      */
@@ -310,7 +311,7 @@ public class Artifact extends AbstractModelBase {
         return null;
     }
 
-    
+
     public String createStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
         if (getGroupId() != null) {
@@ -481,16 +482,16 @@ public class Artifact extends AbstractModelBase {
     public String getDerivedLicenseFolder() {
         return LicenseMetaData.deriveLicenseFolderName(getLicense());
     }
-    
+
     public String getType() {
         return inferTypeFromId();
     }
 
-    
+
     public String getClassifier() {
         return inferClassifierFromId();
     }
-    
+
     public boolean isEnabledForDistribution() {
         String classification = getClassification();
         if (!StringUtils.isEmpty(classification)) {
@@ -505,10 +506,10 @@ public class Artifact extends AbstractModelBase {
      * Checks whether the artifact is internal. Internal artifacts require a license association, but
      * no component folder or license notice. Nevertheless, a component folder and/or license notice
      * can already be provided.
-     *
+     * <p>
      * The internal flag may be used to mark artifacts that are identified for associated licenses.
      *
-     * @return
+     * @return Boolean indicating whether the artifacts is classified as internal.
      */
     public boolean isInternal() {
         String classification = getClassification();
@@ -523,7 +524,7 @@ public class Artifact extends AbstractModelBase {
     /**
      * Checks whether the artifact is banned. Banned artifacts are allowed to have incomplete meta data.
      *
-     * @return
+     * @return Boolean indicating whether the artifact is banned.
      */
     public boolean isBanned() {
         String classification = getClassification();

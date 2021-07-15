@@ -53,7 +53,7 @@ public class CentOSInventoryExtractor extends AbstractInventoryExtractor {
         return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    private void parseRpmPackageFiles(File analysisDir, Map<String,PackageInfo> nameToPackageReferenceMap) throws IOException {
+    private void parseRpmPackageFiles(File analysisDir, Map<String, PackageInfo> nameToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : nameToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = entry.getKey();

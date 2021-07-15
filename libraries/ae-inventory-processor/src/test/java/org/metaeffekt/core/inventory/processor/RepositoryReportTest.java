@@ -185,8 +185,8 @@ public class RepositoryReportTest {
 
         LOG.info("Applicable:");
         applicableVulnerabilities.stream()
-            .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
-            .forEach(LOG::info);
+                .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
+                .forEach(LOG::info);
 
         List<VulnerabilityMetaData> notApplicableVulnerabilities = VulnerabilityMetaData.filterNotApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
         Assert.assertEquals(10, notApplicableVulnerabilities.size());
@@ -196,8 +196,8 @@ public class RepositoryReportTest {
 
         LOG.info("Not Applicable:");
         notApplicableVulnerabilities.stream()
-            .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
-            .forEach(LOG::info);
+                .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
+                .forEach(LOG::info);
 
         File targetFile = new File("target/test-inventory.xls");
         new InventoryWriter().writeInventory(inventory, targetFile);
@@ -230,7 +230,7 @@ public class RepositoryReportTest {
         new InventoryWriter().writeInventory(inventory, new File(reportDir, "output_artifact-inventory.xls"));
 
         // read rewritten
-        Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir,"output_artifact-inventory.xls"));
+        Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir, "output_artifact-inventory.xls"));
 
         // check selected data in reread inventory
         Assert.assertEquals("GPL-2.0", rereadInventory.
@@ -287,7 +287,7 @@ public class RepositoryReportTest {
         new InventoryWriter().writeInventory(inventory, new File(reportDir, "output_artifact-inventory.xls"));
 
         // read rewritten
-        Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir,"output_artifact-inventory.xls"));
+        Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir, "output_artifact-inventory.xls"));
 
         // check selected data in reread inventory
         Assert.assertEquals("GPL-2.0", rereadInventory.

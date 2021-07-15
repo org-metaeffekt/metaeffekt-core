@@ -44,15 +44,18 @@ public class LicenseData extends AbstractModelBase {
         REPRESENTED_AS("RepresentedAs");
 
         private String key;
+
         Attribute(String key) {
             this.key = key;
         }
+
         public String getKey() {
             return key;
         }
     }
 
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
@@ -66,6 +69,8 @@ public class LicenseData extends AbstractModelBase {
 
     /**
      * Validates that the mandatory attributes of a component are set.
+     *
+     * @return Boolean indicating whether the instance is valid.
      */
     public boolean isValid() {
         if (StringUtils.isEmpty(get(Attribute.CANONICAL_NAME))) return false;

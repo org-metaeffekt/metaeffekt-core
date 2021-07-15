@@ -45,7 +45,7 @@ import java.io.IOException;
  * is evaluated. Using the source category of the license meta data it is determined whether and whereto download the
  * source artifacts.
  */
-@Mojo( name = "download-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES )
+@Mojo(name = "download-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
 
     /**
@@ -57,13 +57,13 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
     /**
      * The local Maven repository where artifacts are cached during the build process.
      */
-    @Parameter(defaultValue="${localRepository}", readonly = true, required = true )
+    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     private ArtifactRepository localRepository;
 
     /**
      * A list of remote Maven repositories to be used for the compile run.
      */
-    @Parameter(defaultValue="${project.remoteArtifactRepositories}")
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
     private java.util.List remoteRepositories;
 
     /**
@@ -146,7 +146,7 @@ public class DownloadSourcesMojo extends AbstractProjectAwareMojo {
                                     downloadArtifact(artifact, retainedSourcesSourcePath);
                                     break;
                                 case LicenseMetaData.SOURCE_CATEGORY_EXTENDED:
-                                case LicenseMetaData.SOURCE_CATEGORY_ANNEX:                              
+                                case LicenseMetaData.SOURCE_CATEGORY_ANNEX:
                                     downloadArtifact(artifact, softwareDistributionAnnexSourcePath);
                                     break;
                                 default:

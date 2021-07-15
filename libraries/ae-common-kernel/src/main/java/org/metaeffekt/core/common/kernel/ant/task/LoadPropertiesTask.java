@@ -45,7 +45,7 @@ public class LoadPropertiesTask extends Task {
 
     /**
      * Executes the task.
-     * 
+     *
      * @see Task#execute()
      */
     @Override
@@ -70,8 +70,8 @@ public class LoadPropertiesTask extends Task {
     }
 
     /**
-     * Loads the properties as configured for this task. 
-     * 
+     * Loads the properties as configured for this task.
+     *
      * @return The loaded properties.
      */
     protected Properties loadProperties() {
@@ -120,12 +120,12 @@ public class LoadPropertiesTask extends Task {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-    
+
     public void addProperties(Properties properties) {
         if (this.properties == null) {
             this.properties = new Properties();
         }
-        
+
         this.properties.putAll(properties);
     }
 
@@ -133,7 +133,7 @@ public class LoadPropertiesTask extends Task {
         if (this.properties == null) {
             this.properties = new Properties();
         }
-        
+
         this.properties.putAll(properties);
     }
 

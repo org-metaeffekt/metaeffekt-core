@@ -75,6 +75,5 @@ public class UpdateVersionRecommendationProcessor extends AbstractInventoryProce
         }
 
 
-
     }
 }

@@ -20,7 +20,7 @@ public class ComponentMirror extends AbstractMirror {
         if (mappings != null) {
             for (String mapping : mappings) {
                 String[] split = mapping.split(":");
-                resolver.addMapping(new Mapping(extractPattern(0, split), extractPattern( 1,split)));
+                resolver.addMapping(new Mapping(extractPattern(0, split), extractPattern(1, split)));
             }
         }
 
@@ -28,7 +28,7 @@ public class ComponentMirror extends AbstractMirror {
     }
 
     public void dumpConfig(Log log, String prefix) {
-        super.dumpConfig(log,prefix);
+        super.dumpConfig(log, prefix);
         log.debug(prefix + "  mappings: " + mappings);
     }
 

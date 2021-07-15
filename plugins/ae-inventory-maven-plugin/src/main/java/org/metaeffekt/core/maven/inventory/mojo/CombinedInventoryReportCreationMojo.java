@@ -26,7 +26,7 @@ import java.io.IOException;
 
 /**
  * Creates a report based on an set of inventories.
- * 
+ *
  * @goal create-combined-inventory-report
  */
 public class CombinedInventoryReportCreationMojo extends AbstractInventoryReportCreationMojo {

@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ae-plugins</artifactId>
     <packaging>pom</packaging>
-    
+
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-plugin-management-pom</artifactId>
         <version>HEAD-SNAPSHOT</version>
         <relativePath>../poms/ae-core-plugin-management-pom</relativePath>
     </parent>
-    
+
     <modules>
         <module>ae-inventory-maven-plugin</module>
         <module>ae-version-maven-plugin</module>
@@ -31,7 +32,7 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <build>
         <pluginManagement>
             <plugins>
@@ -42,7 +43,7 @@
                         <projectsDirectory>src/it</projectsDirectory>
                         <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                         <postBuildHookScript>validate.groovy</postBuildHookScript>
-                        
+
                         <!-- NOTE: some verification scripts rely on debug output -->
                         <debug>true</debug>
                         <addTestClassPath>true</addTestClassPath>
@@ -53,7 +54,7 @@
                             <goals>
                                 <goal>run</goal>
                             </goals>
-                            
+
                             <!-- NOTE: we are performing the integration test late in the build. In 
                                  particular when the plugin has already been installed. Approaches
                                  that workaround this concepts do not harmonize with the parent
@@ -88,7 +89,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencies>
         <dependency>
             <!-- ensure the proper build order (invoker usage) in the reactor -->

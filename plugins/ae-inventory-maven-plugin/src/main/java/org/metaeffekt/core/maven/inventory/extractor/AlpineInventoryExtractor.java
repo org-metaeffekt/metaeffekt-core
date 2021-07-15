@@ -105,7 +105,7 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
     public int getIndex(List<String> lines, String key) {
         int index = -1;
         for (String line : lines) {
-            index ++;
+            index++;
             if (line.contains(key)) {
                 return index;
             }

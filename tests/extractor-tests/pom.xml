@@ -72,9 +72,9 @@
                             <configuration>
                                 <target>
                                     <chmod perm="+x">
-                                        <fileSet dir="${project.build.directory}/container-extractors" includes="**/*.sh" />
+                                        <fileSet dir="${project.build.directory}/container-extractors" includes="**/*.sh"/>
                                     </chmod>
-                                    <mkdir dir="${project.build.directory}/analysis" />
+                                    <mkdir dir="${project.build.directory}/analysis"/>
                                 </target>
                             </configuration>
                         </execution>

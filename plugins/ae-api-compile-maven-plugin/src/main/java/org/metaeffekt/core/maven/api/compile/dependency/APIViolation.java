@@ -19,16 +19,19 @@ import org.apache.maven.artifact.Artifact;
 
 /**
  * POJO to specify APIViolations for the API Compile Mojo.
+ *
  * @author i001098
  */
 public class APIViolation {
-    
+
     private String groupId;
     private String artifactId;
-    
+
     public APIViolation() {
         super();
-    };
+    }
+
+    ;
 
     public APIViolation(String groupId, String artifactId) {
         this.groupId = groupId;
@@ -53,14 +56,15 @@ public class APIViolation {
 
     /**
      * @param artifact to match against
-     * @return true if groupId and artifactId of the given artifact are equal to groupId and artifactId of the APIViolation. 
+     *
+     * @return true if groupId and artifactId of the given artifact are equal to groupId and artifactId of the APIViolation.
      */
     public boolean matches(Artifact artifact) {
-        return (artifact != null && 
-                artifact.getGroupId() != null && 
-                artifact.getArtifactId() != null && 
-                groupId != null && 
-                artifactId != null && 
+        return (artifact != null &&
+                artifact.getGroupId() != null &&
+                artifact.getArtifactId() != null &&
+                groupId != null &&
+                artifactId != null &&
                 groupId.equals(artifact.getGroupId()) &&
                 artifactId.equals(artifact.getArtifactId()));
     }

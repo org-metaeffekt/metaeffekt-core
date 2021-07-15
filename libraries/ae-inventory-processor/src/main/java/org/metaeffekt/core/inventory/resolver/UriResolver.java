@@ -27,6 +27,7 @@ public interface UriResolver {
      *
      * @param uri The uri.
      * @param destinationFile The file to download to. The file is only a proposal. The returned file may differ.
+     *
      * @return Returns the file under which the resolved or downloaded artifact is available in the local file system.
      */
     File resolve(String uri, File destinationFile);

@@ -22,7 +22,7 @@ import java.io.File;
 
 /**
  * Creates a report by scanning a folder in the file system.
- * 
+ *
  * @goal create-directory-report
  */
 public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCreationMojo {
@@ -32,18 +32,18 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
      * @required
      */
     private File inputDirectory;
-    
+
     /**
      * @parameter expression="${project.build.directory}/scan"
      * @required
      */
     private File scanDirectory;
-    
+
     /**
      * @parameter
      * @required
      */
-    private String[] scanIncludes = new String[] { "**/*" };
+    private String[] scanIncludes = new String[]{"**/*"};
 
     /**
      * @parameter
@@ -69,7 +69,7 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
         report.setScanExcludes(scanExcludes);
 
         report.setEnableImplicitUnpack(enableImplicitUnpack);
-        
+
         return report;
     }
 

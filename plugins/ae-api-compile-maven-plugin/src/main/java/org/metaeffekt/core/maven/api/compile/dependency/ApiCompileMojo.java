@@ -40,8 +40,8 @@ import java.util.List;
  * against API artifacts rather than runtime artifacts.
  */
 @SuppressWarnings("rawtypes")
-@Mojo( name = "compile", defaultPhase = LifecyclePhase.COMPILE, threadSafe = true,
-requiresDependencyResolution = ResolutionScope.COMPILE )
+@Mojo(name = "compile", defaultPhase = LifecyclePhase.COMPILE, threadSafe = true,
+        requiresDependencyResolution = ResolutionScope.COMPILE)
 public class ApiCompileMojo extends CompilerMojo {
 
     /**
@@ -53,27 +53,27 @@ public class ApiCompileMojo extends CompilerMojo {
     /**
      * The local Maven repository where artifacts are cached during the build process.
      */
-    @Parameter(defaultValue="${localRepository}", readonly = true, required = true )
+    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
     private ArtifactRepository localRepository;
 
     /**
      * A list of remote Maven repositories to be used for the compile run.
      */
-    @Parameter(defaultValue="${project.remoteArtifactRepositories}")
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
     private java.util.List remoteRepositories;
 
     /**
      * The directory for compiled classes.
      */
-    @Parameter(defaultValue="${project.build.outputDirectory}", required=true)
+    @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
     private File alternateOutputDirectory;
-    
+
     /**
      * The Maven mavenProject this goal is called for.
      */
-    @Parameter(defaultValue="${project}", required=true, readonly=true)
+    @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject mavenProject;
-    
+
     /**
      * The defined API Violations.
      */
@@ -88,15 +88,16 @@ public class ApiCompileMojo extends CompilerMojo {
         getLog().debug("############################################################");
         getLog().debug("#         Using Modified API compile Plugin                #");
         getLog().debug("############################################################");
-        
+
         super.execute();
     }
 
     /**
      * Obtains the Classpath Elements for compilation.
-     *
+     * <p>
      * This methode is called by the super class and its content is overriden in
      * order to provide a check for API classified artifacts.
+     *
      * @return List with artifacts required for compilation
      */
     @SuppressWarnings("unchecked")
@@ -108,7 +109,7 @@ public class ApiCompileMojo extends CompilerMojo {
         for (int i = 0; i < compileArtifacts.size(); i++) {
             Artifact a = (Artifact) compileArtifacts.get(i);
             // only check on non api artifacts for api existence
-            if (!isConfiguredViolation(a)){
+            if (!isConfiguredViolation(a)) {
                 if ("runtime".equalsIgnoreCase(a.getClassifier())) {
                     Artifact apiArtifact = getClassifiedArtifact(a, "api");
                     if (apiArtifact != null) {
@@ -168,7 +169,7 @@ public class ApiCompileMojo extends CompilerMojo {
         }
         return null;
     }
-    
+
     private boolean isConfiguredViolation(Artifact artifact) {
         if (artifact == null) {
             return false;
@@ -176,7 +177,7 @@ public class ApiCompileMojo extends CompilerMojo {
         if (apiViolations == null) {
             return false;
         }
-        
+
         for (APIViolation apiViolation : apiViolations) {
             if (apiViolation != null && apiViolation.matches(artifact)) {
                 return true;
@@ -188,6 +189,7 @@ public class ApiCompileMojo extends CompilerMojo {
     /**
      * Returns the alternateOutputDirecotry property as {@link java.io.File} representing the output directory
      * configured for the compile run.
+     *
      * @return a {@link java.io.File} representing the output directory
      * configured for the compile run.
      */

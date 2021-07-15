@@ -51,6 +51,7 @@ public abstract class AbstractModelBase {
      *
      * @param key The key to get the value for.
      * @param defaultValue The default value to use, in case the key is not associated.
+     *
      * @return The value associated with the key or defaultValue in case no value is associated. In case key is
      * <code>null</code> also <code>null</code> is returned.
      */
@@ -64,6 +65,7 @@ public abstract class AbstractModelBase {
      * Function to check for a boolean value.
      *
      * @param key The key to get the boolean value for.
+     *
      * @return The boolean value associated with the key. Returns <code>false</code> in case the associated value is
      * not equivalent to <code>Boolean.TRUE</code> or in case key is <code>null</code>.
      */
@@ -76,6 +78,7 @@ public abstract class AbstractModelBase {
      *
      * @param key The key to get the boolean value for.
      * @param defaultValue he default value to use, in case the key is not associated.
+     *
      * @return The boolean value associated with the key. Returns defaultValue in case the associated value is
      * not equivalent to <code>Boolean.TRUE</code> and <code>false</code> in case key is <code>null</code>.
      */

@@ -59,7 +59,7 @@
 
         <license.identifier>Apache License 2.0</license.identifier>
         <license.file>/META-INF/LICENSE</license.file>
-        
+
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.jdk>1.8</maven.compiler.jdk>
@@ -87,7 +87,7 @@
                         <target>${maven.compiler.target}</target>
                     </configuration>
                 </plugin>
-            
+
                 <plugin>
                     <groupId>org.metaeffekt.core</groupId>
                     <!-- FIXME: rename plugin -->
@@ -102,9 +102,9 @@
                         </groupIdVersionMap>
                         <propertyVersionMap>
                             <artifact.inventory.version>${artifact.inventory.version}</artifact.inventory.version>
-<!--
-                            CentOSFileFilterTest<artifact.inventory.enabled>${artifact.inventory.enabled}</artifact.inventory.enabled>
--->
+                            <!--
+                                                        CentOSFileFilterTest<artifact.inventory.enabled>${artifact.inventory.enabled}</artifact.inventory.enabled>
+                            -->
                             <ae.core.version>${ae.core.version}</ae.core.version>
                         </propertyVersionMap>
                     </configuration>
@@ -164,7 +164,9 @@
         <profile>
             <id>generate-source-jar</id>
             <activation>
-                <file><exists>src</exists></file>
+                <file>
+                    <exists>src</exists>
+                </file>
             </activation>
             <build>
                 <plugins>
@@ -205,14 +207,16 @@
         <profile>
             <id>generate-javadoc-jar</id>
             <activation>
-                <file><exists>src/main/java</exists></file>
+                <file>
+                    <exists>src/main/java</exists>
+                </file>
             </activation>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.4</version>
+                        <version>3.3.0</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -223,7 +227,7 @@
                         </executions>
                         <configuration>
                             <javadocVersion>1.8</javadocVersion>
-                            <release>8</release>
+                            <!-- <release>8</release> -->
                             <additionalparam>-Xdoclint:none</additionalparam>
                             <bottom>
                                 Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
@@ -246,6 +250,25 @@
                                     </manifestSection>
                                 </manifestSections>
                             </archive>
+                            <!-- FIXME: remove once all plugins have been moved to real annotations -->
+                            <tags>
+                                <tag>
+                                    <name>goal</name>
+                                    <placement>X</placement>
+                                </tag>
+                                <tag>
+                                    <name>parameter</name>
+                                    <placement>X</placement>
+                                </tag>
+                                <tag>
+                                    <name>required</name>
+                                    <placement>X</placement>
+                                </tag>
+                                <tag>
+                                    <name>requiresDependencyResolution</name>
+                                    <placement>X</placement>
+                                </tag>
+                            </tags>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -1,53 +1,54 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.metaeffekt.core</groupId>
-  <artifactId>api-test</artifactId>
-  <name>api-test</name>
-  <version>@project.version@</version>
+    <groupId>org.metaeffekt.core</groupId>
+    <artifactId>api-test</artifactId>
+    <name>api-test</name>
+    <version>@project.version@</version>
 
-  <description>
-    Tests the generation of the DDL for Hibernate-annotated classes with generating history tables.
-  </description>
+    <description>
+        Tests the generation of the DDL for Hibernate-annotated classes with generating history tables.
+    </description>
 
-  <properties>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
-  </properties>
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
 
-  <dependencies>
-  </dependencies>
+    <dependencies>
+    </dependencies>
 
-  <build>
-    <plugins>
-        <plugin>
-          <groupId>org.metaeffekt.core</groupId>
-          <artifactId>ae-api-publish-maven-plugin</artifactId>
-          <version>@project.version@</version>
-          <executions>
-            <execution>
-              <id>package-api</id>
-              <phase>package</phase>
-              <goals>
-                <goal>publishapi</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <filesets>
-              <fileset>
-                <directory>${basedir}/target/classes</directory>
-                <includes>
-                  <include>**/service/**</include>
-                  <include>**/transfer/**</include>
-                  <include>**/webapi/**</include>
-                </includes>
-               </fileset>
-             </filesets>
-             <scanRootDir>${basedir}/target/classes</scanRootDir>
-             <annotationClass>org.metaeffekt.core.test.annotation.MyPublic</annotationClass>
-           </configuration>
-        </plugin>
-    </plugins>
-  </build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-api-publish-maven-plugin</artifactId>
+                <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>package-api</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>publishapi</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${basedir}/target/classes</directory>
+                            <includes>
+                                <include>**/service/**</include>
+                                <include>**/transfer/**</include>
+                                <include>**/webapi/**</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                    <scanRootDir>${basedir}/target/classes</scanRootDir>
+                    <annotationClass>org.metaeffekt.core.test.annotation.MyPublic</annotationClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -114,6 +114,7 @@ public class DirectoryInventoryScan {
         ComponentPatternData componentPatternData;
         File anchorFile;
         File baseDir;
+
         MatchResult(ComponentPatternData componentPatternData, File anchorFile, File baseDir) {
             this.componentPatternData = componentPatternData;
             this.anchorFile = anchorFile;
@@ -135,7 +136,7 @@ public class DirectoryInventoryScan {
 
     /**
      * Scans the directory recursively.
-     *
+     * <p>
      * All paths are relative to the scanBaseDir.
      *
      * @param scanBaseDir The scan base dir. Use always the same root folder. Also for the recursion.
@@ -223,7 +224,7 @@ public class DirectoryInventoryScan {
 
                 if (!anchorChecksum.equalsIgnoreCase(Constants.ASTERISK)) {
                     throw new IllegalStateException(String.format(
-                        "The version anchor checksum of component pattern [%s] with version anchor [%s] must be '*'.",
+                            "The version anchor checksum of component pattern [%s] with version anchor [%s] must be '*'.",
                             cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN), versionAnchor));
                 }
 
@@ -485,7 +486,7 @@ public class DirectoryInventoryScan {
         }
 
         // try untar
-        try  {
+        try {
             if (tarExtensions.contains(extension)) {
                 Untar expandTask = new Untar();
                 expandTask.setProject(project);

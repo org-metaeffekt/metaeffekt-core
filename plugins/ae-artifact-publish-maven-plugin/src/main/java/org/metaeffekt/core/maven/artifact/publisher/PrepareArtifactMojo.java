@@ -32,7 +32,7 @@ import java.util.List;
  * Prepares the artifact creation by copying selected resources to a dedicated
  * folder structure.
  */
-@Mojo(name="prepare-artifact", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+@Mojo(name = "prepare-artifact", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class PrepareArtifactMojo extends AbstractArtifactMojo {
 
     /**
@@ -59,7 +59,7 @@ public class PrepareArtifactMojo extends AbstractArtifactMojo {
         if (isPomPackagingProject()) {
             return;
         }
-        
+
         File artifactFile = getArtifactFile(getClassifier());
 
         File tempDir = getTempDir(artifactFile);

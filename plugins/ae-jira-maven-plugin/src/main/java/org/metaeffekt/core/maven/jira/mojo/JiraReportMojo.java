@@ -33,10 +33,12 @@ import java.util.Map;
 /**
  * Mojo to populate velocity templates with content fetched from the JIRA REST API.
  */
-@Mojo(name="generate-report", defaultPhase=LifecyclePhase.INITIALIZE)
+@Mojo(name = "generate-report", defaultPhase = LifecyclePhase.INITIALIZE)
 public class JiraReportMojo extends AbstractJiraRestMojo {
 
-    /** File suffix used to detect a velocity template. */
+    /**
+     * File suffix used to detect a velocity template.
+     */
     private static final String VELOCITY_SUFFIX = ".vt";
 
     private static final String DUMP_FOLDER_NAME = "jira-report-dump";
@@ -46,31 +48,31 @@ public class JiraReportMojo extends AbstractJiraRestMojo {
     /**
      * The source. This is where the plugin searches for template folders.
      */
-    @Parameter(required=true)
+    @Parameter(required = true)
     protected File source;
 
     /**
      * The target folder, where the results are written.
      */
-    @Parameter(required=true)
+    @Parameter(required = true)
     protected File target;
 
     /**
      * Flag if existing files should be overwritten or not.
      */
-    @Parameter(defaultValue="true")
+    @Parameter(defaultValue = "true")
     protected boolean overwrite;
 
     /**
      * Indicator whether to skip the execution.
      */
-    @Parameter(defaultValue="${ae.jira-report.skip}")
+    @Parameter(defaultValue = "${ae.jira-report.skip}")
     protected boolean skip;
 
     /**
      * Whether to dump the intermediate results from JIRA.
      */
-    @Parameter(defaultValue="false")
+    @Parameter(defaultValue = "false")
     protected boolean dump;
 
     @Override
@@ -94,7 +96,7 @@ public class JiraReportMojo extends AbstractJiraRestMojo {
             // scan for velocity templates
             DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(source);
-            scanner.setIncludes(new String[] { "**/*.vt" });
+            scanner.setIncludes(new String[]{"**/*.vt"});
             scanner.scan();
 
             File dumpFolder = new File(getOutputDirectory(), DUMP_FOLDER_NAME);

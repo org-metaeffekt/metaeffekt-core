@@ -54,7 +54,7 @@ public class ComponentSourceArchiveResolver extends AbstractMirrorSourceArchiveR
                 }
                 matches.add(componentPlusVersion.replaceAll(pattern, replacement));
             }
-         }
+        }
         return matches;
     }
 

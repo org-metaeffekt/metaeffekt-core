@@ -123,7 +123,6 @@ public class DependenciesDitaReport {
     }
 
 
-
     private String resolveName(String artifactId) {
         if (artifactNameMapping != null) {
             String name = artifactNameMapping.getProperty(artifactId);

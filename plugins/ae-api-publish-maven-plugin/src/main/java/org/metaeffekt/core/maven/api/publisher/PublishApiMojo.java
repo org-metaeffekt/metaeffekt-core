@@ -41,26 +41,26 @@ import java.util.List;
 /**
  * Create and promote API extensions to the maven repository.
  */
-@Mojo( name = "publishapi", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true,
+@Mojo(name = "publishapi", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true,
         requiresDependencyResolution = ResolutionScope.COMPILE)
 public class PublishApiMojo extends AbstractProjectAwareMojo {
 
     /**
      * Directory containing the generated JAR.
      */
-    @Parameter( defaultValue = "${project.build.directory}", required = true )
+    @Parameter(defaultValue = "${project.build.directory}", required = true)
     private File outputDirectory;
 
     /**
      * Directory containing the classes and resource files that should be packaged into the JAR.
      */
-    @Parameter( defaultValue = "${project.build.outputDirectory}", required = true )
+    @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
     private File classesDirectory;
 
     /**
      * The {@link MavenSession}.
      */
-    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
     private MavenSession session;
 
     /**
@@ -97,17 +97,15 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
     @Parameter
     private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
-    @Component( role = Archiver.class, hint = "jar" )
+    @Component(role = Archiver.class, hint = "jar")
     private JarArchiver jarArchiver;
 
     /**
      * Executes this Mojo.
-     * 
-     * @throws MojoExecutionException
-     *             if an unexpected problem occurs.
-     * @throws MojoFailureException
-     *             if an expected problem (such as a compilation failure)
-     *             occurs.
+     *
+     * @throws MojoExecutionException if an unexpected problem occurs.
+     * @throws MojoFailureException if an expected problem (such as a compilation failure)
+     * occurs.
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -121,7 +119,7 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
         getLog().debug("#         Using Publish API Plugin                         #");
         getLog().debug("############################################################");
         File apiJar = new File(project.getBuild().getDirectory(), project.getArtifactId() + "-"
-            + project.getVersion() + "-api.jar");
+                + project.getVersion() + "-api.jar");
 
         extendFileset();
 
@@ -151,7 +149,7 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
         }
         return strings.toArray(new String[strings.size()]);
     }
-    
+
     private void extendFileset() throws MojoExecutionException {
         if (filesets == null) {
             filesets = new ArrayList<FileSet>();
@@ -171,14 +169,14 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
                 URLClassLoader runtimeClassLoader = new URLClassLoader(urls, Thread.currentThread()
                         .getContextClassLoader());
                 @SuppressWarnings("unchecked")
-                Class<? extends Annotation> annotationClazz = 
-                    (Class<? extends Annotation>) runtimeClassLoader
-                        .loadClass(annotationClass);
+                Class<? extends Annotation> annotationClazz =
+                        (Class<? extends Annotation>) runtimeClassLoader
+                                .loadClass(annotationClass);
 
                 this.getLog().debug("Scanning: " + scanRootDir);
                 List<String> includeFiles = new ArrayList<String>();
-                PublicAnnotationAnalyser analyzer = 
-                    new PublicAnnotationAnalyser(runtimeClassLoader, annotationClazz);
+                PublicAnnotationAnalyser analyzer =
+                        new PublicAnnotationAnalyser(runtimeClassLoader, annotationClazz);
                 analyzer.collectPublicTypes(new File(scanRootDir), includeFiles);
 
                 this.getLog().debug("Found public java types: " + includeFiles);

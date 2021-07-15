@@ -22,11 +22,11 @@ import java.util.Map;
 
 
 public class Mapping {
-    
+
     private static final String SEPARATOR = "-->";
-    
+
     private List<String> mappings = new ArrayList<String>();
-    
+
     public Map<String, String> getMap() {
         Map<String, String> map = new HashMap<String, String>();
         if (mappings != null) {
@@ -41,7 +41,7 @@ public class Mapping {
         }
         return map;
     }
-    
+
     public void setMapping(String string) {
         this.mappings.add(string);
     }

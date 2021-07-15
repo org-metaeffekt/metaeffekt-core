@@ -35,7 +35,7 @@ public class InventoryScanReportTest {
 
     /**
      * Local test based on sample artifact. Ignored in general build.
-     *
+     * <p>
      * FIXME: enable test for continuous integration with stripped sample artifact
      *
      * @throws Exception
@@ -102,8 +102,8 @@ public class InventoryScanReportTest {
         final File inputDir = new File("XXX/target/contents");
         final File scanDir = new File("XXX/target/bomscan");
 
-        final String[] scanIncludes = new String[] {"**/*"};
-        final String[] scanExcludes = new String[] {"--none--"};
+        final String[] scanIncludes = new String[]{"**/*"};
+        final String[] scanExcludes = new String[]{"--none--"};
 
         report.setInputDirectory(inputDir);
         report.setScanDirectory(scanDir);
@@ -117,7 +117,7 @@ public class InventoryScanReportTest {
 
     @Ignore
     @Test
-    public void createReportFromScannedInventory() throws Exception  {
+    public void createReportFromScannedInventory() throws Exception {
         Inventory scanInventory = new InventoryReader().readInventory(new File("target/scan-inventory.xls"));
 
         File inventoryFile = new File("<path-to-inventory.xls>");

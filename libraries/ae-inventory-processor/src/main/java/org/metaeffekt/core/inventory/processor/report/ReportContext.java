@@ -23,7 +23,8 @@ public class ReportContext {
     private String title;
     private String context;
 
-    public ReportContext() {}
+    public ReportContext() {
+    }
 
     public ReportContext(String id, String title, String context) {
         this.id = id;
@@ -56,11 +57,12 @@ public class ReportContext {
     }
 
     /**
+     * Combines a title from topic and a prepend string.
      *
+     * @param topic The topic name.
+     * @param prepend The string to prepend.
      *
-     * @param topic
-     * @param prepend
-     * @return
+     * @return The title string.
      */
     public String combinedTitle(String topic, boolean prepend) {
         if (title == null || StringUtils.isEmpty(title)) {

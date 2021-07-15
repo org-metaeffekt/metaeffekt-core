@@ -57,6 +57,7 @@ public class ComponentPatternData extends AbstractModelBase {
     }
 
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.INCLUDE_PATTERN.getKey());
@@ -70,6 +71,8 @@ public class ComponentPatternData extends AbstractModelBase {
 
     /**
      * Validates that the mandatory attributes of a component are set.
+     *
+     * @return Boolean whether the {@link ComponentPatternData} instance is valid.
      */
     public boolean isValid() {
         if (StringUtils.isEmpty(get(Attribute.INCLUDE_PATTERN))) return false;

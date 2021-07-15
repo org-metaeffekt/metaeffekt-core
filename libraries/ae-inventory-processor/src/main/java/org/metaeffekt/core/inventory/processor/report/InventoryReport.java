@@ -38,8 +38,10 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -52,7 +54,7 @@ public class InventoryReport {
 
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
 
-    private static final String TEMPLATES_TECHNICAL_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH  + "technical";
+    private static final String TEMPLATES_TECHNICAL_BASE_DIR = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + "technical";
 
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
@@ -600,7 +602,7 @@ public class InventoryReport {
      * @return true if all information is available.
      */
     private boolean checkAndCopyLicenseFolder(String licenseFolderName, File targetDir,
-          Set<String> reportedLicenseFolders) {
+                                              Set<String> reportedLicenseFolders) {
 
         File sourceLicenseRootDir = new File(getGlobalInventoryDir(), referenceLicensePath);
 
@@ -622,7 +624,7 @@ public class InventoryReport {
     }
 
     private boolean checkAndCopyComponentFolder(String componentFolderName, File targetDir,
-            Set<String> reportedLicenseFolders) {
+                                                Set<String> reportedLicenseFolders) {
 
         File sourceComponentRootDir = new File(getGlobalInventoryDir(), referenceComponentPath);
 
@@ -669,11 +671,11 @@ public class InventoryReport {
             boolean isArtifactVersionWildcard =
                     // when a wildcard version was not resolved
                     ASTERISK.equalsIgnoreCase(version) ||
-                    // when a wildcard version was resolved and the artifact was marked
-                    STRING_TRUE.equalsIgnoreCase(artifact.get(Constants.KEY_WILDCARD_MATCH)) ||
-                    // when (unresolved) version placeholders are used
-                    (version != null && version.startsWith(VERSION_PLACHOLDER_PREFIX) &&
-                            version.endsWith(VERSION_PLACHOLDER_SUFFIX));
+                            // when a wildcard version was resolved and the artifact was marked
+                            STRING_TRUE.equalsIgnoreCase(artifact.get(Constants.KEY_WILDCARD_MATCH)) ||
+                            // when (unresolved) version placeholders are used
+                            (version != null && version.startsWith(VERSION_PLACHOLDER_PREFIX) &&
+                                    version.endsWith(VERSION_PLACHOLDER_SUFFIX));
 
             // try to resolve component license meta data if available
             final LicenseMetaData matchingLicenseMetaData = projectInventory.

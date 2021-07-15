@@ -24,7 +24,7 @@ public class AbstractContainerFileFilterTest {
 
     protected void assertCommonFileAttributes(Artifact artifact) {
         Set<String> projects = artifact.getProjects();
-        assertTrue("No project is set for file artifact " + artifact.getId() ,projects != null && projects.size() == 1);
+        assertTrue("No project is set for file artifact " + artifact.getId(), projects != null && projects.size() == 1);
     }
 
 }

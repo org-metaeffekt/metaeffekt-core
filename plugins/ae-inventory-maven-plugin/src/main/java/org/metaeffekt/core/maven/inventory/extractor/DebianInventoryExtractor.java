@@ -56,7 +56,7 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
         return new ArrayList<>(packageInfoMap.values());
     }
 
-    private void parseDebianPackageFiles(File analysisDir, Map<String,PackageInfo> idToPackageReferenceMap) throws IOException {
+    private void parseDebianPackageFiles(File analysisDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : idToPackageReferenceMap.entrySet()) {
             PackageInfo packageInfo = entry.getValue();
             String packageId = packageInfo.name;

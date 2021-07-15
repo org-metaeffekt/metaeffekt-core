@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -37,19 +36,14 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  */
 public class Inventory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
-
     public static final String CLASSIFICATION_CURRENT = "current";
-
     // Components are structured by context. This is the package context.
     public static final String COMPONENT_CONTEXT_PACKAGE = "package";
-
     // Components are structured by context. This is the artifact context.
     public static final String COMPONENT_CONTEXT_ARTIFACT = "artifact";
-
     // Components are structured by context. This is the web module context.
     public static final String COMPONENT_CONTEXT_WEBMODULE = "web-module";
-
+    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
     private List<Artifact> artifacts = new ArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
@@ -404,8 +398,9 @@ public class Inventory {
      * Returns a sorted list of licenses that is covered by this inventory. Please note that this
      * method only produces the license names, which are assumed to be non-redundant and unique.
      *
-     * @param includeLicensesWithArtifactsOnly
-     * @param includeManagedArtifactsOnly
+     * @param includeLicensesWithArtifactsOnly Result will cover licenses of artifacts without artifactId when true.
+     * @param includeManagedArtifactsOnly Results will only cover license of managed artifacts when true.
+     *
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
@@ -456,6 +451,7 @@ public class Inventory {
      * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
+     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
@@ -485,7 +481,7 @@ public class Inventory {
     /**
      * Used by tpc_inventory-notices.dita.vt.
      *
-     * @return
+     * @return List of component notices for this inventory.
      */
     public List<ComponentNotice> evaluateComponentNotices() {
         List<ComponentNotice> componentNotices = new ArrayList<>();
@@ -534,8 +530,8 @@ public class Inventory {
         for (final Artifact artifact : artifacts) {
             String artifactLicense = artifact.getLicense();
             if (StringUtils.hasText(artifact.getLicense()) &&
-                StringUtils.hasText(artifact.getVersion()) &&
-                StringUtils.hasText(artifact.getComponent())){
+                    StringUtils.hasText(artifact.getVersion()) &&
+                    StringUtils.hasText(artifact.getComponent())) {
                 artifactLicense = artifactLicense.trim();
                 // find a matching LMD instance
                 LicenseMetaData match = findMatchingLicenseMetaData(
@@ -578,7 +574,9 @@ public class Inventory {
      * Iterates through the license metadata to find a match for the given component and license parameters.
      *
      * @param component The component.
-     * @param license   The license name.
+     * @param license The license name.
+     * @param version The version.
+     *
      * @return A matching {@link LicenseMetaData} instance if available. In case multiple
      * can be matched an {@link IllegalStateException} is thrown.
      */
@@ -608,6 +606,7 @@ public class Inventory {
      * Tries to find the matching {@link LicenseMetaData} details for the specified artifact.
      *
      * @param artifact The artifact to look for {@link LicenseMetaData}.
+     *
      * @return The found {@link LicenseMetaData} or <code>null</code> when no matching {@link LicenseMetaData} could be
      * found.
      */
@@ -619,6 +618,7 @@ public class Inventory {
      * Tries to find the {@link LicenseData} with the given canonicalName.
      *
      * @param canonicalName The canonical name.
+     *
      * @return The found {@link LicenseData} instance or <code>null</code> in case no matching {@link LicenseData}
      * instance was identified.
      */
@@ -637,10 +637,14 @@ public class Inventory {
         return artifacts;
     }
 
+    public void setArtifacts(List<Artifact> artifacts) {
+        this.artifacts = artifacts;
+    }
+
     public List<Artifact> getArtifacts(String context) {
         if (COMPONENT_CONTEXT_PACKAGE.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(a -> isPackageType(a))
-                .collect(Collectors.toList());
+                    .collect(Collectors.toList());
         }
         if (COMPONENT_CONTEXT_ARTIFACT.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(
@@ -673,10 +677,6 @@ public class Inventory {
         if (StringUtils.isEmpty(type)) return false;
         if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return true;
         return false;
-    }
-
-    public void setArtifacts(List<Artifact> artifacts) {
-        this.artifacts = artifacts;
     }
 
     public List<LicenseMetaData> getLicenseMetaData() {
@@ -880,31 +880,25 @@ public class Inventory {
     /**
      * Used by templates to check whether a notice for the given component is available.
      *
-     * @param component
+     * @param component The component to check.
      *
      * @return Indicated whether a notice is available or not.
      */
     public boolean hasNotice(Component component) {
+        // FIXME: remove aspect from templates and remove method; currently all components have a notice.
         return true;
-//        if (component == null) return false;
-//        return hasNotice(component.artifacts);
     }
 
+    /**
+     * Used by templates to check whether a notice for the given component is available.
+     *
+     * @param ald The {@link ArtifactLicenseData} instance to check.
+     *
+     * @return Indicated whether a notice is available or not.
+     */
     public boolean hasNotice(ArtifactLicenseData ald) {
+        // FIXME: remove aspect from templates and remove method; currently all components have a notice.
         return true;
-//        if (ald == null) return false;
-//        return hasNotice(ald.getArtifacts());
-    }
-
-    private boolean hasNotice(List<Artifact> artifacts) {
-        if (artifacts == null) return false;
-        for (final Artifact artifact : artifacts) {
-            final LicenseMetaData licenseMetaData = findMatchingLicenseMetaData(artifact);
-            if (licenseMetaData != null) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public List<Artifact> evaluateLicense(String licenseName,
@@ -1109,74 +1103,11 @@ public class Inventory {
     }
 
     /**
-     * Component data. Please note that the component per-se does not have a version, but a license.
-     * Artifacts (with various versions) can be added to the component. When evaluating the
-     * LicenseMetaData for a component the version (on artifact level) is still important.
-     * FIXME:
-     * - add an optional component version to the artifacts or identify the component with version
-     * - alternatively add a component version on license meta data level; rationale: an artifact can
-     *   belong in the same version can belong to several components.
-     */
-    public class Component {
-        private String name;
-        private String license;
-        private String originalComponentName;
-
-        private List<Artifact> artifacts = new ArrayList<>();
-
-        public Component(String name, String originalComponentName, String license) {
-            this.name = name;
-            this.license = license;
-            this.originalComponentName = originalComponentName;
-        }
-
-        @Override
-        public int hashCode() {
-            return toString().hashCode();
-        }
-
-        public boolean equals(Object o) {
-            if (o instanceof Component) {
-                return toString().equals(o.toString());
-            }
-            return false;
-        }
-
-        public List<Artifact> getArtifacts() {
-            return artifacts;
-        }
-
-        public void add(Artifact artifact) {
-            artifacts.add(artifact);
-        }
-
-        @Override
-        public String toString() {
-            return STRING_EMPTY + name + "/" + license;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getLicense() {
-            return license;
-        }
-
-        public String getOriginalComponentName() {
-            return originalComponentName;
-        }
-
-        public String getQualifier() {
-            return toString();
-        }
-    }
-
-    /**
      * Takes over missing license metadata from the provided inputInventory. If the local inventory already has matching
      * license metadata the local data has priority.
      *
      * @param inputInventory The input inventory. From this inventory license metadata will be taken over.
+     * @param infoOnOverwrite Methods provides information on overwrites when true.
      */
     public void inheritLicenseMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
         // Iterate through all license meta data. Generate qualifier based on component name, version and license.
@@ -1219,12 +1150,11 @@ public class Inventory {
         getLicenseMetaData().retainAll(filteredSet);
     }
 
-
     /**
      * Inherits the artifacts from the specified inputInventory. Local artifacts with the same qualifier have
      * priority.
      *
-     * @param inputInventory  Input inventory with artifact information.
+     * @param inputInventory Input inventory with artifact information.
      * @param infoOnOverwrite Logs information on overwrites when active.
      */
     public void inheritArtifacts(Inventory inputInventory, boolean infoOnOverwrite) {
@@ -1368,20 +1298,20 @@ public class Inventory {
         getVulnerabilityMetaData().removeAll(forDeletion);
     }
 
-    public void setComponentPatternData(List<ComponentPatternData> componentPatternData) {
-        this.componentPatternData = componentPatternData;
-    }
-
     public List<ComponentPatternData> getComponentPatternData() {
         return this.componentPatternData;
     }
 
-    public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData) {
-        this.vulnerabilityMetaData = vulnerabilityMetaData;
+    public void setComponentPatternData(List<ComponentPatternData> componentPatternData) {
+        this.componentPatternData = componentPatternData;
     }
 
     public List<VulnerabilityMetaData> getVulnerabilityMetaData() {
         return vulnerabilityMetaData;
+    }
+
+    public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData) {
+        this.vulnerabilityMetaData = vulnerabilityMetaData;
     }
 
     public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
@@ -1396,13 +1326,13 @@ public class Inventory {
         return VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
     }
 
-
-    // helpers
-
     private Set<String> splitCommaSeparated(String string) {
         if (string == null) return Collections.EMPTY_SET;
         return Arrays.stream(string.split(",")).map(String::trim).collect(Collectors.toSet());
     }
+
+
+    // helpers
 
     private String toPlainCVE(String cve) {
         if (StringUtils.isEmpty(cve)) return null;
@@ -1429,28 +1359,27 @@ public class Inventory {
         return InventoryUtils.tokenizeLicense(effectiveLicense, true, true);
     }
 
-    public void setLicenseData(List<LicenseData> licenseData) {
-        this.licenseData = licenseData;
-    }
-
     public List<LicenseData> getLicenseData() {
         return licenseData;
     }
 
-    public String getRepresentedLicenseName(String license){
+    public void setLicenseData(List<LicenseData> licenseData) {
+        this.licenseData = licenseData;
+    }
+
+    public String getRepresentedLicenseName(String license) {
 
         for (LicenseData ld : getLicenseData()) {
-            if (license.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))){
-                if(ld.get(LicenseData.Attribute.REPRESENTED_AS) != null){
+            if (license.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
+                if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
                     return (ld.get(LicenseData.Attribute.REPRESENTED_AS));
-                }
-                else return license;
+                } else return license;
             }
         }
         return license;
     }
 
-    public List<String> getRepresentedLicenseNames(List<String> effectiveLicenses){
+    public List<String> getRepresentedLicenseNames(List<String> effectiveLicenses) {
         final List<String> representedLicenseNames = new ArrayList<>();
         for (String license : effectiveLicenses) {
             representedLicenseNames.add(getRepresentedLicenseName(license));
@@ -1458,7 +1387,7 @@ public class Inventory {
         return representedLicenseNames.stream().distinct().sorted().collect(Collectors.toList());
     }
 
-    public List<String> getRepresentedEffectiveLicenses(String representedLicenseName){
+    public List<String> getRepresentedEffectiveLicenses(String representedLicenseName) {
         List<String> representedEffectiveLicenses = new ArrayList<>();
         representedEffectiveLicenses.add(representedLicenseName);
         for (LicenseData ld : getLicenseData()) {
@@ -1491,7 +1420,7 @@ public class Inventory {
         return false;
     }
 
-    public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense){
+    public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense) {
         final Set<String> componentNames = new HashSet<>();
         for (String effectiveLicense : getRepresentedEffectiveLicenses(representedNameLicense)) {
             evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
@@ -1499,12 +1428,76 @@ public class Inventory {
         return componentNames;
     }
 
-    public boolean isFootnoteRequired(List<String> licenses){
-        for (String license: licenses) {
+    public boolean isFootnoteRequired(List<String> licenses) {
+        for (String license : licenses) {
             if (isSubstructureRequired(license, licenses)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Component data. Please note that the component per-se does not have a version, but a license.
+     * Artifacts (with various versions) can be added to the component. When evaluating the
+     * LicenseMetaData for a component the version (on artifact level) is still important.
+     * FIXME:
+     * - add an optional component version to the artifacts or identify the component with version
+     * - alternatively add a component version on license meta data level; rationale: an artifact can
+     * belong in the same version can belong to several components.
+     */
+    public class Component {
+        private String name;
+        private String license;
+        private String originalComponentName;
+
+        private List<Artifact> artifacts = new ArrayList<>();
+
+        public Component(String name, String originalComponentName, String license) {
+            this.name = name;
+            this.license = license;
+            this.originalComponentName = originalComponentName;
+        }
+
+        @Override
+        public int hashCode() {
+            return toString().hashCode();
+        }
+
+        public boolean equals(Object o) {
+            if (o instanceof Component) {
+                return toString().equals(o.toString());
+            }
+            return false;
+        }
+
+        public List<Artifact> getArtifacts() {
+            return artifacts;
+        }
+
+        public void add(Artifact artifact) {
+            artifacts.add(artifact);
+        }
+
+        @Override
+        public String toString() {
+            return STRING_EMPTY + name + "/" + license;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getLicense() {
+            return license;
+        }
+
+        public String getOriginalComponentName() {
+            return originalComponentName;
+        }
+
+        public String getQualifier() {
+            return toString();
+        }
     }
 }

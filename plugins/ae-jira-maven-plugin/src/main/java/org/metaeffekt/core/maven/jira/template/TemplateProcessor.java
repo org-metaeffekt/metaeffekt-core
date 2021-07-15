@@ -40,7 +40,7 @@ public class TemplateProcessor {
 
     /**
      * Constructor.
-     * 
+     *
      * @param templateResourcePath the location where the template source files can be found
      */
     public TemplateProcessor(String templateResourcePath) {
@@ -57,10 +57,11 @@ public class TemplateProcessor {
 
     /**
      * Process a velocity template source and store it in the target path.
-     * 
+     *
      * @param source location of the template relative to the configured template resource path
      * @param target location where the result files are stored
      * @param data the data for template replacements
+     *
      * @throws IOException when the source can not be read or the target can not be written
      */
     public void processFile(String source, File target, Map<String, Object> data)

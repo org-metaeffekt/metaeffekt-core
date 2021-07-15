@@ -19,7 +19,7 @@ import java.util.*;
 
 /**
  * Aggregates and structures all information to render notices for a given components.
- *
+ * <p>
  * Component notices are on the first level version-agnostic. They organize contain various artifacts of different
  * versions that share the component name.
  */

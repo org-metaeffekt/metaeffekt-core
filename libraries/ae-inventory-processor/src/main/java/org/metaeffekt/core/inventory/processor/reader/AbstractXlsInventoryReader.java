@@ -218,12 +218,15 @@ public abstract class AbstractXlsInventoryReader {
     protected LicenseMetaData readLicenseMetaData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
+
     protected LicenseData readLicenseData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
+
     protected ComponentPatternData readComponentPatternData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
+
     protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }

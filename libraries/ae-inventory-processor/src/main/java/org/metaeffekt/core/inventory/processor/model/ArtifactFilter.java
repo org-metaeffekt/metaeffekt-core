@@ -27,6 +27,7 @@ public interface ArtifactFilter {
      * Method for filtering Artifacts.
      *
      * @param artifact The artifact to check.
+     *
      * @return Returns <code>true</code> in case the artifact passes the filter.
      */
     boolean filter(Artifact artifact);

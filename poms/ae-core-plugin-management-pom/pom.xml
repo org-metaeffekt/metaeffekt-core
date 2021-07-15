@@ -150,7 +150,9 @@
                         <execution>
                             <id>apply-license-to-javadoc</id>
                             <phase>generate-sources</phase>
-                            <goals><goal>copy-resources</goal></goals>
+                            <goals>
+                                <goal>copy-resources</goal>
+                            </goals>
                             <configuration>
                                 <outputDirectory>${project.build.directory}/apidocs/META-INF</outputDirectory>
                                 <resources>
@@ -238,10 +240,11 @@
                     </dependencies>
                 </plugin>
 
+                <!--
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                     <executions>
                         <execution>
                             <id>main-javadoc</id>
@@ -256,6 +259,7 @@
                         </execution>
                     </executions>
                 </plugin>
+                -->
             </plugins>
         </pluginManagement>
 
@@ -282,7 +286,9 @@
         <profile>
             <id>validate-using-inventory</id>
             <activation>
-                <file><missing>.NO_INVENTORY_CHECK</missing></file>
+                <file>
+                    <missing>.NO_INVENTORY_CHECK</missing>
+                </file>
             </activation>
             <build>
                 <pluginManagement>
@@ -374,7 +380,9 @@
         <profile>
             <id>apply-license-to-test</id>
             <activation>
-                <file><exists>src/test</exists></file>
+                <file>
+                    <exists>src/test</exists>
+                </file>
             </activation>
             <build>
                 <pluginManagement>
@@ -387,7 +395,9 @@
                                 <execution>
                                     <id>apply-license-to-test</id>
                                     <phase>generate-sources</phase>
-                                    <goals><goal>copy-resources</goal></goals>
+                                    <goals>
+                                        <goal>copy-resources</goal>
+                                    </goals>
                                     <configuration>
                                         <outputDirectory>${project.basedir}/src/test/resources/META-INF</outputDirectory>
                                         <resources>
@@ -407,7 +417,9 @@
         <profile>
             <id>apply-license-to-main</id>
             <activation>
-                <file><exists>src/main</exists></file>
+                <file>
+                    <exists>src/main</exists>
+                </file>
             </activation>
             <build>
                 <pluginManagement>
@@ -420,7 +432,9 @@
                                 <execution>
                                     <id>apply-license-to-main</id>
                                     <phase>generate-sources</phase>
-                                    <goals><goal>copy-resources</goal></goals>
+                                    <goals>
+                                        <goal>copy-resources</goal>
+                                    </goals>
                                     <configuration>
                                         <outputDirectory>${project.basedir}/src/main/resources/META-INF</outputDirectory>
                                         <resources>

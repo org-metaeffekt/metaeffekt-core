@@ -38,7 +38,7 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 /**
  * Extracts an inventory from node package information.
  */
-@Mojo( name = "extract-node-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
+@Mojo(name = "extract-node-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
 
     public static final String ATTRIBUTE_NAME = "name";
@@ -60,13 +60,13 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
 
     public static final String SEPARATOR_DASH = "-";
 
-    @Parameter(defaultValue="${project.basedir}/package-lock.json", required = false )
+    @Parameter(defaultValue = "${project.basedir}/package-lock.json", required = false)
     private File packageLockJson;
 
-    @Parameter(defaultValue="${project.build.directory}/analysis/dependency-tree_prod.json", required = false )
+    @Parameter(defaultValue = "${project.build.directory}/analysis/dependency-tree_prod.json", required = false)
     private File dependencyTreeJson;
 
-    @Parameter(defaultValue="${project.build.directory}/analysis/license-checker_prod.json", required = false )
+    @Parameter(defaultValue = "${project.build.directory}/analysis/license-checker_prod.json", required = false)
     private File licenseCheckerJson;
 
     @Parameter(defaultValue = "false")
@@ -81,7 +81,7 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
             Inventory inventory = new Inventory();
 
             if ((packageLockJson == null || !packageLockJson.exists()) &&
-                (dependencyTreeJson == null || !dependencyTreeJson.exists())) {
+                    (dependencyTreeJson == null || !dependencyTreeJson.exists())) {
                 throw new MojoExecutionException("Either packageLockJson or dependencyTreeJson must be specified.");
             }
 

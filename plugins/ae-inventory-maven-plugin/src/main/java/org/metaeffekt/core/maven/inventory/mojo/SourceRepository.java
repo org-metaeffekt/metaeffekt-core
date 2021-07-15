@@ -32,7 +32,7 @@ public class SourceRepository extends IdentifiableComponent {
             for (String pattern : patterns) {
                 String[] split = pattern.split(":");
                 artifactSourceRepository.register(new ArtifactPattern(extractPattern(0, split),
-                    extractPattern(1, split), extractPattern(2, split), extractPattern(3, split)));
+                        extractPattern(1, split), extractPattern(2, split), extractPattern(3, split)));
             }
         }
 

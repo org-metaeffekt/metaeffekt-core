@@ -49,7 +49,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
     /**
      * Allows that the folder creations activities are performed in a different path that the path the license
      * information is read from. Validation is performed against both LICENSES_DIR and LICENSES_TARGET_DIR.
-     *
+     * <p>
      * This aspect supports the inheritance of inventories. While the target folder is meant to contain the complete
      * set of licenses resulting from the inheritance, the LICENSES_DIR is only expected to provide content of the
      * entries from the inventory (and not it's parent).
@@ -193,7 +193,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     boolean wildcardMatchPropagation = Boolean.valueOf(artifact.get(KEY_WILDCARD_MATCH, STRING_FALSE));
                     boolean wildcardMatch = ASTERISK.equals(version);
                     boolean placeholderMatch = version != null &&
-                        version.startsWith(VERSION_PLACHOLDER_PREFIX) && version.endsWith(VERSION_PLACHOLDER_SUFFIX);
+                            version.startsWith(VERSION_PLACHOLDER_PREFIX) && version.endsWith(VERSION_PLACHOLDER_SUFFIX);
 
                     String componentFolder;
                     if (wildcardMatch || wildcardMatchPropagation || placeholderMatch) {
@@ -347,7 +347,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         for (String componentFolder : componentFoldersFromDirectory) {
             // check whether this folder is required
             if (!componentFoldersFromInventory.contains(componentFolder)) {
-                if ((manageComponentFolders && isEmptyFolder(componentsBaseDir, componentFolder)) || deleteComponentFolders ) {
+                if ((manageComponentFolders && isEmptyFolder(componentsBaseDir, componentFolder)) || deleteComponentFolders) {
                     removeFolder(componentsBaseDir, componentFolder);
                 } else {
                     log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, componentFolder));
@@ -411,7 +411,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         // check whether component folder is empty
         for (String component : componentFoldersFromInventory) {
-            if (isEmptyFolder(componentsBaseDir, component) && isEmptyFolder(componentsTargetDir, component )) {
+            if (isEmptyFolder(componentsBaseDir, component) && isEmptyFolder(componentsTargetDir, component)) {
                 log(format("%04d: Component folder '%s' does not contain any license or notice files.", index++, component));
                 log(format("      Proposal: add component specific license and/or notice to the component folder."));
                 error = true;
@@ -629,7 +629,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         if (new File(baseDir).exists()) {
             DirectoryScanner directoryScanner = new DirectoryScanner();
             directoryScanner.setBasedir(baseDir);
-            directoryScanner.setIncludes(new String[] {ASTERISK});
+            directoryScanner.setIncludes(new String[]{ASTERISK});
             directoryScanner.scan();
             return directoryScanner.getIncludedDirectories();
         }
@@ -640,8 +640,8 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         if (new File(baseDir).exists()) {
             DirectoryScanner directoryScanner = new DirectoryScanner();
             directoryScanner.setBasedir(baseDir);
-            directoryScanner.setIncludes(new String[] {ASTERISK});
-            directoryScanner.setExcludes(new String[] {"." + ASTERISK});
+            directoryScanner.setIncludes(new String[]{ASTERISK});
+            directoryScanner.setExcludes(new String[]{"." + ASTERISK});
             directoryScanner.scan();
             return directoryScanner.getIncludedFilesCount() > 0;
         }

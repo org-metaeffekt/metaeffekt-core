@@ -48,7 +48,7 @@ public class ArchInventoryExtractor extends AbstractInventoryExtractor {
         return new ArrayList<>(idToPackageReferenceMap.values());
     }
 
-    private void parseArchPackages(File analysisDir, Map<String,PackageInfo> idToPackageReferenceMap) throws  IOException {
+    private void parseArchPackages(File analysisDir, Map<String, PackageInfo> idToPackageReferenceMap) throws IOException {
         for (Map.Entry<String, PackageInfo> entry : idToPackageReferenceMap.entrySet()) {
             String name = entry.getKey();
             PackageInfo p = entry.getValue();

@@ -58,19 +58,20 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
 
     /**
      * Search with the JIRA REST API for the result of a JQL statement.
-     * 
+     *
      * @param jql the JIRA Query Language statement to be processed
+     *
      * @return the search result
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected Object getSearchResult(String jql) throws IOException {
         getLog().debug("searching for JQL: " + jql);
         String resultString = doSearch(jql);
         Object result = JsonTransformer.transform(resultString);
         final Map<String, Object> expandedIssues = Collections.synchronizedMap(new TreeMap<>());
-        
+
         final ExecutorService executor = Executors.newFixedThreadPool(concurrentThreads);
-        
+
         // expand issue data with individual REST requests
         if (result instanceof Map) {
             Object issues = ((Map<?, ?>) result).get("issues");
@@ -93,7 +94,7 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
                     executor.awaitTermination(60, TimeUnit.MINUTES);
                 } catch (InterruptedException e) {
                 }
-                
+
                 // using the tree map preserves the issue order; at the end we only need the values
                 ((Map) result).put("issues", expandedIssues.values());
             }
@@ -121,7 +122,7 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
         }
     }
 
-    private String doSearch(String jql) throws IOException{
+    private String doSearch(String jql) throws IOException {
         getLog().debug("executing REST request with JQL: " + jql);
 
         final String url = serverUrl + "/rest/api/latest/search";
@@ -169,8 +170,8 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
 
                 final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
                 httpClient = HttpClients.custom().setConnectionManager(connManager).setMaxConnTotal(concurrentThreads).
-                    setSSLSocketFactory(socketFactory).setDefaultHeaders(headers).build();
-            } catch(Exception e) {
+                        setSSLSocketFactory(socketFactory).setDefaultHeaders(headers).build();
+            } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
 
@@ -195,7 +196,7 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
             getLog().error("Error HTTP status code: " + statusCode);
             getLog().error("for web resource: " + url);
             throw new RuntimeException("Error HTTP status code: " + statusCode + " - " +
-                response.getStatusLine().getReasonPhrase());
+                    response.getStatusLine().getReasonPhrase());
         }
     }
 

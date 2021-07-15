@@ -12,7 +12,7 @@ import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import java.io.File;
 import java.io.IOException;
 
-@Mojo( name = "infer-inventory-details", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
+@Mojo(name = "infer-inventory-details", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class InventoryInferenceMojo extends AbstractProjectAwareConfiguredMojo {
 
     /**

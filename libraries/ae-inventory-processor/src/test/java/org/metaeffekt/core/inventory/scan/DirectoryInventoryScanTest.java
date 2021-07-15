@@ -33,8 +33,8 @@ public class DirectoryInventoryScanTest {
     public void testScanExtractedFiles() throws IOException {
         File inputDir = new File("src/test/resources/test-scan-inputs");
         File scanDir = new File("target/test-scan");
-        String[] scanIncludes = new String[] {"**/*"};
-        String[] scanExcludes = new String[] {"--none--"};
+        String[] scanIncludes = new String[]{"**/*"};
+        String[] scanExcludes = new String[]{"--none--"};
 
         File inventoryFile = new File("src/test/resources/test-inventory-01/artifact-inventory.xls");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
@@ -69,8 +69,8 @@ public class DirectoryInventoryScanTest {
     public void testScanExtractedFiles_External() throws IOException {
         File inputDir = new File("<project.dir>/external-resources");
         File scanDir = new File("<project.dir>/target/scan");
-        String[] scanIncludes = new String[] {"**/*"};
-        String[] scanExcludes = new String[] {"--none--"};
+        String[] scanIncludes = new String[]{"**/*"};
+        String[] scanExcludes = new String[]{"--none--"};
         File inventoryFile = new File("<project.baseDir>/inventory/src/main/resources/inventory/artifact-inventory.xls");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 

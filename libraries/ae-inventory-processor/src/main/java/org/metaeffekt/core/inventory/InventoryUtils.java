@@ -51,7 +51,9 @@ public abstract class InventoryUtils {
      *
      * @param inventoryBaseDir The inventory base dir.
      * @param inventoryIncludes The comma-separated include patterns.
+     *
      * @return The read aggregated inventory.
+     *
      * @throws IOException
      */
     public static Inventory readInventory(File inventoryBaseDir, String inventoryIncludes) throws IOException {

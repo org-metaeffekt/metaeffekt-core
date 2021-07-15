@@ -23,13 +23,13 @@ public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProject
 
     /**
      * The project to be checked: the current project (readonly)
-     * 
+     *
      * @parameter default-value="${project}"
      * @required
      * @readonly
      */
     private MavenProject project;
-    
+
     @Override
     public MavenProject getProject() {
         return project;

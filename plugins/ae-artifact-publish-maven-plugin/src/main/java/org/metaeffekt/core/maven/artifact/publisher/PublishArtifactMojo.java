@@ -33,28 +33,28 @@ import java.io.File;
 /**
  * Create and promote API extensions to the maven repository.
  */
-@Mojo(name="publish-artifact", defaultPhase=LifecyclePhase.PACKAGE, requiresProject=true, threadSafe=true)
+@Mojo(name = "publish-artifact", defaultPhase = LifecyclePhase.PACKAGE, requiresProject = true, threadSafe = true)
 public class PublishArtifactMojo extends PrepareArtifactMojo {
 
     /**
      * Directory containing the generated JAR.
      */
-    @Parameter( defaultValue = "${project.build.directory}", required = true )
+    @Parameter(defaultValue = "${project.build.directory}", required = true)
     private File outputDirectory;
 
     /**
      * Directory containing the classes and resource files that should be packaged into the JAR.
      */
-    @Parameter( defaultValue = "${project.build.outputDirectory}", required = true )
+    @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
     private File classesDirectory;
 
     /**
      * The {@link MavenSession}.
      */
-    @Parameter( defaultValue = "${session}", readonly = true, required = true )
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
     private MavenSession session;
 
-    @Component( role = Archiver.class, hint = "jar" )
+    @Component(role = Archiver.class, hint = "jar")
     private JarArchiver jarArchiver;
 
     @Parameter

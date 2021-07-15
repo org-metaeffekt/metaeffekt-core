@@ -37,10 +37,10 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 /**
  * Extracts a container inventory from pre-porcessed container information.
  */
-@Mojo( name = "extract-container-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
+@Mojo(name = "extract-container-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
 
-    @Parameter(required = true, defaultValue="${ae.extractor.analysis.dir}")
+    @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}")
     protected File analysisDir;
 
     @Parameter(defaultValue = "false")
@@ -49,11 +49,11 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Parameter
     protected String[] excludes;
 
-    private InventoryExtractor[] inventoryExtractors = new InventoryExtractor[] {
-        new DebianInventoryExtractor(),
-        new CentOSInventoryExtractor(),
-        new AlpineInventoryExtractor(),
-        new ArchInventoryExtractor()
+    private InventoryExtractor[] inventoryExtractors = new InventoryExtractor[]{
+            new DebianInventoryExtractor(),
+            new CentOSInventoryExtractor(),
+            new AlpineInventoryExtractor(),
+            new ArchInventoryExtractor()
     };
 
     @Override
@@ -72,7 +72,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             StringBuilder sb = new StringBuilder();
             for (Artifact artifact : inventory.getArtifacts()) {
                 if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(
-                    artifact.get(KEY_TYPE))) {
+                        artifact.get(KEY_TYPE))) {
                     Set<String> projects = artifact.getProjects();
                     if (projects != null) {
                         for (String project : projects) {
@@ -95,9 +95,9 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
 
     private Inventory extractInventory(File analysisDir) throws IOException {
         InventoryExtractor extractor = Arrays.stream(inventoryExtractors).filter(e -> e
-            .applies(analysisDir))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No applicable inventory extractor found."));
+                .applies(analysisDir))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No applicable inventory extractor found."));
 
         // before extracting the content is validated using the extractor
         extractor.validate(analysisDir);
@@ -111,7 +111,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
         List<Artifact> toBeDeleted = new ArrayList<>();
         for (Artifact artifact : inventory.getArtifacts()) {
             if (filterPackagesWithoutVersion &&
-                    Constants.ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(artifact.get(Constants.KEY_TYPE))&&
+                    Constants.ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(artifact.get(Constants.KEY_TYPE)) &&
                     StringUtils.isEmpty(artifact.getVersion())) {
                 toBeDeleted.add(artifact);
             }

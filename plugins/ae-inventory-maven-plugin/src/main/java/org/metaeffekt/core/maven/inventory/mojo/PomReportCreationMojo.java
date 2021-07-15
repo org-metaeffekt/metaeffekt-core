@@ -24,7 +24,7 @@ import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 /**
  * Creates a report for the dependencies listed in the pom.
- * 
+ *
  * @goal create-pom-report
  * @requiresDependencyResolution test
  */
@@ -36,7 +36,7 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
     private static final String SCOPE_PROVIDED = "provided";
     private static final String SCOPE_SYSTEM = "system";
     private static final String SCOPE_TEST = "test";
-    
+
     /**
      * @parameter default-value="false"
      */
@@ -51,7 +51,7 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
      * @parameter default-value="false"
      */
     private boolean includeScopeTest;
-    
+
     /**
      * @parameter default-value="true"
      */
@@ -76,12 +76,12 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
      * @parameter default-value="false"
      */
     private boolean manageScopeTest;
-    
+
     /**
      * @parameter default-value="true"
      */
     private boolean manageOptional;
-    
+
     /**
      * @parameter default-value="false"
      */
@@ -91,29 +91,29 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
      * @parameter default-value="false"
      */
     private boolean skipPomPackagingProjectExecution;
-    
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         // adapt maven logging to underlying logging facade
         MavenLogAdapter.initialize(getLog());
         try {
-        if (skipExecution()) {
-            return;
-        }
+            if (skipExecution()) {
+                return;
+            }
 
-        InventoryReport report = initializeInventoryReport();
-        Inventory inventory = createInventoryFromPom();
-        report.setInventory(inventory);
+            InventoryReport report = initializeInventoryReport();
+            Inventory inventory = createInventoryFromPom();
+            report.setInventory(inventory);
 
-        boolean success = false;
-        try {
-            success = report.createReport();
-        } catch (Exception e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
-        if (!success) {
-            throw new MojoFailureException("Failing build due to findings in report.");
-        }
+            boolean success = false;
+            try {
+                success = report.createReport();
+            } catch (Exception e) {
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
+            if (!success) {
+                throw new MojoFailureException("Failing build due to findings in report.");
+            }
         } finally {
             MavenLogAdapter.release();
         }
@@ -153,22 +153,22 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
             org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, null, null);
         }
-        
+
         // plugins are treated a little differently (type is lost)
         for (Object obj : getProject().getPluginArtifacts()) {
             org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;
             addArtifactIfNecessary(inventory, mavenArtifact, includePlugins, managePlugins);
         }
-        
+
         inventory.mergeDuplicates();
-        
+
         return inventory;
     }
 
     protected void addArtifactIfNecessary(Inventory inventory,
                                           org.apache.maven.artifact.Artifact mavenArtifact, Boolean relevant, Boolean managed) {
         Artifact artifact = createInventoryArtifact(mavenArtifact);
-        
+
         inventory.getArtifacts().add(artifact);
 
         // modulate relevant flag
@@ -227,7 +227,7 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
             artifact.setManaged(localManaged);
         }
     }
-    
+
     protected Artifact createInventoryArtifact(org.apache.maven.artifact.Artifact mavenArtifact) {
         Artifact artifact = new Artifact();
         artifact.setArtifactId(mavenArtifact.getArtifactId());

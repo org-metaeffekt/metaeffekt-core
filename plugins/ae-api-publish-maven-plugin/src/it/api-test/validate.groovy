@@ -14,26 +14,26 @@ try {
     File buildLog = new File(basedir, "build.log");
     String log = FileUtils.readFileToString(buildLog);
 
-    File apiJar = new File(basedir, "target/api-test-" + version + "-api.jar"); 
-    File fatJar = new File(basedir, "target/api-test-" + version + ".jar"); 
+    File apiJar = new File(basedir, "target/api-test-" + version + "-api.jar");
+    File fatJar = new File(basedir, "target/api-test-" + version + ".jar");
 
-   println("apiJar: " + apiJar + ", length: " + apiJar.length());
-   println("fatJar: " + fatJar + ", length: " + fatJar.length());
+    println("apiJar: " + apiJar + ", length: " + apiJar.length());
+    println("fatJar: " + fatJar + ", length: " + fatJar.length());
 
-  if (!log.contains("Found public java types: [org/metaeffekt/core/test/TestPublicClass.class]")) {
-      println("Expected published class not detected in log.");
-      flag = false;
-  }
+    if (!log.contains("Found public java types: [org/metaeffekt/core/test/TestPublicClass.class]")) {
+        println("Expected published class not detected in log.");
+        flag = false;
+    }
 
-  if (apiJar.length() >= fatJar.length()) {
-     println("Unexpected jar file size.");
-     flag = false;
-  }
+    if (apiJar.length() >= fatJar.length()) {
+        println("Unexpected jar file size.");
+        flag = false;
+    }
 
     return flag;
 
-} catch(Exception e) {
+} catch (Exception e) {
 
-   println(e);	
-   return false;
+    println(e);
+    return false;
 }

@@ -34,7 +34,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
     /**
      * Local Maven repository where artifacts are cached during the build process.
-     * 
+     *
      * @parameter default-value="${localRepository}"
      * @required
      * @readonly
@@ -112,7 +112,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="true"
      */
     private boolean failOnUnknownVersion;
-    
+
     /**
      * @parameter default-value="true"
      */
@@ -157,7 +157,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter
      */
     private String artifactIncludes;
-    
+
     /**
      * @parameter
      */
@@ -202,7 +202,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="licenses"
      */
     private String relativeLicensePath;
-    
+
     /**
      * @parameter
      */
@@ -281,10 +281,10 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         if (artifactExcludes != null) {
             PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
             artifactFilter.addIncludePatterns(
-                ParameterConversionUtil.convertStringToStringArray(artifactExcludes, ","));
+                    ParameterConversionUtil.convertStringToStringArray(artifactExcludes, ","));
             if (artifactIncludes != null) {
                 artifactFilter.addExcludePatterns(
-                    ParameterConversionUtil.convertStringToStringArray(artifactIncludes, ","));
+                        ParameterConversionUtil.convertStringToStringArray(artifactIncludes, ","));
             }
             report.setArtifactFilter(artifactFilter);
         }
@@ -295,7 +295,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         // adapt maven logging to underlying logging facade
         MavenLogAdapter.initialize(getLog());
         try {
-            
+
             // skip execution for POM packaged projects
             if (isPomPackagingProject()) {
                 return;

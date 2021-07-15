@@ -47,16 +47,15 @@ public abstract class AbstractPomTest {
     }
 
 
-    
     @Test
     public void testReplacement() throws IOException {
         UpdateVersionTask task = new UpdateVersionTask();
         task.setProjectPath(new File(getTargetPath()));
-        task.setIncludes(new String[] {"pom.xml" });
-        task.setExcludes(new String[] {"**/target/**"});
-        
+        task.setIncludes(new String[]{"pom.xml"});
+        task.setExcludes(new String[]{"**/target/**"});
+
         task.setProjectVersion("PROJECT-SNAPSHOT");
-        
+
         Map<String, String> propertyVersionMap = new HashMap<String, String>();
         propertyVersionMap.put("ae.core.version", "XYZ-SNAPSHOT");
         propertyVersionMap.put("ae.other.version", "ae-SNAPSHOT");
@@ -64,20 +63,21 @@ public abstract class AbstractPomTest {
         Map<String, String> groupIdVersionMap = new HashMap<String, String>();
         groupIdVersionMap.put("org.metaeffekt", "ae-SNAPSHOT");
         groupIdVersionMap.put("org.metaeffekt.core", "XYZ-SNAPSHOT");
-        
+
         task.setGroupIdVersionMap(groupIdVersionMap);
         task.setPropertyVersionMap(propertyVersionMap);
-        
+
         task.updateVersions();
-        
+
         // verify
         String expected = FileUtils.readFileToString(new File(getSourcePath(), "pom.xml_expected"));
         String actual = FileUtils.readFileToString(new File(getTargetPath(), "pom.xml"));
-        
+
         Assert.assertEquals(expected, actual);
     }
 
     public abstract String getSourcePath();
+
     public abstract String getTargetPath();
-    
+
 }

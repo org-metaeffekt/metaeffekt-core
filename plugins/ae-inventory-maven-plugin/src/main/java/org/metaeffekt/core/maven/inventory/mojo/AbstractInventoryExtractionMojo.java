@@ -21,10 +21,10 @@ import java.io.File;
 
 public abstract class AbstractInventoryExtractionMojo extends AbstractProjectAwareConfiguredMojo {
 
-    @Parameter(defaultValue="${project.artifactId}")
+    @Parameter(defaultValue = "${project.artifactId}")
     protected String artifactInventoryId;
 
-    @Parameter(defaultValue="${project.build.directory}/inventory/${project.artifactId}-container-inventory.xls")
+    @Parameter(defaultValue = "${project.build.directory}/inventory/${project.artifactId}-container-inventory.xls")
     protected File targetInventoryFile;
 
 }

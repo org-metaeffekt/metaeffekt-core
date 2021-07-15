@@ -29,7 +29,7 @@ import java.io.IOException;
 
 /**
  * Creates a report for the dependencies listed in the pom.
- * 
+ *
  * @goal aggregate-inventory-reports
  */
 public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
@@ -37,12 +37,12 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
     /**
      * @parameter
      */
-    private String[] scanIncludes = new String[] { "**/target/**/*-inventory.xls" };
+    private String[] scanIncludes = new String[]{"**/target/**/*-inventory.xls"};
 
     /**
      * @parameter
      */
-    private String[] scanExcludes = new String[] { "-nothing-" };
+    private String[] scanExcludes = new String[]{"-nothing-"};
 
     /**
      * @parameter expression="${project.build.directory}/inventory/${project.artifactId}-${project.version}-aggregate-inventory.xls"
@@ -133,13 +133,13 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
                 inventory.getParentFile().mkdirs();
             }
             new InventoryWriter().writeInventory(multiProjectInventory, inventory);
-            
+
             // check whether reading is possible
             try {
                 new InventoryReader().readInventory(inventory);
             } catch (IOException e) {
                 getLog().error("Inventory file corrupted after save. Please analyze and report this"
-                    + " error.");
+                        + " error.");
                 inventory.deleteOnExit();
             }
         }
@@ -148,5 +148,5 @@ public class ReportAggregationMojo extends AbstractProjectAwareConfiguredMojo {
     public String getProjectName() {
         return projectName;
     }
-    
+
 }

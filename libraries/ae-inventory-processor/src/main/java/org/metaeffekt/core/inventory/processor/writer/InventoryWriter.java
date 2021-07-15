@@ -32,22 +32,22 @@ import java.util.*;
 
 public class InventoryWriter {
 
-    private Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[] {
-        Artifact.Attribute.ID,
-        Artifact.Attribute.CHECKSUM,
-        Artifact.Attribute.COMPONENT,
-        Artifact.Attribute.GROUPID,
-        Artifact.Attribute.VERSION,
-        Artifact.Attribute.LATEST_VERSION,
-        Artifact.Attribute.LICENSE,
-        Artifact.Attribute.CLASSIFICATION,
-        Artifact.Attribute.SECURITY_RELEVANT,
-        Artifact.Attribute.SECURITY_CATEGORY,
-        Artifact.Attribute.VULNERABILITY,
-        Artifact.Attribute.COMMENT,
-        Artifact.Attribute.URL,
-        Artifact.Attribute.PROJECTS,
-        Artifact.Attribute.VERIFIED
+    private Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[]{
+            Artifact.Attribute.ID,
+            Artifact.Attribute.CHECKSUM,
+            Artifact.Attribute.COMPONENT,
+            Artifact.Attribute.GROUPID,
+            Artifact.Attribute.VERSION,
+            Artifact.Attribute.LATEST_VERSION,
+            Artifact.Attribute.LICENSE,
+            Artifact.Attribute.CLASSIFICATION,
+            Artifact.Attribute.SECURITY_RELEVANT,
+            Artifact.Attribute.SECURITY_CATEGORY,
+            Artifact.Attribute.VULNERABILITY,
+            Artifact.Attribute.COMMENT,
+            Artifact.Attribute.URL,
+            Artifact.Attribute.PROJECTS,
+            Artifact.Attribute.VERIFIED
     };
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
@@ -86,7 +86,7 @@ public class InventoryWriter {
         }
 
         List<String> contextColumnList = (List<String>)
-            inventory.getContextMap().get("artifact-column-list");
+                inventory.getContextMap().get("artifact-column-list");
         if (contextColumnList != null) {
             attributes.addAll(contextColumnList);
         }
@@ -300,12 +300,12 @@ public class InventoryWriter {
         }
 
         /**
-        for (int i = 0; i < 6; i++) {
-            Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
-            if (width != null) {
-                mySheet.setColumnWidth(i, Math.min(width, 255));
-            }
-        }
+         for (int i = 0; i < 6; i++) {
+         Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
+         if (width != null) {
+         mySheet.setColumnWidth(i, Math.min(width, 255));
+         }
+         }
          */
 
         mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));

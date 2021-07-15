@@ -68,8 +68,8 @@ public abstract class AbstractContainerValidationTest {
 
     protected void assertCommonFileAttributes(Artifact artifact) {
         Set<String> projects = artifact.getProjects();
-        assertTrue("No project is set for file artifact " + artifact.getId() ,projects != null && projects.size() == 1);
-        assertNotNull("Checksum is required for file artifact " + artifact.getId() ,artifact.getChecksum());
+        assertTrue("No project is set for file artifact " + artifact.getId(), projects != null && projects.size() == 1);
+        assertNotNull("Checksum is required for file artifact " + artifact.getId(), artifact.getChecksum());
     }
 
     protected void assertCommonAttributes(Artifact artifact) {

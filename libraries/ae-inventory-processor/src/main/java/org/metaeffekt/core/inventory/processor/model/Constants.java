@@ -59,6 +59,9 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_FILE = "file";
     public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
 
-    protected Constants() {};
+    protected Constants() {
+    }
+
+    ;
 
 }

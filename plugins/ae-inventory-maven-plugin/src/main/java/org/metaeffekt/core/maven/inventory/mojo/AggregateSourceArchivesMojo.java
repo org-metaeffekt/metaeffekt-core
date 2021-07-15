@@ -44,7 +44,7 @@ import java.util.List;
  * is evaluated. Using the source category of the license meta data it is determined whether and whereto download the
  * source artifacts.
  */
-@Mojo( name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES )
+@Mojo(name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
     public static final String DELIMITER_NEWLINE = String.format("%n");
@@ -198,7 +198,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
     }
 
     private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath,
-          List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus) throws IOException, MojoFailureException {
+                                  List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus) throws IOException, MojoFailureException {
 
         final ArtifactSourceRepository matchingSourceRepository =
                 findMatchingArtifactSourceRepository(artifact, inventory, sourceRepositories);

@@ -34,7 +34,7 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_SOURCE
 /**
  * Extracts a container inventory from pre-processed container information.
  */
-@Mojo( name = "extract-scan-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
+@Mojo(name = "extract-scan-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtractionMojo {
 
     /**
@@ -56,7 +56,7 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
     private File scanDirectory;
 
     @Parameter(defaultValue = "\"**/*\"")
-    private String[] scanIncludes = new String[] { "**/*" };
+    private String[] scanIncludes = new String[]{"**/*"};
 
     @Parameter
     private String[] scanExcludes;

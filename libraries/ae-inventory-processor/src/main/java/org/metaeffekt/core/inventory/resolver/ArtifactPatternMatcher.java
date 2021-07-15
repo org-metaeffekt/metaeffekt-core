@@ -26,7 +26,10 @@ public class ArtifactPatternMatcher {
 
     private List<ArtifactPattern> artifactPatterns = new ArrayList<>();
 
-    public ArtifactPatternMatcher() {};
+    public ArtifactPatternMatcher() {
+    }
+
+    ;
 
     public void register(ArtifactPattern artifactGroup) {
         artifactPatterns.add(artifactGroup);

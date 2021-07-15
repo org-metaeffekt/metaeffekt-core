@@ -28,17 +28,18 @@ import org.codehaus.jackson.node.POJONode;
 import java.io.IOException;
 import java.util.*;
 
-/** Transformer to convert between object trees and the string representation of JSON data. */
+/**
+ * Transformer to convert between object trees and the string representation of JSON data.
+ */
 public class JsonTransformer {
 
     /**
      * Convert data tree recursively to a JSON string.
-     * 
+     *
      * @param data the data to be converted
      * @param indent if <code>true</code>, indent the output (typically with two spaces)
+     *
      * @return JSON string representation of the given data tree
-     * @throws JsonGenerationException
-     * @throws IOException
      */
     public static String transform(Object data, boolean indent) {
         ObjectMapper mapper = new ObjectMapper();
@@ -62,9 +63,10 @@ public class JsonTransformer {
      * Most of the effort goes into replacing the proprietary classes in the package
      * <code>org.codehaus.jackson</code> with plain standard Java classes like
      * <code>java.util.Map</code> and <code>java.util.List</code>.
-     * 
+     *
      * @param dataString the data string to be converted
-     * @return the JSON data as a hierachical structure of maps, lists, string and number values
+     *
+     * @return the JSON data as a hierarchical structure of maps, lists, string and number values
      */
     public static Object transform(String dataString) {
         ObjectMapper mapper = new ObjectMapper();

@@ -187,6 +187,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
 
         return null;
     }
+
     @Override
     protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
         parseColumns(row, vulnerabilityMetaDataColumnMap);

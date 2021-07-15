@@ -17,9 +17,8 @@ package org.metaeffekt.core.common.kernel.ant;
 
 /**
  * Collection of constants common for ant task.
- * 
- * @author Karsten Klein 
- * 
+ *
+ * @author Karsten Klein
  */
 public interface Constants {
 
@@ -29,6 +28,6 @@ public interface Constants {
     public static final String TOKEN_SEPARATOR_KEY = ".sep_";
 
     public static final String INCLUDE_PROPERTY_FILES_KEY = "configuration.include";
-    
-    
+
+
 }

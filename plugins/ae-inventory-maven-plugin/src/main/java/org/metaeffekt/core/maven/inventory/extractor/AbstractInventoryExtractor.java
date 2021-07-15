@@ -15,13 +15,57 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 /**
  * The {@link org.metaeffekt.core.maven.inventory.mojo.ContainerInventoryExtractionMojo} expects
  * information of an appliance or container being available in an analysis folder. The
- * content depends on the distribution an the extractor scripts.<br/>
+ * content depends on the distribution an the extractor scripts.
+ * <p>
  * Different implementations of {@link AbstractInventoryExtractor} support the different outputs.
  */
 public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
     public static final String FOLDER_USR_SHARE_DOC = "usr-share-doc";
     public static final String FOLDER_USR_SHARE_LICENSE = "usr-share-licenses";
+
+    /**
+     * Anticipates a directory for each package in packageDir. The directory contains the
+     * package name only (no other attribute is derived).
+     *
+     * @param analysisDir The analysis dir.
+     * @param packageDir The specific (one out of potentially many) packageDocDir.
+     * @param idToPackageInfoMap The resulting {@link PackageInfo} instances are added to the map.
+     * @param docDir The documentation dir.
+     */
+    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, Map<String,
+            PackageInfo> idToPackageInfoMap, boolean docDir) {
+        if (packageDir.exists()) {
+            DirectoryScanner scanner = new DirectoryScanner();
+            scanner.setBasedir(packageDir);
+            scanner.setIncludes(new String[]{"*"});
+            scanner.scan();
+            for (String path : scanner.getIncludedDirectories()) {
+
+                // check whether information already exists
+                PackageInfo packageInfo = idToPackageInfoMap.get(path);
+                if (packageInfo == null) {
+                    packageInfo = new PackageInfo();
+
+                    // path may include version; at this stage we do not differentiate
+                    packageInfo.name = path;
+                    packageInfo.id = path;
+                    packageInfo.component = path;
+                }
+                if (docDir) {
+                    packageInfo.documentationDir = new File(packageDir, path).getAbsolutePath();
+                } else {
+                    packageInfo.licenseDir = new File(packageDir, path).getAbsolutePath();
+                }
+                registerPackageInfo(packageInfo, idToPackageInfoMap);
+            }
+        }
+    }
+
+    protected static void registerPackageInfo(PackageInfo packageInfo, Map<String, PackageInfo> idToPackageInfoMap) {
+        idToPackageInfoMap.put(packageInfo.id, packageInfo);
+        idToPackageInfoMap.put(packageInfo.name, packageInfo);
+    }
 
     public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException {
         final String issue = extractIssue(analysisDir);
@@ -75,48 +119,6 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         return issue;
     }
 
-    /**
-     * Anticipates a directory for each package in packageDir. The directory contains the
-     * package name only (no other attribute is derived).
-     *
-     * @param analysisDir The analysisDir.
-     * @param packageDir The specific (one out of potentially many) packageDocDir.
-     * @param idToPackageInfoMap The resulting {@link PackageInfo} instances are added to the map.
-     */
-    protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, Map<String,
-            PackageInfo> idToPackageInfoMap, boolean docDir) {
-        if (packageDir.exists()) {
-            DirectoryScanner scanner = new DirectoryScanner();
-            scanner.setBasedir(packageDir);
-            scanner.setIncludes(new String[]{"*"});
-            scanner.scan();
-            for (String path : scanner.getIncludedDirectories()) {
-
-                // check whether information already exists
-                PackageInfo packageInfo = idToPackageInfoMap.get(path);
-                if (packageInfo == null) {
-                    packageInfo = new PackageInfo();
-
-                    // path may include version; at this stage we do not differentiate
-                    packageInfo.name = path;
-                    packageInfo.id = path;
-                    packageInfo.component = path;
-                }
-                if (docDir) {
-                    packageInfo.documentationDir = new File(packageDir, path).getAbsolutePath();
-                } else {
-                    packageInfo.licenseDir = new File(packageDir, path).getAbsolutePath();
-                }
-                registerPackageInfo(packageInfo, idToPackageInfoMap);
-            }
-        }
-    }
-
-    protected static void registerPackageInfo(PackageInfo packageInfo, Map<String, PackageInfo> idToPackageInfoMap) {
-        idToPackageInfoMap.put(packageInfo.id, packageInfo);
-        idToPackageInfoMap.put(packageInfo.name, packageInfo);
-    }
-
     protected void addOrMerge(File analysisDir, Inventory inventory, PackageInfo p) {
         Artifact derivedFromPackage = p.createArtifact(analysisDir);
         Artifact referenceArtifact = inventory.findArtifact(derivedFromPackage.getId());
@@ -146,7 +148,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     private void validateFileExists(File file) {
         if (!file.exists()) {
             throw new IllegalStateException(
-                String.format("File %s expected, but does not exists.", file.getPath()));
+                    String.format("File %s expected, but does not exists.", file.getPath()));
         }
     }
 
@@ -156,7 +158,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
             String content = FileUtils.readFileToString(file, FileUtils.ENCODING_UTF_8);
             if (content == null || content.trim().length() == 0) {
                 throw new IllegalStateException(
-                    String.format("File %s does not contain any content.", file.getPath()));
+                        String.format("File %s does not contain any content.", file.getPath()));
             }
         } catch (IOException e) {
             throw new IllegalStateException(

@@ -35,7 +35,7 @@ public abstract class AbstractArtifactMojo extends AbstractProjectAwareMojo {
      */
     @Component
     private MavenProjectHelper projectHelper;
-    
+
     /**
      * The Maven project.
      */
@@ -59,7 +59,7 @@ public abstract class AbstractArtifactMojo extends AbstractProjectAwareMojo {
      */
     @Component
     private ArtifactHandlerManager artifactHandlerManager;
-    
+
     private String computeArtifactName(String classifier) {
         final StringBuffer artifactName = new StringBuffer();
         artifactName.append(project.getArtifactId());

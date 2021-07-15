@@ -30,12 +30,12 @@ import java.util.Properties;
 
 /**
  * Mojo dedicated to automated inventory updates and consolidation.
- * 
+ *
  * @goal update-inventory
  * @requiresDependencyResolution runtime
  */
 public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
-    
+
     /**
      * @parameter
      * @required
@@ -73,8 +73,8 @@ public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
         // adapt maven logging to underlying logging facade
         MavenLogAdapter.initialize(getLog());
         try {
-            List<InventoryProcessor> inventoryProcessors = 
-                new ArrayList<InventoryProcessor>();
+            List<InventoryProcessor> inventoryProcessors =
+                    new ArrayList<InventoryProcessor>();
 
             if (processors != null) {
                 for (Processor processorConfig : processors) {
@@ -96,25 +96,25 @@ public class InventoryUpdateMojo extends AbstractProjectAwareConfiguredMojo {
                     }
                 }
             }
-            
+
             getLog().info("Processors found: ");
             for (InventoryProcessor inventoryProcessor : inventoryProcessors) {
                 getLog().info(inventoryProcessor.getClass().toString());
             }
-            
+
             InventoryUpdate inventoryUpdate = new InventoryUpdate();
             inventoryUpdate.setInventoryProcessors(inventoryProcessors);
             inventoryUpdate.setSourceInventoryFile(sourceInventoryPath);
             inventoryUpdate.setTargetInventoryFile(targetInventoryPath);
-            
+
             if (componentNameMapping != null) {
                 inventoryUpdate.setComponentNameMap(componentNameMapping.getMap());
             }
-            
+
             if (licenseNameMapping != null) {
                 inventoryUpdate.setLicenseNameMap(licenseNameMapping.getMap());
             }
-            
+
             inventoryUpdate.process();
         } finally {
             MavenLogAdapter.release();

@@ -17,7 +17,6 @@ package org.metaeffekt.core.model;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 
 import static java.lang.Boolean.FALSE;
