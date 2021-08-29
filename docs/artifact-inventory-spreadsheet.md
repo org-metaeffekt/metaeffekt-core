@@ -8,7 +8,7 @@ to review and assess the metadata of artifacts.
 
 The artifact inventory spreadsheet uses several worksheets:
 * **Artifact Inventory**: The Artifact Inventory spreadsheet lists all artifacts with
-  their individual metadata. [Artifact Inventory Worksheet](artifact-inventory-worksheet.md)
+  their individual metadata. See [Artifact Inventory Worksheet](artifact-inventory-worksheet.md) for details.
 * **License Notices**: The License Notices spreadsheet contains license notices that 
   explain additional license related backgrounds, determine the effective licenses and
   support fulfillment of license obligations (as far as these can be addressed in 

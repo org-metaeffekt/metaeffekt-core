@@ -87,6 +87,6 @@ CycloneDX). The metæffekt artifact inventory however covers more information as
 and CycloneDX. The content is primarily targeted to support the automated creation of compliance documentation such as
 the Software Distribution Annex.
 
-A reference project showing the use of the inventory-centric approach is provided [here](https://github.com/org-metaeffekt/metaeffekt-documentation-template))
+A reference project showing the use of the inventory-centric approach is provided [here](https://github.com/org-metaeffekt/metaeffekt-documentation-template).
 
 Documentation on the core inventory features and howto guides can be found in [Artifact Inventory Spreadsheet](artifact-inventory-spreadsheet.md).
