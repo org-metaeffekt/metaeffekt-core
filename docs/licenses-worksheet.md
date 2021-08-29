@@ -10,7 +10,7 @@ used in the spreadsheet.
 | --- | --- | --- | --- | --- |
 | Apache License 2.0 | | Apache-2.0 | TRUE | |
 | BSD 3-Clause License | | BSD-3-Clause | TRUE | |
-| BSD 3-Clause License (copyright variant) | BSD 3-Clause-Copyright | | | BSD 3-Clause License |
+| BSD 3-Clause License (copyright variant) | BSD-3-Clause-Copyright | | | BSD 3-Clause License |
 
 ## Columns
 The example above only shows a selection of the columns below to convey the concept.
