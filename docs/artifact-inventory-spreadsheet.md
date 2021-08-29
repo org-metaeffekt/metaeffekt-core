@@ -4,6 +4,10 @@ The spreadsheet representation of the Artifact Inventory addresses several targe
 For small- to mid-sized projects it represents a very convenient and direct approach
 to review and assess the metadata of artifacts.
 
+Artifact Inventory spreadsheets can be used 
+* as representation of knowledge on known software artifacts, or
+* as inventory of identified items in the extraction process.
+
 ## Worksheets
 
 The artifact inventory spreadsheet uses several worksheets:
@@ -39,3 +43,6 @@ a multi-purpose knowledge base:
 2) It enriches the identified files for verification and documentation
 3) It serves as baseline for vulnerability correlation and assessments
 
+The following use cases have been identified to support modifications of the Artifact 
+Inventory with documentation:
+* [Adding a new Artifact Version](use-case-add-new-artifact-version.md)
