@@ -1,5 +1,8 @@
 # Artifact Inventory Worksheet
 
+## Purpose
+Lists all artifacts of relevance with further metadata.
+
 ## Example Content
 
 | Id | Checksum | Component | Group Id | Version | License |

@@ -17,8 +17,9 @@ The artifact inventory spreadsheet uses several worksheets:
   See [License Notices Worksheet](license-notices-worksheet.md) for details.
 * **Component Patterns**: Artifact may consist of several files. Component patterns
   specify patterns to identify the individual files, such that an extractor can identify
-  the artifacts on coarse-grained level.
-* **Vulnerabilities**: This spreadsheet aggregates vulnernability information for the 
+  the artifacts on coarse-grained level.<br>
+  See [Component Patterns Worksheet](component-patterns-worksheet.md) for details.
+* **Vulnerabilities**: This spreadsheet aggregates vulnerability information for the 
   artifacts in the Artifact Inventory spreadsheet.
 * **Licenses**: This spreadsheet contains license metadata, such as identifiers and 
   license characteristics.

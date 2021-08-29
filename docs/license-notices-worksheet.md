@@ -1,7 +1,7 @@
 # License Notices Worksheet
 
 ## Purpose
-The license notices worksheet specified notice texts that are included in license
+The license notices worksheet specifies notice texts that are included in license
 compliance documentation. The license notices
 * describe the general licensing situation and associated licenses,
 * determine the effective licenses for use and/or distribution,
