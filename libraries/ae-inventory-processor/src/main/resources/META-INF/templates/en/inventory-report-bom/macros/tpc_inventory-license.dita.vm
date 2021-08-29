@@ -45,15 +45,7 @@
                                             #end
                                         </entry>
                                         <entry>
-                                            <lines>#if($artifact.getGroupId())
-                                                <line>
-                                                    <i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
-                                                </line>
-                                            #end
-                                                <line>
-                                                    <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
-                                                </line>
-                                            </lines>
+                                            <lines>#if($artifact.getGroupId())<line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>#end<line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>
                                         </entry>
                                         <entry>
                                             <codeph>$report.xmlEscapeGAV($artifactLicenseData.componentVersion)</codeph>

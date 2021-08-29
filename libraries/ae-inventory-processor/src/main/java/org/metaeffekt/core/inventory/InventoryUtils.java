@@ -54,7 +54,7 @@ public abstract class InventoryUtils {
      *
      * @return The read aggregated inventory.
      *
-     * @throws IOException
+     * @throws IOException Throws {@link IOException}.
      */
     public static Inventory readInventory(File inventoryBaseDir, String inventoryIncludes) throws IOException {
         if (inventoryBaseDir != null) {
