@@ -22,7 +22,8 @@ The artifact inventory spreadsheet uses several worksheets:
 * **Vulnerabilities**: This spreadsheet aggregates vulnerability information for the 
   artifacts in the Artifact Inventory spreadsheet.
 * **Licenses**: This spreadsheet contains license metadata, such as identifiers and 
-  license characteristics.
+  license characteristics.<br>
+  See [Licenses Worksheet](licenses-worksheet.md) for details.
   
 Please note that an Artifact Inventory is self-contained. It does not require any other
 datasource to convey the complete metadata of an asset and the covered artifacts.
