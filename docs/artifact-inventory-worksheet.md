@@ -80,9 +80,10 @@ this column may be included in tooling outputs to provide the users with additio
 The type common supports to declare different types of artifacts, which are
 managed differently in documentation. Currently the implementation supports:
 
-* **file**: Identifies that the artifact is a file. This is the default. If nothing
-  is specified the artifact is handled as a file.
+* **&lt;empty&gt;**: Identifies a generic artifact. This is the default.
+* **file**: Identifies that the artifact is a file. While this is more explicit the
+  treatment of files is the same as for general artifacts.
 * **package**: Identifies the artifact as a operating system level package (consisting of multiple files)
 * **nodejs-module**: Identifies the artifact as nodejs-module (or as web-module in general)
 
-In the future further types may be specified as required for the adjecent tooling.
+In the future further types may be specified as required for the adjacent tooling.
