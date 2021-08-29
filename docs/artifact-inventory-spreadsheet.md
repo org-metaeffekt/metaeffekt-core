@@ -46,3 +46,5 @@ a multi-purpose knowledge base:
 The following use cases have been identified to support modifications of the Artifact 
 Inventory with documentation:
 * [Adding a new Artifact Version](use-case-add-new-artifact-version.md)
+* Adding a new Artifact (coming soon)
+* Adding a new License  (coming soon)
