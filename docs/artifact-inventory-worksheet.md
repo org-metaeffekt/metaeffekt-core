@@ -87,3 +87,6 @@ managed differently in documentation. Currently the implementation supports:
 * **nodejs-module**: Identifies the artifact as nodejs-module (or as web-module in general)
 
 In the future further types may be specified as required for the adjacent tooling.
+
+## References
+* Back to [Artifact Inventory Spreadsheet](artifact-inventory-spreadsheet.md) documentation.

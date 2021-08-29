@@ -44,3 +44,6 @@ This column specifies how sources for this component should be treated. The foll
 * **annex**: sources should be included in the annex archive
 * **retained**: source should be included in the retained archive that is not part of the distribution, but 
   retained internally.
+
+## References
+* Back to [Artifact Inventory Spreadsheet](artifact-inventory-spreadsheet.md) documentation.

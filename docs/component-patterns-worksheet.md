@@ -57,3 +57,6 @@ For consistency, version anchor checksum must be set to `*` if version anchor is
 
 ### Column `Type`
 This column can be used to specify the type of the artifact the component pattern represents.
+
+## References
+* Back to [Artifact Inventory Spreadsheet](artifact-inventory-spreadsheet.md) documentation.
