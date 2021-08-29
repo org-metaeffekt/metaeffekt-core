@@ -8,11 +8,13 @@ to review and assess the metadata of artifacts.
 
 The artifact inventory spreadsheet uses several worksheets:
 * **Artifact Inventory**: The Artifact Inventory spreadsheet lists all artifacts with
-  their individual metadata. See [Artifact Inventory Worksheet](artifact-inventory-worksheet.md) for details.
+  their individual metadata.<br> 
+  See [Artifact Inventory Worksheet](artifact-inventory-worksheet.md) for details.
 * **License Notices**: The License Notices spreadsheet contains license notices that 
   explain additional license related backgrounds, determine the effective licenses and
   support fulfillment of license obligations (as far as these can be addressed in 
-  documentation).
+  documentation).<br>
+  See [License Notices Worksheet](license-notices-worksheet.md) for details.
 * **Component Patterns**: Artifact may consist of several files. Component patterns
   specify patterns to identify the individual files, such that an extractor can identify
   the artifacts on coarse-grained level.
