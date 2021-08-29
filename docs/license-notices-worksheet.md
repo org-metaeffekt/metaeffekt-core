@@ -11,13 +11,15 @@ compliance documentation. The license notices
 
 | Component | Version | License | Effective License | License Notice |
 | --- | --- | --- | --- | --- |
-| `Spring Framework` | `5.1.9.RELEASE` | `Apache License 2.0, BSD 3-Clause License` | Apache License 2.0&#124;BSD 3-Clause License" | <p>The herein covered software distribution contains <b>Spring Framework</b> [...]</p> |
-| `My Component` | `*` | `My Proprietary License` | `My Proprietary License` | <p>The component is provided under proprietary license. [...]</p> |
+| Spring Framework | `5.1.9.RELEASE` | Apache License 2.0, BSD 3-Clause License | Apache License 2.0&#124;BSD 3-Clause License" | <p>The herein covered software distribution contains <b>Spring Framework</b> [...]</p> |
+| My Component | * | My Proprietary License | My Proprietary License | <p>The component is provided under proprietary license. [...]</p> |
 
 ## Columns
 The example above only shows a selection of the columns below to convey the concept.
 In general arbitrary columns can be defined in the worksheet. The following
 documented columns have specific semantics.
+
+Please note, that the columns `Component`, `Version` and `License` uniquely identify the license notice.
 
 ### Column `Component`
 The column specifies the component. 
@@ -29,7 +31,8 @@ license notice).
 ### Column `License`
 The column specifies associated licenses matching the license notice.
 
-Please note, that the columns `Component`, `Version` and `License` uniquely identify the license notice.
+### Column `Effective License`
+The column specifies the effective licenses derived for the component. Effective license are separated by pipe `|`. 
 
 ### Column `License Notice`
 The license notice to be included in the documentation. The text may contain DITA markup to structure the 
