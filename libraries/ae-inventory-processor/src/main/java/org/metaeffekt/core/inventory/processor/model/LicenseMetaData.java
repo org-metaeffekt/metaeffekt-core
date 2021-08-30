@@ -42,26 +42,6 @@ public class LicenseMetaData extends AbstractModelBase {
     public static final String SOURCE_CATEGORY_RETAINED = "retained";
     public static final String SOURCE_CATEGORY_ANNEX = "annex";
 
-    private String component;
-
-    private String version;
-
-    private String license;
-
-    private String licenseInEffect;
-
-    private String notice;
-
-    private String comment;
-
-    /**
-     * The sourceCategory specifies whether source code for the artifacts associated with this component must be included
-     * either in the 'software distribution annex' or the 'retained sources' archive. To include the source code in the
-     * distribution annex specify the value 'annex'; to include the source code in the additional sources specify
-     * 'retained'. Other values are currently not supported. If no information is provided no source code is to
-     * be inlcuded in any archive.
-     */
-    private String sourceCategory;
 
     /**
      * Default constructor.
@@ -72,28 +52,26 @@ public class LicenseMetaData extends AbstractModelBase {
 
     public LicenseMetaData(LicenseMetaData licenseMetaData) {
         super(licenseMetaData);
-        this.component = licenseMetaData.component;
-        this.version = licenseMetaData.version;
-        this.license = licenseMetaData.license;
-        this.licenseInEffect = licenseMetaData.licenseInEffect;
-        this.notice = licenseMetaData.notice;
-        this.comment = licenseMetaData.comment;
-    }
-
-    public static String deriveLicenseFolderName(String license) {
-        if (license == null) return null;
-        return normalizeId(license);
     }
 
     public static String deriveComponentFolderName(String componentName) {
-        if (componentName == null) return null;
+        if (componentName == null)
+            return null;
         return normalizeId(componentName);
     }
 
     public static String deriveComponentFolderName(String componentName, String version) {
-        if (componentName == null) return null;
-        if (StringUtils.isEmpty(version)) return deriveComponentFolderName(componentName);
+        if (componentName == null)
+            return null;
+        if (StringUtils.isEmpty(version))
+            return deriveComponentFolderName(componentName);
         return normalizeId(componentName + "-" + version);
+    }
+
+    public static String deriveLicenseFolderName(String license) {
+        if (license == null)
+            return null;
+        return normalizeId(license);
     }
 
     public static String normalizeId(String string) {
@@ -119,82 +97,8 @@ public class LicenseMetaData extends AbstractModelBase {
         return result;
     }
 
-    public String getComponent() {
-        return component;
-    }
-
-    public void setComponent(String component) {
-        this.component = component;
-    }
-
-    @Deprecated
-    public String getName() {
-        return license;
-    }
-
-    @Deprecated
-    public void setName(String license) {
-        this.license = license;
-    }
-
-    public String getLicense() {
-        return license;
-    }
-
-    public void setLicense(String license) {
-        this.license = license;
-    }
-
-    public String getNotice() {
-        return notice;
-    }
-
-    // FIXME: limitation of excel
-    public String getCompleteNotice() {
-        StringBuilder sb = new StringBuilder(notice);
-        int index = 1;
-        while (get("Notice (split-" + index + ")") != null) {
-            String s = get("Notice (split-" + index + ")");
-            sb.append(s);
-            index++;
-        }
-        return sb.toString();
-    }
-
-    public void setNotice(String notice) {
-        this.notice = notice;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getLicenseInEffect() {
-        return licenseInEffect;
-    }
-
-    public void setLicenseInEffect(String licenseInEffect) {
-        this.licenseInEffect = licenseInEffect;
-    }
-
-    public String deriveQualifier() {
-        StringBuilder sb = new StringBuilder(getComponent()).append("-").append(getLicense());
-        if (!ASTERISK.equalsIgnoreCase(getVersion().trim())) {
-            sb.append("-").append(getVersion());
-        }
-        return sb.toString();
+    public String createCompareStringRepresentation() {
+        return toString();
     }
 
     public String deriveLicenseInEffect() {
@@ -205,37 +109,147 @@ public class LicenseMetaData extends AbstractModelBase {
         return licenseInEffect;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(license);
-        sb.append('/').append(component);
-        sb.append('/').append(version);
-        sb.append('/').append(licenseInEffect);
-        sb.append('/').append(notice);
-        if (StringUtils.hasText(sourceCategory)) {
-            sb.append('/').append(sourceCategory);
-        }
-        if (StringUtils.hasText(comment)) {
-            sb.append('/').append(comment);
+    public String deriveQualifier() {
+        StringBuilder sb = new StringBuilder(getComponent()).append("-").append(getLicense());
+        if (!ASTERISK.equalsIgnoreCase(getVersion().trim())) {
+            sb.append("-").append(getVersion());
         }
         return sb.toString();
     }
 
-    public String createCompareStringRepresentation() {
-        return toString();
+    public String get(Attribute attribute, String defaultValue) {
+        return get(attribute.getKey(), defaultValue);
     }
 
-    public boolean isValid() {
-        if (StringUtils.isEmpty(getComponent())) return false;
-        if (StringUtils.isEmpty(getVersion())) return false;
-        return true;
+    public String get(Attribute attribute) {
+        return get(attribute.getKey());
+    }
+
+    public String getComment() {
+        return get(Attribute.COMMENT);
+    }
+
+    public void setComment(String comment) {
+        set(Attribute.COMMENT, comment);
+    }
+
+    // FIXME: limitation of excel
+    public String getCompleteNotice() {
+        StringBuilder sb = new StringBuilder(get(Attribute.NOTICE));
+        int index = 1;
+        while (get("Notice (split-" + index + ")") != null) {
+            String s = get("Notice (split-" + index + ")");
+            sb.append(s);
+            index++;
+        }
+        return sb.toString();
+    }
+
+    public String getComponent() {
+        return get(Attribute.COMPONENT);
+    }
+
+    public void setComponent(String component) {
+        set(Attribute.COMPONENT, component);
+    }
+
+    public String getLicense() {
+        return get(Attribute.LICENSE);
+    }
+
+    public void setLicense(String license) {
+        set(Attribute.LICENSE, license);
+    }
+
+    public String getLicenseInEffect() {
+        return get(Attribute.LICENSE_IN_EFFECT);
+    }
+
+    public void setLicenseInEffect(String licenseInEffect) {
+        set(Attribute.LICENSE_IN_EFFECT, licenseInEffect);
+    }
+
+    @Deprecated
+    public String getName() {
+        return get(Attribute.LICENSE);
+    }
+
+    @Deprecated
+    public void setName(String license) {
+        set(Attribute.LICENSE, license);
+    }
+
+    public String getNotice() {
+        return get(Attribute.NOTICE);
+    }
+
+    public void setNotice(String notice) {
+        set(Attribute.NOTICE, notice);
     }
 
     public String getSourceCategory() {
-        return sourceCategory;
+        return get(Attribute.SOURCE_CATEGORY);
     }
 
     public void setSourceCategory(String sourceCategory) {
-        this.sourceCategory = sourceCategory;
+        set(Attribute.SOURCE_CATEGORY, sourceCategory);
+    }
+
+    public String getVersion() {
+        return get(Attribute.VERSION);
+    }
+
+    public void setVersion(String version) {
+        set(Attribute.VERSION, version);
+    }
+
+    public boolean isValid() {
+        if (StringUtils.isEmpty(getComponent()))
+            return false;
+        return !StringUtils.isEmpty(getVersion());
+    }
+
+    public void set(Attribute attribute, String value) {
+        set(attribute.getKey(), value);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(get(Attribute.LICENSE));
+        sb.append('/').append(get(Attribute.COMPONENT));
+        sb.append('/').append(get(Attribute.VERSION));
+        sb.append('/').append(get(Attribute.LICENSE_IN_EFFECT));
+        sb.append('/').append(get(Attribute.NOTICE));
+        if (StringUtils.hasText(get(Attribute.SOURCE_CATEGORY))) {
+            sb.append('/').append(get(Attribute.SOURCE_CATEGORY));
+        }
+        if (StringUtils.hasText(get(Attribute.COMMENT))) {
+            sb.append('/').append(get(Attribute.COMMENT));
+        }
+        return sb.toString();
+    }
+
+    public enum Attribute implements AbstractModelBase.Attribute {
+        COMPONENT("Component"), VERSION("Version"), LICENSE("License"), LICENSE_IN_EFFECT("License in Effect"), NOTICE(
+                "License Notice"), COMMENT("Comment"),
+
+        /**
+         * The sourceCategory specifies whether source code for the artifacts associated with this component must be included
+         * either in the 'software distribution annex' or the 'retained sources' archive. To include the source code in the
+         * distribution annex specify the value 'annex'; to include the source code in the additional sources specify
+         * 'retained'. Other values are currently not supported. If no information is provided no source code is to
+         * be inlcuded in any archive.
+         */
+        SOURCE_CATEGORY("Source Category");
+
+        private final String key;
+
+        Attribute(String key) {
+            this.key = key;
+        }
+
+        public String getKey() {
+            return key;
+        }
     }
 }
