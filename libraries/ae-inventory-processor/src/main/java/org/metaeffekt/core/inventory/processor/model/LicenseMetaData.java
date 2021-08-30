@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
 /**
@@ -229,9 +231,26 @@ public class LicenseMetaData extends AbstractModelBase {
         return sb.toString();
     }
 
+    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+
+    static {
+        // fix selection and order
+        CORE_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        CORE_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        CORE_ATTRIBUTES.add(Attribute.LICENSE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.LICENSE_IN_EFFECT.getKey());
+        CORE_ATTRIBUTES.add(Attribute.SOURCE_CATEGORY.getKey());
+        CORE_ATTRIBUTES.add(Attribute.NOTICE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.COMMENT.getKey());
+    }
+
     public enum Attribute implements AbstractModelBase.Attribute {
-        COMPONENT("Component"), VERSION("Version"), LICENSE("License"), LICENSE_IN_EFFECT("License in Effect"), NOTICE(
-                "License Notice"), COMMENT("Comment"),
+        COMPONENT("Component"),
+        VERSION("Version"),
+        LICENSE("License"),
+        LICENSE_IN_EFFECT("License in Effect"),
+        NOTICE("License Notice"),
+        COMMENT("Comment"),
 
         /**
          * The sourceCategory specifies whether source code for the artifacts associated with this component must be included
