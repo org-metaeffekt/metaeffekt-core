@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.*;
@@ -228,38 +229,16 @@ public class InventoryWriter {
         HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
 
         int cellNum = 0;
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Component"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Version"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("License"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("License in Effect"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Source Category"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("License Notice"));
-        myCell = myRow.createCell(cellNum++);
-        myCell.setCellStyle(headerStyle);
-        myCell.setCellValue(new HSSFRichTextString("Comment"));
 
         // create columns for key / value map content
-        Set<String> attributes = new HashSet<>();
+        Set<String> attributes = new LinkedHashSet<>(LicenseMetaData.CORE_ATTRIBUTES);
+        Set<String> orderedOtherAttributes = new TreeSet<>();
         for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
-            attributes.addAll(licenseMetaData.getAttributes());
+            orderedOtherAttributes.addAll(licenseMetaData.getAttributes());
         }
+        attributes.addAll(orderedOtherAttributes);
 
-        List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-
-        for (String key : ordered) {
+        for (String key : attributes) {
             myCell = myRow.createCell(cellNum++);
             myCell.setCellStyle(headerStyle);
             myCell.setCellValue(new HSSFRichTextString(key));
@@ -269,31 +248,8 @@ public class InventoryWriter {
 
         for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
             myRow = mySheet.createRow(rowNum++);
-
             cellNum = 0;
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getComponent()));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getVersion()));
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getLicense()));
-            myCell = myRow.createCell(cellNum++);
-            String licenseInEffect = licenseMetaData.getLicenseInEffect();
-            if (StringUtils.isEmpty(licenseInEffect)) {
-                licenseInEffect = licenseMetaData.getLicense();
-            }
-            myCell.setCellValue(new HSSFRichTextString(licenseInEffect));
-
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getSourceCategory()));
-
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getNotice()));
-
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellValue(new HSSFRichTextString(licenseMetaData.getComment()));
-
-            for (String key : ordered) {
+            for (String key : attributes) {
                 myCell = myRow.createCell(cellNum++);
                 myCell.setCellValue(new HSSFRichTextString(licenseMetaData.get(key)));
             }
