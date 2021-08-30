@@ -12,7 +12,7 @@ The project features:
   governance, software composition analysis, and license compliance management. See
   [Software Composition Analysis Support](docs/software-composition-analysis.md).
   
-Please note that metaeffect-core represents a general baseline support for the metaeffekt 
+Please note that metaeffekt-core represents a general baseline support for the metaeffekt 
 continuous license compliance and vulnerability monitoring support.
 
 Check out also the following projects:
