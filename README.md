@@ -16,7 +16,7 @@ Please note that metaeffekt-core represents a general baseline support for the m
 continuous license compliance and vulnerability monitoring support.
 
 Check out also the following projects:
-* metaeffekt-dita - Renders DITA (Darin Information Typing Architektur) documentation into different output formats. 
+* metaeffekt-dita - Renders DITA (Darwin Information Typing Architektur) documentation into different output formats. 
   The supported plugins can be used to produce PDF documents based on DITA bookmaps. The
   plugins provide essential support to produce compliance documents such as a complete
   software distribution annex.
