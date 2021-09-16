@@ -1016,8 +1016,7 @@ public class Inventory {
             final Artifact artifact = iterator.next();
 
             // an artifact requires at least an id or a component (name)
-            if (!StringUtils.hasText(artifact.getArtifactId()) &&
-                    !StringUtils.hasText(artifact.getComponent())) {
+            if (!artifact.isValid()) {
                 iterator.remove();
             }
         }
