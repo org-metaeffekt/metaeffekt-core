@@ -1,12 +1,26 @@
 # Artifact Inventory Spreadsheet
 
 The spreadsheet representation of the Artifact Inventory addresses several target audiences.
-In particular for small- to mid-sized projects it represents a very convenient and direct approach
+For small- to mid-sized projects in particular, it represents a very convenient and direct approach
 to review and assess the metadata of artifacts.
 
-Artifact Inventory spreadsheets can be used 
-* as representation of knowledge on known software artifacts, or
-* as inventory of identified items in the extraction process.
+Artifact Inventory Spreadsheets can be used 
+* as representation of knowledge on known software artifacts (Reference Artifact Inventory), or
+* as inventory of identified items in the extraction process (Extracted Artifact Inventory).
+
+The following picture covers the two Artifact Inventory applications:
+
+![Alt](inventory-use-cases.png)
+
+A Reference Artifact Inventory is usually defined by a dedicated Maven project. The Reference Artifact Inventory 
+contains all information known about the used software artifacts; it constitutes a "Knowledge-Base". 
+
+A Extracted Artifact Inventory is the result of an extraction process. It is usually organized in an extractor
+Maven project specific to a software asset. The resulting Artifact Inventory Spreadsheet contains only those artifacts 
+which are have been found in the Software Asset that is being extracted. 
+
+An Extracted Artifact Inventor can be enriched with information from the Reference Artifact Inventory. This is - as 
+depicted - done before running the documentation process to produce the Software Annex.
 
 ## Worksheets
 
@@ -46,5 +60,5 @@ a multi-purpose knowledge base:
 The following use cases have been identified to support modifications of the Artifact 
 Inventory with documentation:
 * [Adding a new Artifact Version](use-case-add-new-artifact-version.md)
-* Adding a new Artifact (coming soon)
-* Adding a new License  (coming soon)
+* [Adding a new Artifact](use-case-add-new-artifact.md)
+* [Adding a new License](use-case-add-new-license.md)
