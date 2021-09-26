@@ -66,7 +66,6 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
 
             // write inventory
             targetInventoryFile.getParentFile().mkdirs();
-            new InventoryWriter().writeInventory(inventory, targetInventoryFile);
 
             // write not covered file list
             StringBuilder sb = new StringBuilder();
@@ -88,6 +87,14 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                 }
             }
             FileUtils.write(new File(analysisDir, "filtered-files.txt"), sb.toString(), FileUtils.ENCODING_UTF_8);
+
+            // try saving the excel file; may be too big
+            try {
+                new InventoryWriter().writeInventory(inventory, targetInventoryFile);
+            } catch (Exception e) {
+                getLog().warn("Cannot save file inventory.", e);
+            }
+
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
