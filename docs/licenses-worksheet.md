@@ -14,7 +14,7 @@ used in the spreadsheet.
 
 ## Columns
 The example above only shows a selection of the columns below to convey the concept.
-In general arbitrary columns can be defined in the worksheet. The following
+In general, arbitrary columns can be defined in the worksheet. The following
 documented columns have specific semantics.
 
 ### Column `Canonical Name`
@@ -36,7 +36,7 @@ Licenses may have variants that can be summarized to a single license (but never
 distinguished). In this column the canonical name of another license can be provided to indicate that
 the current license should be summarized under the specified license. 
 
-This information is explcitly used by the documentation. For example all BSD 3-Clause License variants 
+This information is explicitly used by the documentation. For example, all BSD 3-Clause License variants 
 are represented as BSD 3-Clause License and then detailed in the different variants.
 
 ### Column `Source Category`

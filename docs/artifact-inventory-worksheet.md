@@ -22,12 +22,11 @@ filename (without any path information). The value must not be interpreted as Ma
 
 ### Column `Checksum`
 MD5 checksum of the artifact. The checksum support differentiating artifacts represented by files with the same name id 
-but different content. May be left empty. Usually, it is recommended to differentiate files by checksum. In some cases
-this may not be desired.
+but different content. May be left empty. Usually, it is recommended to differentiate files by checksum.
 
 ### Column `Component`
-The column component specifies the component the artifact is associated with. Components group artifacts. The component
-usually does not specify any version information. Exceptions are updated generations of libaries / modules that contain
+The column `Component` specifies the component the artifact is associated with. Components group artifacts. The component
+usually does not specify any version information. Exceptions are updated generations of libraries / modules that contain
 version information as differentiator already in the component name. E.g. `Apache Commons Lang3`.
 
 ### Column: `Group Id`
@@ -38,10 +37,10 @@ artifacts for a given artifact in case the `groupId` is available.
 ### Column `Version`
 The version column specifies the exact version of the artifact. For Maven managed artifacts the version must match the
 version container in the filename in the `Id` column. For Maven managed artifacts the version may appear redundant, 
-but actually isn't. Maven may also use classifiers. Based on the information in the version column the filename can 
-be decomposed in the Maven `artifactId`, `classified` and `type` (which is the file suffix).
+but actually isn't as Maven may also use classifiers. Based on the information in the version column the filename can 
+be decomposed in the Maven `artifactId`, `classifier` and `type` (which is the file suffix).
 
-If the version is irrelvant (usually for self-created artifacts) a `*` may be used as version wildcard. In this case -
+If the version is irrelevant (usually for self-created artifacts) a `*` may be used as version wildcard. In this case -
 and in case the filename contains the version string - the `*` may also be used as placeholder in the `Id` column.
 
 ### Column `License`
@@ -78,7 +77,7 @@ this column may be included in tooling outputs to provide the users with additio
 
 ### Column `Type`
 The type common supports to declare different types of artifacts, which are
-managed differently in documentation. Currently the implementation supports:
+managed differently in documentation. Currently, the implementation supports:
 
 * **&lt;empty&gt;**: Identifies a generic artifact. This is the default.
 * **file**: Identifies that the artifact is a file. While this is more explicit the

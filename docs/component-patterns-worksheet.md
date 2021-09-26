@@ -16,7 +16,7 @@ In general arbitrary columns can be defined in the worksheet. The following
 documented columns have specific semantics.
 
 ### Column `Include Patterns`
-The column specifies a comma-separated list of Ant-style include patterns. The include patterns must
+The column specifies a comma-separated list of Ant-style include patterns. Include patterns must
 be relative to the base directory of the version anchor.
 
 ### Column `Exclude Pattern`
@@ -39,7 +39,7 @@ evaluated around a version anchor.
 The version anchor is a relative file path. E.g. version/version.txt.
 
 The relative file path may contain &ast; in order to specify elements that may vary. Using &ast;&ast; is not allowed. 
-Only * for a single folder level.
+Only &ast; for a single folder level.
 
 The version anchor path implicitly defines the depth of the version anchor in the anticipated structure. The component 
 pattern includes and excludes are relative to the root of the version anchor fragment.

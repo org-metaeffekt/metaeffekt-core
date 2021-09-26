@@ -1,8 +1,8 @@
 # Software Composition Analysis Support
 
 Software Composition Analysis (SCA) has various aspects. Primarily, SCA focuses on the analysis of a software asset to
-reveal its different parts. On second sight SCA is technology-specific. SCA must anticipate the different technologies
-used to define a software asset in order to decompose and interpret its parts.
+reveal its different parts and must anticipate the different technologies used to define a software asset in order to 
+decompose and interpret its parts.
 
 ## Definitions
 

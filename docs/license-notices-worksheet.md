@@ -16,7 +16,7 @@ compliance documentation. The license notices
 
 ## Columns
 The example above only shows a selection of the columns below to convey the concept.
-In general arbitrary columns can be defined in the worksheet. The following
+In general, arbitrary columns can be defined in the worksheet. The following
 documented columns have specific semantics.
 
 Please note, that the columns `Component`, `Version` and `License` uniquely identify the license notice.
@@ -32,7 +32,7 @@ license notice).
 The column specifies associated licenses matching the license notice.
 
 ### Column `Effective License`
-The column specifies the effective licenses derived for the component. Effective license are separated by pipe `|`. 
+The column specifies the effective licenses derived for the component. Effective licenses are separated by pipe `|`. 
 
 ### Column `License Notice`
 The license notice to be included in the documentation. The text may contain DITA markup to structure the 
@@ -42,7 +42,7 @@ content.
 This column specifies how sources for this component should be treated. The following values are possible:
 * **&lt;empty&gt;**: no special source handling
 * **annex**: sources should be included in the annex archive
-* **retained**: source should be included in the retained archive that is not part of the distribution, but 
+* **retained**: source should be included in the retained archive that is not part of the distribution but 
   retained internally.
 
 ## References

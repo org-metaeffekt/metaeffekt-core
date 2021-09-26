@@ -3,7 +3,7 @@
 Core project with fundamental runtime and build support.
 
 The project features:
-* Building of dedicated API jars. API jars contain only those published 
+* Building of dedicated API (application programming interface) jars. API jars contain only those published 
   classes that are required at compile time. The full runtime support
   is provided by the default jar. See org.metaeffekt.core:ae-api-publish-maven-plugin
   plugin documentation for details. This approach can be used to identify the public

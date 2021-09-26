@@ -3,12 +3,12 @@
 ## Prerequisites
 
 * An artifact with an older version `a` is already specified in the artifact inventory.
-* The associated license text are available and are already modelled.
+* The associated license texts are already available.
 * A new artifact version `b` has to be added.
 
 ## Adding a new Artifact Version to the Artifact Inventory Spreadsheet
 
-To add a new artifact version follow the following steps:
+To add a new artifact version, follow the following steps:
 - Locate the artifact inventory spreadsheet that is used as knowledge base of your project.
 - Open the Artifact Inventory Spreadsheet.
 - Locate the artifact of version `a` in the Artifact Inventory Spreadsheet.

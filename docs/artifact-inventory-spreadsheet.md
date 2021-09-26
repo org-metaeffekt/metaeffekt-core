@@ -1,7 +1,7 @@
 # Artifact Inventory Spreadsheet
 
-The spreadsheet representation of the Artifact Inventory addresses several target groups.
-For small- to mid-sized projects it represents a very convenient and direct approach
+The spreadsheet representation of the Artifact Inventory addresses several target audiences.
+In particular for small- to mid-sized projects it represents a very convenient and direct approach
 to review and assess the metadata of artifacts.
 
 Artifact Inventory spreadsheets can be used 
@@ -30,11 +30,11 @@ The artifact inventory spreadsheet uses several worksheets:
   See [Licenses Worksheet](licenses-worksheet.md) for details.
   
 Please note that an Artifact Inventory is self-contained. It does not require any other
-datasource to convey the complete metadata of an asset and the covered artifacts.
+data source to convey the complete metadata of an asset and the covered artifacts.
 
 The Inventory Spreadsheet is integrated in a dedicated folder structure:
 * **inventory**: contains one or more inventory spreadsheets
-* **licenses**: contains all license texts in dedicated subfolders
+* **licenses**: contains all license texts in dedicated sub-folders
 * **components**: container additional component-centric license variants and notices
 
 The Inventory Spreadsheet in combination with licenses and component-specific files is
