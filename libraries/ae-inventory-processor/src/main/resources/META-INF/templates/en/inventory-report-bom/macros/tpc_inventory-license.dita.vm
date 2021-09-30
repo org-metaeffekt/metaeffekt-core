@@ -2,7 +2,7 @@
     #set($folder=$inventory.getLicenseFolder($license))
     #set($name=$inventory.evaluateComponents($license))
     #if(!$name.isEmpty())
-    <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
+    <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
             <p>

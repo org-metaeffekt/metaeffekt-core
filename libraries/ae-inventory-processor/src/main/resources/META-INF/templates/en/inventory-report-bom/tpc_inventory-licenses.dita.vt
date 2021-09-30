@@ -19,34 +19,48 @@
     #end
     <table id="LicensesInEffect" otherprops="wide">
         <title>Licenses in Effect$reportContext.inContextOf()</title>
-        <tgroup cols="2">
+        <tgroup cols="4">
             <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
-            <colspec colname="COLSPEC1" colnum="2" colwidth="20*" />
+            <colspec colname="COLSPEC1" colnum="2" colwidth="27*" />
+            <colspec colname="COLSPEC2" colnum="3" colwidth="10*" />
+            <colspec colname="COLSPEC3" colnum="4" colwidth="13*" />
             <thead>
                 <row>
                     <entry colname="COLSPEC0" valign="top">License in Effect</entry>
-                    <entry colname="COLSPEC1" valign="top">Number of Components</entry>
+                    <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+                    <entry colname="COLSPEC2" valign="top">OSI approved</entry>
+                    <entry colname="COLSPEC3" valign="top">Number of Components</entry>
                 </row>
             </thead>
             <tbody>
 #foreach($license in $effectiveLicensesRepresented)
 #set($folder=$inventory.getLicenseFolder($license))
 #set($group=$inventory.evaluateComponentsRepresentedLicense($license))
+#set($licenseData=$inventory.findMatchingLicenseData($license))
                 <row>
 #if ($inventory.isSubstructureRequired($license, $effectiveLicenses))
                     <entry>
-                        <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
-                            $report.xmlEscapeLicense($license)</xref><xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
+                        <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                            $report.xmlEscapeLicense($license)<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
+                        </xref>
+                    </entry>
+                    <entry>#if ($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>
+                        #if ($licenseData)#if ($licenseData.is('OSI Approved'))yes<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
                     </entry>
 #else
                     <entry>
-                        <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                        <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
                             $report.xmlEscapeLicense($license)
                         </xref>
-                     </entry>
+                    </entry>
+                    <entry>#if ($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>
+                        #if($licenseData)#if($licenseData.is('OSI Approved'))yes#else&nbsp;#end#else&nbsp;#end
+                    </entry>
 #end
                     <entry>
-                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id" type="topic">
+                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
                             <codeph>$group.size()</codeph>
                         </xref>
                     </entry>
@@ -61,7 +75,7 @@
         #if($inventory.isSubstructureRequired($license, $effectiveLicenses) == false)
             #insertLicenseArtifactTopic($license)
         #else
-            <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)-$reportContext.id">
+            <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
                 <title>$report.xmlEscapeLicense($license) Variants</title>
                 <body>
                     <p>

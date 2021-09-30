@@ -223,7 +223,7 @@ public class RepositoryReportTest {
         // check links from package report
         Assert.assertTrue(
                 "Expecting references to license chapter.",
-                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0-test\""));
+                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses-test.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
 
         // read/write inventory
         Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
@@ -280,7 +280,7 @@ public class RepositoryReportTest {
         // check links from package report
         Assert.assertTrue(
                 "Expecting references to license chapter.",
-                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0-test\""));
+                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses-test.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
 
         // read/write inventory
         Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");

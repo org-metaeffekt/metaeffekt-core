@@ -69,9 +69,8 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
 
             // write not covered file list
             StringBuilder sb = new StringBuilder();
-            for (Artifact artifact : inventory.getArtifacts()) {
-                if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(
-                        artifact.get(KEY_TYPE))) {
+            for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
+                if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
                     Set<String> projects = artifact.getProjects();
                     if (projects != null) {
                         for (String project : projects) {
@@ -84,8 +83,13 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                             sb.append(project);
                         }
                     }
+
+                    // remove not covered file from inventory; inventory was just a vehicle
+                    inventory.getArtifacts().remove(artifact);
                 }
             }
+
+            // write list of filtered files
             FileUtils.write(new File(analysisDir, "filtered-files.txt"), sb.toString(), FileUtils.ENCODING_UTF_8);
 
             // try saving the excel file; may be too big
