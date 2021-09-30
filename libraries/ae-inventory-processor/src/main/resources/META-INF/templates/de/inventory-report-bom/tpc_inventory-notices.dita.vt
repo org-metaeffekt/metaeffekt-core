@@ -33,9 +33,8 @@
                         <tbody>
 #foreach($artifact in $artifactNotice.getArtifacts())
     <row>
-        <entry>#if($artifact.getGroupId())<lines><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
-#end
-<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
+        <entry>#if($artifact.getGroupId())<lines><line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+        <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>#else<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
         </entry>
         <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
         #set($licenses=$inventory.getEffectiveLicenses($artifact))

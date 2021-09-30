@@ -22,6 +22,7 @@ import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -223,6 +224,21 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      */
     private String templateLanguageSelector;
 
+    /**
+     * @parameter default-value="default"
+     */
+    private String reportContextId;
+
+    /**
+     * @parameter
+     */
+    private String reportContextTitle;
+
+    /**
+     * @parameter
+     */
+    private String reportContextGroup;
+
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         InventoryReport report = new InventoryReport();
         configureInventoryReport(report);
@@ -277,6 +293,9 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         // enable to select language
         report.setTemplateLanguageSelector(templateLanguageSelector);
+
+        // configure report context
+        report.setReportContext(new ReportContext(reportContextId, reportContextTitle, reportContextGroup));
 
         if (artifactExcludes != null) {
             PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
