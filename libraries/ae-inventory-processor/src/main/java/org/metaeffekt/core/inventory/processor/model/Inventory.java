@@ -1405,6 +1405,9 @@ public class Inventory {
 
     public boolean isSubstructureRequired(String license, List<String> effectiveLicenses) {
         int counter = 0;
+        if(!effectiveLicenses.contains(license)){
+            return true;
+        }
         for (LicenseData ld : getLicenseData()) {
             final String canonicalName = ld.get(LicenseData.Attribute.CANONICAL_NAME);
             if (effectiveLicenses.contains(canonicalName)) {
@@ -1428,7 +1431,7 @@ public class Inventory {
     }
 
     public boolean isFootnoteRequired(List<String> licenses) {
-        for (String license : licenses) {
+        for (String license : getRepresentedLicenseNames(licenses)) {
             if (isSubstructureRequired(license, licenses)) {
                 return true;
             }
