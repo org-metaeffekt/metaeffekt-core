@@ -140,7 +140,7 @@ public class InventoryWriter {
                     // FIXME: log something
                     //        is this fine as log message?
                     LOG.warn("Cell content [{}] is longer than max cell length of [{}] and will be cropped", key, MAX_CELL_LENGTH);
-                    value = value.substring(0, Math.min(value.length(), MAX_CELL_LENGTH));
+                    value = value.substring(0, MAX_CELL_LENGTH);
                     value = value + "...";
                 }
                 myCell.setCellValue(new HSSFRichTextString(value));
