@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
@@ -49,9 +50,8 @@ public abstract class AbstractModelBase {
     /**
      * Get the value associated with the given key. Use defaultValue, in case the key is not associated with any value.
      *
-     * @param key The key to get the value for.
+     * @param key          The key to get the value for.
      * @param defaultValue The default value to use, in case the key is not associated.
-     *
      * @return The value associated with the key or defaultValue in case no value is associated. In case key is
      * <code>null</code> also <code>null</code> is returned.
      */
@@ -62,10 +62,77 @@ public abstract class AbstractModelBase {
     }
 
     /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key The key to get the value for.
+     * @return The value associated with the key or <code>null</code> in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     */
+    public String getComplete(Attribute key) {
+        return getComplete(key.getKey(), null);
+    }
+
+    /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key          The key to get the value for.
+     * @param defaultValue The default value to use, in case the key is not associated.
+     * @return The value associated with the key or defaultValue in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     */
+    public String getComplete(Attribute key, String defaultValue) {
+        return getComplete(key.getKey(), defaultValue);
+    }
+
+    /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key The key to get the value for.
+     * @return The value associated with the key or <code>null</code> in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     */
+    public String getComplete(String key) {
+        return getComplete(key, null);
+    }
+
+    /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key          The key to get the value for.
+     * @param defaultValue The default value to use, in case the key is not associated.
+     * @return The value associated with the key or defaultValue in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     */
+    // FIXME: limitation of excel
+    public String getComplete(String key, String defaultValue) {
+        if (key == null) return null;
+        if (get(key) == null) return defaultValue;
+        StringBuilder sb = new StringBuilder(get(key));
+        int index = 1;
+        while (get(key + " (split-" + index + ")") != null) {
+            String s = get(key + " (split-" + index + ")");
+            sb.append(s);
+            index++;
+        }
+        return sb.toString();
+    }
+
+    /**
      * Function to check for a boolean value.
      *
      * @param key The key to get the boolean value for.
-     *
      * @return The boolean value associated with the key. Returns <code>false</code> in case the associated value is
      * not equivalent to <code>Boolean.TRUE</code> or in case key is <code>null</code>.
      */
@@ -76,9 +143,8 @@ public abstract class AbstractModelBase {
     /**
      * Function to check for a boolean value.
      *
-     * @param key The key to get the boolean value for.
+     * @param key          The key to get the boolean value for.
      * @param defaultValue he default value to use, in case the key is not associated.
-     *
      * @return The boolean value associated with the key. Returns defaultValue in case the associated value is
      * not equivalent to <code>Boolean.TRUE</code> and <code>false</code> in case key is <code>null</code>.
      */
@@ -88,11 +154,73 @@ public abstract class AbstractModelBase {
         return (currentValue != null) ? Boolean.TRUE.toString().equalsIgnoreCase(currentValue) : defaultValue;
     }
 
+    /**
+     * Set the value for a key.
+     *
+     * @param key   The key to set the value for.
+     * @param value The value to set for the key.
+     */
     public void set(String key, String value) {
         if (StringUtils.isEmpty(value)) {
             attributeMap.remove(key);
         } else {
             attributeMap.put(key, value);
+        }
+    }
+
+    /**
+     * Safely set the value for a key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.
+     * This method bypasses this by creating multiple columns for the same value.<br>
+     * See {@link #setComplete(String, String)} for an example.
+     *
+     * @param key   The key to set the value for.
+     * @param value The value to set for the key.
+     */
+    public void setComplete(Attribute key, String value) {
+        setComplete(key.getKey(), value);
+    }
+
+    /**
+     * Safely set the value for a key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.
+     * This method bypasses this by creating multiple columns for the same value.<br>
+     * Example: A string with the length of 100000 characters should be saved to <code>Vulnerability</code>.<br>
+     * <table>
+     *     <tr>
+     *         <td><code>Vulnerability</code></td>
+     *         <td><code>Vulnerability (split-1)</code></td>
+     *         <td><code>Vulnerability (split-2)</code></td>
+     *         <td><code>Vulnerability (split-3)</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td><code>32760 characters</code></td>
+     *         <td><code>32760 characters</code></td>
+     *         <td><code>32760 characters</code></td>
+     *         <td><code>1720 characters</code></td>
+     *     </tr>
+     * </table>
+     *
+     * @param key   The key to set the value for.
+     * @param value The value to set for the key.
+     */
+    // FIXME: limitation of excel
+    public void setComplete(String key, String value) {
+        if (value == null) {
+            set(key, null);
+            return;
+        }
+        // if the content is longer than the maximum cell length, it has to be split up into multiple cells
+        if (value.length() <= InventoryWriter.MAX_CELL_LENGTH) {
+            set(key, value);
+        } else {
+            int index = 0;
+            while (index * InventoryWriter.MAX_CELL_LENGTH < value.length()) {
+                String part = value.substring(index * InventoryWriter.MAX_CELL_LENGTH, Math.min(value.length(), (index + 1) * InventoryWriter.MAX_CELL_LENGTH));
+                if (index == 0) set(key, part);
+                else set(key + " (split-" + index + ")", part);
+                index++;
+            }
         }
     }
 

@@ -15,16 +15,17 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +33,14 @@ import java.io.IOException;
 import java.util.*;
 
 public class InventoryWriter {
+
+    private final Logger LOG = LoggerFactory.getLogger(getClass());
+
+    /**
+     * Excel 97 limits the maximum cell content length to <code>32767</code> characters. To ensure that the contents are
+     * safe, 7 is subtracted from that value to set the max length to <code>32760</code>.
+     */
+    public final static int MAX_CELL_LENGTH = SpreadsheetVersion.EXCEL97.getMaxTextLength() - 7;
 
     private Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[]{
             Artifact.Attribute.ID,
@@ -127,9 +136,11 @@ public class InventoryWriter {
             for (String key : ordered) {
                 HSSFCell myCell = dataRow.createCell(cellNum++);
                 String value = artifact.get(key);
-                if (value != null && value.length() > 32760) {
+                if (value != null && value.length() > MAX_CELL_LENGTH) {
                     // FIXME: log something
-                    value = value.substring(0, Math.min(value.length(), 32760));
+                    //        is this fine as log message?
+                    LOG.warn("Cell content [{}] is longer than max cell length of [{}] and will be cropped", key, MAX_CELL_LENGTH);
+                    value = value.substring(0, Math.min(value.length(), MAX_CELL_LENGTH));
                     value = value + "...";
                 }
                 myCell.setCellValue(new HSSFRichTextString(value));
