@@ -206,15 +206,24 @@ public abstract class AbstractModelBase {
      */
     // FIXME: limitation of excel
     public void setComplete(String key, String value) {
+        // clear the current value before writing the new value
+        int index = 1;
+        while (get(key + " (split-" + index + ")") != null) {
+            set(key + " (split-" + index + ")", null);
+            index++;
+        }
+
+        // if the new value is null, no need to split the value
         if (value == null) {
             set(key, null);
             return;
         }
+
         // if the content is longer than the maximum cell length, it has to be split up into multiple cells
         if (value.length() <= InventoryWriter.MAX_CELL_LENGTH) {
             set(key, value);
         } else {
-            int index = 0;
+            index = 0;
             while (index * InventoryWriter.MAX_CELL_LENGTH < value.length()) {
                 String part = value.substring(index * InventoryWriter.MAX_CELL_LENGTH, Math.min(value.length(), (index + 1) * InventoryWriter.MAX_CELL_LENGTH));
                 if (index == 0) set(key, part);

@@ -24,7 +24,7 @@ import java.util.StringJoiner;
 public class ArtifactTest {
 
     @Test
-    public void vulnerabilityLengthTest() {
+    public void completeVulnerabilityLengthTest() {
         Artifact artifact = new Artifact();
         StringJoiner cveData = new StringJoiner(", ");
         for (int i = 0; i < 4000; i++) cveData.add("CVE-2022-21907 (9.8)");
@@ -34,7 +34,18 @@ public class ArtifactTest {
     }
 
     @Test
-    public void vulnerabilityNullTest() {
+    public void completeVulnerabilityResetTest() {
+        Artifact artifact = new Artifact();
+        StringJoiner cveData = new StringJoiner(", ");
+        for (int i = 0; i < 4000; i++) cveData.add("CVE-2022-21907 (9.8)");
+        artifact.setCompleteVulnerability(cveData.toString());
+        Assert.assertNotNull(artifact.get("Vulnerability (split-1)"));
+        artifact.setCompleteVulnerability(null);
+        Assert.assertNull(artifact.get("Vulnerability (split-1)"));
+    }
+
+    @Test
+    public void completeVulnerabilityNullTest() {
         Artifact artifact = new Artifact();
         artifact.setCompleteVulnerability(null);
         Assert.assertNull(artifact.getCompleteVulnerability());
