@@ -187,6 +187,7 @@ public abstract class AbstractModelBase {
      * This method bypasses this by creating multiple columns for the same value.<br>
      * Example: A string with the length of 100000 characters should be saved to <code>Vulnerability</code>.<br>
      * <table>
+     *     <caption>Splitting attributes over several columns</caption>
      *     <tr>
      *         <td><code>Vulnerability</code></td>
      *         <td><code>Vulnerability (split-1)</code></td>

@@ -190,7 +190,7 @@ public class ApiCompileMojo extends CompilerMojo {
      * Returns the alternateOutputDirecotry property as {@link java.io.File} representing the output directory
      * configured for the compile run.
      *
-     * @return a {@link java.io.File} representing the output directory
+     * @return A {@link java.io.File} representing the output directory
      * configured for the compile run.
      */
     protected File getOutputDirectory() {

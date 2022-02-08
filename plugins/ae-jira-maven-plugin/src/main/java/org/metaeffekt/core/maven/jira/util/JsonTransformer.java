@@ -66,7 +66,7 @@ public class JsonTransformer {
      *
      * @param dataString the data string to be converted
      *
-     * @return the JSON data as a hierarchical structure of maps, lists, string and number values
+     * @return The JSON data as a hierarchical structure of maps, lists, string and number values
      */
     public static Object transform(String dataString) {
         ObjectMapper mapper = new ObjectMapper();

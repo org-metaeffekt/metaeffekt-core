@@ -61,7 +61,7 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
      *
      * @param jql the JIRA Query Language statement to be processed
      *
-     * @return the search result
+     * @return The search result
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected Object getSearchResult(String jql) throws IOException {
