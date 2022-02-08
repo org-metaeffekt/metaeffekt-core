@@ -287,9 +287,8 @@ public class Artifact extends AbstractModelBase {
      * Where the file component is constructed as artifactId-version[-classifier].type. The version therefore can be used to
      * separate the artifactId from the remaining pieces of the file component.
      *
-     * @param id The artifact id.
+     * @param id      The artifact id.
      * @param version The version of the artifact.
-     *
      * @return The derived artifact id or null, in case the version is not part of the file component.
      */
     public String extractArtifactId(String id, String version) {
@@ -566,6 +565,14 @@ public class Artifact extends AbstractModelBase {
 
     public void setVulnerability(String vulnerability) {
         set(Attribute.VULNERABILITY, vulnerability);
+    }
+
+    public String getCompleteVulnerability() {
+        return getComplete(Attribute.VULNERABILITY);
+    }
+
+    public void setCompleteVulnerability(String vulnerability) {
+        setComplete(Attribute.VULNERABILITY, vulnerability);
     }
 
     public boolean isValid() {
