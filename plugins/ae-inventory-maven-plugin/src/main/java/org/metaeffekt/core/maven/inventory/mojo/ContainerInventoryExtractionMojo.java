@@ -35,7 +35,7 @@ import java.util.*;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
- * Extracts a container inventory from pre-porcessed container information.
+ * Extracts a container inventory from pre-preprocessed container information.
  */
 @Mojo(name = "extract-container-inventory", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractionMojo {

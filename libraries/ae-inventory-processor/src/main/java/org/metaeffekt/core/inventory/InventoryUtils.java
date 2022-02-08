@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -107,8 +108,10 @@ public abstract class InventoryUtils {
                     map(String::trim).
                     filter(s -> !isEmpty(s)).
                     map(s -> {
-                        if (s.startsWith("(") && s.endsWith(")")) {
-                            return s.substring(1, s.length() - 2);
+                        if (s.startsWith("(") && s.endsWith(")") &&
+                            StringUtils.countOccurrencesOf(s, "(") == 1 &&
+                            StringUtils.countOccurrencesOf(s, ")") == 1) {
+                            return s.substring(1, s.length() - 1);
                         }
                         return s;
                     }).

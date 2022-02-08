@@ -363,7 +363,7 @@ public class InventoryReport {
                             copy.setVersion(version);
                             copy.set(Constants.KEY_WILDCARD_MATCH, STRING_TRUE);
                         } catch (Exception e) {
-                            LOG.error("Cannot extract version from localArtifact {}. To express that no version information " +
+                            LOG.error("Cannot extract version from artifact {}. To express that no version information " +
                                     "is available use a different version keyword such as 'undefined' or 'unspecific'.", id);
                         }
                     } else {

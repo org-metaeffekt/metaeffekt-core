@@ -35,7 +35,7 @@
         <artifact.inventory.source.dir>/META-INF</artifact.inventory.source.dir>
         <artifact.inventory.source.includes>ae-core-artifact-inventory.xls</artifact.inventory.source.includes>
 
-        <ant.version>1.10.1</ant.version>
+        <ant.version>1.10.11</ant.version>
 
         <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
     </properties>
@@ -285,11 +285,12 @@
                                 <failOnUnknownVersion>${artifact.inventory.enabled}</failOnUnknownVersion>
                                 <failOnMissingLicense>${artifact.inventory.enabled}</failOnMissingLicense>
                                 <failOnMissingLicenseFile>false</failOnMissingLicenseFile>
-                                <failOnMissingNotice>${artifact.inventory.enabled}</failOnMissingNotice>
+                                <failOnMissingNotice>false</failOnMissingNotice>
                                 <failOnDevelopment>${artifact.inventory.external.enabled}</failOnDevelopment>
                                 <failOnInternal>${artifact.inventory.external.enabled}</failOnInternal>
                                 <failOnUpgrade>${artifact.inventory.enabled}</failOnUpgrade>
                                 <failOnDowngrade>${artifact.inventory.enabled}</failOnDowngrade>
+                                <failOnMissingComponentFiles>false</failOnMissingComponentFiles>
 
                                 <manageScopeProvided>${artifact.inventory.manage.scope.provided}</manageScopeProvided>
                                 <manageScopeTest>${artifact.inventory.manage.scope.test}</manageScopeTest>

@@ -465,7 +465,7 @@ public class DirectoryInventoryScan {
                 return targetFolder;
             }
         } catch (Exception e) {
-            LOG.error("Cannot unzip " + archive.getAbsolutePath());
+            LOG.error("Cannot unzip " + archive.getAbsolutePath(), e);
         }
 
         // try gunzip

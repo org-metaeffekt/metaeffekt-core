@@ -57,7 +57,7 @@
                         </configuration>
                     </execution>
                 </executions>
-                <configuration>
+                <configuration combine.children="append">
                     <processors>
                         <processor>
                             <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
