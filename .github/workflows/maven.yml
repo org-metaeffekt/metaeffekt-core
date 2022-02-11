@@ -24,4 +24,4 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - run: mvn -B validate -Dartifact.inventory.enabled=false --file pom.xml
+      - run: mvn -B package -Dartifact.inventory.enabled=false --file pom.xml
