@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         java: [ '8', '11' ]
-        os: [ 'windows-latest' ]
+        os: [ 'ubuntu-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
       - uses: actions/checkout@v2
