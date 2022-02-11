@@ -50,7 +50,7 @@
         <poi.version>3.17</poi.version>
         <saxon.version>9.7.0-7</saxon.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <spring.framework.version>5.3.13</spring.framework.version>
+        <spring.framework.version>5.3.14</spring.framework.version>
         <velocity.version>1.7</velocity.version>
         <xalan.version>2.7.2</xalan.version>
         <xmlunit.version>1.6</xmlunit.version>
