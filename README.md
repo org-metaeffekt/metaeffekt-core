@@ -1,3 +1,5 @@
+[![Java 8/11 Build with Maven](https://github.com/org-metaeffekt/metaeffekt-core/actions/workflows/maven.yml/badge.svg)](https://github.com/org-metaeffekt/metaeffekt-core/actions/workflows/maven.yml)
+
 # metaeffekt-core
 
 Core project with fundamental runtime and build support.
