@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         java: [ '8', '11' ]
-        os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
+        os: [ 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
       - uses: actions/checkout@v2
@@ -24,4 +24,4 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - run: mvn -B package -Dartifact.inventory.enabled=false --file pom.xml
+      - run: mvn -B package "-Dartifact.inventory.enabled=false" --file pom.xml
