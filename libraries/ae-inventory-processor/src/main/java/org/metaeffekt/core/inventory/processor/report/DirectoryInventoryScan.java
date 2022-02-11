@@ -354,7 +354,7 @@ public class DirectoryInventoryScan {
 
             final File baseDir = computeComponentBaseDir(scanBaseDir, anchorFile, versionAnchor);
 
-            // build patters to match (using scanBaseDir relative paths)
+            // build patterns to match (using scanBaseDir relative paths)
             final String baseDirPath = normalizePathToLinux(asRelativePath(scanBaseDir, baseDir));
             final String normalizedIncludePattern = extendIncludePattern(cpd, baseDirPath);
             final String normalizedExcludePattern = normalizePathToLinux(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));

@@ -1,4 +1,4 @@
-# Component Patters Worksheet
+# Component Patterns Worksheet
 
 ## Purpose
 The component patterns worksheet defined compoent patterns, which support combining several
@@ -33,7 +33,7 @@ The component part is used as artifact id and correlates with the `Id` column of
 Component version specifies the version of the artifact derived from a matching component pattern.
 
 ### Column `Version Anchor`
-Version Anchors must not be empty. These are used for matching the component patters. Includes and excludes are 
+Version Anchors must not be empty. These are used for matching the component patterns. Includes and excludes are 
 evaluated around a version anchor.
 
 The version anchor is a relative file path. E.g. version/version.txt.
