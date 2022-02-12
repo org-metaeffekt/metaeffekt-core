@@ -65,8 +65,10 @@
                         <processor>
                             <className>org.metaeffekt.core.inventory.processor.ValidateInventoryProcessor</className>
                             <properties>
+                                <!-- components notices, licenses and notices are not validated on this level -->
                                 <validate.component.folders>false</validate.component.folders>
                                 <validate.license.folders>false</validate.license.folders>
+                                <validate.notices>false</validate.notices>
                                 <failOnError>true</failOnError>
                             </properties>
                         </processor>

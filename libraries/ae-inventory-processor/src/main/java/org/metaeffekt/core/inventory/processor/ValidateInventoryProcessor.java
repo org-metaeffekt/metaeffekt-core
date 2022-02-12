@@ -58,6 +58,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
     public static final String VALIDATE_LICENSE_FOLDERS = "validate.license.folders";
     public static final String VALIDATE_COMPONENT_FOLDERS = "validate.component.folders";
+    public static final String VALIDATE_NOTICES = "validate.notices";
 
     public static final String CREATE_LICENSE_FOLDERS = "create.license.folders";
     public static final String CREATE_COMPONENT_FOLDERS = "create.component.folders";
@@ -84,6 +85,9 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         final boolean validateComponentFolders = Boolean.parseBoolean(getProperties().
                 getProperty(VALIDATE_COMPONENT_FOLDERS, STRING_TRUE));
+
+        final boolean validateNotices = Boolean.parseBoolean(getProperties().
+                getProperty(VALIDATE_NOTICES, STRING_TRUE));
 
         final String licensesBaseDir = getProperties().getProperty(LICENSES_DIR);
         if (licensesBaseDir == null && validateLicenseFolders) {
@@ -321,18 +325,21 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
         }
 
         // check whether all artifacts which require a license notice have a license notice.
-        for (Artifact artifact : inventory.getArtifacts()) {
-            artifact.deriveArtifactId();
+        if (validateNotices) {
+            for (Artifact artifact : inventory.getArtifacts()) {
+                artifact.deriveArtifactId();
 
-            if (artifact.isEnabledForDistribution()) {
-                final LicenseMetaData matchingLicenseMetaData = inventory.findMatchingLicenseMetaData(artifact);
+                if (artifact.isEnabledForDistribution()) {
+                    final LicenseMetaData matchingLicenseMetaData = inventory.
+                            findMatchingLicenseMetaData(artifact);
 
-                if (matchingLicenseMetaData == null) {
-                    if (licensesRequiringNotice.contains(artifact.getLicense())) {
-                        log(format("%04d: Artifact '%s', component '%s' with license '%s' requires a license notice. ",
-                                index++, artifact.getId(), artifact.getComponent(), artifact.getLicense()));
-                        log(format("      Proposal: add license notice to notices in inventory."));
-                        error = true;
+                    if (matchingLicenseMetaData == null) {
+                        if (licensesRequiringNotice.contains(artifact.getLicense())) {
+                            log(format("%04d: Artifact '%s', component '%s' with license '%s' requires a license notice. ",
+                                    index++, artifact.getId(), artifact.getComponent(), artifact.getLicense()));
+                            log(format("      Proposal: add license notice to notices in inventory."));
+                            error = true;
+                        }
                     }
                 }
             }
