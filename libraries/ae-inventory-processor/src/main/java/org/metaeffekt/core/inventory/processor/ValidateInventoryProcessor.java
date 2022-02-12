@@ -56,6 +56,9 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
      */
     public static final String LICENSES_TARGET_DIR = "licenses.target.path";
 
+    public static final String VALIDATE_LICENSE_FOLDERS = "validate.license.folders";
+    public static final String VALIDATE_COMPONENT_FOLDERS = "validate.component.folders";
+
     public static final String CREATE_LICENSE_FOLDERS = "create.license.folders";
     public static final String CREATE_COMPONENT_FOLDERS = "create.component.folders";
 
@@ -76,13 +79,19 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
     public void process(Inventory inventory) {
         boolean error = false;
 
+        final boolean validateLicenseFolders = Boolean.parseBoolean(getProperties().
+                getProperty(VALIDATE_LICENSE_FOLDERS, STRING_TRUE));
+
+        final boolean validateComponentFolders = Boolean.parseBoolean(getProperties().
+                getProperty(VALIDATE_COMPONENT_FOLDERS, STRING_TRUE));
+
         final String licensesBaseDir = getProperties().getProperty(LICENSES_DIR);
-        if (licensesBaseDir == null) {
+        if (licensesBaseDir == null && validateLicenseFolders) {
             throw new IllegalStateException(format("Property '%s' must be set.", LICENSES_DIR));
         }
 
         final String componentsBaseDir = getProperties().getProperty(COMPONENTS_DIR);
-        if (componentsBaseDir == null) {
+        if (componentsBaseDir == null && validateComponentFolders) {
             throw new IllegalStateException(format("Property '%s' must be set.", COMPONENTS_DIR));
         }
 
@@ -329,92 +338,96 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
             }
         }
 
-        // 1st level is the license/component level
-        final String[] licenseDirectories = scanForDirectories(licensesBaseDir);
-        final String[] componentDirectories = scanForDirectories(componentsBaseDir);
+        // check whether license exists in inventory
+        if (validateLicenseFolders) {
+            // 1st level is the license level
+            final String[] licenseDirectories = scanForDirectories(licensesBaseDir);
+            final Set<String> licenseFoldersFromDirectory = new HashSet<>();
+            for (String file : licenseDirectories) {
+                licenseFoldersFromDirectory.add(file);
+            }
 
-        final Set<String> licenseFoldersFromDirectory = new HashSet<>();
-        for (String file : licenseDirectories) {
-            licenseFoldersFromDirectory.add(file);
-        }
+            for (String file : licenseDirectories) {
+                if (!licenseFoldersFromInventory.contains(file)) {
+                    if ((manageLicenseFolders && isEmptyFolder(licensesTargetDir, file)) || deleteLicenseFolders) {
+                        removeFolder(licensesBaseDir, file);
+                        licenseFoldersFromDirectory.remove(file);
+                    } else {
+                        log(format("%04d: License folder '%s' does not match any artifact license / effective license in inventory.", index++, file));
+                        log(format("      Proposal: remove license folder."));
+                        error = true;
+                    }
+                }
+            }
 
-        final Set<String> componentFoldersFromDirectory = new HashSet<>();
-        for (String file : componentDirectories) {
-            componentFoldersFromDirectory.add(file);
+            // check whether the license folder exists
+            for (String file : licenseFoldersFromInventory) {
+                if (!licenseFoldersFromDirectory.contains(file)) {
+                    if (manageLicenseFolders) {
+                        if (!new File(licensesBaseDir, file).exists() && !new File(licensesTargetDir, file).exists()) {
+                            createFolder(licensesBaseDir, file);
+                        }
+                    } else {
+                        log(format("%04d: License folder missing: %s", index++, file));
+                        log(format("      Proposal: add license folder."));
+                        error = true;
+                    }
+                }
+            }
+
+            // check whether the license folder contains any files
+            for (String file : licenseFoldersFromInventory) {
+                if (isEmptyFolder(licensesBaseDir, file) && isEmptyFolder(licensesTargetDir, file)) {
+                    log(format("%04d: License folder '%s' does not contain any license or notice files.", index++, file));
+                    log(format("      Proposal: add license to the license folder."));
+                    error = true;
+                }
+            }
         }
 
         // iterate component level for each component folder
-        for (String componentFolder : componentFoldersFromDirectory) {
-            // check whether this folder is required
-            if (!componentFoldersFromInventory.contains(componentFolder)) {
-                if ((manageComponentFolders && isEmptyFolder(componentsBaseDir, componentFolder)) || deleteComponentFolders) {
-                    removeFolder(componentsBaseDir, componentFolder);
-                } else {
-                    log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, componentFolder));
-                    log(format("      Proposal: remove the folder."));
-                    error = true;
-                }
+        if (validateComponentFolders) {
+            // 1st level is the component level
+            final String[] componentDirectories = scanForDirectories(componentsBaseDir);
+            final Set<String> componentFoldersFromDirectory = new HashSet<>();
+            for (String file : componentDirectories) {
+                componentFoldersFromDirectory.add(file);
             }
-        }
 
-        // check whether license exists in inventory
-        for (String file : licenseDirectories) {
-            if (!licenseFoldersFromInventory.contains(file)) {
-                if ((manageLicenseFolders && isEmptyFolder(licensesTargetDir, file)) || deleteLicenseFolders) {
-                    removeFolder(licensesBaseDir, file);
-                    licenseFoldersFromDirectory.remove(file);
-                } else {
-                    log(format("%04d: License folder '%s' does not match any artifact license / effective license in inventory.", index++, file));
-                    log(format("      Proposal: remove license folder."));
-                    error = true;
-                }
-            }
-        }
-
-        // check whether the license folder exists
-        for (String file : licenseFoldersFromInventory) {
-            if (!licenseFoldersFromDirectory.contains(file)) {
-                if (manageLicenseFolders) {
-                    if (!new File(licensesBaseDir, file).exists() && !new File(licensesTargetDir, file).exists()) {
-                        createFolder(licensesBaseDir, file);
+            for (String componentFolder : componentFoldersFromDirectory) {
+                // check whether this folder is required
+                if (!componentFoldersFromInventory.contains(componentFolder)) {
+                    if ((manageComponentFolders && isEmptyFolder(componentsBaseDir, componentFolder)) || deleteComponentFolders) {
+                        removeFolder(componentsBaseDir, componentFolder);
+                    } else {
+                        log(format("%04d: Component folder '%s' does not match any artifact (not banned, not internal) in the inventory.", index++, componentFolder));
+                        log(format("      Proposal: remove the folder."));
+                        error = true;
                     }
-                } else {
-                    log(format("%04d: License folder missing: %s", index++, file));
-                    log(format("      Proposal: add license folder."));
-                    error = true;
                 }
             }
-        }
 
-        // check whether the license folder contains any files
-        for (String file : licenseFoldersFromInventory) {
-            if (isEmptyFolder(licensesBaseDir, file) && isEmptyFolder(licensesTargetDir, file)) {
-                log(format("%04d: License folder '%s' does not contain any license or notice files.", index++, file));
-                log(format("      Proposal: add license to the license folder."));
-                error = true;
-            }
-        }
-
-        // check that all component folders exist
-        for (String component : componentFoldersFromInventory) {
-            final File componentFolder = new File(componentsBaseDir, component);
-            if (!componentFolder.exists() && !new File(componentsTargetDir, component).exists()) {
-                if (manageComponentFolders) {
-                    createFolder(componentsBaseDir, component);
-                } else {
-                    log(format("%04d: Component folder '%s' does not exist.", index++, component));
-                    log(format("      Proposal: add component specific folder."));
-                    error = true;
+            // check that all component folders exist
+            for (String component : componentFoldersFromInventory) {
+                final File componentFolder = new File(componentsBaseDir, component);
+                if (!componentFolder.exists() && !new File(componentsTargetDir, component).exists()) {
+                    if (manageComponentFolders) {
+                        createFolder(componentsBaseDir, component);
+                    } else {
+                        log(format("%04d: Component folder '%s' does not exist.", index++, component));
+                        log(format("      Proposal: add component specific folder."));
+                        error = true;
+                    }
                 }
             }
-        }
 
-        // check whether component folder is empty
-        for (String component : componentFoldersFromInventory) {
-            if (isEmptyFolder(componentsBaseDir, component) && isEmptyFolder(componentsTargetDir, component)) {
-                log(format("%04d: Component folder '%s' does not contain any license or notice files.", index++, component));
-                log(format("      Proposal: add component specific license and/or notice to the component folder."));
-                error = true;
+            // check whether component folder is empty
+            for (String component : componentFoldersFromInventory) {
+                if (isEmptyFolder(componentsBaseDir, component) && isEmptyFolder(componentsTargetDir, component)) {
+                    log(format("%04d: Component folder '%s' does not contain any license or notice files.", index++, component));
+                    log(format("      Proposal: add component specific license and/or notice to the component folder."));
+                    error = true;
+                }
             }
         }
 

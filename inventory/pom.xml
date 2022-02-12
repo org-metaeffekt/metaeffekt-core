@@ -60,19 +60,13 @@
                 <configuration combine.children="append">
                     <processors>
                         <processor>
-                            <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
-                            <skip>true</skip>
-                        </processor>
-                        <processor>
                             <className>org.metaeffekt.core.inventory.processor.UpdateVersionRecommendationProcessor</className>
                         </processor>
                         <processor>
                             <className>org.metaeffekt.core.inventory.processor.ValidateInventoryProcessor</className>
                             <properties>
-                                <licenses.path>${project.build.directory}/classes/META-INF/licenses</licenses.path>
-                                <components.path>${project.build.directory}/classes/META-INF/components</components.path>
-                                <create.license.folders>true</create.license.folders>
-                                <create.component.folders>true</create.component.folders>
+                                <validate.component.folders>false</validate.component.folders>
+                                <validate.license.folders>false</validate.license.folders>
                                 <failOnError>true</failOnError>
                             </properties>
                         </processor>
@@ -81,69 +75,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>sync-versions</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.metaeffekt.core</groupId>
-                        <artifactId>ae-inventory-maven-plugin</artifactId>
-                        <version>${ae.core.version}</version>
-                        <executions>
-                            <execution>
-                                <id>update-versions</id>
-                                <phase>process-sources</phase>
-                                <goals>
-                                    <goal>update-inventory</goal>
-                                </goals>
-                                <configuration>
-                                    <sourceInventoryPath>src/main/resources/META-INF/ae-core-artifact-inventory.xls</sourceInventoryPath>
-                                    <targetInventoryPath>src/main/resources/META-INF/ae-core-artifact-inventory.xls</targetInventoryPath>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <processors>
-                                <processor>
-                                    <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
-                                </processor>
-                                <processor>
-                                    <className>org.metaeffekt.core.inventory.processor.MavenCentralGroupIdProcessor</className>
-                                    <skip>false</skip>
-                                    <properties>
-                                        <artifactid.exclude.patterns>-nothing-</artifactid.exclude.patterns>
-                                    </properties>
-                                </processor>
-                                <processor>
-                                    <className>org.metaeffekt.core.inventory.processor.MavenCentralGroupIdProcessor</className>
-                                    <skip>false</skip>
-                                    <properties>
-                                        <groupid.exclude.patterns>-nothing-</groupid.exclude.patterns>
-                                        <artifactid.exclude.patterns>-nothing-</artifactid.exclude.patterns>
-                                        <overwrite.existing.version>true</overwrite.existing.version>
-                                    </properties>
-                                </processor>
-                                <processor>
-                                    <className>org.metaeffekt.core.inventory.processor.CleanupInventoryProcessor</className>
-                                </processor>
-                                <processor>
-                                    <className>org.metaeffekt.core.inventory.processor.UpdateVersionRecommendationProcessor</className>
-                                </processor>
-                            </processors>
-                        </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>jaxen</groupId>
-                                <artifactId>jaxen</artifactId>
-                                <version>1.1.1</version>
-                            </dependency>
-                        </dependencies>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>
