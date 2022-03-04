@@ -1014,6 +1014,21 @@ public class InventoryReport {
         return s;
     }
 
+    private PreFormattedEscapeUtils preFormattedEscapeUtils = new PreFormattedEscapeUtils();
+    public String xmlEscapePreformattedContentString(String string) {
+        if (string == null) return "";
+
+        String s = preFormattedEscapeUtils.xml(string.trim());
+
+        s = s.replace("-PSTART-", "<p>");
+        s = s.replace("-PEND-", "</p>");
+        s = s.replace("-NEWLINE-", "<p/>");
+
+        return s;
+    }
+
+
+
     public String xmlEscapeLicense(String license) {
         return xmlEscapeName(license, false);
     }
