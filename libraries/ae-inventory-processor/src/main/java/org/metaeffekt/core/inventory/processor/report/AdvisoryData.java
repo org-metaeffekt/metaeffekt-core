@@ -208,6 +208,10 @@ public class AdvisoryData {
         return acknowledgements;
     }
 
+    public String getType() {
+        return type;
+    }
+
     private static String formatString(String string) {
         if (!StringUtils.hasText(string)) return EMPTY_STRING;
         string = string.replace("\r\n", " ");
