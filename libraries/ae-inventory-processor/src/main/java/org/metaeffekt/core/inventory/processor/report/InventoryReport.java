@@ -806,6 +806,7 @@ public class InventoryReport {
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", projectInventory.getFilteredInventory());
+        context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(projectInventory.getFilteredInventory()));
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("Float", Float.class);
@@ -1002,6 +1003,17 @@ public class InventoryReport {
         return xmlEscapeName(string, true);
     }
 
+    public String xmlEscapeContentString(String string) {
+        if (string == null) return "";
+
+        String s = StringEscapeUtils.escapeXml(string.trim());
+        s = s.replace("-PSTART-", "<p>");
+        s = s.replace("-PEND-", "</p>");
+        s = s.replace("-NEWLINE-", "<p/>");
+
+        return s;
+    }
+
     public String xmlEscapeLicense(String license) {
         return xmlEscapeName(license, false);
     }
@@ -1021,7 +1033,7 @@ public class InventoryReport {
     private String xmlEscapeName(String artifactFileId, boolean insertBreakingSpaces) {
         if (artifactFileId == null) return "&nbsp;";
 
-        // espace the remainder
+        // escape the remainder
         String escaped = StringEscapeUtils.escapeXml(artifactFileId.trim());
 
         if (insertBreakingSpaces) {

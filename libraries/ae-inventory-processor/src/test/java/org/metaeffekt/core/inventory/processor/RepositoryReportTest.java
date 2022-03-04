@@ -237,6 +237,18 @@ public class RepositoryReportTest {
                 findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
     }
 
+    @Test
+    public void testCreateTestReport003() throws Exception {
+        final File inventoryDir = new File("src/test/resources/test-inventory-03");
+        final File reportDir = new File("target/test-inventory-03");
+        createReport(inventoryDir, "*.xls", reportDir);
+
+        // put asserts here
+
+
+    }
+
+
     private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget) throws Exception {
         InventoryReport report = new InventoryReport();
 

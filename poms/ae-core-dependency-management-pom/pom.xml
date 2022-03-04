@@ -49,7 +49,6 @@
         <junit.version>4.13.1</junit.version>
         <plexus.utils.version>3.0.24</plexus.utils.version>
         <poi.version>3.17</poi.version>
-        <saxon.version>9.7.0-7</saxon.version>
         <slf4j.version>1.7.36</slf4j.version>
         <spring.framework.version>5.3.14</spring.framework.version>
         <!-- update to version 2 and test -->
@@ -396,13 +395,6 @@
                 <artifactId>commons-collections</artifactId>
                 <version>${commons.collections.version}</version>
                 <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>net.sf.saxon</groupId>
-                <artifactId>Saxon-HE</artifactId>
-                <version>${saxon.version}</version>
-                <scope>runtime</scope>
             </dependency>
 
             <dependency>
