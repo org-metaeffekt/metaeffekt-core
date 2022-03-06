@@ -84,11 +84,9 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- FIXME: proper dependency management -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20210307</version>
             <scope>compile</scope>
         </dependency>
 

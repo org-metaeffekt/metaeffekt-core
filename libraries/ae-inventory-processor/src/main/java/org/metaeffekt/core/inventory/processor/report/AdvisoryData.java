@@ -1,3 +1,18 @@
+/*
+ * Copyright 2009-2021 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.json.JSONArray;
@@ -5,8 +20,11 @@ import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class AdvisoryData {
 
@@ -23,6 +41,9 @@ public class AdvisoryData {
     private String acknowledgements = EMPTY_STRING;
     private String type = EMPTY_STRING;
 
+    private String createDate;
+    private String updateDate;
+
     @Override
     public String toString() {
         return "AdvisoryData{" +
@@ -36,12 +57,13 @@ public class AdvisoryData {
                 ", workarounds='" + workarounds + '\'' +
                 ", acknowledgements='" + acknowledgements + '\'' +
                 ", type='" + type + '\'' +
+                ", createDate='" + createDate + '\'' +
+                ", updateDate='" + updateDate + '\'' +
                 '}';
     }
 
     public static List<AdvisoryData> fromCertFr(String certFrJson) {
         final List<AdvisoryData> advisoryDataList = new ArrayList<>();
-
         final JSONArray jsonArray = new JSONArray(certFrJson);
 
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -54,7 +76,6 @@ public class AdvisoryData {
 
     public static List<AdvisoryData> fromCertSei(String certSei) {
         final List<AdvisoryData> advisoryDataList = new ArrayList<>();
-
         final JSONArray jsonArray = new JSONArray(certSei);
 
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -86,12 +107,16 @@ public class AdvisoryData {
         final AdvisoryData advisoryData = new AdvisoryData();
 
         advisoryData.id = entry.optString("certfr");
-        advisoryData.type = advisoryData.id == null ? "info" : CertFrUtils.getType(advisoryData.id);
+        advisoryData.type = normalizeType(advisoryData.id == null ? "info" : CertFrUtils.getType(advisoryData.id));
         if (advisoryData.id != null) {
             advisoryData.url = CertFrUtils.toURL(advisoryData.id);
         }
         advisoryData.source = "CERT-FR";
         advisoryData.overview = formatString(entry.optString("topic"));
+
+        // FIXME: all entries should have a create and update date
+        advisoryData.createDate = parseDate(null);
+        advisoryData.updateDate = parseDate(null);
 
         final JSONArray furtherDetails = entry.getJSONArray("furtherDetails");
 
@@ -118,6 +143,70 @@ public class AdvisoryData {
         return advisoryData;
     }
 
+    private static String normalizeType(String type) {
+        type = type.toLowerCase().trim();
+        if (type.equalsIgnoreCase("notice")) {
+            return "notice";
+        }
+        if (type.equalsIgnoreCase("alert")) {
+            return "alert";
+        }
+        if (type.equalsIgnoreCase("news")) {
+            return "news";
+        }
+        if (type.equalsIgnoreCase("info")) {
+            return "notice";
+        }
+        if (type.equalsIgnoreCase("advisory")) {
+            return "alert";
+        }
+        if (type.equalsIgnoreCase("cna")) {
+            return "alert";
+        }
+        if (type.equalsIgnoreCase("compromise indicators")) {
+            return "alert";
+        }
+        if (type.equalsIgnoreCase("hardening and recommendations")) {
+            return "alert";
+        }
+        if (type.equalsIgnoreCase("threats and incidents")) {
+            return "alert";
+        }
+        if (type.equalsIgnoreCase("Description")) {
+            return "notice";
+        }
+        if (type.equalsIgnoreCase("tag")) {
+            return "notice";
+        }
+
+        System.out.println(type);
+
+        /*
+            Notice: AVI
+            Alert: ALE
+            Compromise Indicators: IOC
+            Hardening and Recommendations: DUR
+            News: ACT
+            Threats and Incidents: CTI
+            Information: INF/REC
+
+            if (certfr.contains("AVI"))
+                return "Notice";
+            else if (certfr.contains("ALE"))
+                return "Alert";
+            else if (certfr.contains("IOC"))
+                return "Compromise Indicators";
+            else if (certfr.contains("DUR"))
+                return "Hardening and Recommendations";
+            else if (certfr.contains("ACT"))
+                return "News";
+            else if (certfr.contains("CTI"))
+                return "Threats and Incidents";
+         */
+
+        return "notice";
+    }
+
     private static AdvisoryData extractAdvisoryDataFromMsrc(JSONObject entry, VulnerabilityMetaData vmd) {
         AdvisoryData advisoryData = new AdvisoryData();
         String id = vmd.get(VulnerabilityMetaData.Attribute.NAME);
@@ -127,11 +216,15 @@ public class AdvisoryData {
         advisoryData.source = "MSRC";
 
         // FIXME: check whether this is correct and only advisories are provided
-        advisoryData.type = "advisory";
+        advisoryData.type = normalizeType("advisory");
 
         advisoryData.recommendations = null;
         advisoryData.acknowledgements = null;
         advisoryData.threat = null;
+
+        // FIXME: all entries should have a create and update date
+        advisoryData.createDate = parseDate(null);
+        advisoryData.updateDate = parseDate(null);
 
         // FIXME: currently the content is unstructured (apart from html headings)
         advisoryData.overview = entry.optString("title");
@@ -143,7 +236,7 @@ public class AdvisoryData {
             final JSONObject detail = notes.getJSONObject(j);
 
             if (detail.has("type")) {
-                String type = detail.getString("type");
+                String type = normalizeType(detail.getString("type"));
                 String content = detail.optString("content");
 
                 // FIXME: currently the content is unstructured (apart from html headings)
@@ -163,13 +256,33 @@ public class AdvisoryData {
         // FIXME: clarify id handling; insert id into json
         advisoryData.id = "VU#" + id;
         advisoryData.url = "https://kb.cert.org/vuls/id/" + id;
+        advisoryData.source = "CERT-SEI";
 
-        advisoryData.description = entry.optString("name");
+        advisoryData.description = entry.optString("overview");
+
+        // FIXME: check whether this is correct and only advisories are provided
+        advisoryData.type = normalizeType("advisory");
+
+        // FIXME: all entries should have a create and update date
+        advisoryData.createDate = parseDate(null);
+        advisoryData.updateDate = parseDate(entry.optString("dateupdated"));
 
         // FIXME: overview shows mixed content as it seems to be markdown formatted; where to split?
-        advisoryData.overview = entry.optString("overview");
+        advisoryData.overview = entry.optString("name");
 
         return advisoryData;
+    }
+
+    private static String parseDate(String string) {
+        if (string == null) return "n.a.";
+        try {
+            return LocalDate.parse(string).format(DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (Exception e) {
+            if (string.contains("T")) {
+                return string.substring(0, string.indexOf("T"));
+            }
+            return string;
+        }
     }
 
     public String getId() {
@@ -210,6 +323,14 @@ public class AdvisoryData {
 
     public String getType() {
         return type;
+    }
+
+    public String getCreateDate() {
+        return createDate;
+    }
+
+    public String getUpdateDate() {
+        return updateDate;
     }
 
     private static String formatString(String string) {
