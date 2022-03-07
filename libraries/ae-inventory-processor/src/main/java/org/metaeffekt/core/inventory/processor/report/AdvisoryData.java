@@ -179,8 +179,6 @@ public class AdvisoryData {
             return "notice";
         }
 
-        System.out.println(type);
-
         /*
             Notice: AVI
             Alert: ALE
