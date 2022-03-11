@@ -224,7 +224,6 @@ public class AdvisoryData {
         advisoryData.createDate = parseDate(null);
         advisoryData.updateDate = parseDate(null);
 
-        // FIXME: currently the content is unstructured (apart from html headings)
         advisoryData.overview = entry.optString("title");
 
         JSONArray notes = entry.getJSONArray("notes");

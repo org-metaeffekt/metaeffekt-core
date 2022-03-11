@@ -68,7 +68,6 @@ public class AdvisoryDataTest {
 
         final VulnerabilityMetaData vulnerabilityMetaData = selectVulnerability(inventory, "CVE-2021-44228");
 
-        // FIXME: change column name
         final List<AdvisoryData> advisoryDataList = AdvisoryData.fromCertSei(
                 vulnerabilityMetaData.getComplete("CertSei"));
         final AdvisoryData advisoryData = advisoryDataList.get(0);
