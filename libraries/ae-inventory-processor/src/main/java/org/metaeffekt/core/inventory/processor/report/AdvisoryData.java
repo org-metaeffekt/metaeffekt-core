@@ -33,12 +33,19 @@ public class AdvisoryData {
     private String id = EMPTY_STRING;
     private String source = EMPTY_STRING;
     private String url = EMPTY_STRING;
+
+    // FIXME: rename to summary
     private String overview = EMPTY_STRING;
     private String description = EMPTY_STRING;
+
     private String threat = EMPTY_STRING;
+
     private String recommendations = EMPTY_STRING;
+
     private String workarounds = EMPTY_STRING;
+
     private String acknowledgements = EMPTY_STRING;
+
     private String type = EMPTY_STRING;
 
     private String createDate;
