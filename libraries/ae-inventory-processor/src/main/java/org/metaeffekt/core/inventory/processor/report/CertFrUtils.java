@@ -49,33 +49,4 @@ public class CertFrUtils {
         else return "Unknown type";
     }
 
-    // FIXME: rather than duplicating code here, we could introduce a type in the CertFr JSON.
-    /**
-     * Generates a url from a given certfr id.
-     *
-     * @param certfr The Cert-Fr identifier to generate an url to.
-     * @return If the Cert-Fr identifier is valid: The generated URL, otherwise the Cert-Fr base url.
-     */
-    public static String toURL(String certfr) {
-        if (certfr == null) return CERT_FR_BASE_URL;
-        String onlineCertFr = certfr.replaceAll("((?:CERTFR|CERTA)-\\d+-(?:ACT|AVI|ALE|INF)-\\d+)(?:-\\d+)", "$1");
-        if (certfr.contains("AVI"))
-            return CERT_FR_BASE_URL + "avis/" + onlineCertFr;
-        else if (certfr.contains("ALE"))
-            return CERT_FR_BASE_URL + "alerte/" + onlineCertFr;
-        else if (certfr.contains("IOC"))
-            return CERT_FR_BASE_URL + "ioc/" + onlineCertFr;
-        else if (certfr.contains("DUR"))
-            return CERT_FR_BASE_URL + "dur/" + onlineCertFr;
-        else if (certfr.contains("ACT"))
-            return CERT_FR_BASE_URL + "actualite/" + onlineCertFr;
-        else if (certfr.contains("CTI"))
-            return CERT_FR_BASE_URL + "cti/" + onlineCertFr;
-        else if (certfr.contains("REC"))
-            return CERT_FR_BASE_URL + "information/" + onlineCertFr;
-        else if (certfr.contains("INF"))
-            return CERT_FR_BASE_URL + "information/" + onlineCertFr;
-        else return CERT_FR_BASE_URL;
-    }
-
 }

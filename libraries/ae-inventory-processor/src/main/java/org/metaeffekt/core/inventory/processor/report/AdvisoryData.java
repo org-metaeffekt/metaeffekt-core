@@ -17,14 +17,14 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
+import java.util.StringJoiner;
 
 public class AdvisoryData {
 
@@ -34,8 +34,7 @@ public class AdvisoryData {
     private String source = EMPTY_STRING;
     private String url = EMPTY_STRING;
 
-    // FIXME: rename to summary
-    private String overview = EMPTY_STRING;
+    private String summary = EMPTY_STRING;
     private String description = EMPTY_STRING;
 
     private String threat = EMPTY_STRING;
@@ -57,7 +56,7 @@ public class AdvisoryData {
                 "id='" + id + '\'' +
                 ", source='" + source + '\'' +
                 ", url='" + url + '\'' +
-                ", overview='" + overview + '\'' +
+                ", summary='" + summary + '\'' +
                 ", description='" + description + '\'' +
                 ", threat='" + threat + '\'' +
                 ", recommendations='" + recommendations + '\'' +
@@ -69,85 +68,121 @@ public class AdvisoryData {
                 '}';
     }
 
-    public static List<AdvisoryData> fromCertFr(String certFrJson) {
-        final List<AdvisoryData> advisoryDataList = new ArrayList<>();
-        final JSONArray jsonArray = new JSONArray(certFrJson);
-
-        for (int i = 0; i < jsonArray.length(); i++) {
-            final JSONObject entry = jsonArray.getJSONObject(i);
-            advisoryDataList.add(extractAdvisoryDataFromCertFr(entry));
-        }
-
-        return advisoryDataList;
-    }
-
-    public static List<AdvisoryData> fromCertSei(String certSei) {
-        final List<AdvisoryData> advisoryDataList = new ArrayList<>();
-        final JSONArray jsonArray = new JSONArray(certSei);
-
-        for (int i = 0; i < jsonArray.length(); i++) {
-            final JSONObject entry = jsonArray.getJSONObject(i);
-            advisoryDataList.add(extractAdvisoryDataFromCertSei(entry));
-        }
-
-        return advisoryDataList;
-    }
-
-    public static List<AdvisoryData> fromMsrc(String certMsrc, VulnerabilityMetaData vmd) {
-        final List<AdvisoryData> advisoryDataList = new ArrayList<>();
-
-        if (certMsrc.startsWith("[")) {
-            JSONArray jsonArray = new JSONArray(certMsrc);
-            for (int i = 0; i < jsonArray.length(); i++) {
-                final JSONObject entry = jsonArray.getJSONObject(i);
-                advisoryDataList.add(extractAdvisoryDataFromMsrc(entry, vmd));
+    public static List<AdvisoryData> fromJson(String jsonString) {
+        if (jsonString != null && jsonString.length() > 0) {
+            if (jsonString.charAt(0) == '{') {
+                return Collections.singletonList(fromJson(new JSONObject(jsonString)));
+            } else if (jsonString.charAt(0) == '[') {
+                return fromJson(new JSONArray(jsonString));
             }
-        } else {
-            JSONObject entry = new JSONObject(certMsrc);
-            advisoryDataList.add(extractAdvisoryDataFromMsrc(entry, vmd));
+        }
+
+        return new ArrayList<>();
+    }
+
+    public static List<AdvisoryData> fromJson(JSONArray advisoryJson) {
+        final List<AdvisoryData> advisoryDataList = new ArrayList<>();
+
+        for (int i = 0; i < advisoryJson.length(); i++) {
+            JSONObject json = advisoryJson.optJSONObject(i);
+            if (json != null) {
+                advisoryDataList.add(fromJson(json));
+            }
         }
 
         return advisoryDataList;
+    }
+
+    public static AdvisoryData fromJson(JSONObject advisoryJson) {
+        String source = advisoryJson.optString("source");
+
+        if (source != null) {
+            switch (source) {
+                case "CERT-FR":
+                    return extractAdvisoryDataFromCertFr(advisoryJson);
+                case "CERT-SEI":
+                    return extractAdvisoryDataFromCertSei(advisoryJson);
+                case "MSRC":
+                    return extractAdvisoryDataFromMsrc(advisoryJson);
+            }
+        }
+
+        return null;
     }
 
     private static AdvisoryData extractAdvisoryDataFromCertFr(final JSONObject entry) {
         final AdvisoryData advisoryData = new AdvisoryData();
 
-        advisoryData.id = entry.optString("certfr");
-        advisoryData.type = normalizeType(advisoryData.id == null ? "info" : CertFrUtils.getType(advisoryData.id));
-        if (advisoryData.id != null) {
-            advisoryData.url = CertFrUtils.toURL(advisoryData.id);
-        }
-        advisoryData.source = "CERT-FR";
-        advisoryData.overview = formatString(entry.optString("topic"));
+        advisoryData.id = entry.optString("id", EMPTY_STRING);
+        advisoryData.url = extractUrl(entry.optJSONObject("url"));
+        advisoryData.source = entry.optString("source", EMPTY_STRING);
+        advisoryData.summary = formatString(entry.optString("summary", EMPTY_STRING));
+        advisoryData.description = formatString(entry.optString("description", EMPTY_STRING));
+        advisoryData.threat = formatString(entry.optString("threat", EMPTY_STRING));
+        advisoryData.recommendations = formatString(entry.optString("recommendations", EMPTY_STRING));
+        advisoryData.createDate = parseDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = parseDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.type = normalizeType(entry.optString("type", EMPTY_STRING));
 
-        // FIXME: all entries should have a create and update date
-        advisoryData.createDate = parseDate(null);
-        advisoryData.updateDate = parseDate(null);
-
-        final JSONArray furtherDetails = entry.getJSONArray("furtherDetails");
-
-        for (int j = 0; j < furtherDetails.length(); j++) {
-            final JSONObject detail = furtherDetails.getJSONObject(j);
-
-            if (detail.has("title")) {
-                String title = detail.optString("title");
-                if (title != null) {
-                    String content = formatString(detail.optString(("content")));
-
-                    if ("Summary".equalsIgnoreCase(title)) {
-                        advisoryData.description = content;
-                    }
-                    if ("Risk".equalsIgnoreCase(title)) {
-                        advisoryData.threat = content;
-                    }
-                    if ("Solution".equalsIgnoreCase(title)) {
-                        advisoryData.recommendations = content;
-                    }
-                }
-            }
-        }
         return advisoryData;
+    }
+
+    private static AdvisoryData extractAdvisoryDataFromMsrc(JSONObject entry) {
+        AdvisoryData advisoryData = new AdvisoryData();
+
+        advisoryData.id = entry.optString("id", EMPTY_STRING);
+        advisoryData.url = extractUrl(entry.optJSONObject("url"));
+        advisoryData.source = entry.optString("source", EMPTY_STRING);
+        advisoryData.summary = formatString(entry.optString("summary", EMPTY_STRING));
+        // FIXME: currently the content is unstructured (apart from html headings)
+        advisoryData.description = entry.optString("description", EMPTY_STRING);
+
+        advisoryData.threat = extractMultilineStringFromJsonArray(entry.optJSONArray("threat"));
+        advisoryData.recommendations = extractMultilineStringFromJsonArray(entry.optJSONArray("recommendations"));
+
+        advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
+        advisoryData.createDate = parseDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = parseDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.type = normalizeType(entry.optString("type", "advisory"));
+
+        return advisoryData;
+    }
+
+    private static String extractMultilineStringFromJsonArray(JSONArray array) {
+        if (array == null || array.length() == 0) {
+            return EMPTY_STRING;
+        }
+
+        StringJoiner lines = new StringJoiner("\n");
+        for (int i = 0; i < array.length(); i++) {
+            lines.add(array.optString(i));
+        }
+
+        return lines.toString();
+    }
+
+    private static AdvisoryData extractAdvisoryDataFromCertSei(JSONObject entry) {
+        AdvisoryData advisoryData = new AdvisoryData();
+
+        advisoryData.id = entry.optString("id", EMPTY_STRING);
+        advisoryData.url = extractUrl(entry.optJSONObject("url"));
+        advisoryData.source = entry.optString("source", EMPTY_STRING);
+        advisoryData.summary = entry.optString("summary", EMPTY_STRING);
+        advisoryData.description = entry.optString("description", EMPTY_STRING);
+        advisoryData.threat = entry.optString("threat", EMPTY_STRING);
+        advisoryData.recommendations = entry.optString("recommendations", EMPTY_STRING);
+        advisoryData.workarounds = entry.optString("workarounds", EMPTY_STRING);
+        advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
+        advisoryData.createDate = parseDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = parseDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.type = normalizeType(entry.optString("type", "advisory"));
+
+        return advisoryData;
+    }
+
+    private static String extractUrl(JSONObject urlJson) {
+        if (urlJson == null) return EMPTY_STRING;
+        return urlJson.optString("url");
     }
 
     private static String normalizeType(String type) {
@@ -186,95 +221,7 @@ public class AdvisoryData {
             return "notice";
         }
 
-        /*
-            Notice: AVI
-            Alert: ALE
-            Compromise Indicators: IOC
-            Hardening and Recommendations: DUR
-            News: ACT
-            Threats and Incidents: CTI
-            Information: INF/REC
-
-            if (certfr.contains("AVI"))
-                return "Notice";
-            else if (certfr.contains("ALE"))
-                return "Alert";
-            else if (certfr.contains("IOC"))
-                return "Compromise Indicators";
-            else if (certfr.contains("DUR"))
-                return "Hardening and Recommendations";
-            else if (certfr.contains("ACT"))
-                return "News";
-            else if (certfr.contains("CTI"))
-                return "Threats and Incidents";
-         */
-
         return "notice";
-    }
-
-    private static AdvisoryData extractAdvisoryDataFromMsrc(JSONObject entry, VulnerabilityMetaData vmd) {
-        AdvisoryData advisoryData = new AdvisoryData();
-        String id = vmd.get(VulnerabilityMetaData.Attribute.NAME);
-
-        advisoryData.url = "https://msrc.microsoft.com/update-guide/en-US/vulnerability/" + id;
-        advisoryData.id = "MSRC-" + id;
-        advisoryData.source = "MSRC";
-
-        // FIXME: check whether this is correct and only advisories are provided
-        advisoryData.type = normalizeType("advisory");
-
-        advisoryData.recommendations = null;
-        advisoryData.acknowledgements = null;
-        advisoryData.threat = null;
-
-        // FIXME: all entries should have a create and update date
-        advisoryData.createDate = parseDate(null);
-        advisoryData.updateDate = parseDate(null);
-
-        advisoryData.overview = entry.optString("title");
-
-        JSONArray notes = entry.getJSONArray("notes");
-
-        for (int j = 0; j < notes.length(); j++) {
-
-            final JSONObject detail = notes.getJSONObject(j);
-
-            if (detail.has("type")) {
-                String type = normalizeType(detail.getString("type"));
-                String content = detail.optString("content");
-
-                // FIXME: currently the content is unstructured (apart from html headings)
-                if ("Description".equalsIgnoreCase(type)) {
-                    advisoryData.description = content;
-                    continue;
-                }
-            }
-        }
-        return advisoryData;
-    }
-
-    private static AdvisoryData extractAdvisoryDataFromCertSei(JSONObject entry) {
-        AdvisoryData advisoryData = new AdvisoryData();
-        String id = entry.optString("id");
-
-        // FIXME: clarify id handling; insert id into json
-        advisoryData.id = "VU#" + id;
-        advisoryData.url = "https://kb.cert.org/vuls/id/" + id;
-        advisoryData.source = "CERT-SEI";
-
-        advisoryData.description = entry.optString("overview");
-
-        // FIXME: check whether this is correct and only advisories are provided
-        advisoryData.type = normalizeType("advisory");
-
-        // FIXME: all entries should have a create and update date
-        advisoryData.createDate = parseDate(null);
-        advisoryData.updateDate = parseDate(entry.optString("dateupdated"));
-
-        // FIXME: overview shows mixed content as it seems to be markdown formatted; where to split?
-        advisoryData.overview = entry.optString("name");
-
-        return advisoryData;
     }
 
     private static String parseDate(String string) {
@@ -301,8 +248,8 @@ public class AdvisoryData {
         return url;
     }
 
-    public String getOverview() {
-        return overview;
+    public String getSummary() {
+        return summary;
     }
 
     public String getDescription() {
