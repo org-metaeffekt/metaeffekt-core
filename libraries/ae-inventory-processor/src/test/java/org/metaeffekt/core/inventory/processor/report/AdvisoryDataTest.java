@@ -33,14 +33,15 @@ public class AdvisoryDataTest {
 
         final VulnerabilityMetaData vulnerabilityMetaData = selectVulnerability(inventory, "CVE-2019-17571");
 
-        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromCertFr(
-                vulnerabilityMetaData.getComplete("CertFr"));
+        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromJson(
+                vulnerabilityMetaData.getComplete("Advisories"));
         final AdvisoryData advisoryData = advisoryDataList.get(0);
 
         Assert.assertEquals("CERTFR-2020-AVI-350", advisoryData.getId());
         Assert.assertEquals("https://www.cert.ssi.gouv.fr/avis/CERTFR-2020-AVI-350", advisoryData.getUrl());
         Assert.assertEquals("CERT-FR", advisoryData.getSource());
-        Assert.assertEquals("Multiples vulnérabilités dans les produits SAP", advisoryData.getOverview());
+        Assert.assertEquals("Multiples vulnérabilités dans les produits SAP", advisoryData.getSummary());
+        Assert.assertEquals("2020-06-09", advisoryData.getCreateDate());
         Assert.assertEquals("notice", advisoryData.getType());
     }
 
@@ -50,16 +51,18 @@ public class AdvisoryDataTest {
 
         final VulnerabilityMetaData vulnerabilityMetaData = selectVulnerability(inventory, "CVE-2021-44228");
 
-        // FIXME: change column name
-        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromMsrc(
-                vulnerabilityMetaData.getComplete("MS Vulnerability Information"), vulnerabilityMetaData);
+        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromJson(
+                vulnerabilityMetaData.getComplete("Advisories"));
         final AdvisoryData advisoryData = advisoryDataList.get(0);
 
         Assert.assertEquals("MSRC-CVE-2021-44228", advisoryData.getId());
         Assert.assertEquals("https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2021-44228", advisoryData.getUrl());
         Assert.assertEquals("MSRC", advisoryData.getSource());
-        Assert.assertEquals("Apache Log4j Remote Code Execution Vulnerability", advisoryData.getOverview());
+        Assert.assertEquals("Apache Log4j Remote Code Execution Vulnerability", advisoryData.getSummary());
         Assert.assertEquals("alert", advisoryData.getType());
+        Assert.assertEquals("Exploit Status: Publicly Disclosed:Yes;Exploited:Yes;DOS:N/A (Product: null)\n" +
+                "Impact: Remote Code Execution (Products: 11869, 11967, 11990, 11991, 11992, 11993, 11994, 11995, 11996, 11997, 11998, 11999, 12000, 12001, 12002)\n" +
+                "Severity: Critical (Products: 11869, 11967, 11990, 11991, 11992, 11993, 11994, 11995, 11996, 11997, 11998, 11999, 12000, 12001, 12002)", advisoryData.getThreat());
     }
 
     @Test
@@ -68,15 +71,22 @@ public class AdvisoryDataTest {
 
         final VulnerabilityMetaData vulnerabilityMetaData = selectVulnerability(inventory, "CVE-2021-44228");
 
-        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromCertSei(
-                vulnerabilityMetaData.getComplete("CertSei"));
-        final AdvisoryData advisoryData = advisoryDataList.get(0);
+        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromJson(
+                vulnerabilityMetaData.getComplete("Advisories"));
+        final AdvisoryData advisoryData = advisoryDataList.get(advisoryDataList.size() - 1);
 
         Assert.assertEquals("VU#930724", advisoryData.getId());
         Assert.assertEquals("https://kb.cert.org/vuls/id/930724", advisoryData.getUrl());
-        Assert.assertEquals("Apache Log4j allows insecure JNDI lookups", advisoryData.getOverview());
-        Assert.assertEquals("2022-01-07", advisoryData.getUpdateDate());
+        Assert.assertEquals("Apache Log4j allows insecure JNDI lookups", advisoryData.getSummary());
+        Assert.assertEquals("2021-12-15", advisoryData.getCreateDate());
         Assert.assertEquals("alert", advisoryData.getType());
+    }
+
+    @Test
+    public void normalizeDateTest() {
+        Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("2021-12-15"));
+        Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("15 december 2021"));
+        Assert.assertEquals("2022-02-07", AdvisoryData.normalizeDate("2022-02-07T13:29:18.783233Z"));
     }
 
     private VulnerabilityMetaData selectVulnerability(Inventory inventory, String cve) {
