@@ -19,12 +19,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class AdvisoryData {
 
@@ -120,8 +117,8 @@ public class AdvisoryData {
         advisoryData.description = formatString(entry.optString("description", EMPTY_STRING));
         advisoryData.threat = formatString(entry.optString("threat", EMPTY_STRING));
         advisoryData.recommendations = formatString(entry.optString("recommendations", EMPTY_STRING));
-        advisoryData.createDate = parseDate(entry.optString("createDate", EMPTY_STRING));
-        advisoryData.updateDate = parseDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
         advisoryData.type = normalizeType(entry.optString("type", EMPTY_STRING));
 
         return advisoryData;
@@ -141,8 +138,8 @@ public class AdvisoryData {
         advisoryData.recommendations = extractMultilineStringFromJsonArray(entry.optJSONArray("recommendations"));
 
         advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
-        advisoryData.createDate = parseDate(entry.optString("createDate", EMPTY_STRING));
-        advisoryData.updateDate = parseDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
         advisoryData.type = normalizeType(entry.optString("type", "advisory"));
 
         return advisoryData;
@@ -173,8 +170,8 @@ public class AdvisoryData {
         advisoryData.recommendations = entry.optString("recommendations", EMPTY_STRING);
         advisoryData.workarounds = entry.optString("workarounds", EMPTY_STRING);
         advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
-        advisoryData.createDate = parseDate(entry.optString("createDate", EMPTY_STRING));
-        advisoryData.updateDate = parseDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
         advisoryData.type = normalizeType(entry.optString("type", "advisory"));
 
         return advisoryData;
@@ -224,16 +221,34 @@ public class AdvisoryData {
         return "notice";
     }
 
-    private static String parseDate(String string) {
+    private final static List<SimpleDateFormat> DATE_FORMATS = Arrays.asList(
+            new SimpleDateFormat("yyyy-MM-dd"),
+            new SimpleDateFormat("dd MMMMM yyyy"),
+            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+    );
+
+    static String normalizeDate(String string) {
         if (string == null) return "n.a.";
-        try {
-            return LocalDate.parse(string).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        } catch (Exception e) {
-            if (string.contains("T")) {
-                return string.substring(0, string.indexOf("T"));
-            }
-            return string;
+
+        Date parsedDate = tryParse(string);
+
+        if (parsedDate != null) {
+            return DATE_FORMATS.get(0).format(parsedDate);
+        } else if (string.contains("T")) {
+            return string.substring(0, string.indexOf("T"));
         }
+
+        return string;
+    }
+
+    private static Date tryParse(String dateString) {
+        for (SimpleDateFormat formatter : DATE_FORMATS) {
+            try {
+                return formatter.parse(dateString);
+            } catch (ParseException ignored) {
+            }
+        }
+        return null;
     }
 
     public String getId() {

@@ -41,6 +41,7 @@ public class AdvisoryDataTest {
         Assert.assertEquals("https://www.cert.ssi.gouv.fr/avis/CERTFR-2020-AVI-350", advisoryData.getUrl());
         Assert.assertEquals("CERT-FR", advisoryData.getSource());
         Assert.assertEquals("Multiples vulnérabilités dans les produits SAP", advisoryData.getSummary());
+        Assert.assertEquals("2020-06-09", advisoryData.getCreateDate());
         Assert.assertEquals("notice", advisoryData.getType());
     }
 
@@ -79,6 +80,13 @@ public class AdvisoryDataTest {
         Assert.assertEquals("Apache Log4j allows insecure JNDI lookups", advisoryData.getSummary());
         Assert.assertEquals("2021-12-15", advisoryData.getCreateDate());
         Assert.assertEquals("alert", advisoryData.getType());
+    }
+
+    @Test
+    public void normalizeDateTest() {
+        Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("2021-12-15"));
+        Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("15 december 2021"));
+        Assert.assertEquals("2022-02-07", AdvisoryData.normalizeDate("2022-02-07T13:29:18.783233Z"));
     }
 
     private VulnerabilityMetaData selectVulnerability(Inventory inventory, String cve) {
