@@ -2,6 +2,7 @@
 .idea
 **/target/**/*
 **/.DS_Store
+**/.classpath
 
 .project
 
@@ -13,26 +14,5 @@ inventory/.classpath
 
 *.prefs
 
-libraries/ae-common-kernel/.classpath
-
-libraries/ae-inventory-processor/.classpath
-
-libraries/ae-maven-kernel/.classpath
-
-modules/ae-commons-annotation/.classpath
-
-plugins/ae-api-compile-maven-plugin/.classpath
-
-plugins/ae-api-publish-maven-plugin/.classpath
-
-plugins/ae-artifact-publish-maven-plugin/.classpath
-
-tests/ae-example-module/.classpath
-
-tools/ae-configuration/.classpath
-
-plugins/ae-version-maven-plugin/.classpath
-
-plugins/ae-jira-maven-plugin/.classpath
-
-plugins/ae-inventory-maven-plugin/.classpath
+**/.database
+.local-README.md
