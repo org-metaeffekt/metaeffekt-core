@@ -648,12 +648,12 @@ public class Inventory {
         }
         if (COMPONENT_CONTEXT_ARTIFACT.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(
-                    a -> isArtifactType(a))
+                            a -> isArtifactType(a))
                     .collect(Collectors.toList());
         }
         if (COMPONENT_CONTEXT_WEBMODULE.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(
-                    a -> isWebModuleType(a))
+                            a -> isWebModuleType(a))
                     .collect(Collectors.toList());
         }
         throw new IllegalStateException("Artifact context '" + context + "' not supported.");
@@ -1313,16 +1313,19 @@ public class Inventory {
         this.vulnerabilityMetaData = vulnerabilityMetaData;
     }
 
-    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
-        return VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
+    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
+        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
+        return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
     }
 
-    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold) {
-        return VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
+    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
+        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
+        return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
     }
 
-    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
-        return VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
+    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold, boolean sortedByScore) {
+        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
+        return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
     }
 
     private Set<String> splitCommaSeparated(String string) {
