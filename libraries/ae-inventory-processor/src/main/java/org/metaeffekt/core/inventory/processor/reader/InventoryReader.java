@@ -18,11 +18,19 @@ package org.metaeffekt.core.inventory.processor.reader;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
 
 public class InventoryReader extends AbstractXlsInventoryReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InventoryReader.class);
+
+    private static final String DEPRECATED_KEY_V2_SCORE = "CVSS Score (v2)";
+    private static final String DEPRECATED_KEY_V3_SCORE = "CVSS Base Score (v3)";
+    private static final String DEPRECATED_KEY_MAX_SCORE = "Maximum Score";
 
     private Map<Integer, String> artifactColumnMap = new HashMap<>();
 
@@ -208,10 +216,49 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         }
 
         if (vulnerabilityMetaData.isValid()) {
+
+            // compensate rename of attributes
+            mapContent(vulnerabilityMetaData, DEPRECATED_KEY_V2_SCORE, VulnerabilityMetaData.Attribute.V2_SCORE);
+            mapContent(vulnerabilityMetaData, DEPRECATED_KEY_V3_SCORE, VulnerabilityMetaData.Attribute.V3_SCORE);
+            mapContent(vulnerabilityMetaData, DEPRECATED_KEY_MAX_SCORE, VulnerabilityMetaData.Attribute.MAX_SCORE);
+
             return vulnerabilityMetaData;
         }
 
         return null;
+    }
+
+    private void mapContent(final VulnerabilityMetaData vulnerabilityMetaData,
+            final String originalKey, final VulnerabilityMetaData.Attribute updatedAttribute) {
+
+        // read the original content
+        final String originalKeyContent = vulnerabilityMetaData.get(originalKey);
+
+        // check if there is original content
+        if (StringUtils.hasText(originalKeyContent)) {
+
+            // read updated attribute content
+            final String updatedAttributeContent = vulnerabilityMetaData.get(updatedAttribute);
+
+            if (!StringUtils.hasText(updatedAttributeContent)) {
+                // original content available; no updated content: transfer and delete
+                vulnerabilityMetaData.set(updatedAttribute, originalKeyContent);
+                vulnerabilityMetaData.set(originalKey, null);
+            } else {
+                // original content and updated content available
+                if (!originalKeyContent.equals(updatedAttributeContent)) {
+
+                    // warn in case the values differ
+                    LOG.warn("Vulnerability metadata inconsistent: " +
+                            "[{}] shows different content in attributes [{}] and [{}]. Please consolidate to [{}].",
+                            vulnerabilityMetaData.get(VulnerabilityMetaData.Attribute.NAME), originalKey,
+                            updatedAttribute.getKey(), updatedAttribute.getKey());
+                }
+
+                // values are identical or we warned the consumer: remove the obsolete original key value
+                vulnerabilityMetaData.set(originalKey, null);
+            }
+        }
     }
 
 }
