@@ -26,6 +26,7 @@ import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -220,6 +221,21 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private String vulnerabilityScoreThreshold;
 
     /**
+     * Comma seperated list of advisory providers. All vulnerabilities not containing at least one of the providers
+     * will be ignored when generating the report.<br>
+     * If left empty, no filter will be applied.<br>
+     * Available advisory providers:
+     * <ul>
+     *     <li>CERT-FR</li>
+     *     <li>CERT-SEI</li>
+     *     <li>MSRC</li>
+     * </ul>
+     *
+     * @parameter default-value=""
+     */
+    private String vulnerabilityAdvisoryFilter;
+
+    /**
      * @parameter default-value="en"
      */
     private String templateLanguageSelector;
@@ -276,6 +292,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         // vulnerability settings
         report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
+        Arrays.stream(vulnerabilityAdvisoryFilter.split(", ?")).forEach(report::addVulnerabilityAdvisoryFilter);
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
