@@ -38,10 +38,7 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -138,6 +135,7 @@ public class InventoryReport {
     private boolean failOnMissingComponentFiles = false;
 
     private float vulnerabilityScoreThreshold = 7.0f;
+    private final List<String> vulnerabilityAdvisoryFilter = new ArrayList<>();
 
     private ArtifactFilter artifactFilter;
 
@@ -598,7 +596,6 @@ public class InventoryReport {
      * @param licenseFolderName
      * @param targetDir
      * @param reportedLicenseFolders
-     *
      * @return true if all information is available.
      */
     private boolean checkAndCopyLicenseFolder(String licenseFolderName, File targetDir,
@@ -1015,6 +1012,7 @@ public class InventoryReport {
     }
 
     private PreFormattedEscapeUtils preFormattedEscapeUtils = new PreFormattedEscapeUtils();
+
     public String xmlEscapePreformattedContentString(String string) {
         if (string == null) return "";
 
@@ -1026,7 +1024,6 @@ public class InventoryReport {
 
         return s;
     }
-
 
 
     public String xmlEscapeLicense(String license) {
@@ -1101,6 +1098,20 @@ public class InventoryReport {
 
     public void setVulnerabilityScoreThreshold(float vulnerabilityScoreThreshold) {
         this.vulnerabilityScoreThreshold = vulnerabilityScoreThreshold;
+    }
+
+    private final static String[] VALID_VULNERABILITY_ADVISORY_PROVIDERS = {"CERT-FR", "CERT-SEI", "MSRC"};
+
+    public void addVulnerabilityAdvisoryFilter(String advisoryProvider) {
+        if (advisoryProvider == null || advisoryProvider.length() == 0) {
+            return;
+        }
+        if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(advisoryProvider.toUpperCase()))) {
+            vulnerabilityAdvisoryFilter.add(advisoryProvider.toUpperCase());
+            LOG.info("Added [{}] to the vulnerability advisory filter", advisoryProvider.toUpperCase());
+        } else {
+            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of [{}]", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+        }
     }
 
     public void setTargetReportDir(File reportTarget) {
