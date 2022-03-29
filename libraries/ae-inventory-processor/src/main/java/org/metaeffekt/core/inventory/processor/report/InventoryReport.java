@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -786,6 +787,16 @@ public class InventoryReport {
         }
     }
 
+    private void filterVulnerabilityMetadataByAdvisoryFilter(List<VulnerabilityMetaData> vulnerabilityMetaData) {
+        LOG.info("Filtering for {}", vulnerabilityAdvisoryFilter);
+        LOG.info("on {}", vulnerabilityMetaData.stream().map(VulnerabilityReportAdapter::getAdvisories).map(e -> e.stream().map(AdvisoryData::getSource).collect(Collectors.joining(", "))).collect(Collectors.joining(";; ")));
+        if (vulnerabilityAdvisoryFilter.size() > 0) {
+            vulnerabilityMetaData.removeIf(vmd ->
+                    VulnerabilityReportAdapter.getAdvisories(vmd).stream()
+                            .noneMatch(advisory -> vulnerabilityAdvisoryFilter.contains(advisory.getSource())));
+        }
+    }
+
     private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext)
             throws Exception {
         String ENCODING_UTF_8 = "UTF-8";
@@ -801,9 +812,13 @@ public class InventoryReport {
         StringWriter sw = new StringWriter();
         VelocityContext context = new VelocityContext();
 
+        Inventory filteredInventory = projectInventory.getFilteredInventory();
+        // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
+        filterVulnerabilityMetadataByAdvisoryFilter(filteredInventory.getVulnerabilityMetaData());
+
         // regarding the report we only use the filtered inventory for the time being
-        context.put("inventory", projectInventory.getFilteredInventory());
-        context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(projectInventory.getFilteredInventory()));
+        context.put("inventory", filteredInventory);
+        context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(filteredInventory));
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("Float", Float.class);
@@ -1102,15 +1117,19 @@ public class InventoryReport {
 
     private final static String[] VALID_VULNERABILITY_ADVISORY_PROVIDERS = {"CERT-FR", "CERT-SEI", "MSRC"};
 
+    public List<String> getVulnerabilityAdvisoryFilter() {
+        return Collections.unmodifiableList(vulnerabilityAdvisoryFilter);
+    }
+
     public void addVulnerabilityAdvisoryFilter(String advisoryProvider) {
+        LOG.info("Adding filter [{}]", artifactFilter);
         if (advisoryProvider == null || advisoryProvider.length() == 0) {
             return;
         }
         if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(advisoryProvider.toUpperCase()))) {
             vulnerabilityAdvisoryFilter.add(advisoryProvider.toUpperCase());
-            LOG.info("Added [{}] to the vulnerability advisory filter", advisoryProvider.toUpperCase());
         } else {
-            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of [{}]", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
         }
     }
 

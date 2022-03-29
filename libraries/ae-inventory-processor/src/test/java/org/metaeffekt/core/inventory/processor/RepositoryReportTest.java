@@ -241,7 +241,11 @@ public class RepositoryReportTest {
     public void testCreateTestReport003() throws Exception {
         final File inventoryDir = new File("src/test/resources/test-inventory-03");
         final File reportDir = new File("target/test-inventory-03");
-        createReport(inventoryDir, "*.xls", reportDir);
+
+        InventoryReport report = new InventoryReport();
+        report.addVulnerabilityAdvisoryFilter("CERT-FR");
+
+        createReport(inventoryDir, "*.xls", reportDir, report);
 
         // put asserts here
 
@@ -250,7 +254,10 @@ public class RepositoryReportTest {
 
 
     private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget) throws Exception {
-        InventoryReport report = new InventoryReport();
+        return createReport(inventoryDir, inventoryIncludes, reportTarget, new InventoryReport());
+    }
+
+    private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws Exception {
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
