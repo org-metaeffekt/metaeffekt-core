@@ -39,7 +39,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -788,8 +787,6 @@ public class InventoryReport {
     }
 
     private void filterVulnerabilityMetadataByAdvisoryFilter(List<VulnerabilityMetaData> vulnerabilityMetaData) {
-        LOG.info("Filtering for {}", vulnerabilityAdvisoryFilter);
-        LOG.info("on {}", vulnerabilityMetaData.stream().map(VulnerabilityReportAdapter::getAdvisories).map(e -> e.stream().map(AdvisoryData::getSource).collect(Collectors.joining(", "))).collect(Collectors.joining(";; ")));
         if (vulnerabilityAdvisoryFilter.size() > 0) {
             vulnerabilityMetaData.removeIf(vmd ->
                     VulnerabilityReportAdapter.getAdvisories(vmd).stream()
@@ -1122,11 +1119,11 @@ public class InventoryReport {
     }
 
     public void addVulnerabilityAdvisoryFilter(String advisoryProvider) {
-        LOG.info("Adding filter [{}]", artifactFilter);
         if (advisoryProvider == null || advisoryProvider.length() == 0) {
             return;
         }
         if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(advisoryProvider.toUpperCase()))) {
+            LOG.debug("Filtering vulnerabilities for advisory [{}]", artifactFilter);
             vulnerabilityAdvisoryFilter.add(advisoryProvider.toUpperCase());
         } else {
             LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
