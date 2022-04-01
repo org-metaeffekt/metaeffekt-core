@@ -26,7 +26,6 @@ import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -292,7 +291,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         // vulnerability settings
         report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
-        Arrays.stream(vulnerabilityAdvisoryFilter.split(", ?")).forEach(report::addVulnerabilityAdvisoryFilter);
+        report.addVulnerabilityAdvisoryFilter(vulnerabilityAdvisoryFilter);
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);

@@ -1119,14 +1119,17 @@ public class InventoryReport {
     }
 
     public void addVulnerabilityAdvisoryFilter(String advisoryProvider) {
-        if (advisoryProvider == null || advisoryProvider.length() == 0) {
-            return;
-        }
-        if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(advisoryProvider.toUpperCase()))) {
-            LOG.debug("Filtering vulnerabilities for advisory [{}]", artifactFilter);
-            vulnerabilityAdvisoryFilter.add(advisoryProvider.toUpperCase());
-        } else {
-            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+        if (advisoryProvider != null && advisoryProvider.length() > 0) {
+            if (advisoryProvider.contains(",")) {
+                Arrays.stream(advisoryProvider.split(", ?")).forEach(this::addVulnerabilityAdvisoryFilter);
+            } else {
+                if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(advisoryProvider.toUpperCase()))) {
+                    LOG.debug("Filtering vulnerabilities for advisory [{}]", artifactFilter);
+                    vulnerabilityAdvisoryFilter.add(advisoryProvider.toUpperCase());
+                } else {
+                    LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+                }
+            }
         }
     }
 
