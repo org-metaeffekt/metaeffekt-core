@@ -16,6 +16,7 @@
 
     <modules>
         <module>ae-common-kernel</module>
+        <module>ae-inspect-reader</module>
         <module>ae-inventory-processor</module>
         <module>ae-maven-kernel</module>
     </modules>
