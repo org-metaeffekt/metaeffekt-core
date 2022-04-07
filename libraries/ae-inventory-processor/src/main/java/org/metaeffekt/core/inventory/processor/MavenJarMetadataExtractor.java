@@ -19,7 +19,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.probe.MavenJarIdProbe;
 
-public class GetMetaFromMavenJarsProcessor extends AbstractInventoryProcessor {
+public class MavenJarMetadataExtractor extends AbstractInventoryProcessor {
 
     @Override
     public void process(Inventory inventory) {
