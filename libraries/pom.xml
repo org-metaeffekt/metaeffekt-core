@@ -16,9 +16,7 @@
 
     <modules>
         <module>ae-common-kernel</module>
-        <!-- temporary disabled due to issues with github actions
         <module>ae-inspect-reader</module>
-        -->
         <module>ae-inventory-processor</module>
         <module>ae-maven-kernel</module>
     </modules>
@@ -27,7 +25,8 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>            </plugin>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
