@@ -21,7 +21,6 @@ import org.metaeffekt.reader.inspect.image.model.subtypes.ContainerConfig;
 import org.metaeffekt.reader.inspect.image.model.subtypes.GraphDriver;
 import org.metaeffekt.reader.inspect.image.model.subtypes.RootFS;
 
-import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +47,6 @@ import java.util.Map;
     "RootFS",
     "Metadata"
 })
-@Generated("jsonschema2pojo")
 public class ImageInspectElement {
 
     @JsonProperty("Id")

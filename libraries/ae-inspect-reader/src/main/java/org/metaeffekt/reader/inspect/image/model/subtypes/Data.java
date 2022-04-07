@@ -17,7 +17,6 @@ package org.metaeffekt.reader.inspect.image.model.subtypes;
 
 import com.fasterxml.jackson.annotation.*;
 
-import javax.annotation.Generated;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +27,6 @@ import java.util.Map;
     "WorkDir",
     "LowerDir"
 })
-@Generated("jsonschema2pojo")
 public class Data {
 
     @JsonProperty("MergedDir")

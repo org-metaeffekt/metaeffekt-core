@@ -17,7 +17,6 @@ package org.metaeffekt.reader.inspect.image.model.subtypes;
 
 import com.fasterxml.jackson.annotation.*;
 
-import javax.annotation.Generated;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +43,6 @@ import java.util.Map;
     "Labels",
     "ExposedPorts"
 })
-@Generated("jsonschema2pojo")
 public class ContainerConfig {
 
     @JsonProperty("Hostname")
