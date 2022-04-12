@@ -160,6 +160,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     protected ComponentPatternData readComponentPatternData(HSSFRow row) {
         final ComponentPatternData componentPatternData = new ComponentPatternData();
         Map<Integer, String> map = this.componentPatternDataColumnMap;
+
         for (int i = 0; i < map.size(); i++) {
             final String columnName = map.get(i).trim();
             final HSSFCell myCell = row.getCell(i);
@@ -180,6 +181,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     protected LicenseData readLicenseData(HSSFRow row) {
         final LicenseData licenseData = new LicenseData();
         Map<Integer, String> map = this.licenseDataColumnMap;
+
         for (int i = 0; i < map.size(); i++) {
             final String columnName = map.get(i).trim();
             final HSSFCell myCell = row.getCell(i);
@@ -206,6 +208,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
         final VulnerabilityMetaData vulnerabilityMetaData = new VulnerabilityMetaData();
         Map<Integer, String> map = this.vulnerabilityMetaDataColumnMap;
+
         for (int i = 0; i < map.size(); i++) {
             final String columnName = map.get(i).trim();
             final HSSFCell myCell = row.getCell(i);
@@ -228,8 +231,30 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         return null;
     }
 
+
+    @Override
+    protected CertMetaData readCertMetaData(HSSFRow row) {
+        final CertMetaData certMetaData = new CertMetaData();
+        Map<Integer, String> map = this.vulnerabilityMetaDataColumnMap;
+
+        for (int i = 0; i < map.size(); i++) {
+            final String columnName = map.get(i).trim();
+            final HSSFCell myCell = row.getCell(i);
+            final String value = myCell != null ? myCell.toString() : null;
+            if (value != null) {
+                certMetaData.set(columnName, value.trim());
+            }
+        }
+
+        if (certMetaData.isValid()) {
+            return certMetaData;
+        }
+
+        return null;
+    }
+
     private void mapContent(final VulnerabilityMetaData vulnerabilityMetaData,
-            final String originalKey, final VulnerabilityMetaData.Attribute updatedAttribute) {
+                            final String originalKey, final VulnerabilityMetaData.Attribute updatedAttribute) {
 
         // read the original content
         final String originalKeyContent = vulnerabilityMetaData.get(originalKey);
@@ -250,7 +275,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
 
                     // warn in case the values differ
                     LOG.warn("Vulnerability metadata inconsistent: " +
-                            "[{}] shows different content in attributes [{}] and [{}]. Please consolidate to [{}].",
+                                    "[{}] shows different content in attributes [{}] and [{}]. Please consolidate to [{}].",
                             vulnerabilityMetaData.get(VulnerabilityMetaData.Attribute.NAME), originalKey,
                             updatedAttribute.getKey(), updatedAttribute.getKey());
                 }
