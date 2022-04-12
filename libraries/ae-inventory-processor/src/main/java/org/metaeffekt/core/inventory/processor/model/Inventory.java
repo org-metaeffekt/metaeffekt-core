@@ -54,6 +54,8 @@ public class Inventory {
 
     private List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
 
+    private List<CertMetaData> certMetadata = new ArrayList<>();
+
     private Map<String, String> licenseNameMap = new HashMap<>();
 
     private Map<String, String> componentNameMap = new HashMap<>();
@@ -1326,6 +1328,14 @@ public class Inventory {
     public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold, boolean sortedByScore) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
         return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
+    }
+
+    public List<CertMetaData> getCertMetaData() {
+        return certMetadata;
+    }
+
+    public void setCertMetaData(List<CertMetaData> certMetadata) {
+        this.certMetadata = certMetadata;
     }
 
     private Set<String> splitCommaSeparated(String string) {

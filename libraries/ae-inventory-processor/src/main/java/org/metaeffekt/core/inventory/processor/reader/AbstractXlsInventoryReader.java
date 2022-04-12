@@ -21,7 +21,10 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.metaeffekt.core.inventory.processor.model.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,7 +33,7 @@ import java.util.List;
 
 public abstract class AbstractXlsInventoryReader {
 
-    public Inventory readInventory(File file) throws FileNotFoundException, IOException {
+    public Inventory readInventory(File file) throws IOException {
         FileInputStream myInput = new FileInputStream(file);
         try {
             return readInventory(myInput);
@@ -39,7 +42,7 @@ public abstract class AbstractXlsInventoryReader {
         }
     }
 
-    public Inventory readInventory(InputStream in) throws FileNotFoundException, IOException {
+    public Inventory readInventory(InputStream in) throws IOException {
         POIFSFileSystem fileSystem = new POIFSFileSystem(in);
         HSSFWorkbook workbook = new HSSFWorkbook(fileSystem);
 
@@ -50,6 +53,7 @@ public abstract class AbstractXlsInventoryReader {
         readLicenseData(workbook, inventory);
         readComponentPatternData(workbook, inventory);
         readVulnerabilityMetaData(workbook, inventory);
+        readCertMetaData(workbook, inventory);
 
         return inventory;
     }
@@ -132,6 +136,35 @@ public abstract class AbstractXlsInventoryReader {
         for (int i = 0; i < columns; i++) {
             int width = sheet.getColumnWidth(i);
             inventory.getContextMap().put("vulnerabilities.column[" + i + "].width", width);
+        }
+    }
+
+    protected void readCertMetaData(HSSFWorkbook workbook, Inventory inventory) {
+        HSSFSheet sheet = workbook.getSheet("Cert Metadata");
+        if (sheet == null) return;
+        Iterator<?> rows = sheet.rowIterator();
+
+        List<CertMetaData> certMetadata = new ArrayList<>();
+        inventory.setCertMetaData(certMetadata);
+
+        if (rows.hasNext()) {
+            readVulnerabilityMetaDataHeader((HSSFRow) rows.next());
+        }
+
+        int columns = 0;
+
+        while (rows.hasNext()) {
+            HSSFRow row = (HSSFRow) rows.next();
+            CertMetaData vmd = readCertMetaData(row);
+            if (vmd != null) {
+                certMetadata.add(vmd);
+                columns = vmd.numAttributes();
+            }
+        }
+
+        for (int i = 0; i < columns; i++) {
+            int width = sheet.getColumnWidth(i);
+            inventory.getContextMap().put("cert.column[" + i + "].width", width);
         }
     }
 
@@ -228,6 +261,10 @@ public abstract class AbstractXlsInventoryReader {
     }
 
     protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected CertMetaData readCertMetaData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
 
