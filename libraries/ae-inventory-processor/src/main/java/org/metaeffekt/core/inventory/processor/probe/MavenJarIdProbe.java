@@ -91,7 +91,7 @@ public class MavenJarIdProbe {
         }
     }
 
-    public boolean importantNonNull(Artifact artifact) {
+    protected boolean importantNonNull(Artifact artifact) {
         return artifact.getArtifactId() != null &&
                 artifact.getGroupId() != null &&
                 artifact.getVersion() != null;
@@ -148,7 +148,7 @@ public class MavenJarIdProbe {
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
     }
 
-    public Artifact dummyArtifactFromPom(ZipFile zipFile, ZipArchiveEntry pomEntry) {
+    protected Artifact dummyArtifactFromPom(ZipFile zipFile, ZipArchiveEntry pomEntry) {
         try (InputStream inputStream = zipFile.getInputStream(pomEntry)) {
             if (isPomProperties(pomEntry.getName())) {
                 return getArtifactFromPomProperties(inputStream);
@@ -164,7 +164,7 @@ public class MavenJarIdProbe {
         return null;
     }
 
-    public List<Artifact> getIds(File jarFile) {
+    protected List<Artifact> getIds(File jarFile) {
         List<Artifact> artifacts = new ArrayList<>();
 
         try(ZipFile zipFile = new ZipFile(jarFile)) {
@@ -207,7 +207,7 @@ public class MavenJarIdProbe {
         return fileName.equals(match2) || fileName.equals(match3);
     }
 
-    public Set<Artifact> getConflictsWithOriginal(Collection<Artifact> toCheck) {
+    protected Set<Artifact> getConflictsWithOriginal(Collection<Artifact> toCheck) {
         Set<Artifact> conflictingArtifacts = new HashSet<>();
 
         for (Artifact checking : toCheck) {
@@ -235,7 +235,7 @@ public class MavenJarIdProbe {
         return conflictingArtifacts;
     }
 
-    public Set<Artifact> getConflictsWithEachOther(Collection<Artifact> toCheck) {
+    protected Set<Artifact> getConflictsWithEachOther(Collection<Artifact> toCheck) {
         Set<String> foundArtifactIds = new HashSet<>();
         Set<String> foundGroupIds = new HashSet<>();
         Set<String> foundVersions = new HashSet<>();
