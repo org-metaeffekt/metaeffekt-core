@@ -182,7 +182,7 @@ public class AdvisoryData {
         return urlJson.optString("url");
     }
 
-    private static String normalizeType(String type) {
+    public static String normalizeType(String type) {
         type = type.toLowerCase().trim();
         if (type.equalsIgnoreCase("notice")) {
             return "notice";
