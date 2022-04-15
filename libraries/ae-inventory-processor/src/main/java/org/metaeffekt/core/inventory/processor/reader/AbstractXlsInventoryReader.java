@@ -140,7 +140,7 @@ public abstract class AbstractXlsInventoryReader {
     }
 
     protected void readCertMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("Cert Metadata");
+        HSSFSheet sheet = workbook.getSheet("Cert");
         if (sheet == null) return;
         Iterator<?> rows = sheet.rowIterator();
 

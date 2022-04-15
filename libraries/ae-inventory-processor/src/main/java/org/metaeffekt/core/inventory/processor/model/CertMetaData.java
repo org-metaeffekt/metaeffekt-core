@@ -18,9 +18,15 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 
 public class CertMetaData extends AbstractModelBase {
+
+    public static final String STATUS_VALUE_UNAFFECTED = "unaffected";
+    public static final String STATUS_VALUE_NEW = "new";
+    public static final String STATUS_VALUE_IN_REVIEW = "in review";
+    public static final String STATUS_VALUE_REVIEWED = "reviewed";
 
     public static Comparator<CertMetaData> CERT_COMPARATOR_DESC = Comparator.comparing(cm -> cm.get(Attribute.NAME));
 
@@ -37,10 +43,12 @@ public class CertMetaData extends AbstractModelBase {
     public enum Attribute implements AbstractModelBase.Attribute {
         NAME("Name"),
         URL("Url"),
+        SUMMARY("Summary"),
+        SOURCE("Source"),
+        TYPE("Type"),
         CREATE_DATE("Create Date"),
         UPDATE_DATE("Update Date"),
-        REVIEW_STATUS("Review Status"),
-        REVIEW_COMMENT("Review Comment");
+        REVIEW_STATUS("Review Status");
 
         private String key;
 
@@ -68,10 +76,12 @@ public class CertMetaData extends AbstractModelBase {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.URL.getKey());
+        CORE_ATTRIBUTES.add(Attribute.SUMMARY.getKey());
+        CORE_ATTRIBUTES.add(Attribute.SOURCE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
         CORE_ATTRIBUTES.add(Attribute.CREATE_DATE.getKey());
         CORE_ATTRIBUTES.add(Attribute.UPDATE_DATE.getKey());
         CORE_ATTRIBUTES.add(Attribute.REVIEW_STATUS.getKey());
-        CORE_ATTRIBUTES.add(Attribute.REVIEW_COMMENT.getKey());
     }
 
     /**
@@ -137,6 +147,13 @@ public class CertMetaData extends AbstractModelBase {
         }
 
         return false;
+    }
+
+    public static CertMetaData getByName(Collection<CertMetaData> certMetaData, String name) {
+        return certMetaData.stream()
+                .filter(e -> name.equals(e.get(Attribute.NAME)))
+                .findFirst()
+                .orElse(null);
     }
 
 }

@@ -363,7 +363,7 @@ public class InventoryWriter {
     }
 
     private void writeCertMetaData(Inventory inventory, HSSFWorkbook myWorkBook) {
-        HSSFSheet sheet = myWorkBook.createSheet("Cert Metadata");
+        HSSFSheet sheet = myWorkBook.createSheet("Cert");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
