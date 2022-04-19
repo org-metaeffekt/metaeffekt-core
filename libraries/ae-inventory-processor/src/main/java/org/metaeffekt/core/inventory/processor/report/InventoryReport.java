@@ -190,7 +190,7 @@ public class InventoryReport {
         }
 
         // WORKAROUND
-        // if the given repository already contains LMD content we take it into the the global inventory
+        // if the given repository already contains LMD content we take it into the global inventory
         for (LicenseMetaData lmd : localRepositoryInventory.getLicenseMetaData()) {
             LicenseMetaData globalLmd = globalInventory.findMatchingLicenseMetaData(lmd.getComponent(), lmd.getLicense(), lmd.getVersion());
             if (globalLmd == null) {
@@ -450,6 +450,9 @@ public class InventoryReport {
 
         // transfer available vulnerability information
         projectInventory.inheritVulnerabilityMetaData(globalInventory, false);
+
+        // transfer available cert information
+        projectInventory.inheritCertMetaData(globalInventory, false);
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         projectInventory.filterVulnerabilityMetaData();
@@ -796,6 +799,8 @@ public class InventoryReport {
 
     private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext)
             throws Exception {
+        LOG.info("Producing Dita for template [{}]", templateResourcePath);
+
         String ENCODING_UTF_8 = "UTF-8";
         Properties properties = new Properties();
         properties.put(Velocity.RESOURCE_LOADER, "class, file");

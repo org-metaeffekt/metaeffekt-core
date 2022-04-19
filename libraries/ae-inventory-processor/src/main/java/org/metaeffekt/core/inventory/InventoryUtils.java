@@ -50,11 +50,9 @@ public abstract class InventoryUtils {
      * where the license and component files are not required in the filesystem and an inventory
      * jar is not required to be unpacked.
      *
-     * @param inventoryBaseDir The inventory base dir.
+     * @param inventoryBaseDir  The inventory base dir.
      * @param inventoryIncludes The comma-separated include patterns.
-     *
      * @return The read aggregated inventory.
-     *
      * @throws IOException Throws {@link IOException}.
      */
     public static Inventory readInventory(File inventoryBaseDir, String inventoryIncludes) throws IOException {
@@ -85,7 +83,9 @@ public abstract class InventoryUtils {
             aggregateInventory.inheritLicenseData(inventory, true);
             aggregateInventory.inheritComponentPatterns(inventory, true);
             aggregateInventory.inheritVulnerabilityMetaData(inventory, true);
+            aggregateInventory.inheritCertMetaData(inventory, true);
         }
+
         return aggregateInventory;
     }
 
@@ -109,8 +109,8 @@ public abstract class InventoryUtils {
                     filter(s -> !isEmpty(s)).
                     map(s -> {
                         if (s.startsWith("(") && s.endsWith(")") &&
-                            StringUtils.countOccurrencesOf(s, "(") == 1 &&
-                            StringUtils.countOccurrencesOf(s, ")") == 1) {
+                                StringUtils.countOccurrencesOf(s, "(") == 1 &&
+                                StringUtils.countOccurrencesOf(s, ")") == 1) {
                             return s.substring(1, s.length() - 1);
                         }
                         return s;
