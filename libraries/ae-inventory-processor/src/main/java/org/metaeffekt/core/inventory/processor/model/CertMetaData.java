@@ -28,7 +28,9 @@ public class CertMetaData extends AbstractModelBase {
     public static final String STATUS_VALUE_IN_REVIEW = "in review";
     public static final String STATUS_VALUE_REVIEWED = "reviewed";
 
-    public static Comparator<CertMetaData> CERT_COMPARATOR_DESC = Comparator.comparing(cm -> cm.get(Attribute.NAME));
+    public static Comparator<CertMetaData> CERT_COMPARATOR_NAME_DESC = Comparator.comparing(cm -> cm.get(Attribute.NAME));
+
+    public static Comparator<Object> CERT_COMPARATOR_LAST_UPDATED_DESC = Comparator.comparing(cm -> ((CertMetaData) cm).get(Attribute.UPDATE_DATE)).reversed();
 
     public CertMetaData(CertMetaData cm) {
         super(cm);
@@ -137,6 +139,10 @@ public class CertMetaData extends AbstractModelBase {
 
     public void append(Attribute attribute, String value, String delimiter) {
         append(attribute.getKey(), value, delimiter);
+    }
+
+    public String getName() {
+        return get(Attribute.NAME);
     }
 
     public static boolean hasDetails(CertMetaData cm) {

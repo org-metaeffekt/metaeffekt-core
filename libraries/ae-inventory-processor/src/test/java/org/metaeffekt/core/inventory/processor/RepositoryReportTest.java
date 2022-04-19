@@ -252,6 +252,18 @@ public class RepositoryReportTest {
 
     }
 
+    @Test
+    public void testCreateTestReport004() throws Exception {
+        final File inventoryDir = new File("src/test/resources/test-inventory-04");
+        final File reportDir = new File("target/test-inventory-04");
+
+        createReport(inventoryDir, "*.xls", reportDir);
+
+        // put asserts here
+
+
+    }
+
 
     private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget) throws Exception {
         return createReport(inventoryDir, inventoryIncludes, reportTarget, new InventoryReport());
