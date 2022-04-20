@@ -295,7 +295,7 @@ public class MavenJarIdProbe {
             addError("Number of poms conflict with originally filled state (" + conflictWithOriginal.size() + ").");
         }
         if (conflictWithEachOther.size() > 1) {
-            addError("Number of poms conflict with each other's state (" + conflictWithOriginal.size() + ").");
+            addError("Number of poms conflict with each other's state (" + conflictWithEachOther.size() + ").");
         }
 
 
@@ -310,7 +310,7 @@ public class MavenJarIdProbe {
             }
         } else {
             // on mismatch: insert error into artifact.
-            addError("No poms found by " + this.getClass().getName() + ".");
+            addError("No poms found by " + this.getClass().getSimpleName() + ".");
         }
     }
 }
