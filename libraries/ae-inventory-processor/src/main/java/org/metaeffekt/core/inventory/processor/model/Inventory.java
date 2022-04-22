@@ -1300,6 +1300,13 @@ public class Inventory {
         }
     }
 
+    /**
+     * Removes all VulnerabilityMetaData entries from the inventory that do not fulfill at least one of these conditions:
+     * <ul>
+     *     <li>referenced by at least one artifact</li>
+     *     <li>has the status classification <code>void</code></li>
+     * </ul>
+     */
     public void filterVulnerabilityMetaData() {
         Set<String> coveredVulnerabilityIds = new HashSet<>();
         for (Artifact artifact : artifacts) {
@@ -1307,12 +1314,13 @@ public class Inventory {
             splitCommaSeparated(v).stream().
                     map(this::toPlainCVE).
                     filter(Objects::nonNull).
-                    forEach(cve -> coveredVulnerabilityIds.add(cve));
+                    forEach(coveredVulnerabilityIds::add);
         }
         LOG.debug("Covered vulnerabilities: {}", coveredVulnerabilityIds);
         List<VulnerabilityMetaData> forDeletion = new ArrayList<>();
         for (VulnerabilityMetaData vmd : getVulnerabilityMetaData()) {
-            if (!coveredVulnerabilityIds.contains(vmd.get(VulnerabilityMetaData.Attribute.NAME))) {
+            if (!vmd.isStatus(VulnerabilityMetaData.STATUS_VALUE_VOID)
+                    && !coveredVulnerabilityIds.contains(vmd.get(VulnerabilityMetaData.Attribute.NAME))) {
                 forDeletion.add(vmd);
             }
         }
@@ -1339,17 +1347,26 @@ public class Inventory {
 
     public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
+        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        return vmd;
     }
 
     public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
+        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        return vmd;
     }
 
     public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold, boolean sortedByScore) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
-        return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
+        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        return vmd;
+    }
+
+    public List<VulnerabilityMetaData> getVoidVulnerabilities(boolean sortedByScore) {
+        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterVoidVulnerabilities(getVulnerabilityMetaData());
+        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        return vmd;
     }
 
     public List<CertMetaData> getCertMetaData() {

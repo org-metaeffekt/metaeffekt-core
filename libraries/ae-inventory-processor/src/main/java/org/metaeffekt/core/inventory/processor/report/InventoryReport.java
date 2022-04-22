@@ -39,6 +39,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -168,9 +170,7 @@ public class InventoryReport {
     private String templateLanguageSelector = "en";
 
     public boolean createReport() throws Exception {
-        LOG.info("****************************************************************");
-        LOG.info("* Creating Inventory Report for project {} *", getProjectName());
-        LOG.info("****************************************************************");
+        logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
 
         Inventory globalInventory = readGlobalInventory();
 
@@ -830,6 +830,17 @@ public class InventoryReport {
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString(), "UTF-8");
+    }
+
+    private static String repeat(String str, int count) {
+        if (count <= 0) return "";
+        return IntStream.range(0, count).mapToObj(i -> str).collect(Collectors.joining());
+    }
+
+    private static void logHeaderBox(String str) {
+        LOG.info(repeat("*", str.length() + 4));
+        LOG.info("* {} *", str);
+        LOG.info(repeat("*", str.length() + 4));
     }
 
     public File getDiffInventoryFile() {
