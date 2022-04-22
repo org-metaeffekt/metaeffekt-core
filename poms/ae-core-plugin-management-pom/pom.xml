@@ -206,21 +206,38 @@
                     <artifactId>license-maven-plugin</artifactId>
                     <version>4.1</version>
                     <configuration>
-                        <header>header/apache-license-2.0-header.txt</header>
-                        <properties>
-                            <owner>metaeffekt.org</owner>
-                            <email>contact@metaeffekt.org</email>
-                            <year.initial>2009</year.initial>
-                            <year>2021</year>
-                        </properties>
-                        <includes>
-                            <include>**/*.java</include>
-                        </includes>
-                        <excludes>
-                            <exclude>**/README*</exclude>
-                            <exclude>src/test/resources/**</exclude>
-                            <exclude>src/main/resources/**</exclude>
-                        </excludes>
+                        <licenseSets>
+                            <licenseSet>
+                                <header>header/apache-license-2.0-header.txt</header>
+                                <properties>
+                                    <owner>metaeffekt.org</owner>
+                                    <email>contact@metaeffekt.org</email>
+                                    <year.initial>2009</year.initial>
+                                    <year>2021</year>
+                                </properties>
+                                <includes>
+                                    <include>**/*.java</include>
+                                </includes>
+                                <excludes>
+                                    <exclude>**/README*</exclude>
+                                    <exclude>src/test/resources/**</exclude>
+                                    <exclude>src/main/resources/**</exclude>
+                                    <exclude>**/MavenJarIdProbe.java</exclude>
+                                    <exclude>**/MavenJarMetadataExtractor.java</exclude>
+                                </excludes>
+                            </licenseSet>
+                            <licenseSet>
+                                <header>header/apache-license-2.0-header-2022-only.txt</header>
+                                <properties>
+                                    <owner>metaeffekt.org</owner>
+                                    <email>contact@metaeffekt.org</email>
+                                </properties>
+                                <includes>
+                                    <include>**/MavenJarIdProbe.java</include>
+                                    <include>**/MavenJarMetadataExtractor.java</include>
+                                </includes>
+                            </licenseSet>
+                        </licenseSets>
                     </configuration>
                     <executions>
                         <execution>

@@ -54,6 +54,8 @@ public class Inventory {
 
     private Map<String, List<VulnerabilityMetaData>> vulnerabilityMetaData = new LinkedHashMap<>(1);
 
+    private List<CertMetaData> certMetadata = new ArrayList<>();
+
     private Map<String, String> licenseNameMap = new HashMap<>();
 
     private Map<String, String> componentNameMap = new HashMap<>();
@@ -1076,6 +1078,7 @@ public class Inventory {
         filteredInventory.setLicenseData(getLicenseData());
         filteredInventory.setLicenseNameMap(getLicenseNameMap());
         filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
+        filteredInventory.setCertMetaData(getCertMetaData());
         return filteredInventory;
     }
 
@@ -1268,6 +1271,35 @@ public class Inventory {
         }
     }
 
+    public void inheritCertMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, CertMetaData> localCerts = new HashMap<>();
+        for (CertMetaData cert : getCertMetaData()) {
+            String artifactQualifier = cert.deriveQualifier();
+            localCerts.put(artifactQualifier, cert);
+        }
+        for (CertMetaData cert : inputInventory.getCertMetaData()) {
+            String qualifier = cert.deriveQualifier();
+            if (localCerts.containsKey(qualifier)) {
+                // overwrite; the localCerts inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    CertMetaData localCert = localCerts.get(qualifier);
+                    if (cert.createCompareStringRepresentation().equals(
+                            localCert.createCompareStringRepresentation())) {
+                        LOG.info("Cert metadata {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Cert metadata %s overwritten. %n  %s%n  %s", qualifier,
+                                cert.createCompareStringRepresentation(),
+                                localCert.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                // add the cert
+                getCertMetaData().add(cert);
+            }
+        }
+    }
+
     public void filterVulnerabilityMetaData() {
         Set<String> coveredVulnerabilityIds = new HashSet<>();
         for (Artifact artifact : artifacts) {
@@ -1341,6 +1373,14 @@ public class Inventory {
     public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold, boolean sortedByScore) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
         return sortedByScore ? VulnerabilityMetaData.sortVulnerabilitiesByOverallScore(vmd) : vmd;
+    }
+
+    public List<CertMetaData> getCertMetaData() {
+        return certMetadata;
+    }
+
+    public void setCertMetaData(List<CertMetaData> certMetadata) {
+        this.certMetadata = certMetadata;
     }
 
     private Set<String> splitCommaSeparated(String string) {

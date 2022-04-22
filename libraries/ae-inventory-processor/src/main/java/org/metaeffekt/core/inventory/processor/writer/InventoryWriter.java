@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
@@ -24,6 +25,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.CertMetaData.Attribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +69,7 @@ public class InventoryWriter {
         writeNotices(inventory, myWorkBook);
         writeComponentPatterns(inventory, myWorkBook);
         writeVulnerabilities(inventory, myWorkBook);
+        writeCertMetaData(inventory, myWorkBook);
         writeLicenseData(inventory, myWorkBook);
 
         FileOutputStream out = new FileOutputStream(file);
@@ -266,14 +269,12 @@ public class InventoryWriter {
             }
         }
 
-        /**
-         for (int i = 0; i < 6; i++) {
-         Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
-         if (width != null) {
-         mySheet.setColumnWidth(i, Math.min(width, 255));
-         }
-         }
-         */
+        /*for (int i = 0; i < 6; i++) {
+            Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
+            if (width != null) {
+                mySheet.setColumnWidth(i, Math.min(width, 255));
+            }
+        }*/
 
         mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
 
@@ -325,12 +326,12 @@ public class InventoryWriter {
 
         int numCol = cellNum;
 
-        for (VulnerabilityMetaData cpd : inventory.getVulnerabilityMetaData(context)) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
                 cell = row.createCell(cellNum++);
-                String value = cpd.get(key);
+                String value = vmd.get(key);
 
                 VulnerabilityMetaData.Attribute attribute = VulnerabilityMetaData.Attribute.match(key);
                 if (attribute != null) {
@@ -348,9 +349,84 @@ public class InventoryWriter {
                             break;
                         case URL:
                             cell.setCellValue(new HSSFRichTextString(value));
-                            Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
-                            link.setAddress(value);
-                            cell.setHyperlink(link);
+                            if (StringUtils.isEmpty(value)) {
+                                LOG.warn("Vulnerability URL [{}] is null or empty on [{} {} {}]", value, cell.getSheet().getSheetName(), cell.getColumnIndex(), cell.getRowIndex());
+                            } else {
+                                Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
+                                link.setAddress(value);
+                                cell.setHyperlink(link);
+                            }
+                            break;
+                        default:
+                            cell.setCellValue(new HSSFRichTextString(value));
+                            break;
+                    }
+                } else {
+                    cell.setCellValue(new HSSFRichTextString(value));
+                }
+            }
+        }
+
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
+    }
+
+    private void writeCertMetaData(Inventory inventory, HSSFWorkbook myWorkBook) {
+        HSSFSheet sheet = myWorkBook.createSheet("Cert");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
+
+        HSSFRow row = null;
+        HSSFCell cell = null;
+
+        int rowNum = 0;
+
+        row = sheet.createRow(rowNum++);
+
+        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+
+        int cellNum = 0;
+
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (CertMetaData cm : inventory.getCertMetaData()) {
+            attributes.addAll(cm.getAttributes());
+        }
+
+        attributes.removeAll(CertMetaData.CORE_ATTRIBUTES);
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        List<String> finalOrder = new ArrayList<>(CertMetaData.CORE_ATTRIBUTES);
+        finalOrder.addAll(ordered);
+
+        for (String key : finalOrder) {
+            cell = row.createCell(cellNum++);
+            cell.setCellStyle(headerStyle);
+            cell.setCellValue(new HSSFRichTextString(key));
+        }
+
+        int numCol = cellNum;
+
+        for (CertMetaData cm : inventory.getCertMetaData()) {
+            row = sheet.createRow(rowNum++);
+            cellNum = 0;
+            for (String key : finalOrder) {
+                cell = row.createCell(cellNum++);
+                String value = cm.get(key);
+
+                Attribute attribute = Attribute.match(key);
+                if (attribute != null) {
+                    switch (attribute) {
+                        case URL:
+                            cell.setCellValue(new HSSFRichTextString(value));
+                            if (StringUtils.isEmpty(value)) {
+                                LOG.warn("CertMetaData URL [{}] is null or empty on [{} {} {}]", value, cell.getSheet().getSheetName(), cell.getColumnIndex(), cell.getRowIndex());
+                            } else {
+                                Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
+                                link.setAddress(value);
+                                cell.setHyperlink(link);
+                            }
                             break;
                         default:
                             cell.setCellValue(new HSSFRichTextString(value));
