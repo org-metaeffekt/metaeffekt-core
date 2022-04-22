@@ -243,7 +243,7 @@ public class RepositoryReportTest {
         final File reportDir = new File("target/test-inventory-03");
 
         InventoryReport report = new InventoryReport();
-        report.addVulnerabilityAdvisoryFilter("CERT-FR");
+        //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
 
         createReport(inventoryDir, "*.xls", reportDir, report);
 
@@ -253,9 +253,9 @@ public class RepositoryReportTest {
     }
 
     @Test
-    public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("src/test/resources/test-inventory-04");
-        final File reportDir = new File("target/test-inventory-04");
+    public void testCreateTestReportCertMetaData() throws Exception {
+        final File inventoryDir = new File("src/test/resources/test-inventory-cert");
+        final File reportDir = new File("target/test-inventory-cert");
 
         createReport(inventoryDir, "*.xls", reportDir);
 
