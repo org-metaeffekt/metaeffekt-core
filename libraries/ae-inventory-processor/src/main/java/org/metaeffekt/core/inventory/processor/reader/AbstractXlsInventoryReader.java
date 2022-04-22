@@ -107,12 +107,22 @@ public abstract class AbstractXlsInventoryReader {
     }
 
     protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("Vulnerabilities");
+        workbook.sheetIterator().forEachRemaining(sheet -> {
+            if (sheet.getSheetName().startsWith("Vulnerabilities")) {
+                readVulnerabilityMetaData(workbook, inventory, sheet.getSheetName());
+            }
+        });
+    }
+
+    protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory, String sheetName) {
+        String context = VulnerabilityMetaData.sheetNameToContext(sheetName);
+
+        HSSFSheet sheet = workbook.getSheet(sheetName);
         if (sheet == null) return;
         Iterator<?> rows = sheet.rowIterator();
 
         List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
-        inventory.setVulnerabilityMetaData(vulnerabilityMetaData);
+        inventory.setVulnerabilityMetaData(vulnerabilityMetaData, context);
 
         if (rows.hasNext()) {
             readVulnerabilityMetaDataHeader((HSSFRow) rows.next());

@@ -52,7 +52,7 @@ public class Inventory {
 
     private List<LicenseData> licenseData = new ArrayList<>();
 
-    private List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
+    private Map<String, List<VulnerabilityMetaData>> vulnerabilityMetaData = new LinkedHashMap<>(1);
 
     private Map<String, String> licenseNameMap = new HashMap<>();
 
@@ -256,7 +256,6 @@ public class Inventory {
      * Anticipates only wildcard matches.
      *
      * @param artifactId The artifact id to match.
-     *
      * @return The best matched artifact or <code>null</code>.
      */
     private Artifact findArtifactMatchingId(String artifactId) {
@@ -399,8 +398,7 @@ public class Inventory {
      * method only produces the license names, which are assumed to be non-redundant and unique.
      *
      * @param includeLicensesWithArtifactsOnly Result will cover licenses of artifacts without artifactId when true.
-     * @param includeManagedArtifactsOnly Results will only cover license of managed artifacts when true.
-     *
+     * @param includeManagedArtifactsOnly      Results will only cover license of managed artifacts when true.
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
@@ -451,7 +449,6 @@ public class Inventory {
      * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
-     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
@@ -574,9 +571,8 @@ public class Inventory {
      * Iterates through the license metadata to find a match for the given component and license parameters.
      *
      * @param component The component.
-     * @param license The license name.
-     * @param version The version.
-     *
+     * @param license   The license name.
+     * @param version   The version.
      * @return A matching {@link LicenseMetaData} instance if available. In case multiple
      * can be matched an {@link IllegalStateException} is thrown.
      */
@@ -606,7 +602,6 @@ public class Inventory {
      * Tries to find the matching {@link LicenseMetaData} details for the specified artifact.
      *
      * @param artifact The artifact to look for {@link LicenseMetaData}.
-     *
      * @return The found {@link LicenseMetaData} or <code>null</code> when no matching {@link LicenseMetaData} could be
      * found.
      */
@@ -618,7 +613,6 @@ public class Inventory {
      * Tries to find the {@link LicenseData} with the given canonicalName.
      *
      * @param canonicalName The canonical name.
-     *
      * @return The found {@link LicenseData} instance or <code>null</code> in case no matching {@link LicenseData}
      * instance was identified.
      */
@@ -881,7 +875,6 @@ public class Inventory {
      * Used by templates to check whether a notice for the given component is available.
      *
      * @param component The component to check.
-     *
      * @return Indicated whether a notice is available or not.
      */
     public boolean hasNotice(Component component) {
@@ -893,7 +886,6 @@ public class Inventory {
      * Used by templates to check whether a notice for the given component is available.
      *
      * @param ald The {@link ArtifactLicenseData} instance to check.
-     *
      * @return Indicated whether a notice is available or not.
      */
     public boolean hasNotice(ArtifactLicenseData ald) {
@@ -1105,7 +1097,7 @@ public class Inventory {
      * Takes over missing license metadata from the provided inputInventory. If the local inventory already has matching
      * license metadata the local data has priority.
      *
-     * @param inputInventory The input inventory. From this inventory license metadata will be taken over.
+     * @param inputInventory  The input inventory. From this inventory license metadata will be taken over.
      * @param infoOnOverwrite Methods provides information on overwrites when true.
      */
     public void inheritLicenseMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
@@ -1153,7 +1145,7 @@ public class Inventory {
      * Inherits the artifacts from the specified inputInventory. Local artifacts with the same qualifier have
      * priority.
      *
-     * @param inputInventory Input inventory with artifact information.
+     * @param inputInventory  Input inventory with artifact information.
      * @param infoOnOverwrite Logs information on overwrites when active.
      */
     public void inheritArtifacts(Inventory inputInventory, boolean infoOnOverwrite) {
@@ -1306,11 +1298,34 @@ public class Inventory {
     }
 
     public List<VulnerabilityMetaData> getVulnerabilityMetaData() {
-        return vulnerabilityMetaData;
+        if (vulnerabilityMetaData.isEmpty()) {
+            return vulnerabilityMetaData.computeIfAbsent(VulnerabilityMetaData.DEFAULT_CONTEXT, e -> new ArrayList<>());
+        } else if (vulnerabilityMetaData.size() == 1) {
+            return vulnerabilityMetaData.values().iterator().next();
+        } else {
+            throw new IllegalStateException("Unspecified vulnerability metadata context, specify one of " + getVulnerabilityMetaDataContexts());
+        }
+    }
+
+    public List<VulnerabilityMetaData> getVulnerabilityMetaData(String context) {
+        return vulnerabilityMetaData.computeIfAbsent(context, e -> new ArrayList<>());
     }
 
     public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData) {
-        this.vulnerabilityMetaData = vulnerabilityMetaData;
+        if (this.vulnerabilityMetaData.size() <= 1) {
+            this.vulnerabilityMetaData.clear();
+            this.vulnerabilityMetaData.put(VulnerabilityMetaData.DEFAULT_CONTEXT, vulnerabilityMetaData);
+        } else {
+            throw new IllegalStateException("Unspecified vulnerability metadata context, specify one of " + getVulnerabilityMetaDataContexts());
+        }
+    }
+
+    public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData, String context) {
+        this.vulnerabilityMetaData.put(context, vulnerabilityMetaData);
+    }
+
+    public List<String> getVulnerabilityMetaDataContexts() {
+        return new ArrayList<>(vulnerabilityMetaData.keySet());
     }
 
     public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
@@ -1408,7 +1423,7 @@ public class Inventory {
 
     public boolean isSubstructureRequired(String license, List<String> effectiveLicenses) {
         int counter = 0;
-        if(!effectiveLicenses.contains(license)){
+        if (!effectiveLicenses.contains(license)) {
             return true;
         }
         for (LicenseData ld : getLicenseData()) {

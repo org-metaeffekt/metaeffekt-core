@@ -280,7 +280,15 @@ public class InventoryWriter {
     }
 
     private void writeVulnerabilities(Inventory inventory, HSSFWorkbook myWorkBook) {
-        HSSFSheet sheet = myWorkBook.createSheet("Vulnerabilities");
+        for (String context : inventory.getVulnerabilityMetaDataContexts()) {
+            if (context != null && !context.isEmpty() && inventory.getVulnerabilityMetaData(context).size() > 0) {
+                writeVulnerabilities(inventory, myWorkBook, context);
+            }
+        }
+    }
+
+    private void writeVulnerabilities(Inventory inventory, HSSFWorkbook myWorkBook, String context) {
+        HSSFSheet sheet = myWorkBook.createSheet(VulnerabilityMetaData.contextToSheetName(context));
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
@@ -297,11 +305,11 @@ public class InventoryWriter {
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData()) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
             attributes.addAll(vmd.getAttributes());
         }
 
-        attributes.removeAll(VulnerabilityMetaData.CORE_ATTRIBUTES);
+        VulnerabilityMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
 
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
@@ -317,7 +325,7 @@ public class InventoryWriter {
 
         int numCol = cellNum;
 
-        for (VulnerabilityMetaData cpd : inventory.getVulnerabilityMetaData()) {
+        for (VulnerabilityMetaData cpd : inventory.getVulnerabilityMetaData(context)) {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
