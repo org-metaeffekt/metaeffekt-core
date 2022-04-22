@@ -18,14 +18,22 @@ package org.metaeffekt.core.inventory.processor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.probe.MavenJarIdProbe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MavenJarMetadataExtractor extends AbstractInventoryProcessor {
+    private static final Logger LOG = LoggerFactory.getLogger(MavenJarMetadataExtractor.class);
 
     @Override
     public void process(Inventory inventory) {
         for (Artifact artifact : inventory.getArtifacts()) {
-            MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
-            probe.runCompletion();
+            try {
+                MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
+                probe.runCompletion();
+            } catch (Exception e) {
+                LOG.error("Error while running MavenJarIdProbe on artifact " + artifact.toString() + ":"
+                        + e.getMessage());
+            }
         }
     }
 }
