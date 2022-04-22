@@ -310,7 +310,8 @@ public class MavenJarIdProbe {
             }
         } else {
             // on mismatch: insert error into artifact.
-            addError("No poms found by " + this.getClass().getSimpleName() + ".");
+            addError("No suitable poms found by " + this.getClass().getSimpleName() + " (rejected "
+                    + dummyArtifacts.size() + ").");
         }
     }
 }
