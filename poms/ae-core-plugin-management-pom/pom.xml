@@ -222,9 +222,9 @@
                                     <exclude>**/README*</exclude>
                                     <exclude>src/test/resources/**</exclude>
                                     <exclude>src/main/resources/**</exclude>
-                                    <exclude>**/MavenJarIdProbe.java</exclude>
-                                    <exclude>**/MavenJarMetadataExtractor.java</exclude>
-                                </excludes>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbe.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/MavenJarMetadataExtractor.java</exclude>
+                                    <exclude>src/test/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbeTest.java</exclude>                                </excludes>
                             </licenseSet>
                             <licenseSet>
                                 <header>header/apache-license-2.0-header-2022-only.txt</header>
@@ -233,8 +233,9 @@
                                     <email>contact@metaeffekt.org</email>
                                 </properties>
                                 <includes>
-                                    <include>**/MavenJarIdProbe.java</include>
-                                    <include>**/MavenJarMetadataExtractor.java</include>
+                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbe.java</include>
+                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/MavenJarMetadataExtractor.java</include>
+                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbeTest.java</include>
                                 </includes>
                             </licenseSet>
                         </licenseSets>
