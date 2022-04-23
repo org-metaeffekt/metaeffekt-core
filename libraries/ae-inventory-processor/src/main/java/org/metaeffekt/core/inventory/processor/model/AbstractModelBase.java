@@ -130,6 +130,16 @@ public abstract class AbstractModelBase {
     }
 
     /**
+     * Function to check whether a key exists.
+     *
+     * @param key The key to check for.
+     * @return <code>true</code> if the key exists, <code>false</code> if not.
+     */
+    public boolean has(String key) {
+        return get(key) != null;
+    }
+
+    /**
      * Function to check for a boolean value.
      *
      * @param key The key to get the boolean value for.
