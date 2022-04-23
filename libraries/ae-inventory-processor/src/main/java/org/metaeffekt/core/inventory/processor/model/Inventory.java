@@ -105,7 +105,7 @@ public class Inventory {
                 key += "^" + artifact.getVersion() + "^" + artifact.getGroupId();
                 Set<Artifact> set = artifactMap.get(key);
                 if (set == null) {
-                    set = new HashSet<Artifact>();
+                    set = new HashSet<>();
                 }
                 set.add(artifact);
                 artifactMap.put(key, set);
@@ -113,12 +113,20 @@ public class Inventory {
         }
 
         for (Set<Artifact> set : artifactMap.values()) {
+            // check whether there are multiple
             if (set.size() > 1) {
-                Iterator<Artifact> it = set.iterator();
-                Artifact ref = it.next();
+                final Iterator<Artifact> it = set.iterator();
+
+                // skip first
+                final Artifact ref = it.next();
+
                 while (it.hasNext()) {
                     Artifact a = it.next();
+
+                    // merge content before removing
                     ref.merge(a);
+
+                    // remove
                     artifacts.remove(a);
                 }
             }
