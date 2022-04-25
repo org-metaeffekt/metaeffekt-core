@@ -49,14 +49,26 @@ public class PublishArtifactMojo extends PrepareArtifactMojo {
     private File classesDirectory;
 
     /**
+     * Boolean indicating whether to attach the resulting artifact or not.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean attach;
+
+    /**
      * The {@link MavenSession}.
      */
     @Parameter(defaultValue = "${session}", readonly = true, required = true)
     private MavenSession session;
 
+    /**
+     * The {@link JarArchiver} instance to use.
+     */
     @Component(role = Archiver.class, hint = "jar")
     private JarArchiver jarArchiver;
 
+    /**
+     * The shared {@link MavenArchiveConfiguration}.
+     */
     @Parameter
     private MavenArchiveConfiguration archive = new MavenArchiveConfiguration();
 
@@ -89,8 +101,10 @@ public class PublishArtifactMojo extends PrepareArtifactMojo {
             archiver.getArchiver().addDirectory(tempDir);
             archiver.createArchive(session, getProject(), archive);
 
-            // attach the artifact
-            projectHelper.attachArtifact(getProject(), getType(), getClassifier(), artifactFile);
+            // attach the artifact; if desired
+            if (attach) {
+                projectHelper.attachArtifact(getProject(), getType(), getClassifier(), artifactFile);
+            }
         } catch (Exception e) {
             getLog().info("Couldn't create artifact.", e);
         }
