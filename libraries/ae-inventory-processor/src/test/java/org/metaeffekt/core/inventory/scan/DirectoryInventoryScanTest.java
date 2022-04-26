@@ -83,6 +83,7 @@ public class DirectoryInventoryScanTest {
         boolean found0002 = false;
         boolean found0003 = false;
         boolean found0004 = false;
+        boolean found0005 = false;
 
         for (Artifact artifact : resultInventory.getArtifacts()) {
             // check that 0000 was success
@@ -115,6 +116,12 @@ public class DirectoryInventoryScanTest {
                         && artifact.getVersion() == null
                         && !artifact.get("Errors").isEmpty();
             }
+
+            if (!found0005) {
+                found0005 = "dummy-artifact-deep".equals(artifact.getArtifactId())
+                        && "my.test.dummy.package".equals(artifact.getGroupId())
+                        && "0.0.1".equals(artifact.getVersion());
+            }
         }
 
         Assert.assertTrue(found0000);
@@ -122,6 +129,7 @@ public class DirectoryInventoryScanTest {
         Assert.assertTrue(found0002);
         Assert.assertTrue(found0003);
         Assert.assertTrue(found0004);
+        Assert.assertTrue(found0005);
     }
 
     @Ignore

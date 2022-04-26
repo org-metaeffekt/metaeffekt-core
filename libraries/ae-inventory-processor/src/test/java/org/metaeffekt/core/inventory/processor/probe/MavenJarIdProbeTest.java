@@ -25,15 +25,16 @@ import java.util.Collections;
 import static org.junit.Assert.*;
 
 public class MavenJarIdProbeTest {
+    private final File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
+
     @Test
     public void example0000() {
-        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
         File testJar = new File("dummy-artifact-0.0.1-0000.jar");
 
-        String jarName = testJar.getPath();
+        String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setId(jarName);
-        artifact.setProjects(Collections.singleton(jarName));
+        artifact.setId(jarPath);
+        artifact.setProjects(Collections.singleton(jarPath));
 
         MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
@@ -46,13 +47,12 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0001() {
-        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
         File testJar = new File("dummy-artifact-0.0.1-0001.jar");
 
-        String jarName = testJar.getPath();
+        String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setId(jarName);
-        artifact.setProjects(Collections.singleton(jarName));
+        artifact.setId(jarPath);
+        artifact.setProjects(Collections.singleton(jarPath));
 
         MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
@@ -65,13 +65,12 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0002() {
-        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
         File testJar = new File("dummy-artifact-0.0.2-0002.jar");
 
-        String jarName = testJar.getPath();
+        String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setId(jarName);
-        artifact.setProjects(Collections.singleton(jarName));
+        artifact.setId(jarPath);
+        artifact.setProjects(Collections.singleton(jarPath));
 
         MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
@@ -84,13 +83,12 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0003() {
-        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
         File testJar = new File("dummy-artifact-0003.jar");
 
-        String jarName = testJar.getPath();
+        String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setId(jarName);
-        artifact.setProjects(Collections.singleton(jarName));
+        artifact.setId(jarPath);
+        artifact.setProjects(Collections.singleton(jarPath));
 
         MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
@@ -101,18 +99,34 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0004() {
-        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
         File testJar = new File("dummy-artifact-0004.jar");
 
-        String jarName = testJar.getPath();
+        String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setId(jarName);
-        artifact.setProjects(Collections.singleton(jarName));
+        artifact.setId(jarPath);
+        artifact.setProjects(Collections.singleton(jarPath));
 
         MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
 
         // should have logged an error to the artifact
         assertTrue(StringUtils.isNotBlank(artifact.get("Errors")));
+    }
+
+    @Test
+    public void example0005() {
+        File testJar = new File("subdir-testdir/one-directory-deeper/dummy-artifact-deep-0.0.1-0005.jar");
+
+        Artifact artifact = new Artifact();
+        artifact.setId(testJar.getName());
+        artifact.setProjects(Collections.singleton(testJar.getPath()));
+
+        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
+        probe.runCompletion();
+
+        // should have extracted
+        assertEquals("my.test.dummy.package", artifact.getGroupId());
+        assertEquals("dummy-artifact-deep", artifact.getArtifactId());
+        assertEquals("0.0.1", artifact.getVersion());
     }
 }
