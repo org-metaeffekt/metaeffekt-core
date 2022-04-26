@@ -21,17 +21,32 @@ import org.metaeffekt.core.inventory.processor.probe.MavenJarIdProbe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.util.Properties;
+
 public class MavenJarMetadataExtractor extends AbstractInventoryProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(MavenJarMetadataExtractor.class);
+
+    // where the jar files are found. this is called the scanDirectory in other classes
+    public static final String PROJECT_PATH = "project.path";
+
+    public MavenJarMetadataExtractor() {
+        super();
+    }
+
+    public MavenJarMetadataExtractor(Properties properties) {
+        super(properties);
+    }
 
     @Override
     public void process(Inventory inventory) {
         for (Artifact artifact : inventory.getArtifacts()) {
             try {
-                MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
+                File projectDir = new File(this.getProperties().getProperty(PROJECT_PATH, "./"));
+                MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
                 probe.runCompletion();
             } catch (Exception e) {
-                LOG.error("Error while running MavenJarIdProbe on artifact " + artifact.toString() + ":"
+                LOG.error("Error while running MavenJarIdProbe on artifact '" + artifact.toString() + "':"
                         + e.getMessage());
             }
         }

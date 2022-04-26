@@ -16,9 +16,7 @@
 package org.metaeffekt.core.inventory.processor.probe;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.io.File;
@@ -29,12 +27,15 @@ import static org.junit.Assert.*;
 public class MavenJarIdProbeTest {
     @Test
     public void example0000() {
-        File testJar = new File("src/test/resources/test-maven-jar-meta-extractor/dummy-artifact-0.0.1-0000.jar");
+        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
+        File testJar = new File("dummy-artifact-0.0.1-0000.jar");
 
+        String jarName = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setProjects(Collections.singleton(testJar.getPath()));
+        artifact.setId(jarName);
+        artifact.setProjects(Collections.singleton(jarName));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
+        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
 
         // should have extracted
@@ -45,12 +46,15 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0001() {
-        File testJar = new File("src/test/resources/test-maven-jar-meta-extractor/dummy-artifact-0.0.1-0001.jar");
+        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
+        File testJar = new File("dummy-artifact-0.0.1-0001.jar");
 
+        String jarName = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setProjects(Collections.singleton(testJar.getPath()));
+        artifact.setId(jarName);
+        artifact.setProjects(Collections.singleton(jarName));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
+        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
 
         // should have gotten correct data and ignored the parent
@@ -61,12 +65,15 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0002() {
-        File testJar = new File("src/test/resources/test-maven-jar-meta-extractor/dummy-artifact-0.0.2-0002.jar");
+        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
+        File testJar = new File("dummy-artifact-0.0.2-0002.jar");
 
+        String jarName = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setProjects(Collections.singleton(testJar.getPath()));
+        artifact.setId(jarName);
+        artifact.setProjects(Collections.singleton(jarName));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
+        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
 
         // should have gotten correct data, partially inherited from parent (like maven does it)
@@ -77,12 +84,15 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0003() {
-        File testJar = new File("src/test/resources/test-maven-jar-meta-extractor/dummy-artifact-0003.jar");
+        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
+        File testJar = new File("dummy-artifact-0003.jar");
 
+        String jarName = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setProjects(Collections.singleton(testJar.getPath()));
+        artifact.setId(jarName);
+        artifact.setProjects(Collections.singleton(jarName));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
+        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
 
         // should have logged an error to the artifact
@@ -91,18 +101,18 @@ public class MavenJarIdProbeTest {
 
     @Test
     public void example0004() {
-        File testJar = new File("src/test/resources/test-maven-jar-meta-extractor/dummy-artifact-0004.jar");
+        File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
+        File testJar = new File("dummy-artifact-0004.jar");
 
+        String jarName = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setProjects(Collections.singleton(testJar.getPath()));
+        artifact.setId(jarName);
+        artifact.setProjects(Collections.singleton(jarName));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(artifact);
+        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
 
         // should have logged an error to the artifact
-        System.err.println(artifact.get("Errors"));
-
-
         assertTrue(StringUtils.isNotBlank(artifact.get("Errors")));
     }
 }
