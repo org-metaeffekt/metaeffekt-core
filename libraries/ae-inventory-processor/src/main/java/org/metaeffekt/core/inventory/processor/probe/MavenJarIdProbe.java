@@ -32,9 +32,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MavenJarIdProbe {
+    protected File projectDir;
     protected Artifact artifact;
 
-    public MavenJarIdProbe(Artifact artifact) {
+    public MavenJarIdProbe(File projectDir, Artifact artifact) {
+        this.projectDir = projectDir;
         this.artifact = artifact;
     }
 
@@ -80,7 +82,7 @@ public class MavenJarIdProbe {
 
         File jarFile = null;
         if (jarPath != null) {
-            jarFile = new File(jarPath);
+            jarFile = new File(this.projectDir, jarPath);
         }
 
         if (jarFile == null || !jarFile.exists() || !jarFile.isFile()) {
@@ -211,12 +213,7 @@ public class MavenJarIdProbe {
         Set<Artifact> conflictingArtifacts = new HashSet<>();
 
         for (Artifact checking : toCheck) {
-            if (StringUtils.isNotBlank(artifact.getArtifactId())) {
-                if (!artifact.getArtifactId().equals(checking.getArtifactId())) {
-                    conflictingArtifacts.add(checking);
-                    continue;
-                }
-            }
+            // since artifactid is wrong at this stage, ignore it for the original state check.
 
             if (StringUtils.isNotBlank(artifact.getGroupId())) {
                 if (!artifact.getGroupId().equals(checking.getGroupId())) {
@@ -291,10 +288,10 @@ public class MavenJarIdProbe {
         // process list of accepted dummies, detect disagreements (with original state and each other)
         Set<Artifact> conflictWithOriginal = getConflictsWithOriginal(accepted);
         Set<Artifact> conflictWithEachOther = getConflictsWithEachOther(accepted);
-        if (conflictWithOriginal.size() > 1) {
+        if (conflictWithOriginal.size() > 0) {
             addError("Number of poms conflict with originally filled state (" + conflictWithOriginal.size() + ").");
         }
-        if (conflictWithEachOther.size() > 1) {
+        if (conflictWithEachOther.size() > 0) {
             addError("Number of poms conflict with each other's state (" + conflictWithEachOther.size() + ").");
         }
 
@@ -304,9 +301,12 @@ public class MavenJarIdProbe {
             if (conflictWithOriginal.size() == 0 && conflictWithEachOther.size() == 0) {
                 Artifact newData = accepted.stream().findAny().get();
 
-                artifact.setArtifactId(newData.getArtifactId());
                 artifact.setGroupId(newData.getGroupId());
                 artifact.setVersion(newData.getVersion());
+
+                // derive artifactid once groupId and version are set to produce an up-to-date output
+                artifact.setArtifactId(null);
+                artifact.deriveArtifactId();
             }
         } else {
             // on mismatch: insert error into artifact.
