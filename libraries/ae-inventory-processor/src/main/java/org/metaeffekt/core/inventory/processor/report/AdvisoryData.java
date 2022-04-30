@@ -234,8 +234,12 @@ public class AdvisoryData {
 
         if (parsedDate != null) {
             return DATE_FORMATS.get(0).format(parsedDate);
-        } else if (string.contains("T")) {
-            return string.substring(0, string.indexOf("T"));
+        } else {
+            if (string.contains("T")) {
+                return string.substring(0, string.indexOf("T"));
+            } else {
+                // do nothing
+            }
         }
 
         return string;
