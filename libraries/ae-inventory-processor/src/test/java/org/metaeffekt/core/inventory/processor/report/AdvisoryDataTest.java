@@ -86,6 +86,9 @@ public class AdvisoryDataTest {
     public void normalizeDateTest() {
         Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("2021-12-15"));
         Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("15 december 2021"));
+        Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("15 December 2021"));
+        Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("15 Dezember 2021"));
+        Assert.assertEquals("2021-12-15", AdvisoryData.normalizeDate("15 décembre 2021"));
         Assert.assertEquals("2022-02-07", AdvisoryData.normalizeDate("2022-02-07T13:29:18.783233Z"));
     }
 
