@@ -20,6 +20,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.FileSet;
+import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -106,6 +107,11 @@ public class DirectoryInventoryScan {
         scanDirectory(scanDirectory, scanDirectory, scanIncludes, scanExcludes, referenceInventory, scanInventory);
 
         scanInventory.mergeDuplicates();
+
+        // attempt to extract artifactId, version, groupId from poms
+        Properties properties = new Properties();
+        properties.put(MavenJarMetadataExtractor.PROJECT_PATH, scanDirectory.getAbsolutePath());
+        new MavenJarMetadataExtractor(properties).process(scanInventory);
 
         return scanInventory;
     }

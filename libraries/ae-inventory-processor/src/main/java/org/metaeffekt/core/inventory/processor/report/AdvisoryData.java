@@ -222,7 +222,11 @@ public class AdvisoryData {
     }
 
     private final static List<SimpleDateFormat> DATE_FORMATS = Arrays.asList(
-            new SimpleDateFormat("yyyy-MM-dd"),
+            new SimpleDateFormat("yyyy-MM-dd"), // target format
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+            new SimpleDateFormat("dd MMMMM yyyy", Locale.GERMAN),
+            new SimpleDateFormat("dd MMMMM yyyy", Locale.FRANCE),
+            new SimpleDateFormat("dd MMMMM yyyy", Locale.ENGLISH),
             new SimpleDateFormat("dd MMMMM yyyy"),
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     );
@@ -234,8 +238,12 @@ public class AdvisoryData {
 
         if (parsedDate != null) {
             return DATE_FORMATS.get(0).format(parsedDate);
-        } else if (string.contains("T")) {
-            return string.substring(0, string.indexOf("T"));
+        } else {
+            if (string.contains("T")) {
+                return string.substring(0, string.indexOf("T"));
+            } else {
+                // do nothing
+            }
         }
 
         return string;
