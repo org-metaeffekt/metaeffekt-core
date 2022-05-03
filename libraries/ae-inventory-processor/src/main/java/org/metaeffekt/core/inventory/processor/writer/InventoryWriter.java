@@ -289,7 +289,7 @@ public class InventoryWriter {
     }
 
     private void writeVulnerabilities(Inventory inventory, HSSFWorkbook myWorkBook, String context) {
-        HSSFSheet sheet = myWorkBook.createSheet(VulnerabilityMetaData.contextToSheetName(context));
+        HSSFSheet sheet = myWorkBook.createSheet(VulnerabilityMetaData.convertContextToSheetName(context));
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 

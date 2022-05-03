@@ -119,7 +119,7 @@ public abstract class AbstractXlsInventoryReader {
     }
 
     protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory, String sheetName) {
-        String context = VulnerabilityMetaData.sheetNameToContext(sheetName);
+        String context = VulnerabilityMetaData.convertSheetNameToContext(sheetName);
 
         HSSFSheet sheet = workbook.getSheet(sheetName);
         if (sheet == null) return;
