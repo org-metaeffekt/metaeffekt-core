@@ -225,14 +225,31 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * If left empty, no filter will be applied.<br>
      * Available advisory providers:
      * <ul>
-     *     <li>CERT-FR</li>
-     *     <li>CERT-SEI</li>
-     *     <li>MSRC</li>
+     *     <li><code>CERT-FR</code></li>
+     *     <li><code>CERT-SEI</code></li>
+     *     <li><code>MSRC</code></li>
      * </ul>
+     * To address all providers, use <code>ALL</code>
      *
      * @parameter default-value=""
      */
     private String vulnerabilityAdvisoryFilter;
+
+    /**
+     * Comma seperated list of advisory providers. For every provider, an additional overview table will be generated
+     * only evaluating the vulnerabilities containing the respecting provider.<br>
+     * If left empty, no additional table will be created.<br>
+     * Available advisory providers:
+     * <ul>
+     *     <li><code>CERT-FR</code></li>
+     *     <li><code>CERT-SEI</code></li>
+     *     <li><code>MSRC</code></li>
+     * </ul>
+     * To address all providers, use <code>ALL</code>
+     *
+     * @parameter default-value=""
+     */
+    private String generateOverviewTablesForAdvisories;
 
     /**
      * @parameter default-value="en"
@@ -292,6 +309,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         // vulnerability settings
         report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
         report.addVulnerabilityAdvisoryFilter(vulnerabilityAdvisoryFilter);
+        report.addGenerateOverviewTablesForAdvisories(generateOverviewTablesForAdvisories);
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);

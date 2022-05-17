@@ -138,6 +138,11 @@ public class InventoryReport {
 
     private float vulnerabilityScoreThreshold = 7.0f;
     private final List<String> vulnerabilityAdvisoryFilter = new ArrayList<>();
+    /**
+     * For what advisory providers to generate additional tables in the overview section containing statistic data on
+     * what vulnerabilities have already been reviewed.
+     */
+    private final List<String> generateOverviewTablesForAdvisories = new ArrayList<>();
 
     private ArtifactFilter artifactFilter;
 
@@ -1134,16 +1139,33 @@ public class InventoryReport {
         return Collections.unmodifiableList(vulnerabilityAdvisoryFilter);
     }
 
-    public void addVulnerabilityAdvisoryFilter(String advisoryProvider) {
-        if (advisoryProvider != null && advisoryProvider.length() > 0) {
-            if (advisoryProvider.contains(",")) {
-                Arrays.stream(advisoryProvider.split(", ?")).forEach(this::addVulnerabilityAdvisoryFilter);
-            } else {
-                if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(advisoryProvider.toUpperCase()))) {
-                    LOG.debug("Filtering vulnerabilities for advisory [{}]", artifactFilter);
-                    vulnerabilityAdvisoryFilter.add(advisoryProvider.toUpperCase());
-                } else {
-                    LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+    public void addVulnerabilityAdvisoryFilter(String... advisoryProvider) {
+        splitAndAppendCsvAdvisoryProviders(vulnerabilityAdvisoryFilter, advisoryProvider);
+    }
+
+    public List<String> getGenerateOverviewTablesForAdvisories() {
+        return generateOverviewTablesForAdvisories;
+    }
+
+    public void addGenerateOverviewTablesForAdvisories(String... advisoryProvider) {
+        splitAndAppendCsvAdvisoryProviders(generateOverviewTablesForAdvisories, advisoryProvider);
+    }
+
+    private void splitAndAppendCsvAdvisoryProviders(List<String> listToAddProvidersTo, String... commaSeperatedProviders) {
+        if (commaSeperatedProviders != null && commaSeperatedProviders.length > 0) {
+            for (String commaSeperatedProvider : commaSeperatedProviders) {
+                if (commaSeperatedProvider != null && commaSeperatedProvider.length() > 0) {
+                    if (commaSeperatedProvider.contains(",")) {
+                        splitAndAppendCsvAdvisoryProviders(listToAddProvidersTo, commaSeperatedProvider.split(", ?"));
+                    } else {
+                        if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(commaSeperatedProvider.toUpperCase()))) {
+                            listToAddProvidersTo.add(commaSeperatedProvider.toUpperCase());
+                        } else if (commaSeperatedProvider.equals("ALL")) {
+                            listToAddProvidersTo.addAll(Arrays.asList(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+                        } else {
+                            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", commaSeperatedProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+                        }
+                    }
                 }
             }
         }
