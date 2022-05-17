@@ -244,6 +244,7 @@ public class RepositoryReportTest {
 
         InventoryReport report = new InventoryReport();
         //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
+        report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC");
 
         createReport(inventoryDir, "*.xls", reportDir, report);
 
