@@ -824,6 +824,7 @@ public class InventoryReport {
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("Float", Float.class);
+        context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
 
