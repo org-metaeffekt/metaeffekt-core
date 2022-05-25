@@ -51,7 +51,7 @@
         <plexus.utils.version>3.0.24</plexus.utils.version>
         <poi.version>3.17</poi.version>
         <slf4j.version>1.7.36</slf4j.version>
-        <spring.framework.version>5.3.14</spring.framework.version>
+        <spring.framework.version>5.3.20</spring.framework.version>
         <!-- update to version 2 and test -->
         <velocity.version>1.7</velocity.version>
         <xalan.version>2.7.2</xalan.version>
