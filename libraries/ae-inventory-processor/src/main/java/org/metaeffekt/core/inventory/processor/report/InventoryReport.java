@@ -797,8 +797,7 @@ public class InventoryReport {
         }
     }
 
-    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext)
-            throws Exception {
+    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext) throws Exception {
         LOG.info("Producing Dita for template [{}]", templateResourcePath);
 
         String ENCODING_UTF_8 = "UTF-8";
