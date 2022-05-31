@@ -802,8 +802,7 @@ public class InventoryReport {
         }
     }
 
-    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext)
-            throws Exception {
+    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext) throws Exception {
         LOG.info("Producing Dita for template [{}]", templateResourcePath);
 
         String ENCODING_UTF_8 = "UTF-8";
@@ -829,6 +828,7 @@ public class InventoryReport {
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("Float", Float.class);
+        context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
 

@@ -55,7 +55,7 @@ public class Artifact extends AbstractModelBase {
         // indicates whether the artifact is security relevant and needs to be upgraded asap
         SECURITY_RELEVANT("Security Relevance"),
 
-        // if the artifact is security relevant is is classified into a security category
+        // if the artifact is security relevant it is classified into a security category
         SECURITY_CATEGORY("Security Relevance"),
 
         // vulnerability information
