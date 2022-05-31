@@ -1353,27 +1353,27 @@ public class Inventory {
         this.vulnerabilityMetaData = vulnerabilityMetaData;
     }
 
-    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
+    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
-    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
+    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
-    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold, boolean sortedByScore) {
+    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
-    public List<VulnerabilityMetaData> getVoidVulnerabilities(boolean sortedByScore) {
+    public List<VulnerabilityMetaData> getVoidVulnerabilities() {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterVoidVulnerabilities(getVulnerabilityMetaData());
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+         vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
