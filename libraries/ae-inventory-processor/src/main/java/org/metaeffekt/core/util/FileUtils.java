@@ -48,8 +48,12 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         if (baseDir.exists()) {
             DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(baseDir);
-            scanner.setIncludes(includes.split(","));
-            scanner.setExcludes(excludes.split(","));
+            if (includes != null) {
+                scanner.setIncludes(includes.split(","));
+            }
+            if (excludes != null) {
+                scanner.setExcludes(excludes.split(","));
+            }
             scanner.setFollowSymlinks(false);
             scanner.scan();
             return scanner.getIncludedFiles();

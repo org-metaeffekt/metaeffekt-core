@@ -38,6 +38,8 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     private Map<Integer, String> licenseDataColumnMap = new HashMap<>();
     private Map<Integer, String> componentPatternDataColumnMap = new HashMap<>();
     private Map<Integer, String> vulnerabilityMetaDataColumnMap = new HashMap<>();
+    private Map<Integer, String> certMetaDataColumnMap = new HashMap<>();
+    private Map<Integer, String> assetMetaDataColumnMap = new HashMap<>();
 
     @Override
     protected List<String> readArtifactHeader(HSSFRow row) {
@@ -57,6 +59,11 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected void readComponentPatternDataHeader(HSSFRow row) {
         parseColumns(row, componentPatternDataColumnMap);
+    }
+
+    @Override
+    protected void readAssetMetaDataHeader(HSSFRow row) {
+        parseColumns(row, assetMetaDataColumnMap);
     }
 
     protected List<String> parseColumns(HSSFRow row, Map<Integer, String> map) {
@@ -159,42 +166,20 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected ComponentPatternData readComponentPatternData(HSSFRow row) {
         final ComponentPatternData componentPatternData = new ComponentPatternData();
-        Map<Integer, String> map = this.componentPatternDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                componentPatternData.set(columnName, value.trim());
-            }
-        }
-
+        readValues(row, componentPatternData, this.componentPatternDataColumnMap);
         if (componentPatternData.isValid()) {
             return componentPatternData;
         }
-
         return null;
     }
 
     @Override
     protected LicenseData readLicenseData(HSSFRow row) {
         final LicenseData licenseData = new LicenseData();
-        Map<Integer, String> map = this.licenseDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                licenseData.set(columnName, value.trim());
-            }
-        }
-
+        readValues(row, licenseData, this.licenseDataColumnMap);
         if (licenseData.isValid()) {
             return licenseData;
         }
-
         return null;
     }
 
@@ -207,27 +192,15 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
         final VulnerabilityMetaData vulnerabilityMetaData = new VulnerabilityMetaData();
-        Map<Integer, String> map = this.vulnerabilityMetaDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                vulnerabilityMetaData.set(columnName, value.trim());
-            }
-        }
+        readValues(row, vulnerabilityMetaData, this.vulnerabilityMetaDataColumnMap);
 
         if (vulnerabilityMetaData.isValid()) {
-
             // compensate rename of attributes
             mapContent(vulnerabilityMetaData, DEPRECATED_KEY_V2_SCORE, VulnerabilityMetaData.Attribute.V2_SCORE);
             mapContent(vulnerabilityMetaData, DEPRECATED_KEY_V3_SCORE, VulnerabilityMetaData.Attribute.V3_SCORE);
             mapContent(vulnerabilityMetaData, DEPRECATED_KEY_MAX_SCORE, VulnerabilityMetaData.Attribute.MAX_SCORE);
-
             return vulnerabilityMetaData;
         }
-
         return null;
     }
 
@@ -235,22 +208,32 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected CertMetaData readCertMetaData(HSSFRow row) {
         final CertMetaData certMetaData = new CertMetaData();
-        Map<Integer, String> map = this.vulnerabilityMetaDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                certMetaData.set(columnName, value.trim());
-            }
-        }
-
+        readValues(row, certMetaData, this.certMetaDataColumnMap);
         if (certMetaData.isValid()) {
             return certMetaData;
         }
-
         return null;
+    }
+
+    @Override
+    protected AssetMetaData readAssetMetaData(HSSFRow row) {
+        final AssetMetaData assetMetaData = new AssetMetaData();
+        readValues(row, assetMetaData, this.assetMetaDataColumnMap);
+        if (assetMetaData.isValid()) {
+            return assetMetaData;
+        }
+        return null;
+    }
+
+    private void readValues(HSSFRow row, AbstractModelBase modelBase, Map<Integer, String> map) {
+        for (int i = 0; i < map.size(); i++) {
+            final String columnName = map.get(i).trim();
+            final HSSFCell cell = row.getCell(i);
+            final String value = cell != null ? cell.toString() : null;
+            if (value != null) {
+                modelBase.set(columnName, value.trim());
+            }
+        }
     }
 
     private void mapContent(final VulnerabilityMetaData vulnerabilityMetaData,

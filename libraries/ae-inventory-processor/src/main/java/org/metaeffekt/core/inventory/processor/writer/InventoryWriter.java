@@ -63,26 +63,29 @@ public class InventoryWriter {
     };
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
-        HSSFWorkbook myWorkBook = new HSSFWorkbook();
+        HSSFWorkbook workbook = new HSSFWorkbook();
 
-        writeArtifacts(inventory, myWorkBook);
-        writeNotices(inventory, myWorkBook);
-        writeComponentPatterns(inventory, myWorkBook);
-        writeVulnerabilities(inventory, myWorkBook);
-        writeCertMetaData(inventory, myWorkBook);
-        writeLicenseData(inventory, myWorkBook);
+        writeArtifacts(inventory, workbook);
+        writeNotices(inventory, workbook);
+        writeComponentPatterns(inventory, workbook);
+        writeVulnerabilities(inventory, workbook);
+        writeCertMetaData(inventory, workbook);
+        writeLicenseData(inventory, workbook);
+        writeAssetMetaData(inventory, workbook);
 
         FileOutputStream out = new FileOutputStream(file);
         try {
-            myWorkBook.write(out);
+            workbook.write(out);
         } finally {
             out.flush();
             out.close();
         }
     }
 
-    private void writeArtifacts(Inventory inventory, HSSFWorkbook myWorkBook) {
-        HSSFSheet mySheet = myWorkBook.createSheet("Artifact Inventory");
+    private void writeArtifacts(Inventory inventory, HSSFWorkbook workbook) {
+        if (isEmpty(inventory.getArtifacts())) return;
+
+        HSSFSheet mySheet = workbook.createSheet("Artifact Inventory");
         mySheet.createFreezePane(0, 1);
         mySheet.setDefaultColumnWidth(20);
 
@@ -90,7 +93,7 @@ public class InventoryWriter {
 
         // create header row
         HSSFRow headerRow = mySheet.createRow(rowNum++);
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+        HSSFCellStyle headerStyle = createHeaderStyle(workbook);
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
@@ -153,6 +156,11 @@ public class InventoryWriter {
         mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, ordered.size() - 1));
     }
 
+    private boolean isEmpty(Collection<?> collection) {
+        if (collection == null) return true;
+        return collection.isEmpty();
+    }
+
     private int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
         if (attributesSet.contains(key)) {
             orderedAttributesList.remove(key);
@@ -178,6 +186,8 @@ public class InventoryWriter {
     }
 
     private void writeComponentPatterns(Inventory inventory, HSSFWorkbook myWorkBook) {
+        if (isEmpty(inventory.getComponentPatternData())) return;
+
         HSSFSheet mySheet = myWorkBook.createSheet("Component Patterns");
         mySheet.createFreezePane(0, 1);
         mySheet.setDefaultColumnWidth(20);
@@ -229,6 +239,8 @@ public class InventoryWriter {
 
 
     private void writeNotices(Inventory inventory, HSSFWorkbook myWorkBook) {
+        if (isEmpty(inventory.getLicenseMetaData())) return;
+
         HSSFSheet mySheet = myWorkBook.createSheet("License Notices");
         mySheet.createFreezePane(0, 1);
         mySheet.setDefaultColumnWidth(20);
@@ -281,6 +293,8 @@ public class InventoryWriter {
     }
 
     private void writeVulnerabilities(Inventory inventory, HSSFWorkbook myWorkBook) {
+        if (isEmpty(inventory.getVulnerabilityMetaData())) return;
+
         HSSFSheet sheet = myWorkBook.createSheet("Vulnerabilities");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
@@ -363,6 +377,8 @@ public class InventoryWriter {
     }
 
     private void writeCertMetaData(Inventory inventory, HSSFWorkbook myWorkBook) {
+        if (isEmpty(inventory.getCertMetaData())) return;
+
         HSSFSheet sheet = myWorkBook.createSheet("Cert");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
@@ -434,6 +450,8 @@ public class InventoryWriter {
     }
 
     private void writeLicenseData(Inventory inventory, HSSFWorkbook myWorkBook) {
+        if (isEmpty(inventory.getLicenseData())) return;
+
         HSSFSheet sheet = myWorkBook.createSheet("Licenses");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
@@ -481,5 +499,57 @@ public class InventoryWriter {
         }
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
+
+    private void writeAssetMetaData(Inventory inventory, HSSFWorkbook myWorkBook) {
+        if (isEmpty(inventory.getAssetMetaData())) return;
+
+        HSSFSheet sheet = myWorkBook.createSheet("Assets");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
+
+        HSSFRow row = null;
+        HSSFCell cell = null;
+
+        int rowNum = 0;
+
+        row = sheet.createRow(rowNum++);
+
+        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+
+        int cellNum = 0;
+
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (AssetMetaData amd : inventory.getAssetMetaData()) {
+            attributes.addAll(amd.getAttributes());
+        }
+
+        attributes.removeAll(AssetMetaData.CORE_ATTRIBUTES);
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        List<String> finalOrder = new ArrayList<>(AssetMetaData.CORE_ATTRIBUTES);
+        finalOrder.addAll(ordered);
+
+        for (String key : finalOrder) {
+            cell = row.createCell(cellNum++);
+            cell.setCellStyle(headerStyle);
+            cell.setCellValue(new HSSFRichTextString(key));
+        }
+
+        int numCol = cellNum;
+
+        for (AssetMetaData cpd : inventory.getAssetMetaData()) {
+            row = sheet.createRow(rowNum++);
+            cellNum = 0;
+            for (String key : finalOrder) {
+                cell = row.createCell(cellNum++);
+                cell.setCellValue(new HSSFRichTextString(cpd.get(key)));
+            }
+        }
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
+    }
+
 
 }

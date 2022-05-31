@@ -36,14 +36,19 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  */
 public class Inventory {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
+
     public static final String CLASSIFICATION_CURRENT = "current";
+
     // Components are structured by context. This is the package context.
     public static final String COMPONENT_CONTEXT_PACKAGE = "package";
+
     // Components are structured by context. This is the artifact context.
     public static final String COMPONENT_CONTEXT_ARTIFACT = "artifact";
+
     // Components are structured by context. This is the web module context.
     public static final String COMPONENT_CONTEXT_WEBMODULE = "web-module";
-    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
+
     private List<Artifact> artifacts = new ArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
@@ -54,7 +59,9 @@ public class Inventory {
 
     private List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
 
-    private List<CertMetaData> certMetadata = new ArrayList<>();
+    private List<CertMetaData> certMetaData = new ArrayList<>();
+
+    private List<AssetMetaData> assetMetaData = new ArrayList<>();
 
     private Map<String, String> licenseNameMap = new HashMap<>();
 
@@ -1378,11 +1385,19 @@ public class Inventory {
     }
 
     public List<CertMetaData> getCertMetaData() {
-        return certMetadata;
+        return certMetaData;
     }
 
-    public void setCertMetaData(List<CertMetaData> certMetadata) {
-        this.certMetadata = certMetadata;
+    public void setCertMetaData(List<CertMetaData> certMetaData) {
+        this.certMetaData = certMetaData;
+    }
+
+    public List<AssetMetaData> getAssetMetaData() {
+        return assetMetaData;
+    }
+
+    public void setAssetMetaData(List<AssetMetaData> assetMetaData) {
+        this.assetMetaData = assetMetaData;
     }
 
     private Set<String> splitCommaSeparated(String string) {

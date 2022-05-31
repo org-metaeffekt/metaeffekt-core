@@ -54,6 +54,7 @@ public abstract class AbstractXlsInventoryReader {
         readComponentPatternData(workbook, inventory);
         readVulnerabilityMetaData(workbook, inventory);
         readCertMetaData(workbook, inventory);
+        readAssetMetaData(workbook, inventory);
 
         return inventory;
     }
@@ -168,6 +169,34 @@ public abstract class AbstractXlsInventoryReader {
         }
     }
 
+    protected void readAssetMetaData(HSSFWorkbook workbook, Inventory inventory) {
+        HSSFSheet sheet = workbook.getSheet("Assets");
+        if (sheet == null) return;
+        Iterator<?> rows = sheet.rowIterator();
+
+        List<AssetMetaData> assetMetaData = new ArrayList<>();
+        inventory.setAssetMetaData(assetMetaData);
+
+        if (rows.hasNext()) {
+            readAssetMetaDataHeader((HSSFRow) rows.next());
+        }
+
+        int columns = 0;
+
+        while (rows.hasNext()) {
+            HSSFRow row = (HSSFRow) rows.next();
+            AssetMetaData amd = readAssetMetaData(row);
+            if (amd != null) {
+                assetMetaData.add(amd);
+                columns = amd.numAttributes();
+            }
+        }
+
+        for (int i = 0; i < columns; i++) {
+            int width = sheet.getColumnWidth(i);
+            inventory.getContextMap().put("assets.column[" + i + "].width", width);
+        }
+    }
 
     protected List<String> readArtifactHeader(HSSFRow row) {
         // default implementation does nothing
@@ -187,6 +216,10 @@ public abstract class AbstractXlsInventoryReader {
     }
 
     protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
+        // default implementation does nothing
+    }
+
+    protected void readAssetMetaDataHeader(HSSFRow row) {
         // default implementation does nothing
     }
 
@@ -264,6 +297,9 @@ public abstract class AbstractXlsInventoryReader {
         throw new UnsupportedOperationException();
     }
 
+    protected AssetMetaData readAssetMetaData(HSSFRow row) {
+        throw new UnsupportedOperationException();
+    }
     protected CertMetaData readCertMetaData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
