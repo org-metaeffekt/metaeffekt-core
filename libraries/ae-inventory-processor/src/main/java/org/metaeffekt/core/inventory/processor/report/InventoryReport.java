@@ -138,9 +138,10 @@ public class InventoryReport {
 
     private float vulnerabilityScoreThreshold = 7.0f;
     private final List<String> vulnerabilityAdvisoryFilter = new ArrayList<>();
+
     /**
-     * For what advisory providers to generate additional tables in the overview section containing statistic data on
-     * what vulnerabilities have already been reviewed.
+     * For which advisory providers to generate additional tables in the overview section containing statistic data on
+     * which vulnerabilities have already been reviewed.
      */
     private final List<String> generateOverviewTablesForAdvisories = new ArrayList<>();
 
