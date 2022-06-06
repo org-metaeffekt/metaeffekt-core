@@ -556,10 +556,13 @@ public class InventoryReport {
         final String parentPath = parentResource.getURI().toASCIIString();
         for (Resource r : resources) {
             String filePath = r.getURI().toASCIIString();
-            filePath = templateBaseDir + filePath.replace(parentPath, "");
+            String path = filePath.replace(parentPath, "");
+            filePath = templateBaseDir + path;
             String targetFileName = r.getFilename().replace(".vt", "");
 
-            final File targetReportPath = new File(this.targetReportDir, targetFileName);
+            File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
+
+            final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
             produceDita(projectInventory, filePath, targetReportPath, reportContext);
         }
     }
@@ -1043,6 +1046,11 @@ public class InventoryReport {
         s = s.replace("-NEWLINE-", "<p/>");
 
         return s;
+    }
+
+    public String xmlEscapeSvgId(String text) {
+        if (text == null) return "";
+        return text.trim().toLowerCase().replace(" ", "-");
     }
 
     private PreFormattedEscapeUtils preFormattedEscapeUtils = new PreFormattedEscapeUtils();
