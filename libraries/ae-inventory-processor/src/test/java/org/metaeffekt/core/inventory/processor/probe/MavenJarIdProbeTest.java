@@ -93,8 +93,8 @@ public class MavenJarIdProbeTest {
         MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
         probe.runCompletion();
 
-        // should have logged an error to the artifact
-        assertTrue(StringUtils.isNotBlank(artifact.get("Errors")));
+        // do not expect an error in this case
+        assertFalse(StringUtils.isNotBlank(artifact.get("Errors")));
     }
 
     @Test

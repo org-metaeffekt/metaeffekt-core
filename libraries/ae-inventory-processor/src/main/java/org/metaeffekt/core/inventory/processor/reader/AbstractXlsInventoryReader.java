@@ -149,7 +149,7 @@ public abstract class AbstractXlsInventoryReader {
         inventory.setCertMetaData(certMetadata);
 
         if (rows.hasNext()) {
-            readVulnerabilityMetaDataHeader((HSSFRow) rows.next());
+            readCertMetaDataHeader((HSSFRow) rows.next());
         }
 
         int columns = 0;
@@ -203,25 +203,18 @@ public abstract class AbstractXlsInventoryReader {
         return Collections.emptyList();
     }
 
-    protected void readLicenseMetaDataHeader(HSSFRow row) {
-        // default implementation does nothing
-    }
 
-    protected void readLicenseDataHeader(HSSFRow row) {
-        // default implementation does nothing
-    }
+    abstract protected void readLicenseMetaDataHeader(HSSFRow row);
 
-    protected void readComponentPatternDataHeader(HSSFRow row) {
-        // default implementation does nothing
-    }
+    abstract protected void readLicenseDataHeader(HSSFRow row);
 
-    protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
-        // default implementation does nothing
-    }
+    abstract protected void readComponentPatternDataHeader(HSSFRow row);
 
-    protected void readAssetMetaDataHeader(HSSFRow row) {
-        // default implementation does nothing
-    }
+    abstract protected void readVulnerabilityMetaDataHeader(HSSFRow row);
+
+    abstract protected void readCertMetaDataHeader(HSSFRow row);
+
+    abstract protected void readAssetMetaDataHeader(HSSFRow row);
 
     protected void readLicenseMetaData(HSSFWorkbook workbook, Inventory inventory) {
         HSSFSheet sheet = workbook.getSheet("License Notices");

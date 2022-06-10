@@ -108,13 +108,13 @@ public class DirectoryInventoryScanTest {
             if (!found0003) {
                 found0003 = artifact.getGroupId() == null
                         && artifact.getVersion() == null
-                        && !artifact.get("Errors").isEmpty();
+                        && artifact.get("Errors") == null;
             }
 
             if (!found0004) {
                 found0004 = artifact.getGroupId() == null
                         && artifact.getVersion() == null
-                        && !artifact.get("Errors").isEmpty();
+                        && artifact.get("Errors") == null;
             }
 
             if (!found0005) {

@@ -86,7 +86,6 @@ public class MavenJarIdProbe {
         }
 
         if (jarFile == null || !jarFile.exists() || !jarFile.isFile()) {
-            addError(this.getClass().getName() + ": Could not read first jar from getProjects.");
             return null;
         } else {
             return jarFile;
@@ -104,7 +103,7 @@ public class MavenJarIdProbe {
         try {
             pomProperties.load(inputStream);
         } catch (IOException e) {
-            addError("Error while loading a 'pom.properties'.");
+            addError("Error while loading 'pom.properties'.");
         }
 
         Artifact dummyArtifact = new Artifact();
@@ -180,7 +179,7 @@ public class MavenJarIdProbe {
                 }
             }
         } catch (IOException e) {
-            addError("IOException while reading project jar.");
+            // ignore
         }
 
         return artifacts;
@@ -309,9 +308,7 @@ public class MavenJarIdProbe {
                 artifact.deriveArtifactId();
             }
         } else {
-            // on mismatch: insert error into artifact.
-            addError("No suitable poms found by " + this.getClass().getSimpleName() + " (rejected "
-                    + dummyArtifacts.size() + ").");
+            // no pom found; ignore
         }
     }
 }

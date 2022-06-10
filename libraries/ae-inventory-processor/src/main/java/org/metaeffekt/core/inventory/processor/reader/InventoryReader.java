@@ -66,6 +66,16 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         parseColumns(row, assetMetaDataColumnMap);
     }
 
+    @Override
+    protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
+        parseColumns(row, vulnerabilityMetaDataColumnMap);
+    }
+
+    @Override
+    protected void readCertMetaDataHeader(HSSFRow row) {
+        parseColumns(row, certMetaDataColumnMap);
+    }
+
     protected List<String> parseColumns(HSSFRow row, Map<Integer, String> map) {
         List<String> columnList = new ArrayList<>();
         for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
@@ -182,12 +192,6 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         }
         return null;
     }
-
-    @Override
-    protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
-        parseColumns(row, vulnerabilityMetaDataColumnMap);
-    }
-
 
     @Override
     protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
