@@ -64,13 +64,15 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            Inventory sourceInventory = InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
+            final Inventory sourceInventory =
+                InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
 
-            DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, sourceInventory);
+            final DirectoryInventoryScan scan =
+                new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, sourceInventory);
 
-            Inventory inventory = scan.createScanInventory();
+            final Inventory inventory = scan.createScanInventory();
 
-            for (Artifact artifact : inventory.getArtifacts()) {
+            for (final Artifact artifact : inventory.getArtifacts()) {
                 artifact.set(KEY_SOURCE_PROJECT, artifactInventoryId);
             }
 

@@ -36,7 +36,6 @@ import java.util.*;
 
 public class DependenciesDitaReport {
 
-
     private static final String DITA_REPORT_TEMPLATE =
             "/META-INF/templates/dependencies/tpc_dependencies-report.dita.vt";
     private static final String PROVIDED_SCOPE = "provided";

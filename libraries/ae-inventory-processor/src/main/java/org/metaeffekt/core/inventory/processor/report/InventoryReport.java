@@ -354,8 +354,6 @@ public class InventoryReport {
                     copy.setId(artifactFileId);
 
                     if (ASTERISK.equals(matchedReferenceArtifact.getVersion())) {
-                        copy.setVerified(false);
-
                         // in this case we also to manage the version (and replace the wildcard with the concrete version)
                         final String id = matchedReferenceArtifact.getId();
                         try {
@@ -370,8 +368,6 @@ public class InventoryReport {
                             LOG.error("Cannot extract version from artifact {}. To express that no version information " +
                                     "is available use a different version keyword such as 'undefined' or 'unspecific'.", id);
                         }
-                    } else {
-                        copy.setVerified(true);
                     }
 
                     // override flags (the original data does not include context)

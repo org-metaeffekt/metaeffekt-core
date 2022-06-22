@@ -179,10 +179,12 @@ public class Artifact extends AbstractModelBase {
         set(Attribute.CLASSIFICATION, classification);
     }
 
+    @Deprecated
     public boolean isVerified() {
         return "X".equalsIgnoreCase(get(Attribute.VERIFIED));
     }
 
+    @Deprecated
     public void setVerified(boolean verified) {
         set(Attribute.VERIFIED, verified ? "X" : null);
     }
@@ -223,9 +225,6 @@ public class Artifact extends AbstractModelBase {
 
     public void merge(Artifact a) {
         append(Attribute.PROJECTS.getKey(), a.get(Attribute.PROJECTS), ", ");
-        if (a.isVerified()) {
-            setVerified(true);
-        }
 
         // merge attributes
         super.merge(a);

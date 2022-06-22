@@ -24,6 +24,13 @@
 
         <dependency>
             <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-inspect-reader</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.metaeffekt.core</groupId>
             <artifactId>ae-maven-kernel</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>

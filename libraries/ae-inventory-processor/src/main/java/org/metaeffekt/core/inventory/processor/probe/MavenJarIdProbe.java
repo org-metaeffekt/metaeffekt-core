@@ -23,6 +23,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +33,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MavenJarIdProbe {
-    protected File projectDir;
-    protected Artifact artifact;
+    private File projectDir;
+    private Artifact artifact;
 
     public MavenJarIdProbe(File projectDir, Artifact artifact) {
         this.projectDir = projectDir;
@@ -141,6 +142,15 @@ public class MavenJarIdProbe {
                 dummyArtifact.setVersion(model.getParent().getVersion());
             }
 
+            // NOTE: the information may not be part of the pom, but provided in the parent pom. However, if the
+            // information is available, it is included in the artifact
+            if (model.getOrganization() != null) {
+                dummyArtifact.set(Constants.KEY_ORGANIZATION, model.getOrganization().getName());
+                dummyArtifact.set(Constants.KEY_ORGANIZATION_URL, model.getOrganization().getUrl());
+            }
+
+            // NOTE: the current mode is identification. POM specified licenses are not subjec to identification
+            // Furthermore, the leaf-pom may not include license information.
 
         } catch (IOException | XmlPullParserException e) {
             addError("Exception while parsing a 'pom.xml'.");
@@ -165,8 +175,15 @@ public class MavenJarIdProbe {
         return null;
     }
 
+    /**
+     * Iternates throw the entries in the jar file and produced an artifact for every pom.properties or pom.xml file.
+     *
+     * @param jarFile The file being probed.
+     *
+     * @return List of artifacts created from pom.properties or pom.xml entries in the jar file.
+     */
     protected List<Artifact> getIds(File jarFile) {
-        List<Artifact> artifacts = new ArrayList<>();
+        final List<Artifact> artifacts = new ArrayList<>();
 
         try(ZipFile zipFile = new ZipFile(jarFile)) {
             Enumeration<ZipArchiveEntry> entries = zipFile.getEntries();
@@ -298,14 +315,17 @@ public class MavenJarIdProbe {
         if (accepted.size() > 0) {
             // on match (accepted and no conflicts): insert info into artifact
             if (conflictWithOriginal.size() == 0 && conflictWithEachOther.size() == 0) {
-                Artifact newData = accepted.stream().findAny().get();
+                for (Artifact newData : accepted) {
 
-                artifact.setGroupId(newData.getGroupId());
-                artifact.setVersion(newData.getVersion());
+                    // copy all attributes
+                    for (String attribute : newData.getAttributes()) {
+                        artifact.set(attribute, newData.get(attribute));
+                    }
 
-                // derive artifactid once groupId and version are set to produce an up-to-date output
-                artifact.setArtifactId(null);
-                artifact.deriveArtifactId();
+                    // derive artifactid once groupId and version are set to produce an up-to-date output
+                    artifact.setArtifactId(null);
+                    artifact.deriveArtifactId();
+                }
             }
         } else {
             // no pom found; ignore

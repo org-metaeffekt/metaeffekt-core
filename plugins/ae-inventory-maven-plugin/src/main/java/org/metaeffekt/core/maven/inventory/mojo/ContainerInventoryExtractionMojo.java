@@ -60,7 +60,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             // fill content derived from preprocessed files
-            Inventory inventory = extractInventory(analysisDir);
+            final Inventory inventory = extractInventory(analysisDir);
 
             filterInventory(inventory);
 
@@ -68,7 +68,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             targetInventoryFile.getParentFile().mkdirs();
 
             // write not covered file list
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
                 if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
                     Set<String> projects = artifact.getProjects();

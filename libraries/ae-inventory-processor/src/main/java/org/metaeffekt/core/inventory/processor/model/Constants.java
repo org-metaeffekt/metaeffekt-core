@@ -46,6 +46,17 @@ public final class Constants {
     public static final String KEY_LICENSE_PATH_PACKAGE = "Package License Path";
     public static final String KEY_GROUP_PACKAGE = "Package Group";
 
+    /**
+     * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
+     * supplier (CycloneDX).
+     */
+    public static final String KEY_ORGANIZATION = "Organization";
+
+    /**
+     * Organization URL key. Maven uses two distinct attributes for an organization.
+     */
+    public static final String KEY_ORGANIZATION_URL = "Organization URL";
+
     public static final String KEY_SUMMARY = "Summary";
     public static final String KEY_DESCRIPTION = "Description";
     public static final String KEY_ARCHITECTURE = "Architecture";

@@ -40,7 +40,7 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
      * Includes based on sourceInventoryBaseDir.
      */
     @Parameter(defaultValue = "**/*.xls")
-    protected String sourceInventoryInclude;
+    protected String sourceInventoryIncludes;
 
     /**
      * Excludes based on sourceInventoryBaseDir.
@@ -91,16 +91,19 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
                 if (sourceInventory.exists() && sourceInventory.isFile()) {
                     sourceInventories.add(sourceInventory);
                 } else {
-                    throw new MojoExecutionException("The parameter [sourceInventory] is set, but the file does not exist: " + sourceInventory.getAbsolutePath());
+                    throw new MojoExecutionException("The parameter [sourceInventory] is set, but the file does not exist: " +
+                            sourceInventory.getAbsolutePath());
                 }
             }
 
             if (sourceInventoryBaseDir != null) {
                 if (sourceInventoryBaseDir.exists() && sourceInventoryBaseDir.isDirectory()) {
-                    final String[] sourceFiles = FileUtils.scanForFiles(sourceInventoryBaseDir, sourceInventoryInclude, sourceInventoryExcludes);
+                    final String[] sourceFiles = FileUtils.scanForFiles(sourceInventoryBaseDir,
+                            sourceInventoryIncludes, sourceInventoryExcludes);
                     Arrays.stream(sourceFiles).forEach(f -> sourceInventories.add(new File(sourceInventoryBaseDir, f)));
                 } else {
-                    throw new MojoExecutionException("The parameter [sourceInventoryDir] parameter is set, but the directory does not exist: " + sourceInventoryBaseDir.getAbsolutePath());
+                    throw new MojoExecutionException("The parameter [sourceInventoryBaseDir] parameter is set, but the directory does not exist: " +
+                            sourceInventoryBaseDir.getAbsolutePath());
                 }
             }
 
@@ -114,7 +117,6 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
             }
 
             // NOTE:
-
             // - we merge artifacts
             // - we merge assets (currently only by adding; not merging; not cleaning duplicates)
 
@@ -124,6 +126,12 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
             // - we do not merge vulnerabilities; vulnerabilities are in the reference inventory (target) or
             //   processed later on (future: organize vulnerability data per asset, merge details on artifact level)
             // - we do not merge license data (reference is the target; future: merge; manage assets columns; remove duplicates)
+
+            // create target directory if not existing yet
+            final File targetParentFile = this.targetInventory.getParentFile();
+            if (targetParentFile != null && !this.targetInventory.exists()) {
+                targetParentFile.mkdirs();
+            }
 
             // write inventory to target location
             new InventoryWriter().writeInventory(targetInventory, this.targetInventory);
