@@ -21,10 +21,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.*;
 import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -104,7 +102,9 @@ public class DirectoryInventoryScan {
         Inventory scanInventory = new Inventory();
 
         // process scanning
-        scanDirectory(scanDirectory, scanDirectory, scanIncludes, scanExcludes, referenceInventory, scanInventory);
+        final List<String> assetIdChain = Collections.emptyList();
+        scanDirectory(scanDirectory, scanDirectory, scanIncludes, scanExcludes, referenceInventory, scanInventory,
+                assetIdChain);
 
         scanInventory.mergeDuplicates();
 
@@ -152,7 +152,8 @@ public class DirectoryInventoryScan {
      * @param referenceInventory
      * @param scanInventory
      */
-    private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes, Inventory referenceInventory, Inventory scanInventory) {
+    private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes,
+           Inventory referenceInventory, Inventory scanInventory, List<String> assetIdChain) {
         LOG.info("{}: scanning...", scanDir);
         // scan the directory using includes and excludes; scans the full tree (maybe not yet unwrapped)
         final String[] filesArray = scanDirectory(scanDir, scanIncludes, scanExcludes);
@@ -185,7 +186,8 @@ public class DirectoryInventoryScan {
 
         // add the files not covered by component patterns
         LOG.info("{}: evaluating / recursing", scanDir);
-        populateInventoryWithScannedFiles(scanBaseDir, scanIncludes, scanExcludes, referenceInventory, scanInventory, files);
+        populateInventoryWithScannedFiles(scanBaseDir, scanIncludes, scanExcludes, referenceInventory,
+                scanInventory, files, assetIdChain);
 
         LOG.info("{}: scanning completed.", scanDir);
     }
@@ -278,7 +280,11 @@ public class DirectoryInventoryScan {
         return matchedComponentPatterns;
     }
 
-    private void populateInventoryWithScannedFiles(File scanBaseDir, String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory, Inventory scanInventory, Set<File> files) {
+    private void populateInventoryWithScannedFiles(final File scanBaseDir,
+        final String[] scanIncludes, final String[] scanExcludes,
+        final Inventory referenceInventory, final Inventory scanInventory, final Set<File> files,
+        final List<String> assetIdChain) {
+
         for (final File file : files) {
             final String id = file.getName();
             final String checksum = computeChecksum(file);
@@ -310,9 +316,11 @@ public class DirectoryInventoryScan {
 
                 if (enableImplicitUnpack) {
                     // unknown or requires expansion
+                    String fileChecksum = FileUtils.computeChecksum(file);
                     File unpackedFile = unpackIfPossible(file, false);
                     if (unpackedFile != null) {
-                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, referenceInventory, scanInventory);
+                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, referenceInventory,
+                                scanInventory, extendAssetIdChain(assetIdChain, file, fileChecksum, scanInventory));
                         unpacked = true;
                     }
                 }
@@ -323,6 +331,9 @@ public class DirectoryInventoryScan {
                     newArtifact.setId(id);
                     newArtifact.setChecksum(checksum);
                     newArtifact.addProject(asRelativePath(scanBaseDir, file));
+
+                    applyAssetIdChain(assetIdChain, newArtifact);
+
                     scanInventory.getArtifacts().add(newArtifact);
                 } else {
                     // NOTE: we should add the unpacked artifact level anyway; need to understand implications
@@ -335,22 +346,49 @@ public class DirectoryInventoryScan {
                 copy.setId(id);
                 copy.setChecksum(checksum);
                 copy.addProject(asRelativePath(scanBaseDir, file));
+
+                // we may want to control whether to include files with HINT_SCAN
                 scanInventory.getArtifacts().add(copy);
 
                 // in case the artifact contains the scan classification we try to unpack and scan in depth
                 if (StringUtils.hasText(artifact.getClassification()) && artifact.getClassification().contains(HINT_SCAN)) {
+                    String fileChecksum = FileUtils.computeChecksum(file);
                     File unpackedFile = unpackIfPossible(file, true);
                     if (unpackedFile != null) {
-                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, referenceInventory, scanInventory);
+                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, referenceInventory,
+                                scanInventory, extendAssetIdChain(assetIdChain, file, fileChecksum, scanInventory));
                     } else {
-                        throw new IllegalStateException("The artifact with id " + artifact.getId() + " was classified to be scanned in-depth, but cannot be unpacked");
+                        throw new IllegalStateException("The artifact with id " + artifact.getId() +
+                                " was classified to be scanned in-depth, but cannot be unpacked");
                     }
                 }
             }
         }
     }
 
-    private void filterFilesMatchedByComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap, File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches) {
+    private void applyAssetIdChain(List<String> assetIdChain, Artifact newArtifact) {
+        for (String assetId : assetIdChain) {
+            newArtifact.set(assetId, "x");
+        }
+    }
+
+    private List<String> extendAssetIdChain(final List<String> assetIdChain, final File archiveFile,
+        final String fileChecksum, final Inventory inventory) {
+        final List<String> extendedAssetIdChain = new ArrayList<>(assetIdChain);
+        final String assetId = "AID-" + archiveFile.getName() + "-" + fileChecksum;
+        extendedAssetIdChain.add(assetId);
+
+        AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, assetId);
+        assetMetaData.set("Checksum", fileChecksum);
+        inventory.getAssetMetaData().add(assetMetaData);
+
+        return Collections.unmodifiableList(extendedAssetIdChain);
+    }
+
+    private void filterFilesMatchedByComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap,
+           File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches) {
+
         // remove the matched file covered by the matched components
         for (MatchResult matchResult : matchedComponentDataOnAnchor) {
             final ComponentPatternData cpd = matchResult.componentPatternData;
