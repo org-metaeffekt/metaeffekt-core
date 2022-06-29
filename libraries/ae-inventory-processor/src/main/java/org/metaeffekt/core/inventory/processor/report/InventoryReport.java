@@ -223,8 +223,11 @@ public class InventoryReport {
         Inventory projectInventory = new Inventory();
         this.lastProjectInventory = projectInventory;
 
-        // transfer component patterns from scan inventory (these may include wildcard checksum replacments)
+        // transfer component patterns from scan inventory (these may include wildcard checksum replacements)
         projectInventory.inheritComponentPatterns(localInventory, false);
+
+        // tranfer identified assets from scan
+        projectInventory.inheritAssetMetaData(localInventory, false);
 
         localInventory.sortArtifacts();
 
@@ -385,6 +388,14 @@ public class InventoryReport {
                         }
                     }
 
+                    // copy details not covered by reference artifact to resulting artifact
+                    for (String attributeKey : localArtifact.getAttributes()) {
+                        final String currentValue = copy.get(attributeKey);
+                        if (!StringUtils.hasText(currentValue)) {
+                            copy.set(attributeKey, localArtifact.get(attributeKey));
+                        }
+                    }
+
                     reportArtifact = matchedReferenceArtifact;
                 } else {
                     projectInventory.getArtifacts().add(localArtifact);
@@ -455,6 +466,9 @@ public class InventoryReport {
 
         // transfer available cert information
         projectInventory.inheritCertMetaData(globalInventory, false);
+
+        // transfer available asset information
+        projectInventory.inheritAssetMetaData(globalInventory, false);
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         projectInventory.filterVulnerabilityMetaData();

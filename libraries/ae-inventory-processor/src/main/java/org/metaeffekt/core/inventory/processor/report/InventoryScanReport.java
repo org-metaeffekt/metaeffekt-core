@@ -43,7 +43,7 @@ public class InventoryScanReport extends InventoryReport {
                 inputDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory);
         directoryScan.setEnableImplicitUnpack(enableImplicitUnpack);
 
-        Inventory scanInventory = directoryScan.createScanInventory();
+        final Inventory scanInventory = directoryScan.createScanInventory();
 
         return createReport(globalInventory, scanInventory);
     }

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.60.0</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -59,6 +59,7 @@
         <xbean.reflect.version>4.5</xbean.reflect.version>
         <commons.digester.version>2.1</commons.digester.version>
         <javassist.version>3.21.0-GA</javassist.version>
+        <tukaani.xz.version>1.9</tukaani.xz.version>
 
         <minimal.maven.version>3.0.5</minimal.maven.version>
         <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
@@ -639,6 +640,13 @@
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.tukaani</groupId>
+                <artifactId>xz</artifactId>
+                <version>${tukaani.xz.version}</version>
+                <scope>compile</scope>
             </dependency>
 
         </dependencies>
