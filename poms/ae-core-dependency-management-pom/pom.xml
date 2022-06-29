@@ -49,7 +49,7 @@
         <json.version>20210307</json.version>
         <junit.version>4.13.1</junit.version>
         <plexus.utils.version>3.0.24</plexus.utils.version>
-        <poi.version>3.17</poi.version>
+        <poi.version>4.1.1</poi.version>
         <slf4j.version>1.7.36</slf4j.version>
         <spring.framework.version>5.3.20</spring.framework.version>
         <!-- update to version 2 and test -->
