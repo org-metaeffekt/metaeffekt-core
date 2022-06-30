@@ -24,6 +24,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
+import org.apache.tools.ant.taskdefs.Untar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -163,7 +164,7 @@ public class ArchiveUtils {
         try {
             untarInternal(file, targetDir);
         } catch (Exception e) {
-            throw new IllegalStateException("Cannot untar " + file);
+            throw new IllegalStateException("Cannot untar " + file, e);
         } finally {
             for (File intermediateFile : intermediateFiles) {
                 FileUtils.forceDelete(intermediateFile);
@@ -194,14 +195,30 @@ public class ArchiveUtils {
 
     private static void untarInternal(File file, File targetFile) throws IOException {
         try {
-            final InputStream fin = Files.newInputStream(file.toPath());
-            final BufferedInputStream in = new BufferedInputStream(fin);
-            final ArArchiveInputStream xzIn = new ArArchiveInputStream(in);
-            unpackAndClose(xzIn, targetFile);
+            // attempt ant untar (anticipating broad compatibility)
+            final Project project = new Project();
+            Untar expandTask = new Untar();
+            expandTask.setProject(project);
+            expandTask.setDest(targetFile);
+            expandTask.setSrc(file);
+            expandTask.setAllowFilesToEscapeDest(false);
+            expandTask.execute();
         } catch (Exception exception) {
-            // as fallback attempt untar on command line
-            Process exec = Runtime.getRuntime().exec("tar -xf " + file.getAbsolutePath() + " -C " + targetFile.getAbsolutePath());
-            FileUtils.waitForProcess(exec);
+            try {
+                // fallback to commons-compress (local code with support for specific cases (i.e., .deb)
+                final InputStream fin = Files.newInputStream(file.toPath());
+                final BufferedInputStream in = new BufferedInputStream(fin);
+                final ArArchiveInputStream xzIn = new ArArchiveInputStream(in);
+                unpackAndClose(xzIn, targetFile);
+            } catch (Exception ex) {
+                // report commons compress exception only and indicate fallback
+                LOG.warn("Cannot untar file [{}]. Attempting native untar.", file, ex);
+                // fallback to native support on command line
+                Process exec = Runtime.getRuntime().exec("tar -xf " + file.getAbsolutePath() + " -C " + targetFile.getAbsolutePath());
+                FileUtils.waitForProcess(exec);
+
+                // NOTE: further exceptions are handled upstream
+            }
         }
     }
 
