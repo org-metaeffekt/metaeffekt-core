@@ -15,20 +15,27 @@
  */
 package org.metaeffekt.core.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * FileUtils extension.
  */
 public class FileUtils extends org.apache.commons.io.FileUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -144,6 +151,30 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static String normalizePathToLinux(String path) {
         if (path == null) return null;
         return path.replace("\\", "/");
+    }
+
+    public static void waitForProcess(Process p) {
+        try {
+            while (p.isAlive()) {
+                p.waitFor(1000, TimeUnit.MILLISECONDS);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try {
+                    IOUtils.copy(p.getInputStream(), baos);
+                } catch (IOException e) {
+                    LOG.error("Unable to copy input stream into output stream.", e);
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void deleteDirectoryQuietly(File directory) {
+        try {
+            deleteDirectory(directory);
+        } catch (IOException e) {
+            // ignore
+        }
     }
 
 }

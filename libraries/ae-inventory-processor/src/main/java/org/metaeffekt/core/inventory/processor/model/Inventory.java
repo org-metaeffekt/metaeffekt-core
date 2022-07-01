@@ -1315,6 +1315,34 @@ public class Inventory {
         }
     }
 
+    public void inheritAssetMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, AssetMetaData> localAssets = new HashMap<>();
+        for (AssetMetaData assetMetaData : getAssetMetaData()) {
+            localAssets.put(assetMetaData.deriveQualifier(), assetMetaData);
+        }
+        for (AssetMetaData assetMetaData : inputInventory.getAssetMetaData()) {
+            final String qualifier = assetMetaData.deriveQualifier();
+            if (localAssets.containsKey(qualifier)) {
+                // overwrite; the localCerts inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    AssetMetaData localAssetMetadata = localAssets.get(qualifier);
+                    if (assetMetaData.createCompareStringRepresentation().equals(
+                            localAssetMetadata.createCompareStringRepresentation())) {
+                        LOG.info("Asset metadata {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Asset metadata %s overwritten. %n  %s%n  %s", qualifier,
+                                assetMetaData.createCompareStringRepresentation(),
+                                localAssetMetadata.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                // add the cert
+                getAssetMetaData().add(assetMetaData);
+            }
+        }
+    }
+
     /**
      * Removes all VulnerabilityMetaData entries from the inventory that do not fulfill at least one of these conditions:
      * <ul>
