@@ -185,6 +185,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean enableVulnerabilityReport;
 
     /**
+     * @parameter default-value="false"
+     */
+    private boolean enableVulnerabilityStatisticsReport;
+
+    /**
      * @parameter expression="${basedir}/src/main/dita/${project.artifactId}/gen"
      */
     private File targetReportDir;
@@ -318,6 +323,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setInventoryDiffReportEnabled(enableDiffReport);
         report.setInventoryBomReportEnabled(enableBomReport);
         report.setInventoryVulnerabilityReportEnabled(enableVulnerabilityReport);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport);
 
         report.setTargetReportDir(targetReportDir);
 

@@ -57,6 +57,9 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
+
+    public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "inventory-statistics-vulnerability";
+
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
@@ -151,6 +154,7 @@ public class InventoryReport {
     private boolean inventoryDiffReportEnabled = false;
     private boolean inventoryPomEnabled = false;
     private boolean inventoryVulnerabilityReportEnabled = false;
+    private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
 
     /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
@@ -484,6 +488,10 @@ public class InventoryReport {
 
         if (inventoryVulnerabilityReportEnabled) {
             writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
+        }
+
+        if (inventoryVulnerabilityStatisticsReportEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
         }
 
         if (inventoryPomEnabled) {
@@ -1240,6 +1248,14 @@ public class InventoryReport {
 
     public void setInventoryVulnerabilityReportEnabled(boolean inventoryVulnerabilityReportEnabled) {
         this.inventoryVulnerabilityReportEnabled = inventoryVulnerabilityReportEnabled;
+    }
+
+    public boolean isInventoryVulnerabilityStatisticsReportEnabled() {
+        return inventoryVulnerabilityStatisticsReportEnabled;
+    }
+
+    public void setInventoryVulnerabilityStatisticsReportEnabled(boolean inventoryVulnerabilityStatisticsReportEnabled) {
+        this.inventoryVulnerabilityStatisticsReportEnabled = inventoryVulnerabilityStatisticsReportEnabled;
     }
 
     public void setLastProjectInventory(Inventory lastProjectInventory) {
