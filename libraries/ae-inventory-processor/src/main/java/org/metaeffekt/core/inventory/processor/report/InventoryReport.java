@@ -226,7 +226,7 @@ public class InventoryReport {
         // transfer component patterns from scan inventory (these may include wildcard checksum replacements)
         projectInventory.inheritComponentPatterns(localInventory, false);
 
-        // tranfer identified assets from scan
+        // transfer identified assets from scan
         projectInventory.inheritAssetMetaData(localInventory, false);
 
         localInventory.sortArtifacts();
