@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_notices-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+<topic id="tpc_notices-$reportContext.id">
     <title>$reportContext.combinedTitle("Lizenzhinweise", true)</title>
 #set($componentNoticeList=$inventory.evaluateComponentNotices())
 #set($licensesInEffect=$inventory.evaluateLicenses(false))
@@ -33,7 +33,7 @@
                         <tbody>
 #foreach($artifact in $artifactNotice.getArtifacts())
     <row>
-        <entry>#if($artifact.getGroupId())<lines><line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+        <entry>#if($utils.notEmpty($artifact.getGroupId()))<lines><line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
         <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>#else<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
         </entry>
         <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
