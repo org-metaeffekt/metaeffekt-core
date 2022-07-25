@@ -74,7 +74,6 @@ public class ArtifactLicenseData {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(licenseMetaData.getComponent());
-        return sb.toString();
+        return new StringBuilder(licenseMetaData.getComponent()).toString();
     }
 }

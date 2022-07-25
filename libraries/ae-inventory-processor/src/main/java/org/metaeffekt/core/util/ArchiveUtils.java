@@ -253,9 +253,16 @@ public class ArchiveUtils {
         final Project project = new Project();
         project.setBaseDir(archiveFile.getParentFile());
 
-        String extension = FilenameUtils.getExtension(archiveFile.getName()).toLowerCase();
+        final String archiveFileName = archiveFile.getName();
+
+        String extension = FilenameUtils.getExtension(archiveFileName).toLowerCase();
         if (extension.isEmpty()) {
-            extension = archiveFile.getName().toLowerCase();
+            extension = archiveFileName.toLowerCase();
+        }
+
+        // if the filename the extension we skip
+        if (!StringUtils.hasText(extension) || archiveFileName.equalsIgnoreCase(extension)) {
+            return false;
         }
 
         boolean mkdir = targetDir.mkdirs();

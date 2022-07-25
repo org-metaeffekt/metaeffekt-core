@@ -167,6 +167,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter default-value="false"
      */
+    private boolean enableAssetReport;
+
+    /**
+     * @parameter default-value="false"
+     */
     private boolean enableBomReport;
 
     /**
@@ -319,6 +324,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
 
+        report.setAssetBomReportEnabled(enableAssetReport);
         report.setInventoryPomEnabled(enablePomReport);
         report.setInventoryDiffReportEnabled(enableDiffReport);
         report.setInventoryBomReportEnabled(enableBomReport);

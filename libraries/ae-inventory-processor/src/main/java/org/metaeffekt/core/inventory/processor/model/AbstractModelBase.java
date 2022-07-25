@@ -292,5 +292,14 @@ public abstract class AbstractModelBase {
         return sb.toString();
     }
 
+    public String getAlternatives(String... keys) {
+        for (final String key : keys) {
+            final String value = get(key);
+            if (StringUtils.hasText(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
 
 }

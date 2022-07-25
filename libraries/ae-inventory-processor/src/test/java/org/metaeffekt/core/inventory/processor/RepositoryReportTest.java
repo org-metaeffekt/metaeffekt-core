@@ -253,6 +253,22 @@ public class RepositoryReportTest {
 
     }
 
+    @Ignore // needs external resources
+    @Test
+    public void testCreateTestReport004() throws Exception {
+        final File inventoryDir = new File("XXX");
+        final File reportDir = new File("target/test-inventory-04");
+
+        InventoryReport report = new InventoryReport();
+        prepareReport(inventoryDir, "*.xls", reportDir, report);
+
+        report.setInventoryBomReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setAssetBomReportEnabled(true);
+
+        report.createReport();
+    }
+
     @Test
     public void testCreateTestReportCertMetaData() throws Exception {
         final File inventoryDir = new File("src/test/resources/test-inventory-cert");
@@ -272,10 +288,17 @@ public class RepositoryReportTest {
 
     private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws Exception {
 
+        prepareReport(inventoryDir, inventoryIncludes, reportTarget, report);
+
+        return report.createReport();
+    }
+
+    private void prepareReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
         report.setInventoryBomReportEnabled(true);
         report.setInventoryVulnerabilityReportEnabled(true);
+        report.setAssetBomReportEnabled(true);
 
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
@@ -294,8 +317,6 @@ public class RepositoryReportTest {
         final File targetComponentDir = new File(reportTarget, "components");
         report.setTargetLicenseDir(targetLicensesDir);
         report.setTargetComponentDir(targetComponentDir);
-
-        return report.createReport();
     }
 
     @Ignore
