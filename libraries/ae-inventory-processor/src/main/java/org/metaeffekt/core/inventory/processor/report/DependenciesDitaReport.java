@@ -173,6 +173,9 @@ public class DependenciesDitaReport {
         context.put("externalDependencies", externalDependencies);
         context.put("projectId", artifactId);
         context.put("projectName", resolveName(artifactId));
+
+        context.put("utils", new ReportUtils());
+
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString());

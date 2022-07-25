@@ -15,7 +15,8 @@
         Please note, that a component may be subject to several licenses in effect.
     </p>
     #if ($inventory.isFootnoteRequired($effectiveLicenses))
-        <fn callout="*" id="id-footnote">License variations are represented as a single effective license. The concrete license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
+        <fn callout="*" id="id-footnote">License variations are represented as a single effective license. The concrete
+        license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
     #end
     <table id="LicensesInEffect" otherprops="wide">
         <title>Licenses in Effect$reportContext.inContextOf()</title>

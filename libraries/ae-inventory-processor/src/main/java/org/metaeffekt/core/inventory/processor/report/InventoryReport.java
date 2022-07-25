@@ -65,6 +65,8 @@ public class InventoryReport {
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
 
+    public static final String TEMPLATE_GROUP_ASSET_REPORT_BOM = "asset-report-bom";
+
     public static final String KEY_PREVIOUS_VERSION = "Previous Version";
 
     /**
@@ -157,6 +159,7 @@ public class InventoryReport {
     private boolean inventoryPomEnabled = false;
     private boolean inventoryVulnerabilityReportEnabled = false;
     private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
+    private boolean assetBomReportEnabled = false;
 
     /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
@@ -503,6 +506,10 @@ public class InventoryReport {
 
         if (inventoryPomEnabled) {
             writeReports(projectInventory, TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
+        }
+
+        if (assetBomReportEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -854,6 +861,7 @@ public class InventoryReport {
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
         context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(filteredInventory));
+        context.put("assetAdapter", new AssetReportAdapter(filteredInventory));
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("Float", Float.class);
@@ -1265,6 +1273,14 @@ public class InventoryReport {
         this.inventoryVulnerabilityStatisticsReportEnabled = inventoryVulnerabilityStatisticsReportEnabled;
     }
 
+    public boolean isAssetBomReportEnabled() {
+        return assetBomReportEnabled;
+    }
+
+    public void setAssetBomReportEnabled(boolean assetBomReportEnabled) {
+        this.assetBomReportEnabled = assetBomReportEnabled;
+    }
+
     public void setLastProjectInventory(Inventory lastProjectInventory) {
         this.lastProjectInventory = lastProjectInventory;
     }
@@ -1283,6 +1299,10 @@ public class InventoryReport {
 
     public boolean isFailOnMissingComponentFiles() {
         return failOnMissingComponentFiles;
+    }
+
+    public AssetData getAssetData(Inventory inventory) {
+        return AssetData.fromArtifacts(inventory);
     }
 
 }

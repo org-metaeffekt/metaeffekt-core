@@ -462,6 +462,39 @@ public class Inventory {
         return sortedByLicense;
     }
 
+    // FIXME: remove
+    public List<String> evaluateAssetAssociatedLicenses() {
+        final Set<String> licenses = new HashSet();
+
+        for (AssetMetaData assetMetaData : getAssetMetaData()) {
+
+            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+
+            for (Artifact artifact : getArtifacts()) {
+
+                // skip all artifacts that do not belong to an asset
+                if (!StringUtils.hasText(artifact.get(assetId))) {
+                    continue;
+                }
+
+                // not relevant artifact licenses must not be included
+                if (!artifact.isRelevant()) {
+                    continue;
+                }
+
+                List<String> artifactLicense = artifact.getLicenses();
+
+                // check whether there is an effective license (set of licenses)
+                licenses.addAll(artifactLicense);
+            }
+        }
+
+        List<String> sortedByLicense = new ArrayList<>(licenses);
+        Collections.sort(sortedByLicense);
+        return sortedByLicense;
+    }
+
+
     /**
      * Returns all relevant notices for a given effective license.
      *
@@ -571,14 +604,16 @@ public class Inventory {
             }
         }
         final ArrayList<ArtifactLicenseData> artifactLicenseData = new ArrayList<>(map.values());
-        Collections.sort(artifactLicenseData, (o1, o2) -> Objects.compare(artifactSortString(o1), artifactSortString(o2), String::compareToIgnoreCase));
+        Collections.sort(artifactLicenseData, (o1, o2) ->
+                Objects.compare(artifactSortString(o1), artifactSortString(o2), String::compareToIgnoreCase));
         return artifactLicenseData;
     }
+
+
 
     private String artifactSortString(ArtifactLicenseData o1) {
         return o1.getComponentName() + "-" + o1.getComponentVersion();
     }
-
     private boolean matches(String effectiveLicense, LicenseMetaData match) {
         List<String> licenses = Arrays.asList(match.deriveLicenseInEffect().split("\\|"));
         return licenses.contains(effectiveLicense);
@@ -637,7 +672,7 @@ public class Inventory {
         if (StringUtils.isEmpty(canonicalName)) return null;
 
         for (LicenseData ld : licenseData) {
-            if (canonicalName.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
+            if (canonicalName.trim().equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
                 return ld;
             }
         }
@@ -1094,6 +1129,7 @@ public class Inventory {
         filteredInventory.setLicenseNameMap(getLicenseNameMap());
         filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         filteredInventory.setCertMetaData(getCertMetaData());
+        filteredInventory.setAssetMetaData(getAssetMetaData());
         return filteredInventory;
     }
 
@@ -1337,7 +1373,6 @@ public class Inventory {
                     }
                 }
             } else {
-                // add the cert
                 getAssetMetaData().add(assetMetaData);
             }
         }
