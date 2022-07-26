@@ -1,7 +1,7 @@
 #parse("META-INF/templates/en/asset-report-bom/macros/tpc_inventory-license.dita.vm")
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_asset-license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+<topic id="tpc_asset-license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Asset Licenses", true)</title>
 #set($assetData=$report.getAssetData($inventory))
 #set($associatedLicensesRepresented=$assetData.getRepresentedAssociatedLicenses())
@@ -44,7 +44,7 @@
                             $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
                         </xref>
                     </entry>
-                    <entry>#if ($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
                         #if ($licenseData)#if ($licenseData.is('OSI Approved'))yes<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
                     </entry>
@@ -54,7 +54,7 @@
                             $report.xmlEscapeLicense($license)
                         </xref>
                     </entry>
-                    <entry>#if ($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
 #if ($assetData.containsNonOsiApprovedLicense($license))
                     <entry>
                         #if ($licenseData)#if ($licenseData.is('OSI Approved'))yes<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end

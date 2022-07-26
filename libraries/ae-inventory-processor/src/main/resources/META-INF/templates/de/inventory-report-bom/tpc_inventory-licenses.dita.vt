@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+<topic id="tpc_license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Effektive Lizenzen", true)</title>
 
 <body>
@@ -93,7 +93,7 @@
                                 #end
                             </entry>
                             <entry>
-                                <lines>#if($artifact.getGroupId())<line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                                <lines>#if($utils.notEmpty($artifact.getGroupId()))<line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
                                 #end
                                 <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>
                             </entry>
