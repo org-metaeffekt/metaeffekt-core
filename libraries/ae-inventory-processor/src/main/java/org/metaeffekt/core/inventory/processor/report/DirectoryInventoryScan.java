@@ -22,7 +22,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.util.ArchiveUtils;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -184,7 +183,7 @@ public class DirectoryInventoryScan {
         }
 
         // add artifacts representing the component patterns
-        deriveAddonArtifactsFromMatchResult(scanBaseDir, scanDir, matchedComponentPatterns, scanInventory);
+        deriveAddonArtifactsFromMatchResult(scanBaseDir, matchedComponentPatterns, scanInventory, assetIdChain);
 
         // add the files not covered by component patterns
         LOG.info("{}: evaluating / recursing", scanDir);
@@ -194,9 +193,11 @@ public class DirectoryInventoryScan {
         LOG.info("{}: scanning completed.", scanDir);
     }
 
-    private void deriveAddonArtifactsFromMatchResult(File scanBaseDir, File scanDir, List<MatchResult> componentPatterns, Inventory scanInventory) {
+    private void deriveAddonArtifactsFromMatchResult(File scanBaseDir, List<MatchResult> componentPatterns, Inventory scanInventory, List<String> assetIdChain) {
         for (MatchResult matchResult : componentPatterns) {
-            scanInventory.getArtifacts().add(matchResult.deriveArtifact(scanBaseDir));
+            final Artifact derivedArtifact = matchResult.deriveArtifact(scanBaseDir);
+            applyAssetIdChain(assetIdChain, derivedArtifact);
+            scanInventory.getArtifacts().add(derivedArtifact);
         }
     }
 
@@ -384,9 +385,11 @@ public class DirectoryInventoryScan {
         return ArchiveUtils.unpackIfPossible(file, targetDir);
     }
 
-    private void applyAssetIdChain(List<String> assetIdChain, Artifact newArtifact) {
-        for (String assetId : assetIdChain) {
-            newArtifact.set(assetId, "x");
+    private void applyAssetIdChain(List<String> assetIdChain, Artifact artifact) {
+        if (assetIdChain != null && artifact != null) {
+            for (String assetId : assetIdChain) {
+                artifact.set(assetId, "x");
+            }
         }
     }
 

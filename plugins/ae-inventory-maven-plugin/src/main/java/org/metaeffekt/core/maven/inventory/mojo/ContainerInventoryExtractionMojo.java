@@ -110,6 +110,8 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No applicable inventory extractor found."));
 
+        getLog().info("Using extractor " + extractor.getClass() + ".");
+
         // before extracting the content is validated using the extractor
         extractor.validate(analysisDir);
 

@@ -66,12 +66,14 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
                     packageInfo.name = path;
                     packageInfo.id = path;
                     packageInfo.component = path;
+                    packageInfo.status = "documented";
                 }
                 if (docDir) {
                     packageInfo.documentationDir = new File(packageDir, path).getAbsolutePath();
                 } else {
                     packageInfo.licenseDir = new File(packageDir, path).getAbsolutePath();
                 }
+
                 registerPackageInfo(packageInfo, idToPackageInfoMap);
             }
         }

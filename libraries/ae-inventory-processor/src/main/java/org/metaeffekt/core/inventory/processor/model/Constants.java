@@ -45,6 +45,7 @@ public final class Constants {
     public static final String KEY_DOCUMENTATION_PATH_PACKAGE = "Package Documentation Path";
     public static final String KEY_LICENSE_PATH_PACKAGE = "Package License Path";
     public static final String KEY_GROUP_PACKAGE = "Package Group";
+    public static final String KEY_STATUS_PACKAGE = "Package Status";
 
     /**
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
