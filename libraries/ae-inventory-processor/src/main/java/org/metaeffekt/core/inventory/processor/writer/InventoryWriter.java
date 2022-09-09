@@ -355,9 +355,7 @@ public class InventoryWriter {
                             break;
                         case URL:
                             cell.setCellValue(new HSSFRichTextString(value));
-                            if (StringUtils.isEmpty(value)) {
-                                LOG.warn("Vulnerability URL [{}] is null or empty on [{} {} {}]", value, cell.getSheet().getSheetName(), cell.getColumnIndex(), cell.getRowIndex());
-                            } else {
+                            if (StringUtils.isNotEmpty(value)) {
                                 Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
                                 link.setAddress(value);
                                 cell.setHyperlink(link);
@@ -428,9 +426,7 @@ public class InventoryWriter {
                     switch (attribute) {
                         case URL:
                             cell.setCellValue(new HSSFRichTextString(value));
-                            if (StringUtils.isEmpty(value)) {
-                                LOG.warn("CertMetaData URL [{}] is null or empty on [{} {} {}]", value, cell.getSheet().getSheetName(), cell.getColumnIndex(), cell.getRowIndex());
-                            } else {
+                            if (StringUtils.isNotEmpty(value)) {
                                 Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
                                 link.setAddress(value);
                                 cell.setHyperlink(link);
