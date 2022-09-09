@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -18,7 +19,7 @@ public class AbstractContainerFileFilterTest {
     private final Logger LOG = LoggerFactory.getLogger(AbstractContainerFileFilterTest.class);
 
     protected void assertFilesFiltered(File analysisDir, List<String> excludePatterns, int extectedRemainingFileArtifacts) throws IOException {
-        List<String> fileList = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
+        Collection<String> fileList = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
         Assert.assertEquals("Check filters in POM to exclude artifacts or adapt expectation.", extectedRemainingFileArtifacts, fileList.size());
     }
 

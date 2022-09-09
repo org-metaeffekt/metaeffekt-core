@@ -22,6 +22,7 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +108,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
 
     private void extendNotCoveredFiles(File analysisDir, Inventory inventory, List<String> excludePatterns) throws IOException {
         if (excludePatterns.contains("**/*")) return;
-        final List<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
+        final Collection<String> notCoveredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
         for (String fileName : notCoveredFiles) {
             Artifact artifact = new Artifact();
             File file = new File(fileName);

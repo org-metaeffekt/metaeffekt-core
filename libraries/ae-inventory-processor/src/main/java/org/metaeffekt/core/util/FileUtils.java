@@ -177,4 +177,16 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
     }
 
+    public static String canonicalizeLinuxPath(String path) {
+        path = path.replaceAll("/./", "/");
+        path = path.replaceAll("/./", "/");
+        path = path.replaceAll("^\\./", "");
+
+        while (path.contains("/../")) {
+            path = path.replaceFirst("/[^/]*/\\.\\./", "/");
+        }
+
+        return path;
+    }
+
 }

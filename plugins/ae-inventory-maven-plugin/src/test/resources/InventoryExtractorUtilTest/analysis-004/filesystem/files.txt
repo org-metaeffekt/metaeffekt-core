@@ -1,0 +1,5 @@
+/file-a
+/file-b
+/folder-a/file-aa
+/folder-b/file-ba
+/folder-b/folder-bb/file-bba
