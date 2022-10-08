@@ -116,7 +116,12 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
 
         String architecture = ParsingUtils.getValue(fileContentLines, "APT-Sources:");
         if (architecture != null) {
-            packageInfo.arch = architecture = architecture.replaceAll("(.* )([a-zA-Z0-9]*)( Packages)", "$2");
+            architecture = architecture.replaceAll("(.* )([a-zA-Z0-9]*)( Packages)", "$2");
+
+            // it was observed that sometimes APT-Sources contains a path to a status file. We omit this case.
+            if (!architecture.contains("/status")) {
+                packageInfo.arch = architecture;
+            }
         }
 
     }

@@ -61,6 +61,18 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
     @Parameter
     private String[] scanExcludes;
 
+    /**
+     * For backward compatibility reasons the default value is false. The feature requires explicit activation.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean includeEmbedded = false;
+
+    /**
+     * When true, enabled that implicitly general archive types are unpacked
+     */
+    @Parameter(defaultValue = "true")
+    private boolean enabledImplicitUnpack = true;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -69,6 +81,9 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
 
             final DirectoryInventoryScan scan =
                 new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, sourceInventory);
+
+            scan.setIncludeEmbedded(includeEmbedded);
+            scan.setEnableImplicitUnpack(enabledImplicitUnpack);
 
             final Inventory inventory = scan.createScanInventory();
 

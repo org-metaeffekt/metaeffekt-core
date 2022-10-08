@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 public class MavenJarIdProbe {
     private File projectDir;
     private Artifact artifact;
+    private List<Artifact> detectedArtifactsInFatJar;
 
     public MavenJarIdProbe(File projectDir, Artifact artifact) {
         this.projectDir = projectDir;
@@ -113,6 +114,8 @@ public class MavenJarIdProbe {
         dummyArtifact.setGroupId(pomProperties.getProperty("groupId", null));
         dummyArtifact.setVersion(pomProperties.getProperty("version", null));
 
+        deriveId(dummyArtifact, pomProperties.getProperty("packaging", "jar"));
+
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
     }
 
@@ -152,11 +155,26 @@ public class MavenJarIdProbe {
             // NOTE: the current mode is identification. POM specified licenses are not subjec to identification
             // Furthermore, the leaf-pom may not include license information.
 
+            deriveId(dummyArtifact, model.getPackaging() != null ? model.getPackaging() : "jar");
+
         } catch (IOException | XmlPullParserException e) {
             addError("Exception while parsing a 'pom.xml'.");
         }
 
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
+    }
+
+    private void deriveId(Artifact dummyArtifact, String type) {
+        if ("bundle".equalsIgnoreCase(type)) {
+            type = "jar";
+        }
+
+        // embedded (shaded) artifacts have no id, we derive one for those without
+        if (StringUtils.isEmpty(dummyArtifact.getId())) {
+            final String version = dummyArtifact.getVersion();
+            dummyArtifact.setId(dummyArtifact.getArtifactId() + "-" +
+                    version + "." + type);
+        }
     }
 
     protected Artifact dummyArtifactFromPom(ZipFile zipFile, ZipArchiveEntry pomEntry) {
@@ -294,10 +312,15 @@ public class MavenJarIdProbe {
         }
 
         // enforce all of artifactid, version and groupid being non-null for filling to kick in
-        List<Artifact> accepted = new ArrayList<>();
+        final List<Artifact> accepted = new ArrayList<>();
+        final List<Artifact> notAccepted = new ArrayList<>();
         for (Artifact dummyArtifact : dummyArtifacts) {
-            if (importantNonNull(dummyArtifact) && matchesFileName(jarFile.getName(), dummyArtifact)) {
-                accepted.add(dummyArtifact);
+            if (importantNonNull(dummyArtifact)) {
+                if (matchesFileName(jarFile.getName(), dummyArtifact)) {
+                    accepted.add(dummyArtifact);
+                } else {
+                    notAccepted.add(dummyArtifact);
+                }
             }
         }
 
@@ -310,7 +333,6 @@ public class MavenJarIdProbe {
         if (conflictWithEachOther.size() > 0) {
             addError("Number of poms conflict with each other's state (" + conflictWithEachOther.size() + ").");
         }
-
 
         if (accepted.size() > 0) {
             // on match (accepted and no conflicts): insert info into artifact
@@ -330,5 +352,12 @@ public class MavenJarIdProbe {
         } else {
             // no pom found; ignore
         }
+
+        detectedArtifactsInFatJar = notAccepted;
     }
+
+    public List<Artifact> getDetectedArtifactsInFatJar() {
+        return detectedArtifactsInFatJar;
+    }
+
 }

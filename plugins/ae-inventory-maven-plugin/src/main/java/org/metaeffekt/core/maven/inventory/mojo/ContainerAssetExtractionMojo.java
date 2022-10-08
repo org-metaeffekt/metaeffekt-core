@@ -34,7 +34,7 @@ public class ContainerAssetExtractionMojo extends AbstractProjectAwareConfigured
     @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}")
     protected File analysisDir;
 
-    @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}/image-inspect.yaml")
+    @Parameter(required = true, defaultValue = "${ae.extractor.analysis.dir}/image-inspect.json")
     private File containerInspectionFile;
 
     @Parameter(required = true)

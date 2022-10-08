@@ -146,7 +146,6 @@ public class Artifact extends AbstractModelBase {
         set(Attribute.ID, id);
     }
 
-
     public String getVersion() {
         return get(Attribute.VERSION);
     }

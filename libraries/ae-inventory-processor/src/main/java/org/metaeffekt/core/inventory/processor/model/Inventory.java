@@ -385,7 +385,7 @@ public class Inventory {
     }
 
     public Set<Artifact> findArtifacts(String groupId, String artifactId) {
-        Set<Artifact> matchingArtifacts = new HashSet<Artifact>();
+        Set<Artifact> matchingArtifacts = new HashSet<>();
         for (Artifact candidate : getArtifacts()) {
             candidate.deriveArtifactId();
             if (candidate.getArtifactId() == null)
@@ -1521,7 +1521,8 @@ public class Inventory {
         for (String license : effectiveLicenses) {
             representedLicenseNames.add(getRepresentedLicenseName(license));
         }
-        return representedLicenseNames.stream().distinct().sorted().collect(Collectors.toList());
+        return representedLicenseNames.stream().distinct().
+                sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
     }
 
     public List<String> getRepresentedEffectiveLicenses(String representedLicenseName) {
@@ -1535,7 +1536,8 @@ public class Inventory {
             }
         }
         if (!representedEffectiveLicenses.isEmpty()) {
-            return representedEffectiveLicenses.stream().sorted().distinct().collect(Collectors.toList());
+            return representedEffectiveLicenses.stream()
+                    .sorted(String.CASE_INSENSITIVE_ORDER).distinct().collect(Collectors.toList());
         } else {
             return representedEffectiveLicenses;
         }

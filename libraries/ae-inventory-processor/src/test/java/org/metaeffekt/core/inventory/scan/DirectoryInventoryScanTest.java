@@ -145,6 +145,8 @@ public class DirectoryInventoryScanTest {
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
 
         scan.setEnableImplicitUnpack(true);
+        scan.setIncludeEmbedded(true);
+
         final Inventory resultInventory = scan.createScanInventory();
 
         for (Artifact a : resultInventory.getArtifacts()) {

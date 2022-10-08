@@ -82,7 +82,7 @@ public abstract class InventoryExtractorUtil {
         LOG.info("Filtering [{}] files analyzing coverage by packages and symlinks...", resultingFileSet.size());
         filterByPackageFiles(packageFilesDir, resultingFileSet, folder, symLinkMap, packageFiles);
 
-        LOG.info("Filtering [{}] files applying exclude patterns and folder symlinks...", fileList.size());
+        LOG.info("Filtering [{}] files applying exclude patterns and folder symlinks...", resultingFileSet.size());
         filterByExcludePatternsAndLinkedFolders(resultingFileSet, excludePatternSetMatcher, symLinkMap);
 
         LOG.info("Filtering files completed resulting in [{}] files.", resultingFileSet.size());

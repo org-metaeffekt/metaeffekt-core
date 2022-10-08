@@ -56,6 +56,8 @@ public class DirectoryInventoryScan {
 
     private boolean enableImplicitUnpack = true;
 
+    private boolean includeEmbedded = false;
+
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory, String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
         this.inputDirectory = inputDirectory;
 
@@ -111,7 +113,8 @@ public class DirectoryInventoryScan {
 
         // attempt to extract artifactId, version, groupId from contained POMs
         final Properties properties = new Properties();
-        properties.put(MavenJarMetadataExtractor.PROJECT_PATH, scanDirectory.getAbsolutePath());
+        properties.put(MavenJarMetadataExtractor.KEY_PROJECT_PATH, scanDirectory.getAbsolutePath());
+        properties.put(MavenJarMetadataExtractor.KEY_INCLUDE_EMBEDDED, Boolean.toString(includeEmbedded));
         new MavenJarMetadataExtractor(properties).process(scanInventory);
 
         return scanInventory;
@@ -502,6 +505,10 @@ public class DirectoryInventoryScan {
 
     public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {
         this.enableImplicitUnpack = enableImplicitUnpack;
+    }
+
+    public void setIncludeEmbedded(boolean includeEmbedded) {
+        this.includeEmbedded = includeEmbedded;
     }
 
 }
