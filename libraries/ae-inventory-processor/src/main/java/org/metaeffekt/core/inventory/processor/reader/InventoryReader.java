@@ -39,6 +39,7 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     private Map<Integer, String> componentPatternDataColumnMap = new HashMap<>();
     private Map<Integer, String> vulnerabilityMetaDataColumnMap = new HashMap<>();
     private Map<Integer, String> certMetaDataColumnMap = new HashMap<>();
+    private Map<Integer, String> inventoryInfoColumnMap = new HashMap<>();
     private Map<Integer, String> assetMetaDataColumnMap = new HashMap<>();
 
     @Override
@@ -74,6 +75,11 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     @Override
     protected void readCertMetaDataHeader(HSSFRow row) {
         parseColumns(row, certMetaDataColumnMap);
+    }
+
+    @Override
+    protected void readInventoryInfoHeader(HSSFRow row) {
+        parseColumns(row, inventoryInfoColumnMap);
     }
 
     protected List<String> parseColumns(HSSFRow row, Map<Integer, String> map) {
@@ -215,6 +221,16 @@ public class InventoryReader extends AbstractXlsInventoryReader {
         readValues(row, certMetaData, this.certMetaDataColumnMap);
         if (certMetaData.isValid()) {
             return certMetaData;
+        }
+        return null;
+    }
+
+    @Override
+    protected InventoryInfo readInventoryInfo(HSSFRow row) {
+        final InventoryInfo info = new InventoryInfo();
+        readValues(row, info, this.inventoryInfoColumnMap);
+        if (info.isValid()) {
+            return info;
         }
         return null;
     }

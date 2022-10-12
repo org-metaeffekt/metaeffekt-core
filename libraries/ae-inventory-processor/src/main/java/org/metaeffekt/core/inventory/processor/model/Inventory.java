@@ -61,6 +61,8 @@ public class Inventory {
 
     private List<CertMetaData> certMetaData = new ArrayList<>();
 
+    private List<InventoryInfo> inventoryInfo = new ArrayList<>();
+
     private List<AssetMetaData> assetMetaData = new ArrayList<>();
 
     private Map<String, String> licenseNameMap = new HashMap<>();
@@ -171,6 +173,20 @@ public class Inventory {
         }
 
         return null;
+    }
+
+    public InventoryInfo findOrCreateInventoryInfo(String id) {
+        for (InventoryInfo inventoryInfo : getInventoryInfo()) {
+            if (id.equals(inventoryInfo.getId())) {
+                return inventoryInfo;
+            }
+        }
+
+        final InventoryInfo inventoryInfo = new InventoryInfo();
+        inventoryInfo.set(InventoryInfo.Attribute.ID, id);
+        getInventoryInfo().add(inventoryInfo);
+
+        return inventoryInfo;
     }
 
     private boolean isVariableVersion(String version) {
@@ -610,10 +626,10 @@ public class Inventory {
     }
 
 
-
     private String artifactSortString(ArtifactLicenseData o1) {
         return o1.getComponentName() + "-" + o1.getComponentVersion();
     }
+
     private boolean matches(String effectiveLicense, LicenseMetaData match) {
         List<String> licenses = Arrays.asList(match.deriveLicenseInEffect().split("\\|"));
         return licenses.contains(effectiveLicense);
@@ -1443,7 +1459,7 @@ public class Inventory {
 
     public List<VulnerabilityMetaData> getVoidVulnerabilities() {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterVoidVulnerabilities(getVulnerabilityMetaData());
-         vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
@@ -1453,6 +1469,14 @@ public class Inventory {
 
     public void setCertMetaData(List<CertMetaData> certMetaData) {
         this.certMetaData = certMetaData;
+    }
+
+    public List<InventoryInfo> getInventoryInfo() {
+        return inventoryInfo;
+    }
+
+    public void setInventoryInfo(List<InventoryInfo> inventoryInfo) {
+        this.inventoryInfo = inventoryInfo;
     }
 
     public List<AssetMetaData> getAssetMetaData() {

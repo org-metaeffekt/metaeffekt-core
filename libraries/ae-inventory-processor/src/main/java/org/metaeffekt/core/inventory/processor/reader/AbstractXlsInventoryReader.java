@@ -54,6 +54,7 @@ public abstract class AbstractXlsInventoryReader {
         readComponentPatternData(workbook, inventory);
         readVulnerabilityMetaData(workbook, inventory);
         readCertMetaData(workbook, inventory);
+        readInventoryInfo(workbook, inventory);
         readAssetMetaData(workbook, inventory);
 
         return inventory;
@@ -156,16 +157,45 @@ public abstract class AbstractXlsInventoryReader {
 
         while (rows.hasNext()) {
             HSSFRow row = (HSSFRow) rows.next();
-            CertMetaData vmd = readCertMetaData(row);
-            if (vmd != null) {
-                certMetadata.add(vmd);
-                columns = vmd.numAttributes();
+            CertMetaData cert = readCertMetaData(row);
+            if (cert != null) {
+                certMetadata.add(cert);
+                columns = cert.numAttributes();
             }
         }
 
         for (int i = 0; i < columns; i++) {
             int width = sheet.getColumnWidth(i);
             inventory.getContextMap().put("cert.column[" + i + "].width", width);
+        }
+    }
+
+    protected void readInventoryInfo(HSSFWorkbook workbook, Inventory inventory) {
+        HSSFSheet sheet = workbook.getSheet("Info");
+        if (sheet == null) return;
+        Iterator<?> rows = sheet.rowIterator();
+
+        List<InventoryInfo> inventoryInfo = new ArrayList<>();
+        inventory.setInventoryInfo(inventoryInfo);
+
+        if (rows.hasNext()) {
+            readInventoryInfoHeader((HSSFRow) rows.next());
+        }
+
+        int columns = 0;
+
+        while (rows.hasNext()) {
+            HSSFRow row = (HSSFRow) rows.next();
+            InventoryInfo info = readInventoryInfo(row);
+            if (info != null) {
+                inventoryInfo.add(info);
+                columns = info.numAttributes();
+            }
+        }
+
+        for (int i = 0; i < columns; i++) {
+            int width = sheet.getColumnWidth(i);
+            inventory.getContextMap().put("info.column[" + i + "].width", width);
         }
     }
 
@@ -213,6 +243,8 @@ public abstract class AbstractXlsInventoryReader {
     abstract protected void readVulnerabilityMetaDataHeader(HSSFRow row);
 
     abstract protected void readCertMetaDataHeader(HSSFRow row);
+
+    abstract protected void readInventoryInfoHeader(HSSFRow row);
 
     abstract protected void readAssetMetaDataHeader(HSSFRow row);
 
@@ -293,7 +325,12 @@ public abstract class AbstractXlsInventoryReader {
     protected AssetMetaData readAssetMetaData(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
+
     protected CertMetaData readCertMetaData(HSSFRow row) {
+        throw new UnsupportedOperationException();
+    }
+
+    protected InventoryInfo readInventoryInfo(HSSFRow row) {
         throw new UnsupportedOperationException();
     }
 
