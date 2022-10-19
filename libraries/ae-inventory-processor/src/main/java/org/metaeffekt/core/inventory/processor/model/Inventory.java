@@ -176,10 +176,9 @@ public class Inventory {
     }
 
     public InventoryInfo findOrCreateInventoryInfo(String id) {
-        for (InventoryInfo inventoryInfo : getInventoryInfo()) {
-            if (id.equals(inventoryInfo.getId())) {
-                return inventoryInfo;
-            }
+        final InventoryInfo info = findInventoryInfo(id);
+        if (info != null) {
+            return info;
         }
 
         final InventoryInfo inventoryInfo = new InventoryInfo();
@@ -187,6 +186,16 @@ public class Inventory {
         getInventoryInfo().add(inventoryInfo);
 
         return inventoryInfo;
+    }
+
+    public InventoryInfo findInventoryInfo(String id) {
+        for (InventoryInfo inventoryInfo : getInventoryInfo()) {
+            if (id.equals(inventoryInfo.getId())) {
+                return inventoryInfo;
+            }
+        }
+
+        return null;
     }
 
     private boolean isVariableVersion(String version) {

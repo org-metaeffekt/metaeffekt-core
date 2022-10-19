@@ -28,7 +28,7 @@ public class InventoryInfoTest {
     private final File TARGET_DIRECTORY = new File("target");
 
     @Test
-    public void basicTest() throws IOException {
+    public void createNonExistingAndWrite() throws IOException {
         final Inventory inventory = new Inventory();
 
         final InventoryInfo info = inventory.findOrCreateInventoryInfo("test-id");
