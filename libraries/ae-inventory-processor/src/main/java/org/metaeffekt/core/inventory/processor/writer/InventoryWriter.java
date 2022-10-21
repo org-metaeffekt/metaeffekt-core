@@ -70,6 +70,7 @@ public class InventoryWriter {
         writeComponentPatterns(inventory, workbook);
         writeVulnerabilities(inventory, workbook);
         writeCertMetaData(inventory, workbook);
+        writeInventoryInfo(inventory, workbook);
         writeLicenseData(inventory, workbook);
         writeAssetMetaData(inventory, workbook);
 
@@ -439,6 +440,60 @@ public class InventoryWriter {
                 } else {
                     cell.setCellValue(new HSSFRichTextString(value));
                 }
+            }
+        }
+
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
+    }
+
+    private void writeInventoryInfo(Inventory inventory, HSSFWorkbook myWorkBook) {
+        if (isEmpty(inventory.getInventoryInfo())) return;
+
+        HSSFSheet sheet = myWorkBook.createSheet("Info");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
+
+        HSSFRow row = null;
+        HSSFCell cell = null;
+
+        int rowNum = 0;
+
+        row = sheet.createRow(rowNum++);
+
+        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+
+        int cellNum = 0;
+
+        // create columns for key / value map content
+        Set<String> attributes = new HashSet<>();
+        for (InventoryInfo info : inventory.getInventoryInfo()) {
+            attributes.addAll(info.getAttributes());
+        }
+
+        attributes.removeAll(InventoryInfo.CORE_ATTRIBUTES);
+
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+
+        List<String> finalOrder = new ArrayList<>(InventoryInfo.CORE_ATTRIBUTES);
+        finalOrder.addAll(ordered);
+
+        for (String key : finalOrder) {
+            cell = row.createCell(cellNum++);
+            cell.setCellStyle(headerStyle);
+            cell.setCellValue(new HSSFRichTextString(key));
+        }
+
+        int numCol = cellNum;
+
+        for (InventoryInfo info : inventory.getInventoryInfo()) {
+            row = sheet.createRow(rowNum++);
+            cellNum = 0;
+            for (String key : finalOrder) {
+                cell = row.createCell(cellNum++);
+                String value = info.get(key);
+
+                cell.setCellValue(new HSSFRichTextString(value));
             }
         }
 
