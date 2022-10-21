@@ -99,7 +99,7 @@ public class AssetData {
 
     private List<String> sortedList(Set<String> assetAssociatedLicenses) {
         final List list = new ArrayList(assetAssociatedLicenses);
-        Collections.sort(list);
+        Collections.sort(list, String.CASE_INSENSITIVE_ORDER);
         return list;
     }
 
@@ -173,6 +173,7 @@ public class AssetData {
         return o1.getAssetName() + "-" + o1.getAssetVersion();
     }
 
+    // FIXME: revise naming
     public boolean containsNonOsiApprovedLicense(String license) {
         if (license == null) return true;
 

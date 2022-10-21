@@ -35,6 +35,11 @@ public class InventoryScanReport extends InventoryReport {
 
     private boolean enableImplicitUnpack = true;
 
+    /**
+     * Whether to include embedded POMs in the analysis. Defaults to false.
+     */
+    private boolean includeEmbedded = false;
+
     @Override
     public boolean createReport() throws Exception {
         Inventory globalInventory = readGlobalInventory();
@@ -42,6 +47,7 @@ public class InventoryScanReport extends InventoryReport {
         DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
                 inputDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory);
         directoryScan.setEnableImplicitUnpack(enableImplicitUnpack);
+        directoryScan.setIncludeEmbedded(includeEmbedded);
 
         final Inventory scanInventory = directoryScan.createScanInventory();
 
@@ -101,6 +107,14 @@ public class InventoryScanReport extends InventoryReport {
 
     public boolean isEnableImplicitUnpack() {
         return enableImplicitUnpack;
+    }
+
+    public void setIncludeEmbedded(boolean includeEmbedded) {
+        this.includeEmbedded = includeEmbedded;
+    }
+
+    public boolean isIncludeEmbedded() {
+        return includeEmbedded;
     }
 
 }

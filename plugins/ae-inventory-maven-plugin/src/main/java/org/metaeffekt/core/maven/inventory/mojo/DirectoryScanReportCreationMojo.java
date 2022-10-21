@@ -56,6 +56,12 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
      */
     private boolean enableImplicitUnpack = true;
 
+    /**
+     * For backward compatibility reasons the default value is false. The feature requires explicit activation.
+     * @parameter
+     */
+    private boolean includeEmbedded = false;
+
     @Override
     protected InventoryReport initializeInventoryReport() {
         InventoryScanReport report = new InventoryScanReport();
@@ -69,6 +75,7 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
         report.setScanExcludes(scanExcludes);
 
         report.setEnableImplicitUnpack(enableImplicitUnpack);
+        report.setIncludeEmbedded(includeEmbedded);
 
         return report;
     }

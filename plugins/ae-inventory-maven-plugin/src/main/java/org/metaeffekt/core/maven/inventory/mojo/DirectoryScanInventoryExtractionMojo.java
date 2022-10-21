@@ -68,7 +68,7 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
     private boolean includeEmbedded = false;
 
     /**
-     * When true, enabled that implicitly general archive types are unpacked
+     * When true, enabled that implicitly general archive types are unpacked.
      */
     @Parameter(defaultValue = "true")
     private boolean enabledImplicitUnpack = true;
