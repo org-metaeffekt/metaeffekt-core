@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -151,6 +152,16 @@ public class InventoryReport {
      * which vulnerabilities have already been reviewed.
      */
     private final List<String> generateOverviewTablesForAdvisories = new ArrayList<>();
+
+    /**
+     * What mapper to use when generating the header row for the overview tables.<br>
+     * Currently supported are:
+     * <ul>
+     *     <li><code>default</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
+     *     <li><code>abstracted</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
+     * </ul>
+     */
+    private Function<String, String> overviewTablesVulnerabilityStatusMappingFunction = VulnerabilityReportAdapter.StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT;
 
     private ArtifactFilter artifactFilter;
 
@@ -1192,6 +1203,18 @@ public class InventoryReport {
 
     public void addGenerateOverviewTablesForAdvisories(String... advisoryProvider) {
         splitAndAppendCsvAdvisoryProviders(generateOverviewTablesForAdvisories, advisoryProvider);
+    }
+
+    public Function<String, String> getOverviewTablesVulnerabilityStatusMappingFunction() {
+        return overviewTablesVulnerabilityStatusMappingFunction;
+    }
+
+    public void setOverviewTablesVulnerabilityStatusMappingFunction(Function<String, String> overviewTablesVulnerabilityStatusMappingFunction) {
+        this.overviewTablesVulnerabilityStatusMappingFunction = overviewTablesVulnerabilityStatusMappingFunction;
+    }
+
+    public void setOverviewTablesVulnerabilityStatusMappingFunction(String function) {
+        this.overviewTablesVulnerabilityStatusMappingFunction = VulnerabilityReportAdapter.StatisticsOverviewTable.getStatusMapperFunction(function);
     }
 
     private void splitAndAppendCsvAdvisoryProviders(List<String> listToAddProvidersTo, String... commaSeperatedProviders) {
