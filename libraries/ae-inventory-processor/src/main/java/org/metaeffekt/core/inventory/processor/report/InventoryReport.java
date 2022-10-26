@@ -157,11 +157,11 @@ public class InventoryReport {
      * What mapper to use when generating the header row for the overview tables.<br>
      * Currently supported are:
      * <ul>
-     *     <li><code>default</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
-     *     <li><code>abstracted</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
+     *     <li><code>default</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
+     *     <li><code>abstracted</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
      * </ul>
      */
-    private Function<String, String> overviewTablesVulnerabilityStatusMappingFunction = VulnerabilityReportAdapter.StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT;
+    private Function<String, String> overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT;
 
     private ArtifactFilter artifactFilter;
 
@@ -1214,7 +1214,7 @@ public class InventoryReport {
     }
 
     public void setOverviewTablesVulnerabilityStatusMappingFunction(String function) {
-        this.overviewTablesVulnerabilityStatusMappingFunction = VulnerabilityReportAdapter.StatisticsOverviewTable.getStatusMapperFunction(function);
+        this.overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.getStatusMapperFunction(function);
     }
 
     private void splitAndAppendCsvAdvisoryProviders(List<String> listToAddProvidersTo, String... commaSeperatedProviders) {

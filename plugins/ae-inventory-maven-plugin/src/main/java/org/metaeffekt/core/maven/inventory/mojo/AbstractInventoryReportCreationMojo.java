@@ -23,7 +23,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
-import org.metaeffekt.core.inventory.processor.report.VulnerabilityReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -266,8 +266,8 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * What mapper to use when generating the header row for the overview tables.<br>
      * Currently supported are:
      * <ul>
-     *     <li><code>default</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
-     *     <li><code>abstracted</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
+     *     <li><code>default</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
+     *     <li><code>abstracted</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
      * </ul>
      *
      * @parameter
