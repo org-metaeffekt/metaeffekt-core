@@ -23,6 +23,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
+import org.metaeffekt.core.inventory.processor.report.VulnerabilityReportAdapter;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -262,6 +263,18 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private String generateOverviewTablesForAdvisories;
 
     /**
+     * What mapper to use when generating the header row for the overview tables.<br>
+     * Currently supported are:
+     * <ul>
+     *     <li><code>default</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
+     *     <li><code>abstracted</code> from {@link VulnerabilityReportAdapter.StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
+     * </ul>
+     *
+     * @parameter
+     */
+    private String overviewTablesVulnerabilityStatusMappingFunction;
+
+    /**
      * @parameter default-value="en"
      */
     private String templateLanguageSelector;
@@ -320,6 +333,9 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
         report.addVulnerabilityAdvisoryFilter(vulnerabilityAdvisoryFilter);
         report.addGenerateOverviewTablesForAdvisories(generateOverviewTablesForAdvisories);
+        if (overviewTablesVulnerabilityStatusMappingFunction != null) {
+            report.setOverviewTablesVulnerabilityStatusMappingFunction(overviewTablesVulnerabilityStatusMappingFunction);
+        }
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
