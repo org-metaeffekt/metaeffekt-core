@@ -242,7 +242,7 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-03");
         final File reportDir = new File("target/test-inventory-03");
 
-        InventoryReport report = new InventoryReport();
+        final InventoryReport report = new InventoryReport();
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
