@@ -350,7 +350,13 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             report.setOverviewTablesVulnerabilityStatusMappingFunction(overviewTablesVulnerabilityStatusMappingFunction);
         }
         if (cvssScoringPreference != null) {
-            report.setCvssScoringPreference(cvssScoringPreference);
+            if (cvssScoringPreference.equalsIgnoreCase("max")) {
+                report.setCvssScoringPreference(VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_MAX);
+            } else if (cvssScoringPreference.equalsIgnoreCase("latest")) {
+                report.setCvssScoringPreference(VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST);
+            } else {
+                report.setCvssScoringPreference(cvssScoringPreference);
+            }
         }
 
         // diff settings
