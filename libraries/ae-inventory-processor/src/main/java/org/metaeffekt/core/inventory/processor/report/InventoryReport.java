@@ -163,6 +163,16 @@ public class InventoryReport {
      */
     private Function<String, String> overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT;
 
+    /**
+     * A space-separated list of CVSS-versions to be used to determine the effective score of a vulnerability.<br>
+     * Supported presets are:
+     * <ul>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_LATEST_FIRST} which uses in order of availability <code>v3</code>, then <code>v2</code></li>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_MAX} which uses the in this order <code>max</code>, <code>v3</code>, then <code>v2</code></li>
+     * </ul>
+     */
+    private String cvssScoringPreference = VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST;
+
     private ArtifactFilter artifactFilter;
 
     private boolean inventoryBomReportEnabled = false;
@@ -1215,6 +1225,14 @@ public class InventoryReport {
 
     public void setOverviewTablesVulnerabilityStatusMappingFunction(String function) {
         this.overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.getStatusMapperFunction(function);
+    }
+
+    public void setCvssScoringPreference(String cvssScoringPreference) {
+        this.cvssScoringPreference = cvssScoringPreference;
+    }
+
+    public String getCvssScoringPreference() {
+        return cvssScoringPreference;
     }
 
     private void splitAndAppendCsvAdvisoryProviders(List<String> listToAddProvidersTo, String... commaSeperatedProviders) {

@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
+import org.metaeffekt.core.inventory.processor.report.VulnerabilityReportAdapter;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -275,6 +276,18 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private String overviewTablesVulnerabilityStatusMappingFunction;
 
     /**
+     * A space-separated list of CVSS-versions to be used to determine the effective score of a vulnerability.<br>
+     * Supported presets are:
+     * <ul>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_LATEST_FIRST} which uses in order of availability <code>v3</code>, then <code>v2</code></li>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_MAX} which uses the in this order <code>max</code>, <code>v3</code>, then <code>v2</code></li>
+     * </ul>
+     *
+     * @parameter
+     */
+    private String cvssScoringPreference;
+
+    /**
      * @parameter default-value="en"
      */
     private String templateLanguageSelector;
@@ -335,6 +348,9 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.addGenerateOverviewTablesForAdvisories(generateOverviewTablesForAdvisories);
         if (overviewTablesVulnerabilityStatusMappingFunction != null) {
             report.setOverviewTablesVulnerabilityStatusMappingFunction(overviewTablesVulnerabilityStatusMappingFunction);
+        }
+        if (cvssScoringPreference != null) {
+            report.setCvssScoringPreference(cvssScoringPreference);
         }
 
         // diff settings
