@@ -94,9 +94,9 @@ public class StatisticsOverviewTableTest {
         {
             final StatisticsOverviewTable msrcStatistics = vra.createUnmodifiedStatisticsOverviewTable("MSRC", 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
             Assert.assertEquals(Arrays.asList("Severity", "Void", "Total", "% Assessed"), msrcStatistics.getHeaders());
-            Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low", "Unset"), msrcStatistics.getSeverityCategories());
+            Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
             Assert.assertEquals(Arrays.asList(0, 0, 100), msrcStatistics.getCountsForSeverityCategory("high"));
-            Assert.assertEquals(Arrays.asList(1, 1, 100), msrcStatistics.getCountsForSeverityCategory("unset"));
+            Assert.assertEquals(Arrays.asList(1, 1, 100), msrcStatistics.getCountsForSeverityCategory("None"));
         }
 
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, SEVERITY.MEDIUM.toString(), "MSRC"));
@@ -104,9 +104,9 @@ public class StatisticsOverviewTableTest {
         {
             final StatisticsOverviewTable msrcStatistics = vra.createUnmodifiedStatisticsOverviewTable("MSRC", 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
             Assert.assertEquals(Arrays.asList("Severity", "Insignificant", "Void", "Total", "% Assessed"), msrcStatistics.getHeaders());
-            Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low", "Unset"), msrcStatistics.getSeverityCategories());
+            Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
             Assert.assertEquals(Arrays.asList(0, 0, 0, 100), msrcStatistics.getCountsForSeverityCategory("high"));
-            Assert.assertEquals(Arrays.asList(0, 1, 1, 100), msrcStatistics.getCountsForSeverityCategory("unset"));
+            Assert.assertEquals(Arrays.asList(0, 1, 1, 100), msrcStatistics.getCountsForSeverityCategory("None"));
             Assert.assertEquals(Arrays.asList(1, 0, 1, 0), msrcStatistics.getCountsForSeverityCategory("medium"));
         }
     }
@@ -123,7 +123,7 @@ public class StatisticsOverviewTableTest {
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_VOID, null));
 
         final StatisticsOverviewTable table = vra.createUnmodifiedStatisticsOverviewTable(null, 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
-        Assert.assertEquals(Arrays.asList(0, 1, 1, 100), table.getCountsForSeverityCategory("unset"));
+        Assert.assertEquals(Arrays.asList(0, 1, 1, 100), table.getCountsForSeverityCategory("None"));
     }
 
     @Test
