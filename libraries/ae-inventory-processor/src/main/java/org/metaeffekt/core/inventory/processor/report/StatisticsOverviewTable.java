@@ -73,13 +73,15 @@ public class StatisticsOverviewTable {
         final String normalizedStatus = normalize(status);
         List<Integer> counts = new ArrayList<>();
         for (String severityCategory : severityStatusCountMap.keySet()) {
-            counts.add(severityStatusCountMap.get(severityCategory).get(normalizedStatus));
+            final Integer i = severityStatusCountMap.get(severityCategory).get(normalizedStatus);
+            if (i != null) counts.add(i);
         }
         return counts;
     }
 
     public int getTotalForStatus(String status) {
-        return getCountsForStatus(status).stream().mapToInt(Integer::intValue).sum();
+        return getCountsForStatus(status).stream()
+                .mapToInt(Integer::intValue).sum();
     }
 
     /**
@@ -120,7 +122,7 @@ public class StatisticsOverviewTable {
                 vulnerabilityMetaData.getComplete("CVSS Unmodified Severity (v3)"),
                 modified ? vulnerabilityMetaData.getComplete("CVSS Modified Severity (v2)") : null,
                 vulnerabilityMetaData.getComplete("CVSS Unmodified Severity (v2)"),
-                "unset"
+                "none"
         );
     }
 
@@ -232,10 +234,10 @@ public class StatisticsOverviewTable {
             }
         }
 
-        // remove 'unset' if all but the '% assessed' column are 0
-        if (table.severityStatusCountMap.containsKey("unset")
-                && table.severityStatusCountMap.get("unset").values().stream().filter(i -> i != 0).count() == 1) {
-            table.severityStatusCountMap.remove("unset");
+        // remove 'none' if all but the '% assessed' column are 0
+        if (table.severityStatusCountMap.containsKey("none")
+                && table.severityStatusCountMap.get("none").values().stream().filter(i -> i != 0).count() == 1) {
+            table.severityStatusCountMap.remove("none");
         }
 
         LOG.debug("Generated Overview Table for [{}] vulnerabilities:\n{}", vmds.size(), table);

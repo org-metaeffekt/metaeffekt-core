@@ -280,7 +280,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * Supported presets are:
      * <ul>
      *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_LATEST_FIRST} which uses in order of availability <code>v3</code>, then <code>v2</code></li>
-     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_MAX} which uses the in this order <code>max</code>, <code>v3</code>, then <code>v2</code></li>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_MAX} which uses in this order <code>max</code>, <code>v3</code>, then <code>v2</code></li>
      * </ul>
      *
      * @parameter
