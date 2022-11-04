@@ -242,12 +242,14 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-03");
         final File reportDir = new File("target/test-inventory-03");
 
-        InventoryReport report = new InventoryReport();
+        final InventoryReport report = new InventoryReport();
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
         //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
         report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC");
+        report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
         createReport(inventoryDir, "*.xls", reportDir, report);
 
@@ -277,6 +279,8 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-cert");
         final File reportDir = new File("target/test-inventory-cert");
 
+        final InventoryReport report = new InventoryReport();
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
         createReport(inventoryDir, "*.xls", reportDir);
 
         // put asserts here
