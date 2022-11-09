@@ -17,9 +17,12 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.*;
+import org.apache.tools.ant.taskdefs.Copy;
+import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.types.FileSet;
-import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
+import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
+import org.metaeffekt.core.inventory.processor.inspector.MavenJarIdInspector;
+import org.metaeffekt.core.inventory.processor.inspector.OsgiJarVersionInspector;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.slf4j.Logger;
@@ -111,11 +114,16 @@ public class DirectoryInventoryScan {
         // remove/merge duplicates
         scanInventory.mergeDuplicates();
 
-        // attempt to extract artifactId, version, groupId from contained POMs
+        // run inspections
+        // TODO: specify where to put and load inspector properties
         final Properties properties = new Properties();
-        properties.put(MavenJarMetadataExtractor.KEY_PROJECT_PATH, scanDirectory.getAbsolutePath());
-        properties.put(MavenJarMetadataExtractor.KEY_INCLUDE_EMBEDDED, Boolean.toString(includeEmbedded));
-        new MavenJarMetadataExtractor(properties).process(scanInventory);
+        properties.put("project.path", scanDirectory.getAbsolutePath());
+        properties.put("include.embedded", Boolean.toString(includeEmbedded));
+        InspectorRunner inspectorRunner = InspectorRunner.builder()
+                .queue(MavenJarIdInspector.class)
+                .queue(OsgiJarVersionInspector.class)
+                .build();
+        inspectorRunner.executeAll(scanInventory, properties);
 
         return scanInventory;
     }
