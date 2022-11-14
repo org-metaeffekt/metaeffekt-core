@@ -58,6 +58,7 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY = "inventory-report-vulnerability-summary";
 
     public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "inventory-statistics-vulnerability";
 
@@ -179,6 +180,7 @@ public class InventoryReport {
     private boolean inventoryDiffReportEnabled = false;
     private boolean inventoryPomEnabled = false;
     private boolean inventoryVulnerabilityReportEnabled = false;
+    private boolean inventoryVulnerabilityReportSummaryEnabled = false;
     private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
     private boolean assetBomReportEnabled = false;
 
@@ -258,6 +260,9 @@ public class InventoryReport {
 
         // transfer identified assets from scan
         projectInventory.inheritAssetMetaData(localInventory, false);
+
+        // transfer inventory info
+        projectInventory.inheritInventoryInfo(localInventory, false);
 
         localInventory.sortArtifacts();
 
@@ -514,6 +519,10 @@ public class InventoryReport {
 
         if (inventoryVulnerabilityReportEnabled) {
             writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
+        }
+
+        if (inventoryVulnerabilityReportSummaryEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
         }
 
         if (inventoryVulnerabilityStatisticsReportEnabled) {
@@ -1309,6 +1318,14 @@ public class InventoryReport {
 
     public boolean isInventoryVulnerabilityStatisticsReportEnabled() {
         return inventoryVulnerabilityStatisticsReportEnabled;
+    }
+
+    public void setInventoryVulnerabilityReportSummaryEnabled(boolean inventoryVulnerabilityReportSummaryEnabled) {
+        this.inventoryVulnerabilityReportSummaryEnabled = inventoryVulnerabilityReportSummaryEnabled;
+    }
+
+    public boolean isInventoryVulnerabilityReportSummaryEnabled() {
+        return inventoryVulnerabilityReportSummaryEnabled;
     }
 
     public void setInventoryVulnerabilityStatisticsReportEnabled(boolean inventoryVulnerabilityStatisticsReportEnabled) {

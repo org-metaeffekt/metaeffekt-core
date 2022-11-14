@@ -1155,6 +1155,7 @@ public class Inventory {
         filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         filteredInventory.setCertMetaData(getCertMetaData());
         filteredInventory.setAssetMetaData(getAssetMetaData());
+        filteredInventory.setInventoryInfo(getInventoryInfo());
         return filteredInventory;
     }
 
@@ -1399,6 +1400,33 @@ public class Inventory {
                 }
             } else {
                 getAssetMetaData().add(assetMetaData);
+            }
+        }
+    }
+
+    public void inheritInventoryInfo(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, InventoryInfo> localInfo = new HashMap<>();
+        for (InventoryInfo inventoryInfo : getInventoryInfo()) {
+            localInfo.put(inventoryInfo.deriveQualifier(), inventoryInfo);
+        }
+        for (InventoryInfo inventoryInfo : inputInventory.getInventoryInfo()) {
+            final String qualifier = inventoryInfo.deriveQualifier();
+            if (localInfo.containsKey(qualifier)) {
+                // overwrite; the localCerts inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    InventoryInfo localInventoryInfo = localInfo.get(qualifier);
+                    if (inventoryInfo.createCompareStringRepresentation().equals(
+                            localInventoryInfo.createCompareStringRepresentation())) {
+                        LOG.info("Inventory info {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Inventory info %s overwritten. %n  %s%n  %s", qualifier,
+                                inventoryInfo.createCompareStringRepresentation(),
+                                localInventoryInfo.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                getInventoryInfo().add(inventoryInfo);
             }
         }
     }

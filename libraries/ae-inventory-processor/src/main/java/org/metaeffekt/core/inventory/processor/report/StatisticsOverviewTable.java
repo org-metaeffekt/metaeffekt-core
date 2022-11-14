@@ -117,6 +117,13 @@ public class StatisticsOverviewTable {
     }
 
     private static String getSeverityFromVMD(VulnerabilityMetaData vulnerabilityMetaData, boolean modified) {
+
+        if (modified) {
+            if (vulnerabilityMetaData.isStatus("not applicable") || vulnerabilityMetaData.isStatus("void")) {
+                return "none";
+            }
+        }
+
         return ObjectUtils.firstNonNull(
                 modified ? vulnerabilityMetaData.getComplete("CVSS Modified Severity (v3)") : null,
                 vulnerabilityMetaData.getComplete("CVSS Unmodified Severity (v3)"),
@@ -164,7 +171,7 @@ public class StatisticsOverviewTable {
         final StatisticsOverviewTable table = new StatisticsOverviewTable();
 
         // add the default severity categories in the case there are no vulnerabilities with that category
-        for (String severityCategory : new String[]{"critical", "high", "medium", "low"}) {
+        for (String severityCategory : new String[] {"critical", "high", "medium", "low"}) {
             table.addSeverityCategory(severityCategory);
         }
 
@@ -178,8 +185,18 @@ public class StatisticsOverviewTable {
             final String status = vulnerabilityStatusMapper.apply(StatisticsOverviewTable.getStatusFromVMD(vmd, threshold, adapter));
             allStatuses.add(status);
         }
+
+        // add the default status columns
+        if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_ABSTRACTED) {
+            for (String status : new String[]{"affected", "potentially affected", "not affected"}) {
+                table.addStatus(status);
+            }
+        }
+
         allStatuses.stream().sorted((o1, o2) -> {
-            final String[] order = new String[]{"reviewed", "affected", "potentially affected", "potential vulnerability", "in review", "not affected", "not applicable", "insignificant", "void"};
+            final String[] order = new String[]{
+                    "applicable", "in review", "not applicable", "insignificant", "void",
+                    "affected", "potentially affected", "not affected" };
             return Integer.compare(Arrays.asList(order).indexOf(o1), Arrays.asList(order).indexOf(o2));
         }).forEach(table::addStatus);
 
@@ -202,7 +219,7 @@ public class StatisticsOverviewTable {
 
         // find the % of assessed vulnerabilities for each severity category
         for (Map.Entry<String, Map<String, Integer>> severityMap : table.severityStatusCountMap.entrySet()) {
-            final int applicable = severityMap.getValue().getOrDefault("reviewed", 0);
+            final int applicable = severityMap.getValue().getOrDefault("applicable", 0);
             final int notApplicable = useModifiedSeverity ? 0 : severityMap.getValue().getOrDefault("not applicable", 0);
             final int inReview = severityMap.getValue().getOrDefault("in review", 0);
             final int insignificant = severityMap.getValue().getOrDefault("insignificant", 0);
@@ -298,11 +315,12 @@ public class StatisticsOverviewTable {
 
     public final static Function<String, String> VULNERABILITY_STATUS_MAPPER_DEFAULT = name -> {
         if ("Applicable".equalsIgnoreCase(name)) {
-            return "Reviewed";
+            return "Applicable";
         }
 
+        // FIXME: when whould the status be Potential Vulnerability?
         if ("Potential Vulnerability".equalsIgnoreCase(name)) {
-            return "Reviewed";
+            return "Applicable";
         }
 
         return name;
@@ -326,19 +344,17 @@ public class StatisticsOverviewTable {
      * see <code>AEAA-221</code> for more details.
      */
     public final static Function<String, String> VULNERABILITY_STATUS_MAPPER_ABSTRACTED = name -> {
-        if (StringUtils.isEmpty(name)) { // in review
+        if (StringUtils.isEmpty(name)) { // in review (implicit)
             return "potentially affected";
         }
 
         switch (name) {
             case VulnerabilityMetaData.STATUS_VALUE_APPLICABLE:
-            case "reviewed":
-            case "potential vulnerability":
+            case VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT: // here the explicit set status insignificant
                 return "affected";
 
             case VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE:
             case VulnerabilityMetaData.STATUS_VALUE_VOID:
-            case VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT:
                 return "not affected";
 
             case "in review":

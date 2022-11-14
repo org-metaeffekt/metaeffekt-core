@@ -194,6 +194,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter default-value="false"
      */
+    private boolean enableVulnerabilityReportSummary;
+
+    /**
+     * @parameter default-value="false"
+     */
     private boolean enableVulnerabilityStatisticsReport;
 
     /**
@@ -367,6 +372,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setInventoryDiffReportEnabled(enableDiffReport);
         report.setInventoryBomReportEnabled(enableBomReport);
         report.setInventoryVulnerabilityReportEnabled(enableVulnerabilityReport);
+        report.setInventoryVulnerabilityReportSummaryEnabled(enableVulnerabilityReportSummary);
         report.setInventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport);
 
         report.setTargetReportDir(targetReportDir);

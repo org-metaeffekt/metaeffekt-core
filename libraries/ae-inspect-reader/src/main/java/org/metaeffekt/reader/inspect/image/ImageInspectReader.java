@@ -37,7 +37,7 @@ public class ImageInspectReader {
      */
     public static ImageInspectData dataFromJson(File file) {
         if (!file.isFile()) {
-            throw new IllegalArgumentException("Passed file was not a file.");
+            throw new IllegalArgumentException("Passed file was not a file: " + file);
         }
 
         ImageInspectData inspects;

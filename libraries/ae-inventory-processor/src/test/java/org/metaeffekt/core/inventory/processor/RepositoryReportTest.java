@@ -243,13 +243,14 @@ public class RepositoryReportTest {
         final File reportDir = new File("target/test-inventory-03");
 
         final InventoryReport report = new InventoryReport();
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
         //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
         report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC");
         report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
         createReport(inventoryDir, "*.xls", reportDir, report);
 
@@ -268,8 +269,17 @@ public class RepositoryReportTest {
         prepareReport(inventoryDir, "*.xls", reportDir, report);
 
         report.setInventoryBomReportEnabled(false);
-        report.setInventoryVulnerabilityReportEnabled(false);
+
         report.setAssetBomReportEnabled(true);
+
+        report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
+
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+
+        report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
+
+        report.setVulnerabilityScoreThreshold(0.6f);
 
         report.createReport();
     }

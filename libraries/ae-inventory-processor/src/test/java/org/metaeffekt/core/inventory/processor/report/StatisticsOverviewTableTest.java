@@ -58,7 +58,7 @@ public class StatisticsOverviewTableTest {
         {
             final StatisticsOverviewTable frStatisitics = vra.createUnmodifiedStatisticsOverviewTable("CERT-FR", 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
             Assert.assertFalse(frStatisitics.isEmpty());
-            Assert.assertEquals(Arrays.asList("Severity", "Reviewed", "Total", "% Assessed"), frStatisitics.getHeaders());
+            Assert.assertEquals(Arrays.asList("Severity", "Applicable", "Total", "% Assessed"), frStatisitics.getHeaders());
             Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low"), frStatisitics.getSeverityCategories());
             Assert.assertEquals(Arrays.asList(2, 2, 100), frStatisitics.getCountsForSeverityCategory("critical"));
         }
@@ -69,21 +69,21 @@ public class StatisticsOverviewTableTest {
         {
             final StatisticsOverviewTable statistics = vra.createUnmodifiedStatisticsOverviewTable(null, 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
             Assert.assertFalse(statistics.isEmpty());
-            Assert.assertEquals(Arrays.asList("Severity", "Reviewed", "In Review", "Total", "% Assessed"), statistics.getHeaders());
+            Assert.assertEquals(Arrays.asList("Severity", "Applicable", "In Review", "Total", "% Assessed"), statistics.getHeaders());
             Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low"), statistics.getSeverityCategories());
             Assert.assertEquals(Arrays.asList(2, 1, 3, 66), statistics.getCountsForSeverityCategory("critical"));
         }
 
         {
             final StatisticsOverviewTable seiStatistics = vra.createUnmodifiedStatisticsOverviewTable("CERT-SEI", 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
-            Assert.assertEquals(Arrays.asList("Severity", "Reviewed", "Total", "% Assessed"), seiStatistics.getHeaders());
+            Assert.assertEquals(Arrays.asList("Severity", "Applicable", "Total", "% Assessed"), seiStatistics.getHeaders());
             Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low"), seiStatistics.getSeverityCategories());
             Assert.assertEquals(Arrays.asList(1, 1, 100), seiStatistics.getCountsForSeverityCategory("critical"));
         }
 
         {
             final StatisticsOverviewTable statistics = vra.createUnmodifiedStatisticsOverviewTable(null, 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
-            Assert.assertEquals(Arrays.asList("Severity", "Reviewed", "In Review", "Total", "% Assessed"), statistics.getHeaders());
+            Assert.assertEquals(Arrays.asList("Severity", "Applicable", "In Review", "Total", "% Assessed"), statistics.getHeaders());
             Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low"), statistics.getSeverityCategories());
             Assert.assertEquals(Arrays.asList(2, 1, 3, 66), statistics.getCountsForSeverityCategory("critical"));
             Assert.assertEquals(Arrays.asList(0, 1, 1, 0), statistics.getCountsForSeverityCategory("high"));
@@ -131,24 +131,25 @@ public class StatisticsOverviewTableTest {
         Inventory inventory = new Inventory();
         VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory);
 
-        inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("reviewed", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));
+        inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("applicable", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("in review", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("void", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("insignificant", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("not applicable", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("reviewed", SEVERITY.HIGH.toString(), SEVERITY.CRITICAL.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("reviewed", SEVERITY.HIGH.toString(), SEVERITY.HIGH.toString()));
+        inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("applicable", SEVERITY.HIGH.toString(), SEVERITY.CRITICAL.toString()));
+        inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("applicable", SEVERITY.HIGH.toString(), SEVERITY.HIGH.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("in review", SEVERITY.MEDIUM.toString(), SEVERITY.HIGH.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("in review", SEVERITY.MEDIUM.toString(), SEVERITY.MEDIUM.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("in review", SEVERITY.MEDIUM.toString()));
 
         final StatisticsOverviewTable table = vra.createModifiedStatisticsOverviewTable(null, 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
-        Assert.assertEquals(Arrays.asList("Severity", "Reviewed", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "% Assessed"), table.getHeaders());
-        Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low"), table.getSeverityCategories());
-        Assert.assertEquals(Arrays.asList(2, 1, 1, 1, 1, 6, 60), table.getCountsForSeverityCategory("critical"));
+        Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low", "None"), table.getSeverityCategories());
+        Assert.assertEquals(Arrays.asList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "% Assessed"), table.getHeaders());
+        Assert.assertEquals(Arrays.asList(2, 1, 0, 1, 0, 4, 50), table.getCountsForSeverityCategory("critical"));
         Assert.assertEquals(Arrays.asList(1, 1, 0, 0, 0, 2, 50), table.getCountsForSeverityCategory("high"));
         Assert.assertEquals(Arrays.asList(0, 2, 0, 0, 0, 2, 0), table.getCountsForSeverityCategory("medium"));
         Assert.assertEquals(Arrays.asList(0, 0, 0, 0, 0, 0, 100), table.getCountsForSeverityCategory("low"));
+        Assert.assertEquals(Arrays.asList(0, 0, 1, 0, 1, 2, 100), table.getCountsForSeverityCategory("none"));
     }
 
     @Test
@@ -156,26 +157,27 @@ public class StatisticsOverviewTableTest {
         final Inventory inventory = new Inventory();
         final VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory);
 
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("reviewed", SEVERITY.CRITICAL.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("in review", SEVERITY.CRITICAL.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("void", SEVERITY.CRITICAL.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("insignificant", SEVERITY.CRITICAL.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("not applicable", SEVERITY.CRITICAL.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("reviewed", SEVERITY.HIGH.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("reviewed", SEVERITY.HIGH.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("in review", SEVERITY.MEDIUM.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("in review", SEVERITY.MEDIUM.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("in review", SEVERITY.MEDIUM.toString()));
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("applicable", SEVERITY.CRITICAL.toString())); // affected
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("insignificant", SEVERITY.CRITICAL.toString())); // affected
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(null, SEVERITY.CRITICAL.toString())); // potentially affected
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("not applicable", SEVERITY.CRITICAL.toString())); // not affected
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("void", SEVERITY.CRITICAL.toString())); // not affected
+
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("applicable", SEVERITY.HIGH.toString())); // affected
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("applicable", SEVERITY.HIGH.toString())); // affected
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(null, SEVERITY.MEDIUM.toString()));
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(null, SEVERITY.MEDIUM.toString()));
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(null, SEVERITY.MEDIUM.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(null, SEVERITY.LOW.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("", SEVERITY.LOW.toString()));
-        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("reviewed", SEVERITY.LOW.toString()));
+        inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("applicable", SEVERITY.LOW.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity("applicable", SEVERITY.LOW.toString()));
 
         final StatisticsOverviewTable table = vra.createUnmodifiedStatisticsOverviewTable(null, 0.0f, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_ABSTRACTED);
 
         Assert.assertEquals(Arrays.asList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "% Assessed"), table.getHeaders());
         Assert.assertEquals(Arrays.asList("Critical", "High", "Medium", "Low"), table.getSeverityCategories());
-        Assert.assertEquals(Arrays.asList(1, 1, 3, 5, 80), table.getCountsForSeverityCategory("critical"));
+        Assert.assertEquals(Arrays.asList(2, 1, 2, 5, 80), table.getCountsForSeverityCategory("critical"));
         Assert.assertEquals(Arrays.asList(2, 0, 0, 2, 100), table.getCountsForSeverityCategory("high"));
         Assert.assertEquals(Arrays.asList(0, 3, 0, 3, 0), table.getCountsForSeverityCategory("medium"));
         Assert.assertEquals(Arrays.asList(2, 2, 0, 4, 50), table.getCountsForSeverityCategory("low"));

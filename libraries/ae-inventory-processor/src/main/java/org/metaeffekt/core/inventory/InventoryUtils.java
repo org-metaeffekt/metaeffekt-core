@@ -85,6 +85,7 @@ public abstract class InventoryUtils {
             aggregateInventory.inheritVulnerabilityMetaData(inventory, true);
             aggregateInventory.inheritCertMetaData(inventory, true);
             aggregateInventory.inheritAssetMetaData(inventory, true);
+            aggregateInventory.inheritInventoryInfo(inventory, true);
         }
 
         return aggregateInventory;

@@ -271,8 +271,8 @@ public abstract class AbstractModelBase {
     }
 
     public float getFloat(String key, float defaultValue) {
-        String stringValue = get(key);
-        if (stringValue == null) return defaultValue;
+        final String stringValue = get(key);
+        if (stringValue == null || stringValue.trim().isEmpty()) return defaultValue;
         try {
             return Float.parseFloat(stringValue);
         } catch (NumberFormatException e) {
