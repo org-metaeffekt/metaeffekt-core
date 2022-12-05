@@ -170,10 +170,10 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
             }
         }
 
-        // simply add asset data
+        // simply add asset data (anticipating there are no duplicates)
         targetInv.getAssetMetaData().addAll(sourceInv.getAssetMetaData());
 
-        // remove duplicates (in the sense of exlude and merge attributes
+        // remove duplicates (in the sense of exclude and merge attributes
         final Set<Artifact> toBeDeleted = new HashSet<>();
         final Map<String, Artifact> representationArtifactMap = new HashMap<>();
         final List<String> attributes = new ArrayList<>();

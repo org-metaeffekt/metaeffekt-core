@@ -16,10 +16,8 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.*;
-import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
+import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.slf4j.Logger;
@@ -69,34 +67,18 @@ public class DirectoryInventoryScan {
     }
 
     public Inventory createScanInventory() {
-        final Project project = new Project();
-
-        // delete scan directory (content is progressively unpacked)
-        Delete delete = new Delete();
-        delete.setProject(project);
-        delete.setDir(scanDirectory);
-        delete.execute();
-
-        // ensure scan directory root folder is recreated
-        scanDirectory.mkdirs();
-
-        // copy files to folder that are of interest
-        final Copy copy = new Copy();
-        copy.setProject(project);
-        FileSet set = new FileSet();
-        set.setDir(inputDirectory);
-        set.setIncludes(combinePatterns(scanIncludes, "**/*"));
-        set.setExcludes(combinePatterns(scanExcludes, "--nothing--"));
-        copy.addFileset(set);
-        copy.setTodir(scanDirectory);
-        copy.execute();
+        prepareScanDirectory();
 
         return performScan();
     }
 
-    private String combinePatterns(String[] patterns, String defaultPattern) {
-        if (patterns == null) return defaultPattern;
-        return Arrays.stream(patterns).collect(Collectors.joining(","));
+    private void prepareScanDirectory() {
+        // if the input directory is not set; the scan directory is not managed
+        if (inputDirectory != null) {
+            final PrepareScanDirectoryCommand prepareScanDirectoryCommand = new PrepareScanDirectoryCommand();
+            prepareScanDirectoryCommand.prepareScanDirectory(inputDirectory, scanDirectory, scanIncludes, scanExcludes);
+        }
+        LOG.info("Using prepared scan directory: [{}]", scanDirectory);
     }
 
     public Inventory performScan() {

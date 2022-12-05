@@ -28,26 +28,25 @@ import java.io.File;
 public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
     /**
+     * Change: 12/2022: not mandatory anymore; when no input directory is provided the mojo anticipated the scanDirectory
+     * is managed in advance to an invocation. The other attributes (scanIncludes, scanExcludes) are ignored in this case.
+     *
      * @parameter
-     * @required
      */
     private File inputDirectory;
 
     /**
      * @parameter expression="${project.build.directory}/scan"
-     * @required
      */
     private File scanDirectory;
 
     /**
      * @parameter
-     * @required
      */
     private String[] scanIncludes = new String[]{"**/*"};
 
     /**
      * @parameter
-     * @required
      */
     private String[] scanExcludes;
 
