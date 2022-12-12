@@ -262,20 +262,20 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("XXX");
+        final File inventoryDir = new File("/Volumes/S-DIT-007/ae-workbench-output/S-DIT/S-DIT-007/ondemand/resources/inventory");
         final File reportDir = new File("target/test-inventory-04");
 
         InventoryReport report = new InventoryReport();
         prepareReport(inventoryDir, "*.xls", reportDir, report);
 
-        report.setInventoryBomReportEnabled(false);
+        report.setInventoryBomReportEnabled(true);
 
-        report.setAssetBomReportEnabled(true);
+        report.setAssetBomReportEnabled(false);
 
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
+        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setInventoryVulnerabilityReportSummaryEnabled(false);
 
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
 
         report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
 

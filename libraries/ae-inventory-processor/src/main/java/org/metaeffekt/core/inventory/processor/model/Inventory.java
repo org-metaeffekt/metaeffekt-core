@@ -1566,74 +1566,76 @@ public class Inventory {
     }
 
     public String getRepresentedLicenseName(String license) {
-
+        // this code operates on the metadata in the inventory, only
         for (LicenseData ld : getLicenseData()) {
             if (license.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
-                if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
-                    return (ld.get(LicenseData.Attribute.REPRESENTED_AS));
-                } else return license;
+                final String representedAs = ld.get(LicenseData.Attribute.REPRESENTED_AS);
+                if (representedAs != null) {
+                    return representedAs;
+                } else {
+                    break;
+                }
             }
         }
+
+        // return original license
         return license;
     }
 
-    public List<String> getRepresentedLicenseNames(List<String> effectiveLicenses) {
-        final List<String> representedLicenseNames = new ArrayList<>();
-        for (String license : effectiveLicenses) {
-            representedLicenseNames.add(getRepresentedLicenseName(license));
-        }
-        return representedLicenseNames.stream().distinct().
-                sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
+    public List<String> getRepresentedLicenses(List<String> effectiveLicenses) {
+        return effectiveLicenses.stream()
+            .map(this::getRepresentedLicenseName)
+            .sorted(String.CASE_INSENSITIVE_ORDER)
+            .distinct()
+            .collect(Collectors.toList());
     }
 
-    public List<String> getRepresentedEffectiveLicenses(String representedLicenseName) {
-        List<String> representedEffectiveLicenses = new ArrayList<>();
+    public List<String> getLicensesRepresentedBy(String representedLicenseName) {
+        Set<String> representedEffectiveLicenses = new HashSet<>();
+
+        // add represented license name itself
         representedEffectiveLicenses.add(representedLicenseName);
+
         for (LicenseData ld : getLicenseData()) {
-            if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
-                if (representedLicenseName.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
-                    representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
-                }
+            final String representedAs = ld.get(LicenseData.Attribute.REPRESENTED_AS);
+            if (representedAs != null && representedLicenseName.equals(representedAs)) {
+                representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
             }
         }
-        if (!representedEffectiveLicenses.isEmpty()) {
-            return representedEffectiveLicenses.stream()
-                    .sorted(String.CASE_INSENSITIVE_ORDER).distinct().collect(Collectors.toList());
-        } else {
-            return representedEffectiveLicenses;
-        }
+        return representedEffectiveLicenses.stream().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
     }
 
-    public boolean isSubstructureRequired(String license, List<String> effectiveLicenses) {
-        int counter = 0;
-        if (!effectiveLicenses.contains(license)) {
+    /**
+     * The substructure is required when:
+     * <ol>
+     *     <li>more than 2 licenses are represented by a single license.</li>
+     *     <li>the represented name and variant license name deviates</li>
+     * </ol>
+     *
+     * @param license The license for which the request needs to ne answered.
+     * @param representedEffectiveLicenses List of represented effective licenses
+     *
+     * @return Returns <code>true</code> when a substructure to represent the licenses is required.
+     */
+    public boolean isSubstructureRequired(String license, List<String> representedEffectiveLicenses) {
+        if (!representedEffectiveLicenses.contains(license)) {
             return true;
+        } else {
+            return getLicensesRepresentedBy(license).size() > 1;
         }
-        for (LicenseData ld : getLicenseData()) {
-            final String canonicalName = ld.get(LicenseData.Attribute.CANONICAL_NAME);
-            if (effectiveLicenses.contains(canonicalName)) {
-                if (license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
-                    counter++;
-                }
-            }
-            if (counter > 1) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense) {
         final Set<String> componentNames = new HashSet<>();
-        for (String effectiveLicense : getRepresentedEffectiveLicenses(representedNameLicense)) {
+        for (String effectiveLicense : getLicensesRepresentedBy(representedNameLicense)) {
             evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
         }
         return componentNames;
     }
 
-    public boolean isFootnoteRequired(List<String> licenses) {
-        for (String license : getRepresentedLicenseNames(licenses)) {
-            if (isSubstructureRequired(license, licenses)) {
+    public boolean isFootnoteRequired(List<String> effectiveLicenses, List<String> representedEffectiveLicenses) {
+        for (String license : effectiveLicenses) {
+            if (isSubstructureRequired(license, representedEffectiveLicenses)) {
                 return true;
             }
         }
