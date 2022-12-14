@@ -40,7 +40,8 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
     public static final String ENCODING_UTF_8 = "UTF-8";
-    public static final String VAR_CHECKSUM = "checksum";
+
+    private static final String VAR_CHECKSUM = "checksum";
 
     /**
      * Scans the given baseDir for files matching the includes and excludes.
@@ -56,10 +57,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(baseDir);
             if (includes != null) {
-                scanner.setIncludes(includes.split(","));
+                scanner.setIncludes(includes.split(", ?"));
             }
             if (excludes != null) {
-                scanner.setExcludes(excludes.split(","));
+                scanner.setExcludes(excludes.split(", ?"));
             }
             scanner.setFollowSymlinks(false);
             scanner.scan();
@@ -69,13 +70,44 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String computeChecksum(File file) {
-        // FIXME: currently we use the Ant checksum means (may be not very efficient)
-        Checksum checksum = new Checksum();
+        return computeChecksum(file, "MD5");
+    }
+
+    public static String computeMD5Checksum(File file) {
+        return computeChecksum(file, "MD5");
+    }
+
+    /**
+     * The thread-local enables to reuse the Ant Checksum instance per thread.
+     */
+    private static ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
+
+    private static String computeChecksum(File file, String algorithm) {
+        final Checksum checksum = getChecksumInstance();
+        // cannot reuse the project
         checksum.setProject(new Project());
         checksum.setFile(file);
-        checksum.setProperty(VAR_CHECKSUM);
+        checksum.setAlgorithm(algorithm);
         checksum.execute();
         return checksum.getProject().getProperty(VAR_CHECKSUM);
+    }
+
+    private static Checksum getChecksumInstance() {
+        Checksum checksum = checksumThreadLocal.get();
+        if (checksum == null) {
+            checksum = new Checksum();
+            checksum.setProperty(VAR_CHECKSUM);
+            checksumThreadLocal.set(checksum);
+        }
+        return checksum;
+    }
+
+    public static String computeSHA1Hash(File file) {
+        return computeChecksum(file, "SHA-1");
+    }
+
+    public static String computeSHA256Hash(File file) {
+        return computeChecksum(file, "SHA-256");
     }
 
     public static String asRelativePath(String workingDirPath, String filePath) throws IOException {

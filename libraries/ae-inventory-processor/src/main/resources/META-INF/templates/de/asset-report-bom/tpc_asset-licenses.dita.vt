@@ -1,0 +1,103 @@
+#parse("META-INF/templates/en/asset-report-bom/macros/tpc_inventory-license.dita.vm")
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_asset-license-summary-$reportContext.id">
+    <title>$reportContext.combinedTitle("Asset Licenses", true)</title>
+#set($assetData=$report.getAssetData($inventory))
+#set($associatedLicensesRepresented=$assetData.getRepresentedAssociatedLicenses())
+<body>
+    <p>
+        Tabelle <xref href="#tpc_asset-license-summary-$reportContext.id/AssociatedLicenses" type="table">Softwarebestand Lizenzen</xref>
+        gibt einen Überblick über alle Lizenzen und Lizenzausdrücke, die mit dem Softwarebestand zugeordnet sind. Die Tabelle stellt
+        die assoziierten Lizenzen.
+    </p>
+    <p>
+        Bitte beachten, dass eine Lizenz oder ein Lizenzausdruck mehreren Positionen im Softwarebestand zugeordnet werden kann.
+    </p>
+    #if ($assetData.isLicenseSubstructureRequired())
+        <fn callout="*" id="id-footnote">
+            Lizenzen bzw. Lizenzausdrücke mit Variationen aber inhaltlich ähnlicher Eigenschaften werden zusammengefasst
+            durch eine repräsentative Lizenz bzw. repräsentativen Lizenzausdruck in der Auflistung dargestellt. Die
+            Details der Ausprägungen oder Variationen der Lizenz oder Lizenzausdrücke wird dann in separaten Abschnitten
+            detailliert.
+            Freigaben der Lizenzen sind ggf. nur für bestimmte Ausprägungen vorhanden.
+        </fn>
+    #end
+    <table id="AssociatedLicenses" otherprops="wide">
+        <title>Softwarebestand Lizensen$reportContext.inContextOf()</title>
+        <tgroup cols="4">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+            <colspec colname="COLSPEC1" colnum="2" colwidth="27*" />
+            <colspec colname="COLSPEC2" colnum="3" colwidth="13*" />
+            <colspec colname="COLSPEC3" colnum="4" colwidth="10*" />
+            <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">Lizenz / Lizenzausdruck</entry>
+                    <entry colname="COLSPEC1" valign="top">SPDX Id / Ausdruck</entry>
+                    <entry colname="COLSPEC2" valign="top">OSI Freigabe</entry>
+                    <entry colname="COLSPEC3" valign="top">Anzahl</entry>
+                </row>
+            </thead>
+            <tbody>
+#foreach($license in $associatedLicensesRepresented)
+#set($licenseData=$inventory.findMatchingLicenseData($license))
+                <row>
+#if ($assetData.isLicenseSubstructureRequired($license))
+                    <entry>
+                        <xref href="#tpc_associated_license_$inventory.deriveLicenseId($license)" type="topic">
+                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                        </xref>
+                    </entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>
+                        #if ($licenseData)#if ($licenseData.is('OSI Approved'))yes<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                    </entry>
+#else
+                    <entry>
+                        <xref href="#tpc_associated_license_$inventory.deriveLicenseId($license)" type="topic">
+                            $report.xmlEscapeLicense($license)
+                        </xref>
+                    </entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+#if ($assetData.containsNonOsiApprovedLicense($license))
+                    <entry>
+                        #if ($licenseData)#if ($licenseData.is('OSI Approved'))yes<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                    </entry>
+#else
+                    <entry>
+                        #if($licenseData)#if($licenseData.is('OSI Approved'))yes#else&nbsp;#end#else&nbsp;#end
+                    </entry>
+#end
+#end
+                    <entry>
+                         <xref href="#tpc_associated_license_$inventory.deriveLicenseId($license)" type="topic">
+                            <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license)</codeph>
+                        </xref>
+                    </entry>
+                </row>
+#end
+            </tbody>
+        </tgroup>
+    </table>
+</body>
+
+#foreach($license in $associatedLicensesRepresented)
+    #if(!$assetData.isLicenseSubstructureRequired($license))
+        #insertLicenseAssetTopic($license)
+    #else
+        <topic id="tpc_associated_license_$inventory.deriveLicenseId($license)">
+            <title>$report.xmlEscapeLicense($license) Variants</title>
+            <body>
+                <p>
+                    $license ist repräsentativ für verschiedene Ausprägungen der Lizenz oder des Lizenzausdrucks.
+                    In diesem Abschnitt werden alle Ausprägungen von $license aufgelistet.</p>
+                    #foreach($associatedLicense in $assetData.getLicensesForRepresentedLicense($license))
+                       #insertLicenseAssetTopic($associatedLicense)
+                    #end
+            </body>
+        </topic>
+    #end
+#end
+
+
+</topic>

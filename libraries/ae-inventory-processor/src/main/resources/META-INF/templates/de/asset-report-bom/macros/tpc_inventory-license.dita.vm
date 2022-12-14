@@ -1,0 +1,51 @@
+#macro (insertLicenseAssetTopic $license)
+    #set($folder=$inventory.getLicenseFolder($license))
+    #set($assetLicenseDataList=$assetData.evaluateAssets($license))
+    #if(!$assetLicenseDataList.isEmpty())
+    <topic id="tpc_associated_license_$inventory.deriveLicenseId($license)">
+        <title>$report.xmlEscapeLicense($license)</title>
+        <body>
+            <p>
+                Nachfolgende Tabelle listet den Softwarebestand im Bezug zu $license.
+                #if($folder)
+                    Hinweise oder Inhalten der Lizenz können in
+                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
+                        [external]</xref> nachgeschlagen werden.
+                #end
+            </p>
+            <p>
+                <table otherprops="wide">
+                    <title>Softwarebestand assoziiert mit $license.trim()$reportContext.inContextOf()</title>
+                    <tgroup cols="3">
+                        <colspec colname="COLSPEC0" colnum="1" colwidth="10*"/>
+                        <colspec colname="COLSPEC1" colnum="2" colwidth="70*"/>
+                        <colspec colname="COLSPEC2" colnum="3" colwidth="20*"/>
+                        <thead>
+                            <row>
+                                <entry colname="COLSPEC0" valign="top">Typ</entry>
+                                <entry colname="COLSPEC1" valign="top">Name / Quelle</entry>
+                                <entry colname="COLSPEC2" valign="top">Version / Kennzeichen</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            #foreach($assetLicenseData in $assetLicenseDataList)
+                                <row>
+                                    <entry>
+                                        $report.xmlEscapeString($assetLicenseData.getAssetType())
+                                    </entry>
+                                    <entry>
+                                        <codeph>$report.xmlEscapeArtifactId($assetLicenseData.getAssetName())</codeph>
+                                    </entry>
+                                    <entry>
+                                        <codeph>$report.xmlEscapeGAV($assetLicenseData.getAssetVersion())</codeph>
+                                    </entry>
+                                </row>
+                            #end
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+        </body>
+    </topic>
+    #end
+#end

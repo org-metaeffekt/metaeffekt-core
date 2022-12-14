@@ -20,6 +20,7 @@ import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
 import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.util.ArchiveUtils;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -275,8 +276,9 @@ public class DirectoryInventoryScan {
 
         for (final File file : files) {
             final String id = file.getName();
-            final String checksum = computeChecksum(file);
+            final String checksum = computeMD5Checksum(file);
             final String idFullPath = file.getPath();
+
             Artifact artifact = referenceInventory.findArtifactByIdAndChecksum(id, checksum);
 
             if (artifact == null) {
@@ -314,11 +316,16 @@ public class DirectoryInventoryScan {
 
                 if (!unpacked) {
                     // add new unknown artifact
-                    Artifact newArtifact = new Artifact();
+                    final Artifact newArtifact = new Artifact();
                     newArtifact.setId(id);
                     newArtifact.setChecksum(checksum);
-                    newArtifact.addProject(asRelativePath(scanBaseDir, file));
 
+                    // FIXME: we compute hashes, but we do not use them for searching the inventory yet.
+                    //   This is however step one of a transition. We currently use id/md5 as central qualifier.
+                    newArtifact.set("Hash (SHA-1)", FileUtils.computeSHA1Hash(file));
+                    newArtifact.set("Hash (SHA-256)", FileUtils.computeSHA256Hash(file));
+
+                    newArtifact.addProject(asRelativePath(scanBaseDir, file));
                     applyAssetIdChain(assetIdChain, newArtifact);
                     scanInventory.getArtifacts().add(newArtifact);
                 } else {
@@ -331,6 +338,8 @@ public class DirectoryInventoryScan {
                 Artifact copy = new Artifact();
                 copy.setId(id);
                 copy.setChecksum(checksum);
+                copy.set("Hash (SHA-1)", FileUtils.computeSHA1Hash(file));
+                copy.set("Hash (SHA-256)", FileUtils.computeSHA256Hash(file));
                 copy.addProject(asRelativePath(scanBaseDir, file));
 
                 // only include the artifact if the classification does not include HINT_IGNORE
