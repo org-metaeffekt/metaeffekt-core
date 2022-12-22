@@ -8,14 +8,13 @@
             <p>
                 Nachfolgende Tabelle listet den Softwarebestand im Bezug zu $license.
                 #if($folder)
-                    Hinweise oder Inhalten der Lizenz können in
+                    Hinweise oder Inhalten der Lizenz k&#246;nnen in
                     <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
                         [external]</xref> nachgeschlagen werden.
                 #end
             </p>
             <p>
                 <table otherprops="wide">
-                    <title>Softwarebestand assoziiert mit $license.trim()$reportContext.inContextOf()</title>
                     <tgroup cols="3">
                         <colspec colname="COLSPEC0" colnum="1" colwidth="10*"/>
                         <colspec colname="COLSPEC1" colnum="2" colwidth="70*"/>

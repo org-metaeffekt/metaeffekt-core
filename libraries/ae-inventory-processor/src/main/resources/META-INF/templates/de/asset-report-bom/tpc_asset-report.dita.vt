@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_assets-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>$reportContext.combinedTitle("Asset List", true)</title>
+    <title>$reportContext.combinedTitle("Softwarebestand", true)</title>
     <body>
 #set($assets=$assetAdapter.listAssets())
 #if($assets.isEmpty())
@@ -11,7 +11,7 @@
 #else
         <p>
             Die Tabelle stellt den Sofwarebestand im Umfang von ${product.name} dar. Die einzelnen Positionen
-            werden nachfolgend in individuellen Abschnitten mit ihren spezifischen Details aufgef&uuml;hrt.
+            werden nachfolgend in individuellen Abschnitten mit ihren spezifischen Details aufgef&#252;hrt.
         </p>
     </body>
 #foreach($asset in $assets)
