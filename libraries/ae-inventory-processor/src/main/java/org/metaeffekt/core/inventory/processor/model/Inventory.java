@@ -69,7 +69,10 @@ public class Inventory {
 
     private Map<String, String> componentNameMap = new HashMap<>();
 
-    private Map<String, Object> contextMap = new HashMap<>();
+    /**
+     * Enables to store serialization-related data with the inventory.
+     */
+    private final InventorySerializationContext serializationContext = new InventorySerializationContext();
 
     public static void sortArtifacts(List<Artifact> artifacts) {
         Comparator<Artifact> comparator = new Comparator<Artifact>() {
@@ -89,7 +92,7 @@ public class Inventory {
                 return sb.toString();
             }
         };
-        Collections.sort(artifacts, comparator);
+        artifacts.sort(comparator);
     }
 
     public void mergeDuplicates() {
@@ -444,7 +447,7 @@ public class Inventory {
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
-        final Set<String> licenses = new HashSet();
+        final Set<String> licenses = new HashSet<>();
 
         for (Artifact artifact : getArtifacts()) {
             // not relevant artifact licenses must not be included
@@ -588,12 +591,8 @@ public class Inventory {
             }
         }
 
-        Collections.sort(componentNotices, new Comparator<ComponentNotice>() {
-            @Override
-            public int compare(ComponentNotice cn1, ComponentNotice cn2) {
-                return cn1.getComponentName().compareToIgnoreCase(cn2.getComponentName());
-            }
-        });
+        componentNotices.sort(((cn1, cn2) -> cn1.getComponentName().compareToIgnoreCase(cn2.getComponentName())));
+
         return componentNotices;
     }
 
@@ -1091,12 +1090,18 @@ public class Inventory {
         }
     }
 
+    @Deprecated
     public Map<String, Object> getContextMap() {
-        return contextMap;
+        return serializationContext.getContextMap();
     }
 
+    @Deprecated
     public void setContextMap(Map<String, Object> contextMap) {
-        this.contextMap = contextMap;
+        this.serializationContext.setContextMap(contextMap);
+    }
+
+    public InventorySerializationContext getSerializationContext() {
+        return this.serializationContext;
     }
 
     public Map<String, String> getLicenseNameMap() {

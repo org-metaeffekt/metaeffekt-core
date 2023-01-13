@@ -20,9 +20,7 @@ import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.SpreadsheetVersion;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.model.CertMetaData.Attribute;
@@ -44,7 +42,12 @@ public class InventoryWriter {
      */
     public final static int MAX_CELL_LENGTH = SpreadsheetVersion.EXCEL97.getMaxTextLength() - 7;
 
-    private Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[]{
+    /**
+     * Defines a default order.
+     *
+     * FIXME: column-metadata
+     */
+    private final Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[]{
             Artifact.Attribute.ID,
             Artifact.Attribute.CHECKSUM,
             Artifact.Attribute.COMPONENT,
@@ -62,8 +65,14 @@ public class InventoryWriter {
             Artifact.Attribute.VERIFIED
     };
 
+
+    /**
+     * Contains self-managed palette of colors. HSSF api is strange.
+     */
+    private final Map<String, HSSFColor> colorPalette = new HashMap<>();
+
     public void writeInventory(Inventory inventory, File file) throws IOException {
-        HSSFWorkbook workbook = new HSSFWorkbook();
+        final HSSFWorkbook workbook = new HSSFWorkbook();
 
         writeArtifacts(inventory, workbook);
         writeNotices(inventory, workbook);
@@ -74,7 +83,7 @@ public class InventoryWriter {
         writeLicenseData(inventory, workbook);
         writeAssetMetaData(inventory, workbook);
 
-        FileOutputStream out = new FileOutputStream(file);
+        final FileOutputStream out = new FileOutputStream(file);
         try {
             workbook.write(out);
         } finally {
@@ -84,26 +93,30 @@ public class InventoryWriter {
     }
 
     private void writeArtifacts(Inventory inventory, HSSFWorkbook workbook) {
-        if (isEmpty(inventory.getArtifacts())) return;
+        // an artifact inventory is always written (an xls without sheets is regarded damaged by Excel)
 
-        HSSFSheet mySheet = workbook.createSheet("Artifact Inventory");
-        mySheet.createFreezePane(0, 1);
-        mySheet.setDefaultColumnWidth(20);
+        final HSSFSheet sheet = workbook.createSheet("Artifact Inventory");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
         // create header row
-        HSSFRow headerRow = mySheet.createRow(rowNum++);
-        HSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        final HSSFRow headerRow = sheet.createRow(rowNum++);
+        final HSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        final HSSFCellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
+        final HSSFCellStyle warnHeaderStyle = createWarnHeaderStyle(workbook);
+        final HSSFCellStyle errorHeaderStyle = createErrorHeaderStyle(workbook);
+        final HSSFCellStyle centeredCellStyle = createCenteredStyle(workbook);
 
         // create columns for key / value map content
-        Set<String> attributes = new HashSet<>();
-        for (Artifact artifact : inventory.getArtifacts()) {
+        final Set<String> attributes = new HashSet<>();
+        for (final Artifact artifact : inventory.getArtifacts()) {
             attributes.addAll(artifact.getAttributes());
         }
 
-        List<String> contextColumnList = (List<String>)
-                inventory.getContextMap().get("artifact-column-list");
+        final List<String> contextColumnList = inventory.getSerializationContext().
+                get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
         if (contextColumnList != null) {
             attributes.addAll(contextColumnList);
         }
@@ -131,30 +144,53 @@ public class InventoryWriter {
         // fill header row
         int cellNum = 0;
         for (String key : ordered) {
-            HSSFCell myCell = headerRow.createCell(cellNum++);
-            myCell.setCellStyle(headerStyle);
-            myCell.setCellValue(new HSSFRichTextString(key));
+            HSSFCell cell = headerRow.createCell(cellNum);
+            // FIXME: resolve current workaround
+            if (key.startsWith("CID-") || key.startsWith("AID-") || key.startsWith("EID-") || key.startsWith("IID-")) {
+                cell.setCellStyle(assetHeaderStyle);
+                // number of pixel times magic number
+                sheet.setColumnWidth(cellNum, 20 * 42);
+                headerRow.setHeight((short) (170 * 20));
+            } else if (key.equalsIgnoreCase("Incomplete Match")) {
+                cell.setCellStyle(warnHeaderStyle);
+                sheet.setColumnWidth(cellNum, 20 * 42);
+                headerRow.setHeight((short) (170 * 20));
+            } else if (key.equalsIgnoreCase("Errors")) {
+                cell.setCellStyle(errorHeaderStyle);
+            } else {
+                cell.setCellStyle(headerStyle);
+            }
+            cell.setCellValue(new HSSFRichTextString(key));
+
+            cellNum++;
         }
 
         // create data rows
         for (Artifact artifact : inventory.getArtifacts()) {
-            HSSFRow dataRow = mySheet.createRow(rowNum++);
+            HSSFRow dataRow = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : ordered) {
-                HSSFCell myCell = dataRow.createCell(cellNum++);
+                HSSFCell cell = dataRow.createCell(cellNum);
                 String value = artifact.get(key);
                 if (value != null && value.length() > MAX_CELL_LENGTH) {
-                    // FIXME: log something
-                    //        is this fine as log message?
-                    LOG.warn("Cell content [{}] is longer than max cell length of [{}] and will be cropped", key, MAX_CELL_LENGTH);
+                    LOG.warn("Cell content [{}] is longer than the anticipated max cell length of [{}] and will " +
+                            "potentially cropped", key, MAX_CELL_LENGTH);
                     value = value.substring(0, MAX_CELL_LENGTH);
                     value = value + "...";
                 }
-                myCell.setCellValue(new HSSFRichTextString(value));
+                cell.setCellValue(new HSSFRichTextString(value));
+
+                if (key.startsWith("CID-") || key.startsWith("AID-") || key.startsWith("EID-") || key.startsWith("IID-")) {
+                    cell.setCellStyle(centeredCellStyle);
+                } else if (key.equalsIgnoreCase("Incomplete Match")) {
+                    cell.setCellStyle(centeredCellStyle);
+                }
+
+                cellNum++;
             }
         }
 
-        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, ordered.size() - 1));
+        sheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, ordered.size() - 1));
     }
 
     private boolean isEmpty(Collection<?> collection) {
@@ -171,14 +207,13 @@ public class InventoryWriter {
         return insertIndex;
     }
 
-    private HSSFCellStyle createHeaderStyle(HSSFWorkbook myWorkBook) {
-        Font headerFont = myWorkBook.createFont();
+    private HSSFCellStyle createDefaultHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "153,204,255");
+
+        final Font headerFont = workbook.createFont();
         headerFont.setColor(Font.COLOR_NORMAL);
 
-        HSSFPalette palette = myWorkBook.getCustomPalette();
-        HSSFColor headerColor = palette.findSimilarColor((byte) 149, (byte) 179, (byte) 215);
-
-        HSSFCellStyle headerStyle = myWorkBook.createCellStyle();
+        final HSSFCellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFillForegroundColor(headerColor.getIndex());
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setFont(headerFont);
@@ -186,23 +221,64 @@ public class InventoryWriter {
         return headerStyle;
     }
 
-    private void writeComponentPatterns(Inventory inventory, HSSFWorkbook myWorkBook) {
+    private HSSFCellStyle createHeaderStyle(HSSFWorkbook workbook) {
+        return createDefaultHeaderStyle(workbook);
+    }
+
+    private HSSFCellStyle createAssetSourceHeaderStyle(HSSFWorkbook workbook) {
+        return createRotatedCellStyle(workbook, resolveColor(workbook, "155,192,0"));
+    }
+
+    private HSSFCellStyle createAssetConfigHeaderStyle(HSSFWorkbook workbook) {
+        return createRotatedCellStyle(workbook, resolveColor(workbook, "219,219,219"));
+    }
+
+    private HSSFCellStyle createAssetHeaderStyle(HSSFWorkbook workbook) {
+        return createRotatedCellStyle(workbook, resolveColor(workbook, "255,192,0"));
+    }
+
+    private HSSFCellStyle createRotatedCellStyle(HSSFWorkbook workbook, HSSFColor headerColor) {
+        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor.getIndex());
+        cellStyle.setRotation((short) -90);
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
+        cellStyle.setWrapText(false);
+        return cellStyle;
+    }
+
+    private HSSFCellStyle createCenteredStyle(HSSFWorkbook workbook) {
+        final HSSFCellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setAlignment(HorizontalAlignment.CENTER);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        return cellStyle;
+    }
+
+    private HSSFCellStyle createWarnHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "244,176,132");
+        return createRotatedCellStyle(workbook, headerColor);
+    }
+
+    private HSSFCellStyle createErrorHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "244,176,132");
+        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor.getIndex());
+        cellStyle.setWrapText(false);
+        return cellStyle;
+    }
+
+    private void writeComponentPatterns(Inventory inventory, HSSFWorkbook workbook) {
         if (isEmpty(inventory.getComponentPatternData())) return;
 
-        HSSFSheet mySheet = myWorkBook.createSheet("Component Patterns");
-        mySheet.createFreezePane(0, 1);
-        mySheet.setDefaultColumnWidth(20);
+        HSSFSheet sheet = workbook.createSheet("Component Patterns");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
 
-        HSSFRow myRow = null;
-        HSSFCell myCell = null;
+        HSSFCellStyle headerStyle = createHeaderStyle(workbook);
 
         int rowNum = 0;
 
-        myRow = mySheet.createRow(rowNum++);
-
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
-
-        int cellNum = 0;
+        HSSFRow row = sheet.createRow(rowNum++);
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
@@ -210,7 +286,7 @@ public class InventoryWriter {
             attributes.addAll(cpd.getAttributes());
         }
 
-        attributes.removeAll(ComponentPatternData.CORE_ATTRIBUTES);
+        ComponentPatternData.CORE_ATTRIBUTES.forEach(attributes::remove);
 
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
@@ -218,42 +294,39 @@ public class InventoryWriter {
         List<String> finalOrder = new ArrayList<>(ComponentPatternData.CORE_ATTRIBUTES);
         finalOrder.addAll(ordered);
 
+        int cellNum = 0;
         for (String key : finalOrder) {
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellStyle(headerStyle);
-            myCell.setCellValue(new HSSFRichTextString(key));
+            HSSFCell cell = row.createCell(cellNum++);
+            cell.setCellStyle(headerStyle);
+            cell.setCellValue(new HSSFRichTextString(key));
         }
-
         int numCol = cellNum;
 
         for (ComponentPatternData cpd : inventory.getComponentPatternData()) {
-            myRow = mySheet.createRow(rowNum++);
+            row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                myCell = myRow.createCell(cellNum++);
-                myCell.setCellValue(new HSSFRichTextString(cpd.get(key)));
+                HSSFCell cell = row.createCell(cellNum++);
+                cell.setCellValue(new HSSFRichTextString(cpd.get(key)));
             }
         }
 
-        mySheet.setAutoFilter(new CellRangeAddress(0, mySheet.getLastRowNum(), 0, numCol - 1));
+        sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
 
-    private void writeNotices(Inventory inventory, HSSFWorkbook myWorkBook) {
+    private void writeNotices(Inventory inventory, HSSFWorkbook workbook) {
         if (isEmpty(inventory.getLicenseMetaData())) return;
 
-        HSSFSheet mySheet = myWorkBook.createSheet("License Notices");
-        mySheet.createFreezePane(0, 1);
-        mySheet.setDefaultColumnWidth(20);
-
-        HSSFRow myRow = null;
-        HSSFCell myCell = null;
+        HSSFSheet sheet = workbook.createSheet("License Notices");
+        sheet.createFreezePane(0, 1);
+        sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
-        myRow = mySheet.createRow(rowNum++);
+        HSSFRow row = sheet.createRow(rowNum++);
 
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+        HSSFCellStyle headerStyle = createHeaderStyle(workbook);
 
         int cellNum = 0;
 
@@ -266,48 +339,38 @@ public class InventoryWriter {
         attributes.addAll(orderedOtherAttributes);
 
         for (String key : attributes) {
-            myCell = myRow.createCell(cellNum++);
-            myCell.setCellStyle(headerStyle);
-            myCell.setCellValue(new HSSFRichTextString(key));
+            HSSFCell cell = row.createCell(cellNum++);
+            cell.setCellStyle(headerStyle);
+            cell.setCellValue(new HSSFRichTextString(key));
         }
 
         int numCol = cellNum;
 
         for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
-            myRow = mySheet.createRow(rowNum++);
+            row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : attributes) {
-                myCell = myRow.createCell(cellNum++);
-                myCell.setCellValue(new HSSFRichTextString(licenseMetaData.get(key)));
+                HSSFCell cell = row.createCell(cellNum++);
+                cell.setCellValue(new HSSFRichTextString(licenseMetaData.get(key)));
             }
         }
 
-        /*for (int i = 0; i < 6; i++) {
-            Integer width = (Integer) inventory.getContextMap().get("obligations.column[" + i + "].width");
-            if (width != null) {
-                mySheet.setColumnWidth(i, Math.min(width, 255));
-            }
-        }*/
-
-        mySheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
+        sheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, numCol - 1));
 
     }
 
-    private void writeVulnerabilities(Inventory inventory, HSSFWorkbook myWorkBook) {
+    private void writeVulnerabilities(Inventory inventory, HSSFWorkbook workbook) {
         if (isEmpty(inventory.getVulnerabilityMetaData())) return;
 
-        HSSFSheet sheet = myWorkBook.createSheet("Vulnerabilities");
+        HSSFSheet sheet = workbook.createSheet("Vulnerabilities");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
-        HSSFRow row = null;
-        HSSFCell cell = null;
-
         int rowNum = 0;
 
-        row = sheet.createRow(rowNum++);
+        HSSFRow row = sheet.createRow(rowNum++);
 
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+        HSSFCellStyle headerStyle = createHeaderStyle(workbook);
 
         int cellNum = 0;
 
@@ -317,7 +380,7 @@ public class InventoryWriter {
             attributes.addAll(vmd.getAttributes());
         }
 
-        attributes.removeAll(VulnerabilityMetaData.CORE_ATTRIBUTES);
+        VulnerabilityMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
 
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
@@ -326,7 +389,7 @@ public class InventoryWriter {
         finalOrder.addAll(ordered);
 
         for (String key : finalOrder) {
-            cell = row.createCell(cellNum++);
+            HSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(new HSSFRichTextString(key));
         }
@@ -337,7 +400,7 @@ public class InventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                cell = row.createCell(cellNum++);
+                HSSFCell cell = row.createCell(cellNum++);
                 String value = vmd.get(key);
 
                 VulnerabilityMetaData.Attribute attribute = VulnerabilityMetaData.Attribute.match(key);
@@ -348,7 +411,7 @@ public class InventoryWriter {
                         case V2_SCORE:
                             if (value != null && !value.isEmpty()) {
                                 try {
-                                    cell.setCellValue(Double.valueOf(value));
+                                    cell.setCellValue(Double.parseDouble(value));
                                 } catch (NumberFormatException e) {
                                     cell.setCellValue(value);
                                 }
@@ -357,7 +420,7 @@ public class InventoryWriter {
                         case URL:
                             cell.setCellValue(new HSSFRichTextString(value));
                             if (StringUtils.isNotEmpty(value)) {
-                                Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
+                                Hyperlink link = workbook.getCreationHelper().createHyperlink(HyperlinkType.URL);
                                 link.setAddress(value);
                                 cell.setHyperlink(link);
                             }
@@ -375,21 +438,17 @@ public class InventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
-    private void writeCertMetaData(Inventory inventory, HSSFWorkbook myWorkBook) {
+    private void writeCertMetaData(Inventory inventory, HSSFWorkbook workbook) {
         if (isEmpty(inventory.getCertMetaData())) return;
 
-        HSSFSheet sheet = myWorkBook.createSheet("Cert");
+        HSSFSheet sheet = workbook.createSheet("Cert");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
-        HSSFRow row = null;
-        HSSFCell cell = null;
-
         int rowNum = 0;
 
-        row = sheet.createRow(rowNum++);
-
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+        HSSFRow row = sheet.createRow(rowNum++);
+        HSSFCellStyle headerStyle = createHeaderStyle(workbook);
 
         int cellNum = 0;
 
@@ -399,7 +458,7 @@ public class InventoryWriter {
             attributes.addAll(cm.getAttributes());
         }
 
-        attributes.removeAll(CertMetaData.CORE_ATTRIBUTES);
+        CertMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
 
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
@@ -408,7 +467,7 @@ public class InventoryWriter {
         finalOrder.addAll(ordered);
 
         for (String key : finalOrder) {
-            cell = row.createCell(cellNum++);
+            final HSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(new HSSFRichTextString(key));
         }
@@ -419,7 +478,7 @@ public class InventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                cell = row.createCell(cellNum++);
+                HSSFCell cell = row.createCell(cellNum++);
                 String value = cm.get(key);
 
                 Attribute attribute = Attribute.match(key);
@@ -428,7 +487,7 @@ public class InventoryWriter {
                         case URL:
                             cell.setCellValue(new HSSFRichTextString(value));
                             if (StringUtils.isNotEmpty(value)) {
-                                Hyperlink link = myWorkBook.getCreationHelper().createHyperlink(HyperlinkType.URL);
+                                Hyperlink link = workbook.getCreationHelper().createHyperlink(HyperlinkType.URL);
                                 link.setAddress(value);
                                 cell.setHyperlink(link);
                             }
@@ -446,23 +505,19 @@ public class InventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
-    private void writeInventoryInfo(Inventory inventory, HSSFWorkbook myWorkBook) {
+    private void writeInventoryInfo(Inventory inventory, HSSFWorkbook workbook) {
         if (isEmpty(inventory.getInventoryInfo())) return;
 
-        HSSFSheet sheet = myWorkBook.createSheet("Info");
+        HSSFSheet sheet = workbook.createSheet("Info");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
-        HSSFRow row = null;
-        HSSFCell cell = null;
-
         int rowNum = 0;
-
-        row = sheet.createRow(rowNum++);
-
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
-
         int cellNum = 0;
+
+        HSSFRow row = sheet.createRow(rowNum++);
+
+        HSSFCellStyle headerStyle = createHeaderStyle(workbook);
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
@@ -470,7 +525,7 @@ public class InventoryWriter {
             attributes.addAll(info.getAttributes());
         }
 
-        attributes.removeAll(InventoryInfo.CORE_ATTRIBUTES);
+        InventoryInfo.CORE_ATTRIBUTES.forEach(attributes::remove);
 
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
@@ -479,7 +534,7 @@ public class InventoryWriter {
         finalOrder.addAll(ordered);
 
         for (String key : finalOrder) {
-            cell = row.createCell(cellNum++);
+            final HSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(new HSSFRichTextString(key));
         }
@@ -490,7 +545,7 @@ public class InventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                cell = row.createCell(cellNum++);
+                HSSFCell cell = row.createCell(cellNum++);
                 String value = info.get(key);
 
                 cell.setCellValue(new HSSFRichTextString(value));
@@ -500,21 +555,20 @@ public class InventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
-    private void writeLicenseData(Inventory inventory, HSSFWorkbook myWorkBook) {
+    private void writeLicenseData(Inventory inventory, HSSFWorkbook workbook) {
         if (isEmpty(inventory.getLicenseData())) return;
 
-        HSSFSheet sheet = myWorkBook.createSheet("Licenses");
+        HSSFSheet sheet = workbook.createSheet("Licenses");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
-        HSSFRow row = null;
-        HSSFCell cell = null;
-
         int rowNum = 0;
 
-        row = sheet.createRow(rowNum++);
+        HSSFRow row = sheet.createRow(rowNum++);
 
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+        final HSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        final HSSFCellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
+        final HSSFCellStyle centeredCellStyle = createCenteredStyle(workbook);
 
         int cellNum = 0;
 
@@ -524,18 +578,66 @@ public class InventoryWriter {
             attributes.addAll(vmd.getAttributes());
         }
 
-        attributes.removeAll(LicenseData.CORE_ATTRIBUTES);
+        final InventorySerializationContext serializationContext = inventory.getSerializationContext();
+        final List<String> contextColumnList = serializationContext.
+                get(InventorySerializationContext.CONTEXT_LICENSEDATA_COLUMN_LIST);
+        if (contextColumnList != null) {
+            attributes.addAll(contextColumnList);
+        }
 
+        // add minimum columns
+        attributes.addAll(LicenseData.CORE_ATTRIBUTES);
+
+        // impose context or default order
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
+        int insertIndex = 0;
+        if (contextColumnList != null) {
+            for (String key : contextColumnList) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        } else {
+            for (String key : LicenseData.CORE_ATTRIBUTES) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        }
 
-        List<String> finalOrder = new ArrayList<>(LicenseData.CORE_ATTRIBUTES);
-        finalOrder.addAll(ordered);
+        for (String key : ordered) {
+            final HSSFCell cell = row.createCell(cellNum);
+            if (key.startsWith("CID-") || key.startsWith("AID-") || key.startsWith("EID-") || key.startsWith("IID-")) {
+                cell.setCellStyle(assetHeaderStyle);
+                // number of pixel times magic number
+                sheet.setColumnWidth(cellNum, 20 * 42);
+                row.setHeight((short) (170 * 20));
+            } else {
+                final String customHeaderColor = serializationContext.get("licensedata.header.[" + key + "].fg");
+                if (customHeaderColor != null) {
+                    HSSFCellStyle customHeaderStyle = createHeaderStyle(workbook);
+                    HSSFColor headerColor = resolveColor(workbook, customHeaderColor);
+                    customHeaderStyle.setFillForegroundColor(headerColor.getIndex());
 
-        for (String key : finalOrder) {
-            cell = row.createCell(cellNum++);
-            cell.setCellStyle(headerStyle);
+                    final String customHeaderOrientation = serializationContext.get("licensedata.header.[" + key + "].orientation");
+                    if ("up".equalsIgnoreCase(customHeaderOrientation)) {
+                        customHeaderStyle.setRotation((short) -90);
+                        sheet.setColumnWidth(cellNum, 20 * 42);
+                        row.setHeight((short) (170 * 20));
+                        customHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
+                        customHeaderStyle.setVerticalAlignment(VerticalAlignment.TOP);
+                    }
+
+                    final Integer customHeaderWidth = serializationContext.get("licensedata.header.[" + key + "].width");
+                    if (customHeaderWidth != null) {
+                        sheet.setColumnWidth(cellNum, customHeaderWidth * 42);
+                    }
+
+                    cell.setCellStyle(customHeaderStyle);
+                } else {
+                    cell.setCellStyle(headerStyle);
+                }
+            }
             cell.setCellValue(new HSSFRichTextString(key));
+
+            cellNum++;
         }
 
         int numCol = cellNum;
@@ -543,29 +645,68 @@ public class InventoryWriter {
         for (LicenseData cpd : inventory.getLicenseData()) {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
-            for (String key : finalOrder) {
-                cell = row.createCell(cellNum++);
+            for (String key : ordered) {
+                final HSSFCell cell = row.createCell(cellNum++);
                 cell.setCellValue(new HSSFRichTextString(cpd.get(key)));
+
+                if (key.startsWith("CID-") || key.startsWith("AID-") || key.startsWith("EID-") || key.startsWith("IID-")) {
+                    cell.setCellStyle(centeredCellStyle);
+                }
+
+                final Boolean centered = serializationContext.get("licensedata.column.[" + key + "].centered");
+                if (centered != null && centered) {
+                    cell.setCellStyle(centeredCellStyle);
+                }
             }
         }
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
-    private void writeAssetMetaData(Inventory inventory, HSSFWorkbook myWorkBook) {
+    private HSSFColor resolveColor(HSSFWorkbook workbook, String rgb) {
+        final HSSFPalette palette = workbook.getCustomPalette();
+        final String[] rgbSplit = rgb.trim().split(", ?");
+        final byte red = (byte) Short.parseShort(rgbSplit[0]);
+        final byte green = (byte) Short.parseShort(rgbSplit[1]);
+        final byte blue = (byte) Short.parseShort(rgbSplit[2]);
+
+        HSSFColor color = colorPalette.get(rgb);
+        if (color == null) {
+            // the index needs to start with 7 (8 being an offset that is used by HSSFPalette
+            final int index = colorPalette.size() + 8;
+
+            try {
+                // adjust color
+                palette.setColorAtIndex((short) index, red, green, blue);
+
+                // access color using index
+                color = palette.getColor(index);
+
+            } catch (RuntimeException e) {
+                // fallback to similar color (since palette is limited)
+                color = palette.findSimilarColor(red, green, blue);
+            }
+
+            // add to map
+            colorPalette.put(rgb, color);
+        }
+        return color;
+    }
+
+    private void writeAssetMetaData(Inventory inventory, HSSFWorkbook workbook) {
         if (isEmpty(inventory.getAssetMetaData())) return;
 
-        HSSFSheet sheet = myWorkBook.createSheet("Assets");
+        HSSFSheet sheet = workbook.createSheet("Assets");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
-        HSSFRow row = null;
-        HSSFCell cell = null;
-
         int rowNum = 0;
 
-        row = sheet.createRow(rowNum++);
+        HSSFRow row = sheet.createRow(rowNum++);
 
-        HSSFCellStyle headerStyle = createHeaderStyle(myWorkBook);
+        final HSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        final HSSFCellStyle assetSourceHeaderStyle = createAssetSourceHeaderStyle(workbook);
+        final HSSFCellStyle assetConfigHeaderStyle = createAssetConfigHeaderStyle(workbook);
+        final HSSFCellStyle centeredCellStyle = createCenteredStyle(workbook);
 
         int cellNum = 0;
 
@@ -575,7 +716,7 @@ public class InventoryWriter {
             attributes.addAll(amd.getAttributes());
         }
 
-        attributes.removeAll(AssetMetaData.CORE_ATTRIBUTES);
+        AssetMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
 
         List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
@@ -584,9 +725,22 @@ public class InventoryWriter {
         finalOrder.addAll(ordered);
 
         for (String key : finalOrder) {
-            cell = row.createCell(cellNum++);
-            cell.setCellStyle(headerStyle);
+            final HSSFCell cell = row.createCell(cellNum);
+            if (key.startsWith("SRC-")) {
+                cell.setCellStyle(assetSourceHeaderStyle);
+                // number of pixel times magic number
+                sheet.setColumnWidth(cellNum, 20 * 42);
+                row.setHeight((short) (170 * 20));
+            } else if (key.startsWith("config_")) {
+                cell.setCellStyle(assetConfigHeaderStyle);
+                // number of pixel times magic number
+                sheet.setColumnWidth(cellNum, 40 * 42);
+            } else {
+                cell.setCellStyle(headerStyle);
+            }
             cell.setCellValue(new HSSFRichTextString(key));
+
+            cellNum++;
         }
 
         int numCol = cellNum;
@@ -595,12 +749,16 @@ public class InventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                cell = row.createCell(cellNum++);
+                final HSSFCell cell = row.createCell(cellNum);
                 cell.setCellValue(new HSSFRichTextString(cpd.get(key)));
+
+                if (key.startsWith("SRC-")) {
+                    cell.setCellStyle(centeredCellStyle);
+                }
+                cellNum++;
             }
         }
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
-
 
 }

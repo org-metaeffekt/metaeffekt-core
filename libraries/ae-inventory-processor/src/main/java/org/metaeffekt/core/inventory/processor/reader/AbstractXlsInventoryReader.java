@@ -61,12 +61,12 @@ public abstract class AbstractXlsInventoryReader {
     }
 
     protected void readArtifactMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("Artifact Inventory");
+        final HSSFSheet sheet = workbook.getSheet("Artifact Inventory");
         if (sheet == null) return;
 
         Iterator<?> rows = sheet.rowIterator();
 
-        List<Artifact> artifacts = new ArrayList<Artifact>();
+        final List<Artifact> artifacts = new ArrayList<>();
         inventory.setArtifacts(artifacts);
 
         if (rows.hasNext()) {
@@ -78,10 +78,9 @@ public abstract class AbstractXlsInventoryReader {
                     artifacts.add(artifact);
                 }
             }
-            inventory.getContextMap().put("artifact-column-list", columns);
+            inventory.getSerializationContext().put(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST, columns);
         }
     }
-
 
     protected void readComponentPatternData(HSSFWorkbook workBook, Inventory inventory) {
         HSSFSheet sheet = workBook.getSheet("Component Patterns");
@@ -236,7 +235,7 @@ public abstract class AbstractXlsInventoryReader {
 
     abstract protected void readLicenseMetaDataHeader(HSSFRow row);
 
-    abstract protected void readLicenseDataHeader(HSSFRow row);
+    abstract protected List<String> readLicenseDataHeader(HSSFRow row);
 
     abstract protected void readComponentPatternDataHeader(HSSFRow row);
 
@@ -289,7 +288,8 @@ public abstract class AbstractXlsInventoryReader {
 
         // skip first line being the header
         if (rows.hasNext()) {
-            readLicenseDataHeader((HSSFRow) rows.next());
+            final List<String> columns = readLicenseDataHeader((HSSFRow) rows.next());
+            inventory.getSerializationContext().put(InventorySerializationContext.CONTEXT_LICENSEDATA_COLUMN_LIST, columns);
         }
 
         while (rows.hasNext()) {
@@ -302,7 +302,7 @@ public abstract class AbstractXlsInventoryReader {
 
         for (int i = 0; i < sheet.getLastRowNum(); i++) {
             int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("licenses.column[" + i + "].width", width);
+            inventory.getSerializationContext().put("licenses.column[" + i + "].width", width);
         }
     }
 

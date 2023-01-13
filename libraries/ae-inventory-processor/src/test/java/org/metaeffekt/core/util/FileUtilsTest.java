@@ -29,6 +29,15 @@ public class FileUtilsTest {
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./././test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./././test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././test"));
+        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./////test/./test/../././test"));
+
+        Assert.assertEquals("../test/test", FileUtils.canonicalizeLinuxPath("../test/./test"));
+
+
+        // not yet supported
+        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
+        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
+        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
     }
 
 }

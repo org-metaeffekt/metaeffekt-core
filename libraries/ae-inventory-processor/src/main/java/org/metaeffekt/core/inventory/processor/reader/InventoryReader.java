@@ -53,8 +53,8 @@ public class InventoryReader extends AbstractXlsInventoryReader {
     }
 
     @Override
-    protected void readLicenseDataHeader(HSSFRow row) {
-        parseColumns(row, licenseDataColumnMap);
+    protected List<String> readLicenseDataHeader(HSSFRow row) {
+        return parseColumns(row, licenseDataColumnMap);
     }
 
     @Override
