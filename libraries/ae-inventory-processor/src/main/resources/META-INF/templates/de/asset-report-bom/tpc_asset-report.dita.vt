@@ -10,8 +10,8 @@
         </p>
 #else
         <p>
-            Die Tabelle stellt den Sofwarebestand im Umfang von ${product.name} dar. Die einzelnen Positionen
-            werden nachfolgend in individuellen Abschnitten mit ihren spezifischen Details aufgef&#252;hrt.
+            Die Tabelle stellt den Softwarebestand im Umfang von ${product.name} dar. Die einzelnen Positionen
+            werden nachfolgend in einzelnen Abschnitten mit erg&#228;nzenden Details aufgef&#252;hrt.
         </p>
     </body>
 #foreach($asset in $assets)

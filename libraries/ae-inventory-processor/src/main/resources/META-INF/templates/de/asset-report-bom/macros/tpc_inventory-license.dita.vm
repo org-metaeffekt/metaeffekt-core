@@ -8,7 +8,7 @@
             <p>
                 Nachfolgende Tabelle listet den Softwarebestand im Bezug zu $license.
                 #if($folder)
-                    Hinweise oder Inhalten der Lizenz k&#246;nnen in
+                    Hinweise oder Inhalte der Lizenz k&#246;nnen in
                     <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
                         [external]</xref> nachgeschlagen werden.
                 #end
