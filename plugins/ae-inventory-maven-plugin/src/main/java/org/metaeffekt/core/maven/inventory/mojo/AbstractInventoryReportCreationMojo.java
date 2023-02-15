@@ -237,6 +237,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private String vulnerabilityScoreThreshold;
 
     /**
+     * @parameter default-value="-1.0"
+     */
+    private String minimumVulnerabilityIncludeScore;
+
+    /**
      * Comma seperated list of advisory providers. All vulnerabilities not containing at least one of the providers
      * will be ignored when generating the report.<br>
      * If left empty, no filter will be applied.<br>
@@ -349,6 +354,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         // vulnerability settings
         report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
+        report.setMinimumVulnerabilityIncludeScore(Float.parseFloat(minimumVulnerabilityIncludeScore));
         report.addVulnerabilityAdvisoryFilter(vulnerabilityAdvisoryFilter);
         report.addGenerateOverviewTablesForAdvisories(generateOverviewTablesForAdvisories);
         if (overviewTablesVulnerabilityStatusMappingFunction != null) {
