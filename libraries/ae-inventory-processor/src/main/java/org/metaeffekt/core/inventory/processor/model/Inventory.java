@@ -1600,10 +1600,10 @@ public class Inventory {
 
     public List<String> getRepresentedLicenses(List<String> effectiveLicenses) {
         return effectiveLicenses.stream()
-            .map(this::getRepresentedLicenseName)
-            .sorted(String.CASE_INSENSITIVE_ORDER)
-            .distinct()
-            .collect(Collectors.toList());
+                .map(this::getRepresentedLicenseName)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public List<String> getLicensesRepresentedBy(String representedLicenseName) {
@@ -1628,9 +1628,8 @@ public class Inventory {
      *     <li>the represented name and variant license name deviates</li>
      * </ol>
      *
-     * @param license The license for which the request needs to ne answered.
+     * @param license                      The license for which the request needs to ne answered.
      * @param representedEffectiveLicenses List of represented effective licenses
-     *
      * @return Returns <code>true</code> when a substructure to represent the licenses is required.
      */
     public boolean isSubstructureRequired(String license, List<String> representedEffectiveLicenses) {

@@ -145,7 +145,11 @@ public class InventoryReport {
      */
     private boolean failOnMissingComponentFiles = false;
 
+    /**
+     * Insignificant threshold for CVSS scores on vulnerabilities.
+     */
     private float vulnerabilityScoreThreshold = 7.0f;
+    private float minimumVulnerabilityIncludeScore = Float.MIN_VALUE;
     private final List<String> vulnerabilityAdvisoryFilter = new ArrayList<>();
 
     /**
@@ -507,6 +511,23 @@ public class InventoryReport {
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         projectInventory.filterVulnerabilityMetaData();
+
+        // filter the vulnerability metadata to only include those with a score larger than the min score
+        if (getMinimumVulnerabilityIncludeScore() >= 0) {
+            final VulnerabilityReportAdapter adapter = new VulnerabilityReportAdapter(projectInventory);
+
+            projectInventory.getVulnerabilityMetaData().removeIf(vmd -> {
+                final String compareScore = adapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
+                if (StringUtils.hasText(compareScore)) {
+                    try {
+                        return Double.parseDouble(compareScore) < getMinimumVulnerabilityIncludeScore();
+                    } catch (NumberFormatException e) {
+                        LOG.warn("Cannot parse vulnerability score {} on {}", compareScore, vmd.get(VulnerabilityMetaData.Attribute.NAME));
+                    }
+                }
+                return false;
+            });
+        }
 
         // write reports
         if (inventoryBomReportEnabled) {
@@ -1204,6 +1225,14 @@ public class InventoryReport {
 
     public void setVulnerabilityScoreThreshold(float vulnerabilityScoreThreshold) {
         this.vulnerabilityScoreThreshold = vulnerabilityScoreThreshold;
+    }
+
+    public void setMinimumVulnerabilityIncludeScore(float minimumVulnerabilityIncludeScore) {
+        this.minimumVulnerabilityIncludeScore = minimumVulnerabilityIncludeScore;
+    }
+
+    public float getMinimumVulnerabilityIncludeScore() {
+        return minimumVulnerabilityIncludeScore;
     }
 
     private final static String[] VALID_VULNERABILITY_ADVISORY_PROVIDERS = {"CERT-FR", "CERT-SEI", "MSRC"};
