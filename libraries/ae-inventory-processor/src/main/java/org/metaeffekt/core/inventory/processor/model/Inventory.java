@@ -63,6 +63,8 @@ public class Inventory {
 
     private List<InventoryInfo> inventoryInfo = new ArrayList<>();
 
+    private List<ReportData> reportData = new ArrayList<>();
+
     private List<AssetMetaData> assetMetaData = new ArrayList<>();
 
     private Map<String, String> licenseNameMap = new HashMap<>();
@@ -1161,6 +1163,7 @@ public class Inventory {
         filteredInventory.setCertMetaData(getCertMetaData());
         filteredInventory.setAssetMetaData(getAssetMetaData());
         filteredInventory.setInventoryInfo(getInventoryInfo());
+        filteredInventory.setReportData(getReportData());
         return filteredInventory;
     }
 
@@ -1517,8 +1520,16 @@ public class Inventory {
         return inventoryInfo;
     }
 
+    public List<ReportData> getReportData() {
+        return reportData;
+    }
+
     public void setInventoryInfo(List<InventoryInfo> inventoryInfo) {
         this.inventoryInfo = inventoryInfo;
+    }
+
+    public void setReportData(List<ReportData> reportData) {
+        this.reportData = reportData;
     }
 
     public List<AssetMetaData> getAssetMetaData() {

@@ -83,13 +83,17 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     private static ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
 
     private static String computeChecksum(File file, String algorithm) {
-        final Checksum checksum = getChecksumInstance();
-        // cannot reuse the project
-        checksum.setProject(new Project());
-        checksum.setFile(file);
-        checksum.setAlgorithm(algorithm);
-        checksum.execute();
-        return checksum.getProject().getProperty(VAR_CHECKSUM);
+        try {
+            final Checksum checksum = getChecksumInstance();
+            // cannot reuse the project
+            checksum.setProject(new Project());
+            checksum.setFile(file);
+            checksum.setAlgorithm(algorithm);
+            checksum.execute();
+            return checksum.getProject().getProperty(VAR_CHECKSUM);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static Checksum getChecksumInstance() {

@@ -17,20 +17,28 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import java.util.HashMap;
 import java.util.Map;
-
 public class InventorySerializationContext {
+
+    public static final String CONTEXT_KEY_ASSET_DATA = "asset";
+    public static final String CONTEXT_KEY_ARTIFACT_DATA = "artifact";
+    public static final String CONTEXT_KEY_LICENSE_DATA = "license";
+    public static final String CONTEXT_KEY_REPORT_DATA = "report";
+    public static final String CONTEXT_KEY_COMPONENT_PATTERN_DATA = "report";
+    public static final String CONTEXT_KEY_VULNERABILITY_DATA = "vulnerability";
+    public static final String CONTEXT_KEY_ADVISORY_DATA = "advisory";
+    public static final String CONTEXT_KEY_LICENSE_NOTICE_DATA = "notices";
 
     /**
      * Key for context map. Stores Artifact column names in the order that is used when writing the
      * inventory.
      */
-    public static final String CONTEXT_ARTIFACT_COLUMN_LIST = "artifact-column-list";
+    public static final String CONTEXT_ARTIFACT_COLUMN_LIST = "artifact.columnlist";
 
     /**
      * Key for context map. Stores the LicenseData column names in the order that is used when writing the
      * inventory.
      */
-    public static final String CONTEXT_LICENSEDATA_COLUMN_LIST = "licensedata-column-list";
+    public static final String CONTEXT_LICENSEDATA_COLUMN_LIST = "licensedata.columnlist";
 
     /**
      * The context map stores metadata on excel file level, including

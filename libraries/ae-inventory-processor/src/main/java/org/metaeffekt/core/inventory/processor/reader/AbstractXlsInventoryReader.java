@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -25,16 +26,25 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class AbstractXlsInventoryReader {
 
+    public static final String WORKSHEET_NAME_ARTIFACT_DATA = "Artifacts";
+    public static final String WORKSHEET_NAME_INVENTORY_INFO = "Info";
+    public static final String WORKSHEET_NAME_REPORT_DATA = "Report";
+    public static final String WORKSHEET_NAME_ASSET_DATA = "Assets";
+    public static final String WORKSHEET_NAME_COMPONENT_PATTERN_DATA = "Component Patterns";
+    public static final String WORKSHEET_NAME_VULNERABILITY_DATA = "Vulnerabilities";
+    public static final String WORKSHEET_NAME_LICENSE_NOTICES_DATA = "License Notices";
+    public static final String WORKSHEET_NAME_LICENSE_DATA = "Licenses";
+    public static final String WORKSHEET_NAME_ADVISORY_DATA = "Advisories";
+
     public Inventory readInventory(File file) throws IOException {
-        FileInputStream myInput = new FileInputStream(file);
+        final FileInputStream myInput = new FileInputStream(file);
         try {
             return readInventory(myInput);
         } finally {
@@ -43,10 +53,10 @@ public abstract class AbstractXlsInventoryReader {
     }
 
     public Inventory readInventory(InputStream in) throws IOException {
-        POIFSFileSystem fileSystem = new POIFSFileSystem(in);
-        HSSFWorkbook workbook = new HSSFWorkbook(fileSystem);
+        final POIFSFileSystem fileSystem = new POIFSFileSystem(in);
+        final HSSFWorkbook workbook = new HSSFWorkbook(fileSystem);
 
-        Inventory inventory = new Inventory();
+        final Inventory inventory = new Inventory();
 
         readArtifactMetaData(workbook, inventory);
         readLicenseMetaData(workbook, inventory);
@@ -56,284 +66,276 @@ public abstract class AbstractXlsInventoryReader {
         readCertMetaData(workbook, inventory);
         readInventoryInfo(workbook, inventory);
         readAssetMetaData(workbook, inventory);
+        readReportData(workbook, inventory);
+
+        applyModificationsForCompatibility(inventory);
 
         return inventory;
     }
 
-    protected void readArtifactMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        final HSSFSheet sheet = workbook.getSheet("Artifact Inventory");
-        if (sheet == null) return;
+    abstract void applyModificationsForCompatibility(Inventory inventory);
 
-        Iterator<?> rows = sheet.rowIterator();
+    protected void readArtifactMetaData(HSSFWorkbook workbook, Inventory inventory) {
+        // FIXME: move column map into InventorySerializationContext; make implicit
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_ARTIFACT_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_ARTIFACT_DATA;
+
+        HSSFSheet sheet = workbook.getSheet(worksheetName);
+
+        // supporting alternative sheet names for backward compatibility
+        if (sheet == null) sheet = workbook.getSheet("Artifact Inventory");
+
+        if (sheet == null) return;
 
         final List<Artifact> artifacts = new ArrayList<>();
         inventory.setArtifacts(artifacts);
 
-        if (rows.hasNext()) {
-            List<String> columns = readArtifactHeader((HSSFRow) rows.next());
-            while (rows.hasNext()) {
-                HSSFRow row = (HSSFRow) rows.next();
-                Artifact artifact = readArtifactMetaData(row);
-                if (artifact != null) {
-                    artifacts.add(artifact);
-                }
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final Artifact artifact = readRow(row, new Artifact(), pc);
+            if (artifact.isValid()) {
+                artifacts.add(artifact);
             }
-            inventory.getSerializationContext().put(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST, columns);
-        }
+        };
+
+        parse(inventory, sheet, rowConsumer, contextKey);
     }
-
     protected void readComponentPatternData(HSSFWorkbook workBook, Inventory inventory) {
-        HSSFSheet sheet = workBook.getSheet("Component Patterns");
-        if (sheet == null) return;
-        Iterator<?> rows = sheet.rowIterator();
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_COMPONENT_PATTERN_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_COMPONENT_PATTERN_DATA;
 
-        List<ComponentPatternData> componentPatternData = new ArrayList<>();
+        final HSSFSheet sheet = workBook.getSheet(worksheetName);
+        if (sheet == null) return;
+
+        final List<ComponentPatternData> componentPatternData = new ArrayList<>();
         inventory.setComponentPatternData(componentPatternData);
 
-        if (rows.hasNext()) {
-            readComponentPatternDataHeader((HSSFRow) rows.next());
-        }
-
-        int columns = 0;
-
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            ComponentPatternData cpd = readComponentPatternData(row);
-            if (cpd != null) {
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final ComponentPatternData cpd = readRow(row, new ComponentPatternData(), pc);
+            if (cpd.isValid()) {
                 componentPatternData.add(cpd);
-                columns = cpd.numAttributes();
             }
-        }
+        };
 
-        for (int i = 0; i < columns; i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("patterns.column[" + i + "].width", width);
-        }
+        parse(inventory, sheet, rowConsumer, contextKey);
     }
 
     protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("Vulnerabilities");
-        if (sheet == null) return;
-        Iterator<?> rows = sheet.rowIterator();
+        final String worksheetName = WORKSHEET_NAME_VULNERABILITY_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_VULNERABILITY_DATA;
 
-        List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
+        final HSSFSheet sheet = workbook.getSheet(worksheetName);
+        if (sheet == null) return;
+
+        final List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
         inventory.setVulnerabilityMetaData(vulnerabilityMetaData);
 
-        if (rows.hasNext()) {
-            readVulnerabilityMetaDataHeader((HSSFRow) rows.next());
-        }
-
-        int columns = 0;
-
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            VulnerabilityMetaData vmd = readVulnerabilityMetaData(row);
-            if (vmd != null) {
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final VulnerabilityMetaData vmd = readRow(row, new VulnerabilityMetaData(), pc);
+            if (vmd.isValid()) {
                 vulnerabilityMetaData.add(vmd);
-                columns = vmd.numAttributes();
             }
-        }
+        };
 
-        for (int i = 0; i < columns; i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("vulnerabilities.column[" + i + "].width", width);
-        }
+        parse(inventory, sheet, rowConsumer, contextKey);
     }
 
     protected void readCertMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("Cert");
-        if (sheet == null) return;
-        Iterator<?> rows = sheet.rowIterator();
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_ADVISORY_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_ADVISORY_DATA;
 
-        List<CertMetaData> certMetadata = new ArrayList<>();
+        HSSFSheet sheet = workbook.getSheet(worksheetName);
+
+        // for backward compatibility
+        if (sheet == null) sheet = workbook.getSheet("Cert");
+
+        if (sheet == null) return;
+
+        final List<CertMetaData> certMetadata = new ArrayList<>();
         inventory.setCertMetaData(certMetadata);
 
-        if (rows.hasNext()) {
-            readCertMetaDataHeader((HSSFRow) rows.next());
-        }
-
-        int columns = 0;
-
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            CertMetaData cert = readCertMetaData(row);
-            if (cert != null) {
-                certMetadata.add(cert);
-                columns = cert.numAttributes();
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final CertMetaData cmd = readRow(row, new CertMetaData(), pc);
+            if (cmd.isValid()) {
+                certMetadata.add(cmd);
             }
-        }
+        };
 
-        for (int i = 0; i < columns; i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("cert.column[" + i + "].width", width);
-        }
+        parse(inventory, sheet, rowConsumer, contextKey);
     }
 
     protected void readInventoryInfo(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("Info");
-        if (sheet == null) return;
-        Iterator<?> rows = sheet.rowIterator();
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_INVENTORY_INFO;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_ADVISORY_DATA;
 
-        List<InventoryInfo> inventoryInfo = new ArrayList<>();
+        final HSSFSheet sheet = workbook.getSheet(worksheetName);
+        if (sheet == null) return;
+
+        final List<InventoryInfo> inventoryInfo = new ArrayList<>();
         inventory.setInventoryInfo(inventoryInfo);
 
-        if (rows.hasNext()) {
-            readInventoryInfoHeader((HSSFRow) rows.next());
-        }
-
-        int columns = 0;
-
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            InventoryInfo info = readInventoryInfo(row);
-            if (info != null) {
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final InventoryInfo info = readRow(row, new InventoryInfo(), pc);
+            if (info.isValid()) {
                 inventoryInfo.add(info);
-                columns = info.numAttributes();
             }
-        }
+        };
 
-        for (int i = 0; i < columns; i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("info.column[" + i + "].width", width);
-        }
+        parse(inventory, sheet, rowConsumer, contextKey);
+    }
+
+    protected void readReportData(HSSFWorkbook workbook, Inventory inventory) {
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_REPORT_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_REPORT_DATA;
+
+        final HSSFSheet sheet = workbook.getSheet(worksheetName);
+        if (sheet == null) return;
+
+        final List<ReportData> reportData = new ArrayList<>();
+        inventory.setReportData(reportData);
+
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final ReportData info = readRow(row, new ReportData(), pc);
+            if (info.isValid()) {
+                reportData.add(info);
+            }
+        };
+
+        parse(inventory, sheet, rowConsumer, contextKey);
     }
 
     protected void readAssetMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("Assets");
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_ASSET_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_ASSET_DATA;
+
+        final HSSFSheet sheet = workbook.getSheet(worksheetName);
         if (sheet == null) return;
-        Iterator<?> rows = sheet.rowIterator();
 
-        List<AssetMetaData> assetMetaData = new ArrayList<>();
-        inventory.setAssetMetaData(assetMetaData);
+        final List<AssetMetaData> assetMetaDataList = new ArrayList<>();
+        inventory.setAssetMetaData(assetMetaDataList);
 
-        if (rows.hasNext()) {
-            readAssetMetaDataHeader((HSSFRow) rows.next());
-        }
-
-        int columns = 0;
-
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            AssetMetaData amd = readAssetMetaData(row);
-            if (amd != null) {
-                assetMetaData.add(amd);
-                columns = amd.numAttributes();
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final AssetMetaData amd = readRow(row, new AssetMetaData(), pc);
+            if (amd.isValid()) {
+                assetMetaDataList.add(amd);
             }
-        }
+        };
 
-        for (int i = 0; i < columns; i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("assets.column[" + i + "].width", width);
-        }
+        parse(inventory, sheet, rowConsumer, contextKey);
     }
-
-    protected List<String> readArtifactHeader(HSSFRow row) {
-        // default implementation does nothing
-        return Collections.emptyList();
-    }
-
-
-    abstract protected void readLicenseMetaDataHeader(HSSFRow row);
-
-    abstract protected List<String> readLicenseDataHeader(HSSFRow row);
-
-    abstract protected void readComponentPatternDataHeader(HSSFRow row);
-
-    abstract protected void readVulnerabilityMetaDataHeader(HSSFRow row);
-
-    abstract protected void readCertMetaDataHeader(HSSFRow row);
-
-    abstract protected void readInventoryInfoHeader(HSSFRow row);
-
-    abstract protected void readAssetMetaDataHeader(HSSFRow row);
 
     protected void readLicenseMetaData(HSSFWorkbook workbook, Inventory inventory) {
-        HSSFSheet sheet = workbook.getSheet("License Notices");
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_LICENSE_NOTICES_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_LICENSE_NOTICE_DATA;
+
+        HSSFSheet sheet = workbook.getSheet(worksheetName);
+
+        // supporting alternative sheet names for backward compatibility
         if (sheet == null) sheet = workbook.getSheet("Obligation Notices");
         if (sheet == null) sheet = workbook.getSheet("Component Notices");
+
         if (sheet == null) return;
 
-        Iterator<?> rows = sheet.rowIterator();
+        final List<LicenseMetaData> licenseMetaDataList = new ArrayList<>();
+        inventory.setLicenseMetaData(licenseMetaDataList);
 
-        List<LicenseMetaData> licenseMetaDatas = new ArrayList<LicenseMetaData>();
-        inventory.setLicenseMetaData(licenseMetaDatas);
-
-        // skip first line being the header
-        if (rows.hasNext()) {
-            readLicenseMetaDataHeader((HSSFRow) rows.next());
-        }
-
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            LicenseMetaData licenseMetaData = readLicenseMetaData(row);
-            if (licenseMetaData != null) {
-                licenseMetaDatas.add(licenseMetaData);
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final LicenseMetaData info = readRow(row, new LicenseMetaData(), pc);
+            if (info.isValid()) {
+                licenseMetaDataList.add(info);
             }
-        }
+        };
 
-        for (int i = 0; i < 5; i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getContextMap().put("obligations.column[" + i + "].width", width);
-        }
+        parse(inventory, sheet, rowConsumer, contextKey);
     }
 
     protected void readLicenseData(HSSFWorkbook workbook, Inventory inventory) {
-        final HSSFSheet sheet = workbook.getSheet("Licenses");
+        final Map<Integer, String> columnMap = new HashMap<>();
+        final String worksheetName = WORKSHEET_NAME_LICENSE_DATA;
+        final String contextKey = InventorySerializationContext.CONTEXT_KEY_LICENSE_DATA;
+
+        final HSSFSheet sheet = workbook.getSheet(worksheetName);
         if (sheet == null) return;
 
+        final List<LicenseData> licenseDataList = new ArrayList<>();
+        inventory.setLicenseData(licenseDataList);
+
+        final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
+            final LicenseData licenseData = readRow(row, new LicenseData(), pc);
+            if (licenseData.isValid()) {
+                licenseDataList.add(licenseData);
+            }
+        };
+
+        parse(inventory, sheet, rowConsumer, contextKey);
+    }
+
+    final Function<HSSFRow, ParsingContext> headerConsumer = row -> parseColumns(row);
+
+    private void parse(Inventory inventory, HSSFSheet sheet, BiConsumer<HSSFRow, ParsingContext> rowConsumer, String contextKey) {
+
         final Iterator<?> rows = sheet.rowIterator();
-
-        final List<LicenseData> licenseDatas = new ArrayList<LicenseData>();
-        inventory.setLicenseData(licenseDatas);
-
-        // skip first line being the header
         if (rows.hasNext()) {
-            final List<String> columns = readLicenseDataHeader((HSSFRow) rows.next());
-            inventory.getSerializationContext().put(InventorySerializationContext.CONTEXT_LICENSEDATA_COLUMN_LIST, columns);
-        }
+            // read header row
+            final ParsingContext pc = headerConsumer.apply((HSSFRow) rows.next());
 
-        while (rows.hasNext()) {
-            HSSFRow row = (HSSFRow) rows.next();
-            LicenseData licenseData = readLicenseData(row);
-            if (licenseData != null) {
-                licenseDatas.add(licenseData);
+            // read content
+            while (rows.hasNext()) {
+                rowConsumer.accept((HSSFRow) rows.next(), pc);
+            }
+
+            // read formatting data
+            final List<String> headerList = pc.columns;
+            final InventorySerializationContext serializationContext = inventory.getSerializationContext();
+            serializationContext.put(contextKey + ".columnlist", headerList);
+            for (int i = 0; i < headerList.size(); i++) {
+                int width = sheet.getColumnWidth(i);
+                serializationContext.put(contextKey + ".column[" + i + "].width", width);
             }
         }
+    }
 
-        for (int i = 0; i < sheet.getLastRowNum(); i++) {
-            int width = sheet.getColumnWidth(i);
-            inventory.getSerializationContext().put("licenses.column[" + i + "].width", width);
+    private static class ParsingContext {
+
+        public ParsingContext() {
+            this.columns = new ArrayList<>();
+            this.columnsMap = new HashMap<>();
         }
+
+        final List<String> columns;
+        final Map<Integer, String> columnsMap;
     }
 
-    protected LicenseMetaData readLicenseMetaData(HSSFRow row) {
-        throw new UnsupportedOperationException();
+    protected ParsingContext parseColumns(HSSFRow row) {
+        final ParsingContext parsingContainer = new ParsingContext();
+        for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
+            final HSSFCell cell = row.getCell(i);
+            if (cell != null) {
+                final String value = cell.getStringCellValue();
+                parsingContainer.columnsMap.put(i, value);
+                parsingContainer.columns.add(value);
+            }
+        }
+        return parsingContainer;
     }
 
-    protected LicenseData readLicenseData(HSSFRow row) {
-        throw new UnsupportedOperationException();
+    protected <T extends AbstractModelBase> T readRow(HSSFRow row, T modelBase, ParsingContext parsingContext) {
+        final Map<Integer, String> map = parsingContext.columnsMap;
+        for (int i = 0; i < map.size(); i++) {
+            final String columnName = map.get(i).trim();
+            final HSSFCell cell = row.getCell(i);
+            final String value = cell != null ? cell.toString() : null;
+            if (value != null) {
+                modelBase.set(columnName, value.trim());
+            }
+        }
+        return modelBase;
     }
-
-    protected ComponentPatternData readComponentPatternData(HSSFRow row) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected AssetMetaData readAssetMetaData(HSSFRow row) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected CertMetaData readCertMetaData(HSSFRow row) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected InventoryInfo readInventoryInfo(HSSFRow row) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected abstract Artifact readArtifactMetaData(HSSFRow row);
 
 }

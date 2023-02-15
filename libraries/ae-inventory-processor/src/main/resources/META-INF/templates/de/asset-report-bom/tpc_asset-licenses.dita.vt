@@ -22,7 +22,7 @@
             wiedergegeben. Freigaben von Lizenzvariationen sind ggf. nur f&#252;r bestimmte Auspr&#228;gungen vorhanden.
         </fn>
     #end
-    <table id="AssociatedLicenses" otherprops="wide">
+    <table id="AssociatedLicenses">
         <title>Softwarebestand Lizenzen$reportContext.inContextOf()</title>
         <tgroup cols="5">
             <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
@@ -137,6 +137,7 @@
         #insertLicenseAssetTopic($license)
     #else
         <topic id="tpc_associated_license_$inventory.deriveLicenseId($license)">
+            <title>$report.xmlEscapeLicense($license)</title>
             <body>
                 <p>
                     $license ist repr&#228;sentativ f&#252;r verschiedene Auspr&#228;gungen der Lizenz oder des Lizenzausdrucks.
