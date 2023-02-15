@@ -81,7 +81,7 @@ public class AdvisoryData {
         final List<AdvisoryData> advisoryDataList = new ArrayList<>();
 
         for (int i = 0; i < advisoryJson.length(); i++) {
-            JSONObject json = advisoryJson.optJSONObject(i);
+            final JSONObject json = advisoryJson.optJSONObject(i);
             if (json != null) {
                 advisoryDataList.add(fromJson(json));
             }
@@ -94,10 +94,10 @@ public class AdvisoryData {
         String source = advisoryJson.optString("source");
 
         if (source != null) {
-            switch (source) {
-                case "CERT-FR":
+            switch (source.replaceAll("[-_ ]", "").toUpperCase()) {
+                case "CERTFR":
                     return extractAdvisoryDataFromCertFr(advisoryJson);
-                case "CERT-SEI":
+                case "CERTSEI":
                     return extractAdvisoryDataFromCertSei(advisoryJson);
                 case "MSRC":
                     return extractAdvisoryDataFromMsrc(advisoryJson);
@@ -111,7 +111,7 @@ public class AdvisoryData {
         final AdvisoryData advisoryData = new AdvisoryData();
 
         advisoryData.id = entry.optString("id", EMPTY_STRING);
-        advisoryData.url = extractUrl(entry.optJSONObject("url"));
+        advisoryData.url = extractUrl(entry.opt("url"));
         advisoryData.source = entry.optString("source", EMPTY_STRING);
         advisoryData.summary = formatString(entry.optString("summary", EMPTY_STRING));
         advisoryData.description = formatString(entry.optString("description", EMPTY_STRING));
@@ -128,7 +128,7 @@ public class AdvisoryData {
         AdvisoryData advisoryData = new AdvisoryData();
 
         advisoryData.id = entry.optString("id", EMPTY_STRING);
-        advisoryData.url = extractUrl(entry.optJSONObject("url"));
+        advisoryData.url = extractUrl(entry.opt("url"));
         advisoryData.source = entry.optString("source", EMPTY_STRING);
         advisoryData.summary = formatString(entry.optString("summary", EMPTY_STRING));
         // FIXME: currently the content is unstructured (apart from html headings)
@@ -137,6 +137,25 @@ public class AdvisoryData {
         advisoryData.threat = extractMultilineStringFromJsonArray(entry.optJSONArray("threat"));
         advisoryData.recommendations = extractMultilineStringFromJsonArray(entry.optJSONArray("recommendations"));
 
+        advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
+        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.type = normalizeType(entry.optString("type", "advisory"));
+
+        return advisoryData;
+    }
+
+    private static AdvisoryData extractAdvisoryDataFromCertSei(JSONObject entry) {
+        AdvisoryData advisoryData = new AdvisoryData();
+
+        advisoryData.id = entry.optString("id", EMPTY_STRING);
+        advisoryData.url = extractUrl(entry.opt("url"));
+        advisoryData.source = entry.optString("source", EMPTY_STRING);
+        advisoryData.summary = entry.optString("summary", EMPTY_STRING);
+        advisoryData.description = entry.optString("description", EMPTY_STRING);
+        advisoryData.threat = entry.optString("threat", EMPTY_STRING);
+        advisoryData.recommendations = entry.optString("recommendations", EMPTY_STRING);
+        advisoryData.workarounds = entry.optString("workarounds", EMPTY_STRING);
         advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
         advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
         advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
@@ -158,28 +177,15 @@ public class AdvisoryData {
         return lines.toString();
     }
 
-    private static AdvisoryData extractAdvisoryDataFromCertSei(JSONObject entry) {
-        AdvisoryData advisoryData = new AdvisoryData();
-
-        advisoryData.id = entry.optString("id", EMPTY_STRING);
-        advisoryData.url = extractUrl(entry.optJSONObject("url"));
-        advisoryData.source = entry.optString("source", EMPTY_STRING);
-        advisoryData.summary = entry.optString("summary", EMPTY_STRING);
-        advisoryData.description = entry.optString("description", EMPTY_STRING);
-        advisoryData.threat = entry.optString("threat", EMPTY_STRING);
-        advisoryData.recommendations = entry.optString("recommendations", EMPTY_STRING);
-        advisoryData.workarounds = entry.optString("workarounds", EMPTY_STRING);
-        advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
-        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
-        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
-        advisoryData.type = normalizeType(entry.optString("type", "advisory"));
-
-        return advisoryData;
-    }
-
-    private static String extractUrl(JSONObject urlJson) {
-        if (urlJson == null) return EMPTY_STRING;
-        return urlJson.optString("url");
+    private static String extractUrl(Object url) {
+        if (url == null || url.equals("")) return EMPTY_STRING;
+        if (url instanceof JSONObject) {
+            return ((JSONObject) url).optString("url");
+        } else if (url instanceof String) {
+            return (String) url;
+        } else {
+            return EMPTY_STRING;
+        }
     }
 
     public static String normalizeType(String type) {
