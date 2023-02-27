@@ -40,22 +40,20 @@
         <httpclient.version>4.5.13</httpclient.version>
         <httpcore.version>4.4.15</httpcore.version>
         <httpmime.version>4.5.3</httpmime.version>
-        <log4j2.version>2.17.2</log4j2.version>
+        <log4j2.version>2.20.0</log4j2.version>
         <jaxen.version>1.1.6</jaxen.version>
         <jdom.version>2.0.2</jdom.version>
         <jsch.version>0.1.54</jsch.version>
         <json.version>20210307</json.version>
         <junit.version>4.13.1</junit.version>
         <plexus.utils.version>3.0.24</plexus.utils.version>
-        <poi.version>5.2.3</poi.version>
-        <slf4j.version>1.7.36</slf4j.version>
-        <spring.framework.version>5.3.20</spring.framework.version>
+        <poi.version>3.17</poi.version>
+        <!-- FIXME: changing to latest version required reconfiguration of binders vs providers -->
+        <slf4j.version>1.7.36</slf4j.version> <!--2.0.6-->
+        <spring.framework.version>5.3.25</spring.framework.version>
         <!-- update to version 2 and test -->
         <velocity.version>1.7</velocity.version>
         <xalan.version>2.7.2</xalan.version>
-        <xmlunit.version>1.6</xmlunit.version>
-        <xbean.reflect.version>4.5</xbean.reflect.version>
-        <commons.digester.version>2.1</commons.digester.version>
         <javassist.version>3.21.0-GA</javassist.version>
         <tukaani.xz.version>1.9</tukaani.xz.version>
 
@@ -355,13 +353,6 @@
                 <artifactId>xbean-reflect</artifactId>
                 <version>${xbean.reflect.version}</version>
                 <scope>compile</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>xmlunit</groupId>
-                <artifactId>xmlunit</artifactId>
-                <version>${xmlunit.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>
