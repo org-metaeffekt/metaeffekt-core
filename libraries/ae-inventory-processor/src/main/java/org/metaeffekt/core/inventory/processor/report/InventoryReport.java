@@ -522,7 +522,7 @@ public class InventoryReport {
                     try {
                         return Double.parseDouble(compareScore) < getMinimumVulnerabilityIncludeScore();
                     } catch (NumberFormatException e) {
-                        LOG.warn("Cannot parse vulnerability score {} on {}", compareScore, vmd.get(VulnerabilityMetaData.Attribute.NAME));
+                        LOG.debug("Cannot parse vulnerability score {} on {}", compareScore, vmd.get(VulnerabilityMetaData.Attribute.NAME));
                     }
                 }
                 return false;
