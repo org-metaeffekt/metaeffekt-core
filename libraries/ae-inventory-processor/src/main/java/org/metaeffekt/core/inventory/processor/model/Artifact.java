@@ -31,6 +31,10 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
+    // FIXME: revise delimiter and member name
+    public static final String PROJECT_DELIMITER_REGEXP = ", ";
+    public static final String PROJECT_DELIMITER = ", ";
+
     /**
      * Core attributes to support component patterns.
      */
@@ -114,12 +118,12 @@ public class Artifact extends AbstractModelBase {
         if (StringUtils.isEmpty(projectsString)) {
             return Collections.emptySet();
         }
-        return Arrays.stream(projectsString.split(",")).
+        return Arrays.stream(projectsString.split(PROJECT_DELIMITER_REGEXP)).
                 map(String::trim).collect(Collectors.toSet());
     }
 
     public void setProjects(Set<String> project) {
-        set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(" ,")));
+        set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(PROJECT_DELIMITER)));
     }
 
     public String getComponent() {
@@ -219,11 +223,11 @@ public class Artifact extends AbstractModelBase {
     public void addProject(String project) {
         if (getProjects() != null && getProjects().contains(project)) return;
 
-        append(Attribute.PROJECTS.getKey(), project, ", ");
+        append(Attribute.PROJECTS.getKey(), project, PROJECT_DELIMITER);
     }
 
     public void merge(Artifact a) {
-        append(Attribute.PROJECTS.getKey(), a.get(Attribute.PROJECTS), ", ");
+        append(Attribute.PROJECTS.getKey(), a.get(Attribute.PROJECTS), PROJECT_DELIMITER);
 
         // merge attributes
         super.merge(a);
@@ -239,7 +243,7 @@ public class Artifact extends AbstractModelBase {
     public String deriveQualifier() {
         String id = getId();
         if (!StringUtils.hasText(id)) {
-            // support artifacts with out id (e.g. a folder)
+            // support artifacts without id (e.g. a folder)
             StringBuilder sb = new StringBuilder();
             if (StringUtils.hasText(getComponent())) {
                 sb.append(getComponent().trim());
@@ -413,21 +417,24 @@ public class Artifact extends AbstractModelBase {
 
     private String inferClassifierFromId() {
         final String id = getId();
-        if (id != null) {
+        final String version = getVersion();
+        if (id != null && version != null && !id.isEmpty() && !version.isEmpty()) {
             // get rid of anything right to version
-            final String version = getVersion();
-            int versionIndex = id.indexOf(DELIMITER_DASH + version + DELIMITER_DASH);
+            final int versionIndex = id.indexOf(DELIMITER_DASH + version + DELIMITER_DASH);
             if (versionIndex < 0) {
                 // no version, no classifier
                 return null;
             }
-            String classifierAndType = id.substring(versionIndex + version.length() + 2);
-            // get rid of trailing .{type}
-            int index = classifierAndType.indexOf(DELIMITER_DOT);
-            if (index != -1) {
-                final String classifier = classifierAndType.substring(0, index).trim();
-                if (StringUtils.hasText(classifier)) {
-                    return classifier;
+            final int beginIndex = versionIndex + version.length() + 2;
+            if (id.length() > beginIndex) {
+                final String classifierAndType = id.substring(beginIndex);
+                // get rid of trailing .{type}
+                final int index = classifierAndType.indexOf(DELIMITER_DOT);
+                if (index != -1) {
+                    final String classifier = classifierAndType.substring(0, index).trim();
+                    if (StringUtils.hasText(classifier)) {
+                        return classifier;
+                    }
                 }
             }
         }
