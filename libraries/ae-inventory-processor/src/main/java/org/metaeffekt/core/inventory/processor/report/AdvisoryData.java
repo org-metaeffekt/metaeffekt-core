@@ -240,7 +240,7 @@ public class AdvisoryData {
     static String normalizeDate(String string) {
         if (string == null) return "n.a.";
 
-        Date parsedDate = tryParse(string);
+        final Date parsedDate = tryParse(string);
 
         if (parsedDate != null) {
             return DATE_FORMATS.get(0).format(parsedDate);
@@ -256,6 +256,13 @@ public class AdvisoryData {
     }
 
     private static Date tryParse(String dateString) {
+        if (dateString.matches("\\d+")) {
+            try {
+                return new Date(Long.parseLong(dateString));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
         for (SimpleDateFormat formatter : DATE_FORMATS) {
             try {
                 return formatter.parse(dateString);
