@@ -415,26 +415,31 @@ public class Artifact extends AbstractModelBase {
         return version;
     }
 
+    /**
+     * Anticipated a string in the shape "artifactId-version-classifier.extension". The part between
+     * "-version-" and the first "." are regarded the classifier.
+     *
+     * @return
+     */
     private String inferClassifierFromId() {
         final String id = getId();
         final String version = getVersion();
-        if (id != null && version != null && !id.isEmpty() && !version.isEmpty()) {
+        if (StringUtils.hasText(id) && StringUtils.hasText(version)) {
             // get rid of anything right to version
-            final int versionIndex = id.indexOf(DELIMITER_DASH + version + DELIMITER_DASH);
+            final String queryString = DELIMITER_DASH + version + DELIMITER_DASH;
+            final int versionIndex = id.indexOf(queryString);
             if (versionIndex < 0) {
-                // no version, no classifier
+                // no '-<version>-' part, no classifier
                 return null;
             }
-            final int beginIndex = versionIndex + version.length() + 2;
-            if (id.length() > beginIndex) {
-                final String classifierAndType = id.substring(beginIndex);
-                // get rid of trailing .{type}
-                final int index = classifierAndType.indexOf(DELIMITER_DOT);
-                if (index != -1) {
-                    final String classifier = classifierAndType.substring(0, index).trim();
-                    if (StringUtils.hasText(classifier)) {
-                        return classifier;
-                    }
+            final int beginIndex = versionIndex + queryString.length();
+            final String classifierAndType = id.substring(beginIndex);
+            // get rid of trailing .{type}
+            final int index = classifierAndType.indexOf(DELIMITER_DOT);
+            if (index != -1) {
+                final String classifier = classifierAndType.substring(0, index).trim();
+                if (StringUtils.hasText(classifier)) {
+                    return classifier;
                 }
             }
         }

@@ -51,4 +51,38 @@ public class ArtifactTest {
         Assert.assertNull(artifact.getCompleteVulnerability());
     }
 
+    @Test
+    public void deriveClassifierTest() {
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("guava-25.1-jre.jar");
+            artifact.setVersion("25.1");
+            Assert.assertEquals("jre", artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("guava-25.1-jre.jar");
+            artifact.setVersion("25.1-jre");
+            Assert.assertEquals(null, artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("artifactId--classifier.txt");
+            artifact.setVersion("");
+            Assert.assertEquals(null, artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("artifactId-null-classifier.txt");
+            artifact.setVersion(null);
+            Assert.assertEquals(null, artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("artifactId-X-classifier.txt");
+            artifact.setVersion("X");
+            Assert.assertEquals("classifier", artifact.getClassifier());
+        }
+    }
+
 }
