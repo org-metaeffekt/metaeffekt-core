@@ -312,13 +312,14 @@ public class DirectoryInventoryScan {
                             scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
                                     scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
                             unpacked = true;
+                        } else {
+                            // Not considered as something to unpack
                         }
                     } catch (RuntimeException e) {
                         // NOTE: in case we need to accept an exception here as we cannot unpack the archive, we
-                        // perform simple cleanup and continue
-                        FileUtils.deleteDirectoryQuietly(targetFolder);
-
-                        LOG.warn("Cannot unpack possible archive file: " + file.getAbsolutePath());
+                        // see the cleanup-responsibility with unpackIfPossible and just log the issue
+                        artifact.append("Errors", "Failed unpack attempt.", ", ");
+                        LOG.warn("Failed unpacking archive file: " + file.getAbsolutePath());
                     }
                 }
 
@@ -336,14 +337,12 @@ public class DirectoryInventoryScan {
                     newArtifact.addProject(asRelativePath(scanBaseDir, file));
                     applyAssetIdChain(assetIdChain, newArtifact);
                     scanInventory.getArtifacts().add(newArtifact);
-                } else {
-                    // NOTE: we should add the unpacked artifact level anyway; need to understand implications
                 }
             } else {
                 artifact.addProject(asRelativePath(scanBaseDir, file));
 
                 // we use the plain id to continue. The rest is sorted out by the report.
-                Artifact copy = new Artifact();
+                final Artifact copy = new Artifact();
                 copy.setId(id);
                 copy.setChecksum(checksum);
                 copy.set("Hash (SHA-1)", FileUtils.computeSHA1Hash(file));
