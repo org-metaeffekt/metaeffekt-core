@@ -341,7 +341,10 @@ public class MavenJarIdProbe {
 
                     // copy all attributes
                     for (String attribute : newData.getAttributes()) {
-                        artifact.set(attribute, newData.get(attribute));
+                        // take over attributes from matched dummy without overwriting
+                        if (StringUtils.isBlank(artifact.get(attribute))) {
+                            artifact.set(attribute, newData.get(attribute));
+                        }
                     }
 
                     // derive artifactid once groupId and version are set to produce an up-to-date output

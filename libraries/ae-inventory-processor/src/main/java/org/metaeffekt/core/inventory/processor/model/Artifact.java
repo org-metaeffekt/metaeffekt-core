@@ -31,9 +31,10 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
-    // FIXME: revise delimiter and member name
-    public static final String PROJECT_DELIMITER_REGEXP = ", ";
-    public static final String PROJECT_DELIMITER = ", ";
+    // FIXME: revise attribute name projects; should be paths (in asset)
+    public static final String PROJECT_DELIMITER_REGEXP = "\\|\n";
+
+    public static final String PROJECT_DELIMITER = "|\n";
 
     /**
      * Core attributes to support component patterns.

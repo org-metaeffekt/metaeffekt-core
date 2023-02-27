@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
+import java.util.Set;
 import java.util.StringJoiner;
 
 public class ArtifactTest {
@@ -83,6 +84,21 @@ public class ArtifactTest {
             artifact.setVersion("X");
             Assert.assertEquals("classifier", artifact.getClassifier());
         }
+    }
+
+    @Test
+    public void testProjects() {
+        Artifact artifact = new Artifact();
+        artifact.addProject("A");
+        artifact.addProject("A,B");
+        artifact.addProject("A, B , C");
+        artifact.addProject("D");
+
+        final Set<String> projects = artifact.getProjects();
+        Assert.assertTrue(projects.contains("A"));
+        Assert.assertTrue(projects.contains("A,B"));
+        Assert.assertTrue(projects.contains("A, B , C"));
+        Assert.assertTrue(projects.contains("D"));
     }
 
 }

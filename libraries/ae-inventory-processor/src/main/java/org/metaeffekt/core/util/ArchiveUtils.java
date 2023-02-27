@@ -297,7 +297,7 @@ public class ArchiveUtils {
             throw new IllegalStateException("Cannot gunzip " + archiveFile.getAbsolutePath(), e);
         }
 
-        // NOTE: currently PE files are not supported on core-level. These requires further
+        // NOTE: currently PE files are not supported on core-level. These require further
         //   dependencies. PE files are not regarded as relevant for the software component identification use case.
 
         // try untar

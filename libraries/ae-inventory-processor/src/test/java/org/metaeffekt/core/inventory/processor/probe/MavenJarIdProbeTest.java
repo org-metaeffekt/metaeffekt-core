@@ -69,7 +69,7 @@ public class MavenJarIdProbeTest {
 
         String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
-        artifact.setId(jarPath);
+        artifact.setId(testJar.getName());
         artifact.setProjects(Collections.singleton(jarPath));
 
         MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
@@ -79,6 +79,9 @@ public class MavenJarIdProbeTest {
         assertEquals("good.parent.groupid", artifact.getGroupId());
         assertEquals("dummy-artifact", artifact.getArtifactId());
         assertEquals("0.0.2", artifact.getVersion());
+
+        // the original name is preserved
+        assertEquals("dummy-artifact-0.0.2-0002.jar", artifact.getId());
     }
 
     @Test

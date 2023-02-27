@@ -307,10 +307,18 @@ public class DirectoryInventoryScan {
                 if (enableImplicitUnpack) {
                     // unknown or requires expansion
                     final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
-                    if (unpackIfPossible(file, targetFolder, false)) {
-                        scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
-                                scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
-                        unpacked = true;
+                    try {
+                        if (unpackIfPossible(file, targetFolder, false)) {
+                            scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
+                                    scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
+                            unpacked = true;
+                        }
+                    } catch (RuntimeException e) {
+                        // NOTE: in case we need to accept an exception here as we cannot unpack the archive, we
+                        // perform simple cleanup and continue
+                        FileUtils.deleteDirectoryQuietly(targetFolder);
+
+                        LOG.warn("Cannot unpack possible archive file: " + file.getAbsolutePath());
                     }
                 }
 
