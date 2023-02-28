@@ -279,7 +279,7 @@ public class DirectoryInventoryScan {
             final String checksum = computeMD5Checksum(file);
             final String idFullPath = file.getPath();
 
-            final Set<String> errors = new LinkedHashSet<>();
+            final List<String> errors = new ArrayList<>();
 
             Artifact artifact = referenceInventory.findArtifactByIdAndChecksum(id, checksum);
 
@@ -304,24 +304,17 @@ public class DirectoryInventoryScan {
             }
 
             if (artifact == null) {
-                boolean unpacked = false;
 
+                boolean unpacked = false;
                 if (enableImplicitUnpack) {
                     // unknown or requires expansion
                     final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
-                    try {
-                        if (unpackIfPossible(file, targetFolder, false)) {
-                            scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
-                                    scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
-                            unpacked = true;
-                        } else {
-                            // Not considered as something to unpack
-                        }
-                    } catch (RuntimeException e) {
-                        // NOTE: in case we need to accept an exception here as we cannot unpack the archive, we
-                        // see the cleanup-responsibility with unpackIfPossible and just log the issue
-                        errors.add("Failure attempting unpack: " + e.getMessage());
-                        LOG.warn("Failed unpacking archive file: " + file.getAbsolutePath());
+                    if (unpackIfPossible(file, targetFolder, false, errors)) {
+                        scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
+                                scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
+                        unpacked = true;
+                    } else {
+                        // Not considered as something to unpack
                     }
                 }
 
@@ -341,7 +334,7 @@ public class DirectoryInventoryScan {
                     scanInventory.getArtifacts().add(newArtifact);
 
                     for (String error : errors) {
-                        artifact.append("Errors", error, ", ");
+                        newArtifact.append("Errors", error, ", ");
                     }
                 }
             } else {
@@ -363,15 +356,19 @@ public class DirectoryInventoryScan {
                 if (!hasClassification(artifact, HINT_IGNORE)) {
                     applyAssetIdChain(assetIdChain, copy);
                     scanInventory.getArtifacts().add(copy);
+                } else {
+                    // ISSUE: the collected issues are ignored in this case; we may lose information
+                    // if not captured elsewhere
                 }
 
                 // in case the artifact contains the scan classification we try to unpack and scan in depth
                 if (hasClassification(artifact, HINT_SCAN)) {
                     final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
-                    if (unpackIfPossible(file, targetFolder, true)) {
+                    if (unpackIfPossible(file, targetFolder, true, errors)) {
                         scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
                                 scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
                     } else {
+                        // revise exception / error handling
                         throw new IllegalStateException("The artifact with id " + artifact.getId() +
                                 " was classified to be scanned in-depth, but cannot be unpacked");
                     }
@@ -387,13 +384,13 @@ public class DirectoryInventoryScan {
         return false;
     }
 
-    private boolean unpackIfPossible(File file, File targetDir, boolean includeModules) {
+    private boolean unpackIfPossible(File file, File targetDir, boolean includeModules, List<String> issues) {
         if (!includeModules) {
             if (file == null || file.getName().toLowerCase().endsWith(".jar")) {
                 return false;
             }
         }
-        return ArchiveUtils.unpackIfPossible(file, targetDir);
+        return ArchiveUtils.unpackIfPossible(file, targetDir, issues);
     }
 
     private void applyAssetIdChain(List<String> assetIdChain, Artifact artifact) {

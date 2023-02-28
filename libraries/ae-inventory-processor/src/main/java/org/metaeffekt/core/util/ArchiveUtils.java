@@ -225,7 +225,7 @@ public class ArchiveUtils {
     private static void unpackAndClose(InputStream in, OutputStream out) throws IOException {
         try {
             final byte[] buffer = new byte[1024];
-            int n = 0;
+            int n;
             while (-1 != (n = in.read(buffer))) {
                 out.write(buffer, 0, n);
             }
@@ -240,7 +240,7 @@ public class ArchiveUtils {
             ArArchiveEntry entry;
             while ((entry = in.getNextArEntry()) != null) {
                 final File targetFile = new File(targetDir, entry.getName());
-                try (OutputStream out = new FileOutputStream(targetFile)) {
+                try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
                     IOUtils.copy(in, out);
                 }
             }
@@ -249,7 +249,7 @@ public class ArchiveUtils {
         }
     }
 
-    public static boolean unpackIfPossible(File archiveFile, File targetDir) {
+    public static boolean unpackIfPossible(File archiveFile, File targetDir, List<String> issues) {
         final Project project = new Project();
         project.setBaseDir(archiveFile.getParentFile());
 
@@ -279,7 +279,8 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            throw new IllegalStateException("Cannot unzip " + archiveFile.getAbsolutePath(), e);
+            issues.add("Cannot unzip " + archiveFile.getAbsolutePath());
+            return false;
         }
 
         // try gunzip
@@ -294,7 +295,8 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            throw new IllegalStateException("Cannot gunzip " + archiveFile.getAbsolutePath(), e);
+            issues.add("Cannot gunzip " + archiveFile.getAbsolutePath());
+            return false;
         }
 
         // NOTE: currently PE files are not supported on core-level. These require further
@@ -308,7 +310,8 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            throw new IllegalStateException("Cannot untar " + archiveFile.getAbsolutePath(), e);
+            issues.add("Cannot untar: " + archiveFile.getAbsolutePath());
+            return false;
         }
 
         // native support
@@ -321,7 +324,8 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            throw new IllegalStateException("Cannot extract jmod " + archiveFile.getAbsolutePath(), e);
+            issues.add("Cannot extract JMod: " + archiveFile.getAbsolutePath());
+            return false;
         }
 
         // try jimage
@@ -332,7 +336,8 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            throw new IllegalStateException("Cannot extract jmod " + archiveFile.getAbsolutePath(), e);
+            issues.add("Cannot extract JImage: " + archiveFile.getAbsolutePath());
+            return false;
         }
 
         if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);

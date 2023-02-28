@@ -207,7 +207,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static void deleteDirectoryQuietly(File directory) {
         try {
-            deleteDirectory(directory);
+            forceDelete(directory);
         } catch (IOException e) {
             // ignore
         }
