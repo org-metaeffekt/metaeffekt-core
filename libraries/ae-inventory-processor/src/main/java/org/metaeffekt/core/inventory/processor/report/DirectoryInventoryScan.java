@@ -279,6 +279,8 @@ public class DirectoryInventoryScan {
             final String checksum = computeMD5Checksum(file);
             final String idFullPath = file.getPath();
 
+            final Set<String> errors = new LinkedHashSet<>();
+
             Artifact artifact = referenceInventory.findArtifactByIdAndChecksum(id, checksum);
 
             if (artifact == null) {
@@ -318,7 +320,7 @@ public class DirectoryInventoryScan {
                     } catch (RuntimeException e) {
                         // NOTE: in case we need to accept an exception here as we cannot unpack the archive, we
                         // see the cleanup-responsibility with unpackIfPossible and just log the issue
-                        artifact.append("Errors", "Failed unpack attempt.", ", ");
+                        errors.add("Failure attempting unpack: " + e.getMessage());
                         LOG.warn("Failed unpacking archive file: " + file.getAbsolutePath());
                     }
                 }
@@ -337,6 +339,10 @@ public class DirectoryInventoryScan {
                     newArtifact.addProject(asRelativePath(scanBaseDir, file));
                     applyAssetIdChain(assetIdChain, newArtifact);
                     scanInventory.getArtifacts().add(newArtifact);
+
+                    for (String error : errors) {
+                        artifact.append("Errors", error, ", ");
+                    }
                 }
             } else {
                 artifact.addProject(asRelativePath(scanBaseDir, file));
@@ -348,6 +354,10 @@ public class DirectoryInventoryScan {
                 copy.set("Hash (SHA-1)", FileUtils.computeSHA1Hash(file));
                 copy.set("Hash (SHA-256)", FileUtils.computeSHA256Hash(file));
                 copy.addProject(asRelativePath(scanBaseDir, file));
+
+                for (String error : errors) {
+                    copy.append("Errors", error, ", ");
+                }
 
                 // only include the artifact if the classification does not include HINT_IGNORE
                 if (!hasClassification(artifact, HINT_IGNORE)) {
