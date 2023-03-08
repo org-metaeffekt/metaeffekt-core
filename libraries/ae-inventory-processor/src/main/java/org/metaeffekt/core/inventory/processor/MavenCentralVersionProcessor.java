@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.apache.commons.collections.map.LRUMap;
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.http.HttpException;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
