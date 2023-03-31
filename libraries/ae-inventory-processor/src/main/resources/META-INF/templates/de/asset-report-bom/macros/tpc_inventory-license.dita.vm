@@ -2,7 +2,7 @@
     #set($folder=$inventory.getLicenseFolder($license))
     #set($assetLicenseDataList=$assetData.evaluateAssets($license))
     #if(!$assetLicenseDataList.isEmpty())
-    <topic id="tpc_associated_license_$inventory.deriveLicenseId($license)">
+    <topic id="tpc_associated_license_details_$inventory.deriveLicenseId($license)">
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
             <p>
@@ -47,4 +47,86 @@
         </body>
     </topic>
     #end
+#end
+#macro (insertLicenseTable $id $title $licenseList $handleSubstructure)
+<table id="$id">
+<title>$title$reportContext.inContextOf()</title>
+<tgroup cols="5">
+    <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+    <colspec colname="COLSPEC1" colnum="2" colwidth="18*" />
+    <colspec colname="COLSPEC2" colnum="3" colwidth="11*" />
+    <colspec colname="COLSPEC3" colnum="4" colwidth="11*" />
+    <colspec colname="COLSPEC4" colnum="5" colwidth="10*" />
+    <thead>
+        <row>
+            <entry colname="COLSPEC0" valign="top">Lizenz / Lizenzausdruck</entry>
+            <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+            <entry colname="COLSPEC2" valign="top">OSI Status</entry>
+            <entry colname="COLSPEC3" valign="top">Open CoDE Freigabe</entry>
+            <entry colname="COLSPEC4" valign="top">Anzahl</entry>
+        </row>
+    </thead>
+    <tbody>
+        #foreach($license in $licenseList)
+            #if (!$license.contains(" + "))
+                #set($licenseData=$inventory.findMatchingLicenseData($license))
+                <row>
+                    #if ($handleSubstructure && $assetData.isLicenseSubstructureRequired($license))
+                        <entry>
+                            <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                            </xref>
+                        </entry>
+                        <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                        <entry>
+                            #if ($licenseData)#if ($licenseData.is('OSI Approved'))anerkannt<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                        </entry>
+                        <entry>
+                            #if ($licenseData && $licenseData.get('Open CoDE Status'))
+                                #if ('approved' == $licenseData.get('Open CoDE Status'))
+                                    ja<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                #else
+                                    #if ('not approved' == $licenseData.get('Open CoDE Status'))
+                                        nein<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                    #else
+                                        &nbsp;
+                                    #end
+                                #end
+                            #else&nbsp;#end
+                        </entry>
+                    #else
+                        <entry>
+                            <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                $report.xmlEscapeLicense($license)
+                            </xref>
+                        </entry>
+                        <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                        <entry>
+                            #if($licenseData)#if($licenseData.is('OSI Approved'))anerkannt#else&nbsp;#end#else&nbsp;#end
+                        </entry>
+                        <entry>
+                            #if ($licenseData && $licenseData.get('Open CoDE Status'))
+                                #if ('approved' == $licenseData.get('Open CoDE Status'))
+                                    ja
+                                #else
+                                    #if ('not approved' == $licenseData.get('Open CoDE Status'))
+                                        nein
+                                    #else
+                                        &nbsp;
+                                    #end
+                                #end
+                            #else&nbsp;#end
+                        </entry>
+                    #end
+                    <entry>
+                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                            <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, $handleSubstructure)</codeph>
+                        </xref>
+                    </entry>
+                </row>
+            #end
+        #end
+    </tbody>
+</tgroup>
+</table>
 #end

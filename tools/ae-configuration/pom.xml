@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-tools</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.80.0</version>
     </parent>
 
     <artifactId>ae-configuration</artifactId>

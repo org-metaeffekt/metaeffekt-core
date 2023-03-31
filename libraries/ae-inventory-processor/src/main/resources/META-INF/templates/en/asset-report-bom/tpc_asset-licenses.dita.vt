@@ -67,7 +67,7 @@
 #end
                     <entry>
                          <xref href="#tpc_associated_license_$inventory.deriveLicenseId($license)" type="topic">
-                            <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license)</codeph>
+                            <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
                         </xref>
                     </entry>
                 </row>

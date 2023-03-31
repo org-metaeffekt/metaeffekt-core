@@ -123,8 +123,10 @@ public class AssetData {
         return sortedList(representedLicenseLicensesMap.get(representedAssociatedLicense));
     }
 
-    public int countAssetsWithRepresentedAssociatedLicense(String representedAssociatedLicense) {
-        final Set<String> assetIds = representedLicenseAssetIdMap.get(representedAssociatedLicense);
+    public int countAssetsWithRepresentedAssociatedLicense(String representedAssociatedLicense, boolean handleSubstructure) {
+        final Set<String> assetIds = handleSubstructure ?
+                representedLicenseAssetIdMap.get(representedAssociatedLicense) :
+                individualLicenseAssetIdMap.get(representedAssociatedLicense);
 
         if (assetIds != null) {
             return assetIds.size();

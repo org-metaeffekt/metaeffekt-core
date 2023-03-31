@@ -1393,4 +1393,14 @@ public class InventoryReport {
         return AssetData.fromArtifacts(inventory);
     }
 
+    public CharSequence joinStrings(Collection<CharSequence> strings, CharSequence delimiter) {
+        if (strings == null) {
+            return "";
+        }
+        if (delimiter == null) {
+            return strings.stream().collect(Collectors.joining());
+        }
+        return strings.stream().collect(Collectors.joining(delimiter));
+    }
+
 }

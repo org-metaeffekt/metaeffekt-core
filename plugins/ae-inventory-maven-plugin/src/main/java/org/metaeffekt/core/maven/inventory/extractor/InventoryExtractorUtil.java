@@ -39,7 +39,7 @@ public abstract class InventoryExtractorUtil {
      * Symlinks are or relevance if the source of a symlinked file is covered by a package file or exclude
      * pattern. We try to consistency delete target and source of symlinks if either one is covered.
      *
-     * This procedure is rather time-consuming depending of the container/virtual machine being analyzed. Changes must
+     * This procedure is rather time-consuming depending on the container/virtual machine being analyzed. Changes must
      * only be applied with care and thorough testing.
      *
      * @param analysisDir The analysis base dir.
