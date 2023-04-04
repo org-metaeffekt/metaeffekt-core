@@ -30,7 +30,7 @@ public class StatisticsOverviewTable {
 
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsOverviewTable.class);
 
-    private final Map<String, Map<String, Integer>> severityStatusCountMap = new LinkedHashMap<>();
+    private final Map<String, Map<String, Object>> severityStatusCountMap = new LinkedHashMap<>();
 
     private void addSeverityCategory(String severityCategory) {
         severityStatusCountMap.putIfAbsent(normalize(severityCategory), new LinkedHashMap<>());
@@ -46,7 +46,7 @@ public class StatisticsOverviewTable {
         status = normalize(status);
         addSeverityCategory(severity);
         addStatus(status);
-        severityStatusCountMap.get(severity).put(status, severityStatusCountMap.get(severity).get(status) + 1);
+        severityStatusCountMap.get(severity).put(status, ((Integer) severityStatusCountMap.get(severity).get(status)) + 1);
     }
 
     public List<String> getHeaders() {
@@ -62,18 +62,33 @@ public class StatisticsOverviewTable {
 
     public List<Integer> getCountsForSeverityCategory(String severityCategory) {
         severityCategory = normalize(severityCategory);
-        List<Integer> counts = new ArrayList<>();
-        for (String status : severityStatusCountMap.get(severityCategory).keySet()) {
-            counts.add(severityStatusCountMap.get(severityCategory).get(status));
+        List<Integer> countList = new ArrayList<>();
+        if (severityStatusCountMap.containsKey(severityCategory)) {
+            for (String status : severityStatusCountMap.get(severityCategory).keySet()) {
+                if (!status.equals("% assessed")) {
+                    countList.add((Integer) severityStatusCountMap.get(severityCategory).get(status));
+                }
+            }
         }
-        return counts;
+        return countList;
+    }
+
+    public List<Object> getValuesForSeverityCategory(String severityCategory) {
+        severityCategory = normalize(severityCategory);
+        List<Object> countList = new ArrayList<>();
+        if (severityStatusCountMap.containsKey(severityCategory)) {
+            for (String status : severityStatusCountMap.get(severityCategory).keySet()) {
+                countList.add(severityStatusCountMap.get(severityCategory).get(status));
+            }
+        }
+        return countList;
     }
 
     public List<Integer> getCountsForStatus(String status) {
         final String normalizedStatus = normalize(status);
         List<Integer> counts = new ArrayList<>();
         for (String severityCategory : severityStatusCountMap.keySet()) {
-            final Integer i = severityStatusCountMap.get(severityCategory).get(normalizedStatus);
+            final Integer i = (Integer) severityStatusCountMap.get(severityCategory).get(normalizedStatus);
             if (i != null) counts.add(i);
         }
         return counts;
@@ -91,10 +106,10 @@ public class StatisticsOverviewTable {
      * @return true if the table is empty, false otherwise.
      */
     public boolean isEmpty() {
-        for (Map<String, Integer> m : severityStatusCountMap.values()) {
-            for (Map.Entry<String, Integer> e : m.entrySet()) {
+        for (Map<String, Object> m : severityStatusCountMap.values()) {
+            for (Map.Entry<String, Object> e : m.entrySet()) {
                 if (!e.getKey().equals("% assessed")) {
-                    if (e.getValue() != 0) {
+                    if ((Integer) e.getValue() != 0) {
                         return false;
                     }
                 }
@@ -209,52 +224,53 @@ public class StatisticsOverviewTable {
         }
 
         // add up the total number of vulnerabilities for each severity category
-        for (Map.Entry<String, Map<String, Integer>> severityMap : table.severityStatusCountMap.entrySet()) {
+        for (Map.Entry<String, Map<String, Object>> severityMap : table.severityStatusCountMap.entrySet()) {
             int total = 0;
-            for (Map.Entry<String, Integer> statusMap : severityMap.getValue().entrySet()) {
-                total += statusMap.getValue();
+            for (Map.Entry<String, Object> statusMap : severityMap.getValue().entrySet()) {
+                total += (Integer) statusMap.getValue();
             }
             severityMap.getValue().put("total", total);
         }
 
         // find the % of assessed vulnerabilities for each severity category
-        for (Map.Entry<String, Map<String, Integer>> severityMap : table.severityStatusCountMap.entrySet()) {
-            final int applicable = severityMap.getValue().getOrDefault("applicable", 0);
-            final int notApplicable = useModifiedSeverity ? 0 : severityMap.getValue().getOrDefault("not applicable", 0);
-            final int inReview = severityMap.getValue().getOrDefault("in review", 0);
-            final int insignificant = severityMap.getValue().getOrDefault("insignificant", 0);
-            final int voidCat = severityMap.getValue().getOrDefault("void", 0);
+        for (Map.Entry<String, Map<String, Object>> severityMap : table.severityStatusCountMap.entrySet()) {
+            final int applicable = (Integer) severityMap.getValue().getOrDefault("applicable", 0);
+            final int notApplicable = useModifiedSeverity ? 0 : (Integer) severityMap.getValue().getOrDefault("not applicable", 0);
+            final int inReview = (Integer) severityMap.getValue().getOrDefault("in review", 0);
+            final int insignificant = (Integer) severityMap.getValue().getOrDefault("insignificant", 0);
+            final int voidCat = (Integer) severityMap.getValue().getOrDefault("void", 0);
 
-            final int affected = severityMap.getValue().getOrDefault("affected", 0);
-            final int potentiallyAffected = severityMap.getValue().getOrDefault("potentially affected", 0);
-            final int notAffected = severityMap.getValue().getOrDefault("not affected", 0);
+            final int affected = (Integer) severityMap.getValue().getOrDefault("affected", 0);
+            final int potentiallyAffected = (Integer) severityMap.getValue().getOrDefault("potentially affected", 0);
+            final int notAffected = (Integer) severityMap.getValue().getOrDefault("not affected", 0);
 
             if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_DEFAULT) {
-                if (inReview == 0 && insignificant == 0) {
-                    severityMap.getValue().put("% assessed", 100);
-                } else {
-                    final int total = inReview + applicable + notApplicable + insignificant + voidCat;
-                    final double ratio = ((double) (applicable + notApplicable + voidCat)) / total;
+                final int total = inReview + applicable + notApplicable + insignificant + voidCat;
 
+                if (total == 0) {
+                    severityMap.getValue().put("% assessed", "n/a");
+                } else {
+                    final double ratio = ((double) (applicable + notApplicable + voidCat)) / total;
                     severityMap.getValue().put("% assessed", (int) (ratio * 100));
                 }
-
             } else if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_ABSTRACTED) {
-                if (potentiallyAffected == 0) {
-                    severityMap.getValue().put("% assessed", 100);
-                } else {
-                    final int total = affected + potentiallyAffected + notAffected;
-                    final double ratio = ((double) (affected + notAffected)) / total;
+                final int total = affected + potentiallyAffected + notAffected;
 
+                if (total == 0) {
+                    severityMap.getValue().put("% assessed", "n/a");
+                } else {
+                    final double ratio = ((double) (affected + notAffected)) / total;
                     severityMap.getValue().put("% assessed", (int) (ratio * 100));
                 }
             }
         }
 
         // remove 'none' if all but the '% assessed' column are 0
-        if (table.severityStatusCountMap.containsKey("none")
-                && table.severityStatusCountMap.get("none").values().stream().filter(i -> i != 0).count() == 1) {
-            table.severityStatusCountMap.remove("none");
+        final Map<String, Object> noneEntry = table.severityStatusCountMap.get("none");
+        if (noneEntry != null) {
+            if ("n/a".equalsIgnoreCase(String.valueOf(noneEntry.get("% assessed")))) {
+                table.severityStatusCountMap.remove("none");
+            }
         }
 
         LOG.debug("Generated Overview Table for [{}] vulnerabilities:\n{}", vmds.size(), table);
@@ -263,7 +279,7 @@ public class StatisticsOverviewTable {
     }
 
     private void removeStatus(String status) {
-        for (Map<String, Integer> m : severityStatusCountMap.values()) {
+        for (Map<String, Object> m : severityStatusCountMap.values()) {
             m.remove(status);
         }
     }
