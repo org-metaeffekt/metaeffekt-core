@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
 public class InventorySerializationContext {
 
     public static final String CONTEXT_KEY_ASSET_DATA = "asset";
@@ -106,6 +106,110 @@ public class InventorySerializationContext {
     @Deprecated
     public void setContextMap(Map<String, Object> contextMap) {
         this.contextMap = contextMap;
+    }
+
+    public static List<String> initializeLicenseDataSerializationContext(Inventory inventory) {
+
+        // create columns for key / value map content
+        final Set<String> attributes = new HashSet<>();
+        for (final LicenseData vmd : inventory.getLicenseData()) {
+            attributes.addAll(vmd.getAttributes());
+        }
+
+        final List<String> contextColumnList = inventory.getSerializationContext().
+                get(InventorySerializationContext.CONTEXT_LICENSEDATA_COLUMN_LIST);
+        if (contextColumnList != null) {
+            attributes.addAll(contextColumnList);
+        }
+
+        // add minimum columns
+        attributes.addAll(LicenseData.CORE_ATTRIBUTES);
+
+        // impose context or default order
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+        int insertIndex = 0;
+        if (contextColumnList != null) {
+            for (String key : contextColumnList) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        } else {
+            for (String key : LicenseData.CORE_ATTRIBUTES) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        }
+        return ordered;
+    }
+
+    public static List<String> initializeArtifactSerializationContext(Inventory inventory) {
+        final Set<String> attributes = new HashSet<>();
+        for (final Artifact artifact : inventory.getArtifacts()) {
+            attributes.addAll(artifact.getAttributes());
+        }
+
+        final List<String> contextColumnList = inventory.getSerializationContext().
+                get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
+        if (contextColumnList != null) {
+            attributes.addAll(contextColumnList);
+        }
+
+        // add minimum columns
+        attributes.add(Artifact.Attribute.ID.getKey());
+        attributes.add(Artifact.Attribute.COMPONENT.getKey());
+        attributes.add(Artifact.Attribute.VERSION.getKey());
+
+        // impose context or default order
+        List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+        int insertIndex = 0;
+        if (contextColumnList != null) {
+            for (String key : contextColumnList) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        } else {
+            for (Artifact.Attribute a : ARTIFACT_COLUMN_ORDER) {
+                String key = a.getKey();
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        }
+        return ordered;
+    }
+
+    private static int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
+        if (attributesSet.contains(key)) {
+            orderedAttributesList.remove(key);
+            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
+            insertIndex++;
+        }
+        return insertIndex;
+    }
+
+    /**
+     * Defines a default order.
+     *
+     * FIXME: column-metadata
+     */
+    private final static Artifact.Attribute[] ARTIFACT_COLUMN_ORDER = new Artifact.Attribute[]{
+            Artifact.Attribute.ID,
+            Artifact.Attribute.CHECKSUM,
+            Artifact.Attribute.COMPONENT,
+            Artifact.Attribute.GROUPID,
+            Artifact.Attribute.VERSION,
+            Artifact.Attribute.LATEST_VERSION,
+            Artifact.Attribute.LICENSE,
+            Artifact.Attribute.CLASSIFICATION,
+            Artifact.Attribute.SECURITY_RELEVANT,
+            Artifact.Attribute.SECURITY_CATEGORY,
+            Artifact.Attribute.VULNERABILITY,
+            Artifact.Attribute.COMMENT,
+            Artifact.Attribute.URL,
+            Artifact.Attribute.PROJECTS,
+            Artifact.Attribute.VERIFIED
+    };
+
+    public static void initializeSerializationContext(Inventory inventory) {
+        initializeLicenseDataSerializationContext(inventory);
+        initializeArtifactSerializationContext(inventory);
     }
 
 }

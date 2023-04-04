@@ -45,5 +45,10 @@ public class InventoryInfoTest {
 
         Assert.assertEquals(1, read.getInventoryInfo().size());
         Assert.assertEquals("test-id", read.getInventoryInfo().get(0).get(InventoryInfo.Attribute.ID));
+
+        final File inventoryXlsxFile = new File(TARGET_DIRECTORY, "test-inventory/info/info-inventory.xlsx");
+        inventoryXlsxFile.getParentFile().mkdirs();
+        new InventoryWriter().writeInventory(inventory, inventoryXlsxFile);
+
     }
 }

@@ -15,19 +15,19 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFPalette;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.*;
 
-public class AbstractXlsInventoryWriter {
+public class AbstractXlsxInventoryWriter {
 
     /**
      * Excel 97 limits the maximum cell content length to <code>32767</code> characters. To ensure that the contents are
@@ -36,48 +36,59 @@ public class AbstractXlsInventoryWriter {
     public final static int MAX_CELL_LENGTH = SpreadsheetVersion.EXCEL97.getMaxTextLength() - 7;
 
     /**
-     * Contains self-managed palette of colors. HSSF api is strange.
+     * Contains self-managed palette of colors. XSSF api is strange.
      */
-    private final Map<String, HSSFColor> colorPalette = new HashMap<>();
+    private final Map<String, XSSFColor> colorPalette = new HashMap<>();
+
+    private final DefaultIndexedColorMap indexedColorMap = new DefaultIndexedColorMap();
 
     protected boolean isEmpty(Collection<?> collection) {
         if (collection == null) return true;
         return collection.isEmpty();
     }
 
-    protected HSSFCellStyle createDefaultHeaderStyle(HSSFWorkbook workbook) {
-        final HSSFColor headerColor = resolveColor(workbook, "153,204,255");
+    protected int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
+        if (attributesSet.contains(key)) {
+            orderedAttributesList.remove(key);
+            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
+            insertIndex++;
+        }
+        return insertIndex;
+    }
+
+    protected XSSFCellStyle createDefaultHeaderStyle(XSSFWorkbook workbook) {
+        final XSSFColor headerColor = resolveColor(workbook, "153,204,255");
 
         final Font headerFont = workbook.createFont();
         headerFont.setColor(Font.COLOR_NORMAL);
 
-        final HSSFCellStyle headerStyle = workbook.createCellStyle();
-        headerStyle.setFillForegroundColor(headerColor.getIndex());
+        final XSSFCellStyle headerStyle = workbook.createCellStyle();
+        headerStyle.setFillForegroundColor(headerColor);
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setFont(headerFont);
         headerStyle.setWrapText(true);
         return headerStyle;
     }
 
-    protected HSSFCellStyle createHeaderStyle(HSSFWorkbook workbook) {
+    protected XSSFCellStyle createHeaderStyle(XSSFWorkbook workbook) {
         return createDefaultHeaderStyle(workbook);
     }
 
-    protected HSSFCellStyle createAssetSourceHeaderStyle(HSSFWorkbook workbook) {
+    protected XSSFCellStyle createAssetSourceHeaderStyle(XSSFWorkbook workbook) {
         return createRotatedCellStyle(workbook, resolveColor(workbook, "155,192,0"));
     }
 
-    protected HSSFCellStyle createAssetConfigHeaderStyle(HSSFWorkbook workbook) {
+    protected XSSFCellStyle createAssetConfigHeaderStyle(XSSFWorkbook workbook) {
         return createRotatedCellStyle(workbook, resolveColor(workbook, "219,219,219"));
     }
 
-    protected HSSFCellStyle createAssetHeaderStyle(HSSFWorkbook workbook) {
+    protected XSSFCellStyle createAssetHeaderStyle(XSSFWorkbook workbook) {
         return createRotatedCellStyle(workbook, resolveColor(workbook, "255,192,0"));
     }
 
-    protected HSSFCellStyle createRotatedCellStyle(HSSFWorkbook workbook, HSSFColor headerColor) {
-        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
-        cellStyle.setFillForegroundColor(headerColor.getIndex());
+    protected XSSFCellStyle createRotatedCellStyle(XSSFWorkbook workbook, XSSFColor headerColor) {
+        final XSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor);
         cellStyle.setRotation((short) -90);
         cellStyle.setAlignment(HorizontalAlignment.CENTER);
         cellStyle.setVerticalAlignment(VerticalAlignment.TOP);
@@ -85,49 +96,36 @@ public class AbstractXlsInventoryWriter {
         return cellStyle;
     }
 
-    protected HSSFCellStyle createCenteredStyle(HSSFWorkbook workbook) {
-        final HSSFCellStyle cellStyle = workbook.createCellStyle();
+    protected XSSFCellStyle createCenteredStyle(XSSFWorkbook workbook) {
+        final XSSFCellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setAlignment(HorizontalAlignment.CENTER);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         return cellStyle;
     }
 
-    protected HSSFCellStyle createWarnHeaderStyle(HSSFWorkbook workbook) {
-        final HSSFColor headerColor = resolveColor(workbook, "244,176,132");
+    protected XSSFCellStyle createWarnHeaderStyle(XSSFWorkbook workbook) {
+        final XSSFColor headerColor = resolveColor(workbook, "244,176,132");
         return createRotatedCellStyle(workbook, headerColor);
     }
 
-    protected HSSFCellStyle createErrorHeaderStyle(HSSFWorkbook workbook) {
-        final HSSFColor headerColor = resolveColor(workbook, "244,176,132");
-        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
-        cellStyle.setFillForegroundColor(headerColor.getIndex());
+    protected XSSFCellStyle createErrorHeaderStyle(XSSFWorkbook workbook) {
+        final XSSFColor headerColor = resolveColor(workbook, "244,176,132");
+        final XSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor);
         cellStyle.setWrapText(false);
         return cellStyle;
     }
 
-    protected HSSFColor resolveColor(HSSFWorkbook workbook, String rgb) {
-        final HSSFPalette palette = workbook.getCustomPalette();
+    protected XSSFColor resolveColor(XSSFWorkbook workbook, String rgb) {
         final String[] rgbSplit = rgb.trim().split(", ?");
-        final byte red = (byte) Short.parseShort(rgbSplit[0]);
-        final byte green = (byte) Short.parseShort(rgbSplit[1]);
-        final byte blue = (byte) Short.parseShort(rgbSplit[2]);
+        final int red = Short.parseShort(rgbSplit[0]);
+        final int green = Short.parseShort(rgbSplit[1]);
+        final int blue = Short.parseShort(rgbSplit[2]);
 
-        HSSFColor color = colorPalette.get(rgb);
+        XSSFColor color = colorPalette.get(rgb);
         if (color == null) {
-            // the index needs to start with 7 (8 being an offset that is used by HSSFPalette
-            final int index = colorPalette.size() + 8;
-
-            try {
-                // adjust color
-                palette.setColorAtIndex((short) index, red, green, blue);
-
-                // access color using index
-                color = palette.getColor(index);
-
-            } catch (RuntimeException e) {
-                // fallback to similar color (since palette is limited)
-                color = palette.findSimilarColor(red, green, blue);
-            }
+            // create color and register in map
+            color = new XSSFColor(new java.awt.Color(red, green, blue), indexedColorMap);
 
             // add to map
             colorPalette.put(rgb, color);

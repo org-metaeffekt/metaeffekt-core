@@ -93,9 +93,8 @@ public abstract class InventoryUtils {
 
     private static Inventory readInventoryFromClasspath(File inventoryBaseDir, String inventoryIncludes) throws IOException {
         File file = new File(inventoryBaseDir, inventoryIncludes);
-        Resource inventoryResource = new ClassPathResource(file.getPath());
-        try (InputStream in = inventoryResource.getInputStream()) {
-            return new InventoryReader().readInventory(in);
+        try {
+            return new InventoryReader().readInventoryAsClasspathResource(file);
         } catch (IOException e) {
             throw new IOException(String.format("Unable to read inventory from classpath: {}/{}", inventoryBaseDir, inventoryIncludes), e);
         }

@@ -16,76 +16,41 @@
 package org.metaeffekt.core.inventory.processor.reader;
 
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.writer.XlsInventoryWriter;
+import org.metaeffekt.core.inventory.processor.writer.XlsxInventoryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 
-public class InventoryReader extends AbstractXlsInventoryReader {
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryReader.class);
+public class InventoryReader {
 
-    protected void update(Artifact artifact) {
-        resolveRename(artifact, "Component / Group", Artifact.Attribute.COMPONENT.getKey());
-    }
-
-    protected void update(LicenseMetaData licenseMetaData) {
-        resolveRename(licenseMetaData, "Text", LicenseMetaData.Attribute.NOTICE.getKey());
-    }
-
-    private void resolveRename(AbstractModelBase item, String oldKey, String newKey) {
-        String oldKeyValue = item.get(oldKey);
-        String newKeyValue = item.get(newKey);
-
-        if (org.apache.commons.lang3.StringUtils.isEmpty(newKeyValue)) {
-            item.set(newKey, oldKeyValue);
+    public Inventory readInventory(File file) throws IOException {
+        if (file == null || !file.exists()) {
+            throw new IOException("File [" + file.getAbsolutePath()  + "] does not exist.");
+        }
+        if (file.getName().toLowerCase().endsWith(".xls")) {
+            return new XlsInventoryReader().readInventory(file);
+        } else {
+            return new XlsxInventoryReader().readInventory(file);
         }
     }
 
-    protected void update(VulnerabilityMetaData vulnerabilityMetaData) {
-        // compensate rename of attributes
-        mapContent(vulnerabilityMetaData, "CVSS Score (v2)", VulnerabilityMetaData.Attribute.V2_SCORE);
-        mapContent(vulnerabilityMetaData, "CVSS Base Score (v3)", VulnerabilityMetaData.Attribute.V3_SCORE);
-        mapContent(vulnerabilityMetaData, "Maximum Score", VulnerabilityMetaData.Attribute.MAX_SCORE);
-    }
-
-    private void mapContent(final VulnerabilityMetaData vulnerabilityMetaData,
-                            final String originalKey, final VulnerabilityMetaData.Attribute updatedAttribute) {
-
-        // read the original content
-        final String originalKeyContent = vulnerabilityMetaData.get(originalKey);
-
-        // check if there is original content
-        if (StringUtils.hasText(originalKeyContent)) {
-
-            // read updated attribute content
-            final String updatedAttributeContent = vulnerabilityMetaData.get(updatedAttribute);
-
-            if (!StringUtils.hasText(updatedAttributeContent)) {
-                // original content available; no updated content: transfer and delete
-                vulnerabilityMetaData.set(updatedAttribute, originalKeyContent);
-                vulnerabilityMetaData.set(originalKey, null);
+    public Inventory readInventoryAsClasspathResource(File file) throws IOException {
+        final Resource inventoryResource = new ClassPathResource(file.getPath());
+        try (InputStream in = inventoryResource.getInputStream()) {
+            if (file.getName().toLowerCase().endsWith(".xls")) {
+                return new XlsInventoryReader().readInventory(in);
             } else {
-                // original content and updated content available
-                if (!originalKeyContent.equals(updatedAttributeContent)) {
-
-                    // warn in case the values differ
-                    LOG.warn("Vulnerability metadata inconsistent: " +
-                                    "[{}] shows different content in attributes [{}] and [{}]. Please consolidate to [{}].",
-                            vulnerabilityMetaData.get(VulnerabilityMetaData.Attribute.NAME), originalKey,
-                            updatedAttribute.getKey(), updatedAttribute.getKey());
-                }
-
-                // values are identical or we warned the consumer: remove the obsolete original key value
-                vulnerabilityMetaData.set(originalKey, null);
+                return new XlsxInventoryReader().readInventory(in);
             }
         }
-    }
-
-    @Override
-    void applyModificationsForCompatibility(Inventory inventory) {
-        inventory.getArtifacts().forEach(this::update);
-        inventory.getLicenseMetaData().forEach(this::update);
-        inventory.getVulnerabilityMetaData().forEach(this::update);
     }
 
 }

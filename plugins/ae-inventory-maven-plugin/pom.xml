@@ -66,6 +66,19 @@
             <artifactId>json</artifactId>
             <version>20160212</version>
         </dependency>
+
+        <!-- Due to the runtime dependency from POI to log4j-api the scope is managed to runtime -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>
