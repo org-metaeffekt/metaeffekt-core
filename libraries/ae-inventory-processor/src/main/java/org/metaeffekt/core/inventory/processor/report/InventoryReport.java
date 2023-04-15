@@ -178,6 +178,19 @@ public class InventoryReport {
      */
     private String cvssScoringPreference = VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST;
 
+    /**
+     * An array of advisory types to include in the report. The default is to include all types by using the value
+     * <code>all</code>.<br>
+     * Supported values are:
+     * <ul>
+     *     <li><code>all</code> to include all types</li>
+     *     <li><code>notice</code></li>
+     *     <li><code>alert</code></li>
+     *     <li><code>news</code></li>
+     * </ul>
+     */
+    private String[] includeAdvisoryTypes = new String[]{"all"};
+
     private ArtifactFilter artifactFilter;
 
     private boolean inventoryBomReportEnabled = false;
@@ -1273,8 +1286,26 @@ public class InventoryReport {
         return cvssScoringPreference;
     }
 
+    public void setIncludeAdvisoryTypes(String[] includeAdvisoryTypes) {
+        this.includeAdvisoryTypes = includeAdvisoryTypes;
+    }
+
+    public void setIncludeAdvisoryTypes(String includeAdvisoryTypes) {
+        if (includeAdvisoryTypes != null) {
+            if (includeAdvisoryTypes.length() > 0 && (!includeAdvisoryTypes.equals("null") && !includeAdvisoryTypes.equals("none"))) {
+                this.includeAdvisoryTypes = includeAdvisoryTypes.split(", ");
+            } else {
+                this.includeAdvisoryTypes = new String[]{};
+            }
+        }
+    }
+
+    public String[] getIncludeAdvisoryTypes() {
+        return includeAdvisoryTypes;
+    }
+
     private void splitAndAppendCsvAdvisoryProviders(List<String> listToAddProvidersTo, String... commaSeperatedProviders) {
-        if (commaSeperatedProviders != null && commaSeperatedProviders.length > 0) {
+        if (commaSeperatedProviders != null) { // && commaSeperatedProviders.length > 0) { // is always true
             for (String commaSeperatedProvider : commaSeperatedProviders) {
                 if (commaSeperatedProvider != null && commaSeperatedProvider.length() > 0) {
                     if (commaSeperatedProvider.contains(",")) {
