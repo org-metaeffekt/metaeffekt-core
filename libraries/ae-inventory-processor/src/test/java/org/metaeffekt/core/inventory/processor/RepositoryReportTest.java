@@ -332,6 +332,8 @@ public class RepositoryReportTest {
 
         report.setTargetReportDir(new File(reportTarget, "report"));
 
+        report.setIncludeAdvisoryTypes("alert, notice");
+
         reportTarget.mkdirs();
 
         final File targetLicensesDir = new File(reportTarget, "licenses");

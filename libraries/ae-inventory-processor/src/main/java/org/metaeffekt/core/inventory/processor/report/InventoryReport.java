@@ -895,10 +895,11 @@ public class InventoryReport {
         }
     }
 
-    private void filterVulnerabilityMetadataByAdvisoryFilter(List<VulnerabilityMetaData> vulnerabilityMetaData) {
+    private void filterVulnerabilityMetadataByAdvisoryFilter(
+            VulnerabilityReportAdapter adapter, List<VulnerabilityMetaData> vulnerabilityMetaData) {
         if (vulnerabilityAdvisoryFilter.size() > 0) {
             vulnerabilityMetaData.removeIf(vmd ->
-                    VulnerabilityReportAdapter.getAdvisories(vmd).stream()
+                    adapter.getAdvisories(vmd, null).stream()
                             .noneMatch(advisory -> vulnerabilityAdvisoryFilter.contains(advisory.getSource())));
         }
     }
@@ -918,17 +919,20 @@ public class InventoryReport {
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
 
-        // FIXME: review filtered inventory approach
+        // FIXME: review filtered inventory approach; move score threshold filter out; use adapter
         final Inventory filteredInventory = projectInventory.getFilteredInventory();
 
+        final AssetReportAdapter assetReportAdapter = new AssetReportAdapter(filteredInventory);
+        final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
+                filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold);
+
         // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
-        filterVulnerabilityMetadataByAdvisoryFilter(filteredInventory.getVulnerabilityMetaData());
+        filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityReportAdapter, filteredInventory.getVulnerabilityMetaData());
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
-        context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(
-                filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold));
-        context.put("assetAdapter", new AssetReportAdapter(filteredInventory));
+        context.put("vulnerabilityAdapter", vulnerabilityReportAdapter);
+        context.put("assetAdapter", assetReportAdapter);
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("utils", new ReportUtils());
