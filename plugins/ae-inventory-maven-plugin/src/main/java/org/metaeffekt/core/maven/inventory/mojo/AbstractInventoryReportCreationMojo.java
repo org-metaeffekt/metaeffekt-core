@@ -298,6 +298,21 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private String cvssScoringPreference;
 
     /**
+     * An array of advisory types to include in the report. The default is to include all types by using the value
+     * <code>all</code>.<br>
+     * Supported values are:
+     * <ul>
+     *     <li><code>all</code> to include all types</li>
+     *     <li><code>notice</code></li>
+     *     <li><code>alert</code></li>
+     *     <li><code>news</code></li>
+     * </ul>
+     *
+     * @parameter
+     */
+    private String includeAdvisoryTypes;
+
+    /**
      * @parameter default-value="en"
      */
     private String templateLanguageSelector;
@@ -368,6 +383,9 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             } else {
                 report.setCvssScoringPreference(cvssScoringPreference);
             }
+        }
+        if (includeAdvisoryTypes != null) {
+            report.setIncludeAdvisoryTypes(includeAdvisoryTypes);
         }
 
         // diff settings
