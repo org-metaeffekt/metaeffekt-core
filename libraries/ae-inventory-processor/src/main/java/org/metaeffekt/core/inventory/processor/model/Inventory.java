@@ -925,7 +925,7 @@ public class Inventory {
         return sortedByComponent;
     }
 
-    public List<List<Artifact>> evaluateComponent(Component component, boolean includeLicensesWithArtifactsOnly) {
+    public List<List<Artifact>> evaluateComponent(Component component) {
         List<Artifact> artifactsForComponent = new ArrayList<>(component.getArtifacts());
         sortArtifacts(artifactsForComponent);
 
@@ -971,8 +971,7 @@ public class Inventory {
         return true;
     }
 
-    public List<Artifact> evaluateLicense(String licenseName,
-                                          boolean includeLicensesWithArtifactsOnly) {
+    public List<Artifact> evaluateLicense(String licenseName, boolean includeLicensesWithArtifactsOnly) {
         List<Artifact> artifactsForComponent = new ArrayList<>();
         for (Artifact artifact : getArtifacts()) {
             if (licenseName.equals(artifact.getLicense())) {
@@ -1484,26 +1483,23 @@ public class Inventory {
         this.vulnerabilityMetaData = vulnerabilityMetaData;
     }
 
+    @Deprecated // is still used be the german translation; preserve until translation is completely revised
     public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
         vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
+    @Deprecated // is still used be the german translation; preserve until translation is completely revised
     public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
         vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
+    @Deprecated // is still used be the german translation; preserve until translation is completely revised
     public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
-        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
-    }
-
-    public List<VulnerabilityMetaData> getVoidVulnerabilities() {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterVoidVulnerabilities(getVulnerabilityMetaData());
         vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
@@ -1541,7 +1537,7 @@ public class Inventory {
     }
 
     private Set<String> splitCommaSeparated(String string) {
-        if (string == null) return Collections.EMPTY_SET;
+        if (string == null) return Collections.emptySet();
         return Arrays.stream(string.split(",")).map(String::trim).collect(Collectors.toSet());
     }
 

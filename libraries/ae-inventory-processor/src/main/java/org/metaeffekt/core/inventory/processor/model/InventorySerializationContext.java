@@ -116,7 +116,8 @@ public class InventorySerializationContext {
             attributes.addAll(vmd.getAttributes());
         }
 
-        final List<String> contextColumnList = inventory.getSerializationContext().
+        final InventorySerializationContext serializationContext = inventory.getSerializationContext();
+        final List<String> contextColumnList = serializationContext.
                 get(InventorySerializationContext.CONTEXT_LICENSEDATA_COLUMN_LIST);
         if (contextColumnList != null) {
             attributes.addAll(contextColumnList);
@@ -138,6 +139,9 @@ public class InventorySerializationContext {
                 insertIndex = reinsert(insertIndex, key, ordered, attributes);
             }
         }
+
+        serializationContext.put(InventorySerializationContext.CONTEXT_LICENSEDATA_COLUMN_LIST, ordered);
+
         return ordered;
     }
 
@@ -147,7 +151,8 @@ public class InventorySerializationContext {
             attributes.addAll(artifact.getAttributes());
         }
 
-        final List<String> contextColumnList = inventory.getSerializationContext().
+        final InventorySerializationContext serializationContext = inventory.getSerializationContext();
+        final List<String> contextColumnList = serializationContext.
                 get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
         if (contextColumnList != null) {
             attributes.addAll(contextColumnList);
@@ -172,6 +177,9 @@ public class InventorySerializationContext {
                 insertIndex = reinsert(insertIndex, key, ordered, attributes);
             }
         }
+
+        serializationContext.put(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST, ordered);
+
         return ordered;
     }
 

@@ -164,19 +164,19 @@ public class StatisticsOverviewTable {
         );
     }
 
-    private static String getStatusFromVMD(VulnerabilityMetaData vulnerabilityMetaData, float threshold, VulnerabilityReportAdapter adapter) {
-        return adapter.getStatusText(vulnerabilityMetaData, threshold);
+    private static String getVulnerabilityStatus(VulnerabilityMetaData vulnerabilityMetaData, VulnerabilityReportAdapter adapter) {
+        return adapter.getStatusText(vulnerabilityMetaData);
     }
 
-    public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, String filterCert, float threshold, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromInventory(adapter, filterCert, threshold, false, vulnerabilityStatusMapper);
+    public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, String filterCert, Function<String, String> vulnerabilityStatusMapper) {
+        return StatisticsOverviewTable.fromInventory(adapter, filterCert, false, vulnerabilityStatusMapper);
     }
 
-    public static StatisticsOverviewTable fromInventoryModified(VulnerabilityReportAdapter adapter, String filterCert, float threshold, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromInventory(adapter, filterCert, threshold, true, vulnerabilityStatusMapper);
+    public static StatisticsOverviewTable fromInventoryModified(VulnerabilityReportAdapter adapter, String filterCert, Function<String, String> vulnerabilityStatusMapper) {
+        return StatisticsOverviewTable.fromInventory(adapter, filterCert, true, vulnerabilityStatusMapper);
     }
 
-    private static StatisticsOverviewTable fromInventory(VulnerabilityReportAdapter adapter, String filterCert, float threshold, boolean useModifiedSeverity, Function<String, String> vulnerabilityStatusMapper) {
+    private static StatisticsOverviewTable fromInventory(VulnerabilityReportAdapter adapter, String filterCert, boolean useModifiedSeverity, Function<String, String> vulnerabilityStatusMapper) {
         final List<VulnerabilityMetaData> vmds = new ArrayList<>(adapter.inventory.getVulnerabilityMetaData());
 
         if (filterCert != null && !filterCert.isEmpty()) {
@@ -197,7 +197,7 @@ public class StatisticsOverviewTable {
         }
         final Set<String> allStatuses = new HashSet<>();
         for (VulnerabilityMetaData vmd : vmds) {
-            final String status = vulnerabilityStatusMapper.apply(StatisticsOverviewTable.getStatusFromVMD(vmd, threshold, adapter));
+            final String status = vulnerabilityStatusMapper.apply(StatisticsOverviewTable.getVulnerabilityStatus(vmd, adapter));
             allStatuses.add(status);
         }
 
@@ -217,7 +217,7 @@ public class StatisticsOverviewTable {
 
         // now that the cells exist, count the individual severity and status combinations
         for (VulnerabilityMetaData vmd : vmds) {
-            final String status = vulnerabilityStatusMapper.apply(StatisticsOverviewTable.getStatusFromVMD(vmd, threshold, adapter));
+            final String status = vulnerabilityStatusMapper.apply(StatisticsOverviewTable.getVulnerabilityStatus(vmd, adapter));
             final String severity = StatisticsOverviewTable.getSeverityFromVMD(vmd, useModifiedSeverity);
 
             table.incrementCount(severity, status);
@@ -268,7 +268,12 @@ public class StatisticsOverviewTable {
         // remove 'none' if all but the '% assessed' column are 0
         final Map<String, Object> noneEntry = table.severityStatusCountMap.get("none");
         if (noneEntry != null) {
-            if ("n/a".equalsIgnoreCase(String.valueOf(noneEntry.get("% assessed")))) {
+            // remove the 'none' entry if the content does not contribute any further
+            // information. That is when only 0 and n/a are included.
+            if (noneEntry.values().stream().allMatch(obj -> {
+                final String str = String.valueOf(obj);
+                return "0".equals(str) && "n/a".equals(str);
+            })) {
                 table.severityStatusCountMap.remove("none");
             }
         }

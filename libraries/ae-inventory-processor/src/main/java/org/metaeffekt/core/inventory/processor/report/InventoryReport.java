@@ -419,7 +419,7 @@ public class InventoryReport {
                     projectInventory.getArtifacts().add(copy);
 
                     // handle checksum
-                    if (StringUtils.isEmpty(copy.getChecksum())) {
+                    if (!StringUtils.hasText(copy.getChecksum())) {
                         copy.setChecksum(localArtifact.getChecksum());
                     } else {
                         if (StringUtils.hasText(localArtifact.getChecksum()) && !copy.getChecksum().equalsIgnoreCase(localArtifact.getChecksum())) {
@@ -514,7 +514,8 @@ public class InventoryReport {
 
         // filter the vulnerability metadata to only include those with a score larger than the min score
         if (getMinimumVulnerabilityIncludeScore() >= 0) {
-            final VulnerabilityReportAdapter adapter = new VulnerabilityReportAdapter(projectInventory);
+            final VulnerabilityReportAdapter adapter = new VulnerabilityReportAdapter(
+                    projectInventory, cvssScoringPreference, vulnerabilityScoreThreshold);
 
             projectInventory.getVulnerabilityMetaData().removeIf(vmd -> {
                 final String compareScore = adapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
@@ -892,26 +893,28 @@ public class InventoryReport {
     private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext) throws Exception {
         LOG.info("Producing Dita for template [{}]", templateResourcePath);
 
-        String ENCODING_UTF_8 = "UTF-8";
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
         properties.put(Velocity.RESOURCE_LOADER, "class, file");
         properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
-        properties.put(Velocity.INPUT_ENCODING, ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, ENCODING_UTF_8);
+        properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
+        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.SET_NULL_ALLOWED, true);
 
-        VelocityEngine velocityEngine = new VelocityEngine(properties);
-        Template template = velocityEngine.getTemplate(templateResourcePath);
-        StringWriter sw = new StringWriter();
-        VelocityContext context = new VelocityContext();
+        final VelocityEngine velocityEngine = new VelocityEngine(properties);
+        final Template template = velocityEngine.getTemplate(templateResourcePath);
+        final StringWriter sw = new StringWriter();
+        final VelocityContext context = new VelocityContext();
 
-        Inventory filteredInventory = projectInventory.getFilteredInventory();
+        // FIXME: review filtered inventory approach
+        final Inventory filteredInventory = projectInventory.getFilteredInventory();
+
         // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
         filterVulnerabilityMetadataByAdvisoryFilter(filteredInventory.getVulnerabilityMetaData());
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
-        context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(filteredInventory));
+        context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(
+                filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold));
         context.put("assetAdapter", new AssetReportAdapter(filteredInventory));
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);

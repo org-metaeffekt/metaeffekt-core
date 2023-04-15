@@ -313,8 +313,12 @@ public class RepositoryReportTest {
     private void prepareReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
+        report.setVulnerabilityScoreThreshold(7);
+        report.setMinimumVulnerabilityIncludeScore(0);
+
         report.setInventoryBomReportEnabled(true);
         report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
         report.setAssetBomReportEnabled(true);
 
         report.setFailOnUnknown(false);
@@ -334,6 +338,9 @@ public class RepositoryReportTest {
         final File targetComponentDir = new File(reportTarget, "components");
         report.setTargetLicenseDir(targetLicensesDir);
         report.setTargetComponentDir(targetComponentDir);
+
+        report.setTargetInventoryDir(reportTarget);
+        report.setTargetInventoryPath("result.xls");
     }
 
     @Ignore
