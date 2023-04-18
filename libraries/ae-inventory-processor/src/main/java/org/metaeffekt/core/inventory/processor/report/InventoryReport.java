@@ -189,7 +189,11 @@ public class InventoryReport {
      *     <li><code>news</code></li>
      * </ul>
      */
-    private String[] includeAdvisoryTypes = new String[]{"all"};
+    private List<String> includeAdvisoryTypes = new ArrayList<>();
+
+    {
+        includeAdvisoryTypes.add("all");
+    }
 
     private ArtifactFilter artifactFilter;
 
@@ -528,7 +532,7 @@ public class InventoryReport {
         // filter the vulnerability metadata to only include those with a score larger than the min score
         if (getMinimumVulnerabilityIncludeScore() >= 0) {
             final VulnerabilityReportAdapter adapter = new VulnerabilityReportAdapter(
-                    projectInventory, cvssScoringPreference, vulnerabilityScoreThreshold);
+                    projectInventory, cvssScoringPreference, vulnerabilityScoreThreshold, includeAdvisoryTypes);
 
             projectInventory.getVulnerabilityMetaData().removeIf(vmd -> {
                 final String compareScore = adapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
@@ -899,7 +903,7 @@ public class InventoryReport {
             VulnerabilityReportAdapter adapter, List<VulnerabilityMetaData> vulnerabilityMetaData) {
         if (vulnerabilityAdvisoryFilter.size() > 0) {
             vulnerabilityMetaData.removeIf(vmd ->
-                    adapter.getAdvisories(vmd, null).stream()
+                    adapter.getAdvisories(vmd).stream()
                             .noneMatch(advisory -> vulnerabilityAdvisoryFilter.contains(advisory.getSource())));
         }
     }
@@ -924,7 +928,7 @@ public class InventoryReport {
 
         final AssetReportAdapter assetReportAdapter = new AssetReportAdapter(filteredInventory);
         final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
-                filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold);
+                filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold, includeAdvisoryTypes);
 
         // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
         filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityReportAdapter, filteredInventory.getVulnerabilityMetaData());
@@ -1293,21 +1297,33 @@ public class InventoryReport {
         return cvssScoringPreference;
     }
 
+    public void setIncludeAdvisoryTypes(List<String> includeAdvisoryTypes) {
+        if (includeAdvisoryTypes != null) {
+            this.includeAdvisoryTypes = includeAdvisoryTypes;
+        } else {
+            this.includeAdvisoryTypes.clear();
+        }
+    }
+
     public void setIncludeAdvisoryTypes(String[] includeAdvisoryTypes) {
-        this.includeAdvisoryTypes = includeAdvisoryTypes;
+        if (includeAdvisoryTypes != null) {
+            this.includeAdvisoryTypes = Arrays.asList(includeAdvisoryTypes);
+        } else {
+            this.includeAdvisoryTypes.clear();
+        }
     }
 
     public void setIncludeAdvisoryTypes(String includeAdvisoryTypes) {
         if (includeAdvisoryTypes != null) {
             if (includeAdvisoryTypes.length() > 0 && (!includeAdvisoryTypes.equals("null") && !includeAdvisoryTypes.equals("none"))) {
-                this.includeAdvisoryTypes = includeAdvisoryTypes.split(", ");
+                this.includeAdvisoryTypes = Arrays.asList(includeAdvisoryTypes.split(", "));
             } else {
-                this.includeAdvisoryTypes = new String[]{};
+                this.includeAdvisoryTypes.clear();
             }
         }
     }
 
-    public String[] getIncludeAdvisoryTypes() {
+    public List<String> getIncludeAdvisoryTypes() {
         return includeAdvisoryTypes;
     }
 

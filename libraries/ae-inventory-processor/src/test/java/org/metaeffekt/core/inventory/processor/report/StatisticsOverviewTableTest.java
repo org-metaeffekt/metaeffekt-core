@@ -37,7 +37,7 @@ public class StatisticsOverviewTableTest {
     @Test
     public void createStatisticsOverviewTableTest() {
         Inventory inventory = new Inventory();
-        VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory, VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST, 0.0f);
+        VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory, VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST, 0.0f, null);
 
         // start with an empty inventory
         {
@@ -114,7 +114,7 @@ public class StatisticsOverviewTableTest {
     @Test
     public void createStatisticsOverviewTableAddStatusAfterwardsTest() {
         Inventory inventory = new Inventory();
-        VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory, VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_MAX, 0.0f);
+        VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory, VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_MAX, 0.0f, null);
 
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(null, SEVERITY.CRITICAL.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDUnmodifiedSeverity(null, SEVERITY.CRITICAL.toString()));
@@ -129,7 +129,7 @@ public class StatisticsOverviewTableTest {
     @Test
     public void createStatisticsOverviewForEffectiveValuesTest() {
         Inventory inventory = new Inventory();
-        VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory, VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST, 0.0f);
+        VulnerabilityReportAdapter vra = new VulnerabilityReportAdapter(inventory, VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST, 0.0f, null);
 
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("applicable", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));
         inventory.getVulnerabilityMetaData().add(createVMDMultipleSeverities("in review", SEVERITY.CRITICAL.toString(), SEVERITY.CRITICAL.toString()));

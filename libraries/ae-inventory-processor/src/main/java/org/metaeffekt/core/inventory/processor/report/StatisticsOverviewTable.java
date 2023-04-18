@@ -168,6 +168,14 @@ public class StatisticsOverviewTable {
         return adapter.getStatusText(vulnerabilityMetaData);
     }
 
+    public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, Function<String, String> vulnerabilityStatusMapper) {
+        return StatisticsOverviewTable.fromInventory(adapter, null, false, vulnerabilityStatusMapper);
+    }
+
+    public static StatisticsOverviewTable fromInventoryModified(VulnerabilityReportAdapter adapter, Function<String, String> vulnerabilityStatusMapper) {
+        return StatisticsOverviewTable.fromInventory(adapter, null, true, vulnerabilityStatusMapper);
+    }
+
     public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, String filterCert, Function<String, String> vulnerabilityStatusMapper) {
         return StatisticsOverviewTable.fromInventory(adapter, filterCert, false, vulnerabilityStatusMapper);
     }
@@ -272,7 +280,7 @@ public class StatisticsOverviewTable {
             // information. That is when only 0 and n/a are included.
             if (noneEntry.values().stream().allMatch(obj -> {
                 final String str = String.valueOf(obj);
-                return "0".equals(str) && "n/a".equals(str);
+                return "0".equals(str) || "n/a".equals(str);
             })) {
                 table.severityStatusCountMap.remove("none");
             }
