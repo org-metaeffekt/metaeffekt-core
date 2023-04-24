@@ -25,6 +25,9 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <modules>
+        <module>plugins/ae-extraction-to-required-rpm-plugin</module>
+    </modules>
 
     <scm>
         <connection>scm:git:git://github.com/org-metaeffekt/metaeffekt-core.git</connection>
