@@ -188,40 +188,38 @@ public class AdvisoryData {
         }
     }
 
+    private final static Map<String, List<String>> TYPE_NORMALIZATION_MAP = new HashMap<String, List<String>>() {{
+        put("notice", Arrays.asList(
+                "notice", "info", "Description", "tag",
+                "avis", "ioc", "cti", "information" // CERT-FR
+        ));
+        put("alert", Arrays.asList(
+                "alert", "advisory", "cna", "compromise indicators",
+                "hardening and recommendations", "threats and incidents",
+                "alerte" // CERT-FR
+        ));
+        put("news", Arrays.asList(
+                "news",
+                "actualite", "dur" // CERT-FR
+        ));
+    }};
+
     public static String normalizeType(String type) {
-        type = type.toLowerCase().trim();
-        if (type.equalsIgnoreCase("notice")) {
+        if (org.apache.commons.lang3.StringUtils.isEmpty(type)) {
             return "notice";
         }
-        if (type.equalsIgnoreCase("alert")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("news")) {
-            return "news";
-        }
-        if (type.equalsIgnoreCase("info")) {
-            return "notice";
-        }
-        if (type.equalsIgnoreCase("advisory")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("cna")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("compromise indicators")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("hardening and recommendations")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("threats and incidents")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("Description")) {
-            return "notice";
-        }
-        if (type.equalsIgnoreCase("tag")) {
-            return "notice";
+
+        final String inputNormalizedType = type.toLowerCase().trim();
+
+        for (Map.Entry<String, List<String>> entry : TYPE_NORMALIZATION_MAP.entrySet()) {
+            final String normalizedType = entry.getKey();
+            final List<String> typeList = entry.getValue();
+
+            for (String t : typeList) {
+                if (inputNormalizedType.equalsIgnoreCase(t)) {
+                    return normalizedType;
+                }
+            }
         }
 
         return "notice";
