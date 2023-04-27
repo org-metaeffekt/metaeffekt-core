@@ -342,13 +342,16 @@ public class MavenJarIdInspector extends AbstractJarInspector {
 
         // execute
 
+        // set to record artifact ids in, used to only log errors once
+        Set<String> alreadyReported = new HashSet<>();
+
         // we iterate a cloned list to avoid concurrent modification issues
         for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
             try {
                 List<Artifact> notAccepted = processArtifact(artifact, projectPathParam);
 
                 if (jarInspectionParam.isIncludeEmbedded()) {
-                    includeEmbedded(inventory, artifact, notAccepted);
+                    includeEmbedded(inventory, artifact, notAccepted, alreadyReported);
                 }
             } catch (Exception e) {
                 // log error and carry on
@@ -363,7 +366,8 @@ public class MavenJarIdInspector extends AbstractJarInspector {
     }
 
     // TODO: special steps to take for artifacts added in this fashion? maybe write a separate Inspector for this?
-    private void includeEmbedded(Inventory inventory, Artifact artifact, List<Artifact> detectedArtifactsInFatJar) {
+    private void includeEmbedded(Inventory inventory, Artifact artifact, List<Artifact> detectedArtifactsInFatJar,
+                                 Set<String> alreadyReported) {
         if (detectedArtifactsInFatJar != null && !detectedArtifactsInFatJar.isEmpty()) {
             final String assetId = "AID-" + artifact.getId() + "-" + artifact.getChecksum();
 
@@ -376,8 +380,10 @@ public class MavenJarIdInspector extends AbstractJarInspector {
                 // filter artifacts that cannot be fully identified
                 final String detectedArtifactId = detectedArtifact.getId();
                 if (detectedArtifactId != null && detectedArtifactId.contains("${")) {
-                    // FIXME: for one inventory issues may be reported multiple times; introduce general solution
-                    LOG.warn("Skipping embedded artifact without fully qualified artifact id: {}", detectedArtifactId);
+                    if (!alreadyReported.contains(detectedArtifactId)) {
+                        LOG.warn("Skipping embedded artifact without fully qualified artifact id: {}", detectedArtifactId);
+                        alreadyReported.add(detectedArtifactId);
+                    }
                     continue;
                 }
 
