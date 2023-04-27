@@ -18,12 +18,23 @@ import java.util.List;
 public class ExtractionToRequiredRpmMojo extends AbstractMojo {
     private static final Logger LOG = LoggerFactory.getLogger(ExtractionToRequiredRpmMojo.class);
 
+    /**
+     * The "analysis" directory, as output by our extraction script.
+     */
     @Parameter(required = true)
     public File extractionDir;
 
+    /**
+     * A list of packages that must be kept.<br>
+     * Note that these must be package names as general requirements are not yet supported for this field.
+     */
     @Parameter(required = true)
     public List<String> mustHaves;
 
+    /**
+     * A list of known installed packages.<br>
+     * This will be run against the list of resolved requirements to determine uninstall candidates.
+     */
     @Parameter(required = true)
     public List<String> installedPackages;
 

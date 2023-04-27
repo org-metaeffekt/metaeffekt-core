@@ -241,6 +241,7 @@ public class ExtractionToRequiredRpm {
 
             if (!packageDir.isDirectory()) {
                 LOG.error("Package directory [{}] is not a directory", packageDir.toPath());
+                LOG.error("This will likely lead to a crash and is likely caused by missing extraction data.");
             }
 
             File requiresFile = new File(packageDir, "requires.txt");
