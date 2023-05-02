@@ -239,7 +239,7 @@ public class RepositoryReportTest {
 
     @Test
     public void testCreateTestReport003() throws Exception {
-        final File inventoryDir = new File("/Users/ywittmann/workspace/metaeffekt-documentation-template/documents/reports/example-report/target/inventory/");
+        final File inventoryDir = new File("src/test/resources/test-inventory-03");
         final File reportDir = new File("target/test-inventory-03");
 
         final InventoryReport report = new InventoryReport();
@@ -248,8 +248,6 @@ public class RepositoryReportTest {
         //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
         report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC");
         report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
-        //report.setIncludeAdvisoryTypes("alert");
-
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
         report.setInventoryVulnerabilityReportSummaryEnabled(true);
@@ -258,7 +256,6 @@ public class RepositoryReportTest {
 
         // put asserts here
 
-        // report.createReport();
 
     }
 
