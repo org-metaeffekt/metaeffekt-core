@@ -20,6 +20,8 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +33,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class XlsxInventoryReader extends AbstractInventoryReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(XlsInventoryReader.class);
 
     @Override
     public Inventory readInventory(InputStream in) throws IOException {
@@ -94,12 +98,24 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readVulnerabilityMetaData(XSSFWorkbook workbook, Inventory inventory) {
+        workbook.sheetIterator().forEachRemaining(sheet -> {
+            if (sheet.getSheetName().startsWith(WORKSHEET_NAME_VULNERABILITY_DATA)) {
+                readVulnerabilityMetaData(workbook, inventory, sheet.getSheetName());
+            }
+        });
+    }
 
-        final XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_VULNERABILITY_DATA);
-        if (sheet == null) return;
+    protected void readVulnerabilityMetaData(XSSFWorkbook workbook, Inventory inventory, String sheetName) {
+        final XSSFSheet sheet = workbook.getSheet(sheetName);
+        if (sheet == null) {
+            LOG.warn("Inventory sheet {} not found.", sheetName);
+            return;
+        }
+
+        final String context = VulnerabilityMetaData.sheetNameToContext(sheetName);
 
         final List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
-        inventory.setVulnerabilityMetaData(vulnerabilityMetaData);
+        inventory.setVulnerabilityMetaData(vulnerabilityMetaData, context);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
             final VulnerabilityMetaData vmd = readRow(row, new VulnerabilityMetaData(), pc);

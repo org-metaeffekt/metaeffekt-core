@@ -21,12 +21,10 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.model.CertMetaData.Attribute;
 import org.metaeffekt.core.inventory.processor.reader.AbstractInventoryReader;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +33,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter{
+public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
 
     /**
      * Defines a default order.
-     *
+     * <p>
      * FIXME: column-metadata
      */
     private final Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[]{
@@ -282,9 +280,15 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter{
     }
 
     private void writeVulnerabilities(Inventory inventory, XSSFWorkbook workbook) {
-        if (isEmpty(inventory.getVulnerabilityMetaData())) return;
+        inventory.getVulnerabilityMetaDataContexts().stream()
+                .filter(StringUtils::isNotEmpty)
+                .forEach(context -> writeVulnerabilities(inventory, workbook, context));
+    }
 
-        XSSFSheet sheet = workbook.createSheet("Vulnerabilities");
+    private void writeVulnerabilities(Inventory inventory, XSSFWorkbook workbook, String context) {
+        if (isEmpty(inventory.getVulnerabilityMetaData(context))) return;
+
+        final XSSFSheet sheet = workbook.createSheet(VulnerabilityMetaData.contextToSheetName(context));
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
@@ -298,7 +302,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter{
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData()) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
             attributes.addAll(vmd.getAttributes());
         }
 
@@ -318,7 +322,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter{
 
         int numCol = cellNum;
 
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData()) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
@@ -341,7 +345,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter{
                             break;
                         case URL:
                             cell.setCellValue(new XSSFRichTextString(value));
-                            if (StringUtils.isNotEmpty(value)) {
+                            if (StringUtils.isNotBlank(value)) {
                                 Hyperlink link = workbook.getCreationHelper().createHyperlink(HyperlinkType.URL);
                                 link.setAddress(value);
                                 cell.setHyperlink(link);
