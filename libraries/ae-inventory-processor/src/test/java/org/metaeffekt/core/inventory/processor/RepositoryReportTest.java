@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,8 +242,15 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-03");
         final File reportDir = new File("target/test-inventory-03");
 
-        InventoryReport report = new InventoryReport();
+        final InventoryReport report = new InventoryReport();
+        report.setFailOnMissingLicense(false);
+        report.setFailOnMissingLicenseFile(false);
         //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
+        report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC");
+        report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
         createReport(inventoryDir, "*.xls", reportDir, report);
 
@@ -252,11 +259,38 @@ public class RepositoryReportTest {
 
     }
 
+    @Ignore // needs external resources
+    @Test
+    public void testCreateTestReport004() throws Exception {
+        final File inventoryDir = new File("/Volumes/S-DIT-007/ae-workbench-output/S-DIT/S-DIT-007/ondemand/resources/inventory");
+        final File reportDir = new File("target/test-inventory-04");
+
+        InventoryReport report = new InventoryReport();
+        prepareReport(inventoryDir, "*.xls", reportDir, report);
+
+        report.setInventoryBomReportEnabled(true);
+
+        report.setAssetBomReportEnabled(false);
+
+        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setInventoryVulnerabilityReportSummaryEnabled(false);
+
+        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
+
+        report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
+
+        report.setVulnerabilityScoreThreshold(0.6f);
+
+        report.createReport();
+    }
+
     @Test
     public void testCreateTestReportCertMetaData() throws Exception {
         final File inventoryDir = new File("src/test/resources/test-inventory-cert");
         final File reportDir = new File("target/test-inventory-cert");
 
+        final InventoryReport report = new InventoryReport();
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
         createReport(inventoryDir, "*.xls", reportDir);
 
         // put asserts here
@@ -271,10 +305,21 @@ public class RepositoryReportTest {
 
     private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws Exception {
 
+        prepareReport(inventoryDir, inventoryIncludes, reportTarget, report);
+
+        return report.createReport();
+    }
+
+    private void prepareReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
+
+        report.setVulnerabilityScoreThreshold(7);
+        report.setMinimumVulnerabilityIncludeScore(0);
 
         report.setInventoryBomReportEnabled(true);
         report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+        report.setAssetBomReportEnabled(true);
 
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
@@ -287,6 +332,8 @@ public class RepositoryReportTest {
 
         report.setTargetReportDir(new File(reportTarget, "report"));
 
+        report.setIncludeAdvisoryTypes("alert, notice");
+
         reportTarget.mkdirs();
 
         final File targetLicensesDir = new File(reportTarget, "licenses");
@@ -294,7 +341,8 @@ public class RepositoryReportTest {
         report.setTargetLicenseDir(targetLicensesDir);
         report.setTargetComponentDir(targetComponentDir);
 
-        return report.createReport();
+        report.setTargetInventoryDir(reportTarget);
+        report.setTargetInventoryPath("result.xls");
     }
 
     @Ignore

@@ -1,10 +1,10 @@
 #parse("META-INF/templates/en/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_license-summary-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+<topic id="tpc_license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
 #set($effectiveLicenses=$inventory.evaluateLicenses(false))
-#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenseNames($effectiveLicenses))
+#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
 <body>
     <p>
         Table <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect</xref>
@@ -14,8 +14,9 @@
     <p>
         Please note, that a component may be subject to several licenses in effect.
     </p>
-    #if ($inventory.isFootnoteRequired($effectiveLicenses))
-        <fn callout="*" id="id-footnote">License variations are represented as a single effective license. The concrete license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
+    #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
+        <fn callout="*" id="id-footnote">License variations are represented as a single effective license. The concrete
+        license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
     #end
     <table id="LicensesInEffect" otherprops="wide">
         <title>Licenses in Effect$reportContext.inContextOf()</title>
@@ -38,13 +39,13 @@
 #set($group=$inventory.evaluateComponentsRepresentedLicense($license))
 #set($licenseData=$inventory.findMatchingLicenseData($license))
                 <row>
-#if ($inventory.isSubstructureRequired($license, $effectiveLicenses))
+#if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
                     <entry>
                         <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
                             $report.xmlEscapeLicense($license)<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
                         </xref>
                     </entry>
-                    <entry>#if ($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
                         #if ($licenseData)#if ($licenseData.is('OSI Approved'))yes<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
                     </entry>
@@ -54,7 +55,7 @@
                             $report.xmlEscapeLicense($license)
                         </xref>
                     </entry>
-                    <entry>#if ($licenseData && $licenseData.get('SPDX Id'))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
                         #if($licenseData)#if($licenseData.is('OSI Approved'))yes#else&nbsp;#end#else&nbsp;#end
                     </entry>
@@ -72,7 +73,7 @@
 </body>
 
 #foreach($license in $effectiveLicensesRepresented)
-        #if($inventory.isSubstructureRequired($license, $effectiveLicenses) == false)
+        #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
             #insertLicenseArtifactTopic($license)
         #else
             <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
@@ -83,7 +84,7 @@
                         characteristics and modifications of the original license template. In this subchapter,
                         all these license variations, which are represented by the $license,
                         are listed individually.</p>
-                        #foreach($effLicense in $inventory.getRepresentedEffectiveLicenses($license))
+                        #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))
                         #insertLicenseArtifactTopic($effLicense)
                         #end
                 </body>

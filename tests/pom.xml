@@ -40,12 +40,11 @@
 
     <profiles>
         <profile>
-            <id>dev</id>
+            <id>container-tests</id>
             <modules>
                 <module>extractor-tests</module>
             </modules>
         </profile>
-
     </profiles>
 
 </project>

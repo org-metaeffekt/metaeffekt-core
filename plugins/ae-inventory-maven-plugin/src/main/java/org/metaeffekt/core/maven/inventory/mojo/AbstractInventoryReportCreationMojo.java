@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
+import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
+import org.metaeffekt.core.inventory.processor.report.VulnerabilityReportAdapter;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -167,6 +169,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter default-value="false"
      */
+    private boolean enableAssetReport;
+
+    /**
+     * @parameter default-value="false"
+     */
     private boolean enableBomReport;
 
     /**
@@ -183,6 +190,16 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="false"
      */
     private boolean enableVulnerabilityReport;
+
+    /**
+     * @parameter default-value="false"
+     */
+    private boolean enableVulnerabilityReportSummary;
+
+    /**
+     * @parameter default-value="false"
+     */
+    private boolean enableVulnerabilityStatisticsReport;
 
     /**
      * @parameter expression="${basedir}/src/main/dita/${project.artifactId}/gen"
@@ -220,19 +237,80 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private String vulnerabilityScoreThreshold;
 
     /**
+     * @parameter default-value="-1.0"
+     */
+    private String minimumVulnerabilityIncludeScore;
+
+    /**
      * Comma seperated list of advisory providers. All vulnerabilities not containing at least one of the providers
      * will be ignored when generating the report.<br>
      * If left empty, no filter will be applied.<br>
      * Available advisory providers:
      * <ul>
-     *     <li>CERT-FR</li>
-     *     <li>CERT-SEI</li>
-     *     <li>MSRC</li>
+     *     <li><code>CERT-FR</code></li>
+     *     <li><code>CERT-SEI</code></li>
+     *     <li><code>MSRC</code></li>
      * </ul>
+     * To address all providers, use <code>ALL</code>
      *
      * @parameter default-value=""
      */
     private String vulnerabilityAdvisoryFilter;
+
+    /**
+     * Comma seperated list of advisory providers. For every provider, an additional overview table will be generated
+     * only evaluating the vulnerabilities containing the respecting provider.<br>
+     * If left empty, no additional table will be created.<br>
+     * Available advisory providers:
+     * <ul>
+     *     <li><code>CERT-FR</code></li>
+     *     <li><code>CERT-SEI</code></li>
+     *     <li><code>MSRC</code></li>
+     * </ul>
+     * To address all providers, use <code>ALL</code>
+     *
+     * @parameter default-value=""
+     */
+    private String generateOverviewTablesForAdvisories;
+
+    /**
+     * What mapper to use when generating the header row for the overview tables.<br>
+     * Currently supported are:
+     * <ul>
+     *     <li><code>default</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
+     *     <li><code>abstracted</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
+     * </ul>
+     *
+     * @parameter
+     */
+    private String overviewTablesVulnerabilityStatusMappingFunction;
+
+    /**
+     * A space-separated list of CVSS-versions to be used to determine the effective score of a vulnerability.<br>
+     * Supported presets are:
+     * <ul>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_LATEST_FIRST} which uses in order of availability <code>v3</code>, then <code>v2</code></li>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_MAX} which uses in this order <code>max</code>, <code>v3</code>, then <code>v2</code></li>
+     * </ul>
+     *
+     * @parameter
+     */
+    private String cvssScoringPreference;
+
+    /**
+     * An array of advisory types to include in the report. The default is to include all types by using the value
+     * <code>all</code>.<br>
+     * Supported values are:
+     * <ul>
+     *     <li><code>all</code> to include all types</li>
+     *     <li><code>notice</code></li>
+     *     <li><code>alert</code></li>
+     *     <li><code>news</code></li>
+     * </ul>
+     *
+     * @parameter
+     */
+    private String includeAdvisoryTypes;
 
     /**
      * @parameter default-value="en"
@@ -291,15 +369,35 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         // vulnerability settings
         report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
+        report.setMinimumVulnerabilityIncludeScore(Float.parseFloat(minimumVulnerabilityIncludeScore));
         report.addVulnerabilityAdvisoryFilter(vulnerabilityAdvisoryFilter);
+        report.addGenerateOverviewTablesForAdvisories(generateOverviewTablesForAdvisories);
+        if (overviewTablesVulnerabilityStatusMappingFunction != null) {
+            report.setOverviewTablesVulnerabilityStatusMappingFunction(overviewTablesVulnerabilityStatusMappingFunction);
+        }
+        if (cvssScoringPreference != null) {
+            if (cvssScoringPreference.equalsIgnoreCase("max")) {
+                report.setCvssScoringPreference(VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_MAX);
+            } else if (cvssScoringPreference.equalsIgnoreCase("latest")) {
+                report.setCvssScoringPreference(VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST);
+            } else {
+                report.setCvssScoringPreference(cvssScoringPreference);
+            }
+        }
+        if (includeAdvisoryTypes != null) {
+            report.setIncludeAdvisoryTypes(includeAdvisoryTypes);
+        }
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
 
+        report.setAssetBomReportEnabled(enableAssetReport);
         report.setInventoryPomEnabled(enablePomReport);
         report.setInventoryDiffReportEnabled(enableDiffReport);
         report.setInventoryBomReportEnabled(enableBomReport);
         report.setInventoryVulnerabilityReportEnabled(enableVulnerabilityReport);
+        report.setInventoryVulnerabilityReportSummaryEnabled(enableVulnerabilityReportSummary);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport);
 
         report.setTargetReportDir(targetReportDir);
 

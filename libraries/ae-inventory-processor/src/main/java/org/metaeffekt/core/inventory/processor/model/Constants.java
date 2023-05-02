@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,18 @@ public final class Constants {
     public static final String KEY_DOCUMENTATION_PATH_PACKAGE = "Package Documentation Path";
     public static final String KEY_LICENSE_PATH_PACKAGE = "Package License Path";
     public static final String KEY_GROUP_PACKAGE = "Package Group";
+    public static final String KEY_STATUS_PACKAGE = "Package Status";
+
+    /**
+     * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
+     * supplier (CycloneDX).
+     */
+    public static final String KEY_ORGANIZATION = "Organization";
+
+    /**
+     * Organization URL key. Maven uses two distinct attributes for an organization.
+     */
+    public static final String KEY_ORGANIZATION_URL = "Organization URL";
 
     public static final String KEY_SUMMARY = "Summary";
     public static final String KEY_DESCRIPTION = "Description";

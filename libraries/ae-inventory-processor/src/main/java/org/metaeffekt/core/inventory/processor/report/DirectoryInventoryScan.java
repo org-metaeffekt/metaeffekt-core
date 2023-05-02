@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.tools.ant.DirectoryScanner;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.*;
-import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
+import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.util.ArchiveUtils;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -47,6 +43,7 @@ public class DirectoryInventoryScan {
     private static final Logger LOG = LoggerFactory.getLogger(DirectoryInventoryScan.class);
 
     public static final String HINT_SCAN = "scan";
+    public static final String HINT_IGNORE = "ignore";
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
@@ -57,6 +54,8 @@ public class DirectoryInventoryScan {
     private File scanDirectory;
 
     private boolean enableImplicitUnpack = true;
+
+    private boolean includeEmbedded = false;
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory, String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
         this.inputDirectory = inputDirectory;
@@ -69,34 +68,18 @@ public class DirectoryInventoryScan {
     }
 
     public Inventory createScanInventory() {
-        final Project project = new Project();
-
-        // delete scan directory (content is progressively unpacked)
-        Delete delete = new Delete();
-        delete.setProject(project);
-        delete.setDir(scanDirectory);
-        delete.execute();
-
-        // ensure scan directory root folder is recreated
-        scanDirectory.mkdirs();
-
-        // copy files to folder that are of interest
-        final Copy copy = new Copy();
-        copy.setProject(project);
-        FileSet set = new FileSet();
-        set.setDir(inputDirectory);
-        set.setIncludes(combinePatterns(scanIncludes, "**/*"));
-        set.setExcludes(combinePatterns(scanExcludes, "--nothing--"));
-        copy.addFileset(set);
-        copy.setTodir(scanDirectory);
-        copy.execute();
+        prepareScanDirectory();
 
         return performScan();
     }
 
-    private String combinePatterns(String[] patterns, String defaultPattern) {
-        if (patterns == null) return defaultPattern;
-        return Arrays.stream(patterns).collect(Collectors.joining(","));
+    private void prepareScanDirectory() {
+        // if the input directory is not set; the scan directory is not managed
+        if (inputDirectory != null) {
+            final PrepareScanDirectoryCommand prepareScanDirectoryCommand = new PrepareScanDirectoryCommand();
+            prepareScanDirectoryCommand.prepareScanDirectory(inputDirectory, scanDirectory, scanIncludes, scanExcludes);
+        }
+        LOG.info("Using prepared scan directory: [{}]", scanDirectory);
     }
 
     public Inventory performScan() {
@@ -104,13 +87,17 @@ public class DirectoryInventoryScan {
         Inventory scanInventory = new Inventory();
 
         // process scanning
-        scanDirectory(scanDirectory, scanDirectory, scanIncludes, scanExcludes, referenceInventory, scanInventory);
+        final List<String> assetIdChain = Collections.emptyList();
+        scanDirectory(scanDirectory, scanDirectory, scanIncludes, scanExcludes, referenceInventory, scanInventory,
+                assetIdChain);
 
+        // remove/merge duplicates
         scanInventory.mergeDuplicates();
 
-        // attempt to extract artifactId, version, groupId from poms
-        Properties properties = new Properties();
-        properties.put(MavenJarMetadataExtractor.PROJECT_PATH, scanDirectory.getAbsolutePath());
+        // attempt to extract artifactId, version, groupId from contained POMs
+        final Properties properties = new Properties();
+        properties.put(MavenJarMetadataExtractor.KEY_PROJECT_PATH, scanDirectory.getAbsolutePath());
+        properties.put(MavenJarMetadataExtractor.KEY_INCLUDE_EMBEDDED, Boolean.toString(includeEmbedded));
         new MavenJarMetadataExtractor(properties).process(scanInventory);
 
         return scanInventory;
@@ -152,7 +139,8 @@ public class DirectoryInventoryScan {
      * @param referenceInventory
      * @param scanInventory
      */
-    private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes, Inventory referenceInventory, Inventory scanInventory) {
+    private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes,
+           Inventory referenceInventory, Inventory scanInventory, List<String> assetIdChain) {
         LOG.info("{}: scanning...", scanDir);
         // scan the directory using includes and excludes; scans the full tree (maybe not yet unwrapped)
         final String[] filesArray = scanDirectory(scanDir, scanIncludes, scanExcludes);
@@ -181,18 +169,21 @@ public class DirectoryInventoryScan {
         }
 
         // add artifacts representing the component patterns
-        deriveAddonArtifactsFromMatchResult(scanBaseDir, scanDir, matchedComponentPatterns, scanInventory);
+        deriveAddonArtifactsFromMatchResult(scanBaseDir, matchedComponentPatterns, scanInventory, assetIdChain);
 
         // add the files not covered by component patterns
         LOG.info("{}: evaluating / recursing", scanDir);
-        populateInventoryWithScannedFiles(scanBaseDir, scanIncludes, scanExcludes, referenceInventory, scanInventory, files);
+        populateInventoryWithScannedFiles(scanBaseDir, scanIncludes, scanExcludes, referenceInventory,
+                scanInventory, files, assetIdChain);
 
         LOG.info("{}: scanning completed.", scanDir);
     }
 
-    private void deriveAddonArtifactsFromMatchResult(File scanBaseDir, File scanDir, List<MatchResult> componentPatterns, Inventory scanInventory) {
+    private void deriveAddonArtifactsFromMatchResult(File scanBaseDir, List<MatchResult> componentPatterns, Inventory scanInventory, List<String> assetIdChain) {
         for (MatchResult matchResult : componentPatterns) {
-            scanInventory.getArtifacts().add(matchResult.deriveArtifact(scanBaseDir));
+            final Artifact derivedArtifact = matchResult.deriveArtifact(scanBaseDir);
+            applyAssetIdChain(assetIdChain, derivedArtifact);
+            scanInventory.getArtifacts().add(derivedArtifact);
         }
     }
 
@@ -278,11 +269,18 @@ public class DirectoryInventoryScan {
         return matchedComponentPatterns;
     }
 
-    private void populateInventoryWithScannedFiles(File scanBaseDir, String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory, Inventory scanInventory, Set<File> files) {
+    private void populateInventoryWithScannedFiles(final File scanBaseDir,
+        final String[] scanIncludes, final String[] scanExcludes,
+        final Inventory referenceInventory, final Inventory scanInventory, final Set<File> files,
+        final List<String> assetIdChain) {
+
         for (final File file : files) {
             final String id = file.getName();
-            final String checksum = computeChecksum(file);
+            final String checksum = computeMD5Checksum(file);
             final String idFullPath = file.getPath();
+
+            final List<String> errors = new ArrayList<>();
+
             Artifact artifact = referenceInventory.findArtifactByIdAndChecksum(id, checksum);
 
             if (artifact == null) {
@@ -306,51 +304,121 @@ public class DirectoryInventoryScan {
             }
 
             if (artifact == null) {
-                boolean unpacked = false;
 
+                boolean unpacked = false;
                 if (enableImplicitUnpack) {
                     // unknown or requires expansion
-                    File unpackedFile = unpackIfPossible(file, false);
-                    if (unpackedFile != null) {
-                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, referenceInventory, scanInventory);
+                    final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
+                    if (unpackIfPossible(file, targetFolder, false, errors)) {
+                        scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
+                                scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
                         unpacked = true;
+                    } else {
+                        // Not considered as something to unpack
                     }
                 }
 
                 if (!unpacked) {
                     // add new unknown artifact
-                    Artifact newArtifact = new Artifact();
+                    final Artifact newArtifact = new Artifact();
                     newArtifact.setId(id);
                     newArtifact.setChecksum(checksum);
+
+                    // FIXME: we compute hashes, but we do not use them for searching the inventory yet.
+                    //   This is however step one of a transition. We currently use id/md5 as central qualifier.
+                    newArtifact.set("Hash (SHA-1)", FileUtils.computeSHA1Hash(file));
+                    newArtifact.set("Hash (SHA-256)", FileUtils.computeSHA256Hash(file));
+
                     newArtifact.addProject(asRelativePath(scanBaseDir, file));
+                    applyAssetIdChain(assetIdChain, newArtifact);
                     scanInventory.getArtifacts().add(newArtifact);
-                } else {
-                    // NOTE: we should add the unpacked artifact level anyway; need to understand implications
+
+                    for (String error : errors) {
+                        newArtifact.append("Errors", error, ", ");
+                    }
                 }
             } else {
                 artifact.addProject(asRelativePath(scanBaseDir, file));
 
                 // we use the plain id to continue. The rest is sorted out by the report.
-                Artifact copy = new Artifact();
+                final Artifact copy = new Artifact();
                 copy.setId(id);
                 copy.setChecksum(checksum);
+                copy.set("Hash (SHA-1)", FileUtils.computeSHA1Hash(file));
+                copy.set("Hash (SHA-256)", FileUtils.computeSHA256Hash(file));
                 copy.addProject(asRelativePath(scanBaseDir, file));
-                scanInventory.getArtifacts().add(copy);
+
+                for (String error : errors) {
+                    copy.append("Errors", error, ", ");
+                }
+
+                // only include the artifact if the classification does not include HINT_IGNORE
+                if (!hasClassification(artifact, HINT_IGNORE)) {
+                    applyAssetIdChain(assetIdChain, copy);
+                    scanInventory.getArtifacts().add(copy);
+                } else {
+                    // ISSUE: the collected issues are ignored in this case; we may lose information
+                    // if not captured elsewhere
+                }
 
                 // in case the artifact contains the scan classification we try to unpack and scan in depth
-                if (StringUtils.hasText(artifact.getClassification()) && artifact.getClassification().contains(HINT_SCAN)) {
-                    File unpackedFile = unpackIfPossible(file, true);
-                    if (unpackedFile != null) {
-                        scanDirectory(scanBaseDir, unpackedFile, scanIncludes, scanExcludes, referenceInventory, scanInventory);
+                if (hasClassification(artifact, HINT_SCAN)) {
+                    final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
+                    if (unpackIfPossible(file, targetFolder, true, errors)) {
+                        scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
+                                scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
                     } else {
-                        throw new IllegalStateException("The artifact with id " + artifact.getId() + " was classified to be scanned in-depth, but cannot be unpacked");
+                        // revise exception / error handling
+                        throw new IllegalStateException("The artifact with id " + artifact.getId() +
+                                " was classified to be scanned in-depth, but cannot be unpacked");
                     }
                 }
             }
         }
     }
 
-    private void filterFilesMatchedByComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap, File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches) {
+    private boolean hasClassification(Artifact artifact, String classification) {
+        if (StringUtils.hasText(artifact.getClassification())) {
+            return artifact.getClassification().contains(classification);
+        }
+        return false;
+    }
+
+    private boolean unpackIfPossible(File file, File targetDir, boolean includeModules, List<String> issues) {
+        if (!includeModules) {
+            if (file == null || file.getName().toLowerCase().endsWith(".jar")) {
+                return false;
+            }
+        }
+        return ArchiveUtils.unpackIfPossible(file, targetDir, issues);
+    }
+
+    private void applyAssetIdChain(List<String> assetIdChain, Artifact artifact) {
+        if (assetIdChain != null && artifact != null) {
+            for (String assetId : assetIdChain) {
+                artifact.set(assetId, "x");
+            }
+        }
+    }
+
+    private List<String> extendAssetIdChain(final List<String> assetIdChain, final File archiveFile,
+        final String fileChecksum, final Inventory inventory) {
+        final List<String> extendedAssetIdChain = new ArrayList<>(assetIdChain);
+        final String assetId = "AID-" + archiveFile.getName() + "-" + fileChecksum;
+        extendedAssetIdChain.add(assetId);
+
+        AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, assetId);
+        assetMetaData.set("Checksum", fileChecksum);
+        assetMetaData.set("File Path", archiveFile.getAbsolutePath());
+        inventory.getAssetMetaData().add(assetMetaData);
+
+        return Collections.unmodifiableList(extendedAssetIdChain);
+    }
+
+    private void filterFilesMatchedByComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap,
+           File scanBaseDir, List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches) {
+
         // remove the matched file covered by the matched components
         for (MatchResult matchResult : matchedComponentDataOnAnchor) {
             final ComponentPatternData cpd = matchResult.componentPatternData;
@@ -430,97 +498,6 @@ public class DirectoryInventoryScan {
         return artifactChecksum.equals(checksum);
     }
 
-    private File unpackIfPossible(File archive, boolean includeJarExtension) {
-        LOG.debug("Expanding {}", archive.getAbsolutePath());
-
-        final Project project = new Project();
-        project.setBaseDir(archive.getParentFile());
-
-        Set<String> zipExtensions = new HashSet<String>();
-        zipExtensions.add("war");
-        zipExtensions.add("zip");
-        zipExtensions.add("ear");
-        zipExtensions.add("sar");
-        zipExtensions.add("rar");
-
-        if (includeJarExtension) {
-            zipExtensions.add("jar");
-        }
-
-        Set<String> gzipExtensions = new HashSet<String>();
-        gzipExtensions.add("gzip");
-        gzipExtensions.add("gz");
-        gzipExtensions.add("tgz");
-
-        Set<String> tarExtensions = new HashSet<String>();
-        tarExtensions.add("tar");
-
-        final String extension = FilenameUtils.getExtension(archive.getName()).toLowerCase();
-
-        // try unzip
-        try {
-            if (zipExtensions.contains(extension)) {
-                Expand expandTask = new Expand();
-                expandTask.setProject(project);
-                File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
-                targetFolder.mkdirs();
-                expandTask.setDest(targetFolder);
-                expandTask.setSrc(archive);
-                expandTask.execute();
-                deleteArchive(archive);
-                return targetFolder;
-            }
-        } catch (Exception e) {
-            LOG.error("Cannot unzip " + archive.getAbsolutePath(), e);
-        }
-
-        // try gunzip
-        try {
-            if (gzipExtensions.contains(extension)) {
-                GUnzip expandTask = new GUnzip();
-                expandTask.setProject(project);
-                File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
-                targetFolder.mkdirs();
-                expandTask.setDest(targetFolder);
-                expandTask.setSrc(archive);
-                expandTask.execute();
-                deleteArchive(archive);
-                return targetFolder;
-            }
-        } catch (Exception e) {
-            LOG.error("Cannot gunzip " + archive.getAbsolutePath());
-        }
-
-        // try untar
-        try {
-            if (tarExtensions.contains(extension)) {
-                Untar expandTask = new Untar();
-                expandTask.setProject(project);
-                File targetFolder = new File(archive.getParentFile(), "[" + archive.getName() + "]");
-                targetFolder.mkdirs();
-                expandTask.setDest(targetFolder);
-                expandTask.setSrc(archive);
-                expandTask.execute();
-                deleteArchive(archive);
-                return targetFolder;
-            }
-        } catch (Exception e) {
-            LOG.error("Cannot untar " + archive.getAbsolutePath());
-        }
-
-        return null;
-    }
-
-    public void deleteArchive(File archive) {
-        try {
-            archive.delete();
-        } catch (Exception e) {
-            if (archive.exists()) {
-                archive.deleteOnExit();
-            }
-        }
-    }
-
     // FIXME: DirectoryScanner is not performing very well
     protected String[] scanDirectory(final File directoryToScan, final String[] scanIncludes, final String[] scanExcludes) {
         DirectoryScanner scanner = new DirectoryScanner();
@@ -533,6 +510,10 @@ public class DirectoryInventoryScan {
 
     public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {
         this.enableImplicitUnpack = enableImplicitUnpack;
+    }
+
+    public void setIncludeEmbedded(boolean includeEmbedded) {
+        this.includeEmbedded = includeEmbedded;
     }
 
 }

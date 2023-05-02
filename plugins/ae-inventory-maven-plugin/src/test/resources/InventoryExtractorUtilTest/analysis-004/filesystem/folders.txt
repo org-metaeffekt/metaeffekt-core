@@ -1,0 +1,4 @@
+/
+/folder-a
+/folder-b
+/folder-b/folder-bb

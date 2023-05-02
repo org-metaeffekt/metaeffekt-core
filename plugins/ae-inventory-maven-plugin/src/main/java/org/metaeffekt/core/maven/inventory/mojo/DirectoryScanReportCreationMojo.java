@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,26 +28,25 @@ import java.io.File;
 public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCreationMojo {
 
     /**
+     * Change: 12/2022: not mandatory anymore; when no input directory is provided the mojo anticipated the scanDirectory
+     * is managed in advance to an invocation. The other attributes (scanIncludes, scanExcludes) are ignored in this case.
+     *
      * @parameter
-     * @required
      */
     private File inputDirectory;
 
     /**
      * @parameter expression="${project.build.directory}/scan"
-     * @required
      */
     private File scanDirectory;
 
     /**
      * @parameter
-     * @required
      */
     private String[] scanIncludes = new String[]{"**/*"};
 
     /**
      * @parameter
-     * @required
      */
     private String[] scanExcludes;
 
@@ -55,6 +54,12 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
      * @parameter
      */
     private boolean enableImplicitUnpack = true;
+
+    /**
+     * For backward compatibility reasons the default value is false. The feature requires explicit activation.
+     * @parameter
+     */
+    private boolean includeEmbedded = false;
 
     @Override
     protected InventoryReport initializeInventoryReport() {
@@ -69,6 +74,7 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
         report.setScanExcludes(scanExcludes);
 
         report.setEnableImplicitUnpack(enableImplicitUnpack);
+        report.setIncludeEmbedded(includeEmbedded);
 
         return report;
     }

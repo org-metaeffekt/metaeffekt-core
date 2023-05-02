@@ -43,9 +43,37 @@
                         <phase>process-resources</phase>
                         <configuration>
                             <sourceInventory>${project.basedir}/src/test/resources/artifact-inventory-001.xls</sourceInventory>
-                            <targetInventory>${project.build.directory}/artifact-inventory-001.xls</targetInventory>
+                            <targetInventory>${project.build.directory}/artifact-inventory-002.xls</targetInventory>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <!-- copies the source inventory in the target inventory -->
+                        <id>merge-inventories-dir</id>
+                        <goals>
+                            <goal>merge-inventories</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <sourceInventoryBaseDir>${project.basedir}/src/test/resources</sourceInventoryBaseDir>
+                            <targetInventory>${project.build.directory}/artifact-inventory-003.xls</targetInventory>
+                        </configuration>
+                    </execution>
+
+                    <!-- copies the source inventory in the target inventory
+                    <execution>
+                        <id>merge-inventories-ext</id>
+                        <goals>
+                            <goal>merge-inventories</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <sourceInventoryBaseDir>/Volumes/XXX</sourceInventoryBaseDir>
+                            <sourceInventoryInclude>**/*-extractor-container-inventory.xls</sourceInventoryInclude>
+                            <targetInventory>${project.build.directory}/artifact-inventory-004.xls</targetInventory>
+                        </configuration>
+                    </execution>
+                    -->
 
                 </executions>
             </plugin>

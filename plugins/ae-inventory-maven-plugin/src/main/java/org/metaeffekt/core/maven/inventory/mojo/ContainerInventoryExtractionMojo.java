@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             // fill content derived from preprocessed files
-            Inventory inventory = extractInventory(analysisDir);
+            final Inventory inventory = extractInventory(analysisDir);
 
             filterInventory(inventory);
 
@@ -68,7 +68,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             targetInventoryFile.getParentFile().mkdirs();
 
             // write not covered file list
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
                 if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
                     Set<String> projects = artifact.getProjects();
@@ -109,6 +109,8 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                 .applies(analysisDir))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("No applicable inventory extractor found."));
+
+        getLog().info("Using extractor " + extractor.getClass() + ".");
 
         // before extracting the content is validated using the extractor
         extractor.validate(analysisDir);

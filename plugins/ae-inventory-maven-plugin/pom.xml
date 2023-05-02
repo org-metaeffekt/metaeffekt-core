@@ -24,6 +24,13 @@
 
         <dependency>
             <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-inspect-reader</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.metaeffekt.core</groupId>
             <artifactId>ae-maven-kernel</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -57,7 +64,20 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20160212</version>
+            <version>20230227</version>
+        </dependency>
+
+        <!-- Due to the runtime dependency from POI to log4j-api the scope is managed to runtime -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 

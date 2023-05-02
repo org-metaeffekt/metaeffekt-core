@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,8 @@ public abstract class InventoryUtils {
             aggregateInventory.inheritComponentPatterns(inventory, true);
             aggregateInventory.inheritVulnerabilityMetaData(inventory, true);
             aggregateInventory.inheritCertMetaData(inventory, true);
+            aggregateInventory.inheritAssetMetaData(inventory, true);
+            aggregateInventory.inheritInventoryInfo(inventory, true);
         }
 
         return aggregateInventory;
@@ -91,9 +93,8 @@ public abstract class InventoryUtils {
 
     private static Inventory readInventoryFromClasspath(File inventoryBaseDir, String inventoryIncludes) throws IOException {
         File file = new File(inventoryBaseDir, inventoryIncludes);
-        Resource inventoryResource = new ClassPathResource(file.getPath());
-        try (InputStream in = inventoryResource.getInputStream()) {
-            return new InventoryReader().readInventory(in);
+        try {
+            return new InventoryReader().readInventoryAsClasspathResource(file);
         } catch (IOException e) {
             throw new IOException(String.format("Unable to read inventory from classpath: {}/{}", inventoryBaseDir, inventoryIncludes), e);
         }

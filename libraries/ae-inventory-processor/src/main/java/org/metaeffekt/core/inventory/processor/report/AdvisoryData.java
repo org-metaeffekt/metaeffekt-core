@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class AdvisoryData {
         final List<AdvisoryData> advisoryDataList = new ArrayList<>();
 
         for (int i = 0; i < advisoryJson.length(); i++) {
-            JSONObject json = advisoryJson.optJSONObject(i);
+            final JSONObject json = advisoryJson.optJSONObject(i);
             if (json != null) {
                 advisoryDataList.add(fromJson(json));
             }
@@ -94,10 +94,10 @@ public class AdvisoryData {
         String source = advisoryJson.optString("source");
 
         if (source != null) {
-            switch (source) {
-                case "CERT-FR":
+            switch (source.replaceAll("[-_ ]", "").toUpperCase()) {
+                case "CERTFR":
                     return extractAdvisoryDataFromCertFr(advisoryJson);
-                case "CERT-SEI":
+                case "CERTSEI":
                     return extractAdvisoryDataFromCertSei(advisoryJson);
                 case "MSRC":
                     return extractAdvisoryDataFromMsrc(advisoryJson);
@@ -111,7 +111,7 @@ public class AdvisoryData {
         final AdvisoryData advisoryData = new AdvisoryData();
 
         advisoryData.id = entry.optString("id", EMPTY_STRING);
-        advisoryData.url = extractUrl(entry.optJSONObject("url"));
+        advisoryData.url = extractUrl(entry.opt("url"));
         advisoryData.source = entry.optString("source", EMPTY_STRING);
         advisoryData.summary = formatString(entry.optString("summary", EMPTY_STRING));
         advisoryData.description = formatString(entry.optString("description", EMPTY_STRING));
@@ -128,7 +128,7 @@ public class AdvisoryData {
         AdvisoryData advisoryData = new AdvisoryData();
 
         advisoryData.id = entry.optString("id", EMPTY_STRING);
-        advisoryData.url = extractUrl(entry.optJSONObject("url"));
+        advisoryData.url = extractUrl(entry.opt("url"));
         advisoryData.source = entry.optString("source", EMPTY_STRING);
         advisoryData.summary = formatString(entry.optString("summary", EMPTY_STRING));
         // FIXME: currently the content is unstructured (apart from html headings)
@@ -137,6 +137,25 @@ public class AdvisoryData {
         advisoryData.threat = extractMultilineStringFromJsonArray(entry.optJSONArray("threat"));
         advisoryData.recommendations = extractMultilineStringFromJsonArray(entry.optJSONArray("recommendations"));
 
+        advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
+        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.type = normalizeType(entry.optString("type", "advisory"));
+
+        return advisoryData;
+    }
+
+    private static AdvisoryData extractAdvisoryDataFromCertSei(JSONObject entry) {
+        AdvisoryData advisoryData = new AdvisoryData();
+
+        advisoryData.id = entry.optString("id", EMPTY_STRING);
+        advisoryData.url = extractUrl(entry.opt("url"));
+        advisoryData.source = entry.optString("source", EMPTY_STRING);
+        advisoryData.summary = entry.optString("summary", EMPTY_STRING);
+        advisoryData.description = entry.optString("description", EMPTY_STRING);
+        advisoryData.threat = entry.optString("threat", EMPTY_STRING);
+        advisoryData.recommendations = entry.optString("recommendations", EMPTY_STRING);
+        advisoryData.workarounds = entry.optString("workarounds", EMPTY_STRING);
         advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
         advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
         advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
@@ -158,64 +177,49 @@ public class AdvisoryData {
         return lines.toString();
     }
 
-    private static AdvisoryData extractAdvisoryDataFromCertSei(JSONObject entry) {
-        AdvisoryData advisoryData = new AdvisoryData();
-
-        advisoryData.id = entry.optString("id", EMPTY_STRING);
-        advisoryData.url = extractUrl(entry.optJSONObject("url"));
-        advisoryData.source = entry.optString("source", EMPTY_STRING);
-        advisoryData.summary = entry.optString("summary", EMPTY_STRING);
-        advisoryData.description = entry.optString("description", EMPTY_STRING);
-        advisoryData.threat = entry.optString("threat", EMPTY_STRING);
-        advisoryData.recommendations = entry.optString("recommendations", EMPTY_STRING);
-        advisoryData.workarounds = entry.optString("workarounds", EMPTY_STRING);
-        advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
-        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
-        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
-        advisoryData.type = normalizeType(entry.optString("type", "advisory"));
-
-        return advisoryData;
+    private static String extractUrl(Object url) {
+        if (url == null || url.equals("")) return EMPTY_STRING;
+        if (url instanceof JSONObject) {
+            return ((JSONObject) url).optString("url");
+        } else if (url instanceof String) {
+            return (String) url;
+        } else {
+            return EMPTY_STRING;
+        }
     }
 
-    private static String extractUrl(JSONObject urlJson) {
-        if (urlJson == null) return EMPTY_STRING;
-        return urlJson.optString("url");
-    }
+    private final static Map<String, List<String>> TYPE_NORMALIZATION_MAP = new HashMap<String, List<String>>() {{
+        put("notice", Arrays.asList(
+                "notice", "info", "Description", "tag",
+                "avis", "ioc", "cti", "information" // CERT-FR
+        ));
+        put("alert", Arrays.asList(
+                "alert", "advisory", "cna", "compromise indicators",
+                "hardening and recommendations", "threats and incidents",
+                "alerte" // CERT-FR
+        ));
+        put("news", Arrays.asList(
+                "news",
+                "actualite", "dur" // CERT-FR
+        ));
+    }};
 
     public static String normalizeType(String type) {
-        type = type.toLowerCase().trim();
-        if (type.equalsIgnoreCase("notice")) {
+        if (org.apache.commons.lang3.StringUtils.isEmpty(type)) {
             return "notice";
         }
-        if (type.equalsIgnoreCase("alert")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("news")) {
-            return "news";
-        }
-        if (type.equalsIgnoreCase("info")) {
-            return "notice";
-        }
-        if (type.equalsIgnoreCase("advisory")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("cna")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("compromise indicators")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("hardening and recommendations")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("threats and incidents")) {
-            return "alert";
-        }
-        if (type.equalsIgnoreCase("Description")) {
-            return "notice";
-        }
-        if (type.equalsIgnoreCase("tag")) {
-            return "notice";
+
+        final String inputNormalizedType = type.toLowerCase().trim();
+
+        for (Map.Entry<String, List<String>> entry : TYPE_NORMALIZATION_MAP.entrySet()) {
+            final String normalizedType = entry.getKey();
+            final List<String> typeList = entry.getValue();
+
+            for (String t : typeList) {
+                if (inputNormalizedType.equalsIgnoreCase(t)) {
+                    return normalizedType;
+                }
+            }
         }
 
         return "notice";
@@ -234,7 +238,7 @@ public class AdvisoryData {
     static String normalizeDate(String string) {
         if (string == null) return "n.a.";
 
-        Date parsedDate = tryParse(string);
+        final Date parsedDate = tryParse(string);
 
         if (parsedDate != null) {
             return DATE_FORMATS.get(0).format(parsedDate);
@@ -250,6 +254,13 @@ public class AdvisoryData {
     }
 
     private static Date tryParse(String dateString) {
+        if (dateString.matches("\\d+")) {
+            try {
+                return new Date(Long.parseLong(dateString));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
         for (SimpleDateFormat formatter : DATE_FORMATS) {
             try {
                 return formatter.parse(dateString);

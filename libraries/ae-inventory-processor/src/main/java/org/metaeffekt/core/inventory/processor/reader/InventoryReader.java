@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,273 +15,40 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.writer.XlsInventoryWriter;
+import org.metaeffekt.core.inventory.processor.writer.XlsxInventoryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-public class InventoryReader extends AbstractXlsInventoryReader {
+public class InventoryReader {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryReader.class);
-
-    private static final String DEPRECATED_KEY_V2_SCORE = "CVSS Score (v2)";
-    private static final String DEPRECATED_KEY_V3_SCORE = "CVSS Base Score (v3)";
-    private static final String DEPRECATED_KEY_MAX_SCORE = "Maximum Score";
-
-    private Map<Integer, String> artifactColumnMap = new HashMap<>();
-
-    private Map<Integer, String> licenseMetaDataColumnMap = new HashMap<>();
-    private Map<Integer, String> licenseDataColumnMap = new HashMap<>();
-    private Map<Integer, String> componentPatternDataColumnMap = new HashMap<>();
-    private Map<Integer, String> vulnerabilityMetaDataColumnMap = new HashMap<>();
-
-    @Override
-    protected List<String> readArtifactHeader(HSSFRow row) {
-        return parseColumns(row, artifactColumnMap);
+    public Inventory readInventory(File file) throws IOException {
+        if (file == null || !file.exists()) {
+            throw new IOException("File [" + file.getAbsolutePath()  + "] does not exist.");
+        }
+        if (file.getName().toLowerCase().endsWith(".xls")) {
+            return new XlsInventoryReader().readInventory(file);
+        } else {
+            return new XlsxInventoryReader().readInventory(file);
+        }
     }
 
-    @Override
-    protected void readLicenseMetaDataHeader(HSSFRow row) {
-        parseColumns(row, licenseMetaDataColumnMap);
-    }
-
-    @Override
-    protected void readLicenseDataHeader(HSSFRow row) {
-        parseColumns(row, licenseDataColumnMap);
-    }
-
-    @Override
-    protected void readComponentPatternDataHeader(HSSFRow row) {
-        parseColumns(row, componentPatternDataColumnMap);
-    }
-
-    protected List<String> parseColumns(HSSFRow row, Map<Integer, String> map) {
-        List<String> columnList = new ArrayList<>();
-        for (int i = 0; i < row.getPhysicalNumberOfCells(); i++) {
-            HSSFCell cell = row.getCell(i);
-            if (cell != null) {
-                String value = cell.getStringCellValue();
-                map.put(i, value);
-                columnList.add(value);
-            }
-        }
-        return columnList;
-    }
-
-    @Override
-    protected Artifact readArtifactMetaData(HSSFRow row) {
-        Artifact artifact = new Artifact();
-        Set<String> projects = new LinkedHashSet<>();
-        artifact.setProjects(projects);
-
-        for (int i = 0; i < artifactColumnMap.size(); i++) {
-            final String columnName = artifactColumnMap.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-
-            // compatibility
-            if (columnName.equalsIgnoreCase("component / group")) {
-                if (StringUtils.isEmpty(artifact.getComponent())) {
-                    artifact.setComponent(value);
-                }
-                continue;
-            }
-
-            // if the column in not known we store the content in the key/value store
-            if (StringUtils.hasText(value)) {
-                artifact.set(columnName, value.trim());
-            }
-        }
-
-        if (artifact.isValid()) {
-            return artifact;
-        }
-
-        return null;
-    }
-
-    @Override
-    protected LicenseMetaData readLicenseMetaData(HSSFRow row) {
-        final LicenseMetaData licenseMetaData = new LicenseMetaData();
-
-        for (int i = 0; i < licenseMetaDataColumnMap.size(); i++) {
-            final String columnName = licenseMetaDataColumnMap.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-
-            if (columnName.equalsIgnoreCase("component")) {
-                licenseMetaData.setComponent(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("version")) {
-                licenseMetaData.setVersion(value);
-                continue;
-            }
-
-            if (columnName.equalsIgnoreCase("license")) {
-                licenseMetaData.setLicense(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("license in effect")) {
-                licenseMetaData.setLicenseInEffect(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("license notice") || columnName.equalsIgnoreCase("text")) {
-                licenseMetaData.setNotice(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("comment")) {
-                licenseMetaData.setComment(value);
-                continue;
-            }
-            if (columnName.equalsIgnoreCase("source category")) {
-                licenseMetaData.setSourceCategory(value);
-                continue;
-            }
-
-            // if the column in not known we store the content in the key/value store
-            if (value != null) {
-                licenseMetaData.set(columnName, value.trim());
-            }
-        }
-
-        if (licenseMetaData.isValid()) {
-            return licenseMetaData;
-        }
-
-        return null;
-    }
-
-    @Override
-    protected ComponentPatternData readComponentPatternData(HSSFRow row) {
-        final ComponentPatternData componentPatternData = new ComponentPatternData();
-        Map<Integer, String> map = this.componentPatternDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                componentPatternData.set(columnName, value.trim());
-            }
-        }
-
-        if (componentPatternData.isValid()) {
-            return componentPatternData;
-        }
-
-        return null;
-    }
-
-    @Override
-    protected LicenseData readLicenseData(HSSFRow row) {
-        final LicenseData licenseData = new LicenseData();
-        Map<Integer, String> map = this.licenseDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                licenseData.set(columnName, value.trim());
-            }
-        }
-
-        if (licenseData.isValid()) {
-            return licenseData;
-        }
-
-        return null;
-    }
-
-    @Override
-    protected void readVulnerabilityMetaDataHeader(HSSFRow row) {
-        parseColumns(row, vulnerabilityMetaDataColumnMap);
-    }
-
-
-    @Override
-    protected VulnerabilityMetaData readVulnerabilityMetaData(HSSFRow row) {
-        final VulnerabilityMetaData vulnerabilityMetaData = new VulnerabilityMetaData();
-        Map<Integer, String> map = this.vulnerabilityMetaDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                vulnerabilityMetaData.set(columnName, value.trim());
-            }
-        }
-
-        if (vulnerabilityMetaData.isValid()) {
-
-            // compensate rename of attributes
-            mapContent(vulnerabilityMetaData, DEPRECATED_KEY_V2_SCORE, VulnerabilityMetaData.Attribute.V2_SCORE);
-            mapContent(vulnerabilityMetaData, DEPRECATED_KEY_V3_SCORE, VulnerabilityMetaData.Attribute.V3_SCORE);
-            mapContent(vulnerabilityMetaData, DEPRECATED_KEY_MAX_SCORE, VulnerabilityMetaData.Attribute.MAX_SCORE);
-
-            return vulnerabilityMetaData;
-        }
-
-        return null;
-    }
-
-
-    @Override
-    protected CertMetaData readCertMetaData(HSSFRow row) {
-        final CertMetaData certMetaData = new CertMetaData();
-        Map<Integer, String> map = this.vulnerabilityMetaDataColumnMap;
-
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final HSSFCell myCell = row.getCell(i);
-            final String value = myCell != null ? myCell.toString() : null;
-            if (value != null) {
-                certMetaData.set(columnName, value.trim());
-            }
-        }
-
-        if (certMetaData.isValid()) {
-            return certMetaData;
-        }
-
-        return null;
-    }
-
-    private void mapContent(final VulnerabilityMetaData vulnerabilityMetaData,
-                            final String originalKey, final VulnerabilityMetaData.Attribute updatedAttribute) {
-
-        // read the original content
-        final String originalKeyContent = vulnerabilityMetaData.get(originalKey);
-
-        // check if there is original content
-        if (StringUtils.hasText(originalKeyContent)) {
-
-            // read updated attribute content
-            final String updatedAttributeContent = vulnerabilityMetaData.get(updatedAttribute);
-
-            if (!StringUtils.hasText(updatedAttributeContent)) {
-                // original content available; no updated content: transfer and delete
-                vulnerabilityMetaData.set(updatedAttribute, originalKeyContent);
-                vulnerabilityMetaData.set(originalKey, null);
+    public Inventory readInventoryAsClasspathResource(File file) throws IOException {
+        final Resource inventoryResource = new ClassPathResource(file.getPath());
+        try (InputStream in = inventoryResource.getInputStream()) {
+            if (file.getName().toLowerCase().endsWith(".xls")) {
+                return new XlsInventoryReader().readInventory(in);
             } else {
-                // original content and updated content available
-                if (!originalKeyContent.equals(updatedAttributeContent)) {
-
-                    // warn in case the values differ
-                    LOG.warn("Vulnerability metadata inconsistent: " +
-                                    "[{}] shows different content in attributes [{}] and [{}]. Please consolidate to [{}].",
-                            vulnerabilityMetaData.get(VulnerabilityMetaData.Attribute.NAME), originalKey,
-                            updatedAttribute.getKey(), updatedAttribute.getKey());
-                }
-
-                // values are identical or we warned the consumer: remove the obsolete original key value
-                vulnerabilityMetaData.set(originalKey, null);
+                return new XlsxInventoryReader().readInventory(in);
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,11 @@ public class InventoryScanReport extends InventoryReport {
 
     private boolean enableImplicitUnpack = true;
 
+    /**
+     * Whether to include embedded POMs in the analysis. Defaults to false.
+     */
+    private boolean includeEmbedded = false;
+
     @Override
     public boolean createReport() throws Exception {
         Inventory globalInventory = readGlobalInventory();
@@ -42,8 +47,9 @@ public class InventoryScanReport extends InventoryReport {
         DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
                 inputDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory);
         directoryScan.setEnableImplicitUnpack(enableImplicitUnpack);
+        directoryScan.setIncludeEmbedded(includeEmbedded);
 
-        Inventory scanInventory = directoryScan.createScanInventory();
+        final Inventory scanInventory = directoryScan.createScanInventory();
 
         return createReport(globalInventory, scanInventory);
     }
@@ -101,6 +107,14 @@ public class InventoryScanReport extends InventoryReport {
 
     public boolean isEnableImplicitUnpack() {
         return enableImplicitUnpack;
+    }
+
+    public void setIncludeEmbedded(boolean includeEmbedded) {
+        this.includeEmbedded = includeEmbedded;
+    }
+
+    public boolean isIncludeEmbedded() {
+        return includeEmbedded;
     }
 
 }

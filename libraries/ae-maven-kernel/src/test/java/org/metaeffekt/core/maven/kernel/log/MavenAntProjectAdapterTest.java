@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,10 @@ import java.util.Collections;
 public class MavenAntProjectAdapterTest {
 
     private ByteArrayOutputStream err;
-    private PrintStream orginalErr = System.err;
+    private PrintStream originalErr = System.err;
 
     private ByteArrayOutputStream out;
-    private PrintStream orginalOut = System.out;
+    private PrintStream originalOut = System.out;
 
     @Before
     public void setupStreams() {
@@ -46,18 +46,10 @@ public class MavenAntProjectAdapterTest {
         System.setOut(new PrintStream(out));
     }
 
-    @Before
-    public void setupLogFactory() {
-        err = new ByteArrayOutputStream();
-        out = new ByteArrayOutputStream();
-        System.setErr(new PrintStream(err));
-        System.setOut(new PrintStream(out));
-    }
-
     @After
     public void resetStreams() {
-        System.setErr(orginalErr);
-        System.setOut(orginalOut);
+        System.setErr(originalErr);
+        System.setOut(originalOut);
         MavenLogAdapter.release();
     }
 
@@ -76,10 +68,19 @@ public class MavenAntProjectAdapterTest {
     }
 
     @Test(expected = EscalationException.class)
-    public void testVerboseEscalatedToError() {
+    public void testVerboseEscalatedToError_exception() {
         LoggingProjectAdapter adapter = new LoggingProjectAdapter();
         adapter.setEscalate(true);
         adapter.setErrorEscalationTerms(Collections.singleton("[verbose]"));
+        adapter.log("Hello escalated Error [verbose]", LoggingProjectAdapter.MSG_VERBOSE);
+    }
+
+    @Test
+    public void testVerboseEscalatedToError_noException() {
+        LoggingProjectAdapter adapter = new LoggingProjectAdapter();
+        adapter.setEscalate(true);
+        adapter.setErrorEscalationTerms(Collections.singleton("[verbose]"));
+        adapter.setFailOnErrorEscalation(false);
         adapter.log("Hello escalated Error [verbose]", LoggingProjectAdapter.MSG_VERBOSE);
         Assert.assertTrue(new String(err.toByteArray()).contains("Hello escalated Error [verbose]"));
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,14 +36,19 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  */
 public class Inventory {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
+
     public static final String CLASSIFICATION_CURRENT = "current";
+
     // Components are structured by context. This is the package context.
     public static final String COMPONENT_CONTEXT_PACKAGE = "package";
+
     // Components are structured by context. This is the artifact context.
     public static final String COMPONENT_CONTEXT_ARTIFACT = "artifact";
+
     // Components are structured by context. This is the web module context.
     public static final String COMPONENT_CONTEXT_WEBMODULE = "web-module";
-    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
+
     private List<Artifact> artifacts = new ArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
@@ -54,13 +59,22 @@ public class Inventory {
 
     private Map<String, List<VulnerabilityMetaData>> vulnerabilityMetaData = new LinkedHashMap<>(1);
 
-    private List<CertMetaData> certMetadata = new ArrayList<>();
+    private List<CertMetaData> certMetaData = new ArrayList<>();
+
+    private List<InventoryInfo> inventoryInfo = new ArrayList<>();
+
+    private List<ReportData> reportData = new ArrayList<>();
+
+    private List<AssetMetaData> assetMetaData = new ArrayList<>();
 
     private Map<String, String> licenseNameMap = new HashMap<>();
 
     private Map<String, String> componentNameMap = new HashMap<>();
 
-    private Map<String, Object> contextMap = new HashMap<>();
+    /**
+     * Enables to store serialization-related data with the inventory.
+     */
+    private final InventorySerializationContext serializationContext = new InventorySerializationContext();
 
     public static void sortArtifacts(List<Artifact> artifacts) {
         Comparator<Artifact> comparator = new Comparator<Artifact>() {
@@ -80,7 +94,7 @@ public class Inventory {
                 return sb.toString();
             }
         };
-        Collections.sort(artifacts, comparator);
+        artifacts.sort(comparator);
     }
 
     public void mergeDuplicates() {
@@ -161,6 +175,29 @@ public class Inventory {
 
             // pass with wildcards enabled
             return findArtifactMatchingId(artifact.getId());
+        }
+
+        return null;
+    }
+
+    public InventoryInfo findOrCreateInventoryInfo(String id) {
+        final InventoryInfo info = findInventoryInfo(id);
+        if (info != null) {
+            return info;
+        }
+
+        final InventoryInfo inventoryInfo = new InventoryInfo();
+        inventoryInfo.set(InventoryInfo.Attribute.ID, id);
+        getInventoryInfo().add(inventoryInfo);
+
+        return inventoryInfo;
+    }
+
+    public InventoryInfo findInventoryInfo(String id) {
+        for (InventoryInfo inventoryInfo : getInventoryInfo()) {
+            if (id.equals(inventoryInfo.getId())) {
+                return inventoryInfo;
+            }
         }
 
         return null;
@@ -378,7 +415,7 @@ public class Inventory {
     }
 
     public Set<Artifact> findArtifacts(String groupId, String artifactId) {
-        Set<Artifact> matchingArtifacts = new HashSet<Artifact>();
+        Set<Artifact> matchingArtifacts = new HashSet<>();
         for (Artifact candidate : getArtifacts()) {
             candidate.deriveArtifactId();
             if (candidate.getArtifactId() == null)
@@ -412,7 +449,7 @@ public class Inventory {
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
-        final Set<String> licenses = new HashSet();
+        final Set<String> licenses = new HashSet<>();
 
         for (Artifact artifact : getArtifacts()) {
             // not relevant artifact licenses must not be included
@@ -454,6 +491,39 @@ public class Inventory {
         Collections.sort(sortedByLicense);
         return sortedByLicense;
     }
+
+    // FIXME: remove
+    public List<String> evaluateAssetAssociatedLicenses() {
+        final Set<String> licenses = new HashSet();
+
+        for (AssetMetaData assetMetaData : getAssetMetaData()) {
+
+            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+
+            for (Artifact artifact : getArtifacts()) {
+
+                // skip all artifacts that do not belong to an asset
+                if (!StringUtils.hasText(artifact.get(assetId))) {
+                    continue;
+                }
+
+                // not relevant artifact licenses must not be included
+                if (!artifact.isRelevant()) {
+                    continue;
+                }
+
+                List<String> artifactLicense = artifact.getLicenses();
+
+                // check whether there is an effective license (set of licenses)
+                licenses.addAll(artifactLicense);
+            }
+        }
+
+        List<String> sortedByLicense = new ArrayList<>(licenses);
+        Collections.sort(sortedByLicense);
+        return sortedByLicense;
+    }
+
 
     /**
      * Returns all relevant notices for a given effective license.
@@ -523,12 +593,8 @@ public class Inventory {
             }
         }
 
-        Collections.sort(componentNotices, new Comparator<ComponentNotice>() {
-            @Override
-            public int compare(ComponentNotice cn1, ComponentNotice cn2) {
-                return cn1.getComponentName().compareToIgnoreCase(cn2.getComponentName());
-            }
-        });
+        componentNotices.sort(((cn1, cn2) -> cn1.getComponentName().compareToIgnoreCase(cn2.getComponentName())));
+
         return componentNotices;
     }
 
@@ -564,9 +630,11 @@ public class Inventory {
             }
         }
         final ArrayList<ArtifactLicenseData> artifactLicenseData = new ArrayList<>(map.values());
-        Collections.sort(artifactLicenseData, (o1, o2) -> Objects.compare(artifactSortString(o1), artifactSortString(o2), String::compareToIgnoreCase));
+        Collections.sort(artifactLicenseData, (o1, o2) ->
+                Objects.compare(artifactSortString(o1), artifactSortString(o2), String::compareToIgnoreCase));
         return artifactLicenseData;
     }
+
 
     private String artifactSortString(ArtifactLicenseData o1) {
         return o1.getComponentName() + "-" + o1.getComponentVersion();
@@ -630,7 +698,7 @@ public class Inventory {
         if (StringUtils.isEmpty(canonicalName)) return null;
 
         for (LicenseData ld : licenseData) {
-            if (canonicalName.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
+            if (canonicalName.trim().equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
                 return ld;
             }
         }
@@ -857,7 +925,7 @@ public class Inventory {
         return sortedByComponent;
     }
 
-    public List<List<Artifact>> evaluateComponent(Component component, boolean includeLicensesWithArtifactsOnly) {
+    public List<List<Artifact>> evaluateComponent(Component component) {
         List<Artifact> artifactsForComponent = new ArrayList<>(component.getArtifacts());
         sortArtifacts(artifactsForComponent);
 
@@ -903,8 +971,7 @@ public class Inventory {
         return true;
     }
 
-    public List<Artifact> evaluateLicense(String licenseName,
-                                          boolean includeLicensesWithArtifactsOnly) {
+    public List<Artifact> evaluateLicense(String licenseName, boolean includeLicensesWithArtifactsOnly) {
         List<Artifact> artifactsForComponent = new ArrayList<>();
         for (Artifact artifact : getArtifacts()) {
             if (licenseName.equals(artifact.getLicense())) {
@@ -1024,12 +1091,18 @@ public class Inventory {
         }
     }
 
+    @Deprecated
     public Map<String, Object> getContextMap() {
-        return contextMap;
+        return serializationContext.getContextMap();
     }
 
+    @Deprecated
     public void setContextMap(Map<String, Object> contextMap) {
-        this.contextMap = contextMap;
+        this.serializationContext.setContextMap(contextMap);
+    }
+
+    public InventorySerializationContext getSerializationContext() {
+        return this.serializationContext;
     }
 
     public Map<String, String> getLicenseNameMap() {
@@ -1087,6 +1160,9 @@ public class Inventory {
         filteredInventory.setLicenseNameMap(getLicenseNameMap());
         filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         filteredInventory.setCertMetaData(getCertMetaData());
+        filteredInventory.setAssetMetaData(getAssetMetaData());
+        filteredInventory.setInventoryInfo(getInventoryInfo());
+        filteredInventory.setReportData(getReportData());
         return filteredInventory;
     }
 
@@ -1308,6 +1384,60 @@ public class Inventory {
         }
     }
 
+    public void inheritAssetMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, AssetMetaData> localAssets = new HashMap<>();
+        for (AssetMetaData assetMetaData : getAssetMetaData()) {
+            localAssets.put(assetMetaData.deriveQualifier(), assetMetaData);
+        }
+        for (AssetMetaData assetMetaData : inputInventory.getAssetMetaData()) {
+            final String qualifier = assetMetaData.deriveQualifier();
+            if (localAssets.containsKey(qualifier)) {
+                // overwrite; the localCerts inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    AssetMetaData localAssetMetadata = localAssets.get(qualifier);
+                    if (assetMetaData.createCompareStringRepresentation().equals(
+                            localAssetMetadata.createCompareStringRepresentation())) {
+                        LOG.info("Asset metadata {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Asset metadata %s overwritten. %n  %s%n  %s", qualifier,
+                                assetMetaData.createCompareStringRepresentation(),
+                                localAssetMetadata.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                getAssetMetaData().add(assetMetaData);
+            }
+        }
+    }
+
+    public void inheritInventoryInfo(Inventory inputInventory, boolean infoOnOverwrite) {
+        final Map<String, InventoryInfo> localInfo = new HashMap<>();
+        for (InventoryInfo inventoryInfo : getInventoryInfo()) {
+            localInfo.put(inventoryInfo.deriveQualifier(), inventoryInfo);
+        }
+        for (InventoryInfo inventoryInfo : inputInventory.getInventoryInfo()) {
+            final String qualifier = inventoryInfo.deriveQualifier();
+            if (localInfo.containsKey(qualifier)) {
+                // overwrite; the localCerts inventory contains the artifact.
+                if (infoOnOverwrite) {
+                    InventoryInfo localInventoryInfo = localInfo.get(qualifier);
+                    if (inventoryInfo.createCompareStringRepresentation().equals(
+                            localInventoryInfo.createCompareStringRepresentation())) {
+                        LOG.info("Inventory info {} overwritten. Relevant content nevertheless matches. " +
+                                "Consider removing the overwrite.", qualifier);
+                    } else {
+                        LOG.info(String.format("Inventory info %s overwritten. %n  %s%n  %s", qualifier,
+                                inventoryInfo.createCompareStringRepresentation(),
+                                localInventoryInfo.createCompareStringRepresentation()));
+                    }
+                }
+            } else {
+                getInventoryInfo().add(inventoryInfo);
+            }
+        }
+    }
+
     /**
      * Removes all VulnerabilityMetaData entries from the inventory that do not fulfill at least one of these conditions:
      * <ul>
@@ -1376,40 +1506,61 @@ public class Inventory {
         return new ArrayList<>(vulnerabilityMetaData.keySet());
     }
 
-    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
+    @Deprecated // is still used be the german translation; preserve until translation is completely revised
+    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
-    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold, boolean sortedByScore) {
+    @Deprecated // is still used be the german translation; preserve until translation is completely revised
+    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
-    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold, boolean sortedByScore) {
+    @Deprecated // is still used be the german translation; preserve until translation is completely revised
+    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
         List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
-    }
-
-    public List<VulnerabilityMetaData> getVoidVulnerabilities(boolean sortedByScore) {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterVoidVulnerabilities(getVulnerabilityMetaData());
-        if (sortedByScore) vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
+        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
         return vmd;
     }
 
     public List<CertMetaData> getCertMetaData() {
-        return certMetadata;
+        return certMetaData;
     }
 
-    public void setCertMetaData(List<CertMetaData> certMetadata) {
-        this.certMetadata = certMetadata;
+    public void setCertMetaData(List<CertMetaData> certMetaData) {
+        this.certMetaData = certMetaData;
+    }
+
+    public List<InventoryInfo> getInventoryInfo() {
+        return inventoryInfo;
+    }
+
+    public List<ReportData> getReportData() {
+        return reportData;
+    }
+
+    public void setInventoryInfo(List<InventoryInfo> inventoryInfo) {
+        this.inventoryInfo = inventoryInfo;
+    }
+
+    public void setReportData(List<ReportData> reportData) {
+        this.reportData = reportData;
+    }
+
+    public List<AssetMetaData> getAssetMetaData() {
+        return assetMetaData;
+    }
+
+    public void setAssetMetaData(List<AssetMetaData> assetMetaData) {
+        this.assetMetaData = assetMetaData;
     }
 
     private Set<String> splitCommaSeparated(String string) {
-        if (string == null) return Collections.EMPTY_SET;
+        if (string == null) return Collections.emptySet();
         return Arrays.stream(string.split(",")).map(String::trim).collect(Collectors.toSet());
     }
 
@@ -1450,72 +1601,75 @@ public class Inventory {
     }
 
     public String getRepresentedLicenseName(String license) {
-
+        // this code operates on the metadata in the inventory, only
         for (LicenseData ld : getLicenseData()) {
             if (license.equals(ld.get(LicenseData.Attribute.CANONICAL_NAME))) {
-                if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
-                    return (ld.get(LicenseData.Attribute.REPRESENTED_AS));
-                } else return license;
+                final String representedAs = ld.get(LicenseData.Attribute.REPRESENTED_AS);
+                if (representedAs != null) {
+                    return representedAs;
+                } else {
+                    break;
+                }
             }
         }
+
+        // return original license
         return license;
     }
 
-    public List<String> getRepresentedLicenseNames(List<String> effectiveLicenses) {
-        final List<String> representedLicenseNames = new ArrayList<>();
-        for (String license : effectiveLicenses) {
-            representedLicenseNames.add(getRepresentedLicenseName(license));
-        }
-        return representedLicenseNames.stream().distinct().sorted().collect(Collectors.toList());
+    public List<String> getRepresentedLicenses(List<String> effectiveLicenses) {
+        return effectiveLicenses.stream()
+                .map(this::getRepresentedLicenseName)
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
-    public List<String> getRepresentedEffectiveLicenses(String representedLicenseName) {
-        List<String> representedEffectiveLicenses = new ArrayList<>();
+    public List<String> getLicensesRepresentedBy(String representedLicenseName) {
+        Set<String> representedEffectiveLicenses = new HashSet<>();
+
+        // add represented license name itself
         representedEffectiveLicenses.add(representedLicenseName);
+
         for (LicenseData ld : getLicenseData()) {
-            if (ld.get(LicenseData.Attribute.REPRESENTED_AS) != null) {
-                if (representedLicenseName.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
-                    representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
-                }
+            final String representedAs = ld.get(LicenseData.Attribute.REPRESENTED_AS);
+            if (representedAs != null && representedLicenseName.equals(representedAs)) {
+                representedEffectiveLicenses.add(ld.get(LicenseData.Attribute.CANONICAL_NAME));
             }
         }
-        if (!representedEffectiveLicenses.isEmpty()) {
-            return representedEffectiveLicenses.stream().sorted().distinct().collect(Collectors.toList());
-        } else {
-            return representedEffectiveLicenses;
-        }
+        return representedEffectiveLicenses.stream().sorted(String.CASE_INSENSITIVE_ORDER).collect(Collectors.toList());
     }
 
-    public boolean isSubstructureRequired(String license, List<String> effectiveLicenses) {
-        int counter = 0;
-        if (!effectiveLicenses.contains(license)) {
+    /**
+     * The substructure is required when:
+     * <ol>
+     *     <li>more than 2 licenses are represented by a single license.</li>
+     *     <li>the represented name and variant license name deviates</li>
+     * </ol>
+     *
+     * @param license                      The license for which the request needs to ne answered.
+     * @param representedEffectiveLicenses List of represented effective licenses
+     * @return Returns <code>true</code> when a substructure to represent the licenses is required.
+     */
+    public boolean isSubstructureRequired(String license, List<String> representedEffectiveLicenses) {
+        if (!representedEffectiveLicenses.contains(license)) {
             return true;
+        } else {
+            return getLicensesRepresentedBy(license).size() > 1;
         }
-        for (LicenseData ld : getLicenseData()) {
-            final String canonicalName = ld.get(LicenseData.Attribute.CANONICAL_NAME);
-            if (effectiveLicenses.contains(canonicalName)) {
-                if (license.equals(ld.get(LicenseData.Attribute.REPRESENTED_AS))) {
-                    counter++;
-                }
-            }
-            if (counter > 1) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense) {
         final Set<String> componentNames = new HashSet<>();
-        for (String effectiveLicense : getRepresentedEffectiveLicenses(representedNameLicense)) {
+        for (String effectiveLicense : getLicensesRepresentedBy(representedNameLicense)) {
             evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
         }
         return componentNames;
     }
 
-    public boolean isFootnoteRequired(List<String> licenses) {
-        for (String license : getRepresentedLicenseNames(licenses)) {
-            if (isSubstructureRequired(license, licenses)) {
+    public boolean isFootnoteRequired(List<String> effectiveLicenses, List<String> representedEffectiveLicenses) {
+        for (String license : effectiveLicenses) {
+            if (isSubstructureRequired(license, representedEffectiveLicenses)) {
                 return true;
             }
         }

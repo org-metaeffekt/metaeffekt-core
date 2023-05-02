@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -57,8 +58,16 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOM = "inventory-report-bom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY = "inventory-report-vulnerability";
+    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY = "inventory-report-vulnerability-summary";
+
+    public static final String TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY = "inventory-statistics-vulnerability";
+
+    public static final String TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT = "labels-vulnerability-assessment";
+
     public static final String TEMPLATE_GROUP_INVENTORY_POM = "inventory-pom";
     public static final String TEMPLATE_GROUP_INVENTORY_REPORT_DIFF = "inventory-report-diff";
+
+    public static final String TEMPLATE_GROUP_ASSET_REPORT_BOM = "asset-report-bom";
 
     public static final String KEY_PREVIOUS_VERSION = "Previous Version";
 
@@ -136,8 +145,55 @@ public class InventoryReport {
      */
     private boolean failOnMissingComponentFiles = false;
 
+    /**
+     * Insignificant threshold for CVSS scores on vulnerabilities.
+     */
     private float vulnerabilityScoreThreshold = 7.0f;
+    private float minimumVulnerabilityIncludeScore = Float.MIN_VALUE;
     private final List<String> vulnerabilityAdvisoryFilter = new ArrayList<>();
+
+    /**
+     * For which advisory providers to generate additional tables in the overview section containing statistic data on
+     * which vulnerabilities have already been reviewed.
+     */
+    private final List<String> generateOverviewTablesForAdvisories = new ArrayList<>();
+
+    /**
+     * What mapper to use when generating the header row for the overview tables.<br>
+     * Currently supported are:
+     * <ul>
+     *     <li><code>default</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
+     *     <li><code>abstracted</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
+     * </ul>
+     */
+    private Function<String, String> overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT;
+
+    /**
+     * A space-separated list of CVSS-versions to be used to determine the effective score of a vulnerability.<br>
+     * Supported presets are:
+     * <ul>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_LATEST_FIRST} which uses in order of availability <code>v3</code>, then <code>v2</code></li>
+     *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_MAX} which uses the in this order <code>max</code>, <code>v3</code>, then <code>v2</code></li>
+     * </ul>
+     */
+    private String cvssScoringPreference = VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST;
+
+    /**
+     * An array of advisory types to include in the report. The default is to include all types by using the value
+     * <code>all</code>.<br>
+     * Supported values are:
+     * <ul>
+     *     <li><code>all</code> to include all types</li>
+     *     <li><code>notice</code></li>
+     *     <li><code>alert</code></li>
+     *     <li><code>news</code></li>
+     * </ul>
+     */
+    private List<String> includeAdvisoryTypes = new ArrayList<>();
+
+    {
+        includeAdvisoryTypes.add("all");
+    }
 
     private ArtifactFilter artifactFilter;
 
@@ -145,6 +201,9 @@ public class InventoryReport {
     private boolean inventoryDiffReportEnabled = false;
     private boolean inventoryPomEnabled = false;
     private boolean inventoryVulnerabilityReportEnabled = false;
+    private boolean inventoryVulnerabilityReportSummaryEnabled = false;
+    private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
+    private boolean assetBomReportEnabled = false;
 
     /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
@@ -217,8 +276,14 @@ public class InventoryReport {
         Inventory projectInventory = new Inventory();
         this.lastProjectInventory = projectInventory;
 
-        // transfer component patterns from scan inventory (these may include wildcard checksum replacments)
+        // transfer component patterns from scan inventory (these may include wildcard checksum replacements)
         projectInventory.inheritComponentPatterns(localInventory, false);
+
+        // transfer identified assets from scan
+        projectInventory.inheritAssetMetaData(localInventory, false);
+
+        // transfer inventory info
+        projectInventory.inheritInventoryInfo(localInventory, false);
 
         localInventory.sortArtifacts();
 
@@ -348,8 +413,6 @@ public class InventoryReport {
                     copy.setId(artifactFileId);
 
                     if (ASTERISK.equals(matchedReferenceArtifact.getVersion())) {
-                        copy.setVerified(false);
-
                         // in this case we also to manage the version (and replace the wildcard with the concrete version)
                         final String id = matchedReferenceArtifact.getId();
                         try {
@@ -364,8 +427,6 @@ public class InventoryReport {
                             LOG.error("Cannot extract version from artifact {}. To express that no version information " +
                                     "is available use a different version keyword such as 'undefined' or 'unspecific'.", id);
                         }
-                    } else {
-                        copy.setVerified(true);
                     }
 
                     // override flags (the original data does not include context)
@@ -375,11 +436,19 @@ public class InventoryReport {
                     projectInventory.getArtifacts().add(copy);
 
                     // handle checksum
-                    if (StringUtils.isEmpty(copy.getChecksum())) {
+                    if (!StringUtils.hasText(copy.getChecksum())) {
                         copy.setChecksum(localArtifact.getChecksum());
                     } else {
                         if (StringUtils.hasText(localArtifact.getChecksum()) && !copy.getChecksum().equalsIgnoreCase(localArtifact.getChecksum())) {
                             throw new IllegalStateException(String.format("Checksum mismatch for %s.", localArtifact.getId()));
+                        }
+                    }
+
+                    // copy details not covered by reference artifact to resulting artifact
+                    for (String attributeKey : localArtifact.getAttributes()) {
+                        final String currentValue = copy.get(attributeKey);
+                        if (!StringUtils.hasText(currentValue)) {
+                            copy.set(attributeKey, localArtifact.get(attributeKey));
                         }
                     }
 
@@ -454,8 +523,29 @@ public class InventoryReport {
         // transfer available cert information
         projectInventory.inheritCertMetaData(globalInventory, false);
 
+        // transfer available asset information
+        projectInventory.inheritAssetMetaData(globalInventory, false);
+
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         projectInventory.filterVulnerabilityMetaData();
+
+        // filter the vulnerability metadata to only include those with a score larger than the min score
+        if (getMinimumVulnerabilityIncludeScore() >= 0) {
+            final VulnerabilityReportAdapter adapter = new VulnerabilityReportAdapter(
+                    projectInventory, cvssScoringPreference, vulnerabilityScoreThreshold, includeAdvisoryTypes);
+
+            projectInventory.getVulnerabilityMetaData().removeIf(vmd -> {
+                final String compareScore = adapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
+                if (StringUtils.hasText(compareScore)) {
+                    try {
+                        return Double.parseDouble(compareScore) < getMinimumVulnerabilityIncludeScore();
+                    } catch (NumberFormatException e) {
+                        LOG.debug("Cannot parse vulnerability score {} on {}", compareScore, vmd.get(VulnerabilityMetaData.Attribute.NAME));
+                    }
+                }
+                return false;
+            });
+        }
 
         // write reports
         if (inventoryBomReportEnabled) {
@@ -470,8 +560,25 @@ public class InventoryReport {
             writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
         }
 
+        if (inventoryVulnerabilityReportSummaryEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
+        }
+
+        if (inventoryVulnerabilityStatisticsReportEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
+        }
+
+        // all vulnerability-related templates require to generate labels
+        if (inventoryVulnerabilityReportEnabled || inventoryVulnerabilityStatisticsReportEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT, reportContext);
+        }
+
         if (inventoryPomEnabled) {
             writeReports(projectInventory, TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
+        }
+
+        if (assetBomReportEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -550,10 +657,13 @@ public class InventoryReport {
         final String parentPath = parentResource.getURI().toASCIIString();
         for (Resource r : resources) {
             String filePath = r.getURI().toASCIIString();
-            filePath = templateBaseDir + filePath.replace(parentPath, "");
+            String path = filePath.replace(parentPath, "");
+            filePath = templateBaseDir + path;
             String targetFileName = r.getFilename().replace(".vt", "");
 
-            final File targetReportPath = new File(this.targetReportDir, targetFileName);
+            File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
+
+            final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
             produceDita(projectInventory, filePath, targetReportPath, reportContext);
         }
     }
@@ -789,41 +899,49 @@ public class InventoryReport {
         }
     }
 
-    private void filterVulnerabilityMetadataByAdvisoryFilter(List<VulnerabilityMetaData> vulnerabilityMetaData) {
+    private void filterVulnerabilityMetadataByAdvisoryFilter(
+            VulnerabilityReportAdapter adapter, List<VulnerabilityMetaData> vulnerabilityMetaData) {
         if (vulnerabilityAdvisoryFilter.size() > 0) {
             vulnerabilityMetaData.removeIf(vmd ->
-                    VulnerabilityReportAdapter.getAdvisories(vmd).stream()
+                    adapter.getAdvisories(vmd).stream()
                             .noneMatch(advisory -> vulnerabilityAdvisoryFilter.contains(advisory.getSource())));
         }
     }
 
-    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext)
-            throws Exception {
+    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext) throws Exception {
         LOG.info("Producing Dita for template [{}]", templateResourcePath);
 
-        String ENCODING_UTF_8 = "UTF-8";
-        Properties properties = new Properties();
+        final Properties properties = new Properties();
         properties.put(Velocity.RESOURCE_LOADER, "class, file");
         properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
-        properties.put(Velocity.INPUT_ENCODING, ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, ENCODING_UTF_8);
+        properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
+        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.SET_NULL_ALLOWED, true);
 
-        VelocityEngine velocityEngine = new VelocityEngine(properties);
-        Template template = velocityEngine.getTemplate(templateResourcePath);
-        StringWriter sw = new StringWriter();
-        VelocityContext context = new VelocityContext();
+        final VelocityEngine velocityEngine = new VelocityEngine(properties);
+        final Template template = velocityEngine.getTemplate(templateResourcePath);
+        final StringWriter sw = new StringWriter();
+        final VelocityContext context = new VelocityContext();
 
-        Inventory filteredInventory = projectInventory.getFilteredInventory();
+        // FIXME: review filtered inventory approach; move score threshold filter out; use adapter
+        final Inventory filteredInventory = projectInventory.getFilteredInventory();
+
+        final AssetReportAdapter assetReportAdapter = new AssetReportAdapter(filteredInventory);
+        final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
+                filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold, includeAdvisoryTypes);
+
         // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
-        filterVulnerabilityMetadataByAdvisoryFilter(filteredInventory.getVulnerabilityMetaData());
+        filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityReportAdapter, filteredInventory.getVulnerabilityMetaData());
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
-        context.put("vulnerabilityAdapter", new VulnerabilityReportAdapter(filteredInventory));
+        context.put("vulnerabilityAdapter", vulnerabilityReportAdapter);
+        context.put("assetAdapter", assetReportAdapter);
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
+        context.put("utils", new ReportUtils());
         context.put("Float", Float.class);
+        context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
 
@@ -1039,6 +1157,11 @@ public class InventoryReport {
         return s;
     }
 
+    public String xmlEscapeSvgId(String text) {
+        if (text == null) return "";
+        return text.trim().toLowerCase().replace(" ", "-");
+    }
+
     private PreFormattedEscapeUtils preFormattedEscapeUtils = new PreFormattedEscapeUtils();
 
     public String xmlEscapePreformattedContentString(String string) {
@@ -1128,22 +1251,97 @@ public class InventoryReport {
         this.vulnerabilityScoreThreshold = vulnerabilityScoreThreshold;
     }
 
+    public void setMinimumVulnerabilityIncludeScore(float minimumVulnerabilityIncludeScore) {
+        this.minimumVulnerabilityIncludeScore = minimumVulnerabilityIncludeScore;
+    }
+
+    public float getMinimumVulnerabilityIncludeScore() {
+        return minimumVulnerabilityIncludeScore;
+    }
+
     private final static String[] VALID_VULNERABILITY_ADVISORY_PROVIDERS = {"CERT-FR", "CERT-SEI", "MSRC"};
 
     public List<String> getVulnerabilityAdvisoryFilter() {
         return Collections.unmodifiableList(vulnerabilityAdvisoryFilter);
     }
 
-    public void addVulnerabilityAdvisoryFilter(String advisoryProvider) {
-        if (advisoryProvider != null && advisoryProvider.length() > 0) {
-            if (advisoryProvider.contains(",")) {
-                Arrays.stream(advisoryProvider.split(", ?")).forEach(this::addVulnerabilityAdvisoryFilter);
+    public void addVulnerabilityAdvisoryFilter(String... advisoryProvider) {
+        splitAndAppendCsvAdvisoryProviders(vulnerabilityAdvisoryFilter, advisoryProvider);
+    }
+
+    public List<String> getGenerateOverviewTablesForAdvisories() {
+        return generateOverviewTablesForAdvisories;
+    }
+
+    public void addGenerateOverviewTablesForAdvisories(String... advisoryProvider) {
+        splitAndAppendCsvAdvisoryProviders(generateOverviewTablesForAdvisories, advisoryProvider);
+    }
+
+    public Function<String, String> getOverviewTablesVulnerabilityStatusMappingFunction() {
+        return overviewTablesVulnerabilityStatusMappingFunction;
+    }
+
+    public void setOverviewTablesVulnerabilityStatusMappingFunction(Function<String, String> overviewTablesVulnerabilityStatusMappingFunction) {
+        this.overviewTablesVulnerabilityStatusMappingFunction = overviewTablesVulnerabilityStatusMappingFunction;
+    }
+
+    public void setOverviewTablesVulnerabilityStatusMappingFunction(String function) {
+        this.overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.getStatusMapperFunction(function);
+    }
+
+    public void setCvssScoringPreference(String cvssScoringPreference) {
+        this.cvssScoringPreference = cvssScoringPreference;
+    }
+
+    public String getCvssScoringPreference() {
+        return cvssScoringPreference;
+    }
+
+    public void setIncludeAdvisoryTypes(List<String> includeAdvisoryTypes) {
+        if (includeAdvisoryTypes != null) {
+            this.includeAdvisoryTypes = includeAdvisoryTypes;
+        } else {
+            this.includeAdvisoryTypes.clear();
+        }
+    }
+
+    public void setIncludeAdvisoryTypes(String[] includeAdvisoryTypes) {
+        if (includeAdvisoryTypes != null) {
+            this.includeAdvisoryTypes = Arrays.asList(includeAdvisoryTypes);
+        } else {
+            this.includeAdvisoryTypes.clear();
+        }
+    }
+
+    public void setIncludeAdvisoryTypes(String includeAdvisoryTypes) {
+        if (includeAdvisoryTypes != null) {
+            if (includeAdvisoryTypes.length() > 0 && (!includeAdvisoryTypes.equals("null") && !includeAdvisoryTypes.equals("none"))) {
+                this.includeAdvisoryTypes = Arrays.asList(includeAdvisoryTypes.split(", "));
             } else {
-                if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(advisoryProvider.toUpperCase()))) {
-                    LOG.debug("Filtering vulnerabilities for advisory [{}]", artifactFilter);
-                    vulnerabilityAdvisoryFilter.add(advisoryProvider.toUpperCase());
-                } else {
-                    LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", advisoryProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+                this.includeAdvisoryTypes.clear();
+            }
+        }
+    }
+
+    public List<String> getIncludeAdvisoryTypes() {
+        return includeAdvisoryTypes;
+    }
+
+    private void splitAndAppendCsvAdvisoryProviders(List<String> listToAddProvidersTo, String... commaSeperatedProviders) {
+        if (commaSeperatedProviders != null) { // && commaSeperatedProviders.length > 0) { // is always true
+            for (String commaSeperatedProvider : commaSeperatedProviders) {
+                if (commaSeperatedProvider != null && commaSeperatedProvider.length() > 0) {
+                    if (commaSeperatedProvider.contains(",")) {
+                        splitAndAppendCsvAdvisoryProviders(listToAddProvidersTo, commaSeperatedProvider.split(", ?"));
+                    } else {
+                        if (Arrays.stream(VALID_VULNERABILITY_ADVISORY_PROVIDERS).anyMatch(e -> e.equals(commaSeperatedProvider.toUpperCase()))) {
+                            listToAddProvidersTo.add(commaSeperatedProvider.toUpperCase());
+                        } else if (commaSeperatedProvider.equals("ALL")) {
+                            listToAddProvidersTo.addAll(Arrays.asList(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+                        } else {
+                            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", commaSeperatedProvider, Arrays.toString(VALID_VULNERABILITY_ADVISORY_PROVIDERS));
+                        }
+                    }
                 }
             }
         }
@@ -1201,6 +1399,30 @@ public class InventoryReport {
         this.inventoryVulnerabilityReportEnabled = inventoryVulnerabilityReportEnabled;
     }
 
+    public boolean isInventoryVulnerabilityStatisticsReportEnabled() {
+        return inventoryVulnerabilityStatisticsReportEnabled;
+    }
+
+    public void setInventoryVulnerabilityReportSummaryEnabled(boolean inventoryVulnerabilityReportSummaryEnabled) {
+        this.inventoryVulnerabilityReportSummaryEnabled = inventoryVulnerabilityReportSummaryEnabled;
+    }
+
+    public boolean isInventoryVulnerabilityReportSummaryEnabled() {
+        return inventoryVulnerabilityReportSummaryEnabled;
+    }
+
+    public void setInventoryVulnerabilityStatisticsReportEnabled(boolean inventoryVulnerabilityStatisticsReportEnabled) {
+        this.inventoryVulnerabilityStatisticsReportEnabled = inventoryVulnerabilityStatisticsReportEnabled;
+    }
+
+    public boolean isAssetBomReportEnabled() {
+        return assetBomReportEnabled;
+    }
+
+    public void setAssetBomReportEnabled(boolean assetBomReportEnabled) {
+        this.assetBomReportEnabled = assetBomReportEnabled;
+    }
+
     public void setLastProjectInventory(Inventory lastProjectInventory) {
         this.lastProjectInventory = lastProjectInventory;
     }
@@ -1219,6 +1441,20 @@ public class InventoryReport {
 
     public boolean isFailOnMissingComponentFiles() {
         return failOnMissingComponentFiles;
+    }
+
+    public AssetData getAssetData(Inventory inventory) {
+        return AssetData.fromArtifacts(inventory);
+    }
+
+    public CharSequence joinStrings(Collection<CharSequence> strings, CharSequence delimiter) {
+        if (strings == null) {
+            return "";
+        }
+        if (delimiter == null) {
+            return strings.stream().collect(Collectors.joining());
+        }
+        return strings.stream().collect(Collectors.joining(delimiter));
     }
 
 }

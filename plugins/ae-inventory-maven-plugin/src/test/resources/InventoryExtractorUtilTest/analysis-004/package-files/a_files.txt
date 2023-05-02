@@ -1,0 +1,3 @@
+/.
+/file-a
+/folder-a/file-aa

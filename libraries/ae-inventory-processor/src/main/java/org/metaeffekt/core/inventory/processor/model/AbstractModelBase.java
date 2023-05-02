@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -271,8 +271,8 @@ public abstract class AbstractModelBase {
     }
 
     public float getFloat(String key, float defaultValue) {
-        String stringValue = get(key);
-        if (stringValue == null) return defaultValue;
+        final String stringValue = get(key);
+        if (stringValue == null || stringValue.trim().isEmpty()) return defaultValue;
         try {
             return Float.parseFloat(stringValue);
         } catch (NumberFormatException e) {
@@ -292,5 +292,14 @@ public abstract class AbstractModelBase {
         return sb.toString();
     }
 
+    public String getAlternatives(String... keys) {
+        for (final String key : keys) {
+            final String value = get(key);
+            if (StringUtils.hasText(value)) {
+                return value;
+            }
+        }
+        return null;
+    }
 
 }

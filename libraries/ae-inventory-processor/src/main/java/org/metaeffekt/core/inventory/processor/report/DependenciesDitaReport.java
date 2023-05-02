@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import java.io.*;
 import java.util.*;
 
 public class DependenciesDitaReport {
-
 
     private static final String DITA_REPORT_TEMPLATE =
             "/META-INF/templates/dependencies/tpc_dependencies-report.dita.vt";
@@ -174,6 +173,9 @@ public class DependenciesDitaReport {
         context.put("externalDependencies", externalDependencies);
         context.put("projectId", artifactId);
         context.put("projectName", resolveName(artifactId));
+
+        context.put("utils", new ReportUtils());
+
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString());

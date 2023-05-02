@@ -65,16 +65,6 @@
         <maven.compiler.jdk>1.8</maven.compiler.jdk>
     </properties>
 
-    <modules>
-        <module>poms</module>
-        <module>libraries</module>
-        <module>plugins</module>
-        <module>modules</module>
-        <module>inventory</module>
-        <module>tests</module>
-        <module>tools</module>
-    </modules>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -294,6 +284,14 @@
                     <url>https://oss.sonatype.org/content/repositories/snapshots</url>
                 </snapshotRepository>
             </distributionManagement>
+            <modules>
+                <module>poms</module>
+                <module>libraries</module>
+                <module>plugins</module>
+                <module>modules</module>
+                <module>inventory</module>
+                <module>tools</module>
+            </modules>
             <build>
                 <plugins>
                     <plugin>
@@ -352,6 +350,22 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>poms</module>
+                <module>libraries</module>
+                <module>plugins</module>
+                <module>modules</module>
+                <module>inventory</module>
+                <module>tests</module>
+                <module>tools</module>
+            </modules>
         </profile>
 
     </profiles>

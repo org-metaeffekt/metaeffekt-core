@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 
 
 public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProjectAwareMojo {
 
+    // FIXME: using mixed annotations
     /**
      * The project to be checked: the current project (readonly)
      *
@@ -28,6 +30,7 @@ public abstract class AbstractProjectAwareConfiguredMojo extends AbstractProject
      * @required
      * @readonly
      */
+    @Parameter(defaultValue = "${project}", required = true, readonly = true)
     private MavenProject project;
 
     @Override

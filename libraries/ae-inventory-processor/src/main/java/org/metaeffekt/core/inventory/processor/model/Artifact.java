@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,11 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
+    // FIXME: revise attribute name projects; should be paths (in asset)
+    public static final String PROJECT_DELIMITER_REGEXP = "\\|\n";
+
+    public static final String PROJECT_DELIMITER = "|\n";
+
     /**
      * Core attributes to support component patterns.
      */
@@ -55,7 +60,7 @@ public class Artifact extends AbstractModelBase {
         // indicates whether the artifact is security relevant and needs to be upgraded asap
         SECURITY_RELEVANT("Security Relevance"),
 
-        // if the artifact is security relevant is is classified into a security category
+        // if the artifact is security relevant it is classified into a security category
         SECURITY_CATEGORY("Security Relevance"),
 
         // vulnerability information
@@ -114,12 +119,12 @@ public class Artifact extends AbstractModelBase {
         if (StringUtils.isEmpty(projectsString)) {
             return Collections.emptySet();
         }
-        return Arrays.stream(projectsString.split(",")).
+        return Arrays.stream(projectsString.split(PROJECT_DELIMITER_REGEXP)).
                 map(String::trim).collect(Collectors.toSet());
     }
 
     public void setProjects(Set<String> project) {
-        set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(" ,")));
+        set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(PROJECT_DELIMITER)));
     }
 
     public String getComponent() {
@@ -145,7 +150,6 @@ public class Artifact extends AbstractModelBase {
     public void setId(String id) {
         set(Attribute.ID, id);
     }
-
 
     public String getVersion() {
         return get(Attribute.VERSION);
@@ -179,10 +183,12 @@ public class Artifact extends AbstractModelBase {
         set(Attribute.CLASSIFICATION, classification);
     }
 
+    @Deprecated
     public boolean isVerified() {
         return "X".equalsIgnoreCase(get(Attribute.VERIFIED));
     }
 
+    @Deprecated
     public void setVerified(boolean verified) {
         set(Attribute.VERIFIED, verified ? "X" : null);
     }
@@ -218,14 +224,11 @@ public class Artifact extends AbstractModelBase {
     public void addProject(String project) {
         if (getProjects() != null && getProjects().contains(project)) return;
 
-        append(Attribute.PROJECTS.getKey(), project, ", ");
+        append(Attribute.PROJECTS.getKey(), project, PROJECT_DELIMITER);
     }
 
     public void merge(Artifact a) {
-        append(Attribute.PROJECTS.getKey(), a.get(Attribute.PROJECTS), ", ");
-        if (a.isVerified()) {
-            setVerified(true);
-        }
+        append(Attribute.PROJECTS.getKey(), a.get(Attribute.PROJECTS), PROJECT_DELIMITER);
 
         // merge attributes
         super.merge(a);
@@ -241,7 +244,7 @@ public class Artifact extends AbstractModelBase {
     public String deriveQualifier() {
         String id = getId();
         if (!StringUtils.hasText(id)) {
-            // support artifacts with out id (e.g. a folder)
+            // support artifacts without id (e.g. a folder)
             StringBuilder sb = new StringBuilder();
             if (StringUtils.hasText(getComponent())) {
                 sb.append(getComponent().trim());
@@ -413,19 +416,27 @@ public class Artifact extends AbstractModelBase {
         return version;
     }
 
+    /**
+     * Anticipated a string in the shape "artifactId-version-classifier.extension". The part between
+     * "-version-" and the first "." are regarded the classifier.
+     *
+     * @return
+     */
     private String inferClassifierFromId() {
         final String id = getId();
-        if (id != null) {
+        final String version = getVersion();
+        if (StringUtils.hasText(id) && StringUtils.hasText(version)) {
             // get rid of anything right to version
-            final String version = getVersion();
-            int versionIndex = id.indexOf(DELIMITER_DASH + version + DELIMITER_DASH);
+            final String queryString = DELIMITER_DASH + version + DELIMITER_DASH;
+            final int versionIndex = id.indexOf(queryString);
             if (versionIndex < 0) {
-                // no version, no classifier
+                // no '-<version>-' part, no classifier
                 return null;
             }
-            String classifierAndType = id.substring(versionIndex + version.length() + 2);
+            final int beginIndex = versionIndex + queryString.length();
+            final String classifierAndType = id.substring(beginIndex);
             // get rid of trailing .{type}
-            int index = classifierAndType.indexOf(DELIMITER_DOT);
+            final int index = classifierAndType.indexOf(DELIMITER_DOT);
             if (index != -1) {
                 final String classifier = classifierAndType.substring(0, index).trim();
                 if (StringUtils.hasText(classifier)) {

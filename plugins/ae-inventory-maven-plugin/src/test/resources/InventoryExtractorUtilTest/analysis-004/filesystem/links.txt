@@ -1,0 +1,3 @@
+/symlink-folder-a
+/symlink-folder-bb
+/simlink-file-bba

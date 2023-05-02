@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
+import java.util.Set;
 import java.util.StringJoiner;
 
 public class ArtifactTest {
@@ -49,6 +50,55 @@ public class ArtifactTest {
         Artifact artifact = new Artifact();
         artifact.setCompleteVulnerability(null);
         Assert.assertNull(artifact.getCompleteVulnerability());
+    }
+
+    @Test
+    public void deriveClassifierTest() {
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("guava-25.1-jre.jar");
+            artifact.setVersion("25.1");
+            Assert.assertEquals("jre", artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("guava-25.1-jre.jar");
+            artifact.setVersion("25.1-jre");
+            Assert.assertEquals(null, artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("artifactId--classifier.txt");
+            artifact.setVersion("");
+            Assert.assertEquals(null, artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("artifactId-null-classifier.txt");
+            artifact.setVersion(null);
+            Assert.assertEquals(null, artifact.getClassifier());
+        }
+        {
+            Artifact artifact = new Artifact();
+            artifact.setId("artifactId-X-classifier.txt");
+            artifact.setVersion("X");
+            Assert.assertEquals("classifier", artifact.getClassifier());
+        }
+    }
+
+    @Test
+    public void testProjects() {
+        Artifact artifact = new Artifact();
+        artifact.addProject("A");
+        artifact.addProject("A,B");
+        artifact.addProject("A, B , C");
+        artifact.addProject("D");
+
+        final Set<String> projects = artifact.getProjects();
+        Assert.assertTrue(projects.contains("A"));
+        Assert.assertTrue(projects.contains("A,B"));
+        Assert.assertTrue(projects.contains("A, B , C"));
+        Assert.assertTrue(projects.contains("D"));
     }
 
 }

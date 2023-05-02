@@ -23,6 +23,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +33,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MavenJarIdProbe {
-    protected File projectDir;
-    protected Artifact artifact;
+    private File projectDir;
+    private Artifact artifact;
+    private List<Artifact> detectedArtifactsInFatJar;
 
     public MavenJarIdProbe(File projectDir, Artifact artifact) {
         this.projectDir = projectDir;
@@ -86,7 +88,6 @@ public class MavenJarIdProbe {
         }
 
         if (jarFile == null || !jarFile.exists() || !jarFile.isFile()) {
-            addError(this.getClass().getName() + ": Could not read first jar from getProjects.");
             return null;
         } else {
             return jarFile;
@@ -104,7 +105,7 @@ public class MavenJarIdProbe {
         try {
             pomProperties.load(inputStream);
         } catch (IOException e) {
-            addError("Error while loading a 'pom.properties'.");
+            addError("Error while loading 'pom.properties'.");
         }
 
         Artifact dummyArtifact = new Artifact();
@@ -112,6 +113,8 @@ public class MavenJarIdProbe {
         dummyArtifact.setArtifactId(pomProperties.getProperty("artifactId", null));
         dummyArtifact.setGroupId(pomProperties.getProperty("groupId", null));
         dummyArtifact.setVersion(pomProperties.getProperty("version", null));
+
+        deriveId(dummyArtifact, pomProperties.getProperty("packaging", "jar"));
 
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
     }
@@ -142,12 +145,36 @@ public class MavenJarIdProbe {
                 dummyArtifact.setVersion(model.getParent().getVersion());
             }
 
+            // NOTE: the information may not be part of the pom, but provided in the parent pom. However, if the
+            // information is available, it is included in the artifact
+            if (model.getOrganization() != null) {
+                dummyArtifact.set(Constants.KEY_ORGANIZATION, model.getOrganization().getName());
+                dummyArtifact.set(Constants.KEY_ORGANIZATION_URL, model.getOrganization().getUrl());
+            }
+
+            // NOTE: the current mode is identification. POM specified licenses are not subjec to identification
+            // Furthermore, the leaf-pom may not include license information.
+
+            deriveId(dummyArtifact, model.getPackaging() != null ? model.getPackaging() : "jar");
 
         } catch (IOException | XmlPullParserException e) {
             addError("Exception while parsing a 'pom.xml'.");
         }
 
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
+    }
+
+    private void deriveId(Artifact dummyArtifact, String type) {
+        if ("bundle".equalsIgnoreCase(type)) {
+            type = "jar";
+        }
+
+        // embedded (shaded) artifacts have no id, we derive one for those without
+        if (StringUtils.isEmpty(dummyArtifact.getId())) {
+            final String version = dummyArtifact.getVersion();
+            dummyArtifact.setId(dummyArtifact.getArtifactId() + "-" +
+                    version + "." + type);
+        }
     }
 
     protected Artifact dummyArtifactFromPom(ZipFile zipFile, ZipArchiveEntry pomEntry) {
@@ -166,8 +193,15 @@ public class MavenJarIdProbe {
         return null;
     }
 
+    /**
+     * Iternates throw the entries in the jar file and produced an artifact for every pom.properties or pom.xml file.
+     *
+     * @param jarFile The file being probed.
+     *
+     * @return List of artifacts created from pom.properties or pom.xml entries in the jar file.
+     */
     protected List<Artifact> getIds(File jarFile) {
-        List<Artifact> artifacts = new ArrayList<>();
+        final List<Artifact> artifacts = new ArrayList<>();
 
         try(ZipFile zipFile = new ZipFile(jarFile)) {
             Enumeration<ZipArchiveEntry> entries = zipFile.getEntries();
@@ -180,7 +214,7 @@ public class MavenJarIdProbe {
                 }
             }
         } catch (IOException e) {
-            addError("IOException while reading project jar.");
+            // ignore
         }
 
         return artifacts;
@@ -278,10 +312,15 @@ public class MavenJarIdProbe {
         }
 
         // enforce all of artifactid, version and groupid being non-null for filling to kick in
-        List<Artifact> accepted = new ArrayList<>();
+        final List<Artifact> accepted = new ArrayList<>();
+        final List<Artifact> notAccepted = new ArrayList<>();
         for (Artifact dummyArtifact : dummyArtifacts) {
-            if (importantNonNull(dummyArtifact) && matchesFileName(jarFile.getName(), dummyArtifact)) {
-                accepted.add(dummyArtifact);
+            if (importantNonNull(dummyArtifact)) {
+                if (matchesFileName(jarFile.getName(), dummyArtifact)) {
+                    accepted.add(dummyArtifact);
+                } else {
+                    notAccepted.add(dummyArtifact);
+                }
             }
         }
 
@@ -295,23 +334,33 @@ public class MavenJarIdProbe {
             addError("Number of poms conflict with each other's state (" + conflictWithEachOther.size() + ").");
         }
 
-
         if (accepted.size() > 0) {
             // on match (accepted and no conflicts): insert info into artifact
             if (conflictWithOriginal.size() == 0 && conflictWithEachOther.size() == 0) {
-                Artifact newData = accepted.stream().findAny().get();
+                for (Artifact newData : accepted) {
 
-                artifact.setGroupId(newData.getGroupId());
-                artifact.setVersion(newData.getVersion());
+                    // copy all attributes
+                    for (String attribute : newData.getAttributes()) {
+                        // take over attributes from matched dummy without overwriting
+                        if (StringUtils.isBlank(artifact.get(attribute))) {
+                            artifact.set(attribute, newData.get(attribute));
+                        }
+                    }
 
-                // derive artifactid once groupId and version are set to produce an up-to-date output
-                artifact.setArtifactId(null);
-                artifact.deriveArtifactId();
+                    // derive artifactid once groupId and version are set to produce an up-to-date output
+                    artifact.setArtifactId(null);
+                    artifact.deriveArtifactId();
+                }
             }
         } else {
-            // on mismatch: insert error into artifact.
-            addError("No suitable poms found by " + this.getClass().getSimpleName() + " (rejected "
-                    + dummyArtifacts.size() + ").");
+            // no pom found; ignore
         }
+
+        detectedArtifactsInFatJar = notAccepted;
     }
+
+    public List<Artifact> getDetectedArtifactsInFatJar() {
+        return detectedArtifactsInFatJar;
+    }
+
 }

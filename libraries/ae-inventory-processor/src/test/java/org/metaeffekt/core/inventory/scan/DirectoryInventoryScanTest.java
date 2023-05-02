@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,13 +108,13 @@ public class DirectoryInventoryScanTest {
             if (!found0003) {
                 found0003 = artifact.getGroupId() == null
                         && artifact.getVersion() == null
-                        && !artifact.get("Errors").isEmpty();
+                        && artifact.get("Errors") == null;
             }
 
             if (!found0004) {
                 found0004 = artifact.getGroupId() == null
                         && artifact.getVersion() == null
-                        && !artifact.get("Errors").isEmpty();
+                        && artifact.get("Errors") == null;
             }
 
             if (!found0005) {
@@ -145,6 +145,8 @@ public class DirectoryInventoryScanTest {
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
 
         scan.setEnableImplicitUnpack(true);
+        scan.setIncludeEmbedded(true);
+
         final Inventory resultInventory = scan.createScanInventory();
 
         for (Artifact a : resultInventory.getArtifacts()) {

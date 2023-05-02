@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2021 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,16 +61,33 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
     @Parameter
     private String[] scanExcludes;
 
+    /**
+     * For backward compatibility reasons the default value is false. The feature requires explicit activation.
+     */
+    @Parameter(defaultValue = "false")
+    private boolean includeEmbedded = false;
+
+    /**
+     * When true, enabled that implicitly general archive types are unpacked.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean enabledImplicitUnpack = true;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            Inventory sourceInventory = InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
+            final Inventory sourceInventory =
+                InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
 
-            DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, sourceInventory);
+            final DirectoryInventoryScan scan =
+                new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, sourceInventory);
 
-            Inventory inventory = scan.createScanInventory();
+            scan.setIncludeEmbedded(includeEmbedded);
+            scan.setEnableImplicitUnpack(enabledImplicitUnpack);
 
-            for (Artifact artifact : inventory.getArtifacts()) {
+            final Inventory inventory = scan.createScanInventory();
+
+            for (final Artifact artifact : inventory.getArtifacts()) {
                 artifact.set(KEY_SOURCE_PROJECT, artifactInventoryId);
             }
 

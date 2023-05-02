@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_artifacts-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+<topic id="tpc_artifacts-$reportContext.id">
     <title>$reportContext.combinedTitle("Artefakte", true)</title>
     <body>
 #set($components=$inventory.evaluateComponentsInContext("artifact"))
@@ -32,7 +32,7 @@
                     <tbody>
 
 #foreach($component in $components)
-    #set($groups=$inventory.evaluateComponent($component, true))
+    #set($groups=$inventory.evaluateComponent($component))
     #foreach($name in $groups)
         #set($hasNotice=$inventory.hasNotice($component))
                 <row>
@@ -46,7 +46,7 @@
                     <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
                     #end
                     <entry>
-                        <lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+                        <lines>#foreach($artifact in $name)#if($utils.notEmpty($artifact.getId()))<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
 #end#end</lines>
                     </entry>
                     #set($licenses=$inventory.getEffectiveLicenses($name.get(0)))

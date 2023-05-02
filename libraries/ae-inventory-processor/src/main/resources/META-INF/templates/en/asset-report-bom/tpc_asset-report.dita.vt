@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_assets-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Asset List", true)</title>
+    <body>
+#set($assets=$assetAdapter.listAssets())
+#if($assets.isEmpty())
+        <p>
+            No individual assets have been identified.
+        </p>
+#else
+        <p>
+            The following table lists all assets that have been identified in the context of ${product.name}. The
+            assets are listed in separate sections with their specific characteristics and attributes.
+        </p>
+    </body>
+#foreach($asset in $assets)
+    <topic id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">
+        <title>$report.xmlEscapeString($asset.get("Type")) - $report.xmlEscapeString($asset.get("Name"))</title>
+        <body>
+            <p>
+                <table id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))" otherprops="wide">
+                <title>$report.xmlEscapeString($asset.get("Type")) - $report.xmlEscapeString($asset.get("Name"))</title>
+                <tgroup cols="2">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="80*" />
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Attribute</entry>
+                            <entry colname="COLSPEC1" valign="top">Value</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+#foreach($pair in $assetAdapter.listKeys($asset))
+                        <row>
+                            <entry><codeph>$report.xmlEscapeString($pair.getLeft())</codeph></entry>
+                            <entry><codeph>$report.xmlEscapeString($asset.get($pair.getRight()))</codeph></entry>
+                        </row>
+#end
+                    </tbody>
+                </tgroup>
+                </table>
+            </p>
+        </body>
+    </topic>
+#end
+#end
+</topic>
