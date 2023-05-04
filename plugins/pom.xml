@@ -19,6 +19,7 @@
         <module>ae-api-publish-maven-plugin</module>
         <module>ae-artifact-publish-maven-plugin</module>
         <module>ae-jira-maven-plugin</module>
+        <module>ae-extraction-to-required-rpm-plugin</module>
     </modules>
 
     <dependencyManagement>
