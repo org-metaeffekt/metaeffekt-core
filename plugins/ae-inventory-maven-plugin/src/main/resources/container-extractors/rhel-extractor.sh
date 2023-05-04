@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-echo "Executing centos-extractor.sh"
+echo "Executing rhel-extractor.sh"
 
 # create folder structure in analysis folder (assuming sufficient permissions)
 mkdir -p /analysis/package-meta

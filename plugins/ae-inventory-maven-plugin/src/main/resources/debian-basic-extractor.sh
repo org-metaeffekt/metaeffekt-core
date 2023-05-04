@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-echo "Executing debian-extractor.sh"
+echo "Executing debian-basic-extractor.sh"
 
 # create folder structure in analysis folder (assuming sufficient permissions)
 mkdir -p /analysis/package-meta
