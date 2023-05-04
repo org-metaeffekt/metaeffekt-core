@@ -1,0 +1,4 @@
+coreutils
+fake-package
+iamafake-lib
+linux

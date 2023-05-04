@@ -10,15 +10,31 @@ public class RequirementsResult {
 
     protected final Map<String, Set<String>> packageToRequiredPackages;
     protected final Map<String, Set<String>> packageToUnresolvedRequirements;
+    protected final Set<String> conditionallyRequired;
+    protected final SortedSet<String> installedPackages;
 
     public RequirementsResult(Map<String, Set<String>> packageToRequiredPackages,
-                              Map<String, Set<String>> packageToUnresolvedRequirements) {
-        this.packageToRequiredPackages = Collections.unmodifiableMap(packageToRequiredPackages);
-        this.packageToUnresolvedRequirements = Collections.unmodifiableMap(packageToUnresolvedRequirements);
+                              Map<String, Set<String>> packageToUnresolvedRequirements,
+                              Set<String> conditionallyRequired,
+                              Set<String> installedPackages) {
+        Objects.requireNonNull(packageToRequiredPackages);
+        Objects.requireNonNull(packageToUnresolvedRequirements);
+        Objects.requireNonNull(conditionallyRequired);
+        Objects.requireNonNull(installedPackages);
+
+        this.packageToRequiredPackages = Collections.unmodifiableMap(new HashMap<>(packageToRequiredPackages));
+        this.packageToUnresolvedRequirements =
+                Collections.unmodifiableMap(new HashMap<>(packageToUnresolvedRequirements));
+        this.conditionallyRequired = Collections.unmodifiableSortedSet(new TreeSet<>(conditionallyRequired));
+        this.installedPackages = Collections.unmodifiableSortedSet(new TreeSet<>(installedPackages));
     }
 
     public Map<String, Set<String>> getPackageToRequiredPackages() {
         return packageToRequiredPackages;
+    }
+
+    public Set<String> getConditionallyRequired() {
+        return conditionallyRequired;
     }
 
     public Map<String, Set<String>> getPackageToUnresolvedRequirements() {
@@ -31,6 +47,10 @@ public class RequirementsResult {
         packageToRequiredPackages.values().forEach(requiredPackages::addAll);
 
         return requiredPackages;
+    }
+
+    public SortedSet<String> getInstalledButNotRequired() {
+        return getInstalledButNotRequired(installedPackages);
     }
 
     public SortedSet<String> getInstalledButNotRequired(Collection<String> installedPackages) {
@@ -46,24 +66,9 @@ public class RequirementsResult {
             LOG.warn("Unsatisfied (or unresolvable with current data) requirements in [{}] packages.",
                     packageToUnresolvedRequirements.size());
 
-
-            Map<String, Set<String>> significantUnresolvable = new TreeMap<>();
+            LOG.error("Logging [{}] issues:", packageToUnresolvedRequirements.size());
 
             for (Map.Entry<String, Set<String>> e : packageToUnresolvedRequirements.entrySet()) {
-                boolean significant = e.getValue().stream().anyMatch((req) -> !req.startsWith("rpmlib("));
-
-                if (significant) {
-                    significantUnresolvable.put(e.getKey(), e.getValue());
-                }
-            }
-
-            if (significantUnresolvable.size() == 0) {
-                return;
-            }
-
-            LOG.error("Logging [{}] significant issues:", significantUnresolvable.size());
-
-            for (Map.Entry<String, Set<String>> e : significantUnresolvable.entrySet()) {
                 LOG.error("- " + e.getKey());
                 for (String unresolvable : e.getValue()) {
                     LOG.error("  - " + unresolvable);
@@ -73,6 +78,4 @@ public class RequirementsResult {
             LOG.info("Map of unsatisfiable dependencies is empty.");
         }
     }
-
-    // TODO: add option to output a "required but not found / but not installed" category
 }
