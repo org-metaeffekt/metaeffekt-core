@@ -21,17 +21,21 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class XlsInventoryReader extends AbstractInventoryReader {
+
+    private static final Logger LOG = LoggerFactory.getLogger(XlsInventoryReader.class);
 
     @Override
     public Inventory readInventory(InputStream in) throws IOException {
@@ -99,12 +103,24 @@ public class XlsInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory) {
+        workbook.sheetIterator().forEachRemaining(sheet -> {
+            if (sheet.getSheetName().startsWith(WORKSHEET_NAME_VULNERABILITY_DATA)) {
+                readVulnerabilityMetaData(workbook, inventory, sheet.getSheetName());
+            }
+        });
+    }
 
-        final HSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_VULNERABILITY_DATA);
-        if (sheet == null) return;
+    protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory, String sheetName) {
+        final HSSFSheet sheet = workbook.getSheet(sheetName);
+        if (sheet == null) {
+            LOG.warn("Inventory sheet {} not found.", sheetName);
+            return;
+        }
+
+        final String context = VulnerabilityMetaData.sheetNameToContext(sheetName);
 
         final List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
-        inventory.setVulnerabilityMetaData(vulnerabilityMetaData);
+        inventory.setVulnerabilityMetaData(vulnerabilityMetaData, context);
 
         final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
             final VulnerabilityMetaData vmd = readRow(row, new VulnerabilityMetaData(), pc);

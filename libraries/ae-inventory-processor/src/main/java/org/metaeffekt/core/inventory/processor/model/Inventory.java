@@ -57,7 +57,7 @@ public class Inventory {
 
     private List<LicenseData> licenseData = new ArrayList<>();
 
-    private List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
+    private Map<String, List<VulnerabilityMetaData>> vulnerabilityMetaData = new LinkedHashMap<>(1);
 
     private List<CertMetaData> certMetaData = new ArrayList<>();
 
@@ -1158,7 +1158,15 @@ public class Inventory {
         filteredInventory.setLicenseMetaData(getLicenseMetaData());
         filteredInventory.setLicenseData(getLicenseData());
         filteredInventory.setLicenseNameMap(getLicenseNameMap());
-        filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
+
+        if (getVulnerabilityMetaDataContexts().size() > 1) {
+            getVulnerabilityMetaDataContexts().forEach(
+                    context -> filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData(context), context)
+            );
+        } else {
+            filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
+        }
+
         filteredInventory.setCertMetaData(getCertMetaData());
         filteredInventory.setAssetMetaData(getAssetMetaData());
         filteredInventory.setInventoryInfo(getInventoryInfo());
@@ -1327,30 +1335,36 @@ public class Inventory {
     }
 
     public void inheritVulnerabilityMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
-        final Map<String, VulnerabilityMetaData> localVmds = new HashMap<>();
-        for (VulnerabilityMetaData vmd : getVulnerabilityMetaData()) {
-            String artifactQualifier = vmd.deriveQualifier();
-            localVmds.put(artifactQualifier, vmd);
-        }
-        for (VulnerabilityMetaData vmd : inputInventory.getVulnerabilityMetaData()) {
-            String qualifier = vmd.deriveQualifier();
-            if (localVmds.containsKey(qualifier)) {
-                // overwrite; the localVmds inventory contains the artifact.
-                if (infoOnOverwrite) {
-                    VulnerabilityMetaData localVmd = localVmds.get(qualifier);
-                    if (vmd.createCompareStringRepresentation().equals(
-                            localVmd.createCompareStringRepresentation())) {
-                        LOG.info("Vulnerability metadata {} overwritten. Relevant content nevertheless matches. " +
-                                "Consider removing the overwrite.", qualifier);
-                    } else {
-                        LOG.info(String.format("Vulnerability metadata %s overwritten. %n  %s%n  %s", qualifier,
-                                vmd.createCompareStringRepresentation(),
-                                localVmd.createCompareStringRepresentation()));
+        for (String context : inputInventory.getVulnerabilityMetaDataContexts()) {
+            final Map<String, VulnerabilityMetaData> localVmds = new HashMap<>();
+
+            for (VulnerabilityMetaData vmd : getVulnerabilityMetaData(context)) {
+                final String artifactQualifier = vmd.deriveQualifier();
+                localVmds.put(artifactQualifier, vmd);
+            }
+
+            for (VulnerabilityMetaData vmd : inputInventory.getVulnerabilityMetaData(context)) {
+                final String qualifier = vmd.deriveQualifier();
+
+                if (localVmds.containsKey(qualifier)) {
+                    // overwrite; the localVmds inventory contains the artifact.
+                    if (infoOnOverwrite) {
+                        VulnerabilityMetaData localVmd = localVmds.get(qualifier);
+                        if (vmd.createCompareStringRepresentation().equals(
+                                localVmd.createCompareStringRepresentation())) {
+                            LOG.info("Vulnerability metadata {} overwritten. Relevant content nevertheless matches. " +
+                                    "Consider removing the overwrite.", qualifier);
+                        } else {
+                            LOG.info(String.format("Vulnerability metadata %s overwritten. %n  %s%n  %s", qualifier,
+                                    vmd.createCompareStringRepresentation(),
+                                    localVmd.createCompareStringRepresentation()));
+                        }
                     }
+
+                } else {
+                    // add the artifact
+                    getVulnerabilityMetaData(context).add(vmd);
                 }
-            } else {
-                // add the artifact
-                getVulnerabilityMetaData().add(vmd);
             }
         }
     }
@@ -1446,25 +1460,33 @@ public class Inventory {
      * </ul>
      */
     public void filterVulnerabilityMetaData() {
-        Set<String> coveredVulnerabilityIds = new HashSet<>();
+        final Set<String> coveredVulnerabilityIds = new HashSet<>();
         for (Artifact artifact : artifacts) {
-            String v = artifact.getVulnerability();
+            final String v = artifact.getVulnerability();
             splitCommaSeparated(v).stream().
                     map(this::toPlainCVE).
                     filter(Objects::nonNull).
                     forEach(coveredVulnerabilityIds::add);
         }
         LOG.debug("Covered vulnerabilities: {}", coveredVulnerabilityIds);
-        List<VulnerabilityMetaData> forDeletion = new ArrayList<>();
-        for (VulnerabilityMetaData vmd : getVulnerabilityMetaData()) {
-            if (!vmd.isStatus(VulnerabilityMetaData.STATUS_VALUE_VOID)
-                    && !coveredVulnerabilityIds.contains(vmd.get(VulnerabilityMetaData.Attribute.NAME))) {
-                forDeletion.add(vmd);
+
+        final List<VulnerabilityMetaData> forDeletion = new ArrayList<>();
+        for (String context : this.getVulnerabilityMetaDataContexts()) {
+            for (VulnerabilityMetaData vmd : this.getVulnerabilityMetaData(context)) {
+                if (!vmd.isStatus(VulnerabilityMetaData.STATUS_VALUE_VOID)) {
+                    if (!coveredVulnerabilityIds.contains(vmd.get(VulnerabilityMetaData.Attribute.NAME))) {
+                        forDeletion.add(vmd);
+                    }
+                }
             }
         }
         LOG.debug("Removing vulnerability metadata for: {}",
-                forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", ")));
-        getVulnerabilityMetaData().removeAll(forDeletion);
+                forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", "))
+        );
+
+        for (String context : this.getVulnerabilityMetaDataContexts()) {
+            getVulnerabilityMetaData(context).removeAll(forDeletion);
+        }
     }
 
     public List<ComponentPatternData> getComponentPatternData() {
@@ -1476,11 +1498,34 @@ public class Inventory {
     }
 
     public List<VulnerabilityMetaData> getVulnerabilityMetaData() {
-        return vulnerabilityMetaData;
+        if (vulnerabilityMetaData.isEmpty()) {
+            return vulnerabilityMetaData.computeIfAbsent(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT, e -> new ArrayList<>());
+        } else if (vulnerabilityMetaData.size() == 1) {
+            return vulnerabilityMetaData.values().iterator().next();
+        } else {
+            throw new IllegalStateException("Unspecified vulnerability metadata context, specify one of " + getVulnerabilityMetaDataContexts());
+        }
+    }
+
+    public List<VulnerabilityMetaData> getVulnerabilityMetaData(String context) {
+        return vulnerabilityMetaData.computeIfAbsent(context, e -> new ArrayList<>());
     }
 
     public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData) {
-        this.vulnerabilityMetaData = vulnerabilityMetaData;
+        if (this.vulnerabilityMetaData.size() <= 1) {
+            this.vulnerabilityMetaData.clear();
+            this.vulnerabilityMetaData.put(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT, vulnerabilityMetaData);
+        } else {
+            throw new IllegalStateException("Unspecified vulnerability metadata context, specify one of " + getVulnerabilityMetaDataContexts());
+        }
+    }
+
+    public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData, String context) {
+        this.vulnerabilityMetaData.put(context, vulnerabilityMetaData);
+    }
+
+    public List<String> getVulnerabilityMetaDataContexts() {
+        return new ArrayList<>(vulnerabilityMetaData.keySet());
     }
 
     @Deprecated // is still used be the german translation; preserve until translation is completely revised

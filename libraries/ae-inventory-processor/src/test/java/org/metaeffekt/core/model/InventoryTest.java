@@ -20,6 +20,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+
+import java.io.File;
+import java.io.IOException;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
@@ -271,6 +277,63 @@ public class InventoryTest {
         Artifact matchedArtifact = inventory.findArtifact(candidate, true);
         Assert.assertTrue(matchedArtifact != null);
         Assert.assertEquals(matchedArtifact.getVersion(), ASTERISK);
+    }
+
+    @Test
+    public void vulnerabilityMetaDataContextTest() throws IOException {
+        Inventory inventory = new Inventory();
+        VulnerabilityMetaData vulnerabilityMetaData = new VulnerabilityMetaData();
+        vulnerabilityMetaData.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2017-1234");
+        vulnerabilityMetaData.set(VulnerabilityMetaData.Attribute.URL, " ");
+        inventory.getVulnerabilityMetaData().add(vulnerabilityMetaData);
+
+        Assert.assertNotNull(inventory.getVulnerabilityMetaData());
+        Assert.assertEquals(inventory.getVulnerabilityMetaData().size(), 1);
+        Assert.assertEquals(inventory.getVulnerabilityMetaData().get(0), vulnerabilityMetaData);
+
+        VulnerabilityMetaData vulnerabilityMetaDataTestContext = new VulnerabilityMetaData();
+        vulnerabilityMetaDataTestContext.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2018-1234");
+        vulnerabilityMetaDataTestContext.set(VulnerabilityMetaData.Attribute.URL, " ");
+        inventory.getVulnerabilityMetaData("test").add(vulnerabilityMetaDataTestContext);
+
+        Assert.assertNotNull(inventory.getVulnerabilityMetaData("test"));
+        Assert.assertEquals(1, inventory.getVulnerabilityMetaData("test").size());
+        Assert.assertEquals(vulnerabilityMetaDataTestContext, inventory.getVulnerabilityMetaData("test").get(0));
+
+        try {
+            inventory.getVulnerabilityMetaData();
+            Assert.fail("Should have thrown an exception");
+        } catch (IllegalStateException ignored) {
+        }
+
+        Assert.assertEquals(vulnerabilityMetaData, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT).get(0));
+
+        Assert.assertEquals(0, inventory.getVulnerabilityMetaData("test2").size());
+
+        new InventoryWriter().writeInventory(inventory, new File("target/vulnerabilityMetaDataContextTest.xls"));
+        new InventoryWriter().writeInventory(inventory, new File("target/vulnerabilityMetaDataContextTest.xlsx"));
+
+        // XLS
+        inventory = new InventoryReader().readInventory(new File("target/vulnerabilityMetaDataContextTest.xls"));
+
+        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT));
+        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT).size());
+
+        // methods that used to access the VMD via the getVulnerabilityMetaData() method, without a context
+        inventory.getFilteredInventory();
+        new Inventory().inheritVulnerabilityMetaData(inventory, false);
+        inventory.filterVulnerabilityMetaData();
+
+        // XLXS
+        inventory = new InventoryReader().readInventory(new File("target/vulnerabilityMetaDataContextTest.xlsx"));
+
+        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT));
+        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT).size());
+
+        // methods that used to access the VMD via the getVulnerabilityMetaData() method, without a context
+        inventory.getFilteredInventory();
+        new Inventory().inheritVulnerabilityMetaData(inventory, false);
+        inventory.filterVulnerabilityMetaData();
     }
 
 }

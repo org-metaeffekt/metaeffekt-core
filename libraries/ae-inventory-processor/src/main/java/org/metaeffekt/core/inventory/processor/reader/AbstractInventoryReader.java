@@ -114,7 +114,9 @@ public abstract class AbstractInventoryReader {
     protected void applyModificationsForCompatibility(Inventory inventory) {
         inventory.getArtifacts().forEach(this::update);
         inventory.getLicenseMetaData().forEach(this::update);
-        inventory.getVulnerabilityMetaData().forEach(this::update);
+        inventory.getVulnerabilityMetaDataContexts().forEach(
+                context -> inventory.getVulnerabilityMetaData(context).forEach(this::update)
+        );
     }
 
     protected static class ParsingContext {

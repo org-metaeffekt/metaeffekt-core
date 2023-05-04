@@ -34,7 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
-public class XlsInventoryWriter extends AbstractXlsInventoryWriter{
+public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
 
@@ -229,9 +229,15 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter{
     }
 
     private void writeVulnerabilities(Inventory inventory, HSSFWorkbook workbook) {
-        if (isEmpty(inventory.getVulnerabilityMetaData())) return;
+        inventory.getVulnerabilityMetaDataContexts().stream()
+                .filter(StringUtils::isNotEmpty)
+                .forEach(context -> writeVulnerabilities(inventory, workbook, context));
+    }
 
-        HSSFSheet sheet = workbook.createSheet("Vulnerabilities");
+    private void writeVulnerabilities(Inventory inventory, HSSFWorkbook workbook, String context) {
+        if (isEmpty(inventory.getVulnerabilityMetaData(context))) return;
+
+        final HSSFSheet sheet = workbook.createSheet(VulnerabilityMetaData.contextToSheetName(context));
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
@@ -245,7 +251,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter{
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData()) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
             attributes.addAll(vmd.getAttributes());
         }
 
@@ -265,7 +271,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter{
 
         int numCol = cellNum;
 
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData()) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
@@ -288,7 +294,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter{
                             break;
                         case URL:
                             cell.setCellValue(new HSSFRichTextString(value));
-                            if (StringUtils.isNotEmpty(value)) {
+                            if (StringUtils.isNotBlank(value)) {
                                 Hyperlink link = workbook.getCreationHelper().createHyperlink(HyperlinkType.URL);
                                 link.setAddress(value);
                                 cell.setHyperlink(link);
