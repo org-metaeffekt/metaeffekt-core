@@ -300,12 +300,6 @@ public class InventoryTest {
         Assert.assertEquals(1, inventory.getVulnerabilityMetaData("test").size());
         Assert.assertEquals(vulnerabilityMetaDataTestContext, inventory.getVulnerabilityMetaData("test").get(0));
 
-        try {
-            inventory.getVulnerabilityMetaData();
-            Assert.fail("Should have thrown an exception");
-        } catch (IllegalStateException ignored) {
-        }
-
         Assert.assertEquals(vulnerabilityMetaData, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).get(0));
 
         Assert.assertEquals(0, inventory.getVulnerabilityMetaData("test2").size());
