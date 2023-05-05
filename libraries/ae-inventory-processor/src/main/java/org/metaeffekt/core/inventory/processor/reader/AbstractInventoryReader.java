@@ -29,6 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
+
 public abstract class AbstractInventoryReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractInventoryReader.class);
@@ -128,6 +130,16 @@ public abstract class AbstractInventoryReader {
 
         final List<String> columns;
         final Map<Integer, String> columnsMap;
+    }
+
+    public String sheetNameToAssessmentContext(String sheetName) {
+        // FIXME: also rename to assessment
+        if ("Vulnerabilities".equals(sheetName)) {
+            return VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT;
+        } else if (sheetName.startsWith(VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX)) {
+            return sheetName.substring(VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX.length());
+        }
+        return sheetName;
     }
 
 }

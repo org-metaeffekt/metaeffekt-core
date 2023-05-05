@@ -22,18 +22,20 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 
-public class InventoryWriter extends AbstractXlsInventoryWriter{
+public class InventoryWriter extends AbstractXlsInventoryWriter {
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
 
-    public void writeInventory(Inventory inventory, File file) throws IOException {
+    public static final String VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX = "Assessment-";
 
+    public static final String SINGLE_VULNERABILITY_ASSESSMENT_WORKSHEET = "Vulnerabilities";
+
+    public void writeInventory(Inventory inventory, File file) throws IOException {
         if (file.getName().endsWith(".xls")) {
             new XlsInventoryWriter().writeInventory(inventory, file);
         } else {
             new XlsxInventoryWriter().writeInventory(inventory, file);
         }
-
     }
 
 }

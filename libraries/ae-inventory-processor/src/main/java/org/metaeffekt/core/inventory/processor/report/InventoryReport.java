@@ -69,6 +69,8 @@ public class InventoryReport {
 
     public static final String TEMPLATE_GROUP_ASSET_REPORT_BOM = "asset-report-bom";
 
+    public static final String TEMPLATE_GROUP_ASSESSMENT_REPORT = "assessment-report";
+
     public static final String KEY_PREVIOUS_VERSION = "Previous Version";
 
     /**
@@ -197,6 +199,14 @@ public class InventoryReport {
 
     private ArtifactFilter artifactFilter;
 
+    /**
+     * Some report use cases do not require/desire the vulnerabilities in the inventory to be filtered. Adversely to
+     * previous handling (all inventories were filtered) the default is here <code>false</code>. The relevance of the
+     * vulnerability is determined by the use case of the inventory and not structural. Also some inventories may not
+     * detail the artifacts-level information and anly provide assets and asset-level assessment information.
+     */
+    private boolean filterVulnerabilitiesNotCoveredByArtifacts = false;
+
     private boolean inventoryBomReportEnabled = false;
     private boolean inventoryDiffReportEnabled = false;
     private boolean inventoryPomEnabled = false;
@@ -204,6 +214,7 @@ public class InventoryReport {
     private boolean inventoryVulnerabilityReportSummaryEnabled = false;
     private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
     private boolean assetBomReportEnabled = false;
+    private boolean assessmentReportEnabled = false;
 
     /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
@@ -527,7 +538,9 @@ public class InventoryReport {
         projectInventory.inheritAssetMetaData(globalInventory, false);
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
-        projectInventory.filterVulnerabilityMetaData();
+        if (filterVulnerabilitiesNotCoveredByArtifacts) {
+            projectInventory.filterVulnerabilityMetaData();
+        }
 
         // filter the vulnerability metadata to only include those with a score larger than the min score
         if (getMinimumVulnerabilityIncludeScore() >= 0) {
@@ -579,6 +592,10 @@ public class InventoryReport {
 
         if (assetBomReportEnabled) {
             writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
+        }
+
+        if (assessmentReportEnabled) {
+            writeReports(projectInventory, deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -929,6 +946,7 @@ public class InventoryReport {
         final AssetReportAdapter assetReportAdapter = new AssetReportAdapter(filteredInventory);
         final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
                 filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold, includeAdvisoryTypes);
+        final AssessmentReportAdapter assessmentReportAdapter = new AssessmentReportAdapter(projectInventory);
 
         // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
         filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityReportAdapter, filteredInventory.getVulnerabilityMetaData());
@@ -936,6 +954,7 @@ public class InventoryReport {
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
         context.put("vulnerabilityAdapter", vulnerabilityReportAdapter);
+        context.put("assessmentReportAdapter", assessmentReportAdapter);
         context.put("assetAdapter", assetReportAdapter);
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
@@ -1423,6 +1442,14 @@ public class InventoryReport {
         this.assetBomReportEnabled = assetBomReportEnabled;
     }
 
+    public boolean isAssessmentReportEnabled() {
+        return assessmentReportEnabled;
+    }
+
+    public void setAssessmentReportEnabled(boolean assessmentReportEnabled) {
+        this.assessmentReportEnabled = assessmentReportEnabled;
+    }
+
     public void setLastProjectInventory(Inventory lastProjectInventory) {
         this.lastProjectInventory = lastProjectInventory;
     }
@@ -1457,4 +1484,7 @@ public class InventoryReport {
         return strings.stream().collect(Collectors.joining(delimiter));
     }
 
+    public void setFilterVulnerabilitiesNotCoveredByArtifacts(boolean filterVulnerabilitiesNotCoveredByArtifacts) {
+        this.filterVulnerabilitiesNotCoveredByArtifacts = filterVulnerabilitiesNotCoveredByArtifacts;
+    }
 }

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -69,12 +70,16 @@ public class AssetReportAdapter {
     };
 
     public Pair<String, String>[] listKeys(AssetMetaData assetMetaData) {
-        switch (assetMetaData.get("Type")) {
-            case "Container":
-                return containerKeyList;
-            case "Appliance":
-                return applianceKeyList;
+        final String type = assetMetaData.get("Type");
+        if (!StringUtils.isEmpty(type)) {
+            switch (type) {
+                case "Container":
+                    return containerKeyList;
+                case "Appliance":
+                    return applianceKeyList;
+            }
         }
         return defaultKeyList;
     }
+
 }

@@ -306,7 +306,7 @@ public class InventoryTest {
         } catch (IllegalStateException ignored) {
         }
 
-        Assert.assertEquals(vulnerabilityMetaData, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT).get(0));
+        Assert.assertEquals(vulnerabilityMetaData, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).get(0));
 
         Assert.assertEquals(0, inventory.getVulnerabilityMetaData("test2").size());
 
@@ -316,8 +316,8 @@ public class InventoryTest {
         // XLS
         inventory = new InventoryReader().readInventory(new File("target/vulnerabilityMetaDataContextTest.xls"));
 
-        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT));
-        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT).size());
+        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
+        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
 
         // methods that used to access the VMD via the getVulnerabilityMetaData() method, without a context
         inventory.getFilteredInventory();
@@ -327,8 +327,8 @@ public class InventoryTest {
         // XLXS
         inventory = new InventoryReader().readInventory(new File("target/vulnerabilityMetaDataContextTest.xlsx"));
 
-        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT));
-        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT).size());
+        Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
+        Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
 
         // methods that used to access the VMD via the getVulnerabilityMetaData() method, without a context
         inventory.getFilteredInventory();

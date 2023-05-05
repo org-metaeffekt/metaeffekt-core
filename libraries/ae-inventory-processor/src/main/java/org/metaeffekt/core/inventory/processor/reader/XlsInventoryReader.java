@@ -21,6 +21,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,7 +105,8 @@ public class XlsInventoryReader extends AbstractInventoryReader {
 
     protected void readVulnerabilityMetaData(HSSFWorkbook workbook, Inventory inventory) {
         workbook.sheetIterator().forEachRemaining(sheet -> {
-            if (sheet.getSheetName().startsWith(WORKSHEET_NAME_VULNERABILITY_DATA)) {
+            if (sheet.getSheetName().startsWith(WORKSHEET_NAME_VULNERABILITY_DATA) ||
+                    sheet.getSheetName().startsWith(InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX)) {
                 readVulnerabilityMetaData(workbook, inventory, sheet.getSheetName());
             }
         });
@@ -117,7 +119,7 @@ public class XlsInventoryReader extends AbstractInventoryReader {
             return;
         }
 
-        final String context = VulnerabilityMetaData.sheetNameToContext(sheetName);
+        final String context = sheetNameToAssessmentContext(sheetName);
 
         final List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
         inventory.setVulnerabilityMetaData(vulnerabilityMetaData, context);
@@ -250,7 +252,6 @@ public class XlsInventoryReader extends AbstractInventoryReader {
     }
 
     private void parse(Inventory inventory, HSSFSheet sheet, BiConsumer<HSSFRow, ParsingContext> rowConsumer, String contextKey) {
-
         final Function<HSSFRow, ParsingContext> headerConsumer = row -> parseColumns(row);
 
         final Iterator<?> rows = sheet.rowIterator();

@@ -142,7 +142,7 @@ public class ContainerAssetInventoryProcessor {
                 assetMetaData.set("Os", String.valueOf(element.getOs()));
             }
         } catch (Exception e) {
-            LOG.error("Cannot inspect container image {}:{}.", repo, tag, e);
+            LOG.error("Cannot parse container inspection file {} for {}:{}.", containerInspectionFile, repo, tag, e);
         }
     }
 

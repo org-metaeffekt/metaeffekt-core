@@ -1161,7 +1161,7 @@ public class Inventory {
 
         if (getVulnerabilityMetaDataContexts().size() > 1) {
             getVulnerabilityMetaDataContexts().forEach(
-                    context -> filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData(context), context)
+                context -> filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData(context), context)
             );
         } else {
             filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
@@ -1460,6 +1460,7 @@ public class Inventory {
      * </ul>
      */
     public void filterVulnerabilityMetaData() {
+        // collect vulnerability ids referenced by artifacts
         final Set<String> coveredVulnerabilityIds = new HashSet<>();
         for (Artifact artifact : artifacts) {
             final String v = artifact.getVulnerability();
@@ -1471,19 +1472,29 @@ public class Inventory {
         LOG.debug("Covered vulnerabilities: {}", coveredVulnerabilityIds);
 
         final List<VulnerabilityMetaData> forDeletion = new ArrayList<>();
+
+        // FIXME-YWI: do we want to filter all contexts or only the default context?
         for (String context : this.getVulnerabilityMetaDataContexts()) {
             for (VulnerabilityMetaData vmd : this.getVulnerabilityMetaData(context)) {
-                if (!vmd.isStatus(VulnerabilityMetaData.STATUS_VALUE_VOID)) {
-                    if (!coveredVulnerabilityIds.contains(vmd.get(VulnerabilityMetaData.Attribute.NAME))) {
-                        forDeletion.add(vmd);
-                    }
-                }
+                // retain void vulnerabilities
+                if (vmd.isStatus(VulnerabilityMetaData.STATUS_VALUE_VOID)) continue;
+
+                // retain vulnerabilities referenced by artifacts
+                if (coveredVulnerabilityIds.contains(vmd.get(VulnerabilityMetaData.Attribute.NAME))) continue;
+
+                // collect others for deletion
+                forDeletion.add(vmd);
             }
         }
-        LOG.debug("Removing vulnerability metadata for: {}",
-                forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", "))
-        );
 
+        // log vulnerabilities deleted
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Removing vulnerability metadata for: {}",
+                    forDeletion.stream().map(v -> v.get(VulnerabilityMetaData.Attribute.NAME)).collect(Collectors.joining(", "))
+            );
+        }
+
+        // remove non-relevant vulnerabilities
         for (String context : this.getVulnerabilityMetaDataContexts()) {
             getVulnerabilityMetaData(context).removeAll(forDeletion);
         }
@@ -1497,14 +1508,13 @@ public class Inventory {
         this.componentPatternData = componentPatternData;
     }
 
+    /**
+     * Access the default assessment context.
+     *
+     * @return The default assessment contexts' vulnerability metadata.
+     */
     public List<VulnerabilityMetaData> getVulnerabilityMetaData() {
-        if (vulnerabilityMetaData.isEmpty()) {
-            return vulnerabilityMetaData.computeIfAbsent(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT, e -> new ArrayList<>());
-        } else if (vulnerabilityMetaData.size() == 1) {
-            return vulnerabilityMetaData.values().iterator().next();
-        } else {
-            throw new IllegalStateException("Unspecified vulnerability metadata context, specify one of " + getVulnerabilityMetaDataContexts());
-        }
+        return getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT);
     }
 
     public List<VulnerabilityMetaData> getVulnerabilityMetaData(String context) {
@@ -1512,12 +1522,7 @@ public class Inventory {
     }
 
     public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData) {
-        if (this.vulnerabilityMetaData.size() <= 1) {
-            this.vulnerabilityMetaData.clear();
-            this.vulnerabilityMetaData.put(VulnerabilityMetaData.VULNERABILITY_CONTEXT_DEFAULT, vulnerabilityMetaData);
-        } else {
-            throw new IllegalStateException("Unspecified vulnerability metadata context, specify one of " + getVulnerabilityMetaDataContexts());
-        }
+        setVulnerabilityMetaData(vulnerabilityMetaData, VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT);
     }
 
     public void setVulnerabilityMetaData(List<VulnerabilityMetaData> vulnerabilityMetaData, String context) {

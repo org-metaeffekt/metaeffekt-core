@@ -42,14 +42,16 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final HSSFWorkbook workbook = new HSSFWorkbook();
 
         writeArtifacts(inventory, workbook);
-        writeNotices(inventory, workbook);
-        writeComponentPatterns(inventory, workbook);
-        writeVulnerabilities(inventory, workbook);
-        writeAdvisoryMetaData(inventory, workbook);
-        writeInventoryInfo(inventory, workbook);
-        writeLicenseData(inventory, workbook);
         writeAssetMetaData(inventory, workbook);
+        writeNotices(inventory, workbook);
+        writeInventoryInfo(inventory, workbook);
+
+        writeComponentPatterns(inventory, workbook);
+        writeAdvisoryMetaData(inventory, workbook);
+        writeLicenseData(inventory, workbook);
         writeReportData(inventory, workbook);
+
+        writeVulnerabilities(inventory, workbook);
 
         final FileOutputStream out = new FileOutputStream(file);
         try {
@@ -237,7 +239,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
     private void writeVulnerabilities(Inventory inventory, HSSFWorkbook workbook, String context) {
         if (isEmpty(inventory.getVulnerabilityMetaData(context))) return;
 
-        final HSSFSheet sheet = workbook.createSheet(VulnerabilityMetaData.contextToSheetName(context));
+        final HSSFSheet sheet = workbook.createSheet(assessmentContextToSheetName(context));
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 

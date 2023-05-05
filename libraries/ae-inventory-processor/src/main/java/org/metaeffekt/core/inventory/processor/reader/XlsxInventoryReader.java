@@ -112,7 +112,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
             return;
         }
 
-        final String context = VulnerabilityMetaData.sheetNameToContext(sheetName);
+        final String context = sheetNameToAssessmentContext(sheetName);
 
         final List<VulnerabilityMetaData> vulnerabilityMetaData = new ArrayList<>();
         inventory.setVulnerabilityMetaData(vulnerabilityMetaData, context);

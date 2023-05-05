@@ -320,6 +320,7 @@ public class RepositoryReportTest {
         report.setInventoryVulnerabilityReportEnabled(true);
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
         report.setAssetBomReportEnabled(true);
+        report.setAssessmentReportEnabled(true);
 
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);

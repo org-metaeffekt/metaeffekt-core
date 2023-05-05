@@ -64,14 +64,16 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         final XSSFWorkbook workbook = new XSSFWorkbook();
 
         writeArtifacts(inventory, workbook);
-        writeNotices(inventory, workbook);
-        writeComponentPatterns(inventory, workbook);
-        writeVulnerabilities(inventory, workbook);
-        writeAdvisoryMetaData(inventory, workbook);
-        writeInventoryInfo(inventory, workbook);
-        writeLicenseData(inventory, workbook);
         writeAssetMetaData(inventory, workbook);
+        writeNotices(inventory, workbook);
+        writeInventoryInfo(inventory, workbook);
+
+        writeComponentPatterns(inventory, workbook);
+        writeAdvisoryMetaData(inventory, workbook);
+        writeLicenseData(inventory, workbook);
         writeReportData(inventory, workbook);
+
+        writeVulnerabilities(inventory, workbook);
 
         final FileOutputStream out = new FileOutputStream(file);
         try {
@@ -285,10 +287,10 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
                 .forEach(context -> writeVulnerabilities(inventory, workbook, context));
     }
 
-    private void writeVulnerabilities(Inventory inventory, XSSFWorkbook workbook, String context) {
-        if (isEmpty(inventory.getVulnerabilityMetaData(context))) return;
+    private void writeVulnerabilities(Inventory inventory, XSSFWorkbook workbook, String assessmentContext) {
+        if (isEmpty(inventory.getVulnerabilityMetaData(assessmentContext))) return;
 
-        final XSSFSheet sheet = workbook.createSheet(VulnerabilityMetaData.contextToSheetName(context));
+        final XSSFSheet sheet = workbook.createSheet(assessmentContextToSheetName(assessmentContext));
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
@@ -302,7 +304,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(assessmentContext)) {
             attributes.addAll(vmd.getAttributes());
         }
 
@@ -322,7 +324,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         int numCol = cellNum;
 
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(context)) {
+        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(assessmentContext)) {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {

@@ -50,6 +50,8 @@ public class ArchiveUtils {
     private static final Set<String> jmodExtensions = new HashSet<>();
     private static final Set<String> jimageExtensions = new HashSet<>();
 
+    private static final Set<String> jimageFilenames = new HashSet<>();
+
     static {
         zipExtensions.add("war");
         zipExtensions.add("zip");
@@ -72,7 +74,11 @@ public class ArchiveUtils {
         tarExtensions.add("apk");
 
         jmodExtensions.add("jmod");
+
+        // keep for behavior consistency reasons
         jimageExtensions.add("modules");
+
+        jimageFilenames.add("modules");
     }
 
     public static void registerZipExtension(String suffix) {
@@ -253,23 +259,15 @@ public class ArchiveUtils {
         final Project project = new Project();
         project.setBaseDir(archiveFile.getParentFile());
 
-        final String archiveFileName = archiveFile.getName();
+        final String archiveFileName = archiveFile.getName().toLowerCase();
+        final String extension = FilenameUtils.getExtension(archiveFileName);
 
-        String extension = FilenameUtils.getExtension(archiveFileName).toLowerCase();
-        if (extension.isEmpty()) {
-            extension = archiveFileName.toLowerCase();
-        }
-
-        // if the filename the extension we skip
-        if (!StringUtils.hasText(extension) || archiveFileName.equalsIgnoreCase(extension)) {
-            return false;
-        }
-
-        boolean mkdir = targetDir.mkdirs();
+        boolean mkdir = !targetDir.exists();
 
         // try unzip
         try {
             if (zipExtensions.contains(extension)) {
+                FileUtils.forceMkdir(targetDir);
                 Expand expandTask = new Expand();
                 expandTask.setProject(project);
                 expandTask.setDest(targetDir);
@@ -286,6 +284,7 @@ public class ArchiveUtils {
         // try gunzip
         try {
             if (gzipExtensions.contains(extension)) {
+                FileUtils.forceMkdir(targetDir);
                 GUnzip expandTask = new GUnzip();
                 expandTask.setProject(project);
                 expandTask.setDest(targetDir);
@@ -305,6 +304,7 @@ public class ArchiveUtils {
         // try untar
         try {
             if (tarExtensions.contains(extension)) {
+                FileUtils.forceMkdir(targetDir);
                 untar(archiveFile, targetDir);
                 return true;
             }
@@ -319,6 +319,7 @@ public class ArchiveUtils {
         // try jmod
         try {
             if (jmodExtensions.contains(extension)) {
+                FileUtils.forceMkdir(targetDir);
                 extractJMod(archiveFile, targetDir);
                 return true;
             }
@@ -330,7 +331,8 @@ public class ArchiveUtils {
 
         // try jimage
         try {
-            if (jimageExtensions.contains(extension)) {
+            if (jimageExtensions.contains(extension) || jimageFilenames.contains(archiveFileName)) {
+                FileUtils.forceMkdir(targetDir);
                 extractJImage(archiveFile, targetDir);
                 return true;
             }

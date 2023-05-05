@@ -27,7 +27,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.*;
 
-public class AbstractXlsxInventoryWriter {
+public class AbstractXlsxInventoryWriter extends AbstractInventoryWriter {
 
     /**
      * Excel 97 limits the maximum cell content length to <code>32767</code> characters. To ensure that the contents are

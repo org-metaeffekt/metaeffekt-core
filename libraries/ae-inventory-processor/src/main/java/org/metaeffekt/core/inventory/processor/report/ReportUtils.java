@@ -27,4 +27,13 @@ public class ReportUtils {
         return StringUtils.hasText(value);
     }
 
+    public String ratio(long part, long total) {
+        return String.format("%.1f", ((double) part) / total);
+    }
+
+    public String percent(long part, long total) {
+        if (total == 0) return "n/a";
+        return String.format("%.1f %%", (100d * part) / total);
+    }
+
 }

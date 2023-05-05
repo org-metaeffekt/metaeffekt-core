@@ -1,0 +1,29 @@
+## load macros from other files
+#parse("META-INF/templates/en/labels-vulnerability-assessment/macros/labels.vm")
+#parse("META-INF/templates/en/assessment-report/macros/assessment-report.vm")
+##
+## main template content
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_asset-assessment-overview-modified-$reportContext.id">
+    <title>$reportContext.combinedTitle("Effective Vulnerabilities by Asset", true)</title>
+##
+    #set($assets = $assessmentReportAdapter.getAssets())
+##
+    <body>
+        #if ($assets.isEmpty)
+            No assets have been identified.
+        #else
+            <p>
+                The following table provides information on the severity of vulnerabilities for each individual asset.
+                Vulnerabilities may be counted several times in case these apply for multiple assets and their parts.
+            </p>
+            <p>
+                The table shows the modified severities applying asset-specific assessment details.
+                Column <codeph>Assessed</codeph> indicates to which extent the vulnerabilities have been analyzed. If
+                no modified severity is available the unmodified severity is applied.
+            </p>
+            #assetAssessmentSummary("asset-assessment-summary-effective", "Effective Vulnerabilities by Asset" $assets, true)
+        #end
+    </body>
+</topic>

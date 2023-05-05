@@ -1,0 +1,47 @@
+## do not insert blank lines in between macros. as this document is loaded before the XML tag of the main document,
+## this will result in the empty lines appearing at the head of the document, which is not allowed in XML.
+#macro (assetAssessmentSummary $id $title $assets, $useModifiedSeverity)
+##
+<table id="$id">
+    <title>$title</title>
+    <tgroup cols="8">
+        <colspec colname="COLSPEC0" colnum="1" colwidth="27*" />
+        <colspec colname="COLSPEC1" colnum="2" colwidth="11*" />
+        <colspec colname="COLSPEC2" colnum="3" colwidth="11*" />
+        <colspec colname="COLSPEC3" colnum="4" colwidth="11*" />
+        <colspec colname="COLSPEC4" colnum="5" colwidth="11*" />
+        <colspec colname="COLSPEC5" colnum="6" colwidth="11*" />
+        <colspec colname="COLSPEC6" colnum="7" colwidth="9*" />
+        <colspec colname="COLSPEC7" colnum="8" colwidth="9*" />
+        <thead>
+            <row>
+                <entry colname="COLSPEC0" valign="middle"><p>Asset Name</p></entry>
+                <entry colname="COLSPEC1" valign="middle">#labelRef("Critical")</entry>
+                <entry colname="COLSPEC2" valign="middle">#labelRef("High")</entry>
+                <entry colname="COLSPEC3" valign="middle">#labelRef("Medium")</entry>
+                <entry colname="COLSPEC4" valign="middle">#labelRef("Low")</entry>
+                <entry colname="COLSPEC5" valign="middle">#labelRef("None")</entry>
+                <entry colname="COLSPEC6" valign="middle"><p>Total</p></entry>
+                <entry colname="COLSPEC7" valign="middle"><p>Assessed</p></entry>
+            </row>
+        </thead>
+
+        <tbody>
+#foreach ($asset in $assets)
+#set($counts = $assessmentReportAdapter.countVulnerabilities($asset, $useModifiedSeverity))
+$counts
+            <row  align="center">
+                <entry align="center">$report.xmlEscapeString($asset.get("Name"))</entry>
+                <entry>$counts.criticalCounter</entry>
+                <entry>$counts.highCounter</entry>
+                <entry>$counts.mediumCounter</entry>
+                <entry>$counts.lowCounter</entry>
+                <entry>$counts.noneCounter</entry>
+                <entry>$counts.totalCounter</entry>
+                <entry>$utils.percent($counts.assessedCounter, $counts.totalCounter)</entry>
+            </row>
+#end
+        </tbody>
+    </tgroup>
+</table>
+#end

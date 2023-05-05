@@ -174,6 +174,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter default-value="false"
      */
+    private boolean enableAssessmentReport;
+
+    /**
+     * @parameter default-value="false"
+     */
     private boolean enableBomReport;
 
     /**
@@ -240,6 +245,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="-1.0"
      */
     private String minimumVulnerabilityIncludeScore;
+
+    /**
+     * @parameter default-value="false"
+     */
+    private boolean filterVulnerabilitiesNotCoveredByArtifacts;
 
     /**
      * Comma seperated list of advisory providers. All vulnerabilities not containing at least one of the providers
@@ -368,6 +378,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setTargetComponentDir(targetComponentDir);
 
         // vulnerability settings
+        report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         report.setVulnerabilityScoreThreshold(Float.parseFloat(vulnerabilityScoreThreshold));
         report.setMinimumVulnerabilityIncludeScore(Float.parseFloat(minimumVulnerabilityIncludeScore));
         report.addVulnerabilityAdvisoryFilter(vulnerabilityAdvisoryFilter);
@@ -392,6 +403,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setDiffInventoryFile(diffInventoryFile);
 
         report.setAssetBomReportEnabled(enableAssetReport);
+        report.setAssessmentReportEnabled(enableAssessmentReport);
         report.setInventoryPomEnabled(enablePomReport);
         report.setInventoryDiffReportEnabled(enableDiffReport);
         report.setInventoryBomReportEnabled(enableBomReport);
