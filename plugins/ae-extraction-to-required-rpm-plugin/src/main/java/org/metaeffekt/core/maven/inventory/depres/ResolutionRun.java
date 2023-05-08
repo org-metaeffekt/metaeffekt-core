@@ -396,7 +396,7 @@ public class ResolutionRun {
 
             if (!Files.isRegularFile(requiresFile.toPath())) {
                 LOG.error("File '[{}]' with requires data doesn't exist. skipping '[{}]'.", requiresFile, packageName);
-                throw new RuntimeException("Could not resolve a package due to missing data or invalid dependency.");
+                throw new RuntimeException("Couldn't resolve critical package, data missing or dependency invalid.");
             }
 
             // read requirements and attempt to determine the providing package
