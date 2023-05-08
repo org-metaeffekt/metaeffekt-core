@@ -15,7 +15,8 @@
  */
 package org.metaeffekt.core.maven.inventory.linkres;
 
-import org.sonatype.guice.bean.reflect.Logs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -27,6 +28,8 @@ import java.util.Set;
  * Furthermore, only use an instance of this object with the same set of symlinks or resolution might get unstable.
  */
 public class ResolverPathHolder {
+    private static final Logger LOG = LoggerFactory.getLogger(ResolverPathHolder.class);
+
     protected String currentPath;
     protected final Set<String> previousPositions;
     protected ResolverStatus status = ResolverStatus.INFLIGHT;
@@ -101,9 +104,9 @@ public class ResolverPathHolder {
         Objects.requireNonNull(status, "status must not be null");
 
         if (status != ResolverStatus.INFLIGHT) {
-            Logs.debug("Overriding status from [{}] to [{}]", this.status, status);
+            LOG.debug("Overriding status from [{}] to [{}]", this.status, status);
         }
 
-        this.status = Objects.requireNonNull(status, "status may not be null");
+        this.status = status;
     }
 }

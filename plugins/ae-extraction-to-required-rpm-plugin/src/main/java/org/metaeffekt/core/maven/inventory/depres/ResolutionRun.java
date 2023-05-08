@@ -164,7 +164,7 @@ public class ResolutionRun {
         return filePathToProviders;
     }
 
-    protected LinuxSymlinkResolver getSymlinkResolverFromSymlinks(final File symlinksFile) {
+    protected LinuxSymlinkResolver getSymlinksResolverFromSymlinksNewline(final File symlinksFile) {
         Map<String, String> symlinks = new HashMap<>();
 
         try (InputStream inputStream = Files.newInputStream(symlinksFile.toPath());
@@ -190,6 +190,53 @@ public class ResolutionRun {
                             "Invalid line [{}] in symlinks.txt file: no identifiable absolute path in [{}]",
                             i,
                             line
+                    );
+                    continue;
+                }
+
+                String previousValue = symlinks.put(symlinkPath, symlinkTarget);
+                if (previousValue != null) {
+                    LOG.error("Dupe symlink path, Overrode present symlink at [{}] to [{}] with target [{}].",
+                            symlinkPath,
+                            previousValue,
+                            symlinkTarget
+                    );
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return new LinuxSymlinkResolver(symlinks);
+    }
+
+    protected LinuxSymlinkResolver getSymlinksResolverFromSymlinksNull(final File symlinksFileNullDelimited) {
+        Map<String, String> symlinks = new HashMap<>();
+
+        try (InputStream inputStream = Files.newInputStream(symlinksFileNullDelimited.toPath());
+             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
+            String symlinksFileContent = IOUtils.toString(reader);
+
+            long i = 0;
+            String lineSeparator = "\0\n";
+            for (String line : symlinksFileContent.split(Pattern.quote(lineSeparator))) {
+                i++;
+                String symlinkSeparator = "\0 --> ";
+                int cutAt = line.indexOf(symlinkSeparator);
+                if (cutAt == -1) {
+                    LOG.error("Invalid entry [{}] in symlinks_z.bin file: no \"\\0 --> \" separator.", i);
+                    continue;
+                }
+
+                // the symlink paths in these files have their leading slash removed. re-add it for resolving.
+                String symlinkPath = line.substring(0, cutAt);
+                String symlinkTarget = line.substring(cutAt + symlinkSeparator.length());
+
+                if (!symlinkPath.startsWith("/")) {
+                    LOG.error(
+                            "Invalid entry [{}] in symlinks_z.bin file: path [{}] isn't absolute",
+                            i,
+                            symlinkPath
                     );
                     continue;
                 }
@@ -494,14 +541,22 @@ public class ResolutionRun {
 
         // read symlinks and create a resolver
         File filesystemDir = new File(extractionDir, "filesystem");
-        // TODO: update this and associated methods to use NUL-delimited data if present, otherwise fall back
-        File symlinksFile = new File(filesystemDir, "symlinks.txt");
 
-        if (!Files.isRegularFile(symlinksFile.toPath())) {
-            LOG.warn("Directory doesn't contain [filesystem/symlinks.txt]. File dependencies might not resolve.");
-            linkResolver = new LinuxSymlinkResolver(Collections.emptyMap());
+        // use NUL-delimited data if present, otherwise fall back
+        File symlinksFileNulDelim = new File(filesystemDir, "symlinks_z.bin");
+        if (Files.isRegularFile(symlinksFileNulDelim.toPath())) {
+            LOG.info("Reading symlinks from [{}]", symlinksFileNulDelim);
+            linkResolver = getSymlinksResolverFromSymlinksNull(symlinksFileNulDelim);
         } else {
-            linkResolver = getSymlinkResolverFromSymlinks(symlinksFile);
+            File symlinksFile = new File(filesystemDir, "symlinks.txt");
+            LOG.info("No NUL-delimited symlink file. Reading the less accurate [{}] file.", symlinksFile);
+
+            if (!Files.isRegularFile(symlinksFile.toPath())) {
+                LOG.warn("Directory doesn't contain [filesystem/symlinks.txt]. File dependencies might not resolve.");
+                linkResolver = new LinuxSymlinkResolver(Collections.emptyMap());
+            } else {
+                linkResolver = getSymlinksResolverFromSymlinksNewline(symlinksFile);
+            }
         }
 
         LOG.debug("Building maps");
