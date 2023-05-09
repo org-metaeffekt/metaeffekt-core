@@ -156,4 +156,60 @@ public class DirectoryInventoryScanTest {
         new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
     }
 
+    @Ignore
+    @Test
+    public void testScanExtractedFiles_External2() throws IOException {
+        File scanDir = new File("/Users/kklein/workspace/metaeffekt-artifact-analysis/ae-artifact-analysis/target/license-scanner/analysis/tmp/scan-mastadon_docker_image-ac41a9712eceb.tar");
+
+        String[] scanIncludes = new String[] {"**/*"};
+        String[] scanExcludes = new String[] {
+            "**/.DS_Store", "**/._*" ,"**/.git/**/*", "**/.git*", "**/.git*",
+            "**/*.mp4", "**/*.class", "**/*.md5", "**/*.sha1",
+            "**/.cache/**/*", "**/.wh*", "**/log/**/*", "**/ldconfig/aux-cache",
+            "**/v8-compile-cache*/**/*", "**/tmp/cache/webpacker/**/*",
+            "**/*.cache"
+        };
+
+        String[] unwrapIncludes = new String[] {"**/*"};
+        String[] unwrapExcludes = new String[] {
+            "**/*.js.gz", "**/*.js.map.gz", "**/*.css.gz",
+            "**/*.css.map.gz", "**/*.svg.gz", "**/*.json.gz",
+            "**/*.ttf.gz", "**/*.eot.gz"
+        };
+
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(scanDir, scanDir,
+                scanIncludes, scanExcludes,
+                unwrapIncludes, unwrapExcludes,
+                null);
+
+        final Inventory inventory = scan.scanDirectoryNG(scanDir);
+
+        // FIXME: next step is to apply the component patterns
+
+        new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
+    }
+
+    @Ignore
+    @Test
+    public void testScanExtractedFiles_External3() throws IOException {
+        File scanDir = new File("<path to directory>");
+        String[] scanIncludes = new String[]{"**/*"};
+        String[] scanExcludes = new String[]{
+                "**/.DS_Store", "**/._*" ,"**/.git/**/*", "**/.git*", "**/.git*",
+                "**/*.mp4", "**/*.class", "**/*.md5", "**/*.sha1",
+                "**/.cache/**/*", "**/.wh*", "**/log/**/*", "**/ldconfig/aux-cache",
+                "**/v8-compile-cache*/**/*", "**/tmp/cache/webpacker/**/*",
+                "**/*.cache"
+        };
+        Inventory inventory = new Inventory();
+
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(scanDir, scanDir, scanIncludes, scanExcludes, inventory);
+        scan.setEnableImplicitUnpack(true);
+        scan.setIncludeEmbedded(true);
+
+        final Inventory resultInventory = scan.performScan();
+
+        new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
+    }
+
 }

@@ -225,4 +225,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return path;
     }
 
+    public static String[] scanDirectoryForFolders(File targetDir, String... includes) {
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(targetDir);
+        scanner.setIncludes(includes);
+        scanner.setCaseSensitive(false);
+        scanner.scan();
+        return scanner.getIncludedDirectories();
+    }
+
 }

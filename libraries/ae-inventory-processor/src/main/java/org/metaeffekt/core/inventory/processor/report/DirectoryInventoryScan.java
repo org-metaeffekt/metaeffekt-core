@@ -18,7 +18,11 @@ package org.metaeffekt.core.inventory.processor.report;
 import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.MavenJarMetadataExtractor;
 import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScan;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor;
+import org.metaeffekt.core.inventory.processor.filescan.ScanParam;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
@@ -49,20 +53,40 @@ public class DirectoryInventoryScan {
 
     private Inventory referenceInventory;
     private String[] scanIncludes;
+
     private String[] scanExcludes;
+
+    private String[] unwrapIncludes;
+
+    private String[] unwrapExcludes;
+
     private File inputDirectory;
+
     private File scanDirectory;
 
     private boolean enableImplicitUnpack = true;
 
     private boolean includeEmbedded = false;
 
-    public DirectoryInventoryScan(File inputDirectory, File scanDirectory, String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
+    public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
+                      String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
+        this (inputDirectory, scanDirectory,
+                scanIncludes, scanExcludes, new String[] { "**/*" },
+                new String[0], referenceInventory);
+    }
+
+    public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
+                                  String[] scanIncludes, String[] scanExcludes,
+                                  String[] unwrapIncludes, String[] unwrapExcludes,
+                                  Inventory referenceInventory) {
         this.inputDirectory = inputDirectory;
 
         this.scanDirectory = scanDirectory;
         this.scanIncludes = scanIncludes;
         this.scanExcludes = scanExcludes;
+
+        this.unwrapIncludes = unwrapIncludes;
+        this.unwrapExcludes = unwrapExcludes;
 
         this.referenceInventory = referenceInventory;
     }
@@ -142,6 +166,7 @@ public class DirectoryInventoryScan {
     private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes,
            Inventory referenceInventory, Inventory scanInventory, List<String> assetIdChain) {
         LOG.info("{}: scanning...", scanDir);
+
         // scan the directory using includes and excludes; scans the full tree (maybe not yet unwrapped)
         final String[] filesArray = scanDirectory(scanDir, scanIncludes, scanExcludes);
 
@@ -307,14 +332,30 @@ public class DirectoryInventoryScan {
 
                 boolean unpacked = false;
                 if (enableImplicitUnpack) {
-                    // unknown or requires expansion
-                    final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
-                    if (unpackIfPossible(file, targetFolder, false, errors)) {
-                        scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
-                                scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
-                        unpacked = true;
-                    } else {
-                        // Not considered as something to unpack
+
+                    // temporary workaround
+                    boolean wantToUnpack = true;
+
+                    if (file.getName().toLowerCase().endsWith(".js.gz")) wantToUnpack = false;
+                    if (file.getName().toLowerCase().endsWith(".js.map.gz")) wantToUnpack = false;
+                    if (file.getName().toLowerCase().endsWith(".css.gz")) wantToUnpack = false;
+                    if (file.getName().toLowerCase().endsWith(".css.map.gz")) wantToUnpack = false;
+                    if (file.getName().toLowerCase().endsWith(".svg.gz")) wantToUnpack = false;
+                    if (file.getName().toLowerCase().endsWith(".json.gz")) wantToUnpack = false;
+                    if (file.getName().toLowerCase().endsWith(".ttf.gz")) wantToUnpack = false;
+                    if (file.getName().toLowerCase().endsWith(".eot.gz")) wantToUnpack = false;
+
+                    if (wantToUnpack) {
+
+                        // unknown or requires expansion
+                        final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
+                        if (unpackIfPossible(file, targetFolder, false, errors)) {
+                            scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
+                                    scanInventory, extendAssetIdChain(assetIdChain, file, checksum, scanInventory));
+                            unpacked = true;
+                        } else {
+                            // Not considered as something to unpack
+                        }
                     }
                 }
 
@@ -506,6 +547,29 @@ public class DirectoryInventoryScan {
         scanner.setExcludes(scanExcludes);
         scanner.scan();
         return scanner.getIncludedFiles();
+    }
+
+    // FIXME: note yet final
+    public Inventory scanDirectoryNG(final File directoryToScan) {
+        final ScanParam scanParam = new ScanParam().
+                collectAllMatching(scanIncludes, scanExcludes).
+                unwrapAllMatching(unwrapIncludes, unwrapExcludes).
+                implicitUnwrap(true);
+
+        // FIXME: does not yet use pre-defined component patterns
+
+        final FileSystemScan fileSystemScan = new FileSystemScan(directoryToScan, scanParam);
+        FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
+        fileSystemScanExecutor.execute();
+
+        // NOTE: at this point, the component is fully unwrapped in the file system (expect already detected component
+        //   patterns).
+
+        final ComponentPatternProducer patternProducer = new ComponentPatternProducer();
+        patternProducer.extractComponentPatterns(directoryToScan, fileSystemScan.getInventory());
+
+        return fileSystemScan.getInventory();
+
     }
 
     public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {

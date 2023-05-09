@@ -25,16 +25,14 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class MavenJarIdProbe {
-    private File projectDir;
-    private Artifact artifact;
+    private final File projectDir;
+    private final Artifact artifact;
     private List<Artifact> detectedArtifactsInFatJar;
 
     public MavenJarIdProbe(File projectDir, Artifact artifact) {
@@ -80,18 +78,16 @@ public class MavenJarIdProbe {
 
     protected File getJarFile() {
         // add all existing regular files to file list for later processing.
-        String jarPath = this.artifact.getProjects().stream().findFirst().orElse(null);
+        final String jarPath = this.artifact.getProjects().stream().findFirst().orElse(null);
 
-        File jarFile = null;
         if (jarPath != null) {
-            jarFile = new File(this.projectDir, jarPath);
+            final File jarFile = new File(this.projectDir, jarPath);
+            if (jarFile.exists() && jarFile.isFile() && isZipArchive(jarFile)) {
+                return jarFile;
+            }
         }
 
-        if (jarFile == null || !jarFile.exists() || !jarFile.isFile()) {
-            return null;
-        } else {
-            return jarFile;
-        }
+        return null;
     }
 
     protected boolean importantNonNull(Artifact artifact) {
@@ -302,14 +298,13 @@ public class MavenJarIdProbe {
     }
 
     public void runCompletion() {
-        File jarFile = getJarFile();
+        final File jarFile = getJarFile();
 
-        List<Artifact> dummyArtifacts;
-        if (jarFile != null) {
-            dummyArtifacts = getIds(jarFile).stream().filter(Objects::nonNull).collect(Collectors.toList());
-        } else {
+        if (jarFile == null) {
             return;
         }
+
+        final List<Artifact> dummyArtifacts = getIds(jarFile).stream().filter(Objects::nonNull).collect(Collectors.toList());
 
         // enforce all of artifactid, version and groupid being non-null for filling to kick in
         final List<Artifact> accepted = new ArrayList<>();
@@ -357,6 +352,19 @@ public class MavenJarIdProbe {
         }
 
         detectedArtifactsInFatJar = notAccepted;
+    }
+
+    private boolean isZipArchive(File jarFile) {
+        boolean isZipArchive = false;
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(jarFile, "r")) {
+            long magic = randomAccessFile.readInt();
+            if (magic == 0x504B0304) {
+                isZipArchive = true;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return isZipArchive;
     }
 
     public List<Artifact> getDetectedArtifactsInFatJar() {
