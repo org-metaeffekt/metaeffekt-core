@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.probe;
+package org.metaeffekt.core.inventory.processor.inspector;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -22,23 +22,26 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
+import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class MavenJarIdProbe {
-    private final File projectDir;
-    private final Artifact artifact;
-    private List<Artifact> detectedArtifactsInFatJar;
+public class MavenJarIdInspector extends AbstractJarInspector {
 
-    public MavenJarIdProbe(File projectDir, Artifact artifact) {
-        this.projectDir = projectDir;
-        this.artifact = artifact;
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(MavenJarIdInspector.class);
+
 
     protected boolean hasFilename(String normalizedPath, String fileName) {
         // zips must always use / as a path separator so this check should be correct to only use slash.
@@ -64,44 +67,18 @@ public class MavenJarIdProbe {
         return isPomProperties(normalizedPath) || isPomXml(normalizedPath);
     }
 
-    protected boolean isNovelArtifact(List<Artifact> artifacts, Artifact artifact) {
-        for (Artifact existing : artifacts) {
-            // if all are the same, this artifact already exists.
-            if (existing.getArtifactId().equals(artifact.getArtifactId()) &&
-                    existing.getGroupId().equals(artifact.getGroupId()) &&
-                    existing.getVersion().equals(artifact.getVersion())) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    protected File getJarFile() {
-        // add all existing regular files to file list for later processing.
-        final String jarPath = this.artifact.getProjects().stream().findFirst().orElse(null);
-
-        if (jarPath != null) {
-            final File jarFile = new File(this.projectDir, jarPath);
-            if (jarFile.exists() && jarFile.isFile() && isZipArchive(jarFile)) {
-                return jarFile;
-            }
-        }
-
-        return null;
-    }
-
     protected boolean importantNonNull(Artifact artifact) {
         return artifact.getArtifactId() != null &&
                 artifact.getGroupId() != null &&
                 artifact.getVersion() != null;
     }
 
-    protected Artifact getArtifactFromPomProperties(InputStream inputStream) {
+    protected Artifact getArtifactFromPomProperties(Artifact artifact, InputStream inputStream) {
         Properties pomProperties = new Properties();
         try {
             pomProperties.load(inputStream);
         } catch (IOException e) {
-            addError("Error while loading 'pom.properties'.");
+            addError(artifact, "Error while loading 'pom.properties'.");
         }
 
         Artifact dummyArtifact = new Artifact();
@@ -115,7 +92,7 @@ public class MavenJarIdProbe {
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
     }
 
-    protected Artifact getArtifactFromPomXml(InputStream inputStream) {
+    protected Artifact getArtifactFromPomXml(Artifact artifact, InputStream inputStream) {
         Artifact dummyArtifact = new Artifact();
 
         // parse pom
@@ -154,7 +131,7 @@ public class MavenJarIdProbe {
             deriveId(dummyArtifact, model.getPackaging() != null ? model.getPackaging() : "jar");
 
         } catch (IOException | XmlPullParserException e) {
-            addError("Exception while parsing a 'pom.xml'.");
+            addError(artifact, "Exception while parsing a 'pom.xml'.");
         }
 
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
@@ -173,17 +150,17 @@ public class MavenJarIdProbe {
         }
     }
 
-    protected Artifact dummyArtifactFromPom(ZipFile zipFile, ZipArchiveEntry pomEntry) {
+    protected Artifact dummyArtifactFromPom(Artifact artifact, ZipFile zipFile, ZipArchiveEntry pomEntry) {
         try (InputStream inputStream = zipFile.getInputStream(pomEntry)) {
             if (isPomProperties(pomEntry.getName())) {
-                return getArtifactFromPomProperties(inputStream);
+                return getArtifactFromPomProperties(artifact, inputStream);
             } else if (isPomXml(pomEntry.getName())) {
-                return getArtifactFromPomXml(inputStream);
+                return getArtifactFromPomXml(artifact, inputStream);
             } else {
-                addError("Pom '" + pomEntry.getName() +  "' can't be parsed.");
+                addError(artifact, "Pom '" + pomEntry.getName() +  "' can't be parsed.");
             }
         } catch (IOException e) {
-            addError("IOException while reading pom.");
+            addError(artifact, "IOException while reading pom.");
         }
 
         return null;
@@ -192,11 +169,11 @@ public class MavenJarIdProbe {
     /**
      * Iternates throw the entries in the jar file and produced an artifact for every pom.properties or pom.xml file.
      *
-     * @param jarFile The file being probed.
+     * @param jarFile The file being inspected.
      *
      * @return List of artifacts created from pom.properties or pom.xml entries in the jar file.
      */
-    protected List<Artifact> getIds(File jarFile) {
+    protected List<Artifact> getIds(Artifact artifact, File jarFile) {
         final List<Artifact> artifacts = new ArrayList<>();
 
         try(ZipFile zipFile = new ZipFile(jarFile)) {
@@ -206,7 +183,7 @@ public class MavenJarIdProbe {
                 ZipArchiveEntry entry = entries.nextElement();
 
                 if (isPomMeta(entry.getName())) {
-                    artifacts.add(dummyArtifactFromPom(zipFile, entry));
+                    artifacts.add(dummyArtifactFromPom(artifact, zipFile, entry));
                 }
             }
         } catch (IOException e) {
@@ -216,7 +193,12 @@ public class MavenJarIdProbe {
         return artifacts;
     }
 
-
+    /**
+     * Check if the information in the dummy artifact matches the given fileName.<br>
+     * @param fileName The file's name to check against.
+     * @param dummyArtifact Dummy artifact containing the id and version that will be checked.
+     * @return Returns whether the dummy artifact's data directly relates to the filename.
+     */
     protected boolean matchesFileName(String fileName, Artifact dummyArtifact) {
         // match against filename:
         //  strict matching. we find artifact ids and versions.
@@ -225,10 +207,10 @@ public class MavenJarIdProbe {
         //  - or it matches               "<artifactID>-<version>.jar"
         //  - or it matches               "<artifactID>.jar"
         // keep these definitions strict to not produce "weird" data.
-
-        if (fileName.matches(Pattern.quote(dummyArtifact.getArtifactId() +
+        final Pattern pattern1 = Pattern.compile(Pattern.quote(dummyArtifact.getArtifactId() +
                 "-" + dummyArtifact.getVersion()) +
-                "-" + ".*" + ".jar")) {
+                "-" + ".*" + ".jar");
+        if (pattern1.matcher(fileName).matches()) {
             return true;
         }
 
@@ -239,23 +221,23 @@ public class MavenJarIdProbe {
         return fileName.equals(match2) || fileName.equals(match3);
     }
 
-    protected Set<Artifact> getConflictsWithOriginal(Collection<Artifact> toCheck) {
+    protected Set<Artifact> getConflictsWithOriginal(Artifact artifact, Collection<Artifact> toCheck) {
         Set<Artifact> conflictingArtifacts = new HashSet<>();
 
         for (Artifact checking : toCheck) {
             // since artifactid is wrong at this stage, ignore it for the original state check.
 
-            if (StringUtils.isNotBlank(artifact.getGroupId())) {
-                if (!artifact.getGroupId().equals(checking.getGroupId())) {
-                    conflictingArtifacts.add(checking);
-                    continue;
-                }
+            if (StringUtils.isNotBlank(artifact.getGroupId())
+                    && !artifact.getGroupId().equals(checking.getGroupId())) {
+
+                conflictingArtifacts.add(checking);
+                continue;
             }
 
-            if (StringUtils.isNotBlank(artifact.getVersion())) {
-                if (!artifact.getVersion().equals(checking.getVersion())) {
-                    conflictingArtifacts.add(checking);
-                }
+            if (StringUtils.isNotBlank(artifact.getVersion())
+                    && (!artifact.getVersion().equals(checking.getVersion()))) {
+
+                conflictingArtifacts.add(checking);
             }
         }
 
@@ -293,18 +275,17 @@ public class MavenJarIdProbe {
         return dictatingState.size() > 1 ? dictatingState : new HashSet<>();
     }
 
-    private void addError(String errorString) {
-        this.artifact.append("Errors", errorString, ", ");
-    }
-
-    public void runCompletion() {
-        final File jarFile = getJarFile();
+    private List<Artifact> processArtifact(Artifact artifact, ProjectPathParam projectPathParam) {
+        File jarFile = getJarFile(artifact, projectPathParam);
 
         if (jarFile == null) {
-            return;
+            // early exit: nothing to scan
+            return null;
         }
 
-        final List<Artifact> dummyArtifacts = getIds(jarFile).stream().filter(Objects::nonNull).collect(Collectors.toList());
+        List<Artifact> dummyArtifacts = getIds(artifact, jarFile).stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         // enforce all of artifactid, version and groupid being non-null for filling to kick in
         final List<Artifact> accepted = new ArrayList<>();
@@ -319,14 +300,14 @@ public class MavenJarIdProbe {
             }
         }
 
-        // process list of accepted dummies, detect disagreements (with original state and each other)
-        Set<Artifact> conflictWithOriginal = getConflictsWithOriginal(accepted);
+        // process list of accepted dummies, detect disagreements (with original state and other dummies)
+        Set<Artifact> conflictWithOriginal = getConflictsWithOriginal(artifact, accepted);
         Set<Artifact> conflictWithEachOther = getConflictsWithEachOther(accepted);
         if (conflictWithOriginal.size() > 0) {
-            addError("Number of poms conflict with originally filled state (" + conflictWithOriginal.size() + ").");
+            addError(artifact, "Number of poms conflict with originally filled state (" + conflictWithOriginal.size() + ").");
         }
         if (conflictWithEachOther.size() > 0) {
-            addError("Number of poms conflict with each other's state (" + conflictWithEachOther.size() + ").");
+            addError(artifact, "Number of poms conflict with each other's state (" + conflictWithEachOther.size() + ").");
         }
 
         if (accepted.size() > 0) {
@@ -347,11 +328,74 @@ public class MavenJarIdProbe {
                     artifact.deriveArtifactId();
                 }
             }
-        } else {
-            // no pom found; ignore
         }
+        // otherwise: no pom found; ignore
 
-        detectedArtifactsInFatJar = notAccepted;
+        return notAccepted;
+    }
+
+    @Override
+    public void run(Inventory inventory, Properties properties) {
+        // get params
+        final ProjectPathParam projectPathParam = new ProjectPathParam(properties);
+        final JarInspectionParam jarInspectionParam = new JarInspectionParam(properties);
+
+        // execute
+
+        // set to record artifact ids in, used to only log errors once
+        Set<String> alreadyReported = new HashSet<>();
+
+        // we iterate a cloned list to avoid concurrent modification issues
+        for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
+            try {
+                List<Artifact> notAccepted = processArtifact(artifact, projectPathParam);
+
+                if (jarInspectionParam.isIncludeEmbedded()) {
+                    includeEmbedded(inventory, artifact, notAccepted, alreadyReported);
+                }
+            } catch (Exception e) {
+                // log error and carry on
+                addError(artifact, "Error while running "
+                        + this.getClass().getSimpleName());
+                LOG.error("Error while running "
+                        + this.getClass().getSimpleName()
+                        + " on artifact '" + artifact + "':"
+                        + e.getMessage());
+            }
+        }
+    }
+
+    // TODO: special steps to take for artifacts added in this fashion? maybe write a separate Inspector for this?
+    private void includeEmbedded(Inventory inventory, Artifact artifact, List<Artifact> detectedArtifactsInFatJar,
+                                 Set<String> alreadyReported) {
+        if (detectedArtifactsInFatJar != null && !detectedArtifactsInFatJar.isEmpty()) {
+            final String assetId = "AID-" + artifact.getId() + "-" + artifact.getChecksum();
+
+            // construct asset metadata for shaded jars
+            final AssetMetaData e = new AssetMetaData();
+            e.set(AssetMetaData.Attribute.ASSET_ID, assetId);
+            inventory.getAssetMetaData().add(e);
+
+            for (Artifact detectedArtifact : detectedArtifactsInFatJar) {
+                // filter artifacts that cannot be fully identified
+                final String detectedArtifactId = detectedArtifact.getId();
+                if (detectedArtifactId != null && detectedArtifactId.contains("${")) {
+                    if (!alreadyReported.contains(detectedArtifactId)) {
+                        LOG.warn("Skipping embedded artifact without fully qualified artifact id: {}", detectedArtifactId);
+                        alreadyReported.add(detectedArtifactId);
+                    }
+                    continue;
+                }
+
+                final Artifact foundArtifact = inventory.findArtifact(detectedArtifact);
+                if (foundArtifact != null) {
+                    foundArtifact.set(assetId, "x");
+                } else {
+                    detectedArtifact.set(assetId, "x");
+                    inventory.getArtifacts().add(detectedArtifact);
+                }
+            }
+        }
     }
 
     private boolean isZipArchive(File jarFile) {
@@ -365,10 +409,6 @@ public class MavenJarIdProbe {
             throw new RuntimeException(e);
         }
         return isZipArchive;
-    }
-
-    public List<Artifact> getDetectedArtifactsInFatJar() {
-        return detectedArtifactsInFatJar;
     }
 
 }
