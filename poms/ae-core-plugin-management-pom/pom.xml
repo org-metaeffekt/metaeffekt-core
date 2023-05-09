@@ -222,9 +222,20 @@
                                     <exclude>**/README*</exclude>
                                     <exclude>src/test/resources/**</exclude>
                                     <exclude>src/main/resources/**</exclude>
-                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbe.java</exclude>
-                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/MavenJarMetadataExtractor.java</exclude>
-                                    <exclude>src/test/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbeTest.java</exclude>                                </excludes>
+
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/MavenJarIdInspector.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/AbstractJarInspector.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/OsgiJarVersionInspector.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/param/JarInspectionParam.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/param/ProjectPathParam.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/InspectorInterface.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/InspectorRunner.java</exclude>
+                                    <exclude>src/main/java/org/metaeffekt/core/inventory/processor/inspector/NestedJavaInspector.java</exclude>
+
+                                    <exclude>src/test/java/org/metaeffekt/core/inventory/processor/inspector/MavenJarIdInspectorTest.java</exclude>
+                                    <exclude>src/test/java/org/metaeffekt/core/inventory/processor/inspector/OsgiJarVersionInspectorTest.java</exclude>
+                                    <exclude>src/test/java/org/metaeffekt/core/inventory/processor/inspector/NestedJavaInspectorTest.java</exclude>
+                                </excludes>
                             </licenseSet>
                             <licenseSet>
                                 <header>header/apache-license-2.0-header-2022-only.txt</header>
@@ -233,9 +244,18 @@
                                     <email>contact@metaeffekt.org</email>
                                 </properties>
                                 <includes>
-                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbe.java</include>
-                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/MavenJarMetadataExtractor.java</include>
-                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/probe/MavenJarIdProbeTest.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/MavenJarIdInspector.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/AbstractJarProbe.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/OsgiJarVersionInspector.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/param/JarInspectionParam.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/param/ProjectPathParam.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/InspectorInterface.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/InspectorRunner.java</include>
+                                    <include>src/main/java/org/metaeffekt/core/inventory/processor/inspector/NestedJavaInspector.java</include>
+
+                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/inspector/MavenJarIdInspectorTest.java</include>
+                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/inspector/OsgiJarVersionInspectorTest.java</include>
+                                    <include>src/test/java/org/metaeffekt/core/inventory/processor/inspector/NestedJavaInspectorTest.java</include>
                                 </includes>
                             </licenseSet>
                         </licenseSets>

@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.probe;
+package org.metaeffekt.core.inventory.processor.inspector;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Properties;
 
 import static org.junit.Assert.*;
 
-public class MavenJarIdProbeTest {
+public class MavenJarIdInspectorTest {
     private final File projectDir = new File("src/test/resources/test-maven-jar-meta-extractor");
 
     @Test
@@ -36,8 +38,16 @@ public class MavenJarIdProbeTest {
         artifact.setId(jarPath);
         artifact.setProjects(Collections.singleton(jarPath));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
-        probe.runCompletion();
+        // create mock inventory for inspector
+        Inventory inventory = new Inventory();
+        inventory.setArtifacts(Collections.singletonList(artifact));
+
+        // create mock properties for inspector
+        final Properties properties = new Properties();
+        properties.setProperty("project.path", projectDir.getPath());
+
+        MavenJarIdInspector inspector = new MavenJarIdInspector();
+        inspector.run(inventory, properties);
 
         // should have extracted
         assertEquals("my.test.dummy.package", artifact.getGroupId());
@@ -54,8 +64,16 @@ public class MavenJarIdProbeTest {
         artifact.setId(jarPath);
         artifact.setProjects(Collections.singleton(jarPath));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
-        probe.runCompletion();
+        // create mock inventory for inspector
+        Inventory inventory = new Inventory();
+        inventory.getArtifacts().add(artifact);
+
+        // create mock properties for inspector
+        final Properties properties = new Properties();
+        properties.setProperty("project.path", projectDir.getPath());
+
+        MavenJarIdInspector inspector = new MavenJarIdInspector();
+        inspector.run(inventory, properties);
 
         // should have gotten correct data and ignored the parent
         assertEquals("my.test.dummy.package", artifact.getGroupId());
@@ -72,8 +90,16 @@ public class MavenJarIdProbeTest {
         artifact.setId(testJar.getName());
         artifact.setProjects(Collections.singleton(jarPath));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
-        probe.runCompletion();
+        // create mock inventory for inspector
+        Inventory inventory = new Inventory();
+        inventory.getArtifacts().add(artifact);
+
+        // create mock properties for inspector
+        final Properties properties = new Properties();
+        properties.setProperty("project.path", projectDir.getPath());
+
+        MavenJarIdInspector inspector = new MavenJarIdInspector();
+        inspector.run(inventory, properties);
 
         // should have gotten correct data, partially inherited from parent (like maven does it)
         assertEquals("good.parent.groupid", artifact.getGroupId());
@@ -93,8 +119,16 @@ public class MavenJarIdProbeTest {
         artifact.setId(jarPath);
         artifact.setProjects(Collections.singleton(jarPath));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
-        probe.runCompletion();
+        // create mock inventory for inspector
+        Inventory inventory = new Inventory();
+        inventory.getArtifacts().add(artifact);
+
+        // create mock properties for inspector
+        final Properties properties = new Properties();
+        properties.setProperty("project.path", projectDir.getPath());
+
+        MavenJarIdInspector inspector = new MavenJarIdInspector();
+        inspector.run(inventory, properties);
 
         // do not expect an error in this case
         assertFalse(StringUtils.isNotBlank(artifact.get("Errors")));
@@ -109,8 +143,16 @@ public class MavenJarIdProbeTest {
         artifact.setId(jarPath);
         artifact.setProjects(Collections.singleton(jarPath));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
-        probe.runCompletion();
+        // create mock inventory for inspector
+        Inventory inventory = new Inventory();
+        inventory.getArtifacts().add(artifact);
+
+        // create mock properties for inspector
+        final Properties properties = new Properties();
+        properties.setProperty("project.path", projectDir.getPath());
+
+        MavenJarIdInspector inspector = new MavenJarIdInspector();
+        inspector.run(inventory, properties);
 
         // should have logged an error to the artifact
         assertTrue(StringUtils.isNotBlank(artifact.get("Errors")));
@@ -124,8 +166,16 @@ public class MavenJarIdProbeTest {
         artifact.setId(testJar.getName());
         artifact.setProjects(Collections.singleton(testJar.getPath()));
 
-        MavenJarIdProbe probe = new MavenJarIdProbe(projectDir, artifact);
-        probe.runCompletion();
+        // create mock inventory for inspector
+        Inventory inventory = new Inventory();
+        inventory.getArtifacts().add(artifact);
+
+        // create mock properties for inspector
+        final Properties properties = new Properties();
+        properties.setProperty("project.path", projectDir.getPath());
+
+        MavenJarIdInspector inspector = new MavenJarIdInspector();
+        inspector.run(inventory, properties);
 
         // should have extracted
         assertEquals("my.test.dummy.package", artifact.getGroupId());
