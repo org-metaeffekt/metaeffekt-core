@@ -349,9 +349,9 @@ public class RepositoryReportTest {
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
-        final File inventoryDir = new File("<path-to-inventory>");
+        final File inventoryDir = new File("/Volumes/T-S-DIT-007/S-DIT-007-Merged-Inventories-DK");
         final File reportDir = new File("target/test-inventory-external");
-        createReport(inventoryDir, "*.xls", reportDir);
+        createReport(inventoryDir, "result-*.xls", reportDir);
 
         // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
