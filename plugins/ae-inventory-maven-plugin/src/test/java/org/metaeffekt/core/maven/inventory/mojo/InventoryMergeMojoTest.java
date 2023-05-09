@@ -14,8 +14,8 @@ public class InventoryMergeMojoTest {
     public void testMerge() throws MojoExecutionException, MojoFailureException {
 
         InventoryMergeMojo mojo = new InventoryMergeMojo();
-        mojo.sourceInventoryBaseDir = new File("/Volumes/TransferUSB/S-DIT-003");
-        mojo.targetInventory = new File("/Volumes/TransferUSB/S-DIT-003-inventory.xls");
+        mojo.sourceInventoryBaseDir = new File("<path-to-source-inventory>");
+        mojo.targetInventory = new File("<path-to-target-inventory>");
 
         mojo.execute();
     }

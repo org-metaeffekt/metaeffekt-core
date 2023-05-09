@@ -262,7 +262,7 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("/Volumes/S-DIT-007/ae-workbench-output/S-DIT/S-DIT-007/ondemand/resources/inventory");
+        final File inventoryDir = new File("<path-to-inventory-dir>");
         final File reportDir = new File("target/test-inventory-04");
 
         InventoryReport report = new InventoryReport();
@@ -349,9 +349,9 @@ public class RepositoryReportTest {
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
-        final File inventoryDir = new File("/Volumes/T-S-DIT-007/S-DIT-007-Merged-Inventories-DK");
+        final File inventoryDir = new File("<path-to-inventory>");
         final File reportDir = new File("target/test-inventory-external");
-        createReport(inventoryDir, "result-*.xls", reportDir);
+        createReport(inventoryDir, "*.xls", reportDir);
 
         // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
