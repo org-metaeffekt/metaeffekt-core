@@ -259,7 +259,7 @@ public class StatisticsOverviewTable {
                     severityMap.getValue().put("assessed", "n/a");
                 } else {
                     final double ratio = ((double) (applicable + notApplicable + voidCat)) / total;
-                    severityMap.getValue().put("assessed", String.format("%.1f %%", ratio * 100));
+                    severityMap.getValue().put("assessed", String.format(Locale.GERMANY, "%.1f %%", ratio * 100));
                 }
             } else if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_ABSTRACTED) {
                 final int total = affected + potentiallyAffected + notAffected;
@@ -268,7 +268,7 @@ public class StatisticsOverviewTable {
                     severityMap.getValue().put("assessed", "n/a");
                 } else {
                     final double ratio = ((double) (affected + notAffected)) / total;
-                    severityMap.getValue().put("assessed", String.format("%.1f %%", ratio * 100));
+                    severityMap.getValue().put("assessed", String.format(Locale.GERMANY, "%.1f %%", ratio * 100));
                 }
             }
         }
