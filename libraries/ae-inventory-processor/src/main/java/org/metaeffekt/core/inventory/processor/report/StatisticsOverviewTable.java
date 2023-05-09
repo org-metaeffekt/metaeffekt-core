@@ -65,7 +65,7 @@ public class StatisticsOverviewTable {
         List<Integer> countList = new ArrayList<>();
         if (severityStatusCountMap.containsKey(severityCategory)) {
             for (String status : severityStatusCountMap.get(severityCategory).keySet()) {
-                if (!status.equals("% assessed")) {
+                if (!status.equals("assessed") && !status.equals("% assessed")) {
                     countList.add((Integer) severityStatusCountMap.get(severityCategory).get(status));
                 }
             }
@@ -108,7 +108,7 @@ public class StatisticsOverviewTable {
     public boolean isEmpty() {
         for (Map<String, Object> m : severityStatusCountMap.values()) {
             for (Map.Entry<String, Object> e : m.entrySet()) {
-                if (!e.getKey().equals("% assessed")) {
+                if (!e.getKey().equals("assessed") && !e.getKey().equals("% assessed")) {
                     if ((Integer) e.getValue() != 0) {
                         return false;
                     }
@@ -194,7 +194,7 @@ public class StatisticsOverviewTable {
         final StatisticsOverviewTable table = new StatisticsOverviewTable();
 
         // add the default severity categories in the case there are no vulnerabilities with that category
-        for (String severityCategory : new String[] {"critical", "high", "medium", "low"}) {
+        for (String severityCategory : new String[]{"critical", "high", "medium", "low"}) {
             table.addSeverityCategory(severityCategory);
         }
 
@@ -219,7 +219,7 @@ public class StatisticsOverviewTable {
         allStatuses.stream().sorted((o1, o2) -> {
             final String[] order = new String[]{
                     "applicable", "in review", "not applicable", "insignificant", "void",
-                    "affected", "potentially affected", "not affected" };
+                    "affected", "potentially affected", "not affected"};
             return Integer.compare(Arrays.asList(order).indexOf(o1), Arrays.asList(order).indexOf(o2));
         }).forEach(table::addStatus);
 
@@ -256,31 +256,31 @@ public class StatisticsOverviewTable {
                 final int total = inReview + applicable + notApplicable + insignificant + voidCat;
 
                 if (total == 0) {
-                    severityMap.getValue().put("% assessed", "n/a");
+                    severityMap.getValue().put("assessed", "n/a");
                 } else {
                     final double ratio = ((double) (applicable + notApplicable + voidCat)) / total;
-                    severityMap.getValue().put("% assessed", String.format("%.1f", ratio * 100));
+                    severityMap.getValue().put("assessed", String.format("%.1f %%", ratio * 100));
                 }
             } else if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_ABSTRACTED) {
                 final int total = affected + potentiallyAffected + notAffected;
 
                 if (total == 0) {
-                    severityMap.getValue().put("% assessed", "n/a");
+                    severityMap.getValue().put("assessed", "n/a");
                 } else {
                     final double ratio = ((double) (affected + notAffected)) / total;
-                    severityMap.getValue().put("% assessed", String.format("%.1f", ratio * 100));
+                    severityMap.getValue().put("assessed", String.format("%.1f %%", ratio * 100));
                 }
             }
         }
 
-        // remove 'none' if all but the '% assessed' column are 0
+        // remove 'none' if all but the 'assessed' column are 0
         final Map<String, Object> noneEntry = table.severityStatusCountMap.get("none");
         if (noneEntry != null) {
             // remove the 'none' entry if the content does not contribute any further
             // information. That is when only 0 and n/a are included.
             if (noneEntry.values().stream().allMatch(obj -> {
                 final String str = String.valueOf(obj);
-                return "0".equals(str) || "n/a".equals(str);
+                return "0".equals(str) || "0 %".equals(str) || "n/a".equals(str);
             })) {
                 table.severityStatusCountMap.remove("none");
             }
