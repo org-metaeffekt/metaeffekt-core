@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import org.springframework.util.StringUtils;
 
+import java.util.Locale;
+
 public class ReportUtils {
 
     public boolean isEmpty(String value) {
@@ -33,7 +35,7 @@ public class ReportUtils {
 
     public String percent(long part, long total) {
         if (total == 0) return "n/a";
-        return String.format("%.1f %%", (100d * part) / total);
+        return String.format(Locale.GERMANY, "%.1f %%", (100d * part) / total);
     }
 
 }
