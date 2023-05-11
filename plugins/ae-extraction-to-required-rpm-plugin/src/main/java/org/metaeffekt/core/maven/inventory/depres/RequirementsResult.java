@@ -15,13 +15,21 @@
  */
 package org.metaeffekt.core.maven.inventory.depres;
 
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class RequirementsResult {
     private static final Logger LOG = LoggerFactory.getLogger(RequirementsResult.class);
+
+    protected static final String statusMarkKey = "Requirement Evaluation";
 
     protected final Map<String, Set<String>> packageToRequiredPackages;
     protected final Map<String, Set<String>> packageToUnresolvedRequirements;
@@ -59,7 +67,13 @@ public class RequirementsResult {
     public SortedSet<String> getRequiredPackages() {
         SortedSet<String> requiredPackages = new TreeSet<>(packageToRequiredPackages.keySet());
         // add values too, in case there are unresolvable but known package requirements
-        packageToRequiredPackages.values().forEach(requiredPackages::addAll);
+        packageToRequiredPackages.values().forEach((set) -> {
+            for (String requiredPackage : set) {
+                if (requiredPackages.add(requiredPackage)) {
+                    LOG.warn("Oddity: required package [{}] wasn't a key (not resolved).", requiredPackage);
+                }
+            }
+        });
 
         return requiredPackages;
     }
@@ -92,5 +106,46 @@ public class RequirementsResult {
         } else {
             LOG.info("Map of unsatisfiable dependencies is empty.");
         }
+    }
+
+    /**
+     * This exports the results to an inventory.<br>
+     * It can't properly be read back into RequirementsResult as some data about package relationships is lost.
+     * @param outputDirectory where output files may be put.
+     * @throws IOException on write error.
+     */
+    public void exportToInventory(File outputDirectory) throws IOException {
+        String outputFileName = "RpmRequirementsResult.xlsx";
+
+        Map<String, StatusMark> packageNameToMark = new TreeMap<>();
+
+        // at first, mark all installed as optional
+        for (String installedPackage : installedPackages) {
+            packageNameToMark.put(installedPackage, StatusMark.OPTIONAL);
+        }
+
+        // mark conditionally required, there may still be duplicates in there whose mark may be overridden
+        for (String foundInConditional : conditionallyRequired) {
+            packageNameToMark.put(foundInConditional, StatusMark.CONDITIONAL);
+        }
+
+        // mark required as required
+        for (String requiredPackage : getRequiredPackages()) {
+            packageNameToMark.put(requiredPackage, StatusMark.REQUIRED);
+        }
+
+        List<Artifact> artifacts = packageNameToMark.entrySet().stream().map(e -> {
+            Artifact artifact = new Artifact();
+            artifact.setId(e.getKey());
+            artifact.set(statusMarkKey, e.getValue().toString());
+
+            return artifact;
+        }).collect(Collectors.toCollection(ArrayList::new));
+
+        Inventory inventory = new Inventory();
+        inventory.setArtifacts(artifacts);
+        InventoryWriter writer = new InventoryWriter();
+        File outputFile = new File(outputDirectory, outputFileName);
+        writer.writeInventory(inventory, outputFile);
     }
 }

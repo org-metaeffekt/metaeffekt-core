@@ -47,5 +47,10 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-inventory-processor</artifactId>
+            <version>HEAD-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>

@@ -306,7 +306,7 @@ public class ResolutionRun {
         toChop.addAll(chopped);
     }
 
-    protected ProviderLookupResult getProviders(String requirementLine) {
+    protected ProviderLookupResult whatProvides(String requirementLine) {
         String requirement = requirementLine.trim();
 
         // check if this requirement is even interesting to resolve
@@ -322,7 +322,7 @@ public class ResolutionRun {
             }
         }
 
-        // try first lookup: provides strings
+        // search provides strings for matches
         Set<String> installedProviders = providesStringToProvider.get(requirement);
 
         if (installedProviders == null || installedProviders.size() == 0) {
@@ -459,7 +459,7 @@ public class ResolutionRun {
                         continue;
                     }
 
-                    ProviderLookupResult providerLookup = getProviders(line);
+                    ProviderLookupResult providerLookup = whatProvides(line);
 
                     // use ProviderLookupResult's functionality to determine success and log otherwise
                     Set<String> resolvedRequired = providerLookup.requiredPackages;
@@ -534,7 +534,6 @@ public class ResolutionRun {
      * Does some prepwork, grabbing useful data from the filesystem.
      */
     protected void doPrep() {
-        // TODO: update this and associated methods to use NUL-delimited data if present, otherwise fall back
         packageDepsDir = getPackageDepsDir();
         File[] packageDepsPackageDirArray = packageDepsDir.listFiles();
         Objects.requireNonNull(packageDepsPackageDirArray, "Failed to list files in package-deps.");

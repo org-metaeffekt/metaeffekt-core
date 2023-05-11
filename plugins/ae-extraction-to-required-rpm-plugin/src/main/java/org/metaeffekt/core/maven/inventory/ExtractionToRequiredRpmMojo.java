@@ -17,24 +17,18 @@ package org.metaeffekt.core.maven.inventory;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.maven.inventory.depres.RequirementsResult;
 import org.metaeffekt.core.maven.inventory.depres.ResolutionRun;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.SortedSet;
 
 @Mojo(name = "extract-required-packages-rpm", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class ExtractionToRequiredRpmMojo extends AbstractMojo {
-    private static final Logger LOG = LoggerFactory.getLogger(ExtractionToRequiredRpmMojo.class);
-
     /**
      * The "analysis" directory, as output by our extraction script.
      */
@@ -49,29 +43,21 @@ public class ExtractionToRequiredRpmMojo extends AbstractMojo {
     public List<String> mustHaves;
 
     /**
-     * A list of known installed packages.<br>
-     * This will be run against the list of resolved requirements to determine uninstall candidates.
+     * An output directory where output (currently an xlsx file) will be stored.
      */
-    @Parameter(required = true)
-    public List<String> installedPackages;
+    @Parameter(required = true, defaultValue = "target")
+    public File outputDirectory;
 
     // TODO: output data to a directory in some sort of format
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         ResolutionRun depRes = new ResolutionRun(extractionDir, mustHaves);
         RequirementsResult result = depRes.runResolution();
 
-        Log log = getLog();
-
-        log.debug("required:");
-        for (String required : result.getRequiredPackages()) {
-            log.debug("- " + required);
-        }
-
-        SortedSet<String> installedButNotRequired = result.getInstalledButNotRequired();
-        log.debug("installed but not required (" + installedButNotRequired.size() + "):");
-        for (String notRequiredPackage : installedButNotRequired) {
-            log.debug("- " + notRequiredPackage);
+        try {
+            result.exportToInventory(outputDirectory);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Error writing output inventory:", e);
         }
     }
 }
