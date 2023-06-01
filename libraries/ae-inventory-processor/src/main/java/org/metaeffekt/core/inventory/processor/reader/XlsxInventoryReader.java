@@ -38,6 +38,9 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
 
     @Override
     public Inventory readInventory(InputStream in) throws IOException {
+        // strange workaround to allow reading large XSL files.
+        org.apache.poi.util.IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
+
         final XSSFWorkbook workbook = new XSSFWorkbook(in);
 
         final Inventory inventory = new Inventory();

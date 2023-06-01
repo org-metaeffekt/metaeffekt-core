@@ -28,33 +28,37 @@ import java.util.*;
 
 public class ComponentPatternProducer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
-
-    public void extractComponentPatterns(File baseDir, Inventory inventory) {
-        final String[] includePatternsOrderedByPriority = {
-            // python modules
-            "*.dist-info/METADATA",
-            "*.dist-info/RECORD",
-            "*.dist-info/WHEEL",
-            "__init__.py",
-            "__about__.py",
-
+    public static final String[] INCLUDE_PATTERNS_ORDERED_BY_PRIORITY = new String[]{
             // web modules
             // prioritize bower components; in general, better metadata first
             "bower_components/**/.bower.json",
             "bower_components/**/bower.json",
             "node_modules/**/package-lock.json",
             "node_modules/**/package.json",
+            "package.json",
             ".bower.json",
             "bower.json",
             "composer.json",
+
+            // container marker
+            "json",
 
             // eclipse bundles
             "about.html",
             "about.ini",
             "about.properties",
             "about.mappings",
-        };
+
+            // python modules
+            "*.dist-info/METADATA",
+            "*.dist-info/RECORD",
+            "*.dist-info/WHEEL",
+            "__init__.py",
+            "__about__.py",
+    };
+    private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
+
+    public void extractComponentPatterns(File baseDir, Inventory targetInventory) {
 
         final Set<String> uniqueFolder = new HashSet<>();
         final Map<String, String> uniqueFile = new HashMap<>();
@@ -69,15 +73,16 @@ public class ComponentPatternProducer {
 
         // configure contributors
         final List<ComponentPatternContributor> componentPatternContributors = new ArrayList<>();
-        componentPatternContributors.add(new PythonModuleComponentPatternContributor());
+        componentPatternContributors.add(new ContainerComponentPatternContributor());
         componentPatternContributors.add(new WebModuleComponentPatternContributor());
         componentPatternContributors.add(new UnwrappedEclipseBundleContributor());
+        componentPatternContributors.add(new PythonModuleComponentPatternContributor());
         componentPatternContributors.add(new DefaultComponentPatternContributor());
 
         Set<String> qualifierSet = new HashSet<>();
 
         // for each include pattern (by priority) try to identify a component pattern
-        for (String includePattern : includePatternsOrderedByPriority) {
+        for (String includePattern : INCLUDE_PATTERNS_ORDERED_BY_PRIORITY) {
 
             // process folders (ordered by path length)
             for (String folder : foldersByLength) {
@@ -114,6 +119,7 @@ public class ComponentPatternProducer {
                     artifact.setId(anchorParentDir.getName());
                     artifact.setChecksum(checksum);
 
+                    // construct component pattern
                     final ComponentPatternData componentPatternData = new ComponentPatternData();
                     componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorFile.getParentFile().getName() + "/" + anchorFile.getName());
                     componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
@@ -128,15 +134,17 @@ public class ComponentPatternProducer {
                         }
                     }
 
-                    if ("unspecific".equalsIgnoreCase(artifact.getVersion())) {
-                        LOG.warn("Artifact [{}] without version: {}", artifact.getArtifactId(), new File(contextBaseDir, file));
-                    }
-
                     LOG.info("Identified component pattern: " + componentPatternData.createCompareStringRepresentation());
+
+                    // FIXME: defer to 2nd pass
+                    final String version = componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
+                    if (version != null && "unspecific".equalsIgnoreCase(version)) {
+                        continue;
+                    }
 
                     final String qualifier = componentPatternData.deriveQualifier();
                     if (!qualifierSet.contains(qualifier)) {
-                        inventory.getComponentPatternData().add(componentPatternData);
+                        targetInventory.getComponentPatternData().add(componentPatternData);
                         qualifierSet.add(qualifier);
                     }
                 }

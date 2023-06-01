@@ -91,6 +91,16 @@ public class ComponentPatternData extends AbstractModelBase {
     }
 
     /**
+     * @return The derived simple qualifier for this instance.
+     */
+    public String deriveSimpleQualifier() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(get(Attribute.VERSION_ANCHOR)).append("-");
+        sb.append(get(Attribute.VERSION_ANCHOR_CHECKSUM));
+        return sb.toString();
+    }
+
+    /**
      * The compare string representations is built from the core attributes.
      *
      * @return String to compare component patterns.

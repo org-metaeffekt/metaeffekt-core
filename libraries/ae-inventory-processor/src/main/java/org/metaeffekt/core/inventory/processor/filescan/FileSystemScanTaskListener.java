@@ -15,8 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan;
 
-public abstract class ScanTask {
+import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 
-    public abstract void process(FileSystemScan fileSystemScan);
+public interface FileSystemScanTaskListener {
+
+    void notifyOnTaskPushed(ScanTask scanTask);
+
+    void notifyOnTaskPopped(ScanTask scanTask);
 
 }

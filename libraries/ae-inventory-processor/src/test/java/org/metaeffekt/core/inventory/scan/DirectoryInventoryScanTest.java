@@ -19,6 +19,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -159,7 +160,9 @@ public class DirectoryInventoryScanTest {
     @Ignore
     @Test
     public void testScanExtractedFiles_External2() throws IOException {
-        File scanDir = new File("/Users/kklein/workspace/metaeffekt-artifact-analysis/ae-artifact-analysis/target/license-scanner/analysis/tmp/scan-mastadon_docker_image-ac41a9712eceb.tar");
+
+        File scanDir = new File("<path-to-scan-dir>");
+        File referenceInventoryFile = new File("<path-to-dir>");
 
         String[] scanIncludes = new String[] {"**/*"};
         String[] scanExcludes = new String[] {
@@ -180,7 +183,7 @@ public class DirectoryInventoryScanTest {
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(scanDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
-                null);
+                InventoryUtils.readInventory(referenceInventoryFile, "*.xls"));
 
         final Inventory inventory = scan.scanDirectoryNG(scanDir);
 
@@ -189,27 +192,5 @@ public class DirectoryInventoryScanTest {
         new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
     }
 
-    @Ignore
-    @Test
-    public void testScanExtractedFiles_External3() throws IOException {
-        File scanDir = new File("<path to directory>");
-        String[] scanIncludes = new String[]{"**/*"};
-        String[] scanExcludes = new String[]{
-                "**/.DS_Store", "**/._*" ,"**/.git/**/*", "**/.git*", "**/.git*",
-                "**/*.mp4", "**/*.class", "**/*.md5", "**/*.sha1",
-                "**/.cache/**/*", "**/.wh*", "**/log/**/*", "**/ldconfig/aux-cache",
-                "**/v8-compile-cache*/**/*", "**/tmp/cache/webpacker/**/*",
-                "**/*.cache"
-        };
-        Inventory inventory = new Inventory();
-
-        final DirectoryInventoryScan scan = new DirectoryInventoryScan(scanDir, scanDir, scanIncludes, scanExcludes, inventory);
-        scan.setEnableImplicitUnpack(true);
-        scan.setIncludeEmbedded(true);
-
-        final Inventory resultInventory = scan.performScan();
-
-        new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
-    }
 
 }

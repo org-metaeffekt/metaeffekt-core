@@ -19,26 +19,45 @@ import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
+import java.io.EOFException;
 import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.Properties;
 
 public abstract class AbstractJarInspector implements InspectorInterface {
 
-    // TODO: should this support file types or check that it's really a jar? what could artifact.getProjects() contain?
     protected File getJarFile(Artifact artifact, ProjectPathParam param) {
         // add all existing regular files to file list for later processing.
-        String jarPath = artifact.getProjects().stream().findFirst().orElse(null);
+        final String jarPath = artifact.getProjects().stream().findFirst().orElse(null);
 
-        File jarFile = null;
         if (jarPath != null) {
-            jarFile = new File(param.getProjectPath(), jarPath);
+            final File jarFile = new File(param.getProjectPath(), jarPath);
+            if (jarFile.exists() && jarFile.isFile() && isZipArchive(jarFile)) {
+                return jarFile;
+            }
         }
 
-        if (jarFile == null || !jarFile.exists() || !jarFile.isFile()) {
-            return null;
-        } else {
-            return jarFile;
+        return null;
+    }
+
+    private boolean isZipArchive(File jarFile) {
+        if (jarFile.isDirectory()) return false;
+        if (!jarFile.exists()) return false;
+        if (jarFile.length() < 4) return false;
+
+        boolean isZipArchive = false;
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(jarFile, "r")) {
+            long magic = randomAccessFile.readInt();
+            if (magic == 0x504B0304) {
+                isZipArchive = true;
+            }
+        } catch (EOFException e) {
+            return false;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        return isZipArchive;
     }
 
     protected void addError(Artifact artifact, String errorString) {

@@ -42,7 +42,6 @@ public class MavenJarIdInspector extends AbstractJarInspector {
 
     private static final Logger LOG = LoggerFactory.getLogger(MavenJarIdInspector.class);
 
-
     protected boolean hasFilename(String normalizedPath, String fileName) {
         // zips must always use / as a path separator so this check should be correct to only use slash.
         return normalizedPath.equals(fileName) || normalizedPath.endsWith("/" + fileName);
@@ -396,19 +395,6 @@ public class MavenJarIdInspector extends AbstractJarInspector {
                 }
             }
         }
-    }
-
-    private boolean isZipArchive(File jarFile) {
-        boolean isZipArchive = false;
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(jarFile, "r")) {
-            long magic = randomAccessFile.readInt();
-            if (magic == 0x504B0304) {
-                isZipArchive = true;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return isZipArchive;
     }
 
 }

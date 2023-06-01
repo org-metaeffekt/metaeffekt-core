@@ -13,12 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.filescan;
+package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
-public interface ScanTaskListener {
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 
-    void notifyOnTask(ScanTask scanTask);
+import java.io.IOException;
+import java.util.List;
 
-    void notifyEmptyQueue();
+/**
+ * Abstract base class for scan tasks.
+ */
+public abstract class ScanTask {
+
+    private final List<String> assetIdChain;
+
+    protected ScanTask(List<String> assetIdChain) {
+        this.assetIdChain = assetIdChain;
+    }
+
+    public List<String> getAssetIdChain() {
+        return assetIdChain;
+    }
+
+    public abstract void process(FileSystemScanContext fileSystemScan) throws IOException;
 
 }

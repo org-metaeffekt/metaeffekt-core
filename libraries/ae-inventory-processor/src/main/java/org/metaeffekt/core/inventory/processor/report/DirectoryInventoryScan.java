@@ -16,15 +16,15 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.tools.ant.DirectoryScanner;
-import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
-import org.metaeffekt.core.inventory.processor.inspector.MavenJarIdInspector;
-import org.metaeffekt.core.inventory.processor.inspector.OsgiJarVersionInspector;
 import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
-import org.metaeffekt.core.inventory.processor.filescan.FileSystemScan;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor;
-import org.metaeffekt.core.inventory.processor.filescan.ScanParam;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
+import org.metaeffekt.core.inventory.processor.inspector.MavenJarIdInspector;
+import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
+import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.*;
-import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -120,16 +121,11 @@ public class DirectoryInventoryScan {
         // remove/merge duplicates
         scanInventory.mergeDuplicates();
 
-        // run inspections
-        // TODO: specify where to put and load inspector properties
+        // attempt to extract artifactId, version, groupId from contained POMs
         final Properties properties = new Properties();
-        properties.put("project.path", scanDirectory.getAbsolutePath());
-        properties.put("include.embedded", Boolean.toString(includeEmbedded));
-        InspectorRunner inspectorRunner = InspectorRunner.builder()
-                .queue(MavenJarIdInspector.class)
-                .queue(OsgiJarVersionInspector.class)
-                .build();
-        inspectorRunner.executeAll(scanInventory, properties);
+        properties.put(ProjectPathParam.KEY_PROJECT_PATH, scanDirectory.getAbsolutePath());
+        properties.put(JarInspectionParam.KEY_INCLUDE_EMBEDDED, Boolean.toString(includeEmbedded));
+        new MavenJarIdInspector().run(scanInventory, properties);
 
         return scanInventory;
     }
@@ -557,26 +553,24 @@ public class DirectoryInventoryScan {
     }
 
     // FIXME: note yet final
-    public Inventory scanDirectoryNG(final File directoryToScan) {
-        final ScanParam scanParam = new ScanParam().
+    public Inventory scanDirectoryNG(final File directoryToScan) throws IOException {
+        final FileSystemScanParam scanParam = new FileSystemScanParam().
                 collectAllMatching(scanIncludes, scanExcludes).
                 unwrapAllMatching(unwrapIncludes, unwrapExcludes).
-                implicitUnwrap(true);
+                implicitUnwrap(true).
+                withReference(referenceInventory);
 
-        // FIXME: does not yet use pre-defined component patterns
+        LOG.info("Scanning directory {}...", directoryToScan.getAbsolutePath());
 
-        final FileSystemScan fileSystemScan = new FileSystemScan(directoryToScan, scanParam);
-        FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
+        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
+        final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
+
         fileSystemScanExecutor.execute();
 
-        // NOTE: at this point, the component is fully unwrapped in the file system (expect already detected component
+        // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
         //   patterns).
 
-        final ComponentPatternProducer patternProducer = new ComponentPatternProducer();
-        patternProducer.extractComponentPatterns(directoryToScan, fileSystemScan.getInventory());
-
         return fileSystemScan.getInventory();
-
     }
 
     public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {

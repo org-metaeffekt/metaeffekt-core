@@ -305,7 +305,7 @@ public class Inventory {
      * @param artifactId The artifact id to match.
      * @return The best matched artifact or <code>null</code>.
      */
-    private Artifact findArtifactMatchingId(String artifactId) {
+    public Artifact findArtifactMatchingId(String artifactId) {
         int maximumMatchLength = -1;
         Artifact longestIdMatchCandidate = null;
         for (Artifact candidate : getArtifacts()) {

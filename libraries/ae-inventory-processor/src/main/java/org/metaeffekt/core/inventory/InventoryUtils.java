@@ -21,17 +21,15 @@ import org.metaeffekt.core.inventory.processor.report.DependenciesDitaReport;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.springframework.util.StringUtils.isEmpty;
@@ -100,12 +98,16 @@ public abstract class InventoryUtils {
         }
     }
 
+
+    private static final Pattern REGEXP_PATTERN_SEPARATOR_COMMA = Pattern.compile(",", 0);
+    private static final Pattern REGEXP_PATTERN_SEPARATOR_ALL = Pattern.compile("[,\\|\\+]", 0);
+
     public static List<String> tokenizeLicense(String license, boolean reorder, boolean commaSeparatorOnly) {
         if (license != null) {
-            String[] licenseParts = commaSeparatorOnly ?
-                    license.split(",") :
-                    license.split("[,\\|\\+]");
-            List<String> licenses = Arrays.stream(licenseParts).
+            final String[] licenseParts = commaSeparatorOnly ?
+                    REGEXP_PATTERN_SEPARATOR_COMMA.split(license) :
+                    REGEXP_PATTERN_SEPARATOR_ALL.split(license);
+            final List<String> licenses = Arrays.stream(licenseParts).
                     map(String::trim).
                     filter(s -> !isEmpty(s)).
                     map(s -> {
