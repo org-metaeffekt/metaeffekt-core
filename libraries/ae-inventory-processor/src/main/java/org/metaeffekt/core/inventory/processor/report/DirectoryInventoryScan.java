@@ -552,7 +552,7 @@ public class DirectoryInventoryScan {
         return scanner.getIncludedFiles();
     }
 
-    // FIXME: note yet final
+    // FIXME: not yet final; work in progress
     public Inventory scanDirectoryNG(final File directoryToScan) throws IOException {
         final FileSystemScanParam scanParam = new FileSystemScanParam().
                 collectAllMatching(scanIncludes, scanExcludes).
