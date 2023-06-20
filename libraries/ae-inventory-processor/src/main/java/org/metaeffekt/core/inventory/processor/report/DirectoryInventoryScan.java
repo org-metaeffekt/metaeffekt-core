@@ -146,7 +146,12 @@ public class DirectoryInventoryScan {
             derivedArtifact.setId(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_PART));
             derivedArtifact.setComponent(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME));
             derivedArtifact.setVersion(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
-            derivedArtifact.addProject(asRelativePath(scanBaseDir, baseDir));
+            final String relativePathToBasedir = asRelativePath(scanBaseDir, baseDir);
+            derivedArtifact.addProject(relativePathToBasedir);
+
+            if (anchorFile != null) {
+                derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, asRelativePath(scanBaseDir, anchorFile));
+            }
 
             // also take over the type attribute
             derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));

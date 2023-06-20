@@ -66,6 +66,8 @@ public class InventorySerializationContext {
      *
      * @param key The key.
      *
+     * @param <T> Coerced type.
+     *
      * @return The value currently stored for key in the context map.
      */
     public <T> T get(String key) {
@@ -77,6 +79,8 @@ public class InventorySerializationContext {
      *
      * @param key The key.
      * @param defaultValue The default value.
+     *
+     * @param <T> Coerced type.
      *
      * @return The value in the map or the default value.
      */

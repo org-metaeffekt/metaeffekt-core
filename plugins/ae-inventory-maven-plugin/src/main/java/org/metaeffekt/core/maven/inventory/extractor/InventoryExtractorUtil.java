@@ -83,7 +83,9 @@ public abstract class InventoryExtractorUtil {
         filterByPackageFiles(packageFilesDir, resultingFileSet, folder, symLinkMap, packageFiles);
 
         LOG.info("Filtering [{}] files applying exclude patterns and folder symlinks...", resultingFileSet.size());
-        filterByExcludePatternsAndLinkedFolders(resultingFileSet, excludePatternSetMatcher, symLinkMap);
+
+        // FIXME: temporarily deactivated; identified to remove too many files
+        // filterByExcludePatternsAndLinkedFolders(resultingFileSet, excludePatternSetMatcher, symLinkMap);
 
         LOG.info("Filtering files completed resulting in [{}] files.", resultingFileSet.size());
 

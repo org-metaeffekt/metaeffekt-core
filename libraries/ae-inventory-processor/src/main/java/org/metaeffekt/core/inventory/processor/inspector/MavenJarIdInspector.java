@@ -168,6 +168,7 @@ public class MavenJarIdInspector extends AbstractJarInspector {
     /**
      * Iternates throw the entries in the jar file and produced an artifact for every pom.properties or pom.xml file.
      *
+     * @param artifact The artifact carrying data.
      * @param jarFile The file being inspected.
      *
      * @return List of artifacts created from pom.properties or pom.xml entries in the jar file.

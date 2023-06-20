@@ -120,4 +120,8 @@ public class LicenseData extends AbstractModelBase {
         return Boolean.TRUE.equals(get(attribute.getKey(), "false"));
     }
 
+    public void merge(LicenseData otherLicenseData) {
+        super.merge(otherLicenseData);
+    }
+
 }

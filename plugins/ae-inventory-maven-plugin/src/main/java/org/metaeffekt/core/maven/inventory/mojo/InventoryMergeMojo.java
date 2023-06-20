@@ -5,12 +5,10 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -111,21 +109,15 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
             final Inventory targetInventory = this.targetInventory.exists() ?
                     new InventoryReader().readInventory(this.targetInventory) : new Inventory();
 
-            // parse and merge the collected inventories
-            for (File sourceInv : sourceInventories) {
-                mergeSingleInventory(new InventoryReader().readInventory(sourceInv), targetInventory);
-            }
+            final InventoryMergeUtils inventoryMergeUtils = new InventoryMergeUtils();
 
-            // NOTE:
-            // - we merge artifacts
-            // - we merge assets (currently only by adding; not merging; not cleaning duplicates)
+            inventoryMergeUtils.addDefaultArtifactExcludedAttributes = addDefaultArtifactExcludedAttributes;
+            inventoryMergeUtils.artifactExcludedAttributes = artifactMergeAttributes;
 
-            // TODO: revise the following once assets have been fully established
-            // - we do not merge component patterns; the target component patterns are preserved (future: tbc)
-            // - we do not merge license notices; merges are considered to use reference inventory as targets (future: merge and remove duplicates)
-            // - we do not merge vulnerabilities; vulnerabilities are in the reference inventory (target) or
-            //   processed later on (future: organize vulnerability data per asset, merge details on artifact level)
-            // - we do not merge license data (reference is the target; future: merge; manage assets columns; remove duplicates)
+            inventoryMergeUtils.addDefaultArtifactMergeAttributes = addDefaultArtifactMergeAttributes;
+            inventoryMergeUtils.artifactMergeAttributes = artifactMergeAttributes;
+
+            inventoryMergeUtils.merge(sourceInventories, targetInventory);
 
             // create target directory if not existing yet
             final File targetParentFile = this.targetInventory.getParentFile();
@@ -138,119 +130,6 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
-    }
-
-    private void mergeSingleInventory(Inventory sourceInv, Inventory targetInv) {
-        // complete artifacts in targetInv with checksums (with matching project location)
-        // NOTE: this assumes that the source inventory container extensions to the target inventory
-        for (final Artifact artifact : targetInv.getArtifacts()) {
-
-            // existing checksums must not be overwritten
-            if (StringUtils.hasText(artifact.getChecksum())) continue;
-
-            final List<Artifact> candidates = sourceInv.findAllWithId(artifact.getId());
-
-            // matches match on project location
-            final List<Artifact> matches = new ArrayList<>();
-            for (final Artifact candidate : candidates) {
-                if (matchesProjects(artifact, candidate)) {
-                    matches.add(candidate);
-                }
-            }
-            for (final Artifact match : matches) {
-                artifact.setChecksum(match.getChecksum());
-            }
-        }
-
-        // add NOT COVERED artifacts from sourceInv in targetInv using id and checksum
-        for (final Artifact artifact : sourceInv.getArtifacts()) {
-            final Artifact candidate = targetInv.findArtifactByIdAndChecksum(artifact.getId(), artifact.getChecksum());
-            if (candidate == null) {
-                targetInv.getArtifacts().add(artifact);
-            }
-        }
-
-        // simply add asset data (anticipating there are no duplicates)
-        targetInv.getAssetMetaData().addAll(sourceInv.getAssetMetaData());
-
-        // remove duplicates (in the sense of exclude and merge attributes
-        final Set<Artifact> toBeDeleted = new HashSet<>();
-        final Map<String, Artifact> representationArtifactMap = new HashMap<>();
-        final List<String> attributes = new ArrayList<>();
-        final Set<String> excludedAttributes = new HashSet<>(artifactExcludedAttributes);
-
-        if (addDefaultArtifactExcludedAttributes) {
-            excludedAttributes.add("Verified");
-            excludedAttributes.add("Archive Path");
-            excludedAttributes.add("Latest Version");
-            excludedAttributes.add("Security Relevance");
-            excludedAttributes.add("Notice Parameter");
-            excludedAttributes.add("License");
-            excludedAttributes.add("Package Documentation Path");
-            excludedAttributes.add("Package Group");
-            excludedAttributes.add("Package License Path");
-            excludedAttributes.add("Security Category");
-            excludedAttributes.add("WILDCARD-MATCH");
-            excludedAttributes.add("Issue");
-        }
-
-        // currently not configurable as these require
-        final Set<String> mergeAttributes = new HashSet<>(artifactMergeAttributes);
-
-        if (addDefaultArtifactMergeAttributes) {
-            mergeAttributes.add("Projects");
-            mergeAttributes.add("Source Project");
-        }
-
-        // compile attributes list covering all artifacts
-        for (final Artifact artifact : targetInv.getArtifacts()) {
-
-            // the excluded attributes are eliminated; merge attributes persist (as these are required)
-            for (final String attribute : excludedAttributes) {
-                artifact.set(attribute, null);
-            }
-
-            // add the (remaining) attributes to the overall list
-            attributes.addAll(artifact.getAttributes());
-        }
-
-        // the merge attributes do not contribute to the artifacts representation
-        attributes.removeAll(mergeAttributes);
-
-        for (final Artifact artifact : targetInv.getArtifacts()) {
-            final StringBuilder sb = new StringBuilder();
-            for (String attribute : attributes) {
-                if (sb.length() == 0) {
-                    sb.append(";");
-                }
-                sb.append(attribute).append("=").append(artifact.get(attribute));
-            }
-
-            final String rep = sb.toString();
-            if (representationArtifactMap.containsKey(rep)) {
-                toBeDeleted.add(artifact);
-
-                final Artifact retainedArtifact = representationArtifactMap.get(rep);
-                for (final String key : mergeAttributes) {
-                    retainedArtifact.append(key, artifact.get(key), ", ");
-                }
-            } else {
-                representationArtifactMap.put(rep, artifact);
-            }
-        }
-
-        targetInv.getArtifacts().removeAll(toBeDeleted);
-    }
-
-    private boolean matchesProjects(Artifact artifact, Artifact candidate) {
-        for (String location : artifact.getProjects()) {
-            for (String candidateLocation : candidate.getProjects()) {
-                if (candidateLocation.contains(location)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
 }
