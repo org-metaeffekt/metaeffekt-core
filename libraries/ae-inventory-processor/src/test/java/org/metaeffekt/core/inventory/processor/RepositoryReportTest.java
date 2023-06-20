@@ -246,7 +246,7 @@ public class RepositoryReportTest {
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
         //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
-        report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC");
+        report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC", "GHSA");
         report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
