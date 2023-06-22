@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
@@ -24,6 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class AdvisoryData {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AdvisoryData.class);
 
     public static final String EMPTY_STRING = "";
 
@@ -101,8 +105,12 @@ public class AdvisoryData {
                     return extractAdvisoryDataFromCertSei(advisoryJson);
                 case "MSRC":
                     return extractAdvisoryDataFromMsrc(advisoryJson);
+                case "GHSA":
+                    return extractAdvisoryDataFromGhsa(advisoryJson);
             }
         }
+
+        LOG.warn("Unsupported advisory source: {}", source);
 
         return null;
     }
@@ -157,6 +165,22 @@ public class AdvisoryData {
         advisoryData.recommendations = entry.optString("recommendations", EMPTY_STRING);
         advisoryData.workarounds = entry.optString("workarounds", EMPTY_STRING);
         advisoryData.acknowledgements = entry.optString("acknowledgements", EMPTY_STRING);
+        advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
+        advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
+        advisoryData.type = normalizeType(entry.optString("type", "advisory"));
+
+        return advisoryData;
+    }
+
+    private static AdvisoryData extractAdvisoryDataFromGhsa(JSONObject entry) {
+        AdvisoryData advisoryData = new AdvisoryData();
+
+        // TODO: Check if there are more available fields
+        advisoryData.id = entry.optString("id", EMPTY_STRING);
+        advisoryData.url = extractUrl(entry.opt("url"));
+        advisoryData.source = entry.optString("source", EMPTY_STRING);
+        advisoryData.summary = entry.optString("summary", EMPTY_STRING);
+        advisoryData.description = entry.optString("description", EMPTY_STRING);
         advisoryData.createDate = normalizeDate(entry.optString("createDate", EMPTY_STRING));
         advisoryData.updateDate = normalizeDate(entry.optString("updateDate", EMPTY_STRING));
         advisoryData.type = normalizeType(entry.optString("type", "advisory"));
