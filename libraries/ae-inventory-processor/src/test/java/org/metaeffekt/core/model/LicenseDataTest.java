@@ -33,7 +33,7 @@ public class LicenseDataTest {
         ld.set(LicenseData.Attribute.COPYLEFT_TYPE, "limited");
 
         Assert.assertEquals("GNU Lesser General Public License 2.1-LGPL-2.1", ld.deriveQualifier());
-        Assert.assertEquals("GNU Lesser General Public License 2.1:LGPL-2.1:LGPL-2.1-only::limited:false:",
+        Assert.assertEquals("GNU Lesser General Public License 2.1:LGPL-2.1:LGPL-2.1-only:",
                 ld.createCompareStringRepresentation());
     }
 

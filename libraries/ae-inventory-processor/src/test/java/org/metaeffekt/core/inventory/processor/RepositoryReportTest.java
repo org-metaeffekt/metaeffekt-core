@@ -270,7 +270,7 @@ public class RepositoryReportTest {
 
         report.setInventoryBomReportEnabled(true);
 
-        report.setAssetBomReportEnabled(false);
+        report.setAssetBomReportEnabled(true);
 
         report.setInventoryVulnerabilityReportEnabled(false);
         report.setInventoryVulnerabilityReportSummaryEnabled(false);

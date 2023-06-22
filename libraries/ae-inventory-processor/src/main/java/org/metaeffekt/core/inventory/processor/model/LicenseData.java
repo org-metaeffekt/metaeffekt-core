@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Model class that supports to aggregate data around licenses. The information can be used in reports and documentation.
@@ -54,16 +55,13 @@ public class LicenseData extends AbstractModelBase {
         }
     }
 
-    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+    public static List<String> CORE_ATTRIBUTES = new ArrayList<>();
 
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
-        CORE_ATTRIBUTES.add(Attribute.OSI_APPROVED.getKey());
-        CORE_ATTRIBUTES.add(Attribute.COPYLEFT_TYPE.getKey());
-        CORE_ATTRIBUTES.add(Attribute.COMMERCIAL.getKey());
         CORE_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
     }
 
