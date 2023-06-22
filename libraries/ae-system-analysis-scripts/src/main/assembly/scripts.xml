@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+>
+    <id>scripts</id>
+
+    <formats>
+        <format>jar</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <directory>${scriptsOutputDirectory}</directory>
+            <outputDirectory>ae-system-analysis-scripts-assembled</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+</assembly>
