@@ -24,9 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Assembles scripts according to a custom little format.<br>
@@ -54,6 +52,55 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
     @Parameter(name="libraryDirectory", required = true)
     private File libraryDirectory;
 
+    /**
+     * Distinguishes files (shell script or not) and processes them accordingly.
+     * @param filesToProcess Map (inputPath to outputPath) of files to process.
+     * @return returns a summary of files processed.
+     * @throws IOException if any of the files can't be processed.
+     * @throws MalformedIncludeException if there was a malformed inclusion comment in a script.
+     */
+    protected Map<String, List<Path>> processFiles(Map<Path, Path> filesToProcess) throws IOException, MalformedIncludeException {
+        Map<String, List<Path>> actionToProcessedPath = new HashMap<>();
+
+        for (Map.Entry<Path, Path> entry : filesToProcess.entrySet()) {
+            Path inputPath = entry.getKey();
+            Path outputPath = entry.getValue();
+            File inputFile = inputPath.toFile();
+            File outputFile = outputPath.toFile();
+
+            if (outputFile.exists()) {
+                throw new IOException("Refusing to overwrite output file '" + outputFile.getAbsolutePath() + "'");
+            }
+            if (Files.isDirectory(inputPath, LinkOption.NOFOLLOW_LINKS)) {
+                throw new IOException("A directory should not have made it to filesToProcess.");
+            }
+
+            if (Files.isRegularFile(inputPath, LinkOption.NOFOLLOW_LINKS)) {
+
+                // simple test: does file name end in ".sh"?
+                if (inputPath.getFileName().toString().endsWith(".sh")) {
+                    // identified as a shell script. attempt to process it
+                    ShellScriptAssembler assembler =
+                            new ShellScriptAssembler(inputFile, outputFile, libraryDirectory);
+                    assembler.assemble();
+                    actionToProcessedPath.computeIfAbsent("assembled", (k) -> new ArrayList<>()).add(inputPath);
+                } else {
+                    // non-script files will be copied over
+                    Files.copy(inputPath, outputPath);
+                    actionToProcessedPath.computeIfAbsent("copied", (k) -> new ArrayList<>()).add(inputPath);
+                }
+            } else {
+                throw new IOException("Entry '" + inputFile + "' is neither file nor directory.");
+            }
+        }
+
+        return actionToProcessedPath;
+    }
+
+    private Path getRelativized(Path path, Path basePath) throws IOException {
+        return basePath.relativize(path.toRealPath(LinkOption.NOFOLLOW_LINKS));
+    }
+
     @Override
     public void execute() throws MojoExecutionException {
         if (!inputDirectory.exists()) {
@@ -72,13 +119,13 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
                 outputDirPath = outputDirectory.toPath().toAbsolutePath();
             }
 
-            // iterate dir structure and process files individually with ShellScriptAssembler
+            // iterate dir structure and queue files for processing
             Files.createDirectories(outputDirPath);
 
             Map<Path, Path> filesToProcess = new TreeMap<>();
             Files.walkFileTree(inputDirectory.toPath(), EnumSet.noneOf(FileVisitOption.class), 64, new SimpleFileVisitor<Path>() {
                 private Path getRelativized(Path path) throws IOException {
-                    return inputDirPath.relativize(path.toRealPath(LinkOption.NOFOLLOW_LINKS));
+                    return ShellScriptAssemblerMojo.this.getRelativized(path, inputDirPath);
                 }
 
                 @Override
@@ -96,33 +143,15 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
                 }
             });
 
-            for (Map.Entry<Path, Path> entry : filesToProcess.entrySet()) {
-                Path inputPath = entry.getKey();
-                Path outputPath = entry.getValue();
-                File inputFile = inputPath.toFile();
-                File outputFile = outputPath.toFile();
+            // process files
+            Map<String, List<Path>> processedSummary = processFiles(filesToProcess);
 
-                if (outputFile.exists()) {
-                    throw new IOException("Refusing to overwrite output file '" + outputFile.getAbsolutePath() + "'");
-                }
-
-                if (Files.isDirectory(inputPath, LinkOption.NOFOLLOW_LINKS)) {
-                    throw new IOException("A directory should not have made it to filesToProcess.");
-                }
-
-                if (Files.isRegularFile(inputPath, LinkOption.NOFOLLOW_LINKS)) {
-                    if (inputPath.getFileName().toString().endsWith(".sh")) {
-                        // identified as a shell script. attempt to process it
-                        ShellScriptAssembler assembler =
-                                new ShellScriptAssembler(inputFile, outputFile, libraryDirectory);
-                        assembler.assemble();
-                    } else {
-                        // copy this file over as it is
-                        // TODO: what to do with files other than shell scripts? copy or ignore?
-                        Files.copy(inputPath, outputPath);
-                    }
-                } else {
-                    throw new IOException("Entry '" + inputFile + "' is neither file nor directory.");
+            // print summary
+            getLog().info("Summary:");
+            for (String action : processedSummary.keySet()) {
+                getLog().info("\"" + action + "\":");
+                for (Path path : processedSummary.get(action)) {
+                    getLog().info("  - " + getRelativized(path, inputDirPath));
                 }
             }
         } catch (Exception e) {
