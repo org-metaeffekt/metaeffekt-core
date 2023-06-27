@@ -15,8 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns;
 
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
+import org.metaeffekt.core.inventory.processor.filescan.MatchResult;
+import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.*;
 import org.metaeffekt.core.util.FileUtils;
@@ -25,8 +30,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.metaeffekt.core.util.FileUtils.*;
 
 public class ComponentPatternProducer {
+
+    public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
     public static final String[] INCLUDE_PATTERNS_ORDERED_BY_PRIORITY = new String[]{
             // web modules
@@ -68,8 +78,8 @@ public class ComponentPatternProducer {
 
         final Set<String> fileSet = new HashSet<>(Arrays.asList(folders));
         final List<String> foldersByLength = new ArrayList<>(fileSet);
-        Collections.sort(foldersByLength);
-        Collections.sort(foldersByLength, Comparator.comparingInt(String::length));
+        foldersByLength.sort(String.CASE_INSENSITIVE_ORDER);
+        foldersByLength.sort(Comparator.comparingInt(String::length));
 
         // configure contributors
         final List<ComponentPatternContributor> componentPatternContributors = new ArrayList<>();
@@ -93,7 +103,10 @@ public class ComponentPatternProducer {
                 // skip subtrees already covered
                 boolean skip = false;
                 for (String subtree : uniqueFolder) {
-                    if (folder.startsWith(subtree + "/")) skip = true;
+                    if (folder.startsWith(subtree + "/")) {
+                        skip = true;
+                        break;
+                    }
                 }
                 if (skip) {
                     continue;
@@ -138,7 +151,7 @@ public class ComponentPatternProducer {
 
                     // FIXME: defer to 2nd pass
                     final String version = componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
-                    if (version != null && "unspecific".equalsIgnoreCase(version)) {
+                    if ("unspecific".equalsIgnoreCase(version)) {
                         continue;
                     }
 
@@ -154,6 +167,258 @@ public class ComponentPatternProducer {
         for (Map.Entry<String, String> entry : uniqueFile.entrySet()) {
             System.out.println(entry.getKey() + " - " + entry.getValue());
         }
+    }
+
+    public void detectAndApplyComponentPatterns(Inventory implicitReferenceInventory, FileSystemScanContext fileSystemScanContext) {
+        // NOTE: until here only the static, pre-defined component patterns in the reference inventory have been
+        //  anticipated. These prevented to further unwrap parts which are already considered part of a greater
+        //  component (otherwise the component pattern would not be precise).
+        //  Here, we also have unwrapped the full subtree (except things already covered) and can now derive default
+        //  component patterns applying the ComponentPatternProducer.
+        extractComponentPatterns(fileSystemScanContext.getBaseDir().getFile(), implicitReferenceInventory);
+        matchAndApplyComponentPatterns(implicitReferenceInventory, fileSystemScanContext);
+
+        // delete artifacts marked with delete directive
+        final List<Artifact> toBeDeleted = new ArrayList<>();
+        for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
+            final String scanDirectiveDelete = artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_SCAN_DIRECTIVE);
+            if (!StringUtils.isEmpty(scanDirectiveDelete) && scanDirectiveDelete.contains(ArtifactUnwrapTask.SCAN_DIRECTIVE_DELETE)) {
+                toBeDeleted.add(artifact);
+            }
+        }
+        fileSystemScanContext.removeAll(toBeDeleted);
+    }
+
+    public void matchAndApplyComponentPatterns(final Inventory componentPatternSourceInventory, FileSystemScanContext fileSystemScanContext) {
+        final List<MatchResult> matchedComponentPatterns = matchComponentPatterns(fileSystemScanContext.getInventory(), componentPatternSourceInventory, fileSystemScanContext);
+        LOG.info("Matching component patterns resulted in {} matches.", matchedComponentPatterns.size());
+
+        final ArrayList<MatchResult> matchResultsWithoutFileMatches = new ArrayList<>();
+        filterFilesMatchedByComponentPatterns(matchedComponentPatterns, matchResultsWithoutFileMatches, fileSystemScanContext);
+
+        // add artifacts representing the component patterns
+        deriveAddonArtifactsFromMatchResult(matchedComponentPatterns, fileSystemScanContext);
+
+        // we need to remove those match results, which did not match any file. Such match results may be caused by
+        // generic anchor matches and wildcard anchor checksums.
+        if (!matchResultsWithoutFileMatches.isEmpty()) {
+            matchedComponentPatterns.removeAll(matchResultsWithoutFileMatches);
+        }
+
+        // transfer matched component patterns to the artifact inventory
+        for (MatchResult matchResult : matchedComponentPatterns) {
+            fileSystemScanContext.getInventory().getComponentPatternData().add(matchResult.componentPatternData);
+        }
+    }
+
+    private void deriveAddonArtifactsFromMatchResult(List<MatchResult> componentPatterns, FileSystemScanContext fileSystemScanContext) {
+        for (MatchResult matchResult : componentPatterns) {
+            final Artifact derivedArtifact = matchResult.deriveArtifact(fileSystemScanContext.getBaseDir());
+            fileSystemScanContext.contribute(derivedArtifact);
+        }
+    }
+
+    private void filterFilesMatchedByComponentPatterns(List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches, FileSystemScanContext fileSystemScanContext) {
+
+        // remove the matched files covered by the matched components
+        for (MatchResult matchResult : matchedComponentDataOnAnchor) {
+            final ComponentPatternData cpd = matchResult.componentPatternData;
+            final File anchorFile = matchResult.anchorFile;
+
+            // this is a relative path
+            final String versionAnchor = normalizePathToLinux(cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR));
+
+            final File baseDir = computeComponentBaseDir(fileSystemScanContext.getBaseDir().getFile(), anchorFile, versionAnchor);
+
+            final String relativePathToComponentBaseDir = asRelativePath(fileSystemScanContext.getBaseDir().getFile(), baseDir);
+
+            // build patterns to match (using scanBaseDir relative paths); this should be done during parsing?!
+            final String normalizedIncludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
+            final String normalizedExcludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
+
+            final Inventory inventory = fileSystemScanContext.getInventory();
+            synchronized (inventory) {
+                boolean matched = false;
+                for (final Artifact artifact : inventory.getArtifacts()) {
+                    String relativePathFromBaseDir = getRelativePathFromBaseDir(artifact);
+
+                    // FIXME: revise path matching; consider abstraction
+                    if (pathBeginsWith(relativePathFromBaseDir, relativePathToComponentBaseDir)) {
+                        if (!relativePathToComponentBaseDir.equalsIgnoreCase(".")) {
+                            relativePathFromBaseDir = relativePathFromBaseDir.substring(relativePathToComponentBaseDir.length() + 1);
+                        }
+                        if (matches(normalizedIncludePattern, relativePathFromBaseDir)) {
+                            if (StringUtils.isEmpty(normalizedExcludePattern) || !matches(normalizedExcludePattern, relativePathFromBaseDir)) {
+                                LOG.debug("Filtered component file: {} for component pattern {}", relativePathFromBaseDir, cpd.deriveQualifier());
+                                artifact.set("AID_" + matchResult.anchorFile, "x");
+                                artifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_SCAN_DIRECTIVE, ArtifactUnwrapTask.SCAN_DIRECTIVE_DELETE);
+                                artifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+                                matched = true;
+                            }
+                        }
+                    }
+                }
+
+                if (!matched) {
+                    LOG.info("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
+                    matchResultsWithoutFileMatches.add(matchResult);
+                }
+            }
+        }
+    }
+
+    private static String getRelativePathFromBaseDir(Artifact artifact) {
+        String relativePathFromBaseDir = artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH);
+        if (StringUtils.isEmpty(relativePathFromBaseDir)) {
+            // FIXME: fallback to old style
+            if (artifact.getProjects().size() > 0) {
+                relativePathFromBaseDir = artifact.getProjects().iterator().next();
+            }
+        }
+        return relativePathFromBaseDir;
+    }
+
+    private boolean pathBeginsWith(String relativePathFromBaseDir, String relativePathToComponentBaseDir) {
+        if (relativePathToComponentBaseDir.equalsIgnoreCase(".")) {
+            return true;
+        } else {
+            return relativePathFromBaseDir.startsWith(relativePathToComponentBaseDir + "/");
+        }
+    }
+
+    private String normalizePattern(String pattern) {
+        if (pattern == null) return null;
+
+        String[] patterns = pattern.split(",");
+        return Arrays.stream(patterns)
+                .map(String::trim)
+                .map(FileUtils::normalizePathToLinux)
+                .collect(Collectors.joining(","));
+    }
+
+    /**
+     * Matches the component patterns. The inventory remains unmodified.
+     *
+     * @param inputInventory The inventory carrying the current scan result that is examined for component patterns.
+     * @param componentPatternSourceInventory The inventory to take component patterns from.
+     *
+     * @return List of matched / potential component patterns.
+     */
+    public List<MatchResult> matchComponentPatterns(final Inventory inputInventory, final Inventory componentPatternSourceInventory, FileSystemScanContext fileSystemScanContext) {
+        // match component patterns using version anchor; results in matchedComponentPatterns
+        final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
+
+        for (final ComponentPatternData cpd : componentPatternSourceInventory.getComponentPatternData()) {
+            LOG.debug("Checking component pattern: {}", cpd.createCompareStringRepresentation());
+
+            final String anchorChecksum = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM);
+            final String versionAnchor = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR);
+            final String normalizedVersionAnchor = normalizePathToLinux(versionAnchor);
+
+            if (versionAnchor == null) {
+                throw new IllegalStateException(String.format("The version anchor of component pattern [%s] must be defined.",
+                        cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN)));
+            }
+            if (versionAnchor.contains(DOUBLE_ASTERISK)) {
+                throw new IllegalStateException(String.format("The version anchor of component pattern [%s] must not contain **. Use * only.",
+                        cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN)));
+            }
+            if (anchorChecksum == null) {
+                throw new IllegalStateException(String.format("The version anchor checksum of component pattern [%s] must be defined.",
+                        cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN)));
+            }
+
+            // memorize whether the path fragment of version anchor contains wildcards
+            final boolean isVersionAnchorPattern = versionAnchor.contains(Constants.ASTERISK);
+
+            // memorize whether version anchor checksum is specific (and not just *)
+            final boolean isVersionAnchorChecksumSpecific = !anchorChecksum.equalsIgnoreCase(Constants.ASTERISK);
+
+            final File rootDir = fileSystemScanContext.getBaseDir().getFile();
+
+            if (versionAnchor.equalsIgnoreCase(Constants.ASTERISK) || versionAnchor.equalsIgnoreCase(Constants.DOT)) {
+
+                if (!anchorChecksum.equalsIgnoreCase(Constants.ASTERISK)) {
+                    throw new IllegalStateException(String.format(
+                            "The version anchor checksum of component pattern [%s] with version anchor [%s] must be '*'.",
+                            cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN), versionAnchor));
+                }
+
+                // FIXME: why do we clone and adjust the anchor checksum here? May be instantiated multiple times?
+                final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
+                copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, Constants.ASTERISK);
+                matchedComponentPatterns.add(new MatchResult(copyCpd, rootDir, rootDir, null));
+
+                // continue with next component pattern (otherwise this would produce a hugh amount of matched patterns)
+                continue;
+            }
+
+            final String[] split = normalizedVersionAnchor.split("\\*");
+            final List<String> quickCheck = Arrays.stream(split).sorted(Comparator.comparingInt(String::length)).collect(Collectors.toList());
+            final String containsCheckString = quickCheck.get(quickCheck.size() - 1);
+
+            // TODO: we could determine a substring here that does not include any wildcard; must be quick
+            //  then we use the contains() to have a quick pre check, before computing the accurate match
+
+            // check whether the version anchor path fragment matches one of the file paths
+            final String path = fileSystemScanContext.getBaseDir().getPath();
+            for (final Artifact artifact : inputInventory.getArtifacts()) {
+                // generate normalized path relative to scanBaseDir (important; not to scanDir, which may vary as we
+                // descend into the hierarchy on recursion)
+
+                final String relativePathFromBaseDir = getRelativePathFromBaseDir(artifact);
+
+                if (StringUtils.isEmpty(relativePathFromBaseDir)) continue;
+
+                final String normalizedPath = path + "/" + relativePathFromBaseDir;
+
+                if (normalizedPath.contains(containsCheckString)) {
+                    if (versionAnchorMatches(normalizedVersionAnchor, normalizedPath, isVersionAnchorPattern)) {
+
+                        // on match infer the checksum of the file
+                        final String fileChecksumOrAsterisk = isVersionAnchorChecksumSpecific ? artifact.getChecksum() : Constants.ASTERISK;
+
+                        if (!anchorChecksum.equalsIgnoreCase(fileChecksumOrAsterisk)) {
+                            LOG.debug("Anchor fileChecksumOrAsterisk mismatch: " + normalizedPath);
+                            LOG.debug("Expected fileChecksumOrAsterisk :{}; actual file fileChecksumOrAsterisk: {}", anchorChecksum, fileChecksumOrAsterisk);
+                        } else {
+                            final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
+                            copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, fileChecksumOrAsterisk);
+
+                            final File file = new File(normalizedPath);
+                            matchedComponentPatterns.add(new MatchResult(copyCpd, file,
+                                computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_ASSET_ID_CHAIN)));
+                        }
+                    }
+                }
+            }
+        }
+
+        return matchedComponentPatterns;
+    }
+
+    private static boolean versionAnchorMatches(String normalizedVersionAnchor, String normalizedPath, boolean isVersionAnchorPattern) {
+        return (!isVersionAnchorPattern && normalizedPath.endsWith(normalizedVersionAnchor)) ||
+                (isVersionAnchorPattern && matches("**/" + normalizedVersionAnchor, normalizedPath));
+    }
+
+    private static File computeComponentBaseDir(File scanBaseDir, File anchorFile, String versionAnchor) {
+        if (Constants.ASTERISK.equalsIgnoreCase(versionAnchor)) return scanBaseDir;
+        if (Constants.DOT.equalsIgnoreCase(versionAnchor)) return scanBaseDir;
+
+        final int versionAnchorFolderDepth = org.springframework.util.StringUtils.countOccurrencesOf(versionAnchor, "/") + 1;
+
+        File baseDir = anchorFile;
+        for (int i = 0; i < versionAnchorFolderDepth; i++) {
+            baseDir = baseDir.getParentFile();
+
+            // handle special case the parent dir does not exist (for whatever reason)
+            if (baseDir == null) {
+                baseDir = scanBaseDir;
+                break;
+            }
+        }
+        return baseDir;
     }
 
 

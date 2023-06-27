@@ -16,14 +16,10 @@
 package org.metaeffekt.core.inventory.processor.writer;
 
 import org.apache.poi.ss.SpreadsheetVersion;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.*;
 
@@ -56,13 +52,13 @@ public class AbstractXlsxInventoryWriter extends AbstractInventoryWriter {
         return insertIndex;
     }
 
-    protected XSSFCellStyle createDefaultHeaderStyle(XSSFWorkbook workbook) {
+    protected CellStyle createDefaultHeaderStyle(SXSSFWorkbook workbook) {
         final XSSFColor headerColor = resolveColor(workbook, "153,204,255");
 
         final Font headerFont = workbook.createFont();
         headerFont.setColor(Font.COLOR_NORMAL);
 
-        final XSSFCellStyle headerStyle = workbook.createCellStyle();
+        final CellStyle headerStyle = workbook.createCellStyle();
         headerStyle.setFillForegroundColor(headerColor);
         headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         headerStyle.setFont(headerFont);
@@ -70,24 +66,24 @@ public class AbstractXlsxInventoryWriter extends AbstractInventoryWriter {
         return headerStyle;
     }
 
-    protected XSSFCellStyle createHeaderStyle(XSSFWorkbook workbook) {
+    protected CellStyle createHeaderStyle(SXSSFWorkbook workbook) {
         return createDefaultHeaderStyle(workbook);
     }
 
-    protected XSSFCellStyle createAssetSourceHeaderStyle(XSSFWorkbook workbook) {
+    protected CellStyle createAssetSourceHeaderStyle(SXSSFWorkbook workbook) {
         return createRotatedCellStyle(workbook, resolveColor(workbook, "155,192,0"));
     }
 
-    protected XSSFCellStyle createAssetConfigHeaderStyle(XSSFWorkbook workbook) {
+    protected CellStyle createAssetConfigHeaderStyle(SXSSFWorkbook workbook) {
         return createRotatedCellStyle(workbook, resolveColor(workbook, "219,219,219"));
     }
 
-    protected XSSFCellStyle createAssetHeaderStyle(XSSFWorkbook workbook) {
+    protected CellStyle createAssetHeaderStyle(SXSSFWorkbook workbook) {
         return createRotatedCellStyle(workbook, resolveColor(workbook, "255,192,0"));
     }
 
-    protected XSSFCellStyle createRotatedCellStyle(XSSFWorkbook workbook, XSSFColor headerColor) {
-        final XSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+    protected CellStyle createRotatedCellStyle(SXSSFWorkbook workbook, XSSFColor headerColor) {
+        final CellStyle cellStyle = createDefaultHeaderStyle(workbook);
         cellStyle.setFillForegroundColor(headerColor);
         cellStyle.setRotation((short) -90);
         cellStyle.setAlignment(HorizontalAlignment.CENTER);
@@ -96,27 +92,27 @@ public class AbstractXlsxInventoryWriter extends AbstractInventoryWriter {
         return cellStyle;
     }
 
-    protected XSSFCellStyle createCenteredStyle(XSSFWorkbook workbook) {
-        final XSSFCellStyle cellStyle = workbook.createCellStyle();
+    protected CellStyle createCenteredStyle(SXSSFWorkbook workbook) {
+        final CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setAlignment(HorizontalAlignment.CENTER);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         return cellStyle;
     }
 
-    protected XSSFCellStyle createWarnHeaderStyle(XSSFWorkbook workbook) {
+    protected CellStyle createWarnHeaderStyle(SXSSFWorkbook workbook) {
         final XSSFColor headerColor = resolveColor(workbook, "244,176,132");
         return createRotatedCellStyle(workbook, headerColor);
     }
 
-    protected XSSFCellStyle createErrorHeaderStyle(XSSFWorkbook workbook) {
+    protected CellStyle createErrorHeaderStyle(SXSSFWorkbook workbook) {
         final XSSFColor headerColor = resolveColor(workbook, "244,176,132");
-        final XSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        final CellStyle cellStyle = createDefaultHeaderStyle(workbook);
         cellStyle.setFillForegroundColor(headerColor);
         cellStyle.setWrapText(false);
         return cellStyle;
     }
 
-    protected XSSFColor resolveColor(XSSFWorkbook workbook, String rgb) {
+    protected XSSFColor resolveColor(SXSSFWorkbook workbook, String rgb) {
         final String[] rgbSplit = rgb.trim().split(", ?");
         final int red = Short.parseShort(rgbSplit[0]);
         final int green = Short.parseShort(rgbSplit[1]);

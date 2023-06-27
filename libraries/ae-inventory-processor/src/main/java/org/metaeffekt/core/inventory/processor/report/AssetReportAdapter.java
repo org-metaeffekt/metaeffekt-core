@@ -66,7 +66,12 @@ public class AssetReportAdapter {
     Pair<String, String>[] defaultKeyList = new Pair[] {
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
-            Pair.of("Version", "Version")
+            Pair.of("Hash (SHA-1)", "Hash (SHA-1)")
+    };
+
+    Pair<String, String>[] directoryKeyList = new Pair[] {
+            Pair.of("Type", "Type"),
+            Pair.of("Name", "Name"),
     };
 
     public Pair<String, String>[] listKeys(AssetMetaData assetMetaData) {
@@ -77,6 +82,8 @@ public class AssetReportAdapter {
                     return containerKeyList;
                 case "Appliance":
                     return applianceKeyList;
+                case "Directory":
+                    return directoryKeyList;
             }
         }
         return defaultKeyList;

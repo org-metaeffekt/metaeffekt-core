@@ -29,7 +29,7 @@
                 <row>
                     <entry colname="COLSPEC0" valign="top">License in Effect</entry>
                     <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
-                    <entry colname="COLSPEC2" valign="top">OSI approved</entry>
+                    <entry colname="COLSPEC2" valign="top">OSI Status</entry>
                     <entry colname="COLSPEC3" valign="top">Number of Components</entry>
                 </row>
             </thead>
@@ -47,7 +47,7 @@
                     </entry>
                     <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
-                        #if ($licenseData)#if ($licenseData.is('OSI Approved'))yes<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                        #if ($licenseData)#if ($licenseData.get("OSI Status"))$licenseData.get("OSI Status")<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
                     </entry>
 #else
                     <entry>
@@ -57,7 +57,7 @@
                     </entry>
                     <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
-                        #if($licenseData)#if($licenseData.is('OSI Approved'))yes#else&nbsp;#end#else&nbsp;#end
+                        #if($licenseData)#if($licenseData.get("OSI Status"))$licenseData.get("OSI Status")#else&nbsp;#end#else&nbsp;#end
                     </entry>
 #end
                     <entry>

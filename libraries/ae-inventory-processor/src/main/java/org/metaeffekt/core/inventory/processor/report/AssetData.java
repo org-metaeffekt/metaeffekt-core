@@ -19,6 +19,7 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AssetData {
 
@@ -117,6 +118,14 @@ public class AssetData {
 
     public List<String> getRepresentedAssociatedLicenses() {
         return sortedList(this.representedAssociatedLicenses);
+    }
+
+    public List<String> getRepresentedAssociatedLicensesWithoutOption() {
+        return sortedList(this.representedAssociatedLicenses).stream().filter(s -> !s.contains(" + ")).collect(Collectors.toList());
+    }
+
+    public List<String> getRepresentedAssociatedLicensesWithOption() {
+        return sortedList(this.representedAssociatedLicenses).stream().filter(s -> s.contains(" + ")).collect(Collectors.toList());
     }
 
     public List<String> getLicensesForRepresentedLicense(String representedAssociatedLicense) {

@@ -17,10 +17,15 @@ package org.metaeffekt.core.inventory.processor.writer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFCell;
+import org.apache.poi.xssf.streaming.SXSSFRow;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.model.CertMetaData.Attribute;
@@ -61,7 +66,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     };
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
-        final XSSFWorkbook workbook = new XSSFWorkbook();
+        final SXSSFWorkbook workbook = new SXSSFWorkbook();
 
         writeArtifacts(inventory, workbook);
         writeAssetMetaData(inventory, workbook);
@@ -84,22 +89,22 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         }
     }
 
-    private void writeArtifacts(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeArtifacts(Inventory inventory, SXSSFWorkbook workbook) {
         // an artifact inventory is always written (an xls without sheets is regarded damaged by Excel)
 
-        final XSSFSheet sheet = workbook.createSheet(AbstractInventoryReader.WORKSHEET_NAME_ARTIFACT_DATA);
+        final SXSSFSheet sheet = workbook.createSheet(AbstractInventoryReader.WORKSHEET_NAME_ARTIFACT_DATA);
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
         // create header row
-        final XSSFRow headerRow = sheet.createRow(rowNum++);
-        final XSSFCellStyle headerStyle = createHeaderStyle(workbook);
-        final XSSFCellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
-        final XSSFCellStyle warnHeaderStyle = createWarnHeaderStyle(workbook);
-        final XSSFCellStyle errorHeaderStyle = createErrorHeaderStyle(workbook);
-        final XSSFCellStyle centeredCellStyle = createCenteredStyle(workbook);
+        final SXSSFRow headerRow = sheet.createRow(rowNum++);
+        final CellStyle headerStyle = createHeaderStyle(workbook);
+        final CellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
+        final CellStyle warnHeaderStyle = createWarnHeaderStyle(workbook);
+        final CellStyle errorHeaderStyle = createErrorHeaderStyle(workbook);
+        final CellStyle centeredCellStyle = createCenteredStyle(workbook);
 
         // create columns for key / value map content
         final Set<String> attributes = new HashSet<>();
@@ -136,7 +141,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         // fill header row
         int cellNum = 0;
         for (String key : ordered) {
-            XSSFCell cell = headerRow.createCell(cellNum);
+            SXSSFCell cell = headerRow.createCell(cellNum);
             // FIXME: resolve current workaround
             if (isAssetId(key)) {
                 cell.setCellStyle(assetHeaderStyle);
@@ -159,10 +164,10 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         // create data rows
         for (Artifact artifact : inventory.getArtifacts()) {
-            XSSFRow dataRow = sheet.createRow(rowNum++);
+            SXSSFRow dataRow = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : ordered) {
-                XSSFCell cell = dataRow.createCell(cellNum);
+                SXSSFCell cell = dataRow.createCell(cellNum);
                 String value = artifact.get(key);
                 if (value != null && value.length() > MAX_CELL_LENGTH) {
                     LOG.warn("Cell content [{}] is longer than the anticipated max cell length of [{}] and will " +
@@ -189,18 +194,18 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         return key.startsWith("CID-") || key.startsWith("AID-") || key.startsWith("EID-") || key.startsWith("IID-");
     }
 
-    private void writeComponentPatterns(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeComponentPatterns(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getComponentPatternData())) return;
 
-        XSSFSheet sheet = workbook.createSheet("Component Patterns");
+        SXSSFSheet sheet = workbook.createSheet("Component Patterns");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
-        XSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle headerStyle = createHeaderStyle(workbook);
 
         int rowNum = 0;
 
-        XSSFRow row = sheet.createRow(rowNum++);
+        SXSSFRow row = sheet.createRow(rowNum++);
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
@@ -218,7 +223,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         int cellNum = 0;
         for (String key : finalOrder) {
-            XSSFCell cell = row.createCell(cellNum++);
+            SXSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(new XSSFRichTextString(key));
         }
@@ -228,7 +233,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                XSSFCell cell = row.createCell(cellNum++);
+                SXSSFCell cell = row.createCell(cellNum++);
                 cell.setCellValue(new XSSFRichTextString(cpd.get(key)));
             }
         }
@@ -237,18 +242,18 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     }
 
 
-    private void writeNotices(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeNotices(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getLicenseMetaData())) return;
 
-        XSSFSheet sheet = workbook.createSheet("License Notices");
+        SXSSFSheet sheet = workbook.createSheet("License Notices");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
-        XSSFRow row = sheet.createRow(rowNum++);
+        SXSSFRow row = sheet.createRow(rowNum++);
 
-        XSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle headerStyle = createHeaderStyle(workbook);
 
         int cellNum = 0;
 
@@ -261,7 +266,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         attributes.addAll(orderedOtherAttributes);
 
         for (String key : attributes) {
-            XSSFCell cell = row.createCell(cellNum++);
+            SXSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(key);
         }
@@ -272,7 +277,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : attributes) {
-                XSSFCell cell = row.createCell(cellNum++);
+                SXSSFCell cell = row.createCell(cellNum++);
                 cell.setCellValue(licenseMetaData.get(key));
             }
         }
@@ -281,24 +286,24 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
     }
 
-    private void writeVulnerabilities(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeVulnerabilities(Inventory inventory, SXSSFWorkbook workbook) {
         inventory.getVulnerabilityMetaDataContexts().stream()
                 .filter(StringUtils::isNotEmpty)
                 .forEach(context -> writeVulnerabilities(inventory, workbook, context));
     }
 
-    private void writeVulnerabilities(Inventory inventory, XSSFWorkbook workbook, String assessmentContext) {
+    private void writeVulnerabilities(Inventory inventory, SXSSFWorkbook workbook, String assessmentContext) {
         if (isEmpty(inventory.getVulnerabilityMetaData(assessmentContext))) return;
 
-        final XSSFSheet sheet = workbook.createSheet(assessmentContextToSheetName(assessmentContext));
+        final SXSSFSheet sheet = workbook.createSheet(assessmentContextToSheetName(assessmentContext));
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
-        XSSFRow row = sheet.createRow(rowNum++);
+        SXSSFRow row = sheet.createRow(rowNum++);
 
-        XSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle headerStyle = createHeaderStyle(workbook);
 
         int cellNum = 0;
 
@@ -317,7 +322,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         finalOrder.addAll(ordered);
 
         for (String key : finalOrder) {
-            XSSFCell cell = row.createCell(cellNum++);
+            SXSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(new XSSFRichTextString(key));
         }
@@ -328,7 +333,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                final XSSFCell cell = row.createCell(cellNum++);
+                final SXSSFCell cell = row.createCell(cellNum++);
                 final String value = vmd.get(key);
 
                 final VulnerabilityMetaData.Attribute attribute = VulnerabilityMetaData.Attribute.match(key);
@@ -366,17 +371,17 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
-    private void writeAdvisoryMetaData(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeAdvisoryMetaData(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getCertMetaData())) return;
 
-        XSSFSheet sheet = workbook.createSheet("Cert");
+        SXSSFSheet sheet = workbook.createSheet("Cert");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
-        XSSFRow row = sheet.createRow(rowNum++);
-        XSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        SXSSFRow row = sheet.createRow(rowNum++);
+        CellStyle headerStyle = createHeaderStyle(workbook);
 
         int cellNum = 0;
 
@@ -395,7 +400,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         finalOrder.addAll(ordered);
 
         for (String key : finalOrder) {
-            final XSSFCell cell = row.createCell(cellNum++);
+            final SXSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(new XSSFRichTextString(key));
         }
@@ -406,7 +411,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                XSSFCell cell = row.createCell(cellNum++);
+                SXSSFCell cell = row.createCell(cellNum++);
                 String value = cm.get(key);
 
                 Attribute attribute = Attribute.match(key);
@@ -433,19 +438,19 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
-    private void writeInventoryInfo(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeInventoryInfo(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getInventoryInfo())) return;
 
-        XSSFSheet sheet = workbook.createSheet("Info");
+        SXSSFSheet sheet = workbook.createSheet("Info");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
         int cellNum = 0;
 
-        XSSFRow row = sheet.createRow(rowNum++);
+        SXSSFRow row = sheet.createRow(rowNum++);
 
-        XSSFCellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle headerStyle = createHeaderStyle(workbook);
 
         // create columns for key / value map content
         Set<String> attributes = new HashSet<>();
@@ -462,7 +467,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         finalOrder.addAll(ordered);
 
         for (String key : finalOrder) {
-            final XSSFCell cell = row.createCell(cellNum++);
+            final SXSSFCell cell = row.createCell(cellNum++);
             cell.setCellStyle(headerStyle);
             cell.setCellValue(new XSSFRichTextString(key));
         }
@@ -473,7 +478,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                XSSFCell cell = row.createCell(cellNum++);
+                SXSSFCell cell = row.createCell(cellNum++);
                 String value = info.get(key);
 
                 cell.setCellValue(value);
@@ -483,20 +488,20 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, numCol - 1));
     }
 
-    private void writeLicenseData(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeLicenseData(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getLicenseData())) return;
 
-        XSSFSheet sheet = workbook.createSheet("Licenses");
+        SXSSFSheet sheet = workbook.createSheet("Licenses");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
-        XSSFRow row = sheet.createRow(rowNum++);
+        SXSSFRow row = sheet.createRow(rowNum++);
 
-        final XSSFCellStyle headerStyle = createHeaderStyle(workbook);
-        final XSSFCellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
-        final XSSFCellStyle centeredCellStyle = createCenteredStyle(workbook);
+        final CellStyle headerStyle = createHeaderStyle(workbook);
+        final CellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
+        final CellStyle centeredCellStyle = createCenteredStyle(workbook);
 
         int cellNum = 0;
 
@@ -531,7 +536,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         }
 
         for (String key : ordered) {
-            final XSSFCell cell = row.createCell(cellNum);
+            final SXSSFCell cell = row.createCell(cellNum);
             if (isAssetId(key)) {
                 cell.setCellStyle(assetHeaderStyle);
                 // number of pixel times magic number
@@ -540,7 +545,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             } else {
                 final String customHeaderColor = serializationContext.get("licensedata.header.[" + key + "].fg");
                 if (customHeaderColor != null) {
-                    XSSFCellStyle customHeaderStyle = createHeaderStyle(workbook);
+                    CellStyle customHeaderStyle = createHeaderStyle(workbook);
                     XSSFColor headerColor = resolveColor(workbook, customHeaderColor);
                     customHeaderStyle.setFillForegroundColor(headerColor);
 
@@ -574,7 +579,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : ordered) {
-                final XSSFCell cell = row.createCell(cellNum++);
+                final SXSSFCell cell = row.createCell(cellNum++);
                 cell.setCellValue(new XSSFRichTextString(cpd.get(key)));
 
                 if (isAssetId(key)) {
@@ -591,21 +596,21 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     }
 
 
-    private void writeAssetMetaData(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeAssetMetaData(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getAssetMetaData())) return;
 
-        final XSSFSheet sheet = workbook.createSheet("Assets");
+        final SXSSFSheet sheet = workbook.createSheet("Assets");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
-        final XSSFRow headerRow = sheet.createRow(rowNum++);
+        final SXSSFRow headerRow = sheet.createRow(rowNum++);
 
-        final XSSFCellStyle headerStyle = createHeaderStyle(workbook);
-        final XSSFCellStyle assetSourceHeaderStyle = createAssetSourceHeaderStyle(workbook);
-        final XSSFCellStyle assetConfigHeaderStyle = createAssetConfigHeaderStyle(workbook);
-        final XSSFCellStyle centeredCellStyle = createCenteredStyle(workbook);
+        final CellStyle headerStyle = createHeaderStyle(workbook);
+        final CellStyle assetSourceHeaderStyle = createAssetSourceHeaderStyle(workbook);
+        final CellStyle assetConfigHeaderStyle = createAssetConfigHeaderStyle(workbook);
+        final CellStyle centeredCellStyle = createCenteredStyle(workbook);
 
         // create columns for key / value map content
         final Set<String> attributes = new HashSet<>();
@@ -618,7 +623,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         int cellNum = 0;
         for (final String key : finalOrder) {
-            final XSSFCell cell = headerRow.createCell(cellNum);
+            final SXSSFCell cell = headerRow.createCell(cellNum);
             if (key.startsWith("SRC-")) {
                 cell.setCellStyle(assetSourceHeaderStyle);
                 // number of pixel times magic number
@@ -637,10 +642,10 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         }
 
         for (AssetMetaData cpd : inventory.getAssetMetaData()) {
-            XSSFRow row = sheet.createRow(rowNum++);
+            SXSSFRow row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                final XSSFCell cell = row.createCell(cellNum);
+                final SXSSFCell cell = row.createCell(cellNum);
                 cell.setCellValue(new XSSFRichTextString(cpd.get(key)));
 
                 if (key.startsWith("SRC-")) {
@@ -652,20 +657,20 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, finalOrder.size() - 1));
     }
 
-    private void writeReportData(Inventory inventory, XSSFWorkbook workbook) {
+    private void writeReportData(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getReportData())) return;
 
-        final XSSFSheet sheet = workbook.createSheet("Report");
+        final SXSSFSheet sheet = workbook.createSheet("Report");
         sheet.createFreezePane(0, 1);
         sheet.setDefaultColumnWidth(20);
 
         int rowNum = 0;
 
-        final XSSFRow headerRow = sheet.createRow(rowNum++);
+        final SXSSFRow headerRow = sheet.createRow(rowNum++);
 
-        final XSSFCellStyle headerStyle = createHeaderStyle(workbook);
-        final XSSFCellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
-        final XSSFCellStyle centeredCellStyle = createCenteredStyle(workbook);
+        final CellStyle headerStyle = createHeaderStyle(workbook);
+        final CellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
+        final CellStyle centeredCellStyle = createCenteredStyle(workbook);
 
         // create columns for key / value map content
         final Set<String> attributes = new HashSet<>();
@@ -678,7 +683,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         int cellNum = 0;
         for (final String key : finalOrder) {
-            final XSSFCell cell = headerRow.createCell(cellNum);
+            final SXSSFCell cell = headerRow.createCell(cellNum);
             if (isAssetId(key)) {
                 cell.setCellStyle(assetHeaderStyle);
                 // number of pixel times magic number
@@ -693,10 +698,10 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         }
 
         for (ReportData rd : inventory.getReportData()) {
-            final XSSFRow row = sheet.createRow(rowNum++);
+            final SXSSFRow row = sheet.createRow(rowNum++);
             cellNum = 0;
             for (String key : finalOrder) {
-                final XSSFCell cell = row.createCell(cellNum);
+                final SXSSFCell cell = row.createCell(cellNum);
                 cell.setCellValue(new XSSFRichTextString(rd.get(key)));
 
                 if (isAssetId(key)) {

@@ -59,13 +59,14 @@
     <colspec colname="COLSPEC4" colnum="5" colwidth="10*" />
     <thead>
         <row>
-            <entry colname="COLSPEC0" valign="top">Lizenz / Lizenzausdruck</entry>
+            <entry colname="COLSPEC0" valign="top">Lizenz</entry>
             <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
             <entry colname="COLSPEC2" valign="top">OSI Status</entry>
             <entry colname="COLSPEC3" valign="top">Open CoDE Freigabe</entry>
             <entry colname="COLSPEC4" valign="top">Anzahl</entry>
         </row>
     </thead>
+#set($approved="approved")
     <tbody>
         #foreach($license in $licenseList)
             #if (!$license.contains(" + "))
@@ -79,7 +80,7 @@
                         </entry>
                         <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                         <entry>
-                            #if ($licenseData)#if ($licenseData.is('OSI Approved'))anerkannt<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                            #if ($licenseData)#if ($approved.equalsIgnoreCase($licenseData.get("OSI Status")))anerkannt<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
                         </entry>
                         <entry>
                             #if ($licenseData && $licenseData.get('Open CoDE Status'))
@@ -102,7 +103,7 @@
                         </entry>
                         <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                         <entry>
-                            #if($licenseData)#if($licenseData.is('OSI Approved'))anerkannt#else&nbsp;#end#else&nbsp;#end
+                            #if ($licenseData)#if ($approved.equalsIgnoreCase($licenseData.get("OSI Status")))anerkannt#else&nbsp;#end#else&nbsp;#end
                         </entry>
                         <entry>
                             #if ($licenseData && $licenseData.get('Open CoDE Status'))

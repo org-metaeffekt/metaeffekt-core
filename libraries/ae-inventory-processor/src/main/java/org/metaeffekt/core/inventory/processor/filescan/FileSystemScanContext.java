@@ -22,6 +22,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Container for context information during file system scanning.
@@ -53,6 +54,12 @@ public class FileSystemScanContext {
         this.scanParam = scanParam;
 
         this.inventory = new Inventory();
+    }
+
+    public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam, Inventory inventory) {
+        this.baseDir = baseDir;
+        this.scanParam = scanParam;
+        this.inventory = inventory;
     }
 
     public synchronized void push(ScanTask scanTask) {
@@ -92,4 +99,9 @@ public class FileSystemScanContext {
         }
     }
 
+    public void removeAll(List<Artifact> toBeDeleted) {
+        synchronized (inventory) {
+            inventory.getArtifacts().removeAll(toBeDeleted);
+        }
+    }
 }

@@ -4,7 +4,9 @@
 <topic id="tpc_asset-license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Lizenz&#252;bersicht", true)</title>
 #set($assetData=$report.getAssetData($inventory))
-#set($associatedLicensesRepresented=$assetData.getRepresentedAssociatedLicenses())
+#set($licensesAll=$assetData.getRepresentedAssociatedLicenses())
+#set($licenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
+#set($licenseExpressions=$assetData.getRepresentedAssociatedLicensesWithOption())
 <body>
     <p>
         Die nachfolgenden Tabellen geben einen &#220;berblick &#252;ber alle Lizenzen und Lizenzausdr&#252;cke,
@@ -12,7 +14,8 @@
         auch <abbreviated-form keyref="associated-effective-licenses"/>.
     </p>
     <p>
-        Bitte beachten, dass eine Lizenz oder ein Lizenzausdruck mehreren Positionen im Softwarebestand zugeordnet werden kann.
+        Bitte beachten, dass eine Lizenz oder ein Lizenzausdruck mehreren Positionen im Softwarebestand zugeordnet
+        werden kann.
     </p>
     #if ($assetData.isLicenseSubstructureRequired())
         <fn callout="*" id="id-footnote">
@@ -23,8 +26,11 @@
         </fn>
     #end
 
-    #insertLicenseTable("AssociatedLicenses", "Softwarebestand Lizenzen", $associatedLicensesRepresented, true)
+#if (!$licenses.isEmpty())
+    #insertLicenseTable("AssociatedLicenses", "Softwarebestand Lizenzen", $licenses, true)
+#end
 
+#if (!$licenseExpressions.isEmpty())
     <table id="AssociatedLicenseExpressions" otherprops="wide">
         <title>Softwarebestand Lizenzausdr&#252;cke$reportContext.inContextOf()</title>
         <tgroup cols="2">
@@ -37,7 +43,7 @@
                 </row>
             </thead>
             <tbody>
-                #foreach($license in $associatedLicensesRepresented)
+                #foreach($license in $licenseExpressions)
                     #if ($license.contains(" + "))
                     #set($licenseData=$inventory.findMatchingLicenseData($license))
                     <row>
@@ -65,10 +71,10 @@
             </tbody>
         </tgroup>
     </table>
-
+#end
 </body>
 
-#foreach($license in $associatedLicensesRepresented)
+#foreach($license in $licensesAll)
     #set($licenseList=$assetData.getLicensesForRepresentedLicense($license))
     #if(!$assetData.isLicenseSubstructureRequired($license))
         #insertLicenseAssetTopic($license)
@@ -91,6 +97,4 @@
         </topic>
     #end
 #end
-
-
 </topic>

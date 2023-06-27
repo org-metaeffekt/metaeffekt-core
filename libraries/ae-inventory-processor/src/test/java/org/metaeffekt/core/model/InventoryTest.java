@@ -23,6 +23,8 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,9 @@ import java.io.IOException;
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
 public class InventoryTest {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InventoryTest.class);
+
     @Test
     public void testFindCurrent() {
         Inventory inventory = new Inventory();
@@ -304,11 +309,20 @@ public class InventoryTest {
 
         Assert.assertEquals(0, inventory.getVulnerabilityMetaData("test2").size());
 
-        new InventoryWriter().writeInventory(inventory, new File("target/vulnerabilityMetaDataContextTest.xls"));
-        new InventoryWriter().writeInventory(inventory, new File("target/vulnerabilityMetaDataContextTest.xlsx"));
+        final File xlsInventoryFile = new File("target/vulnerabilityMetaDataContextTest.xls");
+        LOG.info("Writing " + xlsInventoryFile);
+        long ts = System.currentTimeMillis();
+        new InventoryWriter().writeInventory(inventory, xlsInventoryFile);
+        LOG.info("Done in " + (System.currentTimeMillis() - ts) + " ms");
+
+        final File xlsxInventoryFile = new File("target/vulnerabilityMetaDataContextTest.xlsx");
+        LOG.info("Writing " + xlsxInventoryFile);
+        ts = System.currentTimeMillis();
+        new InventoryWriter().writeInventory(inventory, xlsxInventoryFile);
+        LOG.info("Done in " + (System.currentTimeMillis() - ts) + " ms");
 
         // XLS
-        inventory = new InventoryReader().readInventory(new File("target/vulnerabilityMetaDataContextTest.xls"));
+        inventory = new InventoryReader().readInventory(xlsInventoryFile);
 
         Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
         Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
@@ -319,7 +333,7 @@ public class InventoryTest {
         inventory.filterVulnerabilityMetaData();
 
         // XLXS
-        inventory = new InventoryReader().readInventory(new File("target/vulnerabilityMetaDataContextTest.xlsx"));
+        inventory = new InventoryReader().readInventory(xlsxInventoryFile);
 
         Assert.assertNotNull(inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT));
         Assert.assertEquals(1, inventory.getVulnerabilityMetaData(VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT).size());
