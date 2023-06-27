@@ -32,7 +32,7 @@ checkRpmFunctionsPresent || { echo "missing required rpm functions. quitting." 1
 mkOutputDirs "${outDir}"
 
 # generate list of all files
-dumpFilePaths "${outDir}"
+dumpFilepaths "${outDir}"
 
 # analyse symbolic links
 analyseSymbolicLinks "${outDir}"
