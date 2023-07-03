@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 >
     <id>scripts</id>
 
@@ -13,6 +12,13 @@
             <outputDirectory>ae-system-analysis-scripts-assembled</outputDirectory>
         </fileSet>
     </fileSets>
+    <files>
+        <!-- The LICENSE file wasn't in the jar despite being placed in resources/META-INF/LICENSE. Do it manually. -->
+        <file>
+            <source>src/main/resources/META-INF/LICENSE</source>
+            <destName>META-INF/LICENSE</destName>
+        </file>
+    </files>
 
     <includeBaseDirectory>false</includeBaseDirectory>
 </assembly>
