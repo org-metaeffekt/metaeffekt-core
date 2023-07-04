@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 
 /**
@@ -69,7 +72,7 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
             File outputFile = outputPath.toFile();
 
             if (outputFile.exists()) {
-                throw new IOException("Refusing to overwrite output file '" + outputFile.getAbsolutePath() + "'");
+                throw new IOException("Refusing to overwrite existing file '" + outputFile.getAbsolutePath() + "'");
             }
             if (Files.isDirectory(inputPath, LinkOption.NOFOLLOW_LINKS)) {
                 throw new IOException("A directory should not have made it to filesToProcess.");
@@ -111,13 +114,21 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
         }
 
         try {
-            Path inputDirPath = inputDirectory.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS);
-            Path outputDirPath;
             if (outputDirectory.exists()) {
-                outputDirPath = outputDirectory.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS);
-            } else {
-                outputDirPath = outputDirectory.toPath().toAbsolutePath();
+                Path existingOutputDir = outputDirectory.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS);
+                DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                        .appendInstant(6)
+                        .toFormatter(Locale.ENGLISH);
+                String newName = outputDirectory.getName() + "-OLD-" + formatter.format(Instant.now())
+                        .replaceAll("[^a-zA-Z0-9_.:\\-]", "_");
+                Path newPath = existingOutputDir.getParent().resolve(newName);
+                getLog().info("Moving old output directory to [" + newPath + "]");
+
+                Files.move(existingOutputDir, newPath);
             }
+
+            Path inputDirPath = inputDirectory.toPath().toRealPath(LinkOption.NOFOLLOW_LINKS);
+            Path outputDirPath = outputDirectory.toPath().toAbsolutePath();
 
             // iterate dir structure and queue files for processing
             Files.createDirectories(outputDirPath);
