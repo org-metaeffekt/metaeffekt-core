@@ -33,6 +33,8 @@ public class FileSystemScanParam {
 
     private boolean implicitUnwrap = true;
 
+    private boolean includeEmbedded = true;
+
     private Inventory referenceInventory;
 
     private transient Map<String, Set<ComponentPatternData>> checksumComponentPatternDataMap;
@@ -60,7 +62,16 @@ public class FileSystemScanParam {
         return matches(path, unwrapIncludes, unwrapExcludes);
     }
 
-    public FileSystemScanParam withReference(Inventory referenceInventory) {
+    public FileSystemScanParam includeEmbedded(boolean includeEmbedded) {
+        this.includeEmbedded = includeEmbedded;
+        return this;
+    }
+
+    public boolean isIncludeEmbedded() {
+        return includeEmbedded;
+    }
+
+    public FileSystemScanParam withReferenceInventory(Inventory referenceInventory) {
         this.referenceInventory = referenceInventory;
 
         // cache component patterns

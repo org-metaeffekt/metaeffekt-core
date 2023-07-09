@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,33 @@
  */
 package org.metaeffekt.core.inventory.processor.inspector;
 
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * Checks if a file (for particular file types) has other files inside of it (with particular extensions).
+ * Checks if a file (for particular file types) has other files inside of it (with particular extensions). If this
+ * is the case, the file is marked with a 'scan' classification.
  */
-public class NestedJavaInspector implements InspectorInterface{
-    private static final Logger LOG = LoggerFactory.getLogger(NestedJavaInspector.class);
+public class NestedJarInspector implements ArtifactInspector {
 
-    // TODO: what other types to include here?
     /**
      * The accepted list of extensions for project files.<br>
      * Ensure that these are lower-case, as the check later is made case-insensitive by toLowerCase.
      */
     private final String[] outsideExtensions = {".jar", ".war", ".ear", ".sar"};
+
     /**
      * The accepted list of extensions for files inside the project files.
      */
@@ -48,7 +51,7 @@ public class NestedJavaInspector implements InspectorInterface{
      * Checks whether filename ends with one of the accepted suffixes.
      * @param toCheck will be checked for all suffixes.
      * @param acceptedSuffix are suffixes that will be accepted by the method.
-     * @return whether or not the input string ends with one of the suffixes.
+     * @return whether the input string ends with one of the suffixes.
      */
     private static boolean hasExtension(String toCheck, String[] acceptedSuffix) {
         // Optimization: could be improved by cutting the end of the string (after the last, second to last etc dot)
@@ -77,40 +80,63 @@ public class NestedJavaInspector implements InspectorInterface{
     @Override
     public void run(Inventory inventory, Properties properties) {
         for (Artifact artifact : inventory.getArtifacts()) {
-            ProjectPathParam projectPathParam = new ProjectPathParam(properties);
+            run(artifact, properties);
+        }
+    }
 
-            File projectFile;
-            for (String projectString : artifact.getProjects()) {
-                if (projectString == null) {
-                    continue;
-                }
+    public void run(Artifact artifact, Properties properties) {
+        final Set<String> paths = collectPaths(artifact);
 
-                if (!outsideHasExtension(projectString)) {
-                    continue;
-                }
+        final ProjectPathParam projectPathParam = new ProjectPathParam(properties);
 
-                projectFile = new File(projectPathParam.getProjectPath(), projectString);
+        File projectFile;
+        for (String projectString : paths) {
+            if (projectString == null) {
+                continue;
+            }
 
+            if (!outsideHasExtension(projectString)) {
+                continue;
+            }
 
-                try (ZipFile jarZip = new ZipFile(projectFile)) {
-                    // loop all entries and check their extensions
-                    jarZip.stream().forEach(entry -> {
+            projectFile = new File(projectPathParam.getProjectPath(), projectString);
+            System.out.println(projectFile.getAbsolutePath() + " contains ");
+
+            try (ZipFile jarZip = new ZipFile(projectFile)) {
+                // loop all entries and check their extensions
+                final boolean b[] = new boolean[1];
+                b[0] = false;
+                jarZip.stream().forEach(entry -> {
+                    if (!b[0]) {
                         if (insideHasExtension(entry.getName())) {
                             // one of the files has one of the specified extensions!
                             artifact.setClassification("scan");
-                        }
-                    });
-                } catch (IOException e) {
-                    // if we can't read this project entry, just carry on as if nothing happened
-                    addError(artifact, "NestedJavaInspector couldn't read as zip archive");
-                    continue;
-                }
+                            b[0] = true;
 
-                // since this is our only job, we can stop processing other getProjects entries
-                if ("scan".equals(artifact.getClassification())) {
-                    break;
-                }
+                            System.out.println(entry.getName());
+                        }
+                    }
+                });
+            } catch (IOException e) {
+                // if we can't read this project entry, just carry on as if nothing happened
+                addError(artifact, "NestedJavaInspector couldn't read as zip archive");
+                continue;
+            }
+
+            // since this is our only job, we can stop processing other getProjects entries
+            if ("scan".equals(artifact.getClassification())) {
+                break;
             }
         }
+    }
+
+    private static Set<String> collectPaths(Artifact artifact) {
+        Set<String> paths = new HashSet<>();
+        String jarPath = artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH);
+        if (StringUtils.isNotBlank(jarPath)) {
+            paths.add(jarPath);
+        }
+        paths.addAll(artifact.getProjects());
+        return paths;
     }
 }

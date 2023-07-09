@@ -4,7 +4,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class InventoryMergeUtils {
         for (final org.metaeffekt.core.inventory.processor.model.Artifact artifact : targetInv.getArtifacts()) {
 
             // existing checksums must not be overwritten
-            if (StringUtils.hasText(artifact.getChecksum())) continue;
+            if (StringUtils.isNotBlank(artifact.getChecksum())) continue;
 
             final List<org.metaeffekt.core.inventory.processor.model.Artifact> candidates = sourceInv.findAllWithId(artifact.getId());
 

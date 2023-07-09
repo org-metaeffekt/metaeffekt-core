@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.Properties;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-public class NestedJavaInspectorTest {
+public class NestedJarInspectorTest {
 
     static final File testDir = new File("src/test/resources/test-nested-java-inspector");
     static final Path testDirPath = testDir.toPath().toAbsolutePath();
@@ -63,11 +63,11 @@ public class NestedJavaInspectorTest {
     public void jarInJar() {
         File jarFileWithJar = new File(testDir, "dummy-0.0.1-0000.jar");
 
-        NestedJavaInspector nestedJavaInspector = new NestedJavaInspector();
+        NestedJarInspector nestedJarInspector = new NestedJarInspector();
 
         Artifact artifact = getDummyArtifact(jarFileWithJar);
         Inventory inventory = getDummyInventory(artifact);
-        nestedJavaInspector.run(inventory, new Properties());
+        nestedJarInspector.run(inventory, new Properties());
 
         assertEquals("scan", artifact.getClassification());
     }
@@ -76,11 +76,11 @@ public class NestedJavaInspectorTest {
     public void jarInEar() {
         File earFileWithJar = new File(testDir, "dummy-0.0.1-0001.ear");
 
-        NestedJavaInspector nestedJavaInspector = new NestedJavaInspector();
+        NestedJarInspector nestedJarInspector = new NestedJarInspector();
 
         Artifact artifact = getDummyArtifact(earFileWithJar);
         Inventory inventory = getDummyInventory(artifact);
-        nestedJavaInspector.run(inventory, new Properties());
+        nestedJarInspector.run(inventory, new Properties());
 
         assertEquals("scan", artifact.getClassification());
     }
@@ -89,11 +89,11 @@ public class NestedJavaInspectorTest {
     public void warInJar() {
         File earFileWithJar = new File(testDir, "dummy-0.0.1-0002.jar");
 
-        NestedJavaInspector nestedJavaInspector = new NestedJavaInspector();
+        NestedJarInspector nestedJarInspector = new NestedJarInspector();
 
         Artifact artifact = getDummyArtifact(earFileWithJar);
         Inventory inventory = getDummyInventory(artifact);
-        nestedJavaInspector.run(inventory, new Properties());
+        nestedJarInspector.run(inventory, new Properties());
 
         assertEquals("scan", artifact.getClassification());
     }
@@ -102,11 +102,11 @@ public class NestedJavaInspectorTest {
     public void onlyTxtInJar() {
         File fileWithOnlyTextInside = new File(testDir, "inner-file.jar");
 
-        NestedJavaInspector nestedJavaInspector = new NestedJavaInspector();
+        NestedJarInspector nestedJarInspector = new NestedJarInspector();
 
         Artifact artifact = getDummyArtifact(fileWithOnlyTextInside);
         Inventory inventory = getDummyInventory(artifact);
-        nestedJavaInspector.run(inventory, new Properties());
+        nestedJarInspector.run(inventory, new Properties());
 
         assertNotEquals("scan", artifact.getClassification());
     }

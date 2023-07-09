@@ -21,7 +21,9 @@ import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
-import org.metaeffekt.core.inventory.processor.inspector.MavenJarIdInspector;
+import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
+import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
+import org.metaeffekt.core.inventory.processor.inspector.NestedJarInspector;
 import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.*;
@@ -29,7 +31,7 @@ import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +57,7 @@ public class DirectoryInventoryScan {
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
     private Inventory referenceInventory;
+
     private String[] scanIncludes;
 
     private String[] scanExcludes;
@@ -121,13 +124,22 @@ public class DirectoryInventoryScan {
         // remove/merge duplicates
         scanInventory.mergeDuplicates();
 
+        inspectArtifacts(scanInventory);
+
+        return scanInventory;
+    }
+
+    private void inspectArtifacts(Inventory scanInventory) {
         // attempt to extract artifactId, version, groupId from contained POMs
         final Properties properties = new Properties();
         properties.put(ProjectPathParam.KEY_PROJECT_PATH, scanDirectory.getAbsolutePath());
         properties.put(JarInspectionParam.KEY_INCLUDE_EMBEDDED, Boolean.toString(includeEmbedded));
-        new MavenJarIdInspector().run(scanInventory, properties);
 
-        return scanInventory;
+        // run further inspections on identified artifacts
+        InspectorRunner.builder()
+            .queue(JarInspector.class)
+            .queue(NestedJarInspector.class)
+            .build().executeAll(scanInventory, properties);
     }
 
     private static class MatchResult {
@@ -402,7 +414,7 @@ public class DirectoryInventoryScan {
                 }
 
                 // only include the artifact if the classification does not include HINT_IGNORE
-                if (!hasClassification(artifact, HINT_IGNORE)) {
+                if (!artifact.hasClassification(HINT_IGNORE)) {
                     applyAssetIdChain(assetIdChain, copy);
                     scanInventory.getArtifacts().add(copy);
                 } else {
@@ -411,7 +423,7 @@ public class DirectoryInventoryScan {
                 }
 
                 // in case the artifact contains the scan classification we try to unpack and scan in depth
-                if (hasClassification(artifact, HINT_SCAN)) {
+                if (artifact.hasClassification(HINT_SCAN)) {
                     final File targetFolder = new File(file.getParentFile(), "[" + file.getName() + "]");
                     if (unpackIfPossible(file, targetFolder, true, errors)) {
                         scanDirectory(scanBaseDir, targetFolder, scanIncludes, scanExcludes, referenceInventory,
@@ -424,13 +436,6 @@ public class DirectoryInventoryScan {
                 }
             }
         }
-    }
-
-    private boolean hasClassification(Artifact artifact, String classification) {
-        if (StringUtils.hasText(artifact.getClassification())) {
-            return artifact.getClassification().contains(classification);
-        }
-        return false;
     }
 
     private boolean unpackIfPossible(File file, File targetDir, boolean includeModules, List<String> issues) {
@@ -450,9 +455,11 @@ public class DirectoryInventoryScan {
         }
     }
 
+    // FIXME: integrate into new process
     private List<String> extendAssetIdChain(final List<String> assetIdChain, final File archiveFile,
         final String fileChecksum, final Inventory inventory) {
         final List<String> extendedAssetIdChain = new ArrayList<>(assetIdChain);
+
         final String assetId = "AID-" + archiveFile.getName() + "-" + fileChecksum;
         extendedAssetIdChain.add(assetId);
 
@@ -505,7 +512,7 @@ public class DirectoryInventoryScan {
         if (Constants.ASTERISK.equalsIgnoreCase(versionAnchor)) return scanBaseDir;
         if (Constants.DOT.equalsIgnoreCase(versionAnchor)) return scanBaseDir;
 
-        final int versionAnchorFolderDepth = StringUtils.countOccurrencesOf(versionAnchor, "/") + 1;
+        final int versionAnchorFolderDepth = StringUtils.countMatches(versionAnchor, "/") + 1;
 
         File baseDir = anchorFile;
         for (int i = 0; i < versionAnchorFolderDepth; i++) {
@@ -543,7 +550,7 @@ public class DirectoryInventoryScan {
     private boolean matchesChecksumIfAvailable(Artifact artifact, String checksum) {
         if (artifact == null) return false;
         final String artifactChecksum = artifact.getChecksum();
-        if (!StringUtils.hasText(artifactChecksum)) return true; // no checksum available
+        if (!StringUtils.isNotBlank(artifactChecksum)) return true; // no checksum available
         return artifactChecksum.equals(checksum);
     }
 
@@ -558,12 +565,7 @@ public class DirectoryInventoryScan {
     }
 
     // FIXME: not yet final; work in progress
-    public Inventory scanDirectoryNG(final File directoryToScan) throws IOException {
-        final FileSystemScanParam scanParam = new FileSystemScanParam().
-                collectAllMatching(scanIncludes, scanExcludes).
-                unwrapAllMatching(unwrapIncludes, unwrapExcludes).
-                implicitUnwrap(true).
-                withReference(referenceInventory);
+    public Inventory scanDirectoryNG(final File directoryToScan, final FileSystemScanParam scanParam) throws IOException {
 
         LOG.info("Scanning directory {}...", directoryToScan.getAbsolutePath());
 
@@ -574,6 +576,9 @@ public class DirectoryInventoryScan {
 
         // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
         //   patterns).
+
+        LOG.info("Merging duplicates...");
+        fileSystemScan.getInventory().mergeDuplicates();
 
         return fileSystemScan.getInventory();
     }

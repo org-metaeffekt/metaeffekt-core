@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 
@@ -61,7 +61,7 @@ public class AssetMetaData extends AbstractModelBase {
      * @return Boolean indicating whether the instance is valid.
      */
     public boolean isValid() {
-        if (!StringUtils.hasText(get(Attribute.ASSET_ID))) return false;
+        if (!StringUtils.isNotBlank(get(Attribute.ASSET_ID))) return false;
         return true;
     }
 

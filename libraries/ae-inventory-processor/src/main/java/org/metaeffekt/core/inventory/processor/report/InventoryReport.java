@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -346,7 +346,7 @@ public class InventoryReport {
 
                 // in case the group id does not contain anything we
                 // infer the group id from the localArtifact from the repository. Better than nothing.
-                if (!StringUtils.hasText(matchedReferenceArtifact.getGroupId())) {
+                if (!StringUtils.isNotBlank(matchedReferenceArtifact.getGroupId())) {
                     matchedReferenceArtifact.setGroupId(localArtifact.getGroupId());
                 }
 
@@ -401,7 +401,7 @@ public class InventoryReport {
                         localWarn = false;
                     }
                 }
-                if (!StringUtils.hasText(matchedReferenceArtifact.getLicense())) {
+                if (!StringUtils.isNotBlank(matchedReferenceArtifact.getLicense())) {
                     classifier += "[no license]";
                     localMissingLicense = true;
                     if (failOnMissingLicense) {
@@ -447,10 +447,10 @@ public class InventoryReport {
                     projectInventory.getArtifacts().add(copy);
 
                     // handle checksum
-                    if (!StringUtils.hasText(copy.getChecksum())) {
+                    if (!StringUtils.isNotBlank(copy.getChecksum())) {
                         copy.setChecksum(localArtifact.getChecksum());
                     } else {
-                        if (StringUtils.hasText(localArtifact.getChecksum()) && !copy.getChecksum().equalsIgnoreCase(localArtifact.getChecksum())) {
+                        if (StringUtils.isNotBlank(localArtifact.getChecksum()) && !copy.getChecksum().equalsIgnoreCase(localArtifact.getChecksum())) {
                             throw new IllegalStateException(String.format("Checksum mismatch for %s.", localArtifact.getId()));
                         }
                     }
@@ -458,7 +458,7 @@ public class InventoryReport {
                     // copy details not covered by reference artifact to resulting artifact
                     for (String attributeKey : localArtifact.getAttributes()) {
                         final String currentValue = copy.get(attributeKey);
-                        if (!StringUtils.hasText(currentValue)) {
+                        if (!StringUtils.isNotBlank(currentValue)) {
                             copy.set(attributeKey, localArtifact.get(attributeKey));
                         }
                     }
@@ -472,7 +472,7 @@ public class InventoryReport {
                 // log information
                 if (classifier.length() > 0) {
                     String artifactQualifier = reportArtifact.createStringRepresentation();
-                    if (StringUtils.hasText(comment)) {
+                    if (StringUtils.isNotBlank(comment)) {
                         comment = "- " + comment;
                     }
                     if (localArtifact.isRelevant() || localArtifact.isManaged()) {
@@ -549,7 +549,7 @@ public class InventoryReport {
 
             projectInventory.getVulnerabilityMetaData().removeIf(vmd -> {
                 final String compareScore = adapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
-                if (StringUtils.hasText(compareScore)) {
+                if (StringUtils.isNotBlank(compareScore)) {
                     try {
                         return Double.parseDouble(compareScore) < getMinimumVulnerabilityIncludeScore();
                     } catch (NumberFormatException e) {
@@ -701,7 +701,7 @@ public class InventoryReport {
                 continue;
             }
             final String license = artifact.getLicense();
-            if (StringUtils.hasText(license) && artifact.isRelevant()) {
+            if (StringUtils.isNotBlank(license) && artifact.isRelevant()) {
                 if (licensesRequiringNotice.contains(license)) {
                     LicenseMetaData licenseMetaData = projectInventory.findMatchingLicenseMetaData(artifact);
                     if (licenseMetaData == null) {
@@ -787,10 +787,10 @@ public class InventoryReport {
             final String sourceLicense = artifact.getLicense();
 
             // without source license, no license meta data, no license texts / notices
-            if (!StringUtils.hasText(sourceLicense)) {
+            if (!StringUtils.isNotBlank(sourceLicense)) {
                 continue;
             }
-            if (!StringUtils.hasText(componentName)) {
+            if (!StringUtils.isNotBlank(componentName)) {
                 continue;
             }
 

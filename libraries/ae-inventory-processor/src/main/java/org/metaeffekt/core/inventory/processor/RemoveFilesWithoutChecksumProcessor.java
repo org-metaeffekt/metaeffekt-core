@@ -18,7 +18,7 @@ package org.metaeffekt.core.inventory.processor;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -42,7 +42,7 @@ public class RemoveFilesWithoutChecksumProcessor extends AbstractInputInventoryB
     private void removeFilesWithoutChecksum(Inventory inventory) {
         for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
             if (Constants.ARTIFACT_TYPE_FILE.equals(artifact.get(Constants.KEY_TYPE))) {
-                if (!StringUtils.hasText(artifact.getChecksum())) {
+                if (!StringUtils.isNotBlank(artifact.getChecksum())) {
                     inventory.getArtifacts().remove(artifact);
                 }
             }

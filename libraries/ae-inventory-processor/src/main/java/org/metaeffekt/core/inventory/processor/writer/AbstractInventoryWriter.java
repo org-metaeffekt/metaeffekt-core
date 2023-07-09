@@ -29,4 +29,13 @@ public class AbstractInventoryWriter {
         }
     }
 
+    protected static boolean isAssetId(String key) {
+        return key.startsWith("CID-") ||
+                key.startsWith("AID-") ||
+                key.startsWith("EID-") ||
+                key.startsWith("IID-") ||
+                key.startsWith("EAID-");
+    }
+
+
 }

@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class ReportContext {
 

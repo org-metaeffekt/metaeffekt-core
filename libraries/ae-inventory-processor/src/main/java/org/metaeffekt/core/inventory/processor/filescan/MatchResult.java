@@ -44,10 +44,11 @@ public class MatchResult {
         derivedArtifact.setComponent(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME));
         derivedArtifact.setVersion(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
         derivedArtifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH, asRelativePath(scanBaseDir.getFile(), baseDir));
-        derivedArtifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
+        derivedArtifact.set("ASSET_ID_CHAIN", assetIdChain);
 
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
+
         return derivedArtifact;
     }
 }

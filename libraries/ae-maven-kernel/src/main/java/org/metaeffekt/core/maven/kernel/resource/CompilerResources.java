@@ -18,7 +18,7 @@ package org.metaeffekt.core.maven.kernel.resource;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.model.FileSet;
 import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.Arrays;

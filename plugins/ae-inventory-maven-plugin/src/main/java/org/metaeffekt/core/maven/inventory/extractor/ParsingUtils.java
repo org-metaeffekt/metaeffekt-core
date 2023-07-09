@@ -16,7 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class ParsingUtils {
         StringBuilder sb = new StringBuilder(line.substring(colonIndex + 1).trim());
         int lineIndex = index + 1;
         while (lineIndex < lines.size() && !lines.get(lineIndex).contains("" + Constants.DELIMITER_COLON)) {
-            if (StringUtils.hasText(sb)) sb.append(Constants.DELIMITER_NEWLINE);
+            if (StringUtils.isNotBlank(sb)) sb.append(Constants.DELIMITER_NEWLINE);
             line = lines.get(lineIndex).trim();
 
             // filter the debian specific lines with '.'

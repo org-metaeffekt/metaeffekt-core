@@ -27,7 +27,7 @@ import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Untar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -362,7 +362,7 @@ public class ArchiveUtils {
 
     private static String getJdkPath() {
         String jdkPath = System.getProperty("jdk.path");
-        if (!StringUtils.hasText(jdkPath)) {
+        if (!StringUtils.isNotBlank(jdkPath)) {
             throw new IllegalStateException("No jdk.path for extracting jmod files available.");
         }
         return jdkPath;

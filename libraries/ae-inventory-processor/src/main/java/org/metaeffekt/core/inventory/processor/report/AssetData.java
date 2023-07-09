@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.metaeffekt.core.inventory.processor.model.*;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,7 +48,7 @@ public class AssetData {
 
             final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
 
-            if (!StringUtils.hasText(assetId)) continue;
+            if (!StringUtils.isNotBlank(assetId)) continue;
 
             // set to collect all licenses associated with asset
             final Set<String> assetAssociatedLicenses = new HashSet<>();
@@ -56,12 +56,12 @@ public class AssetData {
             // derive licenses from artifacts
             for (Artifact artifact : filteredInventory.getArtifacts()) {
                 // skip all artifacts that do not belong to an asset
-                if (!StringUtils.hasText(artifact.get(assetId))) continue;
+                if (!StringUtils.isNotBlank(artifact.get(assetId))) continue;
 
                 final List<String> associatedLicenses = artifact.getLicenses();
 
                 for (final String associatedLicense : associatedLicenses) {
-                    if (!StringUtils.hasText(associatedLicense)) continue;
+                    if (!StringUtils.isNotBlank(associatedLicense)) continue;
 
                     this.associatedLicenses.add(associatedLicense);
 

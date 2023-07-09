@@ -134,7 +134,8 @@ public class ComponentPatternProducer {
 
                     // construct component pattern
                     final ComponentPatternData componentPatternData = new ComponentPatternData();
-                    componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorFile.getParentFile().getName() + "/" + anchorFile.getName());
+                    componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
+                            anchorFile.getParentFile().getName() + "/" + anchorFile.getName());
                     componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
 
                     // apply contributors
@@ -252,7 +253,7 @@ public class ComponentPatternProducer {
                                 LOG.debug("Filtered component file: {} for component pattern {}", relativePathFromBaseDir, cpd.deriveQualifier());
                                 artifact.set("AID_" + matchResult.anchorFile, "x");
                                 artifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_SCAN_DIRECTIVE, ArtifactUnwrapTask.SCAN_DIRECTIVE_DELETE);
-                                artifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+                                artifact.set("ASSET_ID_CHAIN", matchResult.assetIdChain);
                                 matched = true;
                             }
                         }
@@ -387,7 +388,7 @@ public class ComponentPatternProducer {
 
                             final File file = new File(normalizedPath);
                             matchedComponentPatterns.add(new MatchResult(copyCpd, file,
-                                computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_ASSET_ID_CHAIN)));
+                                computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), artifact.get("ASSET_ID_CHAIN")));
                         }
                     }
                 }

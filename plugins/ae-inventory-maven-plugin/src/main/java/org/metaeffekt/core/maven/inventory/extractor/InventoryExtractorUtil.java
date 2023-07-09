@@ -18,7 +18,7 @@ package org.metaeffekt.core.maven.inventory.extractor;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -159,7 +159,7 @@ public abstract class InventoryExtractorUtil {
             final List<String> packageFileList = FileUtils.readLines(new File(packageFilesDir, singlePackageFile), FileUtils.ENCODING_UTF_8);
             for (final String file : packageFileList) {
                 // skip processing artifacts
-                if (!StringUtils.hasText(file)) continue;
+                if (!StringUtils.isNotBlank(file)) continue;
                 if (file.endsWith(" contains:")) continue;
 
                 // skip folders (optimization)
@@ -219,7 +219,7 @@ public abstract class InventoryExtractorUtil {
             final String linkFile = symLinkLine.substring(0, separatorIndex).trim();
             String linkTargetFile = symLinkLine.substring(separatorIndex + SEPARATOR_LINK_MAP.length()).trim();
 
-            if (StringUtils.hasText(linkFile) && StringUtils.hasText(linkTargetFile)) {
+            if (StringUtils.isNotBlank(linkFile) && StringUtils.isNotBlank(linkTargetFile)) {
                 if (!linkTargetFile.startsWith("..")) {
 
                     // compensate missing slash

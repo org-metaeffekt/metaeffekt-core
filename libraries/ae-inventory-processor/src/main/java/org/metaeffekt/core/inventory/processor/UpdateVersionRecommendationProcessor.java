@@ -19,7 +19,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Properties;
 
@@ -61,7 +61,7 @@ public class UpdateVersionRecommendationProcessor extends AbstractInventoryProce
             // update the recommended version
             if (artifact.getClassification() != null &&
                     !artifact.getClassification().contains(Inventory.CLASSIFICATION_CURRENT)) {
-                if (StringUtils.hasText(artifact.getArtifactId())) {
+                if (StringUtils.isNotBlank(artifact.getArtifactId())) {
                     // we have classified the artifact as not 'current' therefore
                     // we need to update the comment to include the recommended
                     // current version

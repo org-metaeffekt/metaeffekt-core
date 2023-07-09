@@ -26,7 +26,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.maven.inventory.extractor.*;
 import org.metaeffekt.core.util.FileUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;

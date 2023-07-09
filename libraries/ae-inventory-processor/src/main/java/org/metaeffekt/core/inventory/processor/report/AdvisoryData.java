@@ -19,7 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -343,7 +343,7 @@ public class AdvisoryData {
     }
 
     private static String formatString(String string) {
-        if (!StringUtils.hasText(string)) return EMPTY_STRING;
+        if (!StringUtils.isNotBlank(string)) return EMPTY_STRING;
         string = string.replace("\r\n", " ");
         string = string.replace("\n", " ");
 

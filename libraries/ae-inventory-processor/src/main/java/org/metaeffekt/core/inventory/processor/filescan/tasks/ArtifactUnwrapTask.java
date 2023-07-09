@@ -18,11 +18,12 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,7 +44,6 @@ public class ArtifactUnwrapTask extends ScanTask {
 
     public static final String HINT_IGNORE = "ignore";
 
-    public static final String ATTRIBUTE_KEY_ASSET_ID_CHAIN = "ASSET_ID_CHAIN";
     public static final String ATTRIBUTE_KEY_SCAN_DIRECTIVE = "SCAN_DIRECTIVE";
     public static final String SCAN_DIRECTIVE_DELETE = "delete";
     public static final String ATTRIBUTE_KEY_ARTIFACT_PATH = "ARTIFACT PATH";
@@ -85,7 +85,7 @@ public class ArtifactUnwrapTask extends ScanTask {
 
         // seek for a matching artifact without checksum (file name matching only)
         final Optional<Artifact> referenceArtifact =
-                referenceArtifacts.stream().filter(a -> !StringUtils.hasText(a.getChecksum())).findFirst();
+                referenceArtifacts.stream().filter(a -> StringUtils.isBlank(a.getChecksum())).findFirst();
 
         // we implicitly try to unwrap if the artifact is not known:
         final boolean implicitUnwrap = !referenceArtifact.isPresent();
@@ -94,15 +94,14 @@ public class ArtifactUnwrapTask extends ScanTask {
         final boolean explicitUnwrap = referenceArtifact.isPresent() && hasClassification(referenceArtifact.get(), HINT_SCAN);
         final boolean explicitIgnore = referenceArtifact.isPresent() && hasClassification(referenceArtifact.get(), HINT_IGNORE);
 
-        if ((implicitUnwrap || explicitUnwrap) && unpackIfPossible(file, targetFolder, false, issues)) {
+        final boolean artifactHasScanClassification = referenceArtifact.isPresent() ? false : artifact.hasClassification(HINT_SCAN);
+
+        if ((implicitUnwrap || explicitUnwrap) && unpackIfPossible(file, targetFolder, artifactHasScanClassification, issues)) {
             // unpack successful...
 
             boolean markForDelete = false;
-            if (implicitUnwrap && !explicitUnwrap) {
-                markForDelete = true;
-            }
 
-            if (explicitUnwrap && explicitIgnore) {
+            if (implicitUnwrap && explicitIgnore) {
                 markForDelete = true;
             }
 
@@ -114,7 +113,9 @@ public class ArtifactUnwrapTask extends ScanTask {
 
             // trigger collection of content
             LOG.info("Collecting subtree on {}.", fileRef.getPath());
-            fileSystemScanContext.push(new DirectoryScanTask(new FileRef(targetFolder), rebuildAndExtendAssetIdChain(artifact)));
+            final FileRef dirRef = new FileRef(targetFolder);
+            fileSystemScanContext.push(new DirectoryScanTask(dirRef,
+                    rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), dirRef, artifact, fileRef, fileSystemScanContext)));
         } else {
             // compute md5 to support component patterns (candidates for unwrap did not receive a checksum before)
             addChecksum(fileRef);
@@ -143,20 +144,46 @@ public class ArtifactUnwrapTask extends ScanTask {
     }
 
     private boolean hasClassification(Artifact artifact, String classification) {
-        if (artifact != null && StringUtils.hasText(artifact.getClassification())) {
+        if (artifact != null && StringUtils.isNotBlank(artifact.getClassification())) {
             return artifact.getClassification().contains(classification);
         }
         return false;
     }
 
-    private static List<String> rebuildAndExtendAssetIdChain(Artifact artifact) {
-        final String assetChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
+    private static List<String> rebuildAndExtendAssetIdChain(FileRef baseDir, FileRef dirRef, Artifact artifact, FileRef file, FileSystemScanContext context) {
+        // read existing
+        final String assetChain = artifact.get("ASSET_ID_CHAIN");
+
+        // decompose in list
         final List<String> assetIdChain = new ArrayList<>();
-        if (StringUtils.hasText(assetChain)) {
-            final String[] split = assetChain.split("|\n");
+        if (StringUtils.isNotBlank(assetChain)) {
+            final String[] split = assetChain.split("\\|\n");
             Collections.addAll(assetIdChain, split);
         }
-        assetIdChain.add(artifact.getId());
+
+        final String relativePath = FileUtils.asRelativePath(baseDir.getFile(), file.getFile());
+        assetIdChain.add(relativePath);
+
+        String fileChecksum = artifact.getChecksum();
+        if (!StringUtils.isNotBlank(fileChecksum)) {
+            fileChecksum = FileUtils.computeChecksum(file.getFile());
+        }
+
+        final String assetId = "AID-" + artifact.getId() + "-" + fileChecksum;
+
+        final AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, assetId);
+        assetMetaData.set("Checksum", fileChecksum);
+        assetMetaData.set("Source", ArtifactUnwrapTask.class.getName());
+
+        // FIXME: revise name; used not only here
+        assetMetaData.set("File Path", relativePath);
+
+        assetMetaData.set("ARTIFACT_PATH", file.getPath());
+        context.getInventory().getAssetMetaData().add(assetMetaData);
+
+        context.getPathToAssetIdMap().put(relativePath, assetId);
+
         return assetIdChain;
     }
 

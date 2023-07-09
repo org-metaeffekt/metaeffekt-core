@@ -19,7 +19,7 @@ import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -86,11 +86,11 @@ public class Inventory {
 
             private String createRepresentation(Artifact o1) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(StringUtils.hasText(o1.getGroupId()) ? o1.getGroupId() : STRING_EMPTY);
+                sb.append(StringUtils.isNotBlank(o1.getGroupId()) ? o1.getGroupId() : STRING_EMPTY);
                 sb.append(DELIMITER_COLON);
-                sb.append(StringUtils.hasText(o1.getArtifactId()) ? o1.getArtifactId() : STRING_EMPTY);
+                sb.append(StringUtils.isNotBlank(o1.getArtifactId()) ? o1.getArtifactId() : STRING_EMPTY);
                 sb.append(DELIMITER_COLON);
-                sb.append(StringUtils.hasText(o1.getVersion()) ? o1.getVersion() : STRING_EMPTY);
+                sb.append(StringUtils.isNotBlank(o1.getVersion()) ? o1.getVersion() : STRING_EMPTY);
                 return sb.toString();
             }
         };
@@ -105,17 +105,17 @@ public class Inventory {
 
             // in case no id is provided (legacy case) we use the component name as id.
             String key = artifact.getId();
-            if (!StringUtils.hasText(key)) {
+            if (!StringUtils.isNotBlank(key)) {
                 key = artifact.getComponent();
             }
 
             // append checksum (may be null)
-            if (StringUtils.hasText(artifact.getChecksum())) {
+            if (StringUtils.isNotBlank(artifact.getChecksum())) {
                 key += "^" + artifact.getChecksum();
             }
 
             // append version and groupid
-            if (StringUtils.hasText(key)) {
+            if (StringUtils.isNotBlank(key)) {
                 key += "^" + artifact.getVersion() + "^" + artifact.getGroupId();
                 Set<Artifact> set = artifactMap.get(key);
                 if (set == null) {
@@ -230,10 +230,10 @@ public class Inventory {
         }
 
         // now compare checksums
-        if (!StringUtils.hasText(leftChecksum)) {
+        if (!StringUtils.isNotBlank(leftChecksum)) {
             return true;
         }
-        if (!StringUtils.hasText(rightChecksum)) {
+        if (!StringUtils.isNotBlank(rightChecksum)) {
             return true;
         }
         if (leftChecksum.equals(rightChecksum)) return true;
@@ -245,7 +245,7 @@ public class Inventory {
     }
 
     public Artifact findArtifactByIdAndChecksum(String id, String checksum) {
-        if (!StringUtils.hasText(id) || !StringUtils.hasText(checksum)) {
+        if (!StringUtils.isNotBlank(id) || !StringUtils.isNotBlank(checksum)) {
             return null;
         }
         String trimmedId = id.trim();
@@ -464,7 +464,7 @@ public class Inventory {
 
             String artifactLicense = artifact.getLicense();
 
-            if (!StringUtils.hasText(artifact.getArtifactId())) {
+            if (!StringUtils.isNotBlank(artifact.getArtifactId())) {
                 if (includeLicensesWithArtifactsOnly) {
                     continue;
                 }
@@ -480,7 +480,7 @@ public class Inventory {
             if (artifactLicense != null) {
                 String[] splitLicense = artifactLicense.split("\\|");
                 for (int i = 0; i < splitLicense.length; i++) {
-                    if (StringUtils.hasText(splitLicense[i])) {
+                    if (StringUtils.isNotBlank(splitLicense[i])) {
                         licenses.add(splitLicense[i].trim());
                     }
                 }
@@ -503,7 +503,7 @@ public class Inventory {
             for (Artifact artifact : getArtifacts()) {
 
                 // skip all artifacts that do not belong to an asset
-                if (!StringUtils.hasText(artifact.get(assetId))) {
+                if (!StringUtils.isNotBlank(artifact.get(assetId))) {
                     continue;
                 }
 
@@ -602,9 +602,9 @@ public class Inventory {
         final Map<String, ArtifactLicenseData> map = new LinkedHashMap<>();
         for (final Artifact artifact : artifacts) {
             String artifactLicense = artifact.getLicense();
-            if (StringUtils.hasText(artifact.getLicense()) &&
-                    StringUtils.hasText(artifact.getVersion()) &&
-                    StringUtils.hasText(artifact.getComponent())) {
+            if (StringUtils.isNotBlank(artifact.getLicense()) &&
+                    StringUtils.isNotBlank(artifact.getVersion()) &&
+                    StringUtils.isNotBlank(artifact.getComponent())) {
                 artifactLicense = artifactLicense.trim();
                 // find a matching LMD instance
                 LicenseMetaData match = findMatchingLicenseMetaData(
@@ -760,7 +760,7 @@ public class Inventory {
     }
 
     public String getLicenseFolder(String license) {
-        if (StringUtils.hasText(license)) {
+        if (StringUtils.isNotBlank(license)) {
             return LicenseMetaData.deriveLicenseFolderName(license.trim());
         }
         return null;
@@ -896,7 +896,7 @@ public class Inventory {
     }
 
     public String normalize(String s) {
-        if (StringUtils.hasText(s))
+        if (StringUtils.isNotBlank(s))
             return s.trim();
         return STRING_EMPTY;
     }
@@ -975,7 +975,7 @@ public class Inventory {
         List<Artifact> artifactsForComponent = new ArrayList<>();
         for (Artifact artifact : getArtifacts()) {
             if (licenseName.equals(artifact.getLicense())) {
-                if (!StringUtils.hasText(artifact.getArtifactId())) {
+                if (!StringUtils.isNotBlank(artifact.getArtifactId())) {
                     if (includeLicensesWithArtifactsOnly) {
                         continue;
                     }
@@ -998,7 +998,7 @@ public class Inventory {
         List<Artifact> removeList = new ArrayList<Artifact>();
 
         for (Artifact a : getArtifacts()) {
-            if (StringUtils.hasText(a.getComponent())) {
+            if (StringUtils.isNotBlank(a.getComponent())) {
                 String key = a.getComponent() + "/" + a.getVersion();
                 String qualifier = key + "/" + a.getLicense() + "/" + a.getVersion();
                 if (uniqueSet.contains(key) && !qualifiedSet.contains(qualifier)) {
@@ -1124,7 +1124,7 @@ public class Inventory {
     public boolean hasConcreteArtifacts(Artifact artifact) {
         if (artifact != null) {
             String id = artifact.getId();
-            return StringUtils.hasText(id);
+            return StringUtils.isNotBlank(id);
         }
         return false;
     }

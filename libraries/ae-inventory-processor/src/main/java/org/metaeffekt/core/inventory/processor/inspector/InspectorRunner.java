@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,25 @@
  */
 package org.metaeffekt.core.inventory.processor.inspector;
 
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * The {@link InspectorRunner} can be configured with different inspectors and then executed.
+ */
 public class InspectorRunner {
-    private final List<Class<? extends InspectorInterface>> inspectors;
+    private final List<Class<? extends ArtifactInspector>> inspectors;
 
     public static class InspectorRunnerBuilder {
-        List<Class<? extends InspectorInterface>> inspectorList = new ArrayList<>();
+        final List<Class<? extends ArtifactInspector>> inspectorList = new ArrayList<>();
 
         private InspectorRunnerBuilder() {}
 
-        public InspectorRunnerBuilder queue(Class<? extends InspectorInterface> inspector) {
+        public InspectorRunnerBuilder queue(Class<? extends ArtifactInspector> inspector) {
             inspectorList.add(inspector);
             return this;
         }
@@ -39,7 +43,7 @@ public class InspectorRunner {
         }
     }
 
-    private InspectorRunner(List<Class<? extends InspectorInterface>> inspectors) {
+    private InspectorRunner(List<Class<? extends ArtifactInspector>> inspectors) {
         this.inspectors = inspectors;
     }
 
@@ -48,7 +52,7 @@ public class InspectorRunner {
     }
 
     public void executeAll(Inventory inventory, Properties properties) {
-        for (Class<? extends InspectorInterface> inspector : inspectors) {
+        for (Class<? extends ArtifactInspector> inspector : inspectors) {
             try {
                 inspector.newInstance().run(inventory, properties);
             } catch (InstantiationException | IllegalAccessException e) {
@@ -57,4 +61,5 @@ public class InspectorRunner {
             }
         }
     }
+
 }

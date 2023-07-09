@@ -17,10 +17,18 @@ package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
+import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
+import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
+import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
+import org.metaeffekt.core.inventory.processor.inspector.NestedJarInspector;
+import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
+import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
+import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,21 +57,27 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         this.executor = Executors.newFixedThreadPool(4);
 
+        // start with an empty assetIdChain on the root
+        final ArrayList<String> assetIdChain = new ArrayList<>();
+
         // trigger an initial scan from basedir
-        fileSystemScanContext.trigger();
+        fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), assetIdChain));
 
         LOG.info("Awaiting triggered tasks to finish.");
         awaitTasks();
 
-        // we use the scan parameter and the covered inventory to control the process.
-
+        // the scanner works in sequences
         boolean iteration = true;
         while (iteration) {
+
             LOG.info("Collecting derived outstanding tasks.");
             iteration = false;
 
-            // wait fo existing scan tasks to finish
+            // wait for existing scan tasks to finish
             awaitTasks();
+
+            // marks artifacts with scan classifier
+            runNestedComponentInspection();
 
             // TODO: check invariants
             //  * either SCAN_DIRECTIVE=delete OR checksum != null
@@ -82,13 +96,54 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         executor.shutdown();
 
-        final Inventory implicitRereferenceInventory = new Inventory();
-
-        // TODO: move context into producer (constructor argument)
+        // currently we detect component patterns on the final directory
         final ComponentPatternProducer patternProducer = new ComponentPatternProducer();
+        final Inventory implicitRereferenceInventory = new Inventory();
         patternProducer.detectAndApplyComponentPatterns(implicitRereferenceInventory, fileSystemScanContext);
 
+        // run remaining inspection last
+        inspectArtifacts(fileSystemScanContext);
+
+        for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
+            String assetIdChainString = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN);
+            if (StringUtils.isNotBlank(assetIdChainString)) {
+                final String[] split = assetIdChainString.split("\\||\n");
+                for (String assetPath : split) {
+                    String assetId = fileSystemScanContext.getPathToAssetIdMap().get(assetPath);
+                    if (StringUtils.isNotBlank(assetPath)) {
+                        assetId = assetPath;
+                    }
+                    if (StringUtils.isNotBlank(assetId)) {
+                        artifact.set(assetId, "x");
+                    }
+                }
+            }
+
+        }
+
         LOG.info("Scan completed.");
+    }
+
+    private void runNestedComponentInspection() {
+        final Properties properties = new Properties();
+        properties.put(ProjectPathParam.KEY_PROJECT_PATH, fileSystemScanContext.getBaseDir().getPath());
+
+        final NestedJarInspector nestedJarInspector = new NestedJarInspector();
+
+        for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
+            boolean inspected = StringUtils.isNotBlank(artifact.get("INSPECTED"));
+            if (!inspected) {
+
+                // run executors here
+                nestedJarInspector.run(artifact, properties);
+
+                artifact.set("INSPECTED", "x");
+
+                if (artifact.hasClassification(DirectoryInventoryScan.HINT_SCAN)) {
+                    artifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_UNWRAP, "x");
+                }
+            }
+        }
     }
 
     private List<ScanTask> collectOutstandingScanTasks() {
@@ -99,17 +154,15 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         final ComponentPatternProducer componentPatternProducer = new ComponentPatternProducer();
 
-        synchronized (inventory) {
-            // match and apply component patterns before performing unwrapping
-            // only anticipates predefined component patterns
-            componentPatternProducer.matchAndApplyComponentPatterns(referenceInventory, fileSystemScanContext);
+        // match and apply component patterns before performing unwrapping
+        // only anticipates predefined component patterns
+        componentPatternProducer.matchAndApplyComponentPatterns(referenceInventory, fileSystemScanContext);
 
-            for (Artifact artifact : inventory.getArtifacts()) {
-                if (!StringUtils.isEmpty(artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_UNWRAP))) {
+        for (Artifact artifact : inventory.getArtifacts()) {
+            if (!StringUtils.isEmpty(artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_UNWRAP))) {
 
-                    // TODO: exclude artifacts removed (though collection in component)
-                    scanTasks.add(new ArtifactUnwrapTask(artifact, null));
-                }
+                // TODO: exclude artifacts removed (though collection in component)
+                scanTasks.add(new ArtifactUnwrapTask(artifact, null));
             }
         }
 
@@ -150,5 +203,34 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         monitor.remove(scanTask);
     }
 
+    private void inspectArtifacts(FileSystemScanContext fileSystemScanContext) {
+        // attempt to extract artifactId, version, groupId from contained POMs
+        final Properties properties = new Properties();
+        properties.put(ProjectPathParam.KEY_PROJECT_PATH, fileSystemScanContext.getBaseDir().getPath());
+        properties.put(JarInspectionParam.KEY_INCLUDE_EMBEDDED,
+                Boolean.toString(fileSystemScanContext.getScanParam().isIncludeEmbedded()));
+
+        // run further inspections on identified artifacts
+        final InspectorRunner runner = InspectorRunner.builder()
+                .queue(JarInspector.class)
+                .build();
+
+        runner.executeAll(fileSystemScanContext.getInventory(), properties);
+
+        final List<AssetMetaData> assetMetaDataList = fileSystemScanContext.getInventory().getAssetMetaData();
+
+        if (assetMetaDataList != null) {
+            for (AssetMetaData assetMetaData : assetMetaDataList) {
+                final String path = assetMetaData.get("File Path");
+                final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+                if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(assetId)) {
+                    // FIXME; we may need a map  to list
+                    if (fileSystemScanContext.getPathToAssetIdMap().get(path) == null) {
+                        fileSystemScanContext.getPathToAssetIdMap().put(path, assetId);
+                    }
+                }
+            }
+        }
+    }
 
 }

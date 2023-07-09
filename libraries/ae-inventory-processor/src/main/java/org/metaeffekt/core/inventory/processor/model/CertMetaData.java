@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -148,7 +148,7 @@ public class CertMetaData extends AbstractModelBase {
     public static boolean hasDetails(CertMetaData cm) {
 
         // TODO: define what attributes have to be defined in order for the entry to have details
-        if (true || StringUtils.hasText(cm.get(Attribute.NAME))) {
+        if (true || StringUtils.isNotBlank(cm.get(Attribute.NAME))) {
             return true;
         }
 

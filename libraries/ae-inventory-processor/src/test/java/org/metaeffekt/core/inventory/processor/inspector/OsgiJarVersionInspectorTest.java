@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.inspector;
 
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -50,7 +50,7 @@ public class OsgiJarVersionInspectorTest {
         final Properties properties = new Properties();
         properties.setProperty("project.path", projectDir.getPath());
 
-        OsgiJarVersionInspector inspector = new OsgiJarVersionInspector();
+        JarInspector inspector = new JarInspector();
         inspector.run(inventory, properties);
 
         assertEquals("0.0.1", artifact.getVersion());
@@ -78,7 +78,7 @@ public class OsgiJarVersionInspectorTest {
         final Properties properties = new Properties();
         properties.setProperty("project.path", projectDir.getPath());
 
-        OsgiJarVersionInspector inspector = new OsgiJarVersionInspector();
+        JarInspector inspector = new JarInspector();
         inspector.run(inventory, properties);
         assertEquals("4.2.4.4.2.2.2.2asd", artifact.getVersion());
         assertTrue(StringUtils.isBlank(artifact.get("Errors")));
@@ -105,7 +105,7 @@ public class OsgiJarVersionInspectorTest {
         final Properties properties = new Properties();
         properties.setProperty("project.path", projectDir.getPath());
 
-        OsgiJarVersionInspector inspector = new OsgiJarVersionInspector();
+        JarInspector inspector = new JarInspector();
         inspector.run(inventory, properties);
 
         assertEquals("4.2.4.4.2.2.2.2asd", artifact.getVersion());

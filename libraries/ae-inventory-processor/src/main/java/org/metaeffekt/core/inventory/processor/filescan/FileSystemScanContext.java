@@ -15,14 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan;
 
-import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Container for context information during file system scanning.
@@ -48,6 +47,8 @@ public class FileSystemScanContext {
      * Listeners are used to integrate with the FileSystemScanning framework and allow derived tasks to be triggered.
      */
     private FileSystemScanTaskListener scanTaskListener;
+
+    private Map<String, String> pathToAssetIdMap = new ConcurrentHashMap<>();
 
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
         this.baseDir = baseDir;
@@ -84,10 +85,6 @@ public class FileSystemScanContext {
         this.scanTaskListener = scanTaskListener;
     }
 
-    public void trigger() {
-        push(new DirectoryScanTask(baseDir, new ArrayList<>()));
-    }
-
     /**
      * Adds the artifact to the managed inventory. No deduplication is performed.
      *
@@ -103,5 +100,9 @@ public class FileSystemScanContext {
         synchronized (inventory) {
             inventory.getArtifacts().removeAll(toBeDeleted);
         }
+    }
+
+    public Map<String, String> getPathToAssetIdMap() {
+        return pathToAssetIdMap;
     }
 }

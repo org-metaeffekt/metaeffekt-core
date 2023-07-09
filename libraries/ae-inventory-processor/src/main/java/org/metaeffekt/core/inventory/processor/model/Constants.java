@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
+import org.metaeffekt.core.util.FileUtils;
+
 public final class Constants {
 
     public static final String ASTERISK = "*";
@@ -46,6 +48,9 @@ public final class Constants {
     public static final String KEY_LICENSE_PATH_PACKAGE = "Package License Path";
     public static final String KEY_GROUP_PACKAGE = "Package Group";
     public static final String KEY_STATUS_PACKAGE = "Package Status";
+
+    public static final String KEY_HASH_SHA1 = "Hash (SHA-1)";
+    public static final String KEY_HASH_SHA256 = "Hash (SHA-256)";
 
     /**
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or

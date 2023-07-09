@@ -15,18 +15,18 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Locale;
 
 public class ReportUtils {
 
     public boolean isEmpty(String value) {
-        return !StringUtils.hasText(value);
+        return !StringUtils.isNotBlank(value);
     }
 
     public boolean notEmpty(String value) {
-        return StringUtils.hasText(value);
+        return StringUtils.isNotBlank(value);
     }
 
     public String ratio(long part, long total) {

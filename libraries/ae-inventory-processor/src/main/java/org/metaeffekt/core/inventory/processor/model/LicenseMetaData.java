@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 
@@ -222,10 +222,10 @@ public class LicenseMetaData extends AbstractModelBase {
         sb.append('/').append(get(Attribute.VERSION));
         sb.append('/').append(get(Attribute.LICENSE_IN_EFFECT));
         sb.append('/').append(get(Attribute.NOTICE));
-        if (StringUtils.hasText(get(Attribute.SOURCE_CATEGORY))) {
+        if (StringUtils.isNotBlank(get(Attribute.SOURCE_CATEGORY))) {
             sb.append('/').append(get(Attribute.SOURCE_CATEGORY));
         }
-        if (StringUtils.hasText(get(Attribute.COMMENT))) {
+        if (StringUtils.isNotBlank(get(Attribute.COMMENT))) {
             sb.append('/').append(get(Attribute.COMMENT));
         }
         return sb.toString();

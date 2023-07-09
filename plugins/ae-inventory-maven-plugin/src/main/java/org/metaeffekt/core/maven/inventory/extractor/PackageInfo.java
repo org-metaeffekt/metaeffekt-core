@@ -16,7 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 
@@ -47,10 +47,10 @@ class PackageInfo {
         artifact.setId(id);
 
         // the component information is either derived from group or the package name.
-        if (!StringUtils.hasText(component)) {
-            if (StringUtils.hasText(group)) {
+        if (!StringUtils.isNotBlank(component)) {
+            if (StringUtils.isNotBlank(group)) {
                 artifact.setComponent(group);
-            } else if (StringUtils.hasText(name)) {
+            } else if (StringUtils.isNotBlank(name)) {
                 artifact.setComponent(name);
             } else {
                 artifact.setComponent(name);

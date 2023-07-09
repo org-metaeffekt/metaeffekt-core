@@ -29,7 +29,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -65,17 +65,17 @@ public class MavenCentralVersionProcessor extends AbstractMavenCentralProcessor 
             for (Artifact artifact : inventory.getArtifacts()) {
                 String artifactId = artifact.getId();
 
-                if (StringUtils.hasText(artifactId)) {
+                if (StringUtils.isNotBlank(artifactId)) {
                     int index = artifactId.indexOf("-" + artifact.getVersion());
                     if (index != -1) {
                         artifactId = artifactId.substring(0, index);
                     }
-                    if (!overwriteVersion && StringUtils.hasText(artifact.getLatestVersion())) {
+                    if (!overwriteVersion && StringUtils.isNotBlank(artifact.getLatestVersion())) {
                         continue;
                     }
 
                     boolean skip = false;
-                    if (StringUtils.hasText(artifact.getGroupId())) {
+                    if (StringUtils.isNotBlank(artifact.getGroupId())) {
                         for (int i = 0; i < groupIdFilters.length; i++) {
                             if (artifact.getGroupId().matches(groupIdFilters[i])) {
                                 skip = true;
@@ -115,7 +115,7 @@ public class MavenCentralVersionProcessor extends AbstractMavenCentralProcessor 
         if (index != -1) {
             artifactId = artifactId.substring(0, index);
         }
-        if (StringUtils.hasText(artifact.getGroupId())) {
+        if (StringUtils.isNotBlank(artifact.getGroupId())) {
             String[] groupIds = artifact.getGroupId().split("\\|");
             String latestVersions = null;
             for (int i = 0; i < groupIds.length; i++) {

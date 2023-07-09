@@ -27,7 +27,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -52,9 +52,9 @@ public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor 
 
             for (Artifact artifact : inventory.getArtifacts()) {
                 String artifactId = artifact.getId();
-                if (StringUtils.hasText(artifactId)) {
+                if (StringUtils.isNotBlank(artifactId)) {
                     boolean skip = false;
-                    if (StringUtils.hasText(artifact.getGroupId())) {
+                    if (StringUtils.isNotBlank(artifact.getGroupId())) {
                         skip = true;
                     }
                     if (artifactId.contains(" ")) {
@@ -91,18 +91,18 @@ public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor 
         final String id = artifact.getId();
         String version = artifact.getVersion();
 
-        if (!StringUtils.hasText(version)) {
+        if (!StringUtils.isNotBlank(version)) {
             // we need to make a good guess:
             version = artifact.deriveVersionFromId();
         }
 
-        if (!StringUtils.hasText(version)) {
+        if (!StringUtils.isNotBlank(version)) {
             return;
         }
 
         String artifactId = artifact.extractArtifactId(id, version);
 
-        if (!StringUtils.hasText(artifactId)) {
+        if (!StringUtils.isNotBlank(artifactId)) {
             return;
         }
 

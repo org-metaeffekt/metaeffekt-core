@@ -190,10 +190,6 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         sheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, ordered.size() - 1));
     }
 
-    private static boolean isAssetId(String key) {
-        return key.startsWith("CID-") || key.startsWith("AID-") || key.startsWith("EID-") || key.startsWith("IID-");
-    }
-
     private void writeComponentPatterns(Inventory inventory, SXSSFWorkbook workbook) {
         if (isEmpty(inventory.getComponentPatternData())) return;
 

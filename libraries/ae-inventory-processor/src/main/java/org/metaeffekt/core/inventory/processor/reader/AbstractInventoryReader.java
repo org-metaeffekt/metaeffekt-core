@@ -18,7 +18,7 @@ package org.metaeffekt.core.inventory.processor.reader;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,12 +87,12 @@ public abstract class AbstractInventoryReader {
         final String originalKeyContent = vulnerabilityMetaData.get(originalKey);
 
         // check if there is original content
-        if (StringUtils.hasText(originalKeyContent)) {
+        if (StringUtils.isNotBlank(originalKeyContent)) {
 
             // read updated attribute content
             final String updatedAttributeContent = vulnerabilityMetaData.get(updatedAttribute);
 
-            if (!StringUtils.hasText(updatedAttributeContent)) {
+            if (!StringUtils.isNotBlank(updatedAttributeContent)) {
                 // original content available; no updated content: transfer and delete
                 vulnerabilityMetaData.set(updatedAttribute, originalKeyContent);
                 vulnerabilityMetaData.set(originalKey, null);

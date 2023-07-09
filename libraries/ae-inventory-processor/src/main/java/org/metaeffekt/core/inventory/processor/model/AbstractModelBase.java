@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -171,7 +171,10 @@ public abstract class AbstractModelBase {
      * @param value The value to set for the key.
      */
     public void set(String key, String value) {
-        if (StringUtils.isEmpty(value)) {
+        if (StringUtils.isBlank(key)) {
+            throw new IllegalStateException("Attribute key must be defined.");
+        }
+        if (StringUtils.isBlank(value)) {
             attributeMap.remove(key);
         } else {
             attributeMap.put(key, value);
@@ -256,7 +259,7 @@ public abstract class AbstractModelBase {
     protected void merge(AbstractModelBase a) {
         for (String key : a.getAttributes()) {
             String value = get(key);
-            if (!StringUtils.hasText(value)) {
+            if (StringUtils.isBlank(value)) {
                 set(key, a.get(key));
             }
         }
@@ -295,7 +298,7 @@ public abstract class AbstractModelBase {
     public String getAlternatives(String... keys) {
         for (final String key : keys) {
             final String value = get(key);
-            if (StringUtils.hasText(value)) {
+            if (StringUtils.isNotBlank(value)) {
                 return value;
             }
         }

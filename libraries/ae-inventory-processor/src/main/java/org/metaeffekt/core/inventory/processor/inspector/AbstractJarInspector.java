@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor.inspector;
 
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.File;
@@ -25,11 +29,20 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Properties;
 
-public abstract class AbstractJarInspector implements InspectorInterface {
+/**
+ * Abstract {@link ArtifactInspector} with basis support for JARs (Java Archives).
+ */
+public abstract class AbstractJarInspector implements ArtifactInspector {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractJarInspector.class);
 
     protected File getJarFile(Artifact artifact, ProjectPathParam param) {
         // add all existing regular files to file list for later processing.
-        final String jarPath = artifact.getProjects().stream().findFirst().orElse(null);
+        String jarPath = artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH);
+
+        if (StringUtils.isEmpty(jarPath)) {
+            jarPath = artifact.getProjects().stream().findFirst().orElse(null);
+        }
 
         if (jarPath != null) {
             final File jarFile = new File(param.getProjectPath(), jarPath);
@@ -41,13 +54,13 @@ public abstract class AbstractJarInspector implements InspectorInterface {
         return null;
     }
 
-    private boolean isZipArchive(File jarFile) {
-        if (jarFile.isDirectory()) return false;
-        if (!jarFile.exists()) return false;
-        if (jarFile.length() < 4) return false;
+    private boolean isZipArchive(final File file) {
+        if (file.isDirectory()) return false;
+        if (!file.exists()) return false;
+        if (file.length() < 4) return false;
 
         boolean isZipArchive = false;
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(jarFile, "r")) {
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
             long magic = randomAccessFile.readInt();
             if (magic == 0x504B0304) {
                 isZipArchive = true;
@@ -55,7 +68,10 @@ public abstract class AbstractJarInspector implements InspectorInterface {
         } catch (EOFException e) {
             return false;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("IOException while inspecting file [{}] for zip characteristics.", file);
+            }
+            return false;
         }
         return isZipArchive;
     }

@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -243,32 +243,32 @@ public class Artifact extends AbstractModelBase {
      */
     public String deriveQualifier() {
         String id = getId();
-        if (!StringUtils.hasText(id)) {
+        if (StringUtils.isBlank(id)) {
             // support artifacts without id (e.g. a folder)
             StringBuilder sb = new StringBuilder();
-            if (StringUtils.hasText(getComponent())) {
+            if (StringUtils.isNotBlank(getComponent())) {
                 sb.append(getComponent().trim());
             }
             sb.append("-");
-            if (StringUtils.hasText(getChecksum())) {
+            if (StringUtils.isNotBlank(getChecksum())) {
                 sb.append(getChecksum().trim());
             }
             sb.append("-");
-            if (StringUtils.hasText(getVersion())) {
+            if (StringUtils.isNotBlank(getVersion())) {
                 sb.append(getVersion().trim());
             }
         }
 
         StringBuilder sb = new StringBuilder();
-        if (StringUtils.hasText(id)) {
+        if (StringUtils.isNotBlank(id)) {
             sb.append(id.trim());
         }
         sb.append("-");
-        if (StringUtils.hasText(getChecksum())) {
+        if (StringUtils.isNotBlank(getChecksum())) {
             sb.append(getChecksum().trim());
         }
         sb.append("-");
-        if (StringUtils.hasText(getVersion())) {
+        if (StringUtils.isNotBlank(getVersion())) {
             sb.append(getVersion().trim());
         }
         return sb.toString();
@@ -276,11 +276,11 @@ public class Artifact extends AbstractModelBase {
 
     public void deriveArtifactId() {
         if (artifactId == null) {
-            String id = extractArtifactId(getId(), getVersion());
-            if (id == null) {
-                id = getId();
+            String artifactId = extractArtifactId(getId(), getVersion());
+            if (artifactId == null) {
+                artifactId = getId();
             }
-            this.setArtifactId(id);
+            this.setArtifactId(artifactId);
         }
     }
 
@@ -295,7 +295,7 @@ public class Artifact extends AbstractModelBase {
      * @return The derived artifact id or null, in case the version is not part of the file component.
      */
     public String extractArtifactId(String id, String version) {
-        if (StringUtils.hasText(id) && StringUtils.hasText(version)) {
+        if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(version)) {
             int index = id.lastIndexOf(version);
             if (index != -1) {
                 id = id.substring(0, index);
@@ -305,7 +305,7 @@ public class Artifact extends AbstractModelBase {
                     // underscore are the delimiter e.g. when dealing with osgi bundles
                     id = id.substring(0, id.length() - 1);
                 }
-                if (StringUtils.hasText(id)) {
+                if (StringUtils.isNotBlank(id)) {
                     return id;
                 }
             }
@@ -370,7 +370,7 @@ public class Artifact extends AbstractModelBase {
 
     private String inferVersionFromId() {
         String version = getVersion();
-        if (!StringUtils.hasText(version)) {
+        if (!StringUtils.isNotBlank(version)) {
             version = deriveVersionFromId();
         }
         return version;
@@ -425,7 +425,7 @@ public class Artifact extends AbstractModelBase {
     private String inferClassifierFromId() {
         final String id = getId();
         final String version = getVersion();
-        if (StringUtils.hasText(id) && StringUtils.hasText(version)) {
+        if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(version)) {
             // get rid of anything right to version
             final String queryString = DELIMITER_DASH + version + DELIMITER_DASH;
             final int versionIndex = id.indexOf(queryString);
@@ -439,7 +439,7 @@ public class Artifact extends AbstractModelBase {
             final int index = classifierAndType.indexOf(DELIMITER_DOT);
             if (index != -1) {
                 final String classifier = classifierAndType.substring(0, index).trim();
-                if (StringUtils.hasText(classifier)) {
+                if (StringUtils.isNotBlank(classifier)) {
                     return classifier;
                 }
             }
@@ -480,7 +480,7 @@ public class Artifact extends AbstractModelBase {
     }
 
     private String normalize(String s) {
-        if (StringUtils.hasText(s))
+        if (StringUtils.isNotBlank(s))
             return s.trim();
         return "";
     }
@@ -588,7 +588,7 @@ public class Artifact extends AbstractModelBase {
 
     public boolean isValid() {
         // an artifact requires at least an id or component
-        return StringUtils.hasText(getId()) || StringUtils.hasText(getComponent());
+        return StringUtils.isNotBlank(getId()) || StringUtils.isNotBlank(getComponent());
     }
 
     public String get(Attribute attribute, String defaultValue) {
@@ -613,8 +613,15 @@ public class Artifact extends AbstractModelBase {
      * @return List of individual licenses.
      */
     public List<String> getLicenses() {
-        if (!StringUtils.hasText(getLicense())) return Collections.EMPTY_LIST;
+        if (!StringUtils.isNotBlank(getLicense())) return Collections.EMPTY_LIST;
         return InventoryUtils.tokenizeLicense(getLicense(), true, true);
+    }
+
+    public boolean hasClassification(String classification) {
+        if (StringUtils.isNotBlank(getClassification())) {
+            return getClassification().contains(classification);
+        }
+        return false;
     }
 
 }

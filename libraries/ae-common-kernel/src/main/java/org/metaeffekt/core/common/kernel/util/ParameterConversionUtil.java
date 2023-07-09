@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.common.kernel.util;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +43,7 @@ public class ParameterConversionUtil {
         if (string != null) {
             String[] splits = string.split(delimiterRegExp);
             for (int i = 0; i < splits.length; i++) {
-                if (StringUtils.hasText(splits[i])) {
+                if (StringUtils.isNotBlank(splits[i])) {
                     list.add(splits[i].trim());
                 }
             }

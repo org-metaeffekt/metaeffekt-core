@@ -15,13 +15,10 @@
  */
 package org.metaeffekt.core.inventory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.report.DependenciesDitaReport;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,18 +29,14 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.springframework.util.StringUtils.isEmpty;
-
 /**
  * Utilities for dealing with Inventories.
  */
 public abstract class InventoryUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DependenciesDitaReport.class);
-
     /**
      * Read the inventories located in inventoryBaseDir matching the inventoryIncludes pattern.
-     * This methods (to the extend that a specific inventory is qualified by inventoryIncludes)
+     * This method (to the extent that a specific inventory is qualified by inventoryIncludes)
      * supports reading the inventory from the classpath. This is especially useful for cases
      * where the license and component files are not required in the filesystem and an inventory
      * jar is not required to be unpacked.
@@ -94,7 +87,7 @@ public abstract class InventoryUtils {
         try {
             return new InventoryReader().readInventoryAsClasspathResource(file);
         } catch (IOException e) {
-            throw new IOException(String.format("Unable to read inventory from classpath: {}/{}", inventoryBaseDir, inventoryIncludes), e);
+            throw new IOException(String.format("Unable to read inventory from classpath: %s/%s", inventoryBaseDir, inventoryIncludes), e);
         }
     }
 
@@ -109,11 +102,11 @@ public abstract class InventoryUtils {
                     REGEXP_PATTERN_SEPARATOR_ALL.split(license);
             final List<String> licenses = Arrays.stream(licenseParts).
                     map(String::trim).
-                    filter(s -> !isEmpty(s)).
+                    filter(StringUtils::isNotBlank).
                     map(s -> {
                         if (s.startsWith("(") && s.endsWith(")") &&
-                                StringUtils.countOccurrencesOf(s, "(") == 1 &&
-                                StringUtils.countOccurrencesOf(s, ")") == 1) {
+                                StringUtils.countMatches(s, "(") == 1 &&
+                                StringUtils.countMatches(s, ")") == 1) {
                             return s.substring(1, s.length() - 1);
                         }
                         return s;
@@ -122,7 +115,7 @@ public abstract class InventoryUtils {
                     collect(Collectors.toList());
 
             if (reorder) {
-                Collections.sort(licenses, String.CASE_INSENSITIVE_ORDER);
+                licenses.sort(String.CASE_INSENSITIVE_ORDER);
             }
             return licenses;
         }
@@ -130,11 +123,11 @@ public abstract class InventoryUtils {
     }
 
     public static String joinLicenses(Collection<String> licenses) {
-        return licenses.stream().collect(Collectors.joining(", "));
+        return String.join(", ", licenses);
     }
 
     public static String joinEffectiveLicenses(Collection<String> licenses) {
-        return licenses.stream().collect(Collectors.joining("|"));
+        return String.join("|", licenses);
     }
 
 }

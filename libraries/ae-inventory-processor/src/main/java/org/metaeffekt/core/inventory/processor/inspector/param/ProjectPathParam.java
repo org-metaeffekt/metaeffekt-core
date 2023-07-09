@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 the original author or authors.
+ * Copyright 2009-2022 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ public class ProjectPathParam {
 
     public ProjectPathParam(Properties properties) {
         projectPath = new File(properties.getProperty(KEY_PROJECT_PATH, "./"));
-        System.out.println(projectPath.getAbsolutePath());
     }
 
     public File getProjectPath() {

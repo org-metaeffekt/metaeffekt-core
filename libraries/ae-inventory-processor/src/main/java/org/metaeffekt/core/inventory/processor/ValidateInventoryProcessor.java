@@ -307,7 +307,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
                     artifact.getClassification().contains(Inventory.CLASSIFICATION_CURRENT)) {
                 Set<Artifact> alreadyReported = new HashSet<>();
                 if (!alreadyReported.contains(artifact)) {
-                    if (org.springframework.util.StringUtils.hasText(artifact.getArtifactId())) {
+                    if (StringUtils.isNotBlank(artifact.getArtifactId())) {
                         Artifact currentArtifact = inventory.findCurrent(artifact);
                         if (currentArtifact != null) {
                             log(format("%04d: Inconsistent classification (at least one and only one " +
