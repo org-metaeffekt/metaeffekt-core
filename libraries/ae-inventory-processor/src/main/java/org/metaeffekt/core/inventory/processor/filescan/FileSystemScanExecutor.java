@@ -73,8 +73,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         // the scanner works in sequences
         boolean iteration = true;
         while (iteration) {
-
-            LOG.info("Collecting outstanding tasks.");
             iteration = false;
 
             // wait for existing scan tasks to finish
@@ -91,8 +89,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             final List<ScanTask> scanTasks = collectOutstandingScanTasks();
 
             // push tasks for being processed and mark for another iteration
-            LOG.info("Triggering {} outstanding tasks.", scanTasks.size());
             if (!scanTasks.isEmpty()) {
+                LOG.info("Triggering {} outstanding tasks.", scanTasks.size());
                 scanTasks.forEach(fileSystemScanContext::push);
                 iteration = true;
             }
