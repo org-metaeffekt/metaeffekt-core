@@ -114,10 +114,14 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return computeChecksum(file, "SHA-256");
     }
 
-    public static String asRelativePath(String workingDirPath, String filePath) throws IOException {
-        File file = new File(filePath).getCanonicalFile();
-        File workingDirFile = new File(workingDirPath).getCanonicalFile();
-        return asRelativePath(workingDirFile, file);
+    public static String asRelativePath(String workingDirPath, String filePath) {
+        try {
+            File file = new File(filePath).getCanonicalFile();
+            File workingDirFile = new File(workingDirPath).getCanonicalFile();
+            return asRelativePath(workingDirFile, file);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot compute relative path for " + filePath + ".", e);
+        }
     }
 
     public static String asRelativePath(File workingDirFile, File file) {
@@ -189,6 +193,11 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return path.replace("\\", "/");
     }
 
+    public static String normalizePathToLinux(File file) {
+        if (file == null) return null;
+        return normalizePathToLinux(file.getAbsolutePath());
+    }
+
     public static void waitForProcess(Process p) {
         try {
             while (p.isAlive()) {
@@ -232,6 +241,23 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         scanner.setCaseSensitive(false);
         scanner.scan();
         return scanner.getIncludedDirectories();
+    }
+
+    public static File findSingleFile(File baseFile, String pattern) {
+        final String[] files = FileUtils.scanDirectoryForFiles(baseFile, pattern);
+        if (files.length == 1) {
+            return new File(baseFile, files[0]);
+        }
+        return null;
+    }
+
+    public static String[] scanDirectoryForFiles(File targetDir, String... includes) {
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(targetDir);
+        scanner.setIncludes(includes);
+        scanner.setCaseSensitive(false);
+        scanner.scan();
+        return scanner.getIncludedFiles();
     }
 
 }

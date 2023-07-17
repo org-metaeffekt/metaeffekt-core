@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.inspector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -29,6 +30,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.HINT_SCAN;
 
 /**
  * Checks if a file (for particular file types) has other files inside of it (with particular extensions). If this
@@ -100,20 +103,17 @@ public class NestedJarInspector implements ArtifactInspector {
             }
 
             projectFile = new File(projectPathParam.getProjectPath(), projectString);
-            System.out.println(projectFile.getAbsolutePath() + " contains ");
 
             try (ZipFile jarZip = new ZipFile(projectFile)) {
                 // loop all entries and check their extensions
-                final boolean b[] = new boolean[1];
-                b[0] = false;
+                final boolean semaphore[] = new boolean[1];
+                semaphore[0] = false;
                 jarZip.stream().forEach(entry -> {
-                    if (!b[0]) {
+                    if (!semaphore[0]) {
                         if (insideHasExtension(entry.getName())) {
                             // one of the files has one of the specified extensions!
-                            artifact.setClassification("scan");
-                            b[0] = true;
-
-                            System.out.println(entry.getName());
+                            artifact.setClassification(HINT_SCAN);
+                            semaphore[0] = true;
                         }
                     }
                 });
@@ -124,7 +124,7 @@ public class NestedJarInspector implements ArtifactInspector {
             }
 
             // since this is our only job, we can stop processing other getProjects entries
-            if ("scan".equals(artifact.getClassification())) {
+            if (HINT_SCAN.equals(artifact.getClassification())) {
                 break;
             }
         }
@@ -132,7 +132,7 @@ public class NestedJarInspector implements ArtifactInspector {
 
     private static Set<String> collectPaths(Artifact artifact) {
         Set<String> paths = new HashSet<>();
-        String jarPath = artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH);
+        String jarPath = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH);
         if (StringUtils.isNotBlank(jarPath)) {
             paths.add(jarPath);
         }

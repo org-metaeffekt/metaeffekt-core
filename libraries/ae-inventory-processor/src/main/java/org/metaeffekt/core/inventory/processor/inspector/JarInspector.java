@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -41,6 +42,11 @@ import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
+import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CHECKSUM;
+
 /**
  * General JAR-level {@link ArtifactInspector}. The inspector uses common resources (maven poms, osgi manifests,
  * java manifests) to parse information for identifying the artifact.
@@ -48,6 +54,11 @@ import java.util.stream.Collectors;
 public class JarInspector extends AbstractJarInspector {
 
     private static final Logger LOG = LoggerFactory.getLogger(JarInspector.class);
+
+    public static final String ATTRIBUTE_KEY_ARTIFACT_ID = "ARTIFACT_ID";
+    public static final String ATTRIBUTE_KEY_EMBEDDED_PATH = Constants.KEY_PATH_IN_ASSET;
+    public static final String ATTRIBUTE_KEY_QUALIFIER_WITH_VERSION = "QUALIFIER_WITH_VERSION";
+    public static final String ATTRIBUTE_KEY_QUALIFIER_NO_VERSION = "QUALIFIER_NO_VERSION";
 
     protected boolean hasFilename(String normalizedPath, String fileName) {
         // zips must always use / as a path separator so this check should be correct to only use slash.
@@ -85,7 +96,7 @@ public class JarInspector extends AbstractJarInspector {
         return artifact.getGroupId() != null || artifact.getVersion() != null;
     }
 
-    protected Artifact getArtifactFromPomProperties(Artifact artifact, InputStream inputStream, ZipArchiveEntry pomEntry) {
+    public Artifact getArtifactFromPomProperties(Artifact artifact, InputStream inputStream, String embeddedPath) {
         final Properties pomProperties = new Properties();
         try {
             pomProperties.load(inputStream);
@@ -97,20 +108,20 @@ public class JarInspector extends AbstractJarInspector {
         dummyArtifact.setGroupId(pomProperties.getProperty("groupId", null));
         dummyArtifact.setVersion(pomProperties.getProperty("version", null));
 
-        dummyArtifact.set("ARTIFACT_ID", pomProperties.getProperty("artifactId", null));
-        dummyArtifact.set("EMBEDDED_PATH", pomEntry.getName());
+        dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, pomProperties.getProperty("artifactId", null));
+        dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
         deriveQualifiers(dummyArtifact);
 
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
     }
 
-    protected Artifact getArtifactFromManifest(Artifact artifact, InputStream inputStream, ZipArchiveEntry manifestEntry) {
+    protected Artifact getArtifactFromManifest(Artifact artifact, InputStream inputStream, String embeddedPath) {
         Manifest manifest = null;
         try {
             manifest = new Manifest(inputStream);
         } catch (IOException e) {
-            addError(artifact, "Error while loading 'pom.properties'.");
+            addError(artifact, "Error while parsing [" + embeddedPath + "].");
         }
 
         if (manifest != null) {
@@ -127,7 +138,7 @@ public class JarInspector extends AbstractJarInspector {
                 dummyArtifact.setVersion(mainAttributes.getValue("Bundle-Version"));
             }
 
-            dummyArtifact.set("EMBEDDED_PATH", manifestEntry.getName());
+            dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
             String artifactId = artifact.getId();
             // cut off suffix
@@ -139,7 +150,7 @@ public class JarInspector extends AbstractJarInspector {
             if (versionIndex > 0) {
                 artifactId = artifactId.substring(0, versionIndex);
             }
-            dummyArtifact.set("ARTIFACT_ID", artifactId);
+            dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
 
             deriveQualifiers(dummyArtifact);
 
@@ -148,7 +159,17 @@ public class JarInspector extends AbstractJarInspector {
         return null;
     }
 
-    protected Artifact getArtifactFromPomXml(Artifact artifact, InputStream inputStream, ZipArchiveEntry pomEntry) {
+    private static String deriveEmbeddedPath(Artifact artifact, String pathInsideArtifact) {
+        String path = artifact.get(ATTRIBUTE_KEY_ARTIFACT_PATH);
+        if (path != null) {
+            File file = new File(path);
+            file = new File(file.getParentFile(), "[" + artifact.getId() + "]");
+            return new File(file, pathInsideArtifact).getPath();
+        }
+        return null;
+    }
+
+    public Artifact getArtifactFromPomXml(Artifact artifact, InputStream inputStream, String embeddedPath) {
         Artifact dummyArtifact = new Artifact();
 
         // parse pom
@@ -157,7 +178,7 @@ public class JarInspector extends AbstractJarInspector {
 
             // grab artifactId, groupId and version from pom. get from parent section if not filled
             if (model.getArtifactId() != null) {
-                dummyArtifact.set("ARTIFACT_ID", model.getArtifactId());
+                dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, model.getArtifactId());
             }
 
             if (model.getGroupId() != null) {
@@ -179,7 +200,7 @@ public class JarInspector extends AbstractJarInspector {
                 dummyArtifact.set(Constants.KEY_ORGANIZATION_URL, model.getOrganization().getUrl());
             }
 
-            dummyArtifact.set("EMBEDDED_PATH", pomEntry.getName());
+            dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
             // NOTE: the current mode is identification. POM specified licenses are not subject to identification
             // Furthermore, the leaf-pom may not include license information.
@@ -194,16 +215,15 @@ public class JarInspector extends AbstractJarInspector {
 
     private void deriveQualifiers(Artifact dummyArtifact) {
         final String version = dummyArtifact.getVersion();
-        final String artifactId = dummyArtifact.get("ARTIFACT_ID");
+        final String artifactId = dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID);
         final String qualifierWithVersion = artifactId + "-" + version;
-        dummyArtifact.set("QUALIFIER_WITH_VERSION", qualifierWithVersion);
-        final String qualifierNoVersion = artifactId;
-        dummyArtifact.set("QUALIFIER_NO_VERSION", qualifierNoVersion);
+        dummyArtifact.set(ATTRIBUTE_KEY_QUALIFIER_WITH_VERSION, qualifierWithVersion);
+        dummyArtifact.set(ATTRIBUTE_KEY_QUALIFIER_NO_VERSION, artifactId);
     }
 
     protected Artifact dummyArtifactFromPomProperties(Artifact artifact, ZipFile zipFile, ZipArchiveEntry pomEntry) {
         try (InputStream inputStream = zipFile.getInputStream(pomEntry)) {
-            return getArtifactFromPomProperties(artifact, inputStream, pomEntry);
+            return getArtifactFromPomProperties(artifact, inputStream, pomEntry.getName());
         } catch (IOException e) {
             addError(artifact, "IOException while reading [" + pomEntry.getName() + "].");
         }
@@ -212,7 +232,7 @@ public class JarInspector extends AbstractJarInspector {
 
     protected Artifact dummyArtifactFromPomXml(Artifact artifact, ZipFile zipFile, ZipArchiveEntry pomEntry) {
         try (InputStream inputStream = zipFile.getInputStream(pomEntry)) {
-            return getArtifactFromPomXml(artifact, inputStream, pomEntry);
+            return getArtifactFromPomXml(artifact, inputStream, pomEntry.getName());
         } catch (IOException e) {
             addError(artifact, "IOException while reading [" + pomEntry.getName() + "].");
         }
@@ -221,7 +241,7 @@ public class JarInspector extends AbstractJarInspector {
 
     protected Artifact dummyArtifactFromManifest(Artifact artifact, ZipFile zipFile, ZipArchiveEntry manifestEntry) {
         try (InputStream inputStream = zipFile.getInputStream(manifestEntry)) {
-            return getArtifactFromManifest(artifact, inputStream, manifestEntry);
+            return getArtifactFromManifest(artifact, inputStream, manifestEntry.getName());
         } catch (IOException e) {
             addError(artifact, "IOException while reading [" + manifestEntry.getName() + "].");
         }
@@ -267,9 +287,9 @@ public class JarInspector extends AbstractJarInspector {
         final Map<String, Artifact> qualifierArtifactMap = new HashMap<>();
 
         for (Artifact candidate : artifacts) {
-            String qualifier = candidate.get("QUALIFIER_WITH_VERSION");
+            String qualifier = candidate.get(ATTRIBUTE_KEY_QUALIFIER_WITH_VERSION);
             if (qualifier != null) {
-                String qualifierNoVersion = candidate.get("QUALIFIER_NO_VERSION");
+                String qualifierNoVersion = candidate.get(ATTRIBUTE_KEY_QUALIFIER_NO_VERSION);
                 Artifact collector = qualifierArtifactMap.get(qualifier);
 
                 if (collector == null) {
@@ -283,13 +303,13 @@ public class JarInspector extends AbstractJarInspector {
 
                     // pom.xml wins over all
                     if (embeddedFileCandidate.getName().endsWith("pom.xml")) {
-                        collector.set("EMBEDDED_PATH", embeddedFileCandidate.getPath());
+                        collector.set(ATTRIBUTE_KEY_EMBEDDED_PATH, embeddedFileCandidate.getPath());
                     }
 
                     // pom.properties wins over MANIFEST.MF
                     if (embeddedFileCandidate.getName().endsWith("pom.properties")) {
                         if (embeddedFileCollector.getName().endsWith("MANIFEST.MF")) {
-                            collector.set("EMBEDDED_PATH", embeddedFileCandidate.getPath());
+                            collector.set(ATTRIBUTE_KEY_EMBEDDED_PATH, embeddedFileCandidate.getPath());
                         }
                     }
 
@@ -299,8 +319,8 @@ public class JarInspector extends AbstractJarInspector {
 
         for (Artifact candidate : manifestArtifacts) {
             if (candidate.getId() != null && candidate.getVersion() != null) {
-                String qualifier = candidate.get("QUALIFIER_WITH_VERSION");
-                String qualifierNoVersion = candidate.get("QUALIFIER_NO_VERSION");
+                String qualifier = candidate.get(ATTRIBUTE_KEY_QUALIFIER_WITH_VERSION);
+                String qualifierNoVersion = candidate.get(ATTRIBUTE_KEY_QUALIFIER_NO_VERSION);
                 Artifact collectorWithVersion = qualifierArtifactMap.get(qualifier);
                 Artifact collectorNoVersion = qualifierArtifactMap.get(qualifierNoVersion);
 
@@ -317,9 +337,7 @@ public class JarInspector extends AbstractJarInspector {
     }
 
     private static File getEmbeddedPath(Artifact a) {
-        String embeddedPath = a.get("EMBEDDED_PATH");
-        File embeddedFile = new File(embeddedPath);
-        return embeddedFile;
+        return new File(a.get(ATTRIBUTE_KEY_EMBEDDED_PATH));
     }
 
     /**
@@ -343,15 +361,15 @@ public class JarInspector extends AbstractJarInspector {
             }
         }
 
-        final Pattern pattern1 = Pattern.compile(Pattern.quote(dummyArtifact.get("ARTIFACT_ID") +
+        final Pattern pattern1 = Pattern.compile(Pattern.quote(dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) +
                 "-" + dummyArtifact.getVersion()) +
                 "[-\\.].*");
         if (pattern1.matcher(fileName).matches()) {
             return true;
         }
 
-        final String match2 = dummyArtifact.get("ARTIFACT_ID") + "-" + dummyArtifact.getVersion() + ".";
-        final String match3 = dummyArtifact.get("ARTIFACT_ID") + ".";
+        final String match2 = dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" + dummyArtifact.getVersion() + ".";
+        final String match3 = dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + ".";
 
         // otherwise throw the towel. no idea what this jar is supposed to be.
         return fileName.startsWith(match2) || fileName.startsWith(match3);
@@ -381,7 +399,7 @@ public class JarInspector extends AbstractJarInspector {
         Set<String> foundVersions = new HashSet<>();
 
         for (Artifact checking : toCheck) {
-            String currentArtifactId = checking.get("ARTIFACT_ID");
+            String currentArtifactId = checking.get(ATTRIBUTE_KEY_ARTIFACT_ID);
             String currentGroupId = checking.getGroupId();
             String currentVersion = checking.getVersion();
 
@@ -486,6 +504,13 @@ public class JarInspector extends AbstractJarInspector {
                         + e.getMessage());
             }
         }
+
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_ID, inventory);
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_QUALIFIER_NO_VERSION, inventory);
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_QUALIFIER_WITH_VERSION, inventory);
+
+        InventoryUtils.removeAssetAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
+        InventoryUtils.removeAssetAttribute(ATTRIBUTE_KEY_INSPECTION_SOURCE, inventory);
     }
 
     // TODO: special steps to take for artifacts added in this fashion? maybe write a separate Inspector for this?
@@ -496,23 +521,24 @@ public class JarInspector extends AbstractJarInspector {
             final String assetId = "AID-" + containingArtifact.getId() + "-" + containingArtifact.getChecksum();
 
             // manage assetIdChain and artifact path
-            String parentAssetIdChain = containingArtifact.get("ASSET_ID_CHAIN");
-            String parentArtifactPath = containingArtifact.get("ARTIFACT PATH");
+            String parentAssetIdChain = containingArtifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
+            String parentArtifactPath = containingArtifact.get(ATTRIBUTE_KEY_ARTIFACT_PATH);
+
             final String foundAssetIdChain = deriveAssetIdChain(parentAssetIdChain, parentArtifactPath);
 
             // construct asset metadata for containing artifacts (e.g. shaded jars)
             final AssetMetaData assetMetaData = new AssetMetaData();
-            assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, assetId);
-            assetMetaData.set("File Path", parentArtifactPath);
-            assetMetaData.set("Checksum", containingArtifact.getChecksum());
-            assetMetaData.set("ARTIFACT_PATH", parentArtifactPath);
-            assetMetaData.set("Source", JarInspector.class.getName());
+            assetMetaData.set(ASSET_ID, assetId);
+            assetMetaData.set(ATTRIBUTE_KEY_ASSET_PATH, parentArtifactPath);
+            assetMetaData.set(KEY_CHECKSUM, containingArtifact.getChecksum());
+            assetMetaData.set(ATTRIBUTE_KEY_ARTIFACT_PATH, parentArtifactPath);
+            assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, JarInspector.class.getName());
             inventory.getAssetMetaData().add(assetMetaData);
 
             for (final Artifact embeddedArtifact : embeddedArtifacts) {
                 // supplement default id; FIXME: move to identification code; here only consumer
                 if (StringUtils.isBlank(embeddedArtifact.getId())) {
-                    embeddedArtifact.setId(embeddedArtifact.get("ARTIFACT_ID") + "-" +
+                    embeddedArtifact.setId(embeddedArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" +
                             embeddedArtifact.getVersion() + "." + "jar");
                 }
 

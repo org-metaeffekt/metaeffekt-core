@@ -64,6 +64,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                 }
             }
         } catch (IOException e) {
+            // it was an attempts
         }
 
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
@@ -81,12 +82,12 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         webModule.folder = file;
 
         Artifact artifact = new Artifact();
-        parseModuleDetails(artifact, new File(baseDir, file).getAbsolutePath(), webModule);
+        parseModuleDetails(artifact, new File(baseDir, file).getAbsolutePath(), webModule, baseDir);
 
         return artifact;
     }
 
-    public class WebModule implements Comparable<WebModule> {
+    public static class WebModule implements Comparable<WebModule> {
         String folder;
         String name;
         String version;
@@ -121,13 +122,11 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         // - ues derived inventories instead (all files unfiltered, with proper project path)
         // - do for all inventories in a project context
 
-        scanWebComponents(scanDir, pathModuleMap);
+        scanWebComponents(scanDir, pathModuleMap, scanDir);
 
         Inventory webComponentInventory = new Inventory();
 
         Set<String> uniqueAnchors = pathModuleMap.values().stream().map(wm -> wm.anchor != null ? wm.anchorChecksum : null).filter(Objects::nonNull).collect(Collectors.toSet());
-        Set<String> noAnchors = pathModuleMap.values().stream().map(wm -> wm.anchor == null ? wm.path : null).filter(Objects::nonNull).collect(Collectors.toSet());
-        Set<String> uniqueComponents = pathModuleMap.values().stream().map(wm -> wm.name + "-" + wm.version).collect(Collectors.toSet());
 
         for (String anchorChecksum : uniqueAnchors) {
             WebModule webModule = null;
@@ -151,20 +150,10 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             cpd.set("TMP-LICENSE", webModule.license);
             cpd.set("TMP-PATH", webModule.path);
 
-            System.out.println(cpd.createCompareStringRepresentation());
             webComponentInventory.getComponentPatternData().add(cpd);
         }
 
         // NOTE: we drop modules, which we do not have sufficient information for using only modules with anchors
-        // System.out.println("No anchors: ");
-        // noAnchors.forEach(System.out::println);
-
-        System.out.println("Unique components: " + uniqueComponents.size());
-        System.out.println("Unique anchors: " + uniqueAnchors.size());
-        pathModuleMap.values().stream().sorted().forEach(System.out::println);
-
-        System.out.println("Web modules without version: ");
-        pathModuleMap.values().stream().sorted().filter(p -> p.version == null).forEach(System.out::println);
 
         // derive artifacts of type web component for component patterns
         for (ComponentPatternData cpd : webComponentInventory.getComponentPatternData()) {
@@ -175,7 +164,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             queryArtifact.setId(artifactId);
             queryArtifact.setVersion(version);
             queryArtifact.setComponent(component);
-            // FIXME-Core: use type as attribute constant; renanme nodejs to webmodule (as there are different types)
+            // FIXME-Core: use type as attribute constant; rename nodejs to webmodule (as there are different types)
             queryArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
             Artifact artifact = webComponentInventory.findArtifact(queryArtifact);
             if (artifact == null) {
@@ -187,17 +176,17 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         new InventoryWriter().writeInventory(webComponentInventory, new File("target/web.xls"));
     }
 
-    protected void scanWebComponents(File inventoryFile, Map<String, WebModule> pathModuleMap) throws IOException {
+    protected void scanWebComponents(File inventoryFile, Map<String, WebModule> pathModuleMap, File baseDir) throws IOException {
         final Inventory inventory = new InventoryReader().readInventory(inventoryFile);
         for (Artifact artifact : inventory.getArtifacts()) {
             for (String project : artifact.getProjects()) {
-                parseWebModule("/node_modules/", artifact, project, pathModuleMap);
-                parseWebModule("/bower_components/", artifact, project, pathModuleMap);
+                parseWebModule(baseDir, artifact, project, pathModuleMap, "/node_modules/");
+                parseWebModule(baseDir, artifact, project, pathModuleMap, "/bower_components/");
             }
         }
     }
 
-    protected void parseWebModule(String moduleMarker, Artifact artifact, String artifactPath, Map<String, WebModule> pathModuleMap) throws IOException {
+    protected void parseWebModule(File baseDir, Artifact artifact, String artifactPath, Map<String, WebModule> pathModuleMap, String moduleMarker) throws IOException {
         if (!isWebModule(artifactPath)) {
             return;
         }
@@ -208,36 +197,21 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             String path = artifactPath.substring(0, artifactPath.lastIndexOf(moduleMarker) + moduleMarker.length());
             path = path + folder;
 
-            System.out.println("Parsing " + folder);
-
             WebModule webModule = getOrInitWebModule(path, pathModuleMap);
             webModule.folder = folder;
 
-            parseModuleDetails(artifact, artifactPath, webModule);
+            parseModuleDetails(artifact, artifactPath, webModule, baseDir);
         }
     }
 
-    protected void parseModuleDetails(Artifact artifact, String project, WebModule webModule) throws IOException {
-        String filePath = webModule.folder;
-
-        // do not mix with files in a deeper context
-//        if (!project.endsWith(filePath)) return;
-
-        if ("composer.json".equals(artifact.getId())) {
-            parseDetails(artifact, project, webModule);
-        }
-
-        if ("package.json".equals(artifact.getId())) {
-            parseDetails(artifact, project, webModule);
-        }
-        if (".bower.json".equals(artifact.getId())) {
-            parseDetails(artifact, project, webModule);
-        }
-        if ("bower.json".equals(artifact.getId())) {
-            parseDetails(artifact, project, webModule);
-        }
-        if ("package-lock.json".equals(artifact.getId())) {
-            parseDetails(artifact, project, webModule);
+    protected void parseModuleDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
+        switch(artifact.getId()) {
+            case "composer.json":
+            case "package.json":
+            case ".bower.json":
+            case "bower.json":
+            case "package-lock.json":
+                parseDetails(artifact, project, webModule, baseDir);
         }
     }
 
@@ -270,8 +244,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         return webModule;
     }
 
-    protected void parseDetails(File file, WebModule webModule) throws IOException {
-        final File packageJson = file;
+    protected void parseDetails(File packageJson, WebModule webModule) throws IOException {
         if (packageJson.exists()) {
             final String json = FileUtils.readFileToString(packageJson, "UTF-8");
             try {
@@ -305,8 +278,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         }
     }
 
-    protected void parseDetails(Artifact artifact, String project, WebModule webModule) throws IOException {
-        final File baseDir = new File("/Volumes/S-DIT-007");
+    protected void parseDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
         final File projectDir = new File(baseDir, project);
         final File packageJson = new File(projectDir, artifact.getId());
         if (packageJson.exists()) {

@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -39,11 +40,14 @@ public class DirectoryInventoryScanTest {
         String[] scanExcludes = new String[]{"--none--"};
 
         File inventoryFile = new File("src/test/resources/test-inventory-01/artifact-inventory.xls");
-        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
+        Inventory referenceInventory = new InventoryReader().readInventory(inventoryFile);
 
-        final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, referenceInventory);
 
         scan.setEnableImplicitUnpack(false);
+        scan.setEnableDetectComponentPatterns(false);
+        scan.setIncludeEmbedded(false);
+
         final Inventory resultInventory = scan.createScanInventory();
 
         new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory.xls"));
@@ -87,6 +91,8 @@ public class DirectoryInventoryScanTest {
         boolean found0005 = false;
 
         for (Artifact artifact : resultInventory.getArtifacts()) {
+            artifact.deriveArtifactId();
+
             // check that 0000 was success
             if (!found0000) {
                 found0000 = "dummy-artifact".equals(artifact.getArtifactId())
@@ -161,29 +167,37 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_External2() throws IOException {
 
-        File scanDir = new File("<path-to-scan-dir>");
-        File referenceInventoryFile = new File("<path-to-dir>");
+        File scanDir = new File("<dir>>");
+        File referenceInventoryFile = new File("<reference-inventory");
 
         String[] scanIncludes = new String[] {"**/*"};
         String[] scanExcludes = new String[] {
-            "**/.DS_Store", "**/._*" ,"**/.git/**/*", "**/.git*", "**/.git*",
-            "**/*.mp4", "**/*.class", "**/*.md5", "**/*.sha1",
-            "**/.cache/**/*", "**/.wh*", "**/log/**/*", "**/ldconfig/aux-cache",
-            "**/v8-compile-cache*/**/*", "**/tmp/cache/webpacker/**/*",
-            "**/*.cache"
+                "**/.DS_Store", "**/._*" ,"**/.git/**/*", "**/.git*", "**/.git*",
+                "**/*.mp4", "**/*.class", "**/*.md5", "**/*.sha1",
+                "**/.cache/**/*", "**/.wh*", "**/log/**/*", "**/ldconfig/aux-cache",
+                "**/v8-compile-cache*/**/*", "**/tmp/cache/webpacker/**/*",
+                "**/*.cache"
         };
 
         String[] unwrapIncludes = new String[] {"**/*"};
         String[] unwrapExcludes = new String[] {
-            "**/*.js.gz", "**/*.js.map.gz", "**/*.css.gz",
-            "**/*.css.map.gz", "**/*.svg.gz", "**/*.json.gz",
-            "**/*.ttf.gz", "**/*.eot.gz"
+                "**/*.js.gz", "**/*.js.map.gz", "**/*.css.gz",
+                "**/*.css.map.gz", "**/*.svg.gz", "**/*.json.gz",
+                "**/*.ttf.gz", "**/*.eot.gz"
         };
 
-        final DirectoryInventoryScan scan = new DirectoryInventoryScan(scanDir, scanDir,
+        final Inventory referenceInventory = InventoryUtils.
+                readInventory(referenceInventoryFile, "*.xls");
+
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(
+                scanDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
-                InventoryUtils.readInventory(referenceInventoryFile, "*.xls"));
+                referenceInventory);
+
+        scan.setIncludeEmbedded(true);
+        scan.setEnableImplicitUnpack(true);
+        scan.setEnableDetectComponentPatterns(true);
 
         final Inventory inventory = scan.scanDirectoryNG(scanDir);
 
@@ -191,6 +205,5 @@ public class DirectoryInventoryScanTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
     }
-
 
 }

@@ -15,7 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -26,7 +28,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
 
 /**
  * Contributes to the inventory managed by {@link FileSystemScanContext}.
@@ -37,7 +42,6 @@ public class FileCollectTask extends ScanTask {
 
     public static final String ATTRIBUTE_KEY_UNWRAP = "UNWRAP";
     public static final String ATTRIBUTE_KEY_ANCHOR = "ANCHOR";
-    public static final String ATTRIBUTE_VALUE_MARK = "x";
 
     private FileRef fileRef;
 
@@ -58,7 +62,9 @@ public class FileCollectTask extends ScanTask {
 
         final Artifact artifact = new Artifact();
         artifact.setId(fileName);
-        artifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH, FileUtils.asRelativePath(fileSystemScanContext.getBaseDir().getPath(), filePath));
+        final String relativePath = FileUtils.asRelativePath(fileSystemScanContext.getBaseDir().getPath(), filePath);
+        artifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
+        artifact.set(KEY_PATH_IN_ASSET, relativePath);
 
         // evaluate conditions for unwrapping the file (file is not yet probed; any file may be subject to unwrapping)
         final boolean unwrap = fileSystemScanContext.getScanParam().isImplicitUnwrap() &&
@@ -66,7 +72,8 @@ public class FileCollectTask extends ScanTask {
 
         if (unwrap) {
             // mark for unwrap
-            artifact.set(ATTRIBUTE_KEY_UNWRAP, ATTRIBUTE_VALUE_MARK);
+            artifact.set(ATTRIBUTE_KEY_UNWRAP, Constants.MARKER_CROSS);
+            artifact.set(KEY_PATH_IN_ASSET, relativePath);
         } else {
             // compute SHA hashes
             artifact.set(Constants.KEY_HASH_SHA1, FileUtils.computeSHA1Hash(file));
@@ -80,27 +87,34 @@ public class FileCollectTask extends ScanTask {
 
             // mark artifacts matching a component pattern with anchor checksum
             if (!fileSystemScanContext.getScanParam().getComponentPatternsByChecksum(fileMd5Checksum).isEmpty()) {
-                artifact.set(ATTRIBUTE_KEY_ANCHOR, ATTRIBUTE_VALUE_MARK);
+                artifact.set(ATTRIBUTE_KEY_ANCHOR, Constants.MARKER_CROSS);
             }
-
-
         }
 
         attachAssetIdChain(artifact, fileSystemScanContext);
 
+        attachEmbeddedPath(artifact, relativePath);
+
         fileSystemScanContext.contribute(artifact);
+    }
+
+    private static void attachEmbeddedPath(Artifact artifact, String value) {
+        String assetChainId = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
+        if (StringUtils.isNotBlank(assetChainId)) {
+            artifact.set(KEY_PATH_IN_ASSET, value);
+        }
     }
 
     private void attachAssetIdChain(Artifact artifact, FileSystemScanContext fileSystemScanContext) {
         final List<String> assetIdChain = getAssetIdChain();
         if (assetIdChain != null && !assetIdChain.isEmpty()) {
-            String assetIdChainString = assetIdChain.stream().collect(Collectors.joining("|\n"));
-            artifact.set("ASSET_ID_CHAIN", assetIdChainString);
+            final String assetIdChainString = String.join("|\n", assetIdChain);
+            artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChainString);
 
             for (String assetPath : assetIdChain) {
                 String assetId = fileSystemScanContext.getPathToAssetIdMap().get(assetPath);
                 if (assetId != null) {
-                    artifact.set(assetId, "x");
+                    artifact.set(assetId, Constants.MARKER_CROSS);
                 }
             }
         }

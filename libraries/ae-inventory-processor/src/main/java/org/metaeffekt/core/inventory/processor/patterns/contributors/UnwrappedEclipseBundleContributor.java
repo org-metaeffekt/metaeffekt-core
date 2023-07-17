@@ -31,8 +31,6 @@ public class UnwrappedEclipseBundleContributor extends ComponentPatternContribut
 
     @Override
     public void contribute(File contextBaseDir, String anchorFile, Artifact artifact, ComponentPatternData componentPatternData) {
-        System.out.println("Hello Eclipse Bundle: " + contextBaseDir + " / " + anchorFile);
-
         String id = contextBaseDir.getName();
         final int i = id.lastIndexOf("_");
 

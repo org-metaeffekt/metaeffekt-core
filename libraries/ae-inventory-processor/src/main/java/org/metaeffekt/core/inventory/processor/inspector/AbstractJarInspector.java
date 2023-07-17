@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.inspector;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -38,7 +39,7 @@ public abstract class AbstractJarInspector implements ArtifactInspector {
 
     protected File getJarFile(Artifact artifact, ProjectPathParam param) {
         // add all existing regular files to file list for later processing.
-        String jarPath = artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH);
+        String jarPath = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH);
 
         if (StringUtils.isEmpty(jarPath)) {
             jarPath = artifact.getProjects().stream().findFirst().orElse(null);

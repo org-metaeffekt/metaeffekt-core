@@ -21,6 +21,8 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.util.*;
 
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM;
+
 public class FileSystemScanParam {
 
     private String[] collectIncludes = new String[] { "**/*" };
@@ -34,6 +36,8 @@ public class FileSystemScanParam {
     private boolean implicitUnwrap = true;
 
     private boolean includeEmbedded = true;
+
+    private boolean detectComponentPatterns = true;
 
     private Inventory referenceInventory;
 
@@ -87,7 +91,7 @@ public class FileSystemScanParam {
             if (componentPatternDataList != null) {
                 for (ComponentPatternData componentPatternData : componentPatternDataList) {
                     // the checksum may be a md5 or '*'
-                    final String checksumOrWildcard = componentPatternData.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM);
+                    final String checksumOrWildcard = componentPatternData.get(VERSION_ANCHOR_CHECKSUM);
                     Set<ComponentPatternData> cpdSet = checksumComponentPatternDataMap.computeIfAbsent(checksumOrWildcard, m -> new HashSet<>());
                     cpdSet.add(componentPatternData);
                 }
@@ -123,6 +127,15 @@ public class FileSystemScanParam {
     }
 
     public Set<ComponentPatternData> getComponentPatternsByChecksum(String md5Checksum) {
-        return checksumComponentPatternDataMap.getOrDefault(md5Checksum, Collections.EMPTY_SET);
+        return checksumComponentPatternDataMap.getOrDefault(md5Checksum, Collections.emptySet());
+    }
+
+    public FileSystemScanParam detectComponentPatterns(boolean detectComponentPatterns) {
+        this.detectComponentPatterns = detectComponentPatterns;
+        return this;
+    }
+
+    public boolean isDetectComponentPatterns() {
+        return detectComponentPatterns;
     }
 }

@@ -15,17 +15,23 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan;
 
-import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 public class MatchResult {
+
     public ComponentPatternData componentPatternData;
+
     public File anchorFile;
     public File baseDir;
 
@@ -40,14 +46,26 @@ public class MatchResult {
 
     public Artifact deriveArtifact(FileRef scanBaseDir) {
         final Artifact derivedArtifact = new Artifact();
-        derivedArtifact.setId(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_PART));
-        derivedArtifact.setComponent(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME));
-        derivedArtifact.setVersion(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
-        derivedArtifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_ARTIFACT_PATH, asRelativePath(scanBaseDir.getFile(), baseDir));
-        derivedArtifact.set("ASSET_ID_CHAIN", assetIdChain);
+
+        derivedArtifact.setId(componentPatternData.get(COMPONENT_PART));
+        derivedArtifact.setComponent(componentPatternData.get(COMPONENT_NAME));
+        derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
+
+        final String relativePath = asRelativePath(scanBaseDir.getPath(), FileUtils.normalizePathToLinux(baseDir));
+        derivedArtifact.set(ATTRIBUTE_KEY_ASSET_PATH, relativePath);
+        derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, relativePath);
+
+        // FIXME: this attribute is of no use for component patterns; consider removing this line
+        derivedArtifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
+        derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
 
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
+
+        // also the group id
+        derivedArtifact.setGroupId(componentPatternData.get("Group Id"));
+
+        derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, "x");
 
         return derivedArtifact;
     }

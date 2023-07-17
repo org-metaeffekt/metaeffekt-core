@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.List;
@@ -104,5 +105,11 @@ public class FileSystemScanContext {
 
     public Map<String, String> getPathToAssetIdMap() {
         return pathToAssetIdMap;
+    }
+
+    public void contribute(ComponentPatternData componentPatternData) {
+        synchronized (inventory) {
+            inventory.getComponentPatternData().add(componentPatternData);
+        }
     }
 }

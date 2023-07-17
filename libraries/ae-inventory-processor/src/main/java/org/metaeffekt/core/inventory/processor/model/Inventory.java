@@ -77,7 +77,7 @@ public class Inventory {
     private final InventorySerializationContext serializationContext = new InventorySerializationContext();
 
     public static void sortArtifacts(List<Artifact> artifacts) {
-        Comparator<Artifact> comparator = new Comparator<Artifact>() {
+        final Comparator<Artifact> comparator = new Comparator<Artifact>() {
 
             @Override
             public int compare(Artifact o1, Artifact o2) {
@@ -98,7 +98,7 @@ public class Inventory {
     }
 
     public void mergeDuplicates() {
-        Map<String, Set<Artifact>> artifactMap = new HashMap<>();
+        final Map<String, Set<Artifact>> artifactMap = new HashMap<>();
 
         for (Artifact artifact : artifacts) {
             artifact.deriveArtifactId();

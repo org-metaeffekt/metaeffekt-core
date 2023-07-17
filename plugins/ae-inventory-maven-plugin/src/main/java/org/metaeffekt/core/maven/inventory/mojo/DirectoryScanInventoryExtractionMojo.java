@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -61,38 +62,65 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
     @Parameter
     private String[] scanExcludes;
 
+    @Parameter(defaultValue = "\"**/*\"")
+    private String[] unwrapIncludes = new String[]{"**/*"};
+
+    @Parameter
+    private String[] unwrapExcludes;
+
     /**
+     * Whether certain artifacts should be inspected for nested information.
      * For backward compatibility reasons the default value is false. The feature requires explicit activation.
      */
     @Parameter(defaultValue = "false")
     private boolean includeEmbedded = false;
 
     /**
-     * When true, enabled that implicitly general archive types are unpacked.
+     * When true, enables that implicitly general archive types are unpacked.
      */
     @Parameter(defaultValue = "true")
     private boolean enabledImplicitUnpack = true;
 
+    /**
+     * When true, enables that implicitly component patterns are detected and applied.
+     * Defaults to false for compatibility reasons.
+     */
+    @Parameter(defaultValue = "true")
+    private boolean enabledDetectComponentPatterns = false;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            final Inventory sourceInventory =
-                InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
+            // read reference inventory
+            final Inventory sourceInventory = InventoryUtils.readInventory(sourceInventoryDir, sourceInventoryIncludes);
 
-            final DirectoryInventoryScan scan =
-                new DirectoryInventoryScan(inputDirectory, scanDirectory, scanIncludes, scanExcludes, sourceInventory);
+            // initialize DirectoryInventoryScan instance to perfom scan
+            final DirectoryInventoryScan scan = new DirectoryInventoryScan(
+                    inputDirectory, scanDirectory,
+                    scanIncludes, scanExcludes,
+                    unwrapIncludes, unwrapExcludes,
+                    sourceInventory);
 
+            // transfer configuration
             scan.setIncludeEmbedded(includeEmbedded);
             scan.setEnableImplicitUnpack(enabledImplicitUnpack);
+            scan.setEnableDetectComponentPatterns(enabledDetectComponentPatterns);
 
+            // run scan
             final Inventory inventory = scan.createScanInventory();
 
-            for (final Artifact artifact : inventory.getArtifacts()) {
-                artifact.set(KEY_SOURCE_PROJECT, artifactInventoryId);
+            // FIXME: this may be legacy, when asset information is provided.
+            // mark artifacts with inventory id
+            if (StringUtils.isNotBlank(artifactInventoryId)) {
+                for (final Artifact artifact : inventory.getArtifacts()) {
+                    artifact.set(KEY_SOURCE_PROJECT, artifactInventoryId);
+                }
             }
 
-            // write inventory
+            // ensure file to write inventory exists
             targetInventoryFile.getParentFile().mkdirs();
+
+            // write inventory
             new InventoryWriter().writeInventory(inventory, targetInventoryFile);
         } catch (IOException e) {
             throw new MojoExecutionException(e.getMessage(), e);

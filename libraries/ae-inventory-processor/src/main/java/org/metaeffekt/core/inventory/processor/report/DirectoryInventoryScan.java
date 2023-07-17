@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
@@ -31,21 +32,13 @@ import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.*;
-
-/*
-    Optimization potential
-    - Decouple file expansion from component pattern matching; produce intermediate inventory (indicating expanded artifacts)
-    - Execute component patterns in separate step (globally); can be executed independently
-    - The reference inventory (with wildcard artifacts and component patterns) could be extractor specific.
- */
 
 public class DirectoryInventoryScan {
 
@@ -56,23 +49,25 @@ public class DirectoryInventoryScan {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
-    private Inventory referenceInventory;
+    private final Inventory referenceInventory;
 
-    private String[] scanIncludes;
+    private final String[] scanIncludes;
 
-    private String[] scanExcludes;
+    private final String[] scanExcludes;
 
-    private String[] unwrapIncludes;
+    private final String[] unwrapIncludes;
 
-    private String[] unwrapExcludes;
+    private final String[] unwrapExcludes;
 
-    private File inputDirectory;
+    private final File inputDirectory;
 
-    private File scanDirectory;
+    private final File scanDirectory;
 
     private boolean enableImplicitUnpack = true;
 
     private boolean includeEmbedded = false;
+
+    private boolean enableDetectComponentPatterns = false;
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
                       String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
@@ -100,7 +95,11 @@ public class DirectoryInventoryScan {
     public Inventory createScanInventory() {
         prepareScanDirectory();
 
-        return performScan();
+        final Inventory inventory = performScan();
+
+  //      InventoryUtils.sortInventoryContent(inventory);
+
+        return inventory;
     }
 
     private void prepareScanDirectory() {
@@ -113,20 +112,7 @@ public class DirectoryInventoryScan {
     }
 
     public Inventory performScan() {
-        // initialize inventories
-        Inventory scanInventory = new Inventory();
-
-        // process scanning
-        final List<String> assetIdChain = Collections.emptyList();
-        scanDirectory(scanDirectory, scanDirectory, scanIncludes, scanExcludes, referenceInventory, scanInventory,
-                assetIdChain);
-
-        // remove/merge duplicates
-        scanInventory.mergeDuplicates();
-
-        inspectArtifacts(scanInventory);
-
-        return scanInventory;
+        return scanDirectoryNG(scanDirectory);
     }
 
     private void inspectArtifacts(Inventory scanInventory) {
@@ -155,9 +141,10 @@ public class DirectoryInventoryScan {
 
         Artifact deriveArtifact(File scanBaseDir) {
             final Artifact derivedArtifact = new Artifact();
-            derivedArtifact.setId(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_PART));
-            derivedArtifact.setComponent(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_NAME));
-            derivedArtifact.setVersion(componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
+            derivedArtifact.setId(componentPatternData.get(COMPONENT_PART));
+            derivedArtifact.setComponent(componentPatternData.get(COMPONENT_NAME));
+            derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
+
             final String relativePathToBasedir = asRelativePath(scanBaseDir, baseDir);
             derivedArtifact.addProject(relativePathToBasedir);
 
@@ -201,7 +188,7 @@ public class DirectoryInventoryScan {
 
         LOG.info("{}: matching component patterns", scanDir);
         final List<MatchResult> matchedComponentPatterns =
-                matchComponentPatterns(files, normalizedFileMap, scanBaseDir, scanDir, referenceInventory, scanInventory);
+                matchComponentPatterns(files, normalizedFileMap, scanBaseDir, scanDir, referenceInventory);
 
         LOG.info("{}: filtering matched files", scanDir);
         final List<MatchResult> matchResultsWithoutFileMatches = new ArrayList<>();
@@ -232,7 +219,7 @@ public class DirectoryInventoryScan {
         }
     }
 
-    private List<MatchResult> matchComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap, File scanBaseDir, File scanDir, Inventory referenceInventory, Inventory scanInventory) {
+    private List<MatchResult> matchComponentPatterns(Set<File> files, Map<File, String> normalizedFileMap, File scanBaseDir, File scanDir, Inventory referenceInventory) {
         // match component patterns using version anchor version anchors; results in matchedComponentPatterns
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
 
@@ -356,14 +343,15 @@ public class DirectoryInventoryScan {
                     // temporary workaround
                     boolean wantToUnpack = true;
 
-                    if (file.getName().toLowerCase().endsWith(".js.gz")) wantToUnpack = false;
-                    if (file.getName().toLowerCase().endsWith(".js.map.gz")) wantToUnpack = false;
-                    if (file.getName().toLowerCase().endsWith(".css.gz")) wantToUnpack = false;
-                    if (file.getName().toLowerCase().endsWith(".css.map.gz")) wantToUnpack = false;
-                    if (file.getName().toLowerCase().endsWith(".svg.gz")) wantToUnpack = false;
-                    if (file.getName().toLowerCase().endsWith(".json.gz")) wantToUnpack = false;
-                    if (file.getName().toLowerCase().endsWith(".ttf.gz")) wantToUnpack = false;
-                    if (file.getName().toLowerCase().endsWith(".eot.gz")) wantToUnpack = false;
+                    final String name = file.getName().toLowerCase();
+                    if (name.endsWith(".js.gz")) wantToUnpack = false;
+                    if (name.endsWith(".js.map.gz")) wantToUnpack = false;
+                    if (name.endsWith(".css.gz")) wantToUnpack = false;
+                    if (name.endsWith(".css.map.gz")) wantToUnpack = false;
+                    if (name.endsWith(".svg.gz")) wantToUnpack = false;
+                    if (name.endsWith(".json.gz")) wantToUnpack = false;
+                    if (name.endsWith(".ttf.gz")) wantToUnpack = false;
+                    if (name.endsWith(".eot.gz")) wantToUnpack = false;
 
                     if (wantToUnpack) {
 
@@ -518,7 +506,7 @@ public class DirectoryInventoryScan {
         for (int i = 0; i < versionAnchorFolderDepth; i++) {
             baseDir = baseDir.getParentFile();
 
-            // handle special case the the parent dir does not exist (for whatever reason)
+            // handle special case the parent dir does not exist (for whatever reason)
             if (baseDir == null) {
                 baseDir = scanBaseDir;
                 break;
@@ -528,8 +516,8 @@ public class DirectoryInventoryScan {
     }
 
     private String extendIncludePattern(ComponentPatternData cpd, String baseDirPath) {
-        String p = cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN);
-        if (p == null) return p;
+        final String p = cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN);
+        if (p == null) return null;
 
         if (StringUtils.isEmpty(baseDirPath)) return p;
         if (Constants.DOT.equals(baseDirPath)) return p;
@@ -565,7 +553,15 @@ public class DirectoryInventoryScan {
     }
 
     // FIXME: not yet final; work in progress
-    public Inventory scanDirectoryNG(final File directoryToScan, final FileSystemScanParam scanParam) throws IOException {
+    public Inventory scanDirectoryNG(final File directoryToScan) {
+
+        final FileSystemScanParam scanParam = new FileSystemScanParam().
+                collectAllMatching(scanIncludes, scanExcludes).
+                unwrapAllMatching(unwrapIncludes, unwrapExcludes).
+                implicitUnwrap(enableImplicitUnpack).
+                includeEmbedded(includeEmbedded).
+                detectComponentPatterns(enableDetectComponentPatterns).
+                withReferenceInventory(referenceInventory);
 
         LOG.info("Scanning directory {}...", directoryToScan.getAbsolutePath());
 
@@ -577,8 +573,7 @@ public class DirectoryInventoryScan {
         // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
         //   patterns).
 
-        LOG.info("Merging duplicates...");
-        fileSystemScan.getInventory().mergeDuplicates();
+        LOG.info("Scanning directory {} completed.", directoryToScan.getAbsolutePath());
 
         return fileSystemScan.getInventory();
     }
@@ -589,6 +584,14 @@ public class DirectoryInventoryScan {
 
     public void setIncludeEmbedded(boolean includeEmbedded) {
         this.includeEmbedded = includeEmbedded;
+    }
+
+    public void setEnableDetectComponentPatterns(boolean enableDetectComponentPatterns) {
+        this.enableDetectComponentPatterns = enableDetectComponentPatterns;
+    }
+
+    public boolean isEnableDetectComponentPatterns() {
+        return enableDetectComponentPatterns;
     }
 
 }

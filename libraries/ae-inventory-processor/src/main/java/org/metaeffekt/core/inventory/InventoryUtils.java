@@ -16,16 +16,13 @@
 package org.metaeffekt.core.inventory;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -128,6 +125,106 @@ public abstract class InventoryUtils {
 
     public static String joinEffectiveLicenses(Collection<String> licenses) {
         return String.join("|", licenses);
+    }
+
+    public static void removeArtifactAttribute(String key, Inventory inventory) {
+        for (Artifact artifact : inventory.getArtifacts()) {
+            artifact.set(key, null);
+        }
+    }
+
+    public static void removeArtifactAttributeContaining(String substring, Inventory inventory) {
+        for (Artifact artifact : inventory.getArtifacts()) {
+            for (String key : new HashSet<>(artifact.getAttributes())) {
+                if (key.contains(substring)) {
+                    artifact.set(key, null);
+                }
+            }
+        }
+    }
+
+    public static void removeLicenseDataAttributeContaining(String substring, Inventory inventory) {
+        for (LicenseData licenseData : inventory.getLicenseData()) {
+            for (String key : new HashSet<>(licenseData.getAttributes())) {
+                if (key.contains(substring)) {
+                    licenseData.set(key, null);
+                }
+            }
+        }
+    }
+
+    public static void removeAssetAttribute(String key, Inventory inventory) {
+        for (AssetMetaData assetMetaData : inventory.getAssetMetaData()) {
+            assetMetaData.set(key, null);
+        }
+    }
+
+    public static void mergeDuplicateAssets(Inventory mergedInventory) {
+        final Map<String, HashSet<AssetMetaData>> qualiferAssetMap = new HashMap<>();
+        for (AssetMetaData assetMetaData : mergedInventory.getAssetMetaData()) {
+            qualiferAssetMap.computeIfAbsent(assetMetaData.deriveQualifier(),
+                    c -> new LinkedHashSet<>()).add(assetMetaData);
+        }
+
+        final Set<AssetMetaData> toBeDeleted = new HashSet<>();
+        for (HashSet<AssetMetaData> assetMetaDataSet : qualiferAssetMap.values()) {
+            // first item is the reference
+            final Iterator<AssetMetaData> assetMetaDataIterator = assetMetaDataSet.iterator();
+            final AssetMetaData referenceAsset = assetMetaDataIterator.next();
+            while (assetMetaDataIterator.hasNext()) {
+                final AssetMetaData duplicate = assetMetaDataIterator.next();
+                toBeDeleted.add(duplicate);
+
+                // FIXME: expose a merge signature on artifact level
+                for (final String key : duplicate.getAttributes()) {
+                    final String value = referenceAsset.get(key);
+                    if (StringUtils.isBlank(value)) {
+                        referenceAsset.set(key, duplicate.get(key));
+                    }
+                }
+            }
+        }
+        toBeDeleted.forEach(mergedInventory.getAssetMetaData()::remove);
+    }
+
+    public static void sortInventoryContent(Inventory inventory) {
+        // sort all sheets
+        inventory.getArtifacts().sort(Comparator.comparing(InventoryUtils::createStringRepresentation));
+        inventory.getLicenseData().sort(Comparator.comparing(InventoryUtils::createStringRepresentation));
+        inventory.getAssetMetaData().sort(Comparator.comparing(InventoryUtils::createStringRepresentation));
+        inventory.getComponentPatternData().sort(Comparator.comparing(InventoryUtils::createStringRepresentation));
+    }
+
+    public static String createStringRepresentation(Artifact artifact) {
+        final String id = artifact.getId();
+        final String groupId = artifact.getGroupId();
+        final String version = artifact.getVersion();
+
+        String s = "";
+        s = id != null ? s + "/" + id : s + "/";
+        s = groupId != null ? s + "/" + groupId : s + "/";
+        s = version != null ? s + "/" + version : s + "/";
+        return s;
+    }
+
+    public static String createStringRepresentation(AssetMetaData assetMetaData) {
+        final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+
+        String s = "";
+        s = assetId != null ? s + "/" + assetId : s + "/";
+        return s;
+    }
+
+    public static String createStringRepresentation(ComponentPatternData componentPatternData) {
+        return componentPatternData.createCompareStringRepresentation();
+    }
+
+    public static String createStringRepresentation(LicenseData licenseData) {
+        final String assetId = licenseData.get(LicenseData.Attribute.CANONICAL_NAME);
+
+        String s = "";
+        s = assetId != null ? s + "/" + assetId : s + "/";
+        return s;
     }
 
 }

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
@@ -28,13 +29,16 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
-import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
+
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
+import static org.metaeffekt.core.inventory.processor.model.Constants.MARKER_CROSS;
 
 public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
@@ -52,7 +56,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         this.monitor = new ConcurrentHashMap<>();
     }
 
-    public void execute() throws IOException {
+    public void execute() {
         LOG.info("Triggering scan on {}...", fileSystemScanContext.getBaseDir().getPath());
 
         this.executor = Executors.newFixedThreadPool(4);
@@ -70,7 +74,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         boolean iteration = true;
         while (iteration) {
 
-            LOG.info("Collecting derived outstanding tasks.");
+            LOG.info("Collecting outstanding tasks.");
             iteration = false;
 
             // wait for existing scan tasks to finish
@@ -87,7 +91,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             final List<ScanTask> scanTasks = collectOutstandingScanTasks();
 
             // push tasks for being processed and mark for another iteration
-            LOG.info("Triggering derived outstanding tasks.");
+            LOG.info("Triggering {} outstanding tasks.", scanTasks.size());
             if (!scanTasks.isEmpty()) {
                 scanTasks.forEach(fileSystemScanContext::push);
                 iteration = true;
@@ -96,32 +100,55 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         executor.shutdown();
 
-        // currently we detect component patterns on the final directory
-        final ComponentPatternProducer patternProducer = new ComponentPatternProducer();
-        final Inventory implicitRereferenceInventory = new Inventory();
-        patternProducer.detectAndApplyComponentPatterns(implicitRereferenceInventory, fileSystemScanContext);
+        if (fileSystemScanContext.getScanParam().isDetectComponentPatterns()) {
+            // currently we detect component patterns on the final directory
+            final ComponentPatternProducer patternProducer = new ComponentPatternProducer();
+            final Inventory implicitRereferenceInventory = new Inventory();
+            patternProducer.detectAndApplyComponentPatterns(implicitRereferenceInventory, fileSystemScanContext);
+        }
 
         // run remaining inspection last
-        inspectArtifacts(fileSystemScanContext);
+        inspectArtifacts();
 
+        setArtifactAssetMarker();
+
+
+        final Inventory inventory = fileSystemScanContext.getInventory();
+
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_INSPECTED, inventory);
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE, inventory);
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_PATH, inventory);
+        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
+
+        mergeDuplicates(inventory);
+
+        LOG.info("Scan completed.");
+    }
+
+    private void setArtifactAssetMarker() {
         for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
-            String assetIdChainString = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN);
-            if (StringUtils.isNotBlank(assetIdChainString)) {
-                final String[] split = assetIdChainString.split("\\||\n");
+            final String assetIdChainString = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
+
+            if (StringUtils.isNotBlank(artifact.get(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER))) continue;
+
+            if (StringUtils.isNotBlank(assetIdChainString) && !(".").equals(assetIdChainString)) {
+                final String[] split = assetIdChainString.split("\\|\n");
                 for (String assetPath : split) {
                     String assetId = fileSystemScanContext.getPathToAssetIdMap().get(assetPath);
-                    if (StringUtils.isNotBlank(assetPath)) {
-                        assetId = assetPath;
+
+                    // fallback to asset path; more as a processing failure indication
+                    if (StringUtils.isBlank(assetId)) {
+                        assetId = "AID-" + assetPath;
                     }
+
                     if (StringUtils.isNotBlank(assetId)) {
-                        artifact.set(assetId, "x");
+                        artifact.set(assetId, MARKER_CROSS);
                     }
                 }
             }
-
         }
-
-        LOG.info("Scan completed.");
     }
 
     private void runNestedComponentInspection() {
@@ -131,16 +158,16 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         final NestedJarInspector nestedJarInspector = new NestedJarInspector();
 
         for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
-            boolean inspected = StringUtils.isNotBlank(artifact.get("INSPECTED"));
+            boolean inspected = StringUtils.isNotBlank(artifact.get(ATTRIBUTE_KEY_INSPECTED));
             if (!inspected) {
 
                 // run executors here
                 nestedJarInspector.run(artifact, properties);
 
-                artifact.set("INSPECTED", "x");
+                artifact.set(ATTRIBUTE_KEY_INSPECTED, MARKER_CROSS);
 
-                if (artifact.hasClassification(DirectoryInventoryScan.HINT_SCAN)) {
-                    artifact.set(ArtifactUnwrapTask.ATTRIBUTE_KEY_UNWRAP, "x");
+                if (artifact.hasClassification(HINT_SCAN)) {
+                    artifact.set(ATTRIBUTE_KEY_UNWRAP, MARKER_CROSS);
                 }
             }
         }
@@ -159,7 +186,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         componentPatternProducer.matchAndApplyComponentPatterns(referenceInventory, fileSystemScanContext);
 
         for (Artifact artifact : inventory.getArtifacts()) {
-            if (!StringUtils.isEmpty(artifact.get(ArtifactUnwrapTask.ATTRIBUTE_KEY_UNWRAP))) {
+            if (!StringUtils.isEmpty(artifact.get(ATTRIBUTE_KEY_UNWRAP))) {
 
                 // TODO: exclude artifacts removed (though collection in component)
                 scanTasks.add(new ArtifactUnwrapTask(artifact, null));
@@ -175,10 +202,12 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         while (!values.isEmpty()) {
             try {
                 for (Future<?> future : values) {
-                    future.get();
+                    future.get(1, TimeUnit.SECONDS);
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                // nothing to do
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (TimeoutException | ExecutionException e) {
+                // do nothing
             }
             values = new HashSet<>(monitor.values());
         }
@@ -203,7 +232,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         monitor.remove(scanTask);
     }
 
-    private void inspectArtifacts(FileSystemScanContext fileSystemScanContext) {
+    private void inspectArtifacts() {
         // attempt to extract artifactId, version, groupId from contained POMs
         final Properties properties = new Properties();
         properties.put(ProjectPathParam.KEY_PROJECT_PATH, fileSystemScanContext.getBaseDir().getPath());
@@ -221,15 +250,75 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         if (assetMetaDataList != null) {
             for (AssetMetaData assetMetaData : assetMetaDataList) {
-                final String path = assetMetaData.get("File Path");
+                final String path = assetMetaData.get(ATTRIBUTE_KEY_ASSET_PATH);
                 final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
                 if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(assetId)) {
-                    // FIXME; we may need a map  to list
-                    if (fileSystemScanContext.getPathToAssetIdMap().get(path) == null) {
-                        fileSystemScanContext.getPathToAssetIdMap().put(path, assetId);
-                    }
+                    // FIXME: we may need a map to list; validated; refers to putIfAbsent
+                    fileSystemScanContext.getPathToAssetIdMap().putIfAbsent(path, assetId);
                 }
             }
+        }
+    }
+
+    public void mergeDuplicates(Inventory inventory) {
+
+        final Map<String, List<Artifact>> stringListMap = buildQualifierArtifactMap(inventory);
+
+        for (List<Artifact> list : stringListMap.values()) {
+            Artifact artifact = list.get(0);
+
+            HashSet<String> paths = new HashSet<>();
+            addPath(artifact, paths);
+            for (int i = 1; i < list.size(); i++) {
+                final Artifact a = list.get(i);
+                inventory.getArtifacts().remove(a);
+                artifact.merge(a);
+                addPath(a, paths);
+            }
+
+            if (!paths.isEmpty()) {
+                artifact.setProjects(paths);
+                artifact.set(KEY_PATH_IN_ASSET, paths.stream().sorted(String::compareToIgnoreCase).collect(Collectors.joining("|\n")));
+            }
+        }
+
+        InventoryUtils.mergeDuplicateAssets(inventory);
+
+    }
+
+    private static void addPath(Artifact a, HashSet<String> paths) {
+        String path = a.get(KEY_PATH_IN_ASSET);
+        if (StringUtils.isNotBlank(path)) {
+            paths.add(path);
+        }
+    }
+
+    public Map<String, List<Artifact>> buildQualifierArtifactMap(Inventory inventory) {
+        final Map<String, List<Artifact>> qualifierArtifactMap = new LinkedHashMap<>();
+
+        for (final Artifact artifact : inventory.getArtifacts()) {
+            final String artifactQualifier = qualifierOf(artifact);
+            final List<Artifact> artifacts = qualifierArtifactMap.computeIfAbsent(artifactQualifier, a -> new ArrayList<>());
+            artifacts.add(artifact);
+        }
+        return qualifierArtifactMap;
+    }
+
+    public String qualifierOf(Artifact artifact) {
+        if (StringUtils.isNotBlank(artifact.getChecksum())) {
+            // in case we have a checksum id and checksum are sufficient
+            return "[" +
+                    artifact.getId() + "-" +
+                    artifact.getChecksum() +
+                    "]";
+        } else {
+            // in case there is no checksum use groupId and version as discriminator
+            return "[" +
+                    artifact.getId() + "-" +
+                    artifact.getGroupId() + "-" +
+                    artifact.getVersion() +
+                    "]";
+
         }
     }
 
