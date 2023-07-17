@@ -183,7 +183,10 @@ public class ComponentPatternProducer {
     public void matchAndApplyComponentPatterns(final Inventory componentPatternSourceInventory, FileSystemScanContext fileSystemScanContext) {
         final List<MatchResult> matchedComponentPatterns =
                 matchComponentPatterns(fileSystemScanContext.getInventory(), componentPatternSourceInventory, fileSystemScanContext);
-        LOG.info("Matching component patterns resulted in {} anchor matches.", matchedComponentPatterns.size());
+
+        if (!matchedComponentPatterns.isEmpty()) {
+            LOG.info("Matching component patterns resulted in {} anchor matches.", matchedComponentPatterns.size());
+        }
 
         final ArrayList<MatchResult> matchResultsWithoutFileMatches = new ArrayList<>();
         markFilesCoveredByComponentPatterns(matchedComponentPatterns, matchResultsWithoutFileMatches, fileSystemScanContext);

@@ -57,8 +57,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     }
 
     public void execute() {
-        LOG.info("Triggering scan on {}...", fileSystemScanContext.getBaseDir().getPath());
-
         this.executor = Executors.newFixedThreadPool(4);
 
         // start with an empty assetIdChain on the root
@@ -67,7 +65,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         // trigger an initial scan from basedir
         fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), assetIdChain));
 
-        LOG.info("Awaiting triggered tasks to finish.");
         awaitTasks();
 
         // the scanner works in sequences
@@ -90,7 +87,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
             // push tasks for being processed and mark for another iteration
             if (!scanTasks.isEmpty()) {
-                LOG.info("Triggering {} outstanding tasks.", scanTasks.size());
+                LOG.info("Triggering {} outstanding tasks...", scanTasks.size());
                 scanTasks.forEach(fileSystemScanContext::push);
                 iteration = true;
             }
@@ -121,8 +118,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
 
         mergeDuplicates(inventory);
-
-        LOG.info("Scan completed.");
     }
 
     private void setArtifactAssetMarker() {

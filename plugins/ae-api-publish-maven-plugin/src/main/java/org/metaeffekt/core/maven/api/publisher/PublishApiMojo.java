@@ -173,7 +173,7 @@ public class PublishApiMojo extends AbstractProjectAwareMojo {
                         (Class<? extends Annotation>) runtimeClassLoader
                                 .loadClass(annotationClass);
 
-                this.getLog().debug("Scanning: " + scanRootDir);
+                this.getLog().debug("Scanning: [" + scanRootDir + "]");
                 List<String> includeFiles = new ArrayList<String>();
                 PublicAnnotationAnalyser analyzer =
                         new PublicAnnotationAnalyser(runtimeClassLoader, annotationClazz);

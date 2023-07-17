@@ -108,7 +108,6 @@ public class DirectoryInventoryScan {
             final PrepareScanDirectoryCommand prepareScanDirectoryCommand = new PrepareScanDirectoryCommand();
             prepareScanDirectoryCommand.prepareScanDirectory(inputDirectory, scanDirectory, scanIncludes, scanExcludes);
         }
-        LOG.info("Using prepared scan directory: [{}]", scanDirectory);
     }
 
     public Inventory performScan() {
@@ -563,7 +562,7 @@ public class DirectoryInventoryScan {
                 detectComponentPatterns(enableDetectComponentPatterns).
                 withReferenceInventory(referenceInventory);
 
-        LOG.info("Scanning directory {}...", directoryToScan.getAbsolutePath());
+        LOG.info("Scanning directory [{}]...", directoryToScan.getAbsolutePath());
 
         final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
         final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
@@ -573,7 +572,7 @@ public class DirectoryInventoryScan {
         // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
         //   patterns).
 
-        LOG.info("Scanning directory {} completed.", directoryToScan.getAbsolutePath());
+        LOG.info("Scanning directory [{}] completed.", directoryToScan.getAbsolutePath());
 
         return fileSystemScan.getInventory();
     }
