@@ -301,6 +301,9 @@ public class JarInspector extends AbstractJarInspector {
 
                     collector.merge(candidate);
 
+                    // this condition is specific to the environment; the embedded path may not be known to the artifact
+                    if (embeddedFileCandidate == null || embeddedFileCollector == null) continue;
+
                     // pom.xml wins over all
                     if (embeddedFileCandidate.getName().endsWith("pom.xml")) {
                         collector.set(ATTRIBUTE_KEY_EMBEDDED_PATH, embeddedFileCandidate.getPath());
@@ -337,7 +340,11 @@ public class JarInspector extends AbstractJarInspector {
     }
 
     private static File getEmbeddedPath(Artifact a) {
-        return new File(a.get(ATTRIBUTE_KEY_EMBEDDED_PATH));
+        final String embeddedPath = a.get(ATTRIBUTE_KEY_EMBEDDED_PATH);
+        if (StringUtils.isNotBlank(embeddedPath)) {
+            return new File(embeddedPath);
+        }
+        return null;
     }
 
     /**
