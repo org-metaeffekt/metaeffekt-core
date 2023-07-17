@@ -198,18 +198,24 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
 
     public void awaitTasks() {
-        Collection<Future<?>> values = new HashSet<>(monitor.values());
-        while (!values.isEmpty()) {
-            try {
-                for (Future<?> future : values) {
-                    future.get(1, TimeUnit.SECONDS);
+        Collection<Future<?>> futures = new HashSet<>(monitor.values());
+        while (!futures.isEmpty()) {
+            boolean allDone = true;
+            for (Future<?> future : futures) {
+                if (!future.isDone() && !future.isCancelled()) {
+                    allDone = false;
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (TimeoutException | ExecutionException e) {
-                // do nothing
             }
-            values = new HashSet<>(monitor.values());
+            if (!allDone) {
+                futures = new HashSet<>(monitor.values());
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            } else {
+                break;
+            }
         }
     }
 

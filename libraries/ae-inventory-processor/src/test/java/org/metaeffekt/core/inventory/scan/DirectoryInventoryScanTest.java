@@ -165,9 +165,9 @@ public class DirectoryInventoryScanTest {
 
     @Ignore
     @Test
-    public void testScanExtractedFiles_External2() throws IOException {
+    public void testScanExtractedFiles_ExternalNG() throws IOException {
 
-        File scanDir = new File("<dir>>");
+        File scanDir = new File("<dir>");
         File referenceInventoryFile = new File("<reference-inventory");
 
         String[] scanIncludes = new String[] {"**/*"};
