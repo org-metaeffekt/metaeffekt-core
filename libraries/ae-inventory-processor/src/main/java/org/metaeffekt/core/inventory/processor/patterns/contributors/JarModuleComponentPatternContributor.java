@@ -25,40 +25,43 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Collections;
+import java.util.List;
 
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file, Artifact artifact) {
+    public boolean applies(File contextBaseDir, String file) {
         file = file.toLowerCase();
         return (file.startsWith("meta-inf/maven/") && file.endsWith("/pom.xml"));
     }
 
     @Override
-    public void contribute(File contextBaseDir, String anchorFilePath, Artifact artifact, ComponentPatternData componentPatternData) {
+    public List<ComponentPatternData> contribute(File contextBaseDir,
+                 String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
         JarInspector jarInspector = new JarInspector();
 
-        File referenceFile = new File(contextBaseDir, anchorFilePath);
+        File referenceFile = new File(contextBaseDir, anchorRelPath);
         File mavenDir = referenceFile.getParentFile();
 
         final File pomXmlFile = FileUtils.findSingleFile(mavenDir, "pom.xml");
         final File pomPropertiesFile = FileUtils.findSingleFile(mavenDir, "pom.properties");
 
+        final Artifact artifact = new Artifact();
+
         Artifact fromXml = null;
         if (pomXmlFile != null) {
             try (InputStream in = Files.newInputStream(pomXmlFile.toPath())) {
-                fromXml = jarInspector.getArtifactFromPomXml(artifact, in, anchorFilePath);
+                fromXml = jarInspector.getArtifactFromPomXml(artifact, in, anchorRelPath);
             } catch (IOException e) {
-                return;
             }
         }
 
         Artifact fromProperties = null;
         if (pomPropertiesFile != null) {
             try (InputStream in = Files.newInputStream(pomPropertiesFile.toPath())) {
-                fromProperties = jarInspector.getArtifactFromPomProperties(artifact, in, anchorFilePath);
+                fromProperties = jarInspector.getArtifactFromPomProperties(artifact, in, anchorRelPath);
             } catch (IOException e) {
-                return;
             }
         }
 
@@ -71,9 +74,16 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         String id = artifact.getArtifactId() + "-" + artifact.getVersion() + ".jar";
         artifact.setId(id);
 
-        final File anchorFile = new File(contextBaseDir, anchorFilePath);
-
         String includePattern = "**/*";
+
+        final File anchorFile = new File(contextBaseDir, anchorRelPath);
+        final File anchorParentFile = anchorFile.getParentFile();
+
+        // construct component pattern
+        final ComponentPatternData componentPatternData = new ComponentPatternData();
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
+                FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
@@ -89,6 +99,8 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
 
         // contribute groupid (consider also other attributes)
         componentPatternData.set("Group Id", artifact.getGroupId());
+
+        return Collections.singletonList(componentPatternData);
     }
 
     private void mergeArtifact(Artifact artifact, Artifact fromXml) {

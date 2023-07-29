@@ -167,8 +167,9 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
 
-        File scanDir = new File("<dir>");
-        File referenceInventoryFile = new File("<reference-inventory");
+        final File scanDir = new File("<path-to-dir-to-scan>");
+
+        final File referenceInventoryFile = new File("/Users/kklein/workspace/metaeffekt-core/libraries/ae-inventory-processor/src/test/resources/test-inventory-01");
 
         String[] scanIncludes = new String[] {"**/*"};
         String[] scanExcludes = new String[] {
@@ -200,8 +201,6 @@ public class DirectoryInventoryScanTest {
         scan.setEnableDetectComponentPatterns(true);
 
         final Inventory inventory = scan.scanDirectoryNG(scanDir);
-
-        // FIXME: next step is to apply the component patterns
 
         new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
     }

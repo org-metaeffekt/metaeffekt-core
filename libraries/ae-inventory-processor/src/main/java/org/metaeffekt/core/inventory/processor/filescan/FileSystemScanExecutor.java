@@ -150,7 +150,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         final NestedJarInspector nestedJarInspector = new NestedJarInspector();
 
-        for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
+        for (Artifact artifact : new ArrayList<>(fileSystemScanContext.getInventory().getArtifacts())) {
             boolean inspected = StringUtils.isNotBlank(artifact.get(ATTRIBUTE_KEY_INSPECTED));
             if (!inspected) {
 
@@ -195,17 +195,17 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         while (!futures.isEmpty()) {
             boolean allDone = true;
             for (Future<?> future : futures) {
-                if (!future.isDone() && !future.isCancelled()) {
-                    allDone = false;
-                }
+                if (future.isCancelled()) continue;
+                if (future.isDone()) continue;
+                allDone = false;
             }
             if (!allDone) {
-                futures = new HashSet<>(monitor.values());
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
+                futures = new HashSet<>(monitor.values());
             } else {
                 break;
             }

@@ -31,7 +31,7 @@ import java.io.IOException;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ISSUE;
 
-public class ContainerAssetInventoryProcessor {
+public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContainerAssetInventoryProcessor.class);
 
@@ -39,7 +39,6 @@ public class ContainerAssetInventoryProcessor {
 
     private File analysisDir;
     private File containerInspectionFile;
-    private File inventoryFile;
 
     private String repo;
     private String tag;
@@ -49,11 +48,6 @@ public class ContainerAssetInventoryProcessor {
 
     public ContainerAssetInventoryProcessor basedOn(File containerInspectionFile) {
         this.containerInspectionFile = containerInspectionFile;
-        return this;
-    }
-
-    public ContainerAssetInventoryProcessor augmenting(File inventoryFile) {
-        this.inventoryFile = inventoryFile;
         return this;
     }
 
@@ -77,9 +71,14 @@ public class ContainerAssetInventoryProcessor {
         return this;
     }
 
+    public ContainerAssetInventoryProcessor augmenting(File inventoryFile) {
+        super.augmenting(inventoryFile);
+        return this;
+    }
+
     public void process() throws IOException {
         // load the inventory
-        final Inventory inventory = new InventoryReader().readInventory(inventoryFile);
+        final Inventory inventory = new InventoryReader().readInventory(getInventoryFile());
 
         final AssetMetaData assetMetadata = createAssetMetadata(inventory);
         final String assetId = assetMetadata.get(AssetMetaData.Attribute.ASSET_ID);
@@ -94,7 +93,7 @@ public class ContainerAssetInventoryProcessor {
         }
 
         // write the inventory
-        new InventoryWriter().writeInventory(inventory, inventoryFile);
+        new InventoryWriter().writeInventory(inventory, getInventoryFile());
     }
 
     private AssetMetaData createAssetMetadata(Inventory inventory) {

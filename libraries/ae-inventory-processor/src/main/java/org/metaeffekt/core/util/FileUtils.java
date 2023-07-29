@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -177,11 +178,24 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         if (normalizedPath == null) return false;
 
         if (!normalizedPattern.contains(",")) {
-            return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
+            final String trimmedPattern = normalizedPattern.trim();
+            return ANT_PATH_MATCHER.match(trimmedPattern, normalizedPath);
         }
         final String[] patterns = normalizedPattern.split(",");
         for (final String pattern : patterns) {
-            if (ANT_PATH_MATCHER.match(pattern.trim(), normalizedPath)) {
+            final String trimmedPattern = pattern.trim();
+            if (ANT_PATH_MATCHER.match(trimmedPattern, normalizedPath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean matches(final Set<String> normalizedPatternSet, final String normalizedPath) {
+        if (normalizedPath == null) return false;
+        for (final String pattern : normalizedPatternSet) {
+            final String trimmedPattern = pattern.trim();
+            if (ANT_PATH_MATCHER.match(trimmedPattern, normalizedPath)) {
                 return true;
             }
         }

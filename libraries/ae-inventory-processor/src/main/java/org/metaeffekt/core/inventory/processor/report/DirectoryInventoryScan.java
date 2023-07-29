@@ -153,6 +153,7 @@ public class DirectoryInventoryScan {
 
             // also take over the type attribute
             derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
+            derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Artifact.Attribute.URL.getKey()));
             return derivedArtifact;
         }
     }

@@ -13,21 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.patterns.contributors;
-
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+package org.metaeffekt.core.maven.inventory.extractor;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.List;
 
-public abstract class ComponentPatternContributor {
+public class BaseInventoryProcessor {
 
-    public abstract boolean applies(File contextBaseDir, String file);
+    private File inventoryFile;
 
-    public List<ComponentPatternData> contribute(File contextBaseDir, String anchorFilePath, String normalizedPath, String checksum) {
-        return Collections.emptyList();
+    private File targetInventoryFile;
+
+    public BaseInventoryProcessor augmenting(File inventoryFile) {
+        this.inventoryFile = inventoryFile;
+        return this;
+    }
+
+    public File getInventoryFile() {
+        return inventoryFile;
+    }
+
+    public BaseInventoryProcessor writing(File targetInventoryFile) {
+        this.targetInventoryFile = targetInventoryFile;
+        return this;
+    }
+
+    public File getTargetInventoryFile() {
+        return targetInventoryFile;
     }
 
 }

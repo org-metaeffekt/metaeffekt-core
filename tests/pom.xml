@@ -16,6 +16,7 @@
         <module>ae-example-module</module>
         <module>ae-container-validation</module>
         <module>ae-merge-inventory-test</module>
+        <module>ae-attach-asset-metadata-test</module>
     </modules>
 
     <build>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>ae-attach-asset-metadata-test</artifactId>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-core-plugin-management-pom</artifactId>
+        <version>HEAD-SNAPSHOT</version>
+        <relativePath>../../poms/ae-core-plugin-management-pom</relativePath>
+    </parent>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-inventory-maven-plugin</artifactId>
+                <version>${project.version}</version>
+
+                <executions>
+                    <execution>
+                        <!-- copies the source inventory in the target inventory -->
+                        <id>attach</id>
+                        <goals>
+                            <goal>attach-asset-metadata</goal>
+                        </goals>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <inventoryFile>${project.basedir}/src/test/resources/artifact-inventory-001.xls</inventoryFile>
+                            <targetInventoryFile>${project.build.directory}/artifact-inventory-001_asset-metadata.xls</targetInventoryFile>
+                            <assetId>AID-0815</assetId>
+                            <attributes>
+                                <Some_Key>value</Some_Key>
+                                <Other__key>value</Other__key>
+                                <Name>Display Name</Name>
+                                <Version>12.0.3</Version>
+                                <SBOM_Path>root/folder/x.sbom</SBOM_Path>
+                            </attributes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

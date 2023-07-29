@@ -40,4 +40,16 @@ public class FileUtilsTest {
         // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
     }
 
+    @Test
+    public void match() {
+
+        String pattern = "**/md_to_pdf/**/*,/**/cache/**/md_to_pdf/**/*,/**/cache/**/md_to_pdf.*,**/md-to-pdf/**/*,**/md-to-pdf-*/**/*,/**/cache/**/md-to-pdf/**/*,/**/cache/**/md-to-pdf-*/**/*,/**/cache/**/md-to-pdf.*,**/md_to_pdf.gemspec";
+        String path = "3.2.0/cache/bundler/git/md-to-pdf-db8a51cb2d2f39298e3259fa5c06fe96d67fec0b/objects/d4/4d0b959ab06938fe21bcb1150f5c2c2c05308a";
+
+        final boolean matches = FileUtils.matches(pattern, path);
+
+        System.out.println(matches);
+
+    }
+
 }

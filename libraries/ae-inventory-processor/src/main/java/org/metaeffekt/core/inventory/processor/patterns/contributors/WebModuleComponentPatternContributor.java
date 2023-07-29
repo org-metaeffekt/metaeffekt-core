@@ -33,15 +33,18 @@ import java.util.stream.Collectors;
 public class WebModuleComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file, Artifact artifact) {
+    public boolean applies(File contextBaseDir, String file) {
         return isWebModule(file);
     }
 
     @Override
-    public void contribute(File contextBaseDir, String anchorFilePath, Artifact artifact, ComponentPatternData componentPatternData) {
-        final File anchorFile = new File(contextBaseDir, anchorFilePath);
+    public List<ComponentPatternData> contribute(File contextBaseDir,
+                                                 String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+        final File anchorFile = new File(contextBaseDir, anchorRelPath);
         final File anchorParentDir = anchorFile.getParentFile();
         final File parentDir = anchorParentDir.getParentFile();
+
+        Artifact artifact = new Artifact();
 
         // attempt reading web modules metadata
         try {
@@ -67,6 +70,12 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             // it was an attempts
         }
 
+        // construct component pattern
+        final ComponentPatternData componentPatternData = new ComponentPatternData();
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
+                FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
@@ -75,6 +84,8 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDir.getName() + "/**/*");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+
+        return Collections.singletonList(componentPatternData);
     }
 
     private Artifact parseWebModule(File baseDir, String file, final Map<String, WebModule> pathModuleMap) throws IOException {

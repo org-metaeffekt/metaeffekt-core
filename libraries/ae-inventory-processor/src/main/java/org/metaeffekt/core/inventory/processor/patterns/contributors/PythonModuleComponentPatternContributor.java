@@ -24,26 +24,29 @@ import org.metaeffekt.core.util.ParsingUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PythonModuleComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file, Artifact artifact) {
+    public boolean applies(File contextBaseDir, String file) {
         return file.endsWith(".dist-info/METADATA")
                 || file.endsWith(".dist-info/RECORD")
                 || file.endsWith(".dist-info/WHEEL");
     }
 
     @Override
-    public void contribute(File contextBaseDir, String anchorFilePath, Artifact artifact, ComponentPatternData componentPatternData) {
-        final File anchorFile = new File(contextBaseDir, anchorFilePath);
+    public List<ComponentPatternData> contribute(File contextBaseDir,
+                     String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+        final File anchorFile = new File(contextBaseDir, anchorRelPath);
         final File anchorParentDir = anchorFile.getParentFile();
 
-        String includePattern = anchorFilePath.replace("/" + anchorFile.getName(), "") + "/**/*";
+        String includePattern = anchorRelPath.replace("/" + anchorFile.getName(), "") + "/**/*";
 
-        artifact.setId(anchorFilePath.replace(".dist-info/"+ anchorFile.getName(), ""));
+        Artifact artifact = new Artifact();
+        artifact.setId(anchorRelPath.replace(".dist-info/"+ anchorFile.getName(), ""));
 
         if (anchorFile.getName().equals("METADATA") && anchorFile.exists()) {
             try {
@@ -94,11 +97,19 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
             includePattern += "," + artifact.getComponent() + "/**/*";
         }
 
+        // construct component pattern
+        final ComponentPatternData componentPatternData = new ComponentPatternData();
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
+                FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, anchorParentDir.getName() + "/**/node_modules/**/*" + "," + anchorParentDir.getName() + "/**/bower_components/**/*");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
+
+        return Collections.singletonList(componentPatternData);
     }
 }

@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,17 +39,31 @@ public class ComponentPatternProducer {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
-    public static final String[] INCLUDE_PATTERNS_ORDERED_BY_PRIORITY = new String[]{
+    public static final String[] ANCHOR_INCLUDE_PATTERNS_BY_PRIORITY = new String[] {
+
+            // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into
+            // context.
+
+            // ruby; order matters; start from the ones you regard more appropriate
+            "specifications/*.gemspec",
+            "*/*.gemspec",
+
             // web modules
             // prioritize bower components; in general, better metadata first
             "bower_components/**/.bower.json",
             "bower_components/**/bower.json",
             "node_modules/**/package-lock.json",
             "node_modules/**/package.json",
+
+            // revise (no parent)
             "package.json",
             ".bower.json",
             "bower.json",
             "composer.json",
+            "composer.lock",
+
+            // nextcloud appinfo
+            "appinfo/info.xml",
 
             // container marker
             "json",
@@ -66,15 +81,13 @@ public class ComponentPatternProducer {
             "*.dist-info/METADATA",
             "*.dist-info/RECORD",
             "*.dist-info/WHEEL",
-            "__init__.py",
-            "__about__.py",
+            "*/__init__.py",
+            "*/__about__.py",
     };
+
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
 
     public void extractComponentPatterns(File baseDir, Inventory targetInventory) {
-
-        final Set<String> uniqueFolder = new HashSet<>();
-        final Map<String, String> uniqueFile = new HashMap<>();
 
         // collect all folders
         final String[] folders = FileUtils.scanDirectoryForFolders(baseDir, "**/*");
@@ -84,86 +97,65 @@ public class ComponentPatternProducer {
         foldersByLength.sort(String.CASE_INSENSITIVE_ORDER);
         foldersByLength.sort(Comparator.comparingInt(String::length));
 
-        // configure contributors
+        // configure contributors; please note that currently the contributors consume anchors (no anchor can be used twice)
         final List<ComponentPatternContributor> componentPatternContributors = new ArrayList<>();
+        componentPatternContributors.add(new GemSpecContributor());
         componentPatternContributors.add(new ContainerComponentPatternContributor());
         componentPatternContributors.add(new WebModuleComponentPatternContributor());
         componentPatternContributors.add(new UnwrappedEclipseBundleContributor());
         componentPatternContributors.add(new PythonModuleComponentPatternContributor());
         componentPatternContributors.add(new JarModuleComponentPatternContributor());
-        componentPatternContributors.add(new DefaultComponentPatternContributor());
+        componentPatternContributors.add(new NextcloudAppInfoContributor());
+        componentPatternContributors.add(new ComposerLockContributor());
 
-        Set<String> qualifierSet = new HashSet<>();
+        // record component pattern qualifiers for deduplication purposes
+        final Set<String> deduplicationQualifierSet = new HashSet<>();
 
         // for each include pattern (by priority) try to identify a component pattern
-        for (String includePattern : INCLUDE_PATTERNS_ORDERED_BY_PRIORITY) {
+        for (String includePattern : ANCHOR_INCLUDE_PATTERNS_BY_PRIORITY) {
 
             // process folders (ordered by path length)
             for (String folder : foldersByLength) {
 
-                File contextBaseDir = new File(baseDir, folder);
-
-                // FIXME: shouldn't this be an exact match rather that a subtree match; is this an optimization?
-                // skip subtrees already covered
-                boolean skip = false;
-                for (String subtree : uniqueFolder) {
-                    if (folder.startsWith(subtree + "/")) {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (skip) {
-                    continue;
-                }
+                final File contextBaseDir = new File(baseDir, folder);
 
                 // scan inside folder using the current include pattern
-                String[] files = FileUtils.scanForFiles(contextBaseDir, includePattern, "--none--");
+                final String[] files = FileUtils.scanForFiles(contextBaseDir, includePattern, "--none--");
 
                 for (String file : files) {
                     final File anchorFile = new File(contextBaseDir, file);
-                    final File anchorParentDir = anchorFile.getParentFile();
-
-                    // skip if there is already a component pattern available
-                    if (uniqueFolder.contains(anchorParentDir.getAbsolutePath())) {
-                        continue;
-                    }
 
                     final String checksum = FileUtils.computeChecksum(anchorFile);
-                    uniqueFile.put(checksum, new File(file).getAbsolutePath());
-                    uniqueFolder.add(anchorParentDir.getAbsolutePath());
-
-                    final Artifact artifact = new Artifact();
-                    artifact.setId(anchorParentDir.getName());
-                    artifact.setChecksum(checksum);
-
-                    // construct component pattern
-                    final ComponentPatternData componentPatternData = new ComponentPatternData();
-                    componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
-                            FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
-                    componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+                    final String absolutePath = FileUtils.normalizePathToLinux(file);
 
                     // apply contributors
                     for (ComponentPatternContributor cpc : componentPatternContributors) {
-                        if (cpc.applies(contextBaseDir, file, artifact)) {
-                            cpc.contribute(contextBaseDir, file, artifact, componentPatternData);
+                        if (cpc.applies(contextBaseDir, file)) {
+                            final List<ComponentPatternData> componentPatternDataList =
+                                    cpc.contribute(contextBaseDir, file, absolutePath, checksum);
+
+                            if (!componentPatternDataList.isEmpty()) {
+                                for (ComponentPatternData cpd : componentPatternDataList) {
+                                    LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
+
+                                    // FIXME: defer to 2nd pass
+                                    final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
+                                    if ("unspecific".equalsIgnoreCase(version)) {
+                                        continue;
+                                    }
+
+                                    final String qualifier = cpd.deriveQualifier();
+                                    if (!deduplicationQualifierSet.contains(qualifier)) {
+                                        targetInventory.getComponentPatternData().add(cpd);
+                                        deduplicationQualifierSet.add(qualifier);
+                                    }
+
+                                }
+                            }
 
                             // the first contributor wins
                             break;
                         }
-                    }
-
-                    LOG.info("Identified component pattern: " + componentPatternData.createCompareStringRepresentation());
-
-                    // FIXME: defer to 2nd pass
-                    final String version = componentPatternData.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
-                    if ("unspecific".equalsIgnoreCase(version)) {
-                        continue;
-                    }
-
-                    final String qualifier = componentPatternData.deriveQualifier();
-                    if (!qualifierSet.contains(qualifier)) {
-                        targetInventory.getComponentPatternData().add(componentPatternData);
-                        qualifierSet.add(qualifier);
                     }
                 }
             }
@@ -223,38 +215,73 @@ public class ComponentPatternProducer {
         }
     }
 
-    private void markFilesCoveredByComponentPatterns(List<MatchResult> matchedComponentDataOnAnchor, List<MatchResult> matchResultsWithoutFileMatches, FileSystemScanContext fileSystemScanContext) {
+    private void markFilesCoveredByComponentPatterns(List<MatchResult> matchedComponentDataOnAnchor,
+                     List<MatchResult> matchResultsWithoutFileMatches, FileSystemScanContext fileSystemScanContext) {
 
-        // remove the matched files covered by the matched components
+        // remove the matched files covered by the matched component patterns
         for (MatchResult matchResult : matchedComponentDataOnAnchor) {
             final ComponentPatternData cpd = matchResult.componentPatternData;
 
             final String baseDir = normalizePathToLinux(matchResult.baseDir.getAbsolutePath());
             final String relativePathToComponentBaseDir = asRelativePath(fileSystemScanContext.getBaseDir().getPath(), baseDir);
 
-            // build patterns to match (using scanBaseDir relative paths); this should be done during parsing?!
-            final String normalizedIncludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
-            final String normalizedExcludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
+            // build pattern sets to match (using scanBaseDir relative paths)
+            final NormalizedPatternSet normalizedIncludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
+            final NormalizedPatternSet normalizedExcludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
 
             final Inventory inventory = fileSystemScanContext.getInventory();
             synchronized (inventory) {
                 boolean matched = false;
                 for (final Artifact artifact : inventory.getArtifacts()) {
-                    String relativePathFromBaseDir = getRelativePathFromBaseDir(artifact);
+                    final String relativePathFromBaseDir = getRelativePathFromBaseDir(artifact);
 
-                    // FIXME: revise path matching; consider abstraction
+                    final String absolutePathFromBaseDir = "/" + relativePathFromBaseDir;
+
+                    // match absolute first (anchor matched, so we have to check anyway)
+                    if (matches(normalizedExcludePattern.absolutePatterns, absolutePathFromBaseDir)) {
+                        continue;
+                    }
+
+                    if (matches(normalizedIncludePattern.absolutePatterns, absolutePathFromBaseDir)) {
+                        // marked matched
+                        artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
+                        artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+
+                        LOG.info("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
+                                cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
+                                cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
+                                relativePathFromBaseDir);
+
+                        matched = true;
+                        continue;
+                    }
+
+                    // NOTE: absolute matching did not conclude anything yet; match relative paths
+
+                    // check whether the artifact is at all in the subtree of the match (relative to component base dir)
                     if (pathBeginsWith(relativePathFromBaseDir, relativePathToComponentBaseDir)) {
+
+                        // NOTE: within this block, we know that we are within the subtree of the anchor (path)
+
+                        // compute the relative path within subtree
+                        String relativePathFromComponentBaseDir = relativePathFromBaseDir;
                         if (!relativePathToComponentBaseDir.equalsIgnoreCase(".")) {
-                            relativePathFromBaseDir = relativePathFromBaseDir.substring(relativePathToComponentBaseDir.length() + 1);
+                            // cut off path from component base dir
+                            relativePathFromComponentBaseDir = relativePathFromComponentBaseDir.
+                                    substring(relativePathToComponentBaseDir.length() + 1);
                         }
-                        if (matches(normalizedIncludePattern, relativePathFromBaseDir)) {
-                            if (StringUtils.isEmpty(normalizedExcludePattern) || !matches(normalizedExcludePattern, relativePathFromBaseDir)) {
+
+                        // match patterns (relative only)
+                        if (!matches(normalizedExcludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
+                            if (matches(normalizedIncludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
+                                artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
+                                artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+
                                 LOG.info("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
                                         cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
                                         cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
                                         relativePathFromBaseDir);
-                                artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
-                                artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+
                                 matched = true;
                             }
                         }
@@ -288,14 +315,35 @@ public class ComponentPatternProducer {
         }
     }
 
-    private String normalizePattern(String pattern) {
-        if (pattern == null) return null;
+    private static class NormalizedPatternSet {
+        private Set<String> relativePatterns = new LinkedHashSet<>();
+        private Set<String> absolutePatterns = new LinkedHashSet<>();
+    }
 
-        String[] patterns = pattern.split(",");
-        return Arrays.stream(patterns)
-                .map(String::trim)
-                .map(FileUtils::normalizePathToLinux)
-                .collect(Collectors.joining(","));
+    /**
+     * Splits the comma-separated patterns into individual patterns and sorts the patterns into relative and absolute
+     * pattern. The {@link NormalizedPatternSet} uses LinkedHashSets to unify the patterns, while preserving the order.
+     *
+     * @param commaSeparatedPatterns
+     * @return
+     */
+    private NormalizedPatternSet normalizePattern(String commaSeparatedPatterns) {
+        final NormalizedPatternSet normalizedPatternSet = new NormalizedPatternSet();
+        if (commaSeparatedPatterns == null) return normalizedPatternSet;
+        final String[] patterns = commaSeparatedPatterns.split(",");
+
+        for (String pattern : patterns) {
+            pattern = pattern.trim();
+            pattern = FileUtils.normalizePathToLinux(pattern);
+
+            if (pattern.startsWith("/")) {
+                normalizedPatternSet.absolutePatterns.add(pattern);
+            } else {
+                normalizedPatternSet.relativePatterns.add(pattern);
+            }
+        }
+
+        return normalizedPatternSet;
     }
 
     /**

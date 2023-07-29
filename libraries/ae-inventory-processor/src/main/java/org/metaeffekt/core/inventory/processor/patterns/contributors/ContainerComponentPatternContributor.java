@@ -27,47 +27,53 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ContainerComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file, Artifact artifact) {
+    public boolean applies(File contextBaseDir, String file) {
         return isContainerMetadata(file);
     }
 
     @Override
-    public void contribute(File contextBaseDir, String anchorFilePath, Artifact artifact, ComponentPatternData componentPatternData) {
-        final File anchorFile = new File(contextBaseDir, anchorFilePath);
-        final File anchorParentDir = anchorFile.getParentFile();
+    public List<ComponentPatternData> contribute(File contextBaseDir,
+                 String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+
+        final File anchorFile = new File(contextBaseDir, anchorRelPath);
+        final File anchorParentFile = anchorFile.getParentFile();
+
+        // construct component pattern
+        final ComponentPatternData componentPatternData = new ComponentPatternData();
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
+                FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
         try {
             JSONObject json = new JSONObject(FileUtils.readFileToString(anchorFile, FileUtils.ENCODING_UTF_8));
 
-            final String id = json.getString("id");
+            // FIXME: need to check whether this is really a container
 
-            // add missing artifact information; if required
-            if (StringUtils.isEmpty(artifact.getVersion())) {
-                artifact.setVersion(id);
+            final String id = json.optString("id");
+
+            if (id != null) {
+
+                componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/" + anchorParentFile.getName() + "/**/*");
+
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, id);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, id);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, "layer-" + id);
+
+                componentPatternData.set(Constants.KEY_TYPE, "container");
             }
-            if (StringUtils.isEmpty(artifact.getComponent())) {
-                artifact.setComponent(id);
-            }
 
-            componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/" + anchorParentDir.getName() + "/**/*");
-
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, id);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, id);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, "layer-" + id);
-
-            componentPatternData.set(Constants.KEY_TYPE, "container");
+            return Collections.singletonList(componentPatternData);
 
         } catch (IOException e) {
         }
+
+        return Collections.emptyList();
 
     }
 
