@@ -247,10 +247,12 @@ public class ComponentPatternProducer {
                         artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
                         artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
-                        LOG.info("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
                                 cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
                                 cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
                                 relativePathFromBaseDir);
+                        }
 
                         matched = true;
                         continue;
@@ -277,10 +279,12 @@ public class ComponentPatternProducer {
                                 artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
                                 artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
-                                LOG.info("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
+                                if (LOG.isDebugEnabled()) {
+                                    LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
                                         cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
                                         cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
                                         relativePathFromBaseDir);
+                                }
 
                                 matched = true;
                             }

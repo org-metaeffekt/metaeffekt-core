@@ -19,12 +19,11 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.w3c.dom.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +31,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GemSpecContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GemSpecContributor.class);
 
     public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem";
 
@@ -51,18 +52,17 @@ public class GemSpecContributor extends ComponentPatternContributor {
             String content = FileUtils.readFileToString(anchorFile, FileUtils.ENCODING_UTF_8);
 
             final String anchorFileName = anchorFile.getName();
-            String id = anchorFileName.replace(".gemspec", "");
-            String anchorFileNameNoSuffix = anchorFileName.replace(".gemspec", "");
+            final String id = anchorFileName.replace(".gemspec", "");
+            final String anchorFileNameNoSuffix = anchorFileName.replace(".gemspec", "");
 
-            System.out.println(anchorFile.getAbsolutePath());
-            String parentDirName = anchorFile.getParentFile().getName();
+            final String parentDirName = anchorFile.getParentFile().getName();
 
             // anchor must match at least a qualified semantic versioning string to be able to extract a version
             final Pattern versionPattern = Pattern.compile("-[0-9]+\\.[0-9]+\\.[0-9]+");
             final Matcher matcher = versionPattern.matcher(anchorFileNameNoSuffix);
             int anchorNameSeparatorIndex = matcher.find() ? matcher.start() : -1;
             final String nameDerivedFromFile;
-            String versionDerivedFromFile;
+            final String versionDerivedFromFile;
             if (anchorNameSeparatorIndex != -1) {
                 nameDerivedFromFile = anchorFileNameNoSuffix.substring(0, anchorNameSeparatorIndex);
                 versionDerivedFromFile = anchorFileNameNoSuffix.substring(anchorNameSeparatorIndex + 1);
@@ -101,6 +101,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
             final StringBuilder sb = new StringBuilder();
 
             if (versionDerivedFromFile == null && versionDerivedFromFolder == null) {
+                LOG.warn("No version extracted from Gemspec: " + anchorAbsPath);
                 System.out.println(anchorFile.getAbsolutePath());
                 throw new IllegalStateException();
             }
