@@ -29,7 +29,6 @@
         <tbody>
 #foreach ($asset in $assets)
 #set($counts = $assessmentReportAdapter.countVulnerabilities($asset, $useModifiedSeverity))
-$counts
             <row  align="center">
                 <entry align="center">$report.xmlEscapeString($asset.get("Name"))</entry>
                 <entry>$counts.criticalCounter</entry>
