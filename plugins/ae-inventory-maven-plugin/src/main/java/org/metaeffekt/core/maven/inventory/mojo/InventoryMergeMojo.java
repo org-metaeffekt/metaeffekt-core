@@ -8,43 +8,19 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Merges inventories. Reference inventories are usually the target inventory. Otherwise this Mojo is intended to
  * be applied to inventories from the extraction process, only.
  */
 @Mojo(name = "merge-inventories", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
-
-    /**
-     * The source inventory.
-     */
-    @Parameter(required = false)
-    protected File sourceInventory;
-
-    /**
-     * Alternatively to the sourceInventory parameter a directory can be specified. The inventory is scanned for files
-     * using sourceInventoryIncludes and sourceInventoryExcludes.
-     */
-    @Parameter(required = false)
-    protected File sourceInventoryBaseDir;
-
-    /**
-     * Includes based on sourceInventoryBaseDir.
-     */
-    @Parameter(defaultValue = "**/*.xls")
-    protected String sourceInventoryIncludes;
-
-    /**
-     * Excludes based on sourceInventoryBaseDir.
-     */
-    @Parameter
-    protected String sourceInventoryExcludes;
+public class InventoryMergeMojo extends AbstractMultipleInputInventoriesMojo {
 
     /**
      * Boolean indicating whether to include the default artifact excluded attributes.
@@ -83,27 +59,7 @@ public class InventoryMergeMojo extends AbstractProjectAwareConfiguredMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
 
         try {
-            final List<File> sourceInventories = new ArrayList<>();
-
-            if (sourceInventory != null) {
-                if (sourceInventory.exists() && sourceInventory.isFile()) {
-                    sourceInventories.add(sourceInventory);
-                } else {
-                    throw new MojoExecutionException("The parameter [sourceInventory] is set, but the file does not exist: " +
-                            sourceInventory.getAbsolutePath());
-                }
-            }
-
-            if (sourceInventoryBaseDir != null) {
-                if (sourceInventoryBaseDir.exists() && sourceInventoryBaseDir.isDirectory()) {
-                    final String[] sourceFiles = FileUtils.scanForFiles(sourceInventoryBaseDir,
-                            sourceInventoryIncludes, sourceInventoryExcludes);
-                    Arrays.stream(sourceFiles).forEach(f -> sourceInventories.add(new File(sourceInventoryBaseDir, f)));
-                } else {
-                    throw new MojoExecutionException("The parameter [sourceInventoryBaseDir] parameter is set, but the directory does not exist: " +
-                            sourceInventoryBaseDir.getAbsolutePath());
-                }
-            }
+            final List<File> sourceInventories = super.collectSourceInventories();
 
             // if the target does not exist we initiate a new inventory
             final Inventory targetInventory = this.targetInventory.exists() ?

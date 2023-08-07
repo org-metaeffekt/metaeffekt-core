@@ -35,7 +35,11 @@ public class AssetMetaData extends AbstractModelBase {
      * Core attributes to support license data.
      */
     public enum Attribute implements AbstractModelBase.Attribute {
-        ASSET_ID("Asset Id");
+        ASSET_ID("Asset Id"),
+        NAME("Name"),
+        VERSION("Version"),
+        ASSESSMENT("Assessment"),
+        ;
 
         private String key;
 
