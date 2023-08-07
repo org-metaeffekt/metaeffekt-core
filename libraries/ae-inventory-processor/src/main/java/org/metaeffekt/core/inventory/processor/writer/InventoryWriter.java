@@ -24,7 +24,7 @@ import java.io.IOException;
 
 public class InventoryWriter extends AbstractXlsInventoryWriter {
 
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    private final static Logger LOG = LoggerFactory.getLogger(InventoryWriter.class);
 
     public static final String VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX = "Assessment-";
 
