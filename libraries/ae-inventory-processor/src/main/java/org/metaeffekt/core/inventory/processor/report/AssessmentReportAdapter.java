@@ -69,7 +69,7 @@ public class AssessmentReportAdapter {
                         break;
                 }
 
-                boolean isAssessed = vulnerabilityMetaData.isStatus(STATUS_VALUE_APPLICABLE) ||
+                final boolean isAssessed = vulnerabilityMetaData.isStatus(STATUS_VALUE_APPLICABLE) ||
                         vulnerabilityMetaData.isStatus(STATUS_VALUE_NOTAPPLICABLE) ||
                         vulnerabilityMetaData.isStatus(STATUS_VALUE_VOID);
 

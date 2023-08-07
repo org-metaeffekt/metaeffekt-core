@@ -36,6 +36,8 @@ public class AssetMetaData extends AbstractModelBase {
      */
     public enum Attribute implements AbstractModelBase.Attribute {
         ASSET_ID("Asset Id"),
+        NAME("Name"),
+        VERSION("Version"),
         ASSESSMENT("Assessment"),
         ;
 

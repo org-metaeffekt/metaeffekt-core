@@ -26,10 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AssessmentInventoryMerger {
 
@@ -51,25 +48,38 @@ public class AssessmentInventoryMerger {
     public Inventory mergeInventories() throws IOException {
         final Inventory outputInventory = new Inventory();
 
-        final List<Inventory> collectedInventories = new ArrayList<>(inputInventories);
+        final Map<Inventory, File> collectedInventories = new LinkedHashMap<>();
+        inputInventories.forEach(i -> collectedInventories.put(i, null));
+
         final List<File> inventoryFiles = collectInventoryFiles();
+
         LOG.info("Processing [{}] inventories", collectedInventories.size() + inventoryFiles.size());
 
         {
             final InventoryReader reader = new InventoryReader();
             for (File inventoryFile : inventoryFiles) {
-                collectedInventories.add(reader.readInventory(inventoryFile));
+                collectedInventories.put(reader.readInventory(inventoryFile), inventoryFile);
             }
         }
 
         final Map<String, List<Inventory>> assessmentContextInventoryMap = new HashMap<>();
         final Map<String, Inventory> assessmentInventoryMap = new HashMap<>();
 
-        for (Inventory inputInventory : collectedInventories) {
+        for (Map.Entry<Inventory, File> inputInventoryWithFile : collectedInventories.entrySet()) {
+            final Inventory inputInventory = inputInventoryWithFile.getKey();
+            final File inputInventoryFile = inputInventoryWithFile.getValue();
+
+            if (inputInventory.getAssetMetaData().size() != 1) {
+                throw new IllegalStateException("Inventory must contain exactly one asset meta data entry" + (inputInventoryFile != null ? " in file [" + inputInventoryFile.getAbsolutePath() + "]" : ""));
+            }
+
             final AssetMetaData assetMetaData = inputInventory.getAssetMetaData().get(0);
 
             // in this case the assessment context is the asset (assessment by asset case)
-            final String assetName = assetMetaData.get("Name");
+            final String assetName = assetMetaData.get(AssetMetaData.Attribute.NAME);
+            if (StringUtils.isEmpty(assetName)) {
+                throw new IllegalStateException("Asset name must not be empty on asset meta data" + (inputInventoryFile != null ? " in file [" + inputInventoryFile.getAbsolutePath() + "]" : ""));
+            }
             final String assessmentContext = formatNormalizedAssessmentContextName(assetName);
             LOG.info("Processing inventory with asset [{}] and assessment context [{}]", assetName, assessmentContext);
 
@@ -77,8 +87,8 @@ public class AssessmentInventoryMerger {
             final int inventoryDisplayIndex = commonInventories.size() + 1;
             final String localUniqueAssessmentId = String.format("%s-%03d", assessmentContext, inventoryDisplayIndex);
 
-            assetMetaData.set("Assessment", localUniqueAssessmentId);
-            assetMetaData.set("Name", assetName.toUpperCase());
+            assetMetaData.set(AssetMetaData.Attribute.ASSESSMENT, localUniqueAssessmentId);
+            assetMetaData.set(AssetMetaData.Attribute.NAME, assetName.toUpperCase());
 
             commonInventories.add(inputInventory);
             assessmentInventoryMap.put(localUniqueAssessmentId, inputInventory);
