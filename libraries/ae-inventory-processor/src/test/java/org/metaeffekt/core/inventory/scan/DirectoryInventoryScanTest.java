@@ -170,7 +170,7 @@ public class DirectoryInventoryScanTest {
         final File scanInputDir = new File("<path-to-input>");
         final File scanDir = new File("<path-to-scan>");
 
-        final File referenceInventoryFile = new File("/Users/kklein/workspace/metaeffekt-core/libraries/ae-inventory-processor/src/test/resources/test-inventory-01");
+        final File referenceInventoryFile = new File("src/test/resources/test-inventory-01");
 
         String[] scanIncludes = new String[] {"**/*"};
         String[] scanExcludes = new String[] {
