@@ -101,7 +101,6 @@ public class AssessmentInventoryMergerTest {
     public void mergeInventoriesWithDuplicateAssetsTest() throws IOException {
         final AssessmentInventoryMerger merger = new AssessmentInventoryMerger();
 
-        // First inventory
         {
             final Inventory inputInventory = new Inventory();
             merger.addInputInventory(inputInventory);
@@ -116,7 +115,6 @@ public class AssessmentInventoryMergerTest {
             vmd.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2018-1234");
         }
 
-        // Second inventory with duplicate asset
         {
             final Inventory inputInventory = new Inventory();
             merger.addInputInventory(inputInventory);
