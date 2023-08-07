@@ -22,11 +22,6 @@ import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
-import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
-import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
-import org.metaeffekt.core.inventory.processor.inspector.NestedJarInspector;
-import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
-import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
@@ -94,12 +89,7 @@ public class DirectoryInventoryScan {
 
     public Inventory createScanInventory() {
         prepareScanDirectory();
-
-        final Inventory inventory = performScan();
-
-  //      InventoryUtils.sortInventoryContent(inventory);
-
-        return inventory;
+        return performScan();
     }
 
     private void prepareScanDirectory() {
@@ -111,20 +101,29 @@ public class DirectoryInventoryScan {
     }
 
     public Inventory performScan() {
-        return scanDirectoryNG(scanDirectory);
-    }
+        final File directoryToScan = scanDirectory;
 
-    private void inspectArtifacts(Inventory scanInventory) {
-        // attempt to extract artifactId, version, groupId from contained POMs
-        final Properties properties = new Properties();
-        properties.put(ProjectPathParam.KEY_PROJECT_PATH, scanDirectory.getAbsolutePath());
-        properties.put(JarInspectionParam.KEY_INCLUDE_EMBEDDED, Boolean.toString(includeEmbedded));
+        final FileSystemScanParam scanParam = new FileSystemScanParam().
+                collectAllMatching(scanIncludes, scanExcludes).
+                unwrapAllMatching(unwrapIncludes, unwrapExcludes).
+                implicitUnwrap(enableImplicitUnpack).
+                includeEmbedded(includeEmbedded).
+                detectComponentPatterns(enableDetectComponentPatterns).
+                withReferenceInventory(referenceInventory);
 
-        // run further inspections on identified artifacts
-        InspectorRunner.builder()
-            .queue(JarInspector.class)
-            .queue(NestedJarInspector.class)
-            .build().executeAll(scanInventory, properties);
+        LOG.info("Scanning directory [{}]...", directoryToScan.getAbsolutePath());
+
+        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
+        final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
+
+        fileSystemScanExecutor.execute();
+
+        // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
+        //   patterns).
+
+        LOG.info("Scanning directory [{}] completed.", directoryToScan.getAbsolutePath());
+
+        return fileSystemScan.getInventory();
     }
 
     private static class MatchResult {
@@ -154,6 +153,8 @@ public class DirectoryInventoryScan {
             // also take over the type attribute
             derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
             derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Artifact.Attribute.URL.getKey()));
+            derivedArtifact.set(Artifact.Attribute.GROUPID, componentPatternData.get(Artifact.Attribute.GROUPID.getKey()));
+            derivedArtifact.setChecksum(componentPatternData.get("Component Checksum"));
             return derivedArtifact;
         }
     }
@@ -165,10 +166,10 @@ public class DirectoryInventoryScan {
      *
      * @param scanBaseDir The scan base dir. Use always the same root folder. Also for the recursion.
      * @param scanDir The scan dir. Changes with the recursion.
-     * @param scanIncludes
-     * @param scanExcludes
-     * @param referenceInventory
-     * @param scanInventory
+     * @param scanIncludes Includes patterns.
+     * @param scanExcludes Exclude patterns.
+     * @param referenceInventory The reference inventory to use.
+     * @param scanInventory The scan inventory.
      */
     private void scanDirectory(File scanBaseDir, File scanDir, final String[] scanIncludes, final String[] scanExcludes,
            Inventory referenceInventory, Inventory scanInventory, List<String> assetIdChain) {
@@ -550,32 +551,6 @@ public class DirectoryInventoryScan {
         scanner.setExcludes(scanExcludes);
         scanner.scan();
         return scanner.getIncludedFiles();
-    }
-
-    // FIXME: not yet final; work in progress
-    public Inventory scanDirectoryNG(final File directoryToScan) {
-
-        final FileSystemScanParam scanParam = new FileSystemScanParam().
-                collectAllMatching(scanIncludes, scanExcludes).
-                unwrapAllMatching(unwrapIncludes, unwrapExcludes).
-                implicitUnwrap(enableImplicitUnpack).
-                includeEmbedded(includeEmbedded).
-                detectComponentPatterns(enableDetectComponentPatterns).
-                withReferenceInventory(referenceInventory);
-
-        LOG.info("Scanning directory [{}]...", directoryToScan.getAbsolutePath());
-
-        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
-        final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
-
-        fileSystemScanExecutor.execute();
-
-        // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
-        //   patterns).
-
-        LOG.info("Scanning directory [{}] completed.", directoryToScan.getAbsolutePath());
-
-        return fileSystemScan.getInventory();
     }
 
     public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {

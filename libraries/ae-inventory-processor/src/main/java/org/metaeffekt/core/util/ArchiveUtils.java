@@ -57,6 +57,8 @@ public class ArchiveUtils {
         zipExtensions.add("zip");
         zipExtensions.add("nar");
         zipExtensions.add("jar");
+        zipExtensions.add("xar");
+        zipExtensions.add("webjar");
         zipExtensions.add("ear");
         zipExtensions.add("aar");
         zipExtensions.add("sar");

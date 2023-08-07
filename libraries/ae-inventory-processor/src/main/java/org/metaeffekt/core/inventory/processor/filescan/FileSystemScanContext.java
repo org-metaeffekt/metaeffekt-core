@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -92,6 +93,21 @@ public class FileSystemScanContext {
      * @param artifact The {@link Artifact} to contribute.
      */
     public void contribute(final Artifact artifact) {
+
+        // check scan invariants
+        String errorMsg = null;
+        if (artifact == null) {
+            errorMsg = "Artifact <null> contributed to scan inventory.";
+        } else {
+            if (StringUtils.isBlank(artifact.getId())) {
+                errorMsg = "Artifact with empty id contributed to scan inventory.";
+            }
+        }
+
+        if (errorMsg != null) {
+            throw new IllegalStateException(errorMsg);
+        }
+
         synchronized (inventory) {
             inventory.getArtifacts().add(artifact);
         }

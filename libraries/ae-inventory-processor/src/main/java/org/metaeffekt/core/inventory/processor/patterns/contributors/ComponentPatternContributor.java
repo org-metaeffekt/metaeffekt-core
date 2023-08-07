@@ -24,9 +24,9 @@ import java.util.List;
 
 public abstract class ComponentPatternContributor {
 
-    public abstract boolean applies(File contextBaseDir, String file);
+    public abstract boolean applies(String pathInContext);
 
-    public List<ComponentPatternData> contribute(File contextBaseDir, String anchorFilePath, String normalizedPath, String checksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
         return Collections.emptyList();
     }
 

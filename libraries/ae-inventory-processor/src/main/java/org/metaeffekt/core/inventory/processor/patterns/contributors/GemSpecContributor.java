@@ -37,15 +37,15 @@ public class GemSpecContributor extends ComponentPatternContributor {
     public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem";
 
     @Override
-    public boolean applies(File contextBaseDir, String file) {
-        return file.endsWith(".gemspec");
+    public boolean applies(String pathInContext) {
+        return pathInContext.endsWith(".gemspec");
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File contextBaseDir,
-                     String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
-        final File anchorFile = new File(contextBaseDir, anchorRelPath);
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+        final File contextBaseDir = anchorFile.getParentFile().getParentFile();
 
         try {
             // parse gemspec
@@ -57,8 +57,8 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             final String parentDirName = anchorFile.getParentFile().getName();
 
-            // anchor must match at least a qualified semantic versioning string to be able to extract a version
-            final Pattern versionPattern = Pattern.compile("-[0-9]+\\.[0-9]+\\.[0-9]+");
+            // anchor must match at least a qualified versioning string <major>.<minor> to be able to extract a version
+            final Pattern versionPattern = Pattern.compile("-[0-9]+\\.[0-9]+");
             final Matcher matcher = versionPattern.matcher(anchorFileNameNoSuffix);
             int anchorNameSeparatorIndex = matcher.find() ? matcher.start() : -1;
             final String nameDerivedFromFile;
@@ -87,6 +87,16 @@ public class GemSpecContributor extends ComponentPatternContributor {
             if (version == null) version = versionDerivedFromFolder;
             String url = null;
 
+            String concludedName = nameDerivedFromFile;
+            int versionIndex = concludedName.indexOf("-" + version);
+            if (versionIndex != -1) {
+                concludedName = concludedName.substring(0, versionIndex);
+            }
+
+            concludedName = concludedName.replace(".gemspec", "");
+
+            String concludedId = concludedName + "-" + version;
+
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
             final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
@@ -94,14 +104,14 @@ public class GemSpecContributor extends ComponentPatternContributor {
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFileName);
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, anchorFileNameNoSuffix);
+            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, concludedName);
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, id);
+            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, concludedId);
 
             final StringBuilder sb = new StringBuilder();
 
             if (versionDerivedFromFile == null && versionDerivedFromFolder == null) {
-                LOG.warn("No version extracted from Gemspec: " + anchorAbsPath);
+                LOG.warn("No version extracted from Gemspec: " + relativeAnchorPath);
                 System.out.println(anchorFile.getAbsolutePath());
                 throw new IllegalStateException();
             }

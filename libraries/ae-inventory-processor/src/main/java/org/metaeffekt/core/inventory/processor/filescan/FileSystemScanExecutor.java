@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
+import org.metaeffekt.core.inventory.processor.filescan.tasks.FileCollectTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
 import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
@@ -107,15 +108,18 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         setArtifactAssetMarker();
 
-
         final Inventory inventory = fileSystemScanContext.getInventory();
 
-        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_INSPECTED, inventory);
-        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE, inventory);
-        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
-        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
-        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_PATH, inventory);
-        InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
+        final boolean removeIntermediateAttributes = true;
+        if (removeIntermediateAttributes) {
+            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_INSPECTED, inventory);
+            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE, inventory);
+            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
+            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
+            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_PATH, inventory);
+            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
+            InventoryUtils.removeArtifactAttribute(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, inventory);
+        }
 
         mergeDuplicates(inventory);
     }
@@ -124,8 +128,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
             final String assetIdChainString = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
 
-            if (StringUtils.isNotBlank(artifact.get(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER))) continue;
-
             if (StringUtils.isNotBlank(assetIdChainString) && !(".").equals(assetIdChainString)) {
                 final String[] split = assetIdChainString.split("\\|\n");
                 for (String assetPath : split) {
@@ -133,10 +135,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
                     // fallback to asset path; more as a processing failure indication
                     if (StringUtils.isBlank(assetId)) {
-                        assetId = "AID-" + assetPath;
-                    }
-
-                    if (StringUtils.isNotBlank(assetId)) {
+                        LOG.warn("Cannot resolve asset id for path " + assetPath);
+                    } else {
                         artifact.set(assetId, MARKER_CROSS);
                     }
                 }

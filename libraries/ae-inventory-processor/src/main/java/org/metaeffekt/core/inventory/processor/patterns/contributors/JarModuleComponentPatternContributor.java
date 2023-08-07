@@ -31,28 +31,27 @@ import java.util.List;
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file) {
-        file = file.toLowerCase();
-        return (file.startsWith("meta-inf/maven/") && file.endsWith("/pom.xml"));
+    public boolean applies(String pathInContext) {
+        pathInContext = pathInContext.toLowerCase();
+        return (pathInContext.contains("/meta-inf/maven/") && pathInContext.endsWith("/pom.xml"));
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File contextBaseDir,
-                 String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         JarInspector jarInspector = new JarInspector();
 
-        File referenceFile = new File(contextBaseDir, anchorRelPath);
-        File mavenDir = referenceFile.getParentFile();
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+        final File anchorParentDir = anchorFile.getParentFile();
 
-        final File pomXmlFile = FileUtils.findSingleFile(mavenDir, "pom.xml");
-        final File pomPropertiesFile = FileUtils.findSingleFile(mavenDir, "pom.properties");
+        final File pomXmlFile = FileUtils.findSingleFile(anchorParentDir, "pom.xml");
+        final File pomPropertiesFile = FileUtils.findSingleFile(anchorParentDir, "pom.properties");
 
         final Artifact artifact = new Artifact();
 
         Artifact fromXml = null;
         if (pomXmlFile != null) {
             try (InputStream in = Files.newInputStream(pomXmlFile.toPath())) {
-                fromXml = jarInspector.getArtifactFromPomXml(artifact, in, anchorRelPath);
+                fromXml = jarInspector.getArtifactFromPomXml(artifact, in, relativeAnchorPath);
             } catch (IOException e) {
             }
         }
@@ -60,7 +59,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         Artifact fromProperties = null;
         if (pomPropertiesFile != null) {
             try (InputStream in = Files.newInputStream(pomPropertiesFile.toPath())) {
-                fromProperties = jarInspector.getArtifactFromPomProperties(artifact, in, anchorRelPath);
+                fromProperties = jarInspector.getArtifactFromPomProperties(artifact, in, relativeAnchorPath);
             } catch (IOException e) {
             }
         }
@@ -69,20 +68,22 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         mergeArtifact(artifact, fromXml);
         mergeArtifact(artifact, fromProperties);
 
-        artifact.deriveArtifactId();
-
-        String id = artifact.getArtifactId() + "-" + artifact.getVersion() + ".jar";
+        final String artifactId = artifact.get("ARTIFACT_ID");
+        String id = artifactId + "-" + artifact.getVersion() + "." + artifact.get("Packaging");
         artifact.setId(id);
 
-        String includePattern = "**/*";
+        String includePattern = "**/" + artifact.getGroupId() + "/**/*,**/" + artifactId + "/**/*";
 
-        final File anchorFile = new File(contextBaseDir, anchorRelPath);
-        final File anchorParentFile = anchorFile.getParentFile();
+        if (artifact.getId().endsWith(".war")) {
+            includePattern = "**/*";
+        }
+
+        final File contextBaseDir = new File(baseDir, relativeAnchorPath.substring(0, relativeAnchorPath.indexOf("/META-INF/")));
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
-                FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
+                FileUtils.asRelativePath(contextBaseDir, anchorFile));
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
@@ -93,6 +94,8 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 "**/node_modules/**/*" + "," +
                 "**/bower_components/**/*" + "," +
                 "**/*.jar" + "," +
+                "**/*.xar" + "," +
+                "**/*.xed" + "," +
                 "**/*.so*" + "," +
                 "**/*.dll");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);

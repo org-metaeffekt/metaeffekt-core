@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,63 +38,66 @@ public class ComponentPatternProducer {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
-    public static final String[] ANCHOR_INCLUDE_PATTERNS_BY_PRIORITY = new String[] {
+    public static final String[] FILE_SUFFIX_LIST = new String[] {
 
             // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into
             // context.
 
             // ruby; order matters; start from the ones you regard more appropriate
-            "specifications/*.gemspec",
-            "*/*.gemspec",
+            ".gemspec",
+
+            ".xed",
 
             // web modules
             // prioritize bower components; in general, better metadata first
-            "bower_components/**/.bower.json",
-            "bower_components/**/bower.json",
-            "node_modules/**/package-lock.json",
-            "node_modules/**/package.json",
-
-            // revise (no parent)
-            "package.json",
             ".bower.json",
-            "bower.json",
-            "composer.json",
-            "composer.lock",
+            "/bower.json",
+            "/package-lock.json",
+            "/package.json",
+            "/composer.json",
 
             // nextcloud appinfo
-            "appinfo/info.xml",
+            "/appinfo/info.xml",
 
             // container marker
-            "json",
+            "/json",
 
             // eclipse bundles
-            "about.html",
-            "about.ini",
-            "about.properties",
-            "about.mappings",
+            "/about.html",
+            "/about.ini",
+            "/about.properties",
+            "/about.mappings",
 
             // jars
-            "META-INF/maven/**/pom.xml",
+            "/pom.xml",
 
             // python modules
-            "*.dist-info/METADATA",
-            "*.dist-info/RECORD",
-            "*.dist-info/WHEEL",
-            "*/__init__.py",
-            "*/__about__.py",
+            "/METADATA",
+            "/RECORD",
+            "/WHEEL",
+            "/__init__.py",
+            "/__about__.py",
     };
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
 
-    public void extractComponentPatterns(File baseDir, Inventory targetInventory) {
+    public void extractComponentPatterns(FileSystemScanContext fileSystemScanContext, Inventory targetInventory) {
 
-        // collect all folders
-        final String[] folders = FileUtils.scanDirectoryForFolders(baseDir, "**/*");
+        final File baseDir = fileSystemScanContext.getBaseDir().getFile();
+        final Map<String, Artifact> pathToArtifactMap = new HashMap<>();
 
-        final Set<String> fileSet = new HashSet<>(Arrays.asList(folders));
-        final List<String> foldersByLength = new ArrayList<>(fileSet);
-        foldersByLength.sort(String.CASE_INSENSITIVE_ORDER);
-        foldersByLength.sort(Comparator.comparingInt(String::length));
+        for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
+            // ASSUMPTION: archives are never anchors
+            if (artifact.getChecksum() != null) {
+                String path = artifact.get(Constants.KEY_PATH_IN_ASSET);
+                pathToArtifactMap.put(path, artifact);
+            }
+        }
+
+
+        final List<String> filesByPathLength = new ArrayList<>(pathToArtifactMap.keySet());
+        filesByPathLength.sort(String.CASE_INSENSITIVE_ORDER);
+        filesByPathLength.sort(Comparator.comparingInt(String::length));
 
         // configure contributors; please note that currently the contributors consume anchors (no anchor can be used twice)
         final List<ComponentPatternContributor> componentPatternContributors = new ArrayList<>();
@@ -107,55 +109,49 @@ public class ComponentPatternProducer {
         componentPatternContributors.add(new JarModuleComponentPatternContributor());
         componentPatternContributors.add(new NextcloudAppInfoContributor());
         componentPatternContributors.add(new ComposerLockContributor());
+        componentPatternContributors.add(new XWikiExtensionComponentPatternContributor());
 
         // record component pattern qualifiers for deduplication purposes
         final Set<String> deduplicationQualifierSet = new HashSet<>();
 
         // for each include pattern (by priority) try to identify a component pattern
-        for (String includePattern : ANCHOR_INCLUDE_PATTERNS_BY_PRIORITY) {
+        for (String fileSuffix : FILE_SUFFIX_LIST) {
 
-            // process folders (ordered by path length)
-            for (String folder : foldersByLength) {
+            for (String pathInContext : filesByPathLength) {
+                if (!pathInContext.toLowerCase().endsWith(fileSuffix)) continue;
 
-                final File contextBaseDir = new File(baseDir, folder);
+                final Artifact artifact = pathToArtifactMap.get(pathInContext);
+                final String checksum = artifact.getChecksum();
 
-                // scan inside folder using the current include pattern
-                final String[] files = FileUtils.scanForFiles(contextBaseDir, includePattern, "--none--");
+                // apply contributors
+                for (ComponentPatternContributor cpc : componentPatternContributors) {
+                    if (cpc.applies(pathInContext)) {
 
-                for (String file : files) {
-                    final File anchorFile = new File(contextBaseDir, file);
+                        final List<ComponentPatternData> componentPatternDataList =
+                                cpc.contribute(baseDir, pathInContext, checksum);
 
-                    final String checksum = FileUtils.computeChecksum(anchorFile);
-                    final String absolutePath = FileUtils.normalizePathToLinux(file);
+                        if (!componentPatternDataList.isEmpty()) {
+                            for (ComponentPatternData cpd : componentPatternDataList) {
+                                LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
 
-                    // apply contributors
-                    for (ComponentPatternContributor cpc : componentPatternContributors) {
-                        if (cpc.applies(contextBaseDir, file)) {
-                            final List<ComponentPatternData> componentPatternDataList =
-                                    cpc.contribute(contextBaseDir, file, absolutePath, checksum);
-
-                            if (!componentPatternDataList.isEmpty()) {
-                                for (ComponentPatternData cpd : componentPatternDataList) {
-                                    LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
-
-                                    // FIXME: defer to 2nd pass
-                                    final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
-                                    if ("unspecific".equalsIgnoreCase(version)) {
-                                        continue;
-                                    }
-
-                                    final String qualifier = cpd.deriveQualifier();
-                                    if (!deduplicationQualifierSet.contains(qualifier)) {
-                                        targetInventory.getComponentPatternData().add(cpd);
-                                        deduplicationQualifierSet.add(qualifier);
-                                    }
-
+                                // FIXME: defer to 2nd pass
+                                final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
+                                if ("unspecific".equalsIgnoreCase(version)) {
+                                    continue;
                                 }
-                            }
 
-                            // the first contributor wins
-                            break;
+                                final String qualifier = cpd.deriveQualifier();
+                                if (!deduplicationQualifierSet.contains(qualifier)) {
+                                    targetInventory.getComponentPatternData().add(cpd);
+                                    deduplicationQualifierSet.add(qualifier);
+                                }
+
+                                cpd.validate(cpc.getClass().getName());
+                            }
                         }
+
+                        // the first contributor wins
+                        break;
                     }
                 }
             }
@@ -168,7 +164,7 @@ public class ComponentPatternProducer {
         //  component (otherwise the component pattern would not be precise).
         //  Here, we also have unwrapped the full subtree (except things already covered) and can now derive default
         //  component patterns applying the ComponentPatternProducer.
-        extractComponentPatterns(fileSystemScanContext.getBaseDir().getFile(), implicitReferenceInventory);
+        extractComponentPatterns(fileSystemScanContext, implicitReferenceInventory);
         matchAndApplyComponentPatterns(implicitReferenceInventory, fileSystemScanContext);
     }
 
@@ -239,9 +235,11 @@ public class ComponentPatternProducer {
 
                     // match absolute first (anchor matched, so we have to check anyway)
                     if (matches(normalizedExcludePattern.absolutePatterns, absolutePathFromBaseDir)) {
+                        // continue without adding
                         continue;
                     }
 
+                    // match absolute inlcude patterns
                     if (matches(normalizedIncludePattern.absolutePatterns, absolutePathFromBaseDir)) {
                         // marked matched
                         artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
@@ -254,6 +252,7 @@ public class ComponentPatternProducer {
                                 relativePathFromBaseDir);
                         }
 
+                        // continue adding
                         matched = true;
                         continue;
                     }
@@ -438,8 +437,9 @@ public class ComponentPatternProducer {
                             copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, fileChecksumOrAsterisk);
 
                             final File file = new File(normalizedPath);
+                            final String assetIdChain = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN);
                             matchedComponentPatterns.add(new MatchResult(copyCpd, file,
-                                computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), artifact.get("ASSET_ID_CHAIN")));
+                                computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), assetIdChain));
                         }
                     }
                 }

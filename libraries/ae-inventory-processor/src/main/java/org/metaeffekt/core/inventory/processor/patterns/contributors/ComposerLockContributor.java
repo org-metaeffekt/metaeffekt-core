@@ -33,15 +33,17 @@ public class ComposerLockContributor extends ComponentPatternContributor{
     public static final String TYPE_VALUE_PHP_COMPOSER = "php-composer";
 
     @Override
-    public boolean applies(File contextBaseDir, String file) {
-        return file.endsWith("composer.lock");
+    public boolean applies(String pathInContext) {
+        return pathInContext.endsWith("composer.lock");
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File contextBaseDir,
-                         String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
-        final File anchorFile = new File(contextBaseDir, anchorRelPath);
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+        final File contextBaseDir = anchorFile.getParentFile();
+
+        final String anchorRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile);
 
         try {
             final JSONObject object = new JSONObject(FileUtils.readFileToString(anchorFile, StandardCharsets.UTF_8));
@@ -82,9 +84,7 @@ public class ComposerLockContributor extends ComponentPatternContributor{
 
                 list.add(componentPatternData);
             }
-
             return list;
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

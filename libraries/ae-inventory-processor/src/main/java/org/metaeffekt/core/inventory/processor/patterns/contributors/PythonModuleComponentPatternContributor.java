@@ -31,22 +31,23 @@ import java.util.stream.Collectors;
 public class PythonModuleComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file) {
-        return file.endsWith(".dist-info/METADATA")
-                || file.endsWith(".dist-info/RECORD")
-                || file.endsWith(".dist-info/WHEEL");
+    public boolean applies(String pathInContext) {
+        return pathInContext.endsWith(".dist-info/METADATA")
+                || pathInContext.endsWith(".dist-info/RECORD")
+                || pathInContext.endsWith(".dist-info/WHEEL");
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File contextBaseDir,
-                     String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
-        final File anchorFile = new File(contextBaseDir, anchorRelPath);
-        final File anchorParentDir = anchorFile.getParentFile();
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
-        String includePattern = anchorRelPath.replace("/" + anchorFile.getName(), "") + "/**/*";
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+        final File anchorParentDir = anchorFile.getParentFile();
+        final File contextBaseDir = anchorParentDir.getParentFile();
+
+        String includePattern = relativeAnchorPath.replace("/" + anchorFile.getName(), "") + "/**/*";
 
         Artifact artifact = new Artifact();
-        artifact.setId(anchorRelPath.replace(".dist-info/"+ anchorFile.getName(), ""));
+        artifact.setId(relativeAnchorPath.replace(".dist-info/"+ anchorFile.getName(), ""));
 
         if (anchorFile.getName().equals("METADATA") && anchorFile.exists()) {
             try {

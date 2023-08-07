@@ -53,7 +53,7 @@ public class MatchResult {
 
         final String relativePath = asRelativePath(scanBaseDir.getPath(), FileUtils.normalizePathToLinux(baseDir));
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_PATH, relativePath);
-        derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, relativePath);
+        derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
 
         // FIXME: this attribute is of no use for component patterns; consider removing this line
         derivedArtifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
@@ -65,6 +65,7 @@ public class MatchResult {
 
         // also the group id
         derivedArtifact.setGroupId(componentPatternData.get("Group Id"));
+        derivedArtifact.setChecksum(componentPatternData.get("Component Checksum"));
 
         derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, "x");
 

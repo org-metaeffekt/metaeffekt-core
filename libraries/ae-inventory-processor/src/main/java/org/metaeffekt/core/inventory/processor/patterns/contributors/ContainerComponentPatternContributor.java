@@ -33,16 +33,15 @@ import java.util.stream.Collectors;
 public class ContainerComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file) {
-        return isContainerMetadata(file);
+    public boolean applies(String pathInContext) {
+        return isContainerMetadata(pathInContext);
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File contextBaseDir,
-                 String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
-        final File anchorFile = new File(contextBaseDir, anchorRelPath);
-        final File anchorParentFile = anchorFile.getParentFile();
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+        final File contextBaseDir = anchorFile.getParentFile();
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
@@ -59,7 +58,7 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
 
             if (id != null) {
 
-                componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/" + anchorParentFile.getName() + "/**/*");
+                componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/" + contextBaseDir.getName() + "/**/*");
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, id);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, id);

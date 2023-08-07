@@ -129,7 +129,18 @@ public class JarInspector extends AbstractJarInspector {
 
             final Artifact dummyArtifact = new Artifact();
             dummyArtifact.setId(artifact.getId());
-            dummyArtifact.setVersion(mainAttributes.getValue("Implementation-Version"));
+            String version = mainAttributes.getValue("Implementation-Version");
+
+            // lucene manifest contains "8.11.2 17dee71932c683e345508113523e764c3e4c80f ..."
+            if (version != null) {
+                version = version.trim();
+                int whiteSpaceIndex = version.indexOf(" ");
+                if (whiteSpaceIndex > 0) {
+                    version = version.substring(0, whiteSpaceIndex);
+                }
+            }
+
+            dummyArtifact.setVersion(version);
 
             dummyArtifact.set(Constants.KEY_ORGANIZATION, mainAttributes.getValue("Implementation-Vendor"));
             dummyArtifact.set("Organization Id", mainAttributes.getValue("Implementation-Vendor-Id"));
@@ -191,6 +202,12 @@ public class JarInspector extends AbstractJarInspector {
                 dummyArtifact.setVersion(model.getVersion());
             } else {
                 dummyArtifact.setVersion(model.getParent().getVersion());
+            }
+
+            if (model.getPackaging() != null) {
+                dummyArtifact.set("Packaging", model.getPackaging());
+            } else {
+                dummyArtifact.set("Packaging", "jar");
             }
 
             // NOTE: the information may not be part of the pom, but provided in the parent pom. However, if the

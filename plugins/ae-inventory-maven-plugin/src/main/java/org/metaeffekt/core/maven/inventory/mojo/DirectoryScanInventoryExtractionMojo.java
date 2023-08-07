@@ -79,14 +79,14 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
      * When true, enables that implicitly general archive types are unpacked.
      */
     @Parameter(defaultValue = "true")
-    private boolean enabledImplicitUnpack = true;
+    private boolean enableImplicitUnpack = true;
 
     /**
      * When true, enables that implicitly component patterns are detected and applied.
      * Defaults to false for compatibility reasons.
      */
-    @Parameter(defaultValue = "true")
-    private boolean enabledDetectComponentPatterns = false;
+    @Parameter(defaultValue = "false")
+    private boolean enableDetectComponentPatterns = false;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -103,8 +103,8 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
 
             // transfer configuration
             scan.setIncludeEmbedded(includeEmbedded);
-            scan.setEnableImplicitUnpack(enabledImplicitUnpack);
-            scan.setEnableDetectComponentPatterns(enabledDetectComponentPatterns);
+            scan.setEnableImplicitUnpack(enableImplicitUnpack);
+            scan.setEnableDetectComponentPatterns(enableDetectComponentPatterns);
 
             // run scan
             final Inventory inventory = scan.createScanInventory();

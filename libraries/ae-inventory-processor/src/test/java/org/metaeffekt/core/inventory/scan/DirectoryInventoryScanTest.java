@@ -167,17 +167,15 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
 
-        final File scanDir = new File("<path-to-dir-to-scan>");
+        final File scanInputDir = new File("<path-to-input>");
+        final File scanDir = new File("<path-to-scan>");
 
         final File referenceInventoryFile = new File("/Users/kklein/workspace/metaeffekt-core/libraries/ae-inventory-processor/src/test/resources/test-inventory-01");
 
         String[] scanIncludes = new String[] {"**/*"};
         String[] scanExcludes = new String[] {
-                "**/.DS_Store", "**/._*" ,"**/.git/**/*", "**/.git*", "**/.git*",
-                "**/*.mp4", "**/*.class", "**/*.md5", "**/*.sha1",
-                "**/.cache/**/*", "**/.wh*", "**/log/**/*", "**/ldconfig/aux-cache",
-                "**/v8-compile-cache*/**/*", "**/tmp/cache/webpacker/**/*",
-                "**/*.cache"
+                "**/.DS_Store", "**/._*" ,
+                "**/.git/**/*", "**/.git*", "**/.git*"
         };
 
         String[] unwrapIncludes = new String[] {"**/*"};
@@ -187,11 +185,10 @@ public class DirectoryInventoryScanTest {
                 "**/*.ttf.gz", "**/*.eot.gz"
         };
 
-        final Inventory referenceInventory = InventoryUtils.
-                readInventory(referenceInventoryFile, "*.xls");
+        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryFile, "*.xls");
 
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(
-                scanDir, scanDir,
+                scanInputDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
                 referenceInventory);
@@ -200,7 +197,7 @@ public class DirectoryInventoryScanTest {
         scan.setEnableImplicitUnpack(true);
         scan.setEnableDetectComponentPatterns(true);
 
-        final Inventory inventory = scan.scanDirectoryNG(scanDir);
+        final Inventory inventory = scan.createScanInventory();
 
         new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
     }

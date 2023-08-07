@@ -41,6 +41,7 @@ public class FileCollectTask extends ScanTask {
     private static final Logger LOG = LoggerFactory.getLogger(FileCollectTask.class);
 
     public static final String ATTRIBUTE_KEY_UNWRAP = "UNWRAP";
+
     public static final String ATTRIBUTE_KEY_ANCHOR = "ANCHOR";
 
     private FileRef fileRef;

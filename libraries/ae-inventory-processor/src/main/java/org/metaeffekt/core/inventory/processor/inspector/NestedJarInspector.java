@@ -43,7 +43,7 @@ public class NestedJarInspector implements ArtifactInspector {
      * The accepted list of extensions for project files.<br>
      * Ensure that these are lower-case, as the check later is made case-insensitive by toLowerCase.
      */
-    private final String[] outsideExtensions = {".jar", ".war", ".ear", ".sar"};
+    private final String[] outsideExtensions = {".jar", ".war", ".ear", ".sar", ".webjar", ".xar"};
 
     /**
      * The accepted list of extensions for files inside the project files.

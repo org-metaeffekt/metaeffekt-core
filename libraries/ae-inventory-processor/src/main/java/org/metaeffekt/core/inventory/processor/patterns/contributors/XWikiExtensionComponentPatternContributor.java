@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -29,20 +28,18 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
-public class NextcloudAppInfoContributor extends ComponentPatternContributor {
-
-    public static final String TYPE_VALUE_NEXTCLOUD_APP = "nextcloud-app";
+public class XWikiExtensionComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/appinfo/info.xml");
+        return pathInContext.endsWith(".xed");
     }
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
-        final File contextBaseDir = anchorFile.getParentFile().getParentFile();
+        final File contextBaseDir = anchorFile.getParentFile();
 
         try {
             final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -51,22 +48,42 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
 
             final String id = optStringValue(documentElement, "id");
             final String version = optStringValue(documentElement, "version");
+            final String type = optStringValue(documentElement, "type");
             final String name = optStringValue(documentElement, "name");
-            final String url = optStringValue(documentElement, "repository");
+            final String url = optStringValue(documentElement, "website");
+
+            final String subjectPattern = anchorFile.getName().replace(".xed", ".*");
+            final File subjectFile = new File(contextBaseDir, anchorFile.getName().replace(".xed", "." + type));
+
+            String artifactId = id;
+            String groupId = null;
+
+            final int colonIndex = id.indexOf(":");
+            if (colonIndex != -1) {
+                groupId = id.substring(0, colonIndex);
+                artifactId = id.substring(colonIndex + 1);
+            }
 
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
-            final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
-            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFile.getName());
+            final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile);
+            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath);
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, id);
+            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifactId + "-" + version + "." + type);
+            componentPatternData.set(Artifact.Attribute.GROUPID.getKey(), groupId);
 
-            componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+            componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, subjectPattern);
 
-            componentPatternData.set(Constants.KEY_TYPE, TYPE_VALUE_NEXTCLOUD_APP);
+            if (subjectFile.exists()) {
+                componentPatternData.set("Component Checksum", FileUtils.computeChecksum(subjectFile));
+            }
+
+            // NOTE: potentially a mapping is required
+            // componentPatternData.set(Constants.KEY_TYPE, TYPE_VALUE_XWIKI_EXTENSION);
+
             componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
 
             return Collections.singletonList(componentPatternData);
@@ -82,4 +99,5 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
         }
         return null;
     }
+
 }

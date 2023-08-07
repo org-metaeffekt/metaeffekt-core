@@ -25,26 +25,26 @@ import java.util.List;
 
 public class UnwrappedEclipseBundleContributor extends ComponentPatternContributor {
     @Override
-    public boolean applies(File contextBaseDir, String file) {
-        return file.endsWith("about.html")
-                || file.endsWith("about.ini")
-                || file.endsWith("about.properties")
-                || file.endsWith("about.mappings");
+    public boolean applies(String pathInContext) {
+        return pathInContext.endsWith("about.html")
+                || pathInContext.endsWith("about.ini")
+                || pathInContext.endsWith("about.properties")
+                || pathInContext.endsWith("about.mappings");
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File contextBaseDir,
-                 String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+        final File contextBaseDir = anchorFile.getParentFile();
+
         final String id = contextBaseDir.getName();
         final int i = id.lastIndexOf("_");
-
-        final File anchorFile = new File(contextBaseDir, anchorRelPath);
-        final File anchorParentDir = anchorFile.getParentFile();
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
-                FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
+                FileUtils.asRelativePath(contextBaseDir, anchorFile));
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, id.substring(i + 1));

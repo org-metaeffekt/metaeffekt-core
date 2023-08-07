@@ -31,6 +31,21 @@ public class ComponentPatternData extends AbstractModelBase {
     public ComponentPatternData() {
     }
 
+    public void validate(String context) {
+        // validate minimal attributes
+
+        validateNotEmptyOrNull(context, Attribute.INCLUDE_PATTERN.getKey(), get(Attribute.INCLUDE_PATTERN));
+        validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR.getKey(), get(Attribute.VERSION_ANCHOR));
+        validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR_CHECKSUM.getKey(), get(Attribute.VERSION_ANCHOR_CHECKSUM));
+        validateNotEmptyOrNull(context, Attribute.COMPONENT_PART.getKey(), get(Attribute.COMPONENT_PART));
+    }
+
+    private void validateNotEmptyOrNull(String context, String key, String s) {
+        if (StringUtils.isBlank(s)) {
+            throw new IllegalStateException(context + ": ComponentPatternData [" + key + "] must not be empty.");
+        }
+    }
+
     /**
      * Core attributes to support component patterns.
      */

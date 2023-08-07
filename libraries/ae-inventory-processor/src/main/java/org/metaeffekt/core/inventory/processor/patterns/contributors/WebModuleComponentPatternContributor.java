@@ -33,16 +33,16 @@ import java.util.stream.Collectors;
 public class WebModuleComponentPatternContributor extends ComponentPatternContributor {
 
     @Override
-    public boolean applies(File contextBaseDir, String file) {
-        return isWebModule(file);
+    public boolean applies(String pathInContext) {
+        return isWebModule(pathInContext);
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File contextBaseDir,
-                                                 String anchorRelPath, String anchorAbsPath, String anchorChecksum) {
-        final File anchorFile = new File(contextBaseDir, anchorRelPath);
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();
         final File parentDir = anchorParentDir.getParentFile();
+        final File contextBaseDir = anchorParentDir.getParentFile();
 
         Artifact artifact = new Artifact();
 
@@ -50,6 +50,11 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         try {
             WebModule webModule = new WebModule();
             parseDetails(anchorFile, webModule);
+
+            if (!webModule.hasData()) {
+                return Collections.emptyList();
+            }
+
             artifact.setVersion(webModule.version);
             artifact.set("Module Specified License", webModule.license);
             artifact.setComponent(webModule.name);
@@ -123,6 +128,14 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                     ", path='" + path + '\'' +
                     ", anchor='" + anchor + '\'' +
                     '}';
+        }
+
+        public boolean hasData() {
+            if (StringUtils.isBlank(name)) return false;
+            if (StringUtils.isBlank(version)) return false;
+            if (anchor == null) return false;
+
+            return true;
         }
     }
 
@@ -272,6 +285,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                     webModule.version = getString(obj, "_release", webModule.version);
                     webModule.anchor = packageJson;
                 }
+
                 webModule.name = getString(obj, "name", webModule.name);
 
                 if (webModule.anchor != null) {

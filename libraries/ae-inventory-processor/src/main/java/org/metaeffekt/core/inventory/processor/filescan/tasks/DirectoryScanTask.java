@@ -15,7 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
-import org.metaeffekt.core.inventory.processor.filescan.*;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +61,14 @@ public class DirectoryScanTask extends ScanTask {
                     if (!implicitFolder) {
                         // implicit folders are collected when processing the archives subtree
                         scanContext.push(new DirectoryScanTask(fileRef, getAssetIdChain()));
+                    } else {
+                        // check whether folder is originating from an archive
+                        final String expectedName = folderName.substring(1, folderName.length() - 1);
+                        final File expectedFile = new File(file.getParentFile(), expectedName);
+                        if (!expectedFile.exists()) {
+                            // archive does not exist; scan
+                            scanContext.push(new DirectoryScanTask(fileRef, getAssetIdChain()));
+                        }
                     }
                 }
 

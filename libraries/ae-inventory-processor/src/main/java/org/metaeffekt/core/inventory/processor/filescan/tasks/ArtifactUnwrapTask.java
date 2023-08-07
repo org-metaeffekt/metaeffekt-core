@@ -86,6 +86,7 @@ public class ArtifactUnwrapTask extends ScanTask {
         // we implicitly try to unwrap if the artifact is not known:
         final boolean implicitUnwrap = !referenceArtifact.isPresent();
 
+        // NOTE: this reference articact must be explicitly matched; no wildcard version is supported (yet)
         // only include the artifact if the classification does not include HINT_IGNORE
         final boolean explicitUnwrap = referenceArtifact.isPresent() && referenceArtifact.get().hasClassification(HINT_SCAN);
         final boolean explicitIgnore = referenceArtifact.isPresent() && referenceArtifact.get().hasClassification(HINT_IGNORE);
@@ -129,7 +130,6 @@ public class ArtifactUnwrapTask extends ScanTask {
     private void addChecksumsAndHashes(FileRef fileRef) {
         final File file = fileRef.getFile();
         artifact.setChecksum(FileUtils.computeChecksum(file));
-        artifact.set(Constants.KEY_HASH_SHA1, FileUtils.computeSHA1Hash(file));
         artifact.set(Constants.KEY_HASH_SHA256, FileUtils.computeSHA256Hash(file));
     }
 
