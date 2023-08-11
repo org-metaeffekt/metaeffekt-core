@@ -197,7 +197,8 @@ public class StatisticsOverviewTable {
         return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), filterCert, true, vulnerabilityStatusMapper);
     }
 
-    public static StatisticsOverviewTable fromVmd(VulnerabilityReportAdapter adapter, Collection<VulnerabilityMetaData> vmds, String filterCert, boolean useModifiedSeverity, Function<String, String> vulnerabilityStatusMapper) {
+    public static StatisticsOverviewTable fromVmd(VulnerabilityReportAdapter adapter, Collection<VulnerabilityMetaData> inputVmds, String filterCert, boolean useModifiedSeverity, Function<String, String> vulnerabilityStatusMapper) {
+        final Collection<VulnerabilityMetaData> vmds = new ArrayList<>(inputVmds);
         if (filterCert != null && !filterCert.isEmpty()) {
             StatisticsOverviewTable.filterVulnerabilityMetaDataForAdvisories(vmds, filterCert);
         }
