@@ -43,32 +43,45 @@ public class AssessmentReportAdapter {
     public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useModifiedSeverity) {
         // check for asset-specific assessment
         final String assessment = assetMetaData.get("Assessment");
-
         final List<VulnerabilityMetaData> vulnerabilities = inventory.getVulnerabilityMetaData(assessment);
 
         final VulnerabilityCounts counts = new VulnerabilityCounts();
+
         if (vulnerabilities != null && !vulnerabilities.isEmpty()) {
-            for (VulnerabilityMetaData vulnerabilityMetaData : vulnerabilities) {
-                final String severity = getSeverity(vulnerabilityMetaData, useModifiedSeverity);
+            if (useModifiedSeverity) {
+                final StatisticsOverviewTable table = StatisticsOverviewTable.fromVmd(new VulnerabilityReportAdapter(new Inventory()), vulnerabilities, null, useModifiedSeverity, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
 
-                switch (severity.toLowerCase()) {
-                    case "critical":
-                        counts.criticalCounter++;
-                        break;
-                    case "high":
-                        counts.highCounter++;
-                        break;
-                    case "medium":
-                        counts.mediumCounter++;
-                        break;
-                    case "low":
-                        counts.lowCounter++;
-                        break;
-                    case "none":
-                        counts.noneCounter++;
-                        break;
+                counts.criticalCounter = table.getTotalForSeverity("critical");
+                counts.highCounter = table.getTotalForSeverity("high");
+                counts.mediumCounter = table.getTotalForSeverity("medium");
+                counts.lowCounter = table.getTotalForSeverity("low");
+                counts.noneCounter = table.getTotalForSeverity("none");
+
+            } else {
+                for (VulnerabilityMetaData vulnerabilityMetaData : vulnerabilities) {
+                    final String severity = getSeverity(vulnerabilityMetaData, useModifiedSeverity);
+
+                    switch (severity.toLowerCase()) {
+                        case "critical":
+                            counts.criticalCounter++;
+                            break;
+                        case "high":
+                            counts.highCounter++;
+                            break;
+                        case "medium":
+                            counts.mediumCounter++;
+                            break;
+                        case "low":
+                            counts.lowCounter++;
+                            break;
+                        case "none":
+                            counts.noneCounter++;
+                            break;
+                    }
                 }
+            }
 
+            for (VulnerabilityMetaData vulnerabilityMetaData : vulnerabilities) {
                 final boolean isAssessed = vulnerabilityMetaData.isStatus(STATUS_VALUE_APPLICABLE) ||
                         vulnerabilityMetaData.isStatus(STATUS_VALUE_NOTAPPLICABLE) ||
                         vulnerabilityMetaData.isStatus(STATUS_VALUE_VOID);
@@ -110,7 +123,7 @@ public class AssessmentReportAdapter {
     /**
      * Helper class to collect information per {@link AssetMetaData} instance.
      */
-    public class VulnerabilityCounts {
+    public static class VulnerabilityCounts {
         public long criticalCounter;
         public long highCounter;
         public long mediumCounter;

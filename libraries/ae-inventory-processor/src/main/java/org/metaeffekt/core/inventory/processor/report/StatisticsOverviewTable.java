@@ -99,6 +99,19 @@ public class StatisticsOverviewTable {
                 .mapToInt(Integer::intValue).sum();
     }
 
+    public int getTotalForSeverity(String severity) {
+        severity = normalize(severity);
+        if (severityStatusCountMap.containsKey(severity)) {
+            final Object total = severityStatusCountMap.get(severity).getOrDefault("total", 0);
+            if (total instanceof Number) {
+                return (Integer) total;
+            } else if (total instanceof String && StringUtils.isNumeric((String) total)) {
+                return Integer.parseInt((String) total);
+            }
+        }
+        return 0;
+    }
+
     /**
      * Checks if the table is empty.<br>
      * The table is considered empty if all cells have the value "0", except for the "% assessed" column.
@@ -148,7 +161,7 @@ public class StatisticsOverviewTable {
         );
     }
 
-    private static void filterVulnerabilityMetaDataForAdvisories(List<VulnerabilityMetaData> vmds, String filterCert) {
+    private static void filterVulnerabilityMetaDataForAdvisories(Collection<VulnerabilityMetaData> vmds, String filterCert) {
         vmds.removeIf(
                 vmd -> {
                     String adv = vmd.getComplete("Advisories");
@@ -169,24 +182,23 @@ public class StatisticsOverviewTable {
     }
 
     public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromInventory(adapter, null, false, vulnerabilityStatusMapper);
+        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), null, false, vulnerabilityStatusMapper);
     }
 
     public static StatisticsOverviewTable fromInventoryModified(VulnerabilityReportAdapter adapter, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromInventory(adapter, null, true, vulnerabilityStatusMapper);
+        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), null, true, vulnerabilityStatusMapper);
     }
 
     public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, String filterCert, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromInventory(adapter, filterCert, false, vulnerabilityStatusMapper);
+        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), filterCert, false, vulnerabilityStatusMapper);
     }
 
     public static StatisticsOverviewTable fromInventoryModified(VulnerabilityReportAdapter adapter, String filterCert, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromInventory(adapter, filterCert, true, vulnerabilityStatusMapper);
+        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), filterCert, true, vulnerabilityStatusMapper);
     }
 
-    private static StatisticsOverviewTable fromInventory(VulnerabilityReportAdapter adapter, String filterCert, boolean useModifiedSeverity, Function<String, String> vulnerabilityStatusMapper) {
-        final List<VulnerabilityMetaData> vmds = new ArrayList<>(adapter.inventory.getVulnerabilityMetaData());
-
+    public static StatisticsOverviewTable fromVmd(VulnerabilityReportAdapter adapter, Collection<VulnerabilityMetaData> inputVmds, String filterCert, boolean useModifiedSeverity, Function<String, String> vulnerabilityStatusMapper) {
+        final Collection<VulnerabilityMetaData> vmds = new ArrayList<>(inputVmds);
         if (filterCert != null && !filterCert.isEmpty()) {
             StatisticsOverviewTable.filterVulnerabilityMetaDataForAdvisories(vmds, filterCert);
         }
