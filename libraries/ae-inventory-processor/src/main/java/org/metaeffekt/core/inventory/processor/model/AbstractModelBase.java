@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.writer.AbstractXlsxInventoryWriter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -218,7 +218,7 @@ public abstract class AbstractModelBase {
      * @param key   The key to set the value for.
      * @param value The value to set for the key.
      */
-    // FIXME: limitation of excel
+    // FIXME: limitation of excel, move into writers, letting them handle the issue when reading and writing
     public void setComplete(String key, String value) {
         // clear the current value before writing the new value
         int index = 1;
@@ -234,12 +234,12 @@ public abstract class AbstractModelBase {
         }
 
         // if the content is longer than the maximum cell length, it has to be split up into multiple cells
-        if (value.length() <= InventoryWriter.MAX_CELL_LENGTH) {
+        if (value.length() <= AbstractXlsxInventoryWriter.MAX_CELL_LENGTH) {
             set(key, value);
         } else {
             index = 0;
-            while (index * InventoryWriter.MAX_CELL_LENGTH < value.length()) {
-                String part = value.substring(index * InventoryWriter.MAX_CELL_LENGTH, Math.min(value.length(), (index + 1) * InventoryWriter.MAX_CELL_LENGTH));
+            while (index * AbstractXlsxInventoryWriter.MAX_CELL_LENGTH < value.length()) {
+                String part = value.substring(index * AbstractXlsxInventoryWriter.MAX_CELL_LENGTH, Math.min(value.length(), (index + 1) * AbstractXlsxInventoryWriter.MAX_CELL_LENGTH));
                 if (index == 0) set(key, part);
                 else set(key + " (split-" + index + ")", part);
                 index++;

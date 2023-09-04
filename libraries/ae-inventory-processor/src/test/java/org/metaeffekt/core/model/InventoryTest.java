@@ -342,6 +342,100 @@ public class InventoryTest {
         inventory.getFilteredInventory();
         new Inventory().inheritVulnerabilityMetaData(inventory, false);
         inventory.filterVulnerabilityMetaData();
+
+        cleanUpFiles(xlsInventoryFile, xlsxInventoryFile);
     }
 
+    @Test
+    public void writeAndReadInventoryWithArtifactsTest() throws IOException {
+        final Inventory initialInventory = new Inventory();
+        initialInventory.getArtifacts().add(dummyArtifact());
+
+        final File xlsInventoryFile = new File("target/writeAndReadInventoryWithArtifactsTest.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+
+        final Inventory readInventoryXls = new InventoryReader().readInventory(xlsInventoryFile);
+        Assert.assertEquals(1, readInventoryXls.getArtifacts().size());
+
+        final File xlsxInventoryFile = new File("target/writeAndReadInventoryWithArtifactsTest.xlsx");
+        new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
+
+        final Inventory readInventoryXlsx = new InventoryReader().readInventory(xlsxInventoryFile);
+        Assert.assertEquals(1, readInventoryXlsx.getArtifacts().size());
+
+
+        initialInventory.getVulnerabilityMetaData().add(dummyVulnerabilityMetaData());
+
+        final File xlsInventoryFile2 = new File("target/writeAndReadInventoryWithArtifactsTest2.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile2);
+
+        final Inventory readInventoryXls2 = new InventoryReader().readInventory(xlsInventoryFile2);
+        Assert.assertEquals(1, readInventoryXls2.getVulnerabilityMetaData().size());
+        Assert.assertEquals(1, readInventoryXls2.getArtifacts().size());
+
+        final File xlsxInventoryFile2 = new File("target/writeAndReadInventoryWithArtifactsTest2.xlsx");
+        new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile2);
+
+        final Inventory readInventoryXlsx2 = new InventoryReader().readInventory(xlsxInventoryFile2);
+        Assert.assertEquals(1, readInventoryXlsx2.getVulnerabilityMetaData().size());
+        Assert.assertEquals(1, readInventoryXlsx2.getArtifacts().size());
+
+        cleanUpFiles(xlsInventoryFile, xlsxInventoryFile, xlsInventoryFile2, xlsxInventoryFile2);
+    }
+
+    @Test
+    public void writeAndReadInventoryWithoutArtifactsTest() throws IOException {
+        final Inventory initialInventory = new Inventory();
+
+        final File xlsInventoryFile = new File("target/writeAndReadInventoryWithoutArtifactsTest.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+
+        final Inventory readInventoryXls = new InventoryReader().readInventory(xlsInventoryFile);
+        Assert.assertEquals(0, readInventoryXls.getArtifacts().size());
+        Assert.assertEquals(0, readInventoryXls.getVulnerabilityMetaData().size());
+
+        final File xlsxInventoryFile = new File("target/writeAndReadInventoryWithoutArtifactsTest.xlsx");
+        new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
+
+        final Inventory readInventoryXlsx = new InventoryReader().readInventory(xlsxInventoryFile);
+        Assert.assertEquals(0, readInventoryXlsx.getArtifacts().size());
+        Assert.assertEquals(0, readInventoryXlsx.getVulnerabilityMetaData().size());
+
+        initialInventory.getVulnerabilityMetaData().add(dummyVulnerabilityMetaData());
+
+        final File xlsInventoryFile2 = new File("target/writeAndReadInventoryWithoutArtifactsTest2.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile2);
+
+        final Inventory readInventoryXls2 = new InventoryReader().readInventory(xlsInventoryFile2);
+        Assert.assertEquals(1, readInventoryXls2.getVulnerabilityMetaData().size());
+
+        final File xlsxInventoryFile2 = new File("target/writeAndReadInventoryWithoutArtifactsTest2.xlsx");
+        new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile2);
+
+        final Inventory readInventoryXlsx2 = new InventoryReader().readInventory(xlsxInventoryFile2);
+        Assert.assertEquals(1, readInventoryXlsx2.getVulnerabilityMetaData().size());
+
+        cleanUpFiles(xlsInventoryFile, xlsxInventoryFile, xlsInventoryFile2, xlsxInventoryFile2);
+    }
+
+    private Artifact dummyArtifact() {
+        Artifact artifact = new Artifact();
+        artifact.setId("test.jar");
+        return artifact;
+    }
+
+    private VulnerabilityMetaData dummyVulnerabilityMetaData() {
+        VulnerabilityMetaData vulnerabilityMetaData = new VulnerabilityMetaData();
+        vulnerabilityMetaData.set(VulnerabilityMetaData.Attribute.NAME, "CVE-2023-1234");
+        vulnerabilityMetaData.set(VulnerabilityMetaData.Attribute.URL, " ");
+        return vulnerabilityMetaData;
+    }
+
+    private void cleanUpFiles(File... files) {
+        for (File file : files) {
+            if (file.exists()) {
+                file.delete();
+            }
+        }
+    }
 }

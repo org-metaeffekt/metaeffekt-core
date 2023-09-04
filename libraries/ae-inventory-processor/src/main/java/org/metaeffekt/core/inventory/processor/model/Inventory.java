@@ -16,10 +16,10 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +75,18 @@ public class Inventory {
      * Enables to store serialization-related data with the inventory.
      */
     private final InventorySerializationContext serializationContext = new InventorySerializationContext();
+
+    public boolean hasInformationOtherThanArtifacts() {
+        if (!licenseMetaData.isEmpty()) return true;
+        if (!componentPatternData.isEmpty()) return true;
+        if (!licenseData.isEmpty()) return true;
+        if (!certMetaData.isEmpty()) return true;
+        if (!inventoryInfo.isEmpty()) return true;
+        if (!reportData.isEmpty()) return true;
+        if (!assetMetaData.isEmpty()) return true;
+        if (vulnerabilityMetaData.values().stream().anyMatch(l -> !l.isEmpty())) return true;
+        return false;
+    }
 
     public static void sortArtifacts(List<Artifact> artifacts) {
         final Comparator<Artifact> comparator = new Comparator<Artifact>() {
@@ -1161,7 +1173,7 @@ public class Inventory {
 
         if (getVulnerabilityMetaDataContexts().size() > 1) {
             getVulnerabilityMetaDataContexts().forEach(
-                context -> filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData(context), context)
+                    context -> filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData(context), context)
             );
         } else {
             filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());

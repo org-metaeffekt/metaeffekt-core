@@ -26,7 +26,8 @@ import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.model.CertMetaData.Attribute;
 import org.metaeffekt.core.inventory.processor.reader.AbstractInventoryReader;
@@ -40,7 +41,7 @@ import java.util.*;
 
 public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    private final static Logger LOG = LoggerFactory.getLogger(XlsxInventoryWriter.class);
 
     /**
      * Defines a default order.
@@ -90,7 +91,13 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     }
 
     private void writeArtifacts(Inventory inventory, SXSSFWorkbook workbook) {
-        // an artifact inventory is always written (an xls without sheets is regarded damaged by Excel)
+        // the artifact sheet is only written, if:
+        // - there are artifacts
+        // - there is no other information in the inventory
+        //   this has to be done, since a xls without sheets is regarded damaged by Excel
+        if (inventory.hasInformationOtherThanArtifacts() && inventory.getArtifacts().isEmpty()) {
+            return;
+        }
 
         final SXSSFSheet sheet = workbook.createSheet(AbstractInventoryReader.WORKSHEET_NAME_ARTIFACT_DATA);
         sheet.createFreezePane(0, 1);

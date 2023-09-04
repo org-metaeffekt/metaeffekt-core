@@ -36,7 +36,7 @@ import java.util.*;
 
 public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    private final static Logger LOG = LoggerFactory.getLogger(XlsInventoryWriter.class);
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
         final HSSFWorkbook workbook = new HSSFWorkbook();
@@ -63,7 +63,13 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
     }
 
     private void writeArtifacts(Inventory inventory, HSSFWorkbook workbook) {
-        // an artifact inventory is always written (an xls without sheets is regarded damaged by Excel)
+        // the artifact sheet is only written, if:
+        // - there are artifacts
+        // - there is no other information in the inventory
+        //   this has to be done, since a xls without sheets is regarded damaged by Excel
+        if (inventory.hasInformationOtherThanArtifacts() && inventory.getArtifacts().isEmpty()) {
+            return;
+        }
 
         final HSSFSheet sheet = workbook.createSheet(AbstractInventoryReader.WORKSHEET_NAME_ARTIFACT_DATA);
         sheet.createFreezePane(0, 1);
