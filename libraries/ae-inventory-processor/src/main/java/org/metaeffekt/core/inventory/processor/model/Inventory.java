@@ -42,7 +42,6 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
  *     <li>{@link #Inventory(Inventory)} - Used for deep-copying an instance, also used in deserialization</li>
  *     <li>{@link #hasInformationOtherThanArtifacts()} - Checks if the inventory contains more than just artifact data</li>
  * </ul>
- * </p>
  *
  * @author Karsten Klein
  */
