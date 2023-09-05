@@ -37,6 +37,7 @@ public class InventoryWriter extends AbstractInventoryWriter {
     private final static Map<String, Supplier<AbstractInventoryWriter>> EXTENSIONS_TO_WRITERS = new LinkedHashMap<String, Supplier<AbstractInventoryWriter>>() {{
         put(".xls", XlsInventoryWriter::new);
         put(".xlsx", XlsxInventoryWriter::new);
+        put(".ser", SerializedInventoryWriter::new);
     }};
 
     @Override

@@ -23,20 +23,48 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
- * Class representing an inventory of artifact and license meta data. The implementation
- * offers various methods to analyze, optimize and utilize the meta data.
+ * Class representing an inventory of artifact, license, and various other meta data.
+ * The implementation offers various methods to analyze, optimize, and utilize the meta data.
+ * <p>
+ * <strong>For Developers:</strong> This class is serializable. Because of this and for other
+ * reasons, if you add new fields to this class, make sure to update the following methods in this class:
+ * <ul>
+ *     <li>{@link #readObject(ObjectInputStream)} - Required for custom deserialization</li>
+ *     <li>{@link #Inventory(Inventory)} - Used for deep-copying an instance, also used in deserialization</li>
+ *     <li>{@link #hasInformationOtherThanArtifacts()} - Checks if the inventory contains more than just artifact data</li>
+ * </ul>
+ * </p>
  *
  * @author Karsten Klein
  */
-public class Inventory {
+public class Inventory implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
+
+    /**
+     * The serial version UID for this class. This UID is used to ensure that
+     * during deserialization the loaded class is compatible with the serialized object.
+     * <p>
+     * This value should not be changed. If new fields are added to this class or existing
+     * ones are modified, update the {@code readObject} method to handle those changes
+     * for backward compatibility.
+     * </p>
+     * <p>
+     * This serialization and deserialization mechanism is specifically used by
+     * {@link org.metaeffekt.core.inventory.processor.writer.SerializedInventoryWriter} and
+     * {@link org.metaeffekt.core.inventory.processor.reader.SerializedInventoryReader}.
+     * </p>
+     */
+    private static final long serialVersionUID = 1L;
 
     public static final String CLASSIFICATION_CURRENT = "current";
 
@@ -74,7 +102,79 @@ public class Inventory {
     /**
      * Enables to store serialization-related data with the inventory.
      */
-    private final InventorySerializationContext serializationContext = new InventorySerializationContext();
+    private final transient InventorySerializationContext serializationContext;
+
+    public Inventory() {
+        this.serializationContext = new InventorySerializationContext();
+    }
+
+    /**
+     * Creates a deep copy of the given {@link Inventory} instance.
+     * <p>
+     * This constructor performs a deep copy of all fields in the original {@link Inventory} object.
+     * It ensures that the new instance is independent of the original, so that changes to the new
+     * instance do not affect the original and vice versa.
+     * </p>
+     * <p>
+     * The {@link Inventory#serializationContext} is initialized as a new instance, ensuring that the serialization
+     * state is not shared between the original and the copied object.
+     * This also prevents the {@link Inventory#serializationContext} from being initialized with {@code null} during
+     * deserialization.
+     * </p>
+     *
+     * @param other The original {@code Inventory} instance to be copied.
+     */
+    public Inventory(Inventory other) {
+        this.serializationContext = new InventorySerializationContext();
+
+        this.artifacts = deepCopyList(other.artifacts, Artifact::new);
+        this.licenseMetaData = deepCopyList(other.licenseMetaData, LicenseMetaData::new);
+        this.componentPatternData = deepCopyList(other.componentPatternData, ComponentPatternData::new);
+        this.licenseData = deepCopyList(other.licenseData, LicenseData::new);
+        this.certMetaData = deepCopyList(other.certMetaData, CertMetaData::new);
+        this.inventoryInfo = deepCopyList(other.inventoryInfo, InventoryInfo::new);
+        this.reportData = deepCopyList(other.reportData, ReportData::new);
+        this.assetMetaData = deepCopyList(other.assetMetaData, AssetMetaData::new);
+
+        this.vulnerabilityMetaData = deepCopyMapOfLists(other.vulnerabilityMetaData);
+
+        this.licenseNameMap = new HashMap<>(other.licenseNameMap);
+        this.componentNameMap = new HashMap<>(other.componentNameMap);
+    }
+
+    /**
+     * Custom deserialization method. This method is automatically called during
+     * the deserialization of objects of this class.
+     * <p>
+     * If new fields are added to the class, this method should be updated to
+     * initialize those fields to appropriate default values during deserialization.
+     * </p>
+     *
+     * @param ois The ObjectInputStream from which the object is being read.
+     * @throws IOException            If an I/O error occurs while reading the object.
+     * @throws ClassNotFoundException If a required class is not found.
+     */
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject(); // perform default deserialization first
+    }
+
+    private Object readResolve() {
+        return new Inventory(this);
+    }
+
+    private <T extends AbstractModelBase> List<T> deepCopyList(List<T> list, Function<T, T> modelConstructor) {
+        return list.stream()
+                .map(modelConstructor)
+                .collect(Collectors.toList());
+    }
+
+    private <K, V> Map<K, List<V>> deepCopyMapOfLists(Map<K, List<V>> originalMap) {
+        Map<K, List<V>> copy = new HashMap<>();
+        for (Map.Entry<K, List<V>> entry : originalMap.entrySet()) {
+            copy.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+        return copy;
+    }
 
     public boolean hasInformationOtherThanArtifacts() {
         if (!licenseMetaData.isEmpty()) return true;

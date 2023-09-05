@@ -36,6 +36,7 @@ public class InventoryReader extends AbstractInventoryReader {
     private final static Map<String, Supplier<AbstractInventoryReader>> EXTENSIONS_TO_READERS = new LinkedHashMap<String, Supplier<AbstractInventoryReader>>() {{
         put(".xls", XlsInventoryReader::new);
         put(".xlsx", XlsxInventoryReader::new);
+        put(".ser", SerializedInventoryReader::new);
     }};
 
     @Override

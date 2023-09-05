@@ -18,9 +18,7 @@ package org.metaeffekt.core.model;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.slf4j.Logger;
@@ -28,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
@@ -418,6 +417,83 @@ public class InventoryTest {
         cleanUpFiles(xlsInventoryFile, xlsxInventoryFile, xlsInventoryFile2, xlsxInventoryFile2);
     }
 
+    @Test
+    public void serializationInventoryReaderWriterEmptyInventoryTest() throws IOException {
+        final Inventory initialInventory = new Inventory();
+
+        final File serializedInventoryFile = new File("target/serializationInventoryReaderWriterEmptyInventoryTest.ser");
+        new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
+
+        final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
+        Assert.assertEquals(0, readInventory.getArtifacts().size());
+
+        cleanUpFiles(serializedInventoryFile);
+    }
+
+    @Test
+    public void serializationInventoryReaderWriterInventoryWithArtifactsTest() throws IOException {
+        final Inventory initialInventory = new Inventory();
+        initialInventory.getArtifacts().add(dummyArtifact());
+
+        final File serializedInventoryFile = new File("target/serializationInventoryReaderWriterInventoryWithArtifactsTest.ser");
+        new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
+
+        final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
+        Assert.assertEquals(1, readInventory.getArtifacts().size());
+        Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
+
+        cleanUpFiles(serializedInventoryFile);
+    }
+
+    @Test
+    public void serializationInventoryReaderWriterInventoryWithVulnerabilityContextsTest() throws IOException {
+        final Inventory initialInventory = new Inventory();
+        initialInventory.getVulnerabilityMetaData("test-context").add(dummyVulnerabilityMetaData());
+
+        final File serializedInventoryFile = new File("target/serializationInventoryReaderWriterInventoryWithArtifactsTest.ser");
+        new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
+
+        final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
+        Assert.assertEquals(1, readInventory.getVulnerabilityMetaData("test-context").size());
+        Assert.assertEquals("CVE-2023-1234", readInventory.getVulnerabilityMetaData("test-context").get(0).get(VulnerabilityMetaData.Attribute.NAME));
+
+        cleanUpFiles(serializedInventoryFile);
+    }
+
+    @Test
+    public void serializationInventoryReaderWriterInventoryWithVariousDataTest() throws IOException {
+        final Inventory initialInventory = new Inventory();
+        initialInventory.getVulnerabilityMetaData().add(dummyVulnerabilityMetaData());
+        initialInventory.getVulnerabilityMetaData().add(dummyVulnerabilityMetaData());
+        initialInventory.getArtifacts().add(dummyArtifact());
+        initialInventory.getArtifacts().add(dummyArtifact());
+        initialInventory.getInventoryInfo().add(opAndReturn(new InventoryInfo(), i -> i.set("key", "value")));
+        initialInventory.getCertMetaData().add(opAndReturn(new CertMetaData(), c -> c.set("key", "value")));
+
+        final File serializedInventoryFile = new File("target/serializationInventoryReaderWriterInventoryWithVariousDataTest.ser");
+        new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
+
+        final Inventory readInventory = new InventoryReader().readInventory(serializedInventoryFile);
+        Assert.assertEquals(2, readInventory.getVulnerabilityMetaData().size());
+        Assert.assertEquals("CVE-2023-1234", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.NAME));
+        Assert.assertEquals(2, readInventory.getArtifacts().size());
+        Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
+        Assert.assertEquals(1, readInventory.getInventoryInfo().size());
+        Assert.assertEquals("value", readInventory.getInventoryInfo().get(0).get("key"));
+        Assert.assertEquals(1, readInventory.getCertMetaData().size());
+        Assert.assertEquals("value", readInventory.getCertMetaData().get(0).get("key"));
+
+
+        // serializationContext is transient and not serialized, check if access works correctly
+        final File xlsInventoryFile = new File("target/serializationInventoryReaderWriterInventoryWithVariousDataTest.xls");
+        new InventoryWriter().writeInventory(readInventory, xlsInventoryFile);
+
+        final Inventory readInventoryXls = new InventoryReader().readInventory(xlsInventoryFile);
+        Assert.assertEquals(2, readInventoryXls.getVulnerabilityMetaData().size());
+
+        cleanUpFiles(serializedInventoryFile);
+    }
+
     private Artifact dummyArtifact() {
         Artifact artifact = new Artifact();
         artifact.setId("test.jar");
@@ -437,5 +513,10 @@ public class InventoryTest {
                 file.delete();
             }
         }
+    }
+
+    private <T> T opAndReturn(T t, Consumer<T> consumer) {
+        consumer.accept(t);
+        return t;
     }
 }

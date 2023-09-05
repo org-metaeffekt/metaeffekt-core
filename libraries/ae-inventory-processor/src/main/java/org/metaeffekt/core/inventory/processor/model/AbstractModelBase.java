@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.writer.AbstractXlsxInventoryWriter;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import java.util.Set;
  * Abstract model base class. Support associating key and values as generic concept. Keys can be bound to enums specified
  * by the subclass.
  */
-public abstract class AbstractModelBase {
+public abstract class AbstractModelBase implements Serializable {
 
     public interface Attribute {
         String getKey();
