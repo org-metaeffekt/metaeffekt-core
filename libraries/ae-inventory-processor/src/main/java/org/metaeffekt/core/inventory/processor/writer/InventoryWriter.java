@@ -20,9 +20,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
-public class InventoryWriter extends AbstractXlsInventoryWriter {
+public class InventoryWriter extends AbstractInventoryWriter {
 
     private final static Logger LOG = LoggerFactory.getLogger(InventoryWriter.class);
 
@@ -30,12 +34,33 @@ public class InventoryWriter extends AbstractXlsInventoryWriter {
 
     public static final String SINGLE_VULNERABILITY_ASSESSMENT_WORKSHEET = "Vulnerabilities";
 
+    private final static Map<String, Supplier<AbstractInventoryWriter>> EXTENSIONS_TO_WRITERS = new LinkedHashMap<String, Supplier<AbstractInventoryWriter>>() {{
+        put(".xls", XlsInventoryWriter::new);
+        put(".xlsx", XlsxInventoryWriter::new);
+        put(".ser", SerializedInventoryWriter::new);
+    }};
+
+    @Override
     public void writeInventory(Inventory inventory, File file) throws IOException {
-        if (file.getName().endsWith(".xls")) {
-            new XlsInventoryWriter().writeInventory(inventory, file);
-        } else {
-            new XlsxInventoryWriter().writeInventory(inventory, file);
+        if (file == null) {
+            throw new FileNotFoundException("File is null.");
         }
+
+        final String extension = getFileExtension(file.getName());
+        getWriterForExtension(extension).writeInventory(inventory, file);
     }
 
+    private AbstractInventoryWriter getWriterForExtension(String extension) throws IOException {
+        final Supplier<AbstractInventoryWriter> writerSupplier = EXTENSIONS_TO_WRITERS.get(extension);
+        if (writerSupplier == null) {
+            throw new IOException("Unsupported file type [" + extension + "].");
+        }
+        return writerSupplier.get();
+    }
+
+    private String getFileExtension(String filename) {
+        int lastIndexOf = filename.toLowerCase().lastIndexOf(".");
+        if (lastIndexOf == -1) return "";
+        return filename.substring(lastIndexOf);
+    }
 }

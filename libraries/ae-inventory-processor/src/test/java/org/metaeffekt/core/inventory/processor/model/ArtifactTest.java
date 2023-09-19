@@ -17,7 +17,7 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.inventory.processor.writer.AbstractXlsxInventoryWriter;
 
 import java.util.Set;
 import java.util.StringJoiner;
@@ -30,7 +30,7 @@ public class ArtifactTest {
         StringJoiner cveData = new StringJoiner(", ");
         for (int i = 0; i < 4000; i++) cveData.add("CVE-2022-21907 (9.8)");
         artifact.setCompleteVulnerability(cveData.toString());
-        Assert.assertEquals(InventoryWriter.MAX_CELL_LENGTH, artifact.get("Vulnerability (split-1)").length());
+        Assert.assertEquals(AbstractXlsxInventoryWriter.MAX_CELL_LENGTH, artifact.get("Vulnerability (split-1)").length());
         Assert.assertEquals(cveData.toString(), artifact.getCompleteVulnerability());
     }
 

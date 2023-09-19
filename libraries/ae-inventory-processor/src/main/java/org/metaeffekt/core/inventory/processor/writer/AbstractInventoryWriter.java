@@ -15,11 +15,18 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+
+import java.io.File;
+import java.io.IOException;
+
 import static org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT;
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.SINGLE_VULNERABILITY_ASSESSMENT_WORKSHEET;
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
 
-public class AbstractInventoryWriter {
+public abstract class AbstractInventoryWriter {
+
+    public abstract void writeInventory(Inventory inventory, File file) throws IOException;
 
     public String assessmentContextToSheetName(String assessmentContext) {
         if (VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT.equals(assessmentContext)) {
@@ -36,6 +43,4 @@ public class AbstractInventoryWriter {
                 key.startsWith("IID-") ||
                 key.startsWith("EAID-");
     }
-
-
 }
