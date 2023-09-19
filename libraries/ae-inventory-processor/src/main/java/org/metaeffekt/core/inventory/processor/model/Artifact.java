@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.metaeffekt.core.inventory.InventoryUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,6 +36,14 @@ public class Artifact extends AbstractModelBase {
 
     public static final String PROJECT_DELIMITER = "|\n";
 
+    public static final List<String> ARTIFACT_HARDWARE_TYPES = Collections.unmodifiableList(Arrays.asList(
+            // TODO: revise this list of hardware categories
+            "complete systems", "system board", "processing core", "extension module", "networking hardware",
+            "power supply", "embedded system", "data storage", "device connector", "security hardware",
+            "sensor", "human interface", "sound hardware", "imaging hardware", "print-scan",
+            "temperature control", "aesthetic hardware", "location hardware", "misc hardware"
+    ));
+
     /**
      * Core attributes to support component patterns.
      */
@@ -50,6 +58,9 @@ public class Artifact extends AbstractModelBase {
         CLASSIFICATION("Classification"),
         LICENSE("License"),
         GROUPID("Group Id"),
+
+        // artifact type information
+        TYPE("Type"),
 
         // comments (and hints)
         COMMENT("Comment"),
@@ -584,6 +595,16 @@ public class Artifact extends AbstractModelBase {
 
     public void setCompleteVulnerability(String vulnerability) {
         setComplete(Attribute.VULNERABILITY, vulnerability);
+    }
+
+    /**
+     * Uses the information in the {@link Attribute#TYPE} column to determine whether the artifact is a hardware
+     * component.
+     *
+     * @return true if the artifact is a hardware component, false otherwise.
+     */
+    public boolean isHardware() {
+        return ARTIFACT_HARDWARE_TYPES.contains(get(Attribute.TYPE));
     }
 
     public boolean isValid() {
