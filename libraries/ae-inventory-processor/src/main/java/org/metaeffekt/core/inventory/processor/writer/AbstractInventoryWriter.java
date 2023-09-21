@@ -22,6 +22,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.InventorySheetCellStyler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +35,8 @@ import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.SIN
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
 
 public abstract class AbstractInventoryWriter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractInventoryWriter.class);
 
     public abstract void writeInventory(Inventory inventory, File file) throws IOException;
 
@@ -155,26 +159,53 @@ public abstract class AbstractInventoryWriter {
                     final List<String> splitColumnNames = columnHeaderGroup.getValue();
                     final String columnValue = model == null ? null : model.get(originalColumnName);
 
-                    for (int splitIndex = 0; splitIndex < splitColumnNames.size(); splitIndex++) {
-                        final String splitColumnName = splitColumnNames.get(splitIndex);
-                        final String splitColumnValue = columnValue != null && columnValue.length() > maxCellLength ? columnValue.substring(splitIndex * maxCellLength, Math.min((splitIndex + 1) * maxCellLength, columnValue.length())) : columnValue;
+                    if (columnValue == null) {
+                        cellNum += splitColumnNames.size();
+                        continue;
+                    }
+
+                    if (splitColumnNames.size() == 1) {
+                        // directly set the value if only one column is needed
                         final Cell dataCell = dataRow.createCell(cellNum);
-                        dataCell.setCellValue(richTextInitializer.apply(splitColumnValue));
+                        dataCell.setCellValue(richTextInitializer.apply(columnValue));
 
                         for (InventorySheetCellStyler styler : dataCellStyler) {
-                            if (styler.isApplicable(dataCell, dataRow.getSheet(), dataRow, originalColumnName, splitColumnName, columnValue, splitColumnValue)) {
-                                styler.applyStyle(dataCell, dataRow.getSheet(), dataRow, originalColumnName, splitColumnName, columnValue, splitColumnValue);
+                            if (styler.isApplicable(dataCell, dataRow.getSheet(), dataRow, originalColumnName, originalColumnName, columnValue, columnValue)) {
+                                styler.applyStyle(dataCell, dataRow.getSheet(), dataRow, originalColumnName, originalColumnName, columnValue, columnValue);
                                 break;
                             }
                         }
 
                         cellNum++;
+                    } else {
+                        for (int splitIndex = 0; splitIndex < splitColumnNames.size(); splitIndex++) {
+                            final String splitColumnName = splitColumnNames.get(splitIndex);
+                            final int startIndex = splitIndex * maxCellLength;
+                            final int endIndex = Math.min((splitIndex + 1) * maxCellLength, columnValue.length());
+
+                            String splitColumnValue = null;
+                            if (startIndex < columnValue.length()) {
+                                splitColumnValue = columnValue.substring(startIndex, endIndex);
+                            }
+
+                            final Cell dataCell = dataRow.createCell(cellNum);
+                            dataCell.setCellValue(richTextInitializer.apply(splitColumnValue));
+
+                            for (InventorySheetCellStyler styler : dataCellStyler) {
+                                if (styler.isApplicable(dataCell, dataRow.getSheet(), dataRow, originalColumnName, splitColumnName, columnValue, splitColumnValue)) {
+                                    styler.applyStyle(dataCell, dataRow.getSheet(), dataRow, originalColumnName, splitColumnName, columnValue, splitColumnValue);
+                                    break;
+                                }
+                            }
+
+                            cellNum++;
+                        }
                     }
                 }
-
                 rowNum++;
             }
         }
+
 
         return columnHeadersWithSplitColumnInformation.values().stream().mapToInt(List::size).sum();
     }

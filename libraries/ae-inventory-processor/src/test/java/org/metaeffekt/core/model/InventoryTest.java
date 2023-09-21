@@ -538,6 +538,28 @@ public class InventoryTest {
 
         final File xlsInventoryFile = new File("target/newInventoryWriterSystemTest.xls");
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+
+        cleanUpFiles(xlsInventoryFile);
+    }
+
+    @Test
+    public void anotherLongStringTest() throws IOException {
+        final String longString = buildLongString(AbstractXlsInventoryWriter.MAX_CELL_LENGTH * 4);
+
+        final Inventory initialInventory = new Inventory();
+
+        final Artifact artifact1 = new Artifact();
+        artifact1.set("Advisories", longString);
+        initialInventory.getArtifacts().add(artifact1);
+
+        final Artifact artifact2 = new Artifact();
+        artifact2.set("Advisories", "test");
+        initialInventory.getArtifacts().add(artifact2);
+
+        final File xlsInventoryFile = new File("target/anotherLongStringTest.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+
+        cleanUpFiles(xlsInventoryFile);
     }
 
     @Test
