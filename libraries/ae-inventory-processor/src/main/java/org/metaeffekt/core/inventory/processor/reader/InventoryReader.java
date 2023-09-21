@@ -76,7 +76,7 @@ public class InventoryReader extends AbstractInventoryReader {
     private AbstractInventoryReader getReaderForExtension(String extension) throws IOException {
         final Supplier<AbstractInventoryReader> readerSupplier = EXTENSIONS_TO_READERS.get(extension);
         if (readerSupplier == null) {
-            throw new IOException("Unsupported file type [" + extension + "].");
+            throw new IOException("Unsupported file type [" + extension + "]. Available types are: " + EXTENSIONS_TO_READERS.keySet());
         }
         return readerSupplier.get();
     }

@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.inventory.processor.writer.excel.AbstractXlsInventoryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -491,7 +492,124 @@ public class InventoryTest {
         final Inventory readInventoryXls = new InventoryReader().readInventory(xlsInventoryFile);
         Assert.assertEquals(2, readInventoryXls.getVulnerabilityMetaData().size());
 
-        cleanUpFiles(serializedInventoryFile);
+        cleanUpFiles(serializedInventoryFile, xlsInventoryFile);
+    }
+
+    @Test
+    public void writeVeryLongStringsIntoArtifactTest() throws IOException {
+        final String longString = buildLongString(AbstractXlsInventoryWriter.MAX_CELL_LENGTH * 3);
+
+        final Inventory initialInventory = new Inventory();
+        final Artifact longTextArtifact = new Artifact();
+        longTextArtifact.setId("test.jar");
+        longTextArtifact.set("TEST", longString);
+        initialInventory.getArtifacts().add(longTextArtifact);
+
+        final File xlsInventoryFile = new File("target/writeVeryLongStringsIntoArtifactTest.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+
+        final Inventory readInventory = new InventoryReader().readInventory(xlsInventoryFile);
+        Assert.assertEquals(1, readInventory.getArtifacts().size());
+        Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
+        Assert.assertEquals(longString.trim(), readInventory.getArtifacts().get(0).get("TEST"));
+
+        cleanUpFiles(xlsInventoryFile);
+    }
+
+    @Test
+    public void newInventoryWriterSystem2Test() throws IOException {
+        final String longString = buildLongString(AbstractXlsInventoryWriter.MAX_CELL_LENGTH);
+
+        final Inventory initialInventory = new Inventory();
+
+        final Artifact artifact = new Artifact();
+        artifact.setId("test.jar");
+        artifact.set("TEST", longString);
+        artifact.set("CID-ASSET-ID", "5");
+        initialInventory.getArtifacts().add(artifact);
+
+        final File xlsInventoryFile = new File("target/newInventoryWriterSystemTest.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+    }
+
+    @Test
+    public void newInventoryWriterSystemManualFormatCheckTest() throws IOException {
+        final String longString = buildLongString(AbstractXlsInventoryWriter.MAX_CELL_LENGTH + 10);
+        final String specialChars = "!@#$%^&*()_+{}:\"<>?";
+        final String url = "http://example.com";
+
+        final Inventory initialInventory = new Inventory();
+        final InventorySerializationContext serializationContext = initialInventory.getSerializationContext();
+
+        // Populate serializationContext
+        serializationContext.put("licensedata.header.[License].fg", "224,153,255");
+        serializationContext.put("licensedata.header.[License].width", 50);
+        serializationContext.put("licensedata.column.[License].centered", true);
+
+        final Artifact artifact = new Artifact();
+        artifact.setId("test.jar");
+        artifact.set("TEST", longString);
+        artifact.set("CID-ASSET-ID", longString);
+        artifact.set("Incomplete Match", "Yes");
+        artifact.set("Errors", "None");
+        initialInventory.getArtifacts().add(artifact);
+
+        final VulnerabilityMetaData vmd = new VulnerabilityMetaData();
+        vmd.set(VulnerabilityMetaData.Attribute.V2_SCORE, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.V3_SCORE, "9.0");
+        vmd.set(VulnerabilityMetaData.Attribute.MAX_SCORE, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.URL, url);
+        initialInventory.getVulnerabilityMetaData().add(vmd);
+
+        final LicenseMetaData lmd = new LicenseMetaData();
+        lmd.set("License", "MIT");
+        initialInventory.getLicenseMetaData().add(lmd);
+
+        final LicenseData licenseData = new LicenseData();
+        licenseData.set("License", "GPL");
+        licenseData.set("Version", "3.0");
+        initialInventory.getLicenseData().add(licenseData);
+
+        final ComponentPatternData cpd = new ComponentPatternData();
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*.jar");
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, specialChars);
+        initialInventory.getComponentPatternData().add(cpd);
+
+        final AssetMetaData amd = new AssetMetaData();
+        amd.set("SRC-AssetSource", "Source1");
+        amd.set("config_setting", "value");
+        amd.set(AssetMetaData.Attribute.NAME, "AssetName");
+        amd.set(AssetMetaData.Attribute.ASSET_ID, "12345");
+        initialInventory.getAssetMetaData().add(amd);
+
+        final ReportData rd = new ReportData();
+        rd.set("AssetId", "12345");
+        initialInventory.getReportData().add(rd);
+
+        final InventoryInfo info = new InventoryInfo();
+        info.set("InfoKey", "InfoValue");
+        initialInventory.getInventoryInfo().add(info);
+
+        final CertMetaData cm = new CertMetaData();
+        cm.set(CertMetaData.Attribute.NAME, "CERT-SEI-343434");
+        cm.set(CertMetaData.Attribute.URL, url);
+        initialInventory.getCertMetaData().add(cm);
+
+        final File xlsInventoryFile = new File("target/newInventoryWriterSystemTest.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+        final File xlsxInventoryFile = new File("target/newInventoryWriterSystemTest.xlsx");
+        new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
+
+        // comment out the line below to preserve the test file for manual inspection
+        cleanUpFiles(xlsInventoryFile);
+    }
+
+    private static String buildLongString(int minLength) {
+        final StringBuilder longStringBuilder = new StringBuilder();
+        for (int i = 0; longStringBuilder.length() < minLength; i++) {
+            longStringBuilder.append(i).append(" ");
+        }
+        return longStringBuilder.toString();
     }
 
     private Artifact dummyArtifact() {
@@ -511,6 +629,7 @@ public class InventoryTest {
         for (File file : files) {
             if (file.exists()) {
                 file.delete();
+                // LOG.info("Skipping file deletion: {}", file.getAbsolutePath());
             }
         }
     }

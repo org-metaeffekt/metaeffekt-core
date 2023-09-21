@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.inventory.processor.writer.AbstractXlsxInventoryWriter;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -62,72 +61,12 @@ public abstract class AbstractModelBase implements Serializable {
         return (currentValue != null) ? currentValue : defaultValue;
     }
 
-    /**
-     * Get the value associated with the given key.<br>
-     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
-     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
-     * {@link #setComplete(Attribute, String)} method.
-     *
-     * @param key The key to get the value for.
-     * @return The value associated with the key or <code>null</code> in case no value is associated. In case key is
-     * <code>null</code> also <code>null</code> is returned.
-     */
-    public String getComplete(Attribute key) {
-        return getComplete(key.getKey(), null);
+    public String get(Attribute key) {
+        return get(key.getKey(), null);
     }
 
-    /**
-     * Get the value associated with the given key.<br>
-     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
-     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
-     * {@link #setComplete(Attribute, String)} method.
-     *
-     * @param key          The key to get the value for.
-     * @param defaultValue The default value to use, in case the key is not associated.
-     * @return The value associated with the key or defaultValue in case no value is associated. In case key is
-     * <code>null</code> also <code>null</code> is returned.
-     */
-    public String getComplete(Attribute key, String defaultValue) {
-        return getComplete(key.getKey(), defaultValue);
-    }
-
-    /**
-     * Get the value associated with the given key.<br>
-     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
-     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
-     * {@link #setComplete(Attribute, String)} method.
-     *
-     * @param key The key to get the value for.
-     * @return The value associated with the key or <code>null</code> in case no value is associated. In case key is
-     * <code>null</code> also <code>null</code> is returned.
-     */
-    public String getComplete(String key) {
-        return getComplete(key, null);
-    }
-
-    /**
-     * Get the value associated with the given key.<br>
-     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
-     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
-     * {@link #setComplete(Attribute, String)} method.
-     *
-     * @param key          The key to get the value for.
-     * @param defaultValue The default value to use, in case the key is not associated.
-     * @return The value associated with the key or defaultValue in case no value is associated. In case key is
-     * <code>null</code> also <code>null</code> is returned.
-     */
-    // FIXME: limitation of excel
-    public String getComplete(String key, String defaultValue) {
-        if (key == null) return null;
-        if (get(key) == null) return defaultValue;
-        StringBuilder sb = new StringBuilder(get(key));
-        int index = 1;
-        while (get(key + " (split-" + index + ")") != null) {
-            String s = get(key + " (split-" + index + ")");
-            sb.append(s);
-            index++;
-        }
-        return sb.toString();
+    public String get(Attribute key, String defaultValue) {
+        return get(key.getKey(), defaultValue);
     }
 
     /**
@@ -182,6 +121,83 @@ public abstract class AbstractModelBase implements Serializable {
         }
     }
 
+    public void set(Attribute key, String value) {
+        if (key == null) {
+            throw new IllegalStateException("Attribute key must be defined.");
+        }
+        if (StringUtils.isBlank(value)) {
+            attributeMap.remove(key.getKey());
+        } else {
+            attributeMap.put(key.getKey(), value);
+        }
+    }
+
+    /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key The key to get the value for.
+     * @return The value associated with the key or <code>null</code> in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     * @deprecated No longer required. Limitation is handled by readers and writers. Use {@link #get(Attribute)} instead.
+     */
+    @Deprecated
+    public String getComplete(Attribute key) {
+        return get(key.getKey(), null);
+    }
+
+    /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key          The key to get the value for.
+     * @param defaultValue The default value to use, in case the key is not associated.
+     * @return The value associated with the key or defaultValue in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     * @deprecated No longer required. Limitation is handled by readers and writers. Use {@link #get(Attribute, String)} instead.
+     */
+    @Deprecated
+    public String getComplete(Attribute key, String defaultValue) {
+        return get(key.getKey(), defaultValue);
+    }
+
+    /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key The key to get the value for.
+     * @return The value associated with the key or <code>null</code> in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     * @deprecated No longer required. Limitation is handled by readers and writers. Use {@link #get(String)} instead.
+     */
+    @Deprecated
+    public String getComplete(String key) {
+        return get(key, null);
+    }
+
+    /**
+     * Get the value associated with the given key.<br>
+     * Excel limits the maximum cell length to <code>32767</code> characters.<br>
+     * This method reconstructs the string set by the {@link #setComplete(String, String)} or
+     * {@link #setComplete(Attribute, String)} method.
+     *
+     * @param key          The key to get the value for.
+     * @param defaultValue The default value to use, in case the key is not associated.
+     * @return The value associated with the key or defaultValue in case no value is associated. In case key is
+     * <code>null</code> also <code>null</code> is returned.
+     * @deprecated No longer required. Limitation is handled by readers and writers. Use {@link #get(String, String)} instead.
+     */
+    @Deprecated
+    public String getComplete(String key, String defaultValue) {
+        return get(key, defaultValue);
+    }
+
     /**
      * Safely set the value for a key.<br>
      * Excel limits the maximum cell length to <code>32767</code> characters.
@@ -190,9 +206,11 @@ public abstract class AbstractModelBase implements Serializable {
      *
      * @param key   The key to set the value for.
      * @param value The value to set for the key.
+     * @deprecated No longer required. Limitation is handled by readers and writers. Use {@link #set(Attribute, String)} instead.
      */
+    @Deprecated
     public void setComplete(Attribute key, String value) {
-        setComplete(key.getKey(), value);
+        set(key.getKey(), value);
     }
 
     /**
@@ -218,34 +236,11 @@ public abstract class AbstractModelBase implements Serializable {
      *
      * @param key   The key to set the value for.
      * @param value The value to set for the key.
+     * @deprecated No longer required. Limitation is handled by readers and writers. Use {@link #set(String, String)} instead.
      */
-    // FIXME: limitation of excel, move into writers, letting them handle the issue when reading and writing
+    @Deprecated
     public void setComplete(String key, String value) {
-        // clear the current value before writing the new value
-        int index = 1;
-        while (get(key + " (split-" + index + ")") != null) {
-            set(key + " (split-" + index + ")", null);
-            index++;
-        }
-
-        // if the new value is null, no need to split the value
-        if (value == null) {
-            set(key, null);
-            return;
-        }
-
-        // if the content is longer than the maximum cell length, it has to be split up into multiple cells
-        if (value.length() <= AbstractXlsxInventoryWriter.MAX_CELL_LENGTH) {
-            set(key, value);
-        } else {
-            index = 0;
-            while (index * AbstractXlsxInventoryWriter.MAX_CELL_LENGTH < value.length()) {
-                String part = value.substring(index * AbstractXlsxInventoryWriter.MAX_CELL_LENGTH, Math.min(value.length(), (index + 1) * AbstractXlsxInventoryWriter.MAX_CELL_LENGTH));
-                if (index == 0) set(key, part);
-                else set(key + " (split-" + index + ")", part);
-                index++;
-            }
-        }
+        set(key, value);
     }
 
     public void append(String key, String value, String delimiter) {
