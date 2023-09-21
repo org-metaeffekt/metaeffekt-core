@@ -513,7 +513,15 @@ public class InventoryTest {
         Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
         Assert.assertEquals(longString.trim(), readInventory.getArtifacts().get(0).get("TEST"));
 
-        cleanUpFiles(xlsInventoryFile);
+        final File xlsxInventoryFile = new File("target/writeVeryLongStringsIntoArtifactTest.xlsx");
+        new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
+
+        final Inventory readInventoryXlsx = new InventoryReader().readInventory(xlsxInventoryFile);
+        Assert.assertEquals(1, readInventoryXlsx.getArtifacts().size());
+        Assert.assertEquals("test.jar", readInventoryXlsx.getArtifacts().get(0).getId());
+        Assert.assertEquals(longString.trim(), readInventoryXlsx.getArtifacts().get(0).get("TEST"));
+
+        cleanUpFiles(xlsInventoryFile, xlsxInventoryFile);
     }
 
     @Test
