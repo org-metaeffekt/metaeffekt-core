@@ -16,6 +16,8 @@
 package org.metaeffekt.core.inventory.processor.writer;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.writer.excel.XlsInventoryWriter;
+import org.metaeffekt.core.inventory.processor.writer.excel.XlsxInventoryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +55,7 @@ public class InventoryWriter extends AbstractInventoryWriter {
     private AbstractInventoryWriter getWriterForExtension(String extension) throws IOException {
         final Supplier<AbstractInventoryWriter> writerSupplier = EXTENSIONS_TO_WRITERS.get(extension);
         if (writerSupplier == null) {
-            throw new IOException("Unsupported file type [" + extension + "].");
+            throw new IOException("Unsupported file type [" + extension + "]. Available types are: " + EXTENSIONS_TO_WRITERS.keySet());
         }
         return writerSupplier.get();
     }

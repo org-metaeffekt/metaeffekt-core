@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.metaeffekt.core.inventory.InventoryUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -578,12 +578,22 @@ public class Artifact extends AbstractModelBase {
         set(Attribute.VULNERABILITY, vulnerability);
     }
 
+    /**
+     * @return the complete vulnerability string
+     * @deprecated use {@link #getVulnerability()} instead
+     */
+    @Deprecated
     public String getCompleteVulnerability() {
-        return getComplete(Attribute.VULNERABILITY);
+        return get(Attribute.VULNERABILITY);
     }
 
+    /**
+     * @param vulnerability a comma-separated vulnerability string
+     * @deprecated use {@link #setVulnerability(String)} instead
+     */
+    @Deprecated
     public void setCompleteVulnerability(String vulnerability) {
-        setComplete(Attribute.VULNERABILITY, vulnerability);
+        set(Attribute.VULNERABILITY, vulnerability);
     }
 
     public boolean isValid() {

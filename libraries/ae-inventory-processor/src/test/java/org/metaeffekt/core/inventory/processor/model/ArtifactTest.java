@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.writer.AbstractXlsxInventoryWriter;
 
 import java.util.Set;
 import java.util.StringJoiner;
@@ -29,19 +28,21 @@ public class ArtifactTest {
         Artifact artifact = new Artifact();
         StringJoiner cveData = new StringJoiner(", ");
         for (int i = 0; i < 4000; i++) cveData.add("CVE-2022-21907 (9.8)");
-        artifact.setCompleteVulnerability(cveData.toString());
-        Assert.assertEquals(AbstractXlsxInventoryWriter.MAX_CELL_LENGTH, artifact.get("Vulnerability (split-1)").length());
-        Assert.assertEquals(cveData.toString(), artifact.getCompleteVulnerability());
+        artifact.setVulnerability(cveData.toString());
+        Assert.assertEquals(cveData.length(), artifact.get("Vulnerability").length());
+        Assert.assertEquals(cveData.toString(), artifact.getVulnerability());
     }
 
     @Test
-    public void completeVulnerabilityResetTest() {
+    public void longVulnerabilityResetTest() {
         Artifact artifact = new Artifact();
         StringJoiner cveData = new StringJoiner(", ");
         for (int i = 0; i < 4000; i++) cveData.add("CVE-2022-21907 (9.8)");
-        artifact.setCompleteVulnerability(cveData.toString());
-        Assert.assertNotNull(artifact.get("Vulnerability (split-1)"));
-        artifact.setCompleteVulnerability(null);
+        artifact.setVulnerability(cveData.toString());
+        Assert.assertNotNull(artifact.get("Vulnerability"));
+        Assert.assertNull(artifact.get("Vulnerability (split-1)"));
+        artifact.setVulnerability(null);
+        Assert.assertNull(artifact.get("Vulnerability"));
         Assert.assertNull(artifact.get("Vulnerability (split-1)"));
     }
 

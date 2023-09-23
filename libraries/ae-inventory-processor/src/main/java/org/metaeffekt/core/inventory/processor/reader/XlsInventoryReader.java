@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -33,10 +34,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class XlsInventoryReader extends AbstractInventoryReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(XlsInventoryReader.class);
+
+    private static final Pattern SPLIT_COLUMN_PATTERN = Pattern.compile("(.*) \\(split-\\d+\\)");
 
     @Override
     public Inventory readInventory(InputStream in) throws IOException {
@@ -294,11 +299,53 @@ public class XlsInventoryReader extends AbstractInventoryReader {
             final String columnName = map.get(i).trim();
             final HSSFCell cell = row.getCell(i);
             final String value = cell != null ? cell.toString() : null;
+
             if (value != null) {
-                modelBase.set(columnName, value.trim());
+                final boolean isSplitColumn = isSplitColumn(columnName);
+                if (isSplitColumn) {
+                    final String splitColumnName = getSplitColumnName(columnName);
+                    final String splitColumnValue = modelBase.get(splitColumnName);
+
+                    if (splitColumnValue != null) {
+                        modelBase.set(splitColumnName, splitColumnValue + value);
+                    } else {
+                        modelBase.set(splitColumnName, value);
+                    }
+                } else {
+                    modelBase.set(columnName, value);
+                }
             }
         }
+
+        for (String key : modelBase.getAttributes()) {
+            final String value = modelBase.get(key);
+            if (value != null) {
+                modelBase.set(key, value.trim());
+            }
+        }
+
         return modelBase;
+    }
+
+    private boolean isSplitColumn(String columnName) {
+        if (StringUtils.isEmpty(columnName)) {
+            return false;
+        }
+
+        return columnName.endsWith(")") && SPLIT_COLUMN_PATTERN.matcher(columnName).matches();
+    }
+
+    private String getSplitColumnName(String columnName) {
+        if (StringUtils.isEmpty(columnName)) {
+            return null;
+        }
+
+        final Matcher matcher = SPLIT_COLUMN_PATTERN.matcher(columnName);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        } else {
+            return null;
+        }
     }
 
 }
