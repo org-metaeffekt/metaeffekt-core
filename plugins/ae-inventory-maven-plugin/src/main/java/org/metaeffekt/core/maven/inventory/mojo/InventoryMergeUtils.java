@@ -1,16 +1,20 @@
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 public class InventoryMergeUtils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InventoryMergeUtils.class);
 
     protected boolean addDefaultArtifactExcludedAttributes = true;
 
@@ -81,7 +85,7 @@ public class InventoryMergeUtils {
         // remove duplicates (in the sense of exclude and merge attributes
         final Set<org.metaeffekt.core.inventory.processor.model.Artifact> toBeDeleted = new HashSet<>();
         final Map<String, org.metaeffekt.core.inventory.processor.model.Artifact> representationArtifactMap = new HashMap<>();
-        final List<String> attributes = new ArrayList<>();
+        final Set<String> attributes = new HashSet<>();
         final Set<String> excludedAttributes = new HashSet<>(artifactExcludedAttributes);
 
         if (addDefaultArtifactExcludedAttributes) {
@@ -116,16 +120,20 @@ public class InventoryMergeUtils {
         // the merge attributes do not contribute to the artifacts representation
         attributes.removeAll(mergeAttributes);
 
+        // produce an ordered list of the attributes
+        final List<String> attributesOrdered = new ArrayList<>(attributes);
+        attributesOrdered.sort(String::compareToIgnoreCase);
+
         for (final org.metaeffekt.core.inventory.processor.model.Artifact artifact : targetInv.getArtifacts()) {
-            final StringBuilder sb = new StringBuilder();
+            final StringBuilder stringRepresentation = new StringBuilder();
             for (String attribute : attributes) {
-                if (sb.length() == 0) {
-                    sb.append(";");
+                if (stringRepresentation.length() == 0) {
+                    stringRepresentation.append(";");
                 }
-                sb.append(attribute).append("=").append(artifact.get(attribute));
+                stringRepresentation.append(attribute).append("=").append(artifact.get(attribute));
             }
 
-            final String rep = sb.toString();
+            final String rep = stringRepresentation.toString();
             if (representationArtifactMap.containsKey(rep)) {
                 toBeDeleted.add(artifact);
 
