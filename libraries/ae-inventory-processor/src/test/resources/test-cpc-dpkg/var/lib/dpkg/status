@@ -1,0 +1,37 @@
+Package: test-package-archless
+Status: install ok installed
+Priority: standard
+Section: utils
+Installed-Size: 1234
+Maintainer: Average Joe <averagejoe@example.com>
+Architecture: amd64
+Multi-Arch: foreign
+Version: 1.2.3-4.5
+Replaces: lorem
+Provides: ipsum
+Depends: dolor
+Breaks: sit
+Conflicts: amet
+Description: Small test package.
+ .
+ This package is for TESTING!1111
+Homepage: https://example.com
+
+Package: test-package-arch
+Status: install ok installed
+Priority: standard
+Section: utils
+Installed-Size: 1234
+Maintainer: Average Joe <averagejoe@example.com>
+Architecture: amd64
+Multi-Arch: same
+Version: 1.2.3-4.5
+Replaces: lorem
+Provides: ipsum
+Depends: dolor
+Breaks: sit
+Conflicts: amet
+Description: Small test package. Needs :arch at the end of its info files.
+ .
+ This package is for TESTING!1111
+Homepage: https://example.com
