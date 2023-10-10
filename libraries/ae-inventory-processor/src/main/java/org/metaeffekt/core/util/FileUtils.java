@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * FileUtils extension.
@@ -44,12 +45,21 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     private static final String VAR_CHECKSUM = "checksum";
 
+    private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
+
+    public static final String SEPARATOR_SLASH = "/";
+    public static final String SEPARATOR_COMMA = ",";
+
+    private static Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
+    private static Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
+    private static Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
+
     /**
      * Scans the given baseDir for files matching the includes and excludes.
      *
      * @param baseDir The directory to scan.
-     * @param includes The include patterns separated by ','.
-     * @param excludes The exclude patterns separated by ','.
+     * @param includes Include patterns separated by ','.
+     * @param excludes Exclude patterns separated by ','.
      *
      * @return Array of file paths relative to baseDir.
      */
@@ -141,7 +151,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         String path = "";
         while (commonBaseDir != null && !set.contains(commonBaseDir)) {
             if (path.length() > 0) {
-                path = commonBaseDir.getName() + "/" + path;
+                path = commonBaseDir.getName() + SEPARATOR_SLASH + path;
             } else {
                 path = commonBaseDir.getName();
             }
@@ -171,40 +181,74 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return relativePath;
     }
 
-    private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
     public static boolean matches(final String normalizedPattern, final String normalizedPath) {
         if (normalizedPattern == null) return true;
         if (normalizedPath == null) return false;
 
-        if (!normalizedPattern.contains(",")) {
+        if (!normalizedPattern.contains(SEPARATOR_COMMA)) {
             final String trimmedPattern = normalizedPattern.trim();
-            return ANT_PATH_MATCHER.match(trimmedPattern, normalizedPath);
+            return internalMatching(normalizedPath, trimmedPattern);
         }
-        final String[] patterns = normalizedPattern.split(",");
+
+        final String[] patterns = normalizedPattern.split(SEPARATOR_COMMA);
         for (final String pattern : patterns) {
             final String trimmedPattern = pattern.trim();
-            if (ANT_PATH_MATCHER.match(trimmedPattern, normalizedPath)) {
+            if (internalMatching(normalizedPath, trimmedPattern)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * The AntPathMatcher has the unexpected behavior to treat absolute paths differently. These would only match in
+     * case the pattern is also absolute. This method adapts pattern and path to reach the anticipated results.
+     *
+     * @param normalizedPath Normalized path to match.
+     * @param normalizedPattern Normalized pattern to match.
+     *
+     * @return <code>true</code> in case the pattern matches the path.
+     */
+    private static boolean internalMatching(String normalizedPath, String normalizedPattern) {
+        if (normalizedPattern.startsWith(SEPARATOR_SLASH)) {
+            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
+                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
+            } else {
+                return ANT_PATH_MATCHER.match(normalizedPattern.substring(1), normalizedPath);
+            }
+        } else {
+            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
+                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath.substring(1));
+            } else {
+                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
+            }
+        }
     }
 
     public static boolean matches(final Set<String> normalizedPatternSet, final String normalizedPath) {
         if (normalizedPath == null) return false;
         for (final String pattern : normalizedPatternSet) {
             final String trimmedPattern = pattern.trim();
-            if (ANT_PATH_MATCHER.match(trimmedPattern, normalizedPath)) {
+            if (internalMatching(normalizedPath, trimmedPattern)) {
                 return true;
             }
         }
         return false;
     }
 
+    public static String[] normalizePatterns(String[] patterns) {
+        if (patterns == null) return null;
+        final String[] normalizedPatterns = new String[patterns.length];
+        for (int i = 0; i < patterns.length; i++) {
+            normalizedPatterns[i] = normalizePathToLinux(patterns[i]);
+        }
+        return normalizedPatterns;
+    }
+
     public static String normalizePathToLinux(String path) {
         if (path == null) return null;
-        return path.replace("\\", "/");
+        return path.replace("\\", SEPARATOR_SLASH);
     }
 
     public static String normalizePathToLinux(File file) {
@@ -237,12 +281,12 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String canonicalizeLinuxPath(String path) {
-        path = path.replaceAll("/./", "/");
-        path = path.replaceAll("/./", "/");
-        path = path.replaceAll("^\\./", "");
+        path = NORMALIZE_PATH_PATTERN_001.matcher(path).replaceAll(SEPARATOR_SLASH);
+        path = NORMALIZE_PATH_PATTERN_001.matcher(path).replaceAll(SEPARATOR_SLASH);
+        path = NORMALIZE_PATH_PATTERN_002.matcher(path).replaceAll("");
 
         while (path.contains("/../")) {
-            path = path.replaceFirst("/[^/]*/\\.\\./", "/");
+            path = NORMALIZE_PATH_PATTERN_003.matcher(path).replaceAll(SEPARATOR_SLASH);
         }
 
         return path;
