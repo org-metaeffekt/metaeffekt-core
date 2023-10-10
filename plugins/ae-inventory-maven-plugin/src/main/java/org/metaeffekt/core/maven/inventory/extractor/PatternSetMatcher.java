@@ -18,11 +18,14 @@ package org.metaeffekt.core.maven.inventory.extractor;
 import org.springframework.util.AntPathMatcher;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class PatternSetMatcher {
 
     private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
     private static final Comparator<String> LENGTH_COMPARATOR = (o1, o2) -> o2.length() - o1.length();
+
+    private static final Pattern SEPARATOR_PATTERN = Pattern.compile("[\\*\\?]+");
 
     /**
      * Maps the longest possible literal part of a pattern to
@@ -32,8 +35,8 @@ public class PatternSetMatcher {
     public PatternSetMatcher(Collection<String> patterns) {
         if (patterns != null) {
             for (String pattern : patterns) {
-                final String[] splitPattern = pattern.split("[\\*\\?]+");
-                final String longestLiteralPart = Arrays.stream(splitPattern).sorted(LENGTH_COMPARATOR).findFirst().get();
+                final String[] split = SEPARATOR_PATTERN.split(pattern);
+                final String longestLiteralPart = Arrays.stream(split).sorted(LENGTH_COMPARATOR).findFirst().get();
                 longestLiteralMatchPatternMap.computeIfAbsent(longestLiteralPart, c -> new HashSet<>()).add(pattern);
             }
         }

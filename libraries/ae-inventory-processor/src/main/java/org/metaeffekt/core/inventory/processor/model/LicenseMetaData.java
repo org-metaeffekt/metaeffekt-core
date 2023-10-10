@@ -76,10 +76,12 @@ public class LicenseMetaData extends AbstractModelBase {
         return normalizeId(license);
     }
 
+    // FIXME: unify with Inventory.removeSpecialCharacters and deriveLicenseId
     public static String normalizeId(String string) {
         String result = string.replace(" ", "-");
         result = result.replace("+", "");
         result = result.replace("!", "");
+        result = result.replace("&", "and");
         result = result.replace(",", "-");
         result = result.replace(":", "_");
         result = result.replace(";", "_");

@@ -295,8 +295,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         for (int i = 0; i < map.size(); i++) {
             final String columnName = map.get(i).trim();
             final XSSFCell cell = row.getCell(i);
-            final String value = cell != null ? cell.toString() : null;
-
+            final String value = cell != null ? getFormatter().formatCellValue(cell) : null;
             if (value != null) {
                 final boolean isSplitColumn = isSplitColumn(columnName);
                 if (isSplitColumn) {

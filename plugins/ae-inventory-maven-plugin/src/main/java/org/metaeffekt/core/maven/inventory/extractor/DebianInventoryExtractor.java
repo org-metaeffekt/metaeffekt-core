@@ -48,8 +48,9 @@ public class DebianInventoryExtractor extends AbstractInventoryExtractor {
     @Override
     public void extendInventory(File analysisDir, Inventory inventory) throws IOException {
         // find packages from the provided inputs
-        List<PackageInfo> packageReferences = scan(analysisDir);
+        final List<PackageInfo> packageReferences = scan(analysisDir);
 
+        // process each
         packageReferences.forEach(p -> addOrMerge(analysisDir, inventory, p));
     }
 

@@ -6,10 +6,10 @@
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
             <p>
-                Nachfolgende Tabelle listet den Softwarebestand im Bezug zu $license.
+                Nachfolgende Tabelle listet den Softwarebestand im Bezug zu $report.xmlEscapeString($license).
                 #if($folder)
                     Hinweise oder Inhalte der Lizenz k&#246;nnen in
-                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
+                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$report.xmlEscapeString($license)
                         [external]</xref> nachgeschlagen werden.
                 #end
             </p>

@@ -909,6 +909,7 @@ public class Inventory implements Serializable {
         String licenseId = LicenseMetaData.deriveLicenseFolderName(license);
         licenseId = licenseId.replace("(", "_");
         licenseId = licenseId.replace(")", "_");
+        licenseId = licenseId.replace("&", "and");
         licenseId = licenseId.replace(" ", "-");
         licenseId = licenseId.replace("\"", "");
         licenseId = licenseId.replace("'", "");
@@ -917,6 +918,8 @@ public class Inventory implements Serializable {
             length = licenseId.length();
             licenseId = licenseId.replace("__", "_");
             licenseId = licenseId.replace("--", "-");
+            licenseId = licenseId.replace("-_", "-");
+            licenseId = licenseId.replace("_-", "-");
         }
         return licenseId.toLowerCase();
     }

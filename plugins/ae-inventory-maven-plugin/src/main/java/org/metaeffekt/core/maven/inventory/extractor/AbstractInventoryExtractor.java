@@ -123,19 +123,27 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
     protected abstract void extendInventory(File analysisDir, Inventory inventory) throws IOException;
 
     protected String extractIssue(File analysisDir) throws IOException {
-        String issue = FileUtils.readFileToString(new File(analysisDir, "issue.txt"), "UTF-8");
+        final File issueFile = new File(analysisDir, "issue.txt");
+        if (!issueFile.exists()) return null;
+
+        String issue = FileUtils.readFileToString(issueFile, "UTF-8");
         issue = issue.replace("Welcome to ", "");
         issue = issue.replace("Kernel \\r on an \\m (\\l)", "");
         issue = issue.replace("\\S\nKernel \\r on an \\m", "");
         issue = issue.replace(" \\n \\l", "");
         issue = issue.replace(" - Kernel %r (%t).", "");
         issue = issue.trim();
-        String release = FileUtils.readFileToString(new File(analysisDir, "release.txt"), "UTF-8");
-        if (!issue.contains(release)) {
-            issue = issue + " (" + release.trim() + ")";
+
+        final File releaseFile = new File(analysisDir, "release.txt");
+
+        if (releaseFile.exists()) {
+            final String release = FileUtils.readFileToString(releaseFile, "UTF-8");
+            if (!issue.contains(release)) {
+                issue = issue + " (" + release.trim() + ")";
+            }
         }
-        issue = issue.trim();
-        return issue;
+
+        return issue.trim();
     }
 
     protected void addOrMerge(File analysisDir, Inventory inventory, PackageInfo p) {
@@ -164,14 +172,14 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         validateFileHasContent(new File(analysisDir, "uname.txt"));
     }
 
-    private void validateFileExists(File file) {
+    protected void validateFileExists(File file) {
         if (!file.exists()) {
             throw new IllegalStateException(
                     String.format("File %s expected, but does not exists.", file.getPath()));
         }
     }
 
-    private void validateFileHasContent(File file) {
+    protected void validateFileHasContent(File file) {
         validateFileExists(file);
         try {
             String content = FileUtils.readFileToString(file, FileUtils.ENCODING_UTF_8);

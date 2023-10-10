@@ -84,7 +84,7 @@
             <body>
                 <p>
                     $license ist repr&#228;sentativ f&#252;r verschiedene Auspr&#228;gungen der Lizenz oder des Lizenzausdrucks.
-                    In diesem Abschnitt werden alle Auspr&#228;gungen von $license aufgelistet.
+                    In diesem Abschnitt werden alle Auspr&#228;gungen von $report.xmlEscapeString($license) aufgelistet.
                 </p>
                 <p>
                     #insertLicenseTable($license, "Lizenzenvarianten", $licenseList, false)
