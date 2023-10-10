@@ -18,10 +18,7 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
@@ -50,6 +47,9 @@ public class Artifact extends AbstractModelBase {
         CLASSIFICATION("Classification"),
         LICENSE("License"),
         GROUPID("Group Id"),
+
+        // artifact type information
+        TYPE("Type"),
 
         // comments (and hints)
         COMMENT("Comment"),
@@ -594,6 +594,26 @@ public class Artifact extends AbstractModelBase {
     @Deprecated
     public void setCompleteVulnerability(String vulnerability) {
         set(Attribute.VULNERABILITY, vulnerability);
+    }
+
+    /**
+     * Uses the information in the {@link Attribute#TYPE} column to determine whether the artifact is a hardware
+     * component.
+     *
+     * @return true if the artifact is a hardware component, false otherwise.
+     */
+    public boolean isHardware() {
+        return getArtifactType().map(ArtifactType::isHardware).orElse(false);
+    }
+
+    /**
+     * Uses the information in the {@link Attribute#TYPE} column to find the artifact type.<br>
+     * Currently only supports hardware types.
+     *
+     * @return the artifact type or empty if no type was found / type is not yet registered.
+     */
+    public Optional<ArtifactType> getArtifactType() {
+        return ArtifactType.findType(get(Attribute.TYPE));
     }
 
     public boolean isValid() {
