@@ -49,8 +49,8 @@ public class ArtifactTest {
     @Test
     public void completeVulnerabilityNullTest() {
         Artifact artifact = new Artifact();
-        artifact.setCompleteVulnerability(null);
-        Assert.assertNull(artifact.getCompleteVulnerability());
+        artifact.setVulnerability(null);
+        Assert.assertNull(artifact.getVulnerability());
     }
 
     @Test
@@ -65,19 +65,19 @@ public class ArtifactTest {
             Artifact artifact = new Artifact();
             artifact.setId("guava-25.1-jre.jar");
             artifact.setVersion("25.1-jre");
-            Assert.assertEquals(null, artifact.getClassifier());
+            Assert.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId--classifier.txt");
             artifact.setVersion("");
-            Assert.assertEquals(null, artifact.getClassifier());
+            Assert.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId-null-classifier.txt");
             artifact.setVersion(null);
-            Assert.assertEquals(null, artifact.getClassifier());
+            Assert.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
@@ -102,4 +102,50 @@ public class ArtifactTest {
         Assert.assertTrue(projects.contains("D"));
     }
 
+    @Test
+    public void artifactHardwareTypesTrueTest() {
+        final Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "some hardware component");
+
+        for (ArtifactType type : ArtifactType.ARTIFACT_TYPES) {
+            artifact.set(Artifact.Attribute.TYPE, type.getCategory());
+            Assert.assertEquals(type.isHardware(), artifact.isHardware());
+        }
+    }
+
+    @Test
+    public void artifactInvalidHardwareTypesTest() {
+        final Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "some non hardware component");
+
+        artifact.set(Artifact.Attribute.TYPE, "package");
+        Assert.assertFalse(artifact.isHardware());
+
+        artifact.set(Artifact.Attribute.TYPE, "library");
+        Assert.assertFalse(artifact.isHardware());
+
+        artifact.set(Artifact.Attribute.TYPE, "python-module");
+        Assert.assertFalse(artifact.isHardware());
+    }
+
+    @Test
+    public void artifactGetArtifactTypeTest() {
+        final Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "some non hardware component");
+
+        artifact.set(Artifact.Attribute.TYPE, "library");
+        Assert.assertFalse(artifact.getArtifactType().isPresent());
+
+        artifact.set(Artifact.Attribute.TYPE, "package");
+        Assert.assertEquals(ArtifactType.LINUX_PACKAGE, artifact.getArtifactType().get());
+        Assert.assertTrue(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
+
+        artifact.set(Artifact.Attribute.TYPE, "python-module");
+        Assert.assertEquals(ArtifactType.PYTHON_MODULE, artifact.getArtifactType().get());
+        Assert.assertTrue(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
+
+        artifact.set(Artifact.Attribute.TYPE, "operating system");
+        Assert.assertEquals(ArtifactType.OPERATING_SYSTEM, artifact.getArtifactType().get());
+        Assert.assertFalse(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
+    }
 }

@@ -18,10 +18,7 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
@@ -35,14 +32,6 @@ public class Artifact extends AbstractModelBase {
     public static final String PROJECT_DELIMITER_REGEXP = "\\|\n";
 
     public static final String PROJECT_DELIMITER = "|\n";
-
-    public static final List<String> ARTIFACT_HARDWARE_TYPES = Collections.unmodifiableList(Arrays.asList(
-            // TODO: revise this list of hardware categories
-            "complete systems", "system board", "processing core", "extension module", "networking hardware",
-            "power supply", "embedded system", "data storage", "device connector", "security hardware",
-            "sensor", "human interface", "sound hardware", "imaging hardware", "print-scan",
-            "temperature control", "aesthetic hardware", "location hardware", "misc hardware"
-    ));
 
     /**
      * Core attributes to support component patterns.
@@ -614,7 +603,17 @@ public class Artifact extends AbstractModelBase {
      * @return true if the artifact is a hardware component, false otherwise.
      */
     public boolean isHardware() {
-        return ARTIFACT_HARDWARE_TYPES.contains(get(Attribute.TYPE));
+        return getArtifactType().map(ArtifactType::isHardware).orElse(false);
+    }
+
+    /**
+     * Uses the information in the {@link Attribute#TYPE} column to find the artifact type.<br>
+     * Currently only supports hardware types.
+     *
+     * @return the artifact type or empty if no type was found / type is not yet registered.
+     */
+    public Optional<ArtifactType> getArtifactType() {
+        return ArtifactType.findType(get(Attribute.TYPE));
     }
 
     public boolean isValid() {
