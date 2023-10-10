@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,8 @@ public abstract class AbstractInventoryReader {
     public static final String WORKSHEET_NAME_LICENSE_NOTICES_DATA = "License Notices";
     public static final String WORKSHEET_NAME_LICENSE_DATA = "Licenses";
     public static final String WORKSHEET_NAME_ADVISORY_DATA = "Advisories";
+
+    private final DataFormatter formatter = new DataFormatter();
 
     public Inventory readInventory(File file) throws IOException {
         final FileInputStream myInput = new FileInputStream(file);
@@ -144,4 +147,7 @@ public abstract class AbstractInventoryReader {
         return sheetName;
     }
 
+    protected DataFormatter getFormatter() {
+        return formatter;
+    }
 }
