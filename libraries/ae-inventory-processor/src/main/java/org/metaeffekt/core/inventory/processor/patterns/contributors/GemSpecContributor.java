@@ -112,7 +112,6 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             if (versionDerivedFromFile == null && versionDerivedFromFolder == null) {
                 LOG.warn("No version extracted from Gemspec: " + relativeAnchorPath);
-                System.out.println(anchorFile.getAbsolutePath());
                 throw new IllegalStateException();
             }
 

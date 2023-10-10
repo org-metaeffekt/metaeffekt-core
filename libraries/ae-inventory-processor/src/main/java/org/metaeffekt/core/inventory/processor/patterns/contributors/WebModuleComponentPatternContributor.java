@@ -24,6 +24,8 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +33,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class WebModuleComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WebModuleComponentPatternContributor.class);
 
     @Override
     public boolean applies(String pathInContext) {
@@ -268,22 +272,22 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         return webModule;
     }
 
-    protected void parseDetails(File packageJson, WebModule webModule) throws IOException {
-        if (packageJson.exists()) {
-            final String json = FileUtils.readFileToString(packageJson, "UTF-8");
+    protected void parseDetails(File packageJsonFile, WebModule webModule) throws IOException {
+        if (packageJsonFile.exists()) {
+            final String json = FileUtils.readFileToString(packageJsonFile, "UTF-8");
             try {
                 final JSONObject obj = new JSONObject(json);
                 if (StringUtils.isEmpty(webModule.version)) {
                     webModule.version = getString(obj, "version", webModule.version);
-                    webModule.anchor = packageJson;
+                    webModule.anchor = packageJsonFile;
                 }
                 if (StringUtils.isEmpty(webModule.version)) {
                     webModule.version = getString(obj, "_version", webModule.version);
-                    webModule.anchor = packageJson;
+                    webModule.anchor = packageJsonFile;
                 }
                 if (StringUtils.isEmpty(webModule.version)) {
                     webModule.version = getString(obj, "_release", webModule.version);
-                    webModule.anchor = packageJson;
+                    webModule.anchor = packageJsonFile;
                 }
 
                 webModule.name = getString(obj, "name", webModule.name);
@@ -298,25 +302,25 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
                 webModule.license = getString(obj, "license", webModule.license);
             } catch (Exception e) {
-                System.err.println("Cannot parse :" + packageJson);
+                LOG.warn("Cannot parse web module information: [{}]", packageJsonFile);
             }
         }
     }
 
     protected void parseDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
         final File projectDir = new File(baseDir, project);
-        final File packageJson = new File(projectDir, artifact.getId());
-        if (packageJson.exists()) {
-            final String json = FileUtils.readFileToString(packageJson, "UTF-8");
+        final File packageJsonFile = new File(projectDir, artifact.getId());
+        if (packageJsonFile.exists()) {
+            final String json = FileUtils.readFileToString(packageJsonFile, "UTF-8");
             JSONObject obj = new JSONObject(json);
             try {
                 if (webModule.version == null) {
                     webModule.version = getString(obj, "version", webModule.version);
-                    webModule.anchor = packageJson;
+                    webModule.anchor = packageJsonFile;
                 }
                 if (webModule.version == null) {
                     webModule.version = getString(obj, "_release", webModule.version);
-                    webModule.anchor = packageJson;
+                    webModule.anchor = packageJsonFile;
                 }
                 webModule.name = getString(obj, "name", webModule.name);
 
@@ -330,7 +334,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
                 webModule.license = getString(obj, "license", webModule.license);
             } catch (Exception e) {
-                System.err.println("Cannot parse :" + packageJson);
+                LOG.warn("Cannot parse web module information: [{}]", packageJsonFile);
             }
         }
     }
@@ -338,6 +342,5 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     private String getString(JSONObject obj, String key, String defaultValue) {
         return obj.has(key) ? obj.getString(key) : defaultValue;
     }
-
 
 }

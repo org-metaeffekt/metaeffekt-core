@@ -309,8 +309,6 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
         File anchorFile = new File(baseDir, relativeAnchorFilePath);
-        System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);System.out.println("RELATIVE ANCHOR FILE PATH: " + relativeAnchorFilePath);
-
 
         List<DpkgStatusFileEntry> entries;
         try {
