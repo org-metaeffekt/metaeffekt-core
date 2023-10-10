@@ -15,10 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,51 +76,59 @@ public class ArtifactType {
         }
     }
 
+    // CATEGORY_HARDWARE
+    // APPLIANCE
     public static final ArtifactType NETWORKING_HARDWARE = new ArtifactType("networking hardware", "routers, switches, modems");
     public static final ArtifactType BOARD = new ArtifactType("board", "motherboards, development boards");
     public static final ArtifactType APPLIANCE = new ArtifactType("appliance", "desktops, laptops, servers", NETWORKING_HARDWARE, BOARD);
+    // CONTROLLER
     public static final ArtifactType EMBEDDED_SYSTEM = new ArtifactType("embedded system", "microcontrollers, iot devices, programmable logic controller");
     public static final ArtifactType STORAGE_CONTROLLER = new ArtifactType("storage controller", "RAID controllers");
     public static final ArtifactType CONTROLLER = new ArtifactType("controller", "top-level category for controllers", EMBEDDED_SYSTEM, STORAGE_CONTROLLER);
+    // INPUT_DEVICE
     public static final ArtifactType HUMAN_INTERFACE = new ArtifactType("human interface", "keyboards, mice");
-    public static final ArtifactType SCANNER = new ArtifactType("scanner", "barcode scanners, fingerprint scanners");
+    public static final ArtifactType SCANNER = new ArtifactType("scanner", "barcode scanners, fingerprint scanners, biometric scanners");
     public static final ArtifactType INPUT_DEVICE = new ArtifactType("input device", "top-level category for input devices", HUMAN_INTERFACE, SCANNER);
+    // OUTPUT_DEVICE
     public static final ArtifactType SOUND_HARDWARE = new ArtifactType("sound hardware", "dacs, audio interfaces, speakers");
     public static final ArtifactType IMAGING_HARDWARE = new ArtifactType("imaging hardware", "cameras, video capture cards");
-    public static final ArtifactType PRINTER = new ArtifactType("printers", null);
+    public static final ArtifactType PRINTER = new ArtifactType("printer", null);
     public static final ArtifactType DISPLAY = new ArtifactType("display", null);
     public static final ArtifactType PROJECTOR = new ArtifactType("projector", null);
     public static final ArtifactType OUTPUT_DEVICE = new ArtifactType("output device", "top-level category for output devices", SOUND_HARDWARE, IMAGING_HARDWARE, PRINTER, DISPLAY, PROJECTOR);
+    // other hardware
     public static final ArtifactType DATA_STORAGE = new ArtifactType("data storage", "ssds, hard drives, usb drives");
     public static final ArtifactType DEVICE_CONNECTOR = new ArtifactType("device connector", "cables, connectors");
     public static final ArtifactType SECURITY_TOKEN = new ArtifactType("security token", "nfc tokens");
-    public static final ArtifactType SENSOR = new ArtifactType("sensor", "temperature sensors, motion sensors, biometric scanners");
+    public static final ArtifactType SENSOR = new ArtifactType("sensor", "measurement devices, temperature sensors, motion sensors, anemometers");
     public static final ArtifactType PROCESSING_CORE = new ArtifactType("processing core", "CPUs, GPUs, TPUs");
     public static final ArtifactType EXTENSION_MODULE = new ArtifactType("extension module", "sound cards, wi-fi cards, bluetooth cards, RAM");
-    public static final ArtifactType POWER_SUPPLY = new ArtifactType("power supply", "batteries, adapters, solar chargers, uninterruptible power supplies");
+    public static final ArtifactType POWER_SUPPLY = new ArtifactType("power supply", "batteries, adapters, solar chargers, uninterruptible power supplies, portable power");
     public static final ArtifactType TEMPERATURE_CONTROL = new ArtifactType("temperature control", "fans, liquid cooling systems, heat sinks");
     public static final ArtifactType AESTHETIC_HARDWARE = new ArtifactType("aesthetic hardware", "lights, RGB mouse-pads, custom case panels, LED fans");
     public static final ArtifactType TRACKING_HARDWARE = new ArtifactType("tracking hardware", "GPS modules, bluetooth trackers");
-    public static final ArtifactType MISC_HARDWARE = new ArtifactType("misc hardware", "unclassified or specialized hardware");
+    public static final ArtifactType WEARABLE = new ArtifactType("wearable", "smart watches, fitness trackers, smart glasses, smart rings, smart clothing");
 
+    public static final ArtifactType CATEGORY_HARDWARE = new ArtifactType("hardware", "top-level category for hardware; unclassified or specialized hardware",
+            // categories
+            APPLIANCE, CONTROLLER, INPUT_DEVICE, OUTPUT_DEVICE,
+            // other
+            DATA_STORAGE, DEVICE_CONNECTOR, SECURITY_TOKEN, SENSOR, PROCESSING_CORE, EXTENSION_MODULE, POWER_SUPPLY,
+            TEMPERATURE_CONTROL, AESTHETIC_HARDWARE, TRACKING_HARDWARE, WEARABLE
+    );
+
+    // CATEGORY_SOFTWARE_LIBRARY
     public static final ArtifactType LINUX_PACKAGE = new ArtifactType("package", "linux package");
     public static final ArtifactType PYTHON_MODULE = new ArtifactType("python-module", "python module");
     public static final ArtifactType NODEJS_MODULE = new ArtifactType("nodejs-module", "nodejs module");
-
-    public static final ArtifactType OPERATING_SYSTEM = new ArtifactType("operating system", null);
-    public static final ArtifactType BIOS = new ArtifactType("bios", null);
-    public static final ArtifactType FILE = new ArtifactType("file", null);
 
     public static final ArtifactType CATEGORY_SOFTWARE_LIBRARY = new ArtifactType("software library", null,
             LINUX_PACKAGE, PYTHON_MODULE, NODEJS_MODULE
     );
 
-    public static final ArtifactType CATEGORY_HARDWARE = new ArtifactType("hardware", null,
-            APPLIANCE, NETWORKING_HARDWARE, BOARD,
-            CONTROLLER, EMBEDDED_SYSTEM, STORAGE_CONTROLLER,
-            INPUT_DEVICE, HUMAN_INTERFACE, SCANNER,
-            OUTPUT_DEVICE, SOUND_HARDWARE, IMAGING_HARDWARE, PRINTER, DISPLAY, PROJECTOR
-    );
+    public static final ArtifactType OPERATING_SYSTEM = new ArtifactType("operating system", null);
+    public static final ArtifactType BIOS = new ArtifactType("bios", null);
+    public static final ArtifactType FILE = new ArtifactType("file", null);
 
     public static final List<ArtifactType> ARTIFACT_TYPES = Collections.unmodifiableList(
             Stream.of(
@@ -135,6 +140,14 @@ public class ArtifactType {
                     ).flatMap(ArtifactType::flattenArtifactType)
                     .collect(Collectors.toList())
     );
+
+    public static String toMarkdownString() {
+        final StringJoiner joiner = new StringJoiner("\n");
+        for (ArtifactType artifactType : ARTIFACT_TYPES) {
+            joiner.add((artifactType.getParent() != null ? (artifactType.getParent() != null && artifactType.getParent().getParent() != null ? "    - " : "  - ") : "- ") + "**" + artifactType.getCategory() + "**" + (artifactType.getDescription() != null ? " (" + artifactType.getDescription() + ")" : ""));
+        }
+        return joiner.toString();
+    }
 
     private static Stream<ArtifactType> flattenArtifactType(ArtifactType artifactType) {
         return Stream.concat(
