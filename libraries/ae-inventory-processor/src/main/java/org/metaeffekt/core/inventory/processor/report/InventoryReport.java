@@ -29,6 +29,7 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.RegExUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -958,6 +959,7 @@ public class InventoryReport {
         context.put("assetAdapter", assetReportAdapter);
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
+        context.put("RegExpUtils", RegExUtils.class);
         context.put("utils", new ReportUtils());
         context.put("Float", Float.class);
         context.put("targetReportDir", this.targetReportDir);
