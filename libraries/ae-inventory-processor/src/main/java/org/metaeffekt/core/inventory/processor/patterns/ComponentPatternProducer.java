@@ -77,7 +77,8 @@ public class ComponentPatternProducer {
             "/WHEEL",
             "/__init__.py",
             "/__about__.py",
-            // TODO: enter a suffix here for my new contributor, maybe rewrite this so that contributors themselves will request their suffixes
+
+            // debian status files
             "/status"
     };
 
