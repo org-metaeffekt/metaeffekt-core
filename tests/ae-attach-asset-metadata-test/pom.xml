@@ -22,8 +22,8 @@
 
                 <executions>
                     <execution>
-                        <!-- copies the source inventory in the target inventory -->
-                        <id>attach</id>
+                        <!-- attaches further metadata to the asset-->
+                        <id>attach-asset-metadata</id>
                         <goals>
                             <goal>attach-asset-metadata</goal>
                         </goals>
