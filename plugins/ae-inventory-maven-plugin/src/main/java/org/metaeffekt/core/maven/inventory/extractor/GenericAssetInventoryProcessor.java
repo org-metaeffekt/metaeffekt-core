@@ -62,16 +62,19 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
         // overwrite asset id
         assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, assetId);
 
+        // add asset metadata
         inventory.getAssetMetaData().add(assetMetaData);
 
-        File targetInventoryFile = getTargetInventoryFile();
-        if (targetInventoryFile == null) {
-            // inplace modification
-            targetInventoryFile = getInventoryFile();
-        }
-
+        // add marker for artifacts
         for (Artifact artifact : inventory.getArtifacts()) {
             artifact.set(assetId, Constants.MARKER_CROSS);
+        }
+
+        File targetInventoryFile = getTargetInventoryFile();
+
+        // support in-place modification, when targetInventory file nott set
+        if (targetInventoryFile == null) {
+            targetInventoryFile = getInventoryFile();
         }
 
         new InventoryWriter().writeInventory(inventory, targetInventoryFile);

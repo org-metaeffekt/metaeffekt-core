@@ -216,6 +216,12 @@ public abstract class InventoryExtractorUtil {
         final Map<String, String> symLinkMap = new HashMap<>();
         for (String symLinkLine : symbolicLinks) {
             final int separatorIndex = symLinkLine.indexOf(SEPARATOR_LINK_MAP);
+
+            if (separatorIndex == -1) {
+                LOG.warn("Cannot parse symlink information: " + symLinkLine);
+                continue;
+            }
+
             final String linkFile = symLinkLine.substring(0, separatorIndex).trim();
             String linkTargetFile = symLinkLine.substring(separatorIndex + SEPARATOR_LINK_MAP.length()).trim();
 
