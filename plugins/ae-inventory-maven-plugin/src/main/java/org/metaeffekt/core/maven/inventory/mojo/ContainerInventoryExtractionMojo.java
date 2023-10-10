@@ -53,7 +53,8 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             new DebianInventoryExtractor(),
             new CentOSInventoryExtractor(),
             new AlpineInventoryExtractor(),
-            new ArchInventoryExtractor()
+            new ArchInventoryExtractor(),
+            new FallbackInventoryExtractor()
     };
 
     @Override
