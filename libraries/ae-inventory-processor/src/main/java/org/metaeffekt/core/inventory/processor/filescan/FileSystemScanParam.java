@@ -47,14 +47,14 @@ public class FileSystemScanParam {
     }
 
     public FileSystemScanParam collectAllMatching(String[] includes, String[] excludes) {
-        this.collectIncludes = includes;
-        this.collectExcludes = excludes;
+        this.collectIncludes = FileUtils.normalizePatterns(includes);
+        this.collectExcludes = FileUtils.normalizePatterns(excludes);
         return this;
     }
 
     public FileSystemScanParam unwrapAllMatching(String[] includes, String[] excludes) {
-        this.unwrapIncludes = includes;
-        this.unwrapExcludes = excludes;
+        this.unwrapIncludes = FileUtils.normalizePatterns(includes);
+        this.unwrapExcludes = FileUtils.normalizePatterns(excludes);
         return this;
     }
 
@@ -101,12 +101,12 @@ public class FileSystemScanParam {
 
     private boolean matches(String path, String[] includePatterns, String[] excludePatterns) {
         for (String exclude : excludePatterns) {
-            if (FileUtils.matches("/" + exclude, path)) {
+            if (FileUtils.matches(exclude, path)) {
                 return false;
             }
         }
         for (String include : includePatterns) {
-            if (FileUtils.matches("/" + include, path)) {
+            if (FileUtils.matches(include, path)) {
                 return true;
             }
         }

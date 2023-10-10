@@ -86,13 +86,13 @@ public class ArtifactUnwrapTask extends ScanTask {
         // we implicitly try to unwrap if the artifact is not known:
         final boolean implicitUnwrap = !referenceArtifact.isPresent();
 
-        // NOTE: this reference articact must be explicitly matched; no wildcard version is supported (yet)
+        // NOTE: this reference artifact must be explicitly matched; no wildcard version is supported (yet)
         // only include the artifact if the classification does not include HINT_IGNORE
         final boolean explicitUnwrap = referenceArtifact.isPresent() && referenceArtifact.get().hasClassification(HINT_SCAN);
         final boolean explicitIgnore = referenceArtifact.isPresent() && referenceArtifact.get().hasClassification(HINT_IGNORE);
 
         final boolean artifactWithScanClassification = artifact.hasClassification(HINT_SCAN);
-        final boolean unpackSubmodules = referenceArtifact.isPresent() ? false : artifactWithScanClassification;
+        final boolean unpackSubmodules = referenceArtifact.isPresent() ? explicitUnwrap : artifactWithScanClassification;
 
         if ((implicitUnwrap || explicitUnwrap) && unpackIfPossible(file, targetFolder, unpackSubmodules, issues)) {
             // unpack successful...
