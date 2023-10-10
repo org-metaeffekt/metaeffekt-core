@@ -49,6 +49,8 @@ public abstract class AbstractInventoryReader {
         final FileInputStream myInput = new FileInputStream(file);
         try {
             return readInventory(myInput);
+        } catch (RuntimeException e) {
+          throw new IllegalStateException(String.format("Cannot read inventory file [%s].", file.getAbsoluteFile()), e);
         } finally {
             myInput.close();
         }

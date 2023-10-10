@@ -153,10 +153,10 @@ public class StatisticsOverviewTable {
         }
 
         return ObjectUtils.firstNonNull(
-                modified ? vulnerabilityMetaData.getComplete("CVSS Modified Severity (v3)") : null,
-                vulnerabilityMetaData.getComplete("CVSS Unmodified Severity (v3)"),
-                modified ? vulnerabilityMetaData.getComplete("CVSS Modified Severity (v2)") : null,
-                vulnerabilityMetaData.getComplete("CVSS Unmodified Severity (v2)"),
+                modified ? vulnerabilityMetaData.get("CVSS Modified Severity (v3)") : null,
+                vulnerabilityMetaData.get("CVSS Unmodified Severity (v3)"),
+                modified ? vulnerabilityMetaData.get("CVSS Modified Severity (v2)") : null,
+                vulnerabilityMetaData.get("CVSS Unmodified Severity (v2)"),
                 "none"
         );
     }
@@ -164,7 +164,7 @@ public class StatisticsOverviewTable {
     private static void filterVulnerabilityMetaDataForAdvisories(Collection<VulnerabilityMetaData> vmds, String filterCert) {
         vmds.removeIf(
                 vmd -> {
-                    String adv = vmd.getComplete("Advisories");
+                    String adv = vmd.get("Advisories");
                     if (adv == null) return true;
                     JSONArray advisories = new JSONArray(adv);
                     for (int j = 0; j < advisories.length(); j++) {

@@ -15,42 +15,75 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
-import org.metaeffekt.core.inventory.processor.model.*;
-import org.metaeffekt.core.inventory.processor.writer.XlsInventoryWriter;
-import org.metaeffekt.core.inventory.processor.writer.XlsxInventoryWriter;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
-public class InventoryReader {
+public class InventoryReader extends AbstractInventoryReader {
 
+    private final static Logger LOG = LoggerFactory.getLogger(InventoryReader.class);
+
+    private final static Map<String, Supplier<AbstractInventoryReader>> EXTENSIONS_TO_READERS = new LinkedHashMap<String, Supplier<AbstractInventoryReader>>() {{
+        put(".xls", XlsInventoryReader::new);
+        put(".xlsx", XlsxInventoryReader::new);
+        put(".ser", SerializedInventoryReader::new);
+    }};
+
+    @Override
     public Inventory readInventory(File file) throws IOException {
-        if (file == null || !file.exists()) {
-            throw new IOException("File [" + file.getAbsolutePath()  + "] does not exist.");
+        if (file == null) {
+            throw new FileNotFoundException("File is null.");
         }
-        if (file.getName().toLowerCase().endsWith(".xls")) {
-            return new XlsInventoryReader().readInventory(file);
-        } else {
-            return new XlsxInventoryReader().readInventory(file);
+        if (!file.exists()) {
+            throw new FileNotFoundException("File [" + file.getAbsolutePath() + "] does not exist.");
         }
+
+        final String extension = getFileExtension(file.getName());
+        return getReaderForExtension(extension).readInventory(file);
     }
 
     public Inventory readInventoryAsClasspathResource(File file) throws IOException {
+        if (file == null) {
+            throw new FileNotFoundException("File is null.");
+        }
+
         final Resource inventoryResource = new ClassPathResource(file.getPath());
         try (InputStream in = inventoryResource.getInputStream()) {
-            if (file.getName().toLowerCase().endsWith(".xls")) {
-                return new XlsInventoryReader().readInventory(in);
-            } else {
-                return new XlsxInventoryReader().readInventory(in);
-            }
+            final String extension = getFileExtension(file.getName());
+            return getReaderForExtension(extension).readInventory(in);
         }
     }
 
+    @Override
+    public Inventory readInventory(InputStream in) throws IOException {
+        throw new UnsupportedOperationException("Reading from input stream is not supported. Use readInventory(InputStream in, String extension) or the specific implementations instead.");
+    }
+
+    public Inventory readInventory(InputStream in, String extension) throws IOException {
+        return getReaderForExtension(extension).readInventory(in);
+    }
+
+    private AbstractInventoryReader getReaderForExtension(String extension) throws IOException {
+        final Supplier<AbstractInventoryReader> readerSupplier = EXTENSIONS_TO_READERS.get(extension);
+        if (readerSupplier == null) {
+            throw new IOException("Unsupported file type [" + extension + "]. Available types are: " + EXTENSIONS_TO_READERS.keySet());
+        }
+        return readerSupplier.get();
+    }
+
+    private String getFileExtension(String filename) {
+        int lastIndexOf = filename.toLowerCase().lastIndexOf(".");
+        if (lastIndexOf == -1) return "";
+        return filename.substring(lastIndexOf);
+    }
 }

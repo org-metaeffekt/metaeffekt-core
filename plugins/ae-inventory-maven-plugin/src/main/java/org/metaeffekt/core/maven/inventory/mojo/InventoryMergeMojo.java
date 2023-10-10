@@ -49,7 +49,7 @@ public class InventoryMergeMojo extends AbstractMultipleInputInventoriesMojo {
     protected Set<String> artifactMergeAttributes = new HashSet<>();
 
     /**
-     * The target inventory. The parameter must be specified. However the target must not exist. If the target inventory
+     * The target inventory. The parameter must be specified. However, the target must not exist. If the target inventory
      * does not exist the complete source inventory is copied into the target location.
      */
     @Parameter(required = true)
