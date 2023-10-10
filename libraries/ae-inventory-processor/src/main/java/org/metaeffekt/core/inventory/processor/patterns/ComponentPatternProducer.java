@@ -77,6 +77,8 @@ public class ComponentPatternProducer {
             "/WHEEL",
             "/__init__.py",
             "/__about__.py",
+            // TODO: enter a suffix here for my new contributor, maybe rewrite this so that contributors themselves will request their suffixes
+            "/status"
     };
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
@@ -101,6 +103,7 @@ public class ComponentPatternProducer {
 
         // configure contributors; please note that currently the contributors consume anchors (no anchor can be used twice)
         final List<ComponentPatternContributor> componentPatternContributors = new ArrayList<>();
+        componentPatternContributors.add(new DpkgPackageContributor());
         componentPatternContributors.add(new GemSpecContributor());
         componentPatternContributors.add(new ContainerComponentPatternContributor());
         componentPatternContributors.add(new WebModuleComponentPatternContributor());
@@ -118,6 +121,7 @@ public class ComponentPatternProducer {
         for (String fileSuffix : FILE_SUFFIX_LIST) {
 
             for (String pathInContext : filesByPathLength) {
+                // FIXME: toLowerCase for paths is error-prone and (lack of specified Locale) platform-dependent
                 if (!pathInContext.toLowerCase().endsWith(fileSuffix)) continue;
 
                 final Artifact artifact = pathToArtifactMap.get(pathInContext);
