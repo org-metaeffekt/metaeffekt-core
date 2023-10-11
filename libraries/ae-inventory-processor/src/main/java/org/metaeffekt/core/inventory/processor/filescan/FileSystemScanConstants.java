@@ -34,7 +34,15 @@ public class FileSystemScanConstants {
 
     public static final String HINT_SCAN = "scan";
 
+    public static final String HINT_ATOMIC = "atomic";
+
+    public static final String HINT_COMPLEX = "complex";
+
     public static final String HINT_IGNORE = "ignore";
+
+    public static final String HINT_INCLUDE = "include";
+
+    public static final String HINT_EXCLUDE = "exclude";
 
     public static final String SCAN_DIRECTIVE_DELETE = "delete";
 

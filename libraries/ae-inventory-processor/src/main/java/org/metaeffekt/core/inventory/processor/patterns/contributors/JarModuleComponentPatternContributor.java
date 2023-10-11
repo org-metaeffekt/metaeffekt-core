@@ -21,7 +21,6 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -68,17 +67,17 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         mergeArtifact(artifact, fromXml);
         mergeArtifact(artifact, fromProperties);
 
-        final String artifactId = artifact.get("ARTIFACT_ID");
+        final String artifactId = artifact.get(JarInspector.ATTRIBUTE_KEY_ARTIFACT_ID);
         String id = artifactId + "-" + artifact.getVersion() + "." + artifact.get("Packaging");
         artifact.setId(id);
 
-        String includePattern = "**/" + artifact.getGroupId() + "/**/*,**/" + artifactId + "/**/*";
-
-        if (artifact.getId().endsWith(".war")) {
-            includePattern = "**/*";
-        }
-
         final File contextBaseDir = new File(baseDir, relativeAnchorPath.substring(0, relativeAnchorPath.indexOf("/META-INF/")));
+
+        final String[] pomFiles = FileUtils.scanForFiles(contextBaseDir, "META-INF/maven/**/pom.xml,WEB-INF/maven/**/pom.xml", null);
+
+        String includePattern = (pomFiles.length == 1) ?
+                "**/*" :
+                "**/" + artifact.getGroupId() + "/**/*,**/" + artifactId + "/**/*";
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();

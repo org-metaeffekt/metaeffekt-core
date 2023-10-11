@@ -83,6 +83,9 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             //  * either SCAN_DIRECTIVE=delete OR checksum != null
             //  * ASSET_ID_CHAIN?
 
+            // apply static component patterns
+            applyStaticComponentPatterns(false);
+
             // collect tasks based on the current inventory (process markers)
             final List<ScanTask> scanTasks = collectOutstandingScanTasks();
 
@@ -102,6 +105,9 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             final Inventory implicitRereferenceInventory = new Inventory();
             patternProducer.detectAndApplyComponentPatterns(implicitRereferenceInventory, fileSystemScanContext);
         }
+        
+        // second run static component patterns; run deferred set
+        applyStaticComponentPatterns(true);
 
         // run remaining inspection last
         inspectArtifacts();
@@ -167,16 +173,10 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     }
 
     private List<ScanTask> collectOutstandingScanTasks() {
-        final List<ScanTask> scanTasks = new ArrayList<>();
 
         final Inventory inventory = fileSystemScanContext.getInventory();
-        final Inventory referenceInventory = fileSystemScanContext.getScanParam().getReferenceInventory();
 
-        final ComponentPatternProducer componentPatternProducer = new ComponentPatternProducer();
-
-        // match and apply component patterns before performing unwrapping
-        // only anticipates predefined component patterns
-        componentPatternProducer.matchAndApplyComponentPatterns(referenceInventory, fileSystemScanContext);
+        final List<ScanTask> scanTasks = new ArrayList<>();
 
         for (Artifact artifact : inventory.getArtifacts()) {
             if (!StringUtils.isEmpty(artifact.get(ATTRIBUTE_KEY_UNWRAP))) {
@@ -189,6 +189,16 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         return scanTasks;
     }
 
+    private void applyStaticComponentPatterns(boolean applyDeferred) {
+        final Inventory inventory = fileSystemScanContext.getInventory();
+        final Inventory referenceInventory = fileSystemScanContext.getScanParam().getReferenceInventory();
+
+        final ComponentPatternProducer componentPatternProducer = new ComponentPatternProducer();
+
+        // match and apply component patterns before performing unwrapping
+        // only anticipates predefined component patterns
+        componentPatternProducer.matchAndApplyComponentPatterns(referenceInventory, fileSystemScanContext, applyDeferred);
+    }
 
     public void awaitTasks() {
         Collection<Future<?>> futures = new HashSet<>(monitor.values());

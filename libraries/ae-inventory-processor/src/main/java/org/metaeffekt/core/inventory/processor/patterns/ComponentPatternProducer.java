@@ -170,12 +170,15 @@ public class ComponentPatternProducer {
         //  Here, we also have unwrapped the full subtree (except things already covered) and can now derive default
         //  component patterns applying the ComponentPatternProducer.
         extractComponentPatterns(fileSystemScanContext, implicitReferenceInventory);
-        matchAndApplyComponentPatterns(implicitReferenceInventory, fileSystemScanContext);
+
+        matchAndApplyComponentPatterns(implicitReferenceInventory, fileSystemScanContext, false);
     }
 
-    public void matchAndApplyComponentPatterns(final Inventory componentPatternSourceInventory, FileSystemScanContext fileSystemScanContext) {
-        final List<MatchResult> matchedComponentPatterns =
-                matchComponentPatterns(fileSystemScanContext.getInventory(), componentPatternSourceInventory, fileSystemScanContext);
+    public void matchAndApplyComponentPatterns(final Inventory componentPatternSourceInventory,
+                           FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
+
+        final List<MatchResult> matchedComponentPatterns = matchComponentPatterns(
+                fileSystemScanContext.getInventory(), componentPatternSourceInventory, fileSystemScanContext, applyDeferred);
 
         if (!matchedComponentPatterns.isEmpty()) {
             LOG.info("Matching component patterns resulted in {} anchor matches.", matchedComponentPatterns.size());
@@ -297,7 +300,9 @@ public class ComponentPatternProducer {
                 }
 
                 if (!matched) {
-                    LOG.info("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
+                    }
                     matchResultsWithoutFileMatches.add(matchResult);
                 }
             }
@@ -362,12 +367,19 @@ public class ComponentPatternProducer {
      *
      * @return List of matched / potential component patterns.
      */
-    public List<MatchResult> matchComponentPatterns(final Inventory inputInventory, final Inventory componentPatternSourceInventory, FileSystemScanContext fileSystemScanContext) {
+    public List<MatchResult> matchComponentPatterns(final Inventory inputInventory, final Inventory componentPatternSourceInventory,
+                                        FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
+
         // match component patterns using version anchor; results in matchedComponentPatterns
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
 
         for (final ComponentPatternData cpd : componentPatternSourceInventory.getComponentPatternData()) {
             LOG.debug("Checking component pattern: {}", cpd.createCompareStringRepresentation());
+
+            // evaluate component pattern mode and skip if mode doesn't match
+            final String mode = cpd.get("Mode", "immediate").trim();
+            final boolean isDeferred = "deferred".equalsIgnoreCase(mode);
+            if (applyDeferred != isDeferred) continue;
 
             final String anchorChecksum = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM);
             final String versionAnchor = cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR);

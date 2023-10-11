@@ -347,7 +347,7 @@ public class JarInspector extends AbstractJarInspector {
                 if (collectorWithVersion != null || collectorNoVersion != null) {
                     // already covered; do nothing
                 } else {
-                     qualifierArtifactMap.put(qualifier, candidate);
+                    qualifierArtifactMap.put(qualifier, candidate);
                     qualifierArtifactMap.put(qualifierNoVersion, candidate);
                 }
             }
