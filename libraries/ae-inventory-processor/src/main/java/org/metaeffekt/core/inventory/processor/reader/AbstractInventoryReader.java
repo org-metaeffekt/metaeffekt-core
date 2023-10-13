@@ -15,20 +15,24 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
 
@@ -46,14 +50,23 @@ public abstract class AbstractInventoryReader {
     public static final String WORKSHEET_NAME_LICENSE_DATA = "Licenses";
     public static final String WORKSHEET_NAME_ADVISORY_DATA = "Advisories";
 
-    private final DataFormatter formatter = new DataFormatter();
+    private final DataFormatter baseCellDataFormatter = new DataFormatter();
+    private final DecimalFormat numericCellDataFormatter = new DecimalFormat();
+
+    {
+        // use US locale to ensure dot as decimal separator
+        numericCellDataFormatter.setDecimalFormatSymbols(new DecimalFormatSymbols(Locale.US));
+        numericCellDataFormatter.setGroupingUsed(false);
+    }
+
+    private static final Pattern SPLIT_COLUMN_PATTERN = Pattern.compile("(.*) \\(split-\\d+\\)");
 
     public Inventory readInventory(File file) throws IOException {
         final FileInputStream myInput = new FileInputStream(file);
         try {
             return readInventory(myInput);
         } catch (RuntimeException e) {
-          throw new IllegalStateException(String.format("Cannot read inventory file [%s].", file.getAbsoluteFile()), e);
+            throw new IllegalStateException(String.format("Cannot read inventory file [%s].", file.getAbsoluteFile()), e);
         } finally {
             myInput.close();
         }
@@ -147,7 +160,72 @@ public abstract class AbstractInventoryReader {
         return sheetName;
     }
 
-    protected DataFormatter getFormatter() {
-        return formatter;
+
+    protected <T extends AbstractModelBase> T readRow(Row row, T modelBase, ParsingContext parsingContext) {
+        final Map<Integer, String> map = parsingContext.columnsMap;
+
+        for (Map.Entry<Integer, String> column : map.entrySet()) {
+            final String columnName = column.getValue();
+            final Cell cell = row.getCell(column.getKey());
+
+            if (cell == null) {
+                continue;
+            }
+
+            final String cellValue = formatDataCellValue(cell);
+            final String effectiveCellValue, effectiveCellName;
+
+            if (isSplitColumn(columnName)) {
+                effectiveCellName = getSplitColumnName(columnName);
+                effectiveCellValue = modelBase.get(effectiveCellName) != null ? modelBase.get(effectiveCellName) + cellValue : cellValue;
+            } else {
+                effectiveCellName = columnName;
+                effectiveCellValue = cellValue;
+            }
+
+            modelBase.set(effectiveCellName, effectiveCellValue);
+        }
+
+        for (String key : modelBase.getAttributes()) {
+            final String value = modelBase.get(key);
+            if (value != null) {
+                modelBase.set(key, value.trim());
+            }
+        }
+
+        return modelBase;
+    }
+
+    private boolean isSplitColumn(String columnName) {
+        if (StringUtils.isEmpty(columnName)) {
+            return false;
+        }
+
+        return columnName.endsWith(")") && SPLIT_COLUMN_PATTERN.matcher(columnName).matches();
+    }
+
+    private String getSplitColumnName(String columnName) {
+        if (StringUtils.isEmpty(columnName)) {
+            return null;
+        }
+
+        final Matcher matcher = SPLIT_COLUMN_PATTERN.matcher(columnName);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        } else {
+            return null;
+        }
+    }
+
+    public String formatDataCellValue(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        if (cell.getCellType() == CellType.NUMERIC) {
+            // format decimal numbers to ensure dot as decimal separator
+            return numericCellDataFormatter.format(cell.getNumericCellValue());
+        } else {
+            return baseCellDataFormatter.formatCellValue(cell);
+        }
     }
 }

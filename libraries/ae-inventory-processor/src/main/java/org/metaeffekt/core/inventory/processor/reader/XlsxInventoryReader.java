@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -29,17 +28,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class XlsxInventoryReader extends AbstractInventoryReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(XlsInventoryReader.class);
-
-    private static final Pattern SPLIT_COLUMN_PATTERN = Pattern.compile("(.*) \\(split-\\d+\\)");
 
     @Override
     public Inventory readInventory(InputStream in) throws IOException {
@@ -66,7 +60,6 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readArtifactMetaData(XSSFWorkbook workbook, Inventory inventory) {
-
         XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_ARTIFACT_DATA);
 
         // supporting alternative sheet names for backward compatibility
@@ -78,7 +71,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setArtifacts(artifacts);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final Artifact artifact = readRow(row, new Artifact(), pc);
+            final Artifact artifact = super.readRow(row, new Artifact(), pc);
             if (artifact.isValid()) {
                 artifacts.add(artifact);
             }
@@ -88,7 +81,6 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readComponentPatternData(XSSFWorkbook workBook, Inventory inventory) {
-
         final XSSFSheet sheet = workBook.getSheet(WORKSHEET_NAME_COMPONENT_PATTERN_DATA);
         if (sheet == null) return;
 
@@ -96,7 +88,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setComponentPatternData(componentPatternData);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final ComponentPatternData cpd = readRow(row, new ComponentPatternData(), pc);
+            final ComponentPatternData cpd = super.readRow(row, new ComponentPatternData(), pc);
             if (cpd.isValid()) {
                 componentPatternData.add(cpd);
             }
@@ -126,7 +118,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setVulnerabilityMetaData(vulnerabilityMetaData, context);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final VulnerabilityMetaData vmd = readRow(row, new VulnerabilityMetaData(), pc);
+            final VulnerabilityMetaData vmd = super.readRow(row, new VulnerabilityMetaData(), pc);
             if (vmd.isValid()) {
                 vulnerabilityMetaData.add(vmd);
             }
@@ -136,7 +128,6 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readCertMetaData(XSSFWorkbook workbook, Inventory inventory) {
-
         XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_DATA);
 
         // for backward compatibility
@@ -148,7 +139,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setCertMetaData(certMetadata);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final CertMetaData cmd = readRow(row, new CertMetaData(), pc);
+            final CertMetaData cmd = super.readRow(row, new CertMetaData(), pc);
             if (cmd.isValid()) {
                 certMetadata.add(cmd);
             }
@@ -158,7 +149,6 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readInventoryInfo(XSSFWorkbook workbook, Inventory inventory) {
-
         final XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_INVENTORY_INFO);
         if (sheet == null) return;
 
@@ -166,7 +156,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setInventoryInfo(inventoryInfo);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final InventoryInfo info = readRow(row, new InventoryInfo(), pc);
+            final InventoryInfo info = super.readRow(row, new InventoryInfo(), pc);
             if (info.isValid()) {
                 inventoryInfo.add(info);
             }
@@ -176,7 +166,6 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readReportData(XSSFWorkbook workbook, Inventory inventory) {
-
         final XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_REPORT_DATA);
         if (sheet == null) return;
 
@@ -184,7 +173,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setReportData(reportData);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final ReportData info = readRow(row, new ReportData(), pc);
+            final ReportData info = super.readRow(row, new ReportData(), pc);
             if (info.isValid()) {
                 reportData.add(info);
             }
@@ -194,7 +183,6 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readAssetMetaData(XSSFWorkbook workbook, Inventory inventory) {
-
         final XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_ASSET_DATA);
         if (sheet == null) return;
 
@@ -202,7 +190,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setAssetMetaData(assetMetaDataList);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final AssetMetaData amd = readRow(row, new AssetMetaData(), pc);
+            final AssetMetaData amd = super.readRow(row, new AssetMetaData(), pc);
             if (amd.isValid()) {
                 assetMetaDataList.add(amd);
             }
@@ -212,7 +200,6 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     protected void readLicenseMetaData(XSSFWorkbook workbook, Inventory inventory) {
-
         XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_LICENSE_NOTICES_DATA);
 
         // supporting alternative sheet names for backward compatibility
@@ -225,7 +212,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setLicenseMetaData(licenseMetaDataList);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final LicenseMetaData info = readRow(row, new LicenseMetaData(), pc);
+            final LicenseMetaData info = super.readRow(row, new LicenseMetaData(), pc);
             if (info.isValid()) {
                 licenseMetaDataList.add(info);
             }
@@ -243,7 +230,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         inventory.setLicenseData(licenseDataList);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final LicenseData licenseData = readRow(row, new LicenseData(), pc);
+            final LicenseData licenseData = super.readRow(row, new LicenseData(), pc);
             if (licenseData.isValid()) {
                 licenseDataList.add(licenseData);
             }
@@ -253,8 +240,7 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
     }
 
     private void parse(Inventory inventory, XSSFSheet sheet, BiConsumer<XSSFRow, ParsingContext> rowConsumer, String contextKey) {
-
-        final Function<XSSFRow, ParsingContext> headerConsumer = row -> parseColumns(row);
+        final Function<XSSFRow, ParsingContext> headerConsumer = this::parseColumns;
 
         final Iterator<?> rows = sheet.rowIterator();
         if (rows.hasNext()) {
@@ -288,59 +274,5 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
             }
         }
         return parsingContainer;
-    }
-
-    protected <T extends AbstractModelBase> T readRow(XSSFRow row, T modelBase, ParsingContext parsingContext) {
-        final Map<Integer, String> map = parsingContext.columnsMap;
-        for (int i = 0; i < map.size(); i++) {
-            final String columnName = map.get(i).trim();
-            final XSSFCell cell = row.getCell(i);
-            final String value = cell != null ? getFormatter().formatCellValue(cell) : null;
-            if (value != null) {
-                final boolean isSplitColumn = isSplitColumn(columnName);
-                if (isSplitColumn) {
-                    final String splitColumnName = getSplitColumnName(columnName);
-                    final String splitColumnValue = modelBase.get(splitColumnName);
-
-                    if (splitColumnValue != null) {
-                        modelBase.set(splitColumnName, splitColumnValue + value);
-                    } else {
-                        modelBase.set(splitColumnName, value);
-                    }
-                } else {
-                    modelBase.set(columnName, value);
-                }
-            }
-        }
-
-        for (String key : modelBase.getAttributes()) {
-            final String value = modelBase.get(key);
-            if (value != null) {
-                modelBase.set(key, value.trim());
-            }
-        }
-
-        return modelBase;
-    }
-
-    private boolean isSplitColumn(String columnName) {
-        if (StringUtils.isEmpty(columnName)) {
-            return false;
-        }
-
-        return columnName.endsWith(")") && SPLIT_COLUMN_PATTERN.matcher(columnName).matches();
-    }
-
-    private String getSplitColumnName(String columnName) {
-        if (StringUtils.isEmpty(columnName)) {
-            return null;
-        }
-
-        final Matcher matcher = SPLIT_COLUMN_PATTERN.matcher(columnName);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        } else {
-            return null;
-        }
     }
 }
