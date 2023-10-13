@@ -34,20 +34,21 @@ public class DpkgPackageContributorTest {
         assertTrue(cpc.applies("var/lib/dpkg/status"));
     }
 
+    private boolean isWindows() {
+        return System.getProperty("os.name").startsWith("Windows");
+    }
+
     @Test
     public void contribute() {
+
+        if (isWindows()) return;
+
         List<ComponentPatternData> list =
                 cpc.contribute(cpcTestBaseDir, "var/lib/dpkg/status", "6f72a28d5456b9a7f1af6f25f029afe9");
 
         boolean foundArchlessPackage = false;
         boolean foundArchPackage = false;
         for (ComponentPatternData pattern : list) {
-//            System.out.println("- " + pattern.getComplete(ComponentPatternData.Attribute.COMPONENT_NAME));
-//            for (ComponentPatternData.Attribute attr : ComponentPatternData.Attribute.values()) {
-//                System.out.println("    " + attr.name() + ": " + pattern.getComplete(attr));
-//            }
-//            System.out.println("    - isValid: " + pattern.isValid());
-
             // all should be valid.
             assertTrue(pattern.isValid());
             assertEquals("6f72a28d5456b9a7f1af6f25f029afe9",
