@@ -335,6 +335,8 @@ public class RepositoryReportTest {
 
         report.setIncludeAdvisoryTypes("alert, notice");
 
+        report.setMinimumVulnerabilityIncludeScore(7);
+
         reportTarget.mkdirs();
 
         final File targetLicensesDir = new File(reportTarget, "licenses");

@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AdvisoryData {
 
@@ -342,23 +344,36 @@ public class AdvisoryData {
         return updateDate;
     }
 
+    private static final Pattern PRECOMPILED_PATTERN_RN = Pattern.compile("\r\n", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_N = Pattern.compile("\n", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_CID = Pattern.compile("(cid:160)", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_NOTE = Pattern.compile("Note:", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_NOTE_VAR = Pattern.compile("Note :", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_PR = Pattern.compile("Pour rappel:", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_PR_VAR = Pattern.compile("Pour rappel :", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_COLON = Pattern.compile(" : ", Pattern.LITERAL);
+    private static final Pattern PRECOMPILED_PATTERN_SEMICOLON = Pattern.compile(" ; ", Pattern.LITERAL);
+
     private static String formatString(String string) {
         if (!StringUtils.isNotBlank(string)) return EMPTY_STRING;
-        string = string.replace("\r\n", " ");
-        string = string.replace("\n", " ");
+        string = replace(string, PRECOMPILED_PATTERN_RN, " ");
+        string = replace(string, PRECOMPILED_PATTERN_N, " ");
 
-        string = string.replace("(cid:160)", " ");
+        string = replace(string, PRECOMPILED_PATTERN_CID, " ");
 
-        string = string.replace("Note:", "-PSTART-Note:-PEND-");
-        string = string.replace("Note :", "-PSTART-Note:-PEND-");
+        string = replace(string, PRECOMPILED_PATTERN_NOTE, "-PSTART-Note:-PEND-");
+        string = replace(string, PRECOMPILED_PATTERN_NOTE_VAR, "-PSTART-Note:-PEND-");
 
-        string = string.replace("Pour rappel:", "-PSTART-Pour rappel:-PEND-");
-        string = string.replace("Pour rappel :", "-PSTART-Pour rappel:-PEND-");
+        string = replace(string, PRECOMPILED_PATTERN_PR, "-PSTART-Pour rappel:-PEND-");
+        string = replace(string, PRECOMPILED_PATTERN_PR_VAR, "-PSTART-Pour rappel:-PEND-");
 
-        string = string.replace(" : ", ":-NEWLINE-");
-        string = string.replace(" ; ", ";-NEWLINE-");
+        string = replace(string, PRECOMPILED_PATTERN_COLON, ":-NEWLINE-");
+        string = replace(string, PRECOMPILED_PATTERN_SEMICOLON, ";-NEWLINE-");
 
         return string;
     }
 
+    private static String replace(String text, Pattern pattern, String replacement) {
+        return pattern.matcher(text).replaceAll(Matcher.quoteReplacement(replacement));
+    }
 }
