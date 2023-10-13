@@ -200,6 +200,9 @@
                 <file>
                     <exists>src/main/java</exists>
                 </file>
+                <os>
+                    <family>!Windows</family>
+                </os>
             </activation>
             <build>
                 <plugins>
