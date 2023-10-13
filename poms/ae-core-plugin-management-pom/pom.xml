@@ -272,6 +272,10 @@
                 <file>
                     <missing>.NO_INVENTORY_CHECK</missing>
                 </file>
+                <os>
+                    <!-- disable on windows; currently requires different configuration -->
+                    <family>!Windows</family>
+                </os>
             </activation>
             <build>
                 <pluginManagement>
