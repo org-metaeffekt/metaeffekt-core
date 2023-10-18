@@ -21,22 +21,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 
-public class CertMetaData extends AbstractModelBase {
+public class AdvisoryMetaData extends AbstractModelBase {
 
     public static final String STATUS_VALUE_UNAFFECTED = "unaffected";
     public static final String STATUS_VALUE_NEW = "new";
     public static final String STATUS_VALUE_IN_REVIEW = "in review";
     public static final String STATUS_VALUE_REVIEWED = "reviewed";
 
-    public static Comparator<CertMetaData> CERT_COMPARATOR_NAME_DESC = Comparator.comparing(cm -> cm.get(Attribute.NAME));
+    public static Comparator<AdvisoryMetaData> CERT_COMPARATOR_NAME_DESC = Comparator.comparing(cm -> cm.get(Attribute.NAME));
 
-    public static Comparator<Object> CERT_COMPARATOR_LAST_UPDATED_DESC = Comparator.comparing(cm -> ((CertMetaData) cm).get(Attribute.UPDATE_DATE)).reversed();
+    public static Comparator<Object> CERT_COMPARATOR_LAST_UPDATED_DESC = Comparator.comparing(cm -> ((AdvisoryMetaData) cm).get(Attribute.UPDATE_DATE)).reversed();
 
-    public CertMetaData(CertMetaData cm) {
+    public AdvisoryMetaData(AdvisoryMetaData cm) {
         super(cm);
     }
 
-    public CertMetaData() {
+    public AdvisoryMetaData() {
     }
 
     /**
@@ -145,7 +145,7 @@ public class CertMetaData extends AbstractModelBase {
         return get(Attribute.NAME);
     }
 
-    public static boolean hasDetails(CertMetaData cm) {
+    public static boolean hasDetails(AdvisoryMetaData cm) {
 
         // TODO: define what attributes have to be defined in order for the entry to have details
         if (true || StringUtils.isNotBlank(cm.get(Attribute.NAME))) {
@@ -155,8 +155,8 @@ public class CertMetaData extends AbstractModelBase {
         return false;
     }
 
-    public static CertMetaData getByName(Collection<CertMetaData> certMetaData, String name) {
-        return certMetaData.stream()
+    public static AdvisoryMetaData getByName(Collection<AdvisoryMetaData> advisoryMetaData, String name) {
+        return advisoryMetaData.stream()
                 .filter(e -> name.equals(e.get(Attribute.NAME)))
                 .findFirst()
                 .orElse(null);

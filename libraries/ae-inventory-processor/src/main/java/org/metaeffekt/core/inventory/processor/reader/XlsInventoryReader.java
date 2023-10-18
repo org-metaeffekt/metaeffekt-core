@@ -142,13 +142,13 @@ public class XlsInventoryReader extends AbstractInventoryReader {
 
         if (sheet == null) return;
 
-        final List<CertMetaData> certMetadata = new ArrayList<>();
-        inventory.setCertMetaData(certMetadata);
+        final List<AdvisoryMetaData> advisoryMetadata = new ArrayList<>();
+        inventory.setAdvisoryMetaData(advisoryMetadata);
 
         final BiConsumer<HSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final CertMetaData cmd = super.readRow(row, new CertMetaData(), pc);
-            if (cmd.isValid()) {
-                certMetadata.add(cmd);
+            final AdvisoryMetaData amd = super.readRow(row, new AdvisoryMetaData(), pc);
+            if (amd.isValid()) {
+                advisoryMetadata.add(amd);
             }
         };
 

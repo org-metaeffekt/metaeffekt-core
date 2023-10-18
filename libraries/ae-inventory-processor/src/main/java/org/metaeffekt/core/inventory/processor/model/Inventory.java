@@ -86,7 +86,7 @@ public class Inventory implements Serializable {
 
     private Map<String, List<VulnerabilityMetaData>> vulnerabilityMetaData = new LinkedHashMap<>(1);
 
-    private List<CertMetaData> certMetaData = new ArrayList<>();
+    private List<AdvisoryMetaData> advisoryMetaData = new ArrayList<>();
 
     private List<InventoryInfo> inventoryInfo = new ArrayList<>();
 
@@ -130,7 +130,7 @@ public class Inventory implements Serializable {
         this.licenseMetaData = deepCopyList(other.licenseMetaData, LicenseMetaData::new);
         this.componentPatternData = deepCopyList(other.componentPatternData, ComponentPatternData::new);
         this.licenseData = deepCopyList(other.licenseData, LicenseData::new);
-        this.certMetaData = deepCopyList(other.certMetaData, CertMetaData::new);
+        this.advisoryMetaData = deepCopyList(other.advisoryMetaData, AdvisoryMetaData::new);
         this.inventoryInfo = deepCopyList(other.inventoryInfo, InventoryInfo::new);
         this.reportData = deepCopyList(other.reportData, ReportData::new);
         this.assetMetaData = deepCopyList(other.assetMetaData, AssetMetaData::new);
@@ -179,7 +179,7 @@ public class Inventory implements Serializable {
         if (!licenseMetaData.isEmpty()) return true;
         if (!componentPatternData.isEmpty()) return true;
         if (!licenseData.isEmpty()) return true;
-        if (!certMetaData.isEmpty()) return true;
+        if (!advisoryMetaData.isEmpty()) return true;
         if (!inventoryInfo.isEmpty()) return true;
         if (!reportData.isEmpty()) return true;
         if (!assetMetaData.isEmpty()) return true;
@@ -1281,7 +1281,7 @@ public class Inventory implements Serializable {
             filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         }
 
-        filteredInventory.setCertMetaData(getCertMetaData());
+        filteredInventory.setAdvisoryMetaData(getAdvisoryMetaData());
         filteredInventory.setAssetMetaData(getAssetMetaData());
         filteredInventory.setInventoryInfo(getInventoryInfo());
         filteredInventory.setReportData(getReportData());
@@ -1484,17 +1484,17 @@ public class Inventory implements Serializable {
     }
 
     public void inheritCertMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
-        final Map<String, CertMetaData> localCerts = new HashMap<>();
-        for (CertMetaData cert : getCertMetaData()) {
+        final Map<String, AdvisoryMetaData> localCerts = new HashMap<>();
+        for (AdvisoryMetaData cert : getAdvisoryMetaData()) {
             String artifactQualifier = cert.deriveQualifier();
             localCerts.put(artifactQualifier, cert);
         }
-        for (CertMetaData cert : inputInventory.getCertMetaData()) {
+        for (AdvisoryMetaData cert : inputInventory.getAdvisoryMetaData()) {
             String qualifier = cert.deriveQualifier();
             if (localCerts.containsKey(qualifier)) {
                 // overwrite; the localCerts inventory contains the artifact.
                 if (infoOnOverwrite) {
-                    CertMetaData localCert = localCerts.get(qualifier);
+                    AdvisoryMetaData localCert = localCerts.get(qualifier);
                     if (cert.createCompareStringRepresentation().equals(
                             localCert.createCompareStringRepresentation())) {
                         LOG.info("Cert metadata {} overwritten. Relevant content nevertheless matches. " +
@@ -1507,7 +1507,7 @@ public class Inventory implements Serializable {
                 }
             } else {
                 // add the cert
-                getCertMetaData().add(cert);
+                getAdvisoryMetaData().add(cert);
             }
         }
     }
@@ -1668,12 +1668,12 @@ public class Inventory implements Serializable {
         return vmd;
     }
 
-    public List<CertMetaData> getCertMetaData() {
-        return certMetaData;
+    public List<AdvisoryMetaData> getAdvisoryMetaData() {
+        return advisoryMetaData;
     }
 
-    public void setCertMetaData(List<CertMetaData> certMetaData) {
-        this.certMetaData = certMetaData;
+    public void setAdvisoryMetaData(List<AdvisoryMetaData> advisoryMetaData) {
+        this.advisoryMetaData = advisoryMetaData;
     }
 
     public List<InventoryInfo> getInventoryInfo() {

@@ -469,7 +469,7 @@ public class InventoryTest {
         initialInventory.getArtifacts().add(dummyArtifact());
         initialInventory.getArtifacts().add(dummyArtifact());
         initialInventory.getInventoryInfo().add(opAndReturn(new InventoryInfo(), i -> i.set("key", "value")));
-        initialInventory.getCertMetaData().add(opAndReturn(new CertMetaData(), c -> c.set("key", "value")));
+        initialInventory.getAdvisoryMetaData().add(opAndReturn(new AdvisoryMetaData(), c -> c.set("key", "value")));
 
         final File serializedInventoryFile = new File("target/serializationInventoryReaderWriterInventoryWithVariousDataTest.ser");
         new InventoryWriter().writeInventory(initialInventory, serializedInventoryFile);
@@ -481,8 +481,8 @@ public class InventoryTest {
         Assert.assertEquals("test.jar", readInventory.getArtifacts().get(0).getId());
         Assert.assertEquals(1, readInventory.getInventoryInfo().size());
         Assert.assertEquals("value", readInventory.getInventoryInfo().get(0).get("key"));
-        Assert.assertEquals(1, readInventory.getCertMetaData().size());
-        Assert.assertEquals("value", readInventory.getCertMetaData().get(0).get("key"));
+        Assert.assertEquals(1, readInventory.getAdvisoryMetaData().size());
+        Assert.assertEquals("value", readInventory.getAdvisoryMetaData().get(0).get("key"));
 
 
         // serializationContext is transient and not serialized, check if access works correctly
@@ -620,10 +620,10 @@ public class InventoryTest {
         info.set("InfoKey", "InfoValue");
         initialInventory.getInventoryInfo().add(info);
 
-        final CertMetaData cm = new CertMetaData();
-        cm.set(CertMetaData.Attribute.NAME, "CERT-SEI-343434");
-        cm.set(CertMetaData.Attribute.URL, url);
-        initialInventory.getCertMetaData().add(cm);
+        final AdvisoryMetaData cm = new AdvisoryMetaData();
+        cm.set(AdvisoryMetaData.Attribute.NAME, "CERT-SEI-343434");
+        cm.set(AdvisoryMetaData.Attribute.URL, url);
+        initialInventory.getAdvisoryMetaData().add(cm);
 
         final File xlsInventoryFile = new File("target/newInventoryWriterSystemTest.xls");
         new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
@@ -658,6 +658,34 @@ public class InventoryTest {
         Assert.assertEquals("344,344.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 2"));
 
         cleanUpFiles(xlsInventoryFile);
+    }
+
+    @Test
+    public void advisoriesSheetNameChangeTest() throws IOException {
+        final Inventory initialInventory = new Inventory();
+
+        final AdvisoryMetaData am = new AdvisoryMetaData();
+        am.set(AdvisoryMetaData.Attribute.NAME, "CERT-SEI-343434");
+        am.set(AdvisoryMetaData.Attribute.URL, "http://example.com");
+        initialInventory.getAdvisoryMetaData().add(am);
+
+        final File xlsInventoryFile = new File("target/advisoriesSheetNameChangeTest.xls");
+        new InventoryWriter().writeInventory(initialInventory, xlsInventoryFile);
+
+        final Inventory readXlsInventory = new InventoryReader().readInventory(xlsInventoryFile);
+        Assert.assertEquals(1, readXlsInventory.getAdvisoryMetaData().size());
+        Assert.assertEquals("CERT-SEI-343434", readXlsInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.NAME));
+        Assert.assertEquals("http://example.com", readXlsInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.URL));
+
+        final File xlsxInventoryFile = new File("target/advisoriesSheetNameChangeTest.xlsx");
+        new InventoryWriter().writeInventory(initialInventory, xlsxInventoryFile);
+
+        final Inventory readXlsxInventory = new InventoryReader().readInventory(xlsxInventoryFile);
+        Assert.assertEquals(1, readXlsxInventory.getAdvisoryMetaData().size());
+        Assert.assertEquals("CERT-SEI-343434", readXlsxInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.NAME));
+        Assert.assertEquals("http://example.com", readXlsxInventory.getAdvisoryMetaData().get(0).get(AdvisoryMetaData.Attribute.URL));
+
+        cleanUpFiles(xlsInventoryFile, xlsxInventoryFile);
     }
 
     private static String buildLongString(int minLength) {

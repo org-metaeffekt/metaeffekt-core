@@ -22,7 +22,7 @@ import org.apache.poi.hssf.usermodel.HSSFPalette;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hssf.util.HSSFColor;
 import org.apache.poi.ss.usermodel.*;
-import org.metaeffekt.core.inventory.processor.model.CertMetaData;
+import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.InventorySerializationContext;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 
@@ -145,7 +145,7 @@ public class XlsHSSFInventorySheetCellStylers {
 
         this.contentStyleUrlValue = InventorySheetCellStyler.createStyler(
                 context -> {
-                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.URL, CertMetaData.Attribute.URL);
+                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.URL, AdvisoryMetaData.Attribute.URL);
                     if (!isCorrectHeader) {
                         return false;
                     }
