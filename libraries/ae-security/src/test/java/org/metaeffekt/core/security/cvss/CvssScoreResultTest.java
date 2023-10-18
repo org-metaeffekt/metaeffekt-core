@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3;
 
-class CvssScoreResultTest {
+public class CvssScoreResultTest {
 
     @Test
     public void correctNormalizedCvss3Test() {

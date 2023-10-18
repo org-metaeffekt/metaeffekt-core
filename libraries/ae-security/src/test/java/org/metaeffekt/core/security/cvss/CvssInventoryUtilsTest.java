@@ -15,7 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss;
 
-class CvssInventoryUtilsTest {
+public class CvssInventoryUtilsTest {
 
     /*@Test
     public void applyNewCvssInformationOnVulnerabilityMetaDataTest() {

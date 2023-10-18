@@ -15,9 +15,9 @@
  */
 package org.metaeffekt.core.security.cvss.v4_0;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-class Cvss4_0Test {
+public class Cvss4_0Test {
 
     private final static Logger LOG = LoggerFactory.getLogger(Cvss4_0Test.class);
 
@@ -44,7 +44,7 @@ class Cvss4_0Test {
         Assert.assertEquals("102201", cvss4_0.getMacroVector().toString());
         Assert.assertEquals("1", cvss4_0.getMacroVector().getEq1().getLevel());
         Assert.assertEquals(0, cvss4_0.hammingDistance(cvss4_0)); // distance to itself is 0
-        Assert.assertEquals(5.3, cvss4_0.getMacroVector().getLookupTableScore());
+        Assert.assertEquals(5.3, cvss4_0.getMacroVector().getLookupTableScore(), 0.01);
     }
 
     @Test
