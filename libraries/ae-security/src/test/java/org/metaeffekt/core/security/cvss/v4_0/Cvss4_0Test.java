@@ -1,0 +1,121 @@
+/*
+ * Copyright 2009-2022 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.metaeffekt.core.security.cvss.v4_0;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+class Cvss4_0Test {
+
+    private final static Logger LOG = LoggerFactory.getLogger(Cvss4_0Test.class);
+
+    private final static File CVSS_RESOURCE_DIR = new File("src/test/resources/cvss");
+
+    @Test
+    public void initialTest() {
+        final String vectorString = "CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N";
+        final Cvss4_0 cvss4_0 = new Cvss4_0(vectorString);
+
+        Assert.assertEquals(vectorString, cvss4_0.toString());
+        Assert.assertEquals("102201", cvss4_0.getMacroVector().toString());
+        Assert.assertEquals("1", cvss4_0.getMacroVector().getEq1().getLevel());
+        Assert.assertEquals(0, cvss4_0.hammingDistance(cvss4_0)); // distance to itself is 0
+        Assert.assertEquals(5.3, cvss4_0.getMacroVector().getLookupTableScore());
+    }
+
+    @Test
+    public void parseAndCheckAllCvssMacroVectors001Test() throws IOException {
+        final File cvssVectorsFile = new File(CVSS_RESOURCE_DIR, "cvss-4.0-macro-vectors-001.txt");
+        final List<String> lines = FileUtils.readLines(cvssVectorsFile, StandardCharsets.UTF_8);
+
+        final List<String> invalidVectors = new ArrayList<>();
+        final List<String> toStringNotEqualsVectors = new ArrayList<>();
+        final List<String> incorrectScores = new ArrayList<>();
+        final Map<String, String> exceptionVectors = new LinkedHashMap<>();
+
+        for (String line : lines) {
+            try {
+                final String[] parts = line.split(" ");
+                final String vectorString = parts[0];
+                final String expectedMacroVector = parts[1];
+                final double expectedResultingScore = Double.parseDouble(parts[2]);
+
+                final Cvss4_0 cvss4_0 = new Cvss4_0(vectorString);
+                final Cvss4_0MacroVector macroVector = cvss4_0.getMacroVector();
+                final String actualMacroVector = macroVector.toString();
+                final double actualResultingScore = cvss4_0.getBaseScore();
+
+                if (!expectedMacroVector.equals(actualMacroVector)) {
+                    invalidVectors.add(line);
+                }
+                if (!vectorString.equals(cvss4_0.toString())) {
+                    toStringNotEqualsVectors.add(line + " != " + cvss4_0);
+                }
+                if (actualResultingScore != expectedResultingScore) {
+                    incorrectScores.add(line + " != " + actualResultingScore);
+                }
+            } catch (Exception e) {
+                exceptionVectors.put(line, e.getMessage());
+            }
+        }
+
+        if (!invalidVectors.isEmpty()) {
+            LOG.error("Invalid macro vectors:");
+            for (String invalidVector : invalidVectors) {
+                LOG.error("  {}", invalidVector);
+            }
+        }
+
+        if (!toStringNotEqualsVectors.isEmpty()) {
+            LOG.error("toString() not equals:");
+            for (String invalidVector : toStringNotEqualsVectors) {
+                LOG.error("  {}", invalidVector);
+            }
+        }
+
+        if (!incorrectScores.isEmpty()) {
+            LOG.error("Incorrect scores:");
+            for (String incorrectScore : incorrectScores) {
+                LOG.error("  {}", incorrectScore);
+            }
+        }
+
+        if (!exceptionVectors.isEmpty()) {
+            LOG.error("Exception vectors:");
+            for (Map.Entry<String, String> entry : exceptionVectors.entrySet()) {
+                LOG.error("  {} ({})", entry.getKey(), entry.getValue());
+            }
+        }
+
+        Assert.assertTrue(invalidVectors.isEmpty());
+        Assert.assertTrue(toStringNotEqualsVectors.isEmpty());
+        Assert.assertTrue(incorrectScores.isEmpty());
+        Assert.assertTrue(exceptionVectors.isEmpty());
+
+        LOG.info("Successfully validated [{}] vectors", lines.size());
+    }
+}
