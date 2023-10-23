@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.metaeffekt.core</groupId>
+        <artifactId>ae-libraries</artifactId>
+        <version>HEAD-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>ae-system-analysis-scripts</artifactId>
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <scriptsOutputDirectory>${project.build.directory}/ae-system-analysis-scripts-assembled</scriptsOutputDirectory>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.metaeffekt.core</groupId>
+                <artifactId>ae-shell-script-assembler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>assemble-shell-script</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+                <version>HEAD-SNAPSHOT</version>
+                <configuration>
+                    <inputDirectory>src/main/resources/ae-system-analysis-scripts</inputDirectory>
+                    <outputDirectory>${scriptsOutputDirectory}</outputDirectory>
+                    <libraryDirectory>src/main/resources/ae-system-analysis-scripts/extraction-scripts-lib</libraryDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>src</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+                                <descriptor>src/main/assembly/scripts.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
