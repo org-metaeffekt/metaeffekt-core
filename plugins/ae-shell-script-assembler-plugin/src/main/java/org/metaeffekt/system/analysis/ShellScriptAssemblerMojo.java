@@ -158,15 +158,14 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
             Map<String, List<Path>> processedSummary = processFiles(filesToProcess);
 
             // print summary
-            getLog().info("Summary:");
+            getLog().info("ShellScriptAssembler Summary:");
             for (String action : processedSummary.keySet()) {
-                getLog().info("\"" + action + "\":");
+                getLog().info("Performed: [" + action + "] for:");
                 for (Path path : processedSummary.get(action)) {
                     getLog().info("  - " + getRelativized(path, inputDirPath));
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new MojoExecutionException("Failed to assemble script.", e);
         }
     }

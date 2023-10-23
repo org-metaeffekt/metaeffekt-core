@@ -19,7 +19,7 @@
         <title>$report.xmlEscapeString($asset.get("Type")) - $report.xmlEscapeString($asset.get("Name"))</title>
         <body>
             <p>
-                <table id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))" otherprops="wide">
+                <table id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">
                 <title>$report.xmlEscapeString($asset.get("Type")) - $report.xmlEscapeString($asset.get("Name"))</title>
                 <tgroup cols="2">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />

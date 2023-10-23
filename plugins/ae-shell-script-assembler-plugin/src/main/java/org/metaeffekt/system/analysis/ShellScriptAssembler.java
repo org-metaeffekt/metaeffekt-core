@@ -87,7 +87,6 @@ public class ShellScriptAssembler {
         }
 
         if (!replacementRequest.matcher(line.trim()).matches()) {
-            System.out.println(line.trim());
             throw new MalformedIncludeException("Bad replacement request in " + inputFile.getPath() + ":" + num);
         }
 
