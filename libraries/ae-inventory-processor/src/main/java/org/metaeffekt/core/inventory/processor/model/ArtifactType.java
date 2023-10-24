@@ -86,7 +86,9 @@ public class ArtifactType {
     public static final ArtifactType STORAGE_CONTROLLER = new ArtifactType("storage controller", "RAID controllers");
     public static final ArtifactType CONTROLLER = new ArtifactType("controller", "top-level category for controllers", EMBEDDED_SYSTEM, STORAGE_CONTROLLER);
     // INPUT_DEVICE
-    public static final ArtifactType HUMAN_INTERFACE = new ArtifactType("human interface", "keyboards, mice");
+    public static final ArtifactType KEYBOARD = new ArtifactType("keyboard", "keyboards");
+    public static final ArtifactType MOUSE = new ArtifactType("mouse", "mice, trackballs, touchpads");
+    public static final ArtifactType HUMAN_INTERFACE = new ArtifactType("human interface", "keyboards, mice, gamepads, joysticks", KEYBOARD, MOUSE);
     public static final ArtifactType SCANNER = new ArtifactType("scanner", "barcode scanners, fingerprint scanners, biometric scanners");
     public static final ArtifactType INPUT_DEVICE = new ArtifactType("input device", "top-level category for input devices", HUMAN_INTERFACE, SCANNER);
     // OUTPUT_DEVICE
@@ -95,11 +97,13 @@ public class ArtifactType {
     public static final ArtifactType PRINTER = new ArtifactType("printer", null);
     public static final ArtifactType DISPLAY = new ArtifactType("display", null);
     public static final ArtifactType PROJECTOR = new ArtifactType("projector", null);
-    public static final ArtifactType OUTPUT_DEVICE = new ArtifactType("output device", "top-level category for output devices", SOUND_HARDWARE, IMAGING_HARDWARE, PRINTER, DISPLAY, PROJECTOR);
+    public static final ArtifactType MULTIMEDIA_OUTPUT_DEVICE = new ArtifactType("multimedia output device", "devices that contain both sound and imaging hardware");
+    public static final ArtifactType OUTPUT_DEVICE = new ArtifactType("output device", "top-level category for output devices", SOUND_HARDWARE, IMAGING_HARDWARE, PRINTER, DISPLAY, PROJECTOR, MULTIMEDIA_OUTPUT_DEVICE);
     // other hardware
     public static final ArtifactType DATA_STORAGE = new ArtifactType("data storage", "ssds, hard drives, usb drives");
     public static final ArtifactType DEVICE_CONNECTOR = new ArtifactType("device connector", "cables, connectors");
     public static final ArtifactType SECURITY_TOKEN = new ArtifactType("security token", "nfc tokens");
+    public static final ArtifactType SECURITY_HARDWARE = new ArtifactType("security hardware", "top-level category for security hardware. does not include elements from category 'scanner'", SECURITY_TOKEN);
     public static final ArtifactType SENSOR = new ArtifactType("sensor", "measurement devices, temperature sensors, motion sensors, anemometers");
     public static final ArtifactType PROCESSING_CORE = new ArtifactType("processing core", "CPUs, GPUs, TPUs");
     public static final ArtifactType EXTENSION_MODULE = new ArtifactType("extension module", "sound cards, wi-fi cards, bluetooth cards, RAM");
@@ -113,9 +117,15 @@ public class ArtifactType {
             // categories
             APPLIANCE, CONTROLLER, INPUT_DEVICE, OUTPUT_DEVICE,
             // other
-            DATA_STORAGE, DEVICE_CONNECTOR, SECURITY_TOKEN, SENSOR, PROCESSING_CORE, EXTENSION_MODULE, POWER_SUPPLY,
+            DATA_STORAGE, DEVICE_CONNECTOR, SECURITY_HARDWARE, SENSOR, PROCESSING_CORE, EXTENSION_MODULE, POWER_SUPPLY,
             TEMPERATURE_CONTROL, AESTHETIC_HARDWARE, TRACKING_HARDWARE, WEARABLE
     );
+
+    public static final ArtifactType NETWORK_DRIVER = new ArtifactType("network driver", "ethernet drivers, wifi drivers, bluetooth drivers");
+    public static final ArtifactType DISPLAY_DRIVER = new ArtifactType("display driver", "graphics card drivers, monitor drivers");
+    public static final ArtifactType INPUT_DRIVER = new ArtifactType("input driver", "keyboard drivers, mouse drivers, gamepad drivers");
+    public static final ArtifactType PRINTER_DRIVER = new ArtifactType("printer driver", "printer drivers");
+    public static final ArtifactType DRIVER = new ArtifactType("driver", "top-level category for drivers", NETWORK_DRIVER, DISPLAY_DRIVER, INPUT_DRIVER, PRINTER_DRIVER);
 
     // CATEGORY_SOFTWARE_LIBRARY
     public static final ArtifactType LINUX_PACKAGE = new ArtifactType("package", "linux package");
@@ -130,24 +140,20 @@ public class ArtifactType {
     public static final ArtifactType BIOS = new ArtifactType("bios", null);
     public static final ArtifactType FILE = new ArtifactType("file", null);
 
+    // {4d36e97e-e325-11ce-bfc1-08002be10318} Unknown: Other Devices
+    public static final ArtifactType UNKNOWN = new ArtifactType("unknown", "types that are not covered by the other categories or could not be identified");
+
     public static final List<ArtifactType> ARTIFACT_TYPES = Collections.unmodifiableList(
             Stream.of(
                             CATEGORY_HARDWARE,
                             CATEGORY_SOFTWARE_LIBRARY,
                             OPERATING_SYSTEM,
+                            DRIVER,
                             BIOS,
                             FILE
                     ).flatMap(ArtifactType::flattenArtifactType)
                     .collect(Collectors.toList())
     );
-
-    public static String toMarkdownString() {
-        final StringJoiner joiner = new StringJoiner("\n");
-        for (ArtifactType artifactType : ARTIFACT_TYPES) {
-            joiner.add((artifactType.getParent() != null ? (artifactType.getParent() != null && artifactType.getParent().getParent() != null ? "    - " : "  - ") : "- ") + "**" + artifactType.getCategory() + "**" + (artifactType.getDescription() != null ? " (" + artifactType.getDescription() + ")" : ""));
-        }
-        return joiner.toString();
-    }
 
     private static Stream<ArtifactType> flattenArtifactType(ArtifactType artifactType) {
         return Stream.concat(
@@ -161,4 +167,37 @@ public class ArtifactType {
                 .filter(artifactType -> artifactType.getCategory().equals(category))
                 .findFirst();
     }
+
+    public static String toMarkdownString() {
+        final StringBuilder sb = new StringBuilder();
+        final Set<ArtifactType> coveredTypes = new HashSet<>();
+        for (ArtifactType artifactType : ARTIFACT_TYPES) {
+            recurseMarkdownString(artifactType, sb, 0, coveredTypes);
+        }
+        return sb.toString();
+    }
+
+    public static void recurseMarkdownString(ArtifactType artifactType, StringBuilder sb, int level, Set<ArtifactType> coveredTypes) {
+        if (coveredTypes.contains(artifactType)) {
+            return;
+        } else {
+            coveredTypes.add(artifactType);
+        }
+        final int indentation = Math.max(0, level);
+        for (int i = 0; i < indentation; i++) {
+            sb.append("  ");
+        }
+        sb.append("-").append(" **").append(artifactType.getCategory()).append("**");
+        if (artifactType.getDescription() != null) {
+            sb.append(" (").append(artifactType.getDescription()).append(")");
+        }
+        sb.append("\n");
+        for (ArtifactType child : artifactType.getSubcategories()) {
+            recurseMarkdownString(child, sb, level + 1, coveredTypes);
+        }
+    }
+
+    /*public static void main(String[] args) {
+        System.out.println(toMarkdownString());
+    }*/
 }
