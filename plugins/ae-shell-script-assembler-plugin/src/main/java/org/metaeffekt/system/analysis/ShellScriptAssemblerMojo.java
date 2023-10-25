@@ -86,11 +86,11 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
                     ShellScriptAssembler assembler =
                             new ShellScriptAssembler(inputFile, outputFile, libraryDirectory);
                     assembler.assemble();
-                    actionToProcessedPath.computeIfAbsent("assembled", (k) -> new ArrayList<>()).add(inputPath);
+                    actionToProcessedPath.computeIfAbsent("assemble", (k) -> new ArrayList<>()).add(inputPath);
                 } else {
                     // non-script files will be copied over
                     Files.copy(inputPath, outputPath);
-                    actionToProcessedPath.computeIfAbsent("copied", (k) -> new ArrayList<>()).add(inputPath);
+                    actionToProcessedPath.computeIfAbsent("copy", (k) -> new ArrayList<>()).add(inputPath);
                 }
             } else {
                 throw new IOException("Entry '" + inputFile + "' is neither file nor directory.");
@@ -160,7 +160,7 @@ public class ShellScriptAssemblerMojo extends AbstractMojo {
             // print summary
             getLog().info("ShellScriptAssembler Summary:");
             for (String action : processedSummary.keySet()) {
-                getLog().info("Performed: [" + action + "] for:");
+                getLog().info("Performed [" + action + "] for:");
                 for (Path path : processedSummary.get(action)) {
                     getLog().info("  - " + getRelativized(path, inputDirPath));
                 }
