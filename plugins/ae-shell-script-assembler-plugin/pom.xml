@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>0.95.0</version>
+        <version>HEAD-SNAPSHOT</version>
     </parent>
 
     <artifactId>ae-shell-script-assembler-plugin</artifactId>
