@@ -342,6 +342,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      */
     private String reportContextGroup;
 
+    /**
+     * @parameter  default-value="false"
+     */
+    private boolean includeInofficialOsiStatus;
+
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         InventoryReport report = new InventoryReport();
         configureInventoryReport(report);
@@ -410,6 +415,8 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setInventoryVulnerabilityReportEnabled(enableVulnerabilityReport);
         report.setInventoryVulnerabilityReportSummaryEnabled(enableVulnerabilityReportSummary);
         report.setInventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport);
+
+        report.setIncludeInofficialOsiStatus(includeInofficialOsiStatus);
 
         report.setTargetReportDir(targetReportDir);
 

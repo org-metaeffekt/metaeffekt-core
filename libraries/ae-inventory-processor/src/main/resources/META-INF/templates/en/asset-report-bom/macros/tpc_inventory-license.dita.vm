@@ -2,20 +2,19 @@
     #set($folder=$inventory.getLicenseFolder($license))
     #set($assetLicenseDataList=$assetData.evaluateAssets($license))
     #if(!$assetLicenseDataList.isEmpty())
-    <topic id="tpc_associated_license_$inventory.deriveLicenseId($license)">
+    <topic id="tpc_associated_license_details_$inventory.deriveLicenseId($license)">
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
             <p>
-                The following table lists all assets that are licensed under $license.
+                The following table lists all assets that are licensed under $report.xmlEscapeString($license).
                 #if($folder)
                     Information with respect to the license or contract can be found in
-                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
+                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$report.xmlEscapeString($license)
                         [external]</xref>.
                 #end
             </p>
             <p>
                 <table otherprops="wide">
-                    <title>Assets under $license.trim()$reportContext.inContextOf()</title>
                     <tgroup cols="3">
                         <colspec colname="COLSPEC0" colnum="1" colwidth="10*"/>
                         <colspec colname="COLSPEC1" colnum="2" colwidth="70*"/>
@@ -48,4 +47,86 @@
         </body>
     </topic>
     #end
+#end
+#macro (insertLicenseTable $id $title $licenseList $handleSubstructure)
+<table id="$id">
+<title>$title$reportContext.inContextOf()</title>
+<tgroup cols="5">
+    <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+    <colspec colname="COLSPEC1" colnum="2" colwidth="18*" />
+    <colspec colname="COLSPEC2" colnum="3" colwidth="12*" />
+    <colspec colname="COLSPEC3" colnum="4" colwidth="11*" />
+    <colspec colname="COLSPEC4" colnum="5" colwidth="9*" />
+    <thead>
+        <row>
+            <entry colname="COLSPEC0" valign="top">License</entry>
+            <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+            <entry colname="COLSPEC2" valign="top">OSI Status</entry>
+            <entry colname="COLSPEC3" valign="top">Open CoDE Approval</entry>
+            <entry colname="COLSPEC4" valign="top">Count</entry>
+        </row>
+    </thead>
+#if($report.isIncludeInofficialOsiStatus())
+#set($osiStatusMap = {
+    "approved" : "approved",
+    "submitted" : "submitted",
+    "not submitted" : "not submitted",
+    "pending" : "pending",
+    "withdrawn" : "withdrawn",
+    "rejected" : "rejected",
+    "ineligible" : "ineligible",
+    "unclear" : "unclear"
+})
+#else
+#set($osiStatusMap = {
+    "approved" : "approved"
+})
+#end
+#set($openCoDEStatusMap = {
+    "approved" : "yes",
+    "(approved)" : "(yes)",
+    "not approved" : "no"
+})
+#set($approved="approved")
+    <tbody>
+        #foreach($license in $licenseList)
+            #if (!$license.contains(" + "))
+                #set($licenseData=$inventory.findMatchingLicenseData($license))
+                <row>
+                    #if ($handleSubstructure && $assetData.isLicenseSubstructureRequired($license))
+                        <entry>
+                            <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                            </xref>
+                        </entry>
+                        <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                        <entry>#if ($licenseData)
+                                 #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
+                                 #if ($mappedStatus)$mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#end
+                               #else&nbsp;#end</entry>
+                        <entry>#if ($licenseData)
+                                 #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                                 #if ($mappedStatus)$mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#end
+                               #else&nbsp;#end</entry>
+                    #else
+                        <entry>
+                            <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                $report.xmlEscapeLicense($license)
+                            </xref>
+                        </entry>
+                        <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                        <entry>#if ($licenseData)$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;")#else&nbsp;#end</entry>
+                        <entry>#if ($licenseData)$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap, "&nbsp;")#end</entry>
+                    #end
+                    <entry>
+                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                            <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, $handleSubstructure)</codeph>
+                        </xref>
+                    </entry>
+                </row>
+            #end
+        #end
+    </tbody>
+</tgroup>
+</table>
 #end

@@ -242,35 +242,30 @@ public class Artifact extends AbstractModelBase {
      * @return The derived artifact qualifier.
      */
     public String deriveQualifier() {
-        String id = getId();
-        if (StringUtils.isBlank(id)) {
-            // support artifacts without id (e.g. a folder)
-            StringBuilder sb = new StringBuilder();
-            if (StringUtils.isNotBlank(getComponent())) {
-                sb.append(getComponent().trim());
-            }
-            sb.append("-");
-            if (StringUtils.isNotBlank(getChecksum())) {
-                sb.append(getChecksum().trim());
-            }
-            sb.append("-");
-            if (StringUtils.isNotBlank(getVersion())) {
-                sb.append(getVersion().trim());
-            }
-        }
+        final String id = getId();
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
+
         if (StringUtils.isNotBlank(id)) {
             sb.append(id.trim());
         }
-        sb.append("-");
+        sb.append(":");
+        if (StringUtils.isNotBlank(getComponent())) {
+            sb.append(getComponent().trim());
+        }
+        sb.append(":");
+        if (StringUtils.isNotBlank(getGroupId())) {
+            sb.append(getGroupId().trim());
+        }
+        sb.append(":");
         if (StringUtils.isNotBlank(getChecksum())) {
             sb.append(getChecksum().trim());
         }
-        sb.append("-");
+        sb.append(":");
         if (StringUtils.isNotBlank(getVersion())) {
             sb.append(getVersion().trim());
         }
+
         return sb.toString();
     }
 

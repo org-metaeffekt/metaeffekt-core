@@ -54,9 +54,9 @@
 <tgroup cols="5">
     <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
     <colspec colname="COLSPEC1" colnum="2" colwidth="18*" />
-    <colspec colname="COLSPEC2" colnum="3" colwidth="11*" />
+    <colspec colname="COLSPEC2" colnum="3" colwidth="12*" />
     <colspec colname="COLSPEC3" colnum="4" colwidth="11*" />
-    <colspec colname="COLSPEC4" colnum="5" colwidth="10*" />
+    <colspec colname="COLSPEC4" colnum="5" colwidth="9*" />
     <thead>
         <row>
             <entry colname="COLSPEC0" valign="top">Lizenz</entry>
@@ -66,6 +66,27 @@
             <entry colname="COLSPEC4" valign="top">Anzahl</entry>
         </row>
     </thead>
+#if($report.isIncludeInofficialOsiStatus())
+#set($osiStatusMap = {
+    "approved" : "anerkannt",
+    "submitted" : "eingereicht",
+    "not submitted" : "nicht eingereicht",
+    "pending" : "ausstehend",
+    "withdrawn" : "zur252;ckgezogen",
+    "rejected" : "abgelehnt",
+    "ineligible" : "ungeeignet",
+    "unclear" : "unklar"
+})
+#else
+#set($osiStatusMap = {
+    "approved" : "anerkannt"
+})
+#end
+#set($openCoDEStatusMap = {
+    "approved" : "ja",
+    "(approved)" : "(ja)",
+    "not approved" : "nein"
+})
 #set($approved="approved")
     <tbody>
         #foreach($license in $licenseList)
@@ -79,22 +100,14 @@
                             </xref>
                         </entry>
                         <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
-                        <entry>
-                            #if ($licenseData)#if ($approved.equalsIgnoreCase($licenseData.get("OSI Status")))anerkannt<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
-                        </entry>
-                        <entry>
-                            #if ($licenseData && $licenseData.get('Open CoDE Status'))
-                                #if ('approved' == $licenseData.get('Open CoDE Status'))
-                                    ja<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
-                                #else
-                                    #if ('not approved' == $licenseData.get('Open CoDE Status'))
-                                        nein<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
-                                    #else
-                                        &nbsp;
-                                    #end
-                                #end
-                            #else&nbsp;#end
-                        </entry>
+                        <entry>#if ($licenseData)
+                                 #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
+                                 #if ($mappedStatus)$mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#end
+                               #else&nbsp;#end</entry>
+                        <entry>#if ($licenseData)
+                                 #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                                 #if ($mappedStatus)$mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#end
+                               #else&nbsp;#end</entry>
                     #else
                         <entry>
                             <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
@@ -102,22 +115,8 @@
                             </xref>
                         </entry>
                         <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
-                        <entry>
-                            #if ($licenseData)#if ($approved.equalsIgnoreCase($licenseData.get("OSI Status")))anerkannt#else&nbsp;#end#else&nbsp;#end
-                        </entry>
-                        <entry>
-                            #if ($licenseData && $licenseData.get('Open CoDE Status'))
-                                #if ('approved' == $licenseData.get('Open CoDE Status'))
-                                    ja
-                                #else
-                                    #if ('not approved' == $licenseData.get('Open CoDE Status'))
-                                        nein
-                                    #else
-                                        &nbsp;
-                                    #end
-                                #end
-                            #else&nbsp;#end
-                        </entry>
+                        <entry>#if ($licenseData)$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;")#else&nbsp;#end</entry>
+                        <entry>#if ($licenseData)$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap, "&nbsp;")#end</entry>
                     #end
                     <entry>
                         <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">

@@ -29,6 +29,7 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.ParsingUtils;
 import org.metaeffekt.core.util.RegExUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,6 +219,12 @@ public class InventoryReport {
     private boolean assessmentReportEnabled = false;
 
     /**
+     * Flag indicating whether to include inofficial OSI status information, when detailing license characteristics.
+     * Defaults to <code>false</code> due to backward expectation management.
+     */
+    private boolean includeInofficialOsiStatus = false;
+
+    /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
      * to be configured to match the relative path from the documentation to the licenses.
      */
@@ -311,6 +318,8 @@ public class InventoryReport {
         boolean downgrade = false;
 
         boolean missingLicense = false;
+
+        final Map<String, Integer> classifierMessageCount = new HashMap<>();
 
         for (Artifact localArtifact : list) {
             localArtifact.deriveArtifactId();
@@ -472,16 +481,30 @@ public class InventoryReport {
 
                 // log information
                 if (classifier.length() > 0) {
-                    String artifactQualifier = reportArtifact.createStringRepresentation();
+                    final String artifactQualifier = reportArtifact.deriveQualifier();
                     if (StringUtils.isNotBlank(comment)) {
                         comment = "- " + comment;
+                    } else {
+                        comment = "";
                     }
                     if (localArtifact.isRelevant() || localArtifact.isManaged()) {
-                        final String messagePattern = "{} {} {}";
+                        final String messagePattern = "{} for artifact [{}] {}";
                         if (localError) {
+                            // all errors are logged
                             LOG.error(messagePattern, classifier, artifactQualifier, comment);
                         } else if (localWarn) {
-                            LOG.warn(messagePattern, classifier, artifactQualifier, comment);
+
+                            // only 10 warnings of each kind (classifier) are logged to not pollute the log.
+                            Integer count = classifierMessageCount.get(classifier);
+                            count = count == null ? 1 : count + 1;
+                            classifierMessageCount.put(classifier, count);
+
+                            if (count <= 10) {
+                                LOG.warn(messagePattern, classifier, artifactQualifier, comment);
+                            }
+                            if (count == 10) {
+                                LOG.warn("{} - logging no further warnings for classifier.", classifier);
+                            }
                         } else {
                             LOG.info(messagePattern, classifier, artifactQualifier, comment);
                         }
@@ -552,7 +575,7 @@ public class InventoryReport {
                 final String compareScore = adapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
                 if (StringUtils.isNotBlank(compareScore)) {
                     try {
-                        return Double.parseDouble(compareScore) < getMinimumVulnerabilityIncludeScore();
+                        return ParsingUtils.parseCvssScore(compareScore) < getMinimumVulnerabilityIncludeScore();
                     } catch (NumberFormatException e) {
                         LOG.debug("Cannot parse vulnerability score {} on {}", compareScore, vmd.get(VulnerabilityMetaData.Attribute.NAME));
                     }
@@ -616,9 +639,9 @@ public class InventoryReport {
             // write the report
             try {
                 new InventoryWriter().writeInventory(projectInventory, targetInventoryFile);
-                LOG.info("Report inventory written to {}.", getTargetInventoryPath());
+                LOG.info("Report inventory written to [{}].", getTargetInventoryPath());
             } catch (Exception e) {
-                LOG.error("Unable to write inventory to {}. Skipping write.", getTargetInventoryPath(), e);
+                LOG.error("Unable to write inventory to [{}]. Skipping write.", getTargetInventoryPath(), e);
             }
         }
 
@@ -740,9 +763,14 @@ public class InventoryReport {
         } else {
             if (!reportedLicenseFolders.contains(licenseFolderName)) {
                 if (failOnMissingLicenseFile) {
-                    LOG.error("No license file in folder '{}'", licenseFolderName);
+                    LOG.error("[missing license file] in folder [{}]", licenseFolderName);
                 } else {
-                    LOG.warn("No license file in folder '{}'", licenseFolderName);
+                    if (reportedLicenseFolders.size() <= 10) {
+                    LOG.warn("[missing license file] in folder [{}]", licenseFolderName);
+                    }
+                    if (reportedLicenseFolders.size() == 10) {
+                        LOG.warn("[missing license file] - logging no further warnings for classifier.");
+                    }
                 }
                 reportedLicenseFolders.add(licenseFolderName);
                 return true;
@@ -762,9 +790,14 @@ public class InventoryReport {
         } else {
             if (!reportedLicenseFolders.contains(componentFolderName)) {
                 if (failOnMissingComponentFiles) {
-                    LOG.error("No component-specific license file in folder '{}'", componentFolderName);
+                    LOG.error("[missing component specific license file] in folder '{}'", componentFolderName);
                 } else {
-                    LOG.warn("No component-specific license file in folder '{}'", componentFolderName);
+                    if (reportedLicenseFolders.size() <= 10) {
+                        LOG.warn("[missing component specific license file] in folder '{}'", componentFolderName);
+                    }
+                    if (reportedLicenseFolders.size() == 10) {
+                        LOG.warn("[missing component specific license file] - logging no further warnings for classifier.");
+                    }
                 }
                 reportedLicenseFolders.add(componentFolderName);
                 return true;
@@ -1488,5 +1521,13 @@ public class InventoryReport {
 
     public void setFilterVulnerabilitiesNotCoveredByArtifacts(boolean filterVulnerabilitiesNotCoveredByArtifacts) {
         this.filterVulnerabilitiesNotCoveredByArtifacts = filterVulnerabilitiesNotCoveredByArtifacts;
+    }
+
+    public void setIncludeInofficialOsiStatus(boolean includeInofficialOsiStatus) {
+        this.includeInofficialOsiStatus = includeInofficialOsiStatus;
+    }
+
+    public boolean isIncludeInofficialOsiStatus() {
+        return includeInofficialOsiStatus;
     }
 }

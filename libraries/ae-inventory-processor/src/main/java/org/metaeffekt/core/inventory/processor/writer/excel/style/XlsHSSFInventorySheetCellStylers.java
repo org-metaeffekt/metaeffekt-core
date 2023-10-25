@@ -25,6 +25,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.metaeffekt.core.inventory.processor.model.CertMetaData;
 import org.metaeffekt.core.inventory.processor.model.InventorySerializationContext;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.util.ParsingUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -130,14 +131,15 @@ public class XlsHSSFInventorySheetCellStylers {
 
         this.contentStyleCvssScoresDoubleValue = InventorySheetCellStyler.createStyler(
                 context -> {
-                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.MAX_SCORE, VulnerabilityMetaData.Attribute.V3_SCORE, VulnerabilityMetaData.Attribute.V2_SCORE);
+                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.MAX_SCORE,
+                            VulnerabilityMetaData.Attribute.V3_SCORE, VulnerabilityMetaData.Attribute.V2_SCORE);
                     if (!isCorrectHeader) {
                         return false;
                     }
                     return !context.isSplitColumn() && StringUtils.isNotEmpty(context.getFullCellContent());
                 }, context -> {
                     try {
-                        context.getCell().setCellValue(Double.parseDouble(context.getFullCellContent()));
+                        context.getCell().setCellValue(ParsingUtils.parseCvssScore(context.getFullCellContent()));
                     } catch (NumberFormatException e) {
                         context.getCell().setCellValue(context.getFullCellContent());
                     }

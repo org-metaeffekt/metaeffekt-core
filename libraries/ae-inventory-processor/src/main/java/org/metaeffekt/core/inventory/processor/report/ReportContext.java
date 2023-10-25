@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Map;
+
 public class ReportContext {
 
     private String id;
@@ -78,6 +80,19 @@ public class ReportContext {
         } else {
             return " (" + context + ")";
         }
+    }
+
+    public String map(String key, Map<String, String> map, String defaultValue) {
+        if (key == null) return defaultValue;
+        final String value = map.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value;
+    }
+
+    public String map(String key, Map<String, String> map) {
+        return map(key, map, null);
     }
 
 }
