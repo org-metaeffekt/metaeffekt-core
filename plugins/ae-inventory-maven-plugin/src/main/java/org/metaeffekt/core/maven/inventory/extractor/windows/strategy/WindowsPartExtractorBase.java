@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.extractor.windows;
+package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -61,6 +63,33 @@ public abstract class WindowsPartExtractorBase {
         }
     }
 
+    protected JSONObject findFirstJsonObjectInArray(JSONArray array, String key, Object value) {
+        for (int i = 0; i < array.length(); i++) {
+            final JSONObject object = array.getJSONObject(i);
+            if (Objects.equals(object.opt(key), value)) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    protected JSONObject findFirstJsonObjectInArray(JSONArray array, Map<String, Object> keyValues) {
+        for (int i = 0; i < array.length(); i++) {
+            final JSONObject object = array.getJSONObject(i);
+            boolean matches = true;
+            for (Map.Entry<String, Object> entry : keyValues.entrySet()) {
+                if (!Objects.equals(object.opt(entry.getKey()), entry.getValue())) {
+                    matches = false;
+                    break;
+                }
+            }
+            if (matches) {
+                return object;
+            }
+        }
+        return null;
+    }
+
     protected boolean isStringFieldPresent(JSONObject json, String field) {
         final Object fieldValue = json.opt(field);
         return fieldValue instanceof String && StringUtils.isNotEmpty((String) fieldValue);
@@ -71,13 +100,20 @@ public abstract class WindowsPartExtractorBase {
     }
 
     protected Artifact findArtifactOrElseAppendNew(Inventory inventory, Predicate<Artifact> predicate) {
+        final Artifact existing = findArtifact(inventory, predicate);
+        if (existing != null) return existing;
+
+        final Artifact constructed = new Artifact();
+        inventory.getArtifacts().add(constructed);
+        return constructed;
+    }
+
+    protected Artifact findArtifact(Inventory inventory, Predicate<Artifact> predicate) {
         for (Artifact artifact : inventory.getArtifacts()) {
             if (predicate.test(artifact)) {
                 return artifact;
             }
         }
-        final Artifact constructed = new Artifact();
-        inventory.getArtifacts().add(constructed);
-        return constructed;
+        return null;
     }
 }

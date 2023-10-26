@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.extractor.windows;
+package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;

@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.extractor.windows;
+package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsInventoryExtractor.WindowsAnalysisFiles.Class_Win32_BaseBoard;
+import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile.Class_Win32_BaseBoard;
 
 public class WindowsPartExtractorMotherboard extends WindowsPartExtractorBase {
 

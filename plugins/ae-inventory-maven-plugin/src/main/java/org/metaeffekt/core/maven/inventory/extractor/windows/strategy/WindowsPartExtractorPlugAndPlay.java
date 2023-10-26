@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.extractor.windows;
+package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ArtifactType;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
+import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsPnpClassGuid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorPlugAndPlay.class);
 
     public void parse(Inventory inventory, JSONArray pnpEntityJson, JSONArray getPnpDeviceJson, JSONArray pnpSignedDriverJson) {
+        // overlapping identifiers (have always been identical --> reduce to PNPDeviceID)
         // pnpEntityJson:    DeviceID | PNPDeviceID
         // getPnpDeviceJson: InstanceId | DeviceID | PNPDeviceID
         // pnpSignedDriver:  DeviceID
@@ -41,105 +44,123 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
         groupPnpDevicesById(pnpDeviceMap, pnpEntityJson, new HashSet<>(Arrays.asList("PNPDeviceID", "DeviceID")), "No PNPDeviceID or DeviceID found for PNP Entity: {}");
         groupPnpDevicesById(pnpDeviceMap, getPnpDeviceJson, new HashSet<>(Arrays.asList("PNPDeviceID", "DeviceID", "InstanceId")), "No PNPDeviceID, DeviceID or InstanceId found for PNP Device: {}");
 
-        final Map<String, String> unknownDeviceClasses = new HashMap<>();
-        final List<Artifact> pnpArtifacts = new ArrayList<>();
-
         for (Map.Entry<String, Map<JSONArray, JSONObject>> deviceDataEntry : pnpDeviceMap.entrySet()) {
             final Map<JSONArray, JSONObject> deviceData = deviceDataEntry.getValue();
             final JSONObject pnpEntity = deviceData.get(pnpEntityJson);
             final JSONObject getPnpDevice = deviceData.get(getPnpDeviceJson);
+
+            if (pnpEntity != null || getPnpDevice != null) {
+                final JSONObject effectiveJson = new JSONObject();
+                if (pnpEntity != null) {
+                    pnpEntity.keySet().forEach(key -> effectiveJson.put(key, pnpEntity.get(key)));
+                }
+                if (getPnpDevice != null) {
+                    getPnpDevice.keySet().forEach(key -> effectiveJson.put(key, getPnpDevice.get(key)));
+                }
+
+                final Artifact pnpDeviceArtifact = new Artifact();
+                inventory.getArtifacts().add(pnpDeviceArtifact);
+                mapBaseJsonInformationToInventory(effectiveJson, pnpDeviceArtifact);
+                pnpDeviceArtifact.set("WMI Class", WindowsExtractorAnalysisFile.Class_Win32_PnPEntity.getTypeName());
+
+                pnpDeviceArtifact.set(Artifact.Attribute.ID, constructEffectivePnpDeviceId(effectiveJson));
+
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, Artifact.Attribute.VERSION, "DriverVersion", "DriverDate");
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "Description", "Description");
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "Organisation", "Manufacturer", "DriverProviderName");
+
+                // theses three values are always the same
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "PNPDeviceID", "PNPDeviceID", "DeviceID", "InstanceId");
+
+                // according to the documentation on https://learn.microsoft.com/en-us/windows/win32/cimwin32prov/win32-pnpentity
+                // the PNPClass field is not always or never available, but in the dataset I got, it was always available.
+                // luckily, the ClassGuid field is always available and contains a UUID representing the PNPClass.
+                // lookups happen in the PnpClassGuid enum.
+                // PNPClass, Class
+                final String artifactType = deriveArtifactTypeAndMapClassInformation(effectiveJson, pnpDeviceArtifact, d -> d.getPnpEntityType().getCategory());
+                pnpDeviceArtifact.set(Artifact.Attribute.TYPE, artifactType);
+
+                // clear type if it is UNKNOWN
+                if (ArtifactType.UNKNOWN.getCategory().equals(artifactType)) {
+                    pnpDeviceArtifact.set(Artifact.Attribute.TYPE, null);
+                }
+
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "PNP Service", "Service");
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "PNP Availability", "Availability");
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "PNP ConfigManagerUserConfig", "ConfigManagerUserConfig");
+            }
+        }
+
+        // pnp signed driver
+        for (Map.Entry<String, Map<JSONArray, JSONObject>> deviceDataEntry : pnpDeviceMap.entrySet()) {
+            final Map<JSONArray, JSONObject> deviceData = deviceDataEntry.getValue();
             final JSONObject pnpSignedDriver = deviceData.get(pnpSignedDriverJson);
 
-            final String pnpDeviceId = deviceDataEntry.getKey();
-
-            // merge pnpEntity into effectiveJson first, then getPnpDevice on top
-            final JSONObject effectiveJson = new JSONObject();
             if (pnpSignedDriver != null) {
-                pnpSignedDriver.keySet().forEach(key -> effectiveJson.put(key, pnpSignedDriver.get(key)));
-            }
-            if (pnpEntity != null) {
-                pnpEntity.keySet().forEach(key -> effectiveJson.put(key, pnpEntity.get(key)));
-            }
-            if (getPnpDevice != null) {
-                getPnpDevice.keySet().forEach(key -> effectiveJson.put(key, getPnpDevice.get(key)));
-            }
+                final Artifact signedDriverArtifact = new Artifact();
+                inventory.getArtifacts().add(signedDriverArtifact);
+                mapBaseJsonInformationToInventory(pnpSignedDriver, signedDriverArtifact);
+                signedDriverArtifact.set("WMI Class", "Win32_PnpSignedDriver");
 
-            final Artifact artifact = new Artifact();
-            pnpArtifacts.add(artifact);
-            mapBaseJsonInformationToInventory(effectiveJson, artifact);
-            artifact.set("Plug and Play ID", pnpDeviceId);
-            artifact.set("WMI Class", "Win32_PnPEntity");
+                final String constructedDeviceId = constructEffectivePnpDeviceId(pnpSignedDriver);
+                signedDriverArtifact.set(Artifact.Attribute.ID, constructedDeviceId);
 
-            artifact.set(Artifact.Attribute.ID, constructEffectivePnpDeviceId(effectiveJson));
+                final Artifact matchingPnpDeviceArtifact = findArtifact(inventory, a -> Objects.equals(a.get(Artifact.Attribute.ID), constructedDeviceId));
 
-            mapJsonFieldToInventory(effectiveJson, artifact, Artifact.Attribute.VERSION, "DriverVersion", "DriverDate");
-            mapJsonFieldToInventory(effectiveJson, artifact, "Description", "Description");
-            mapJsonFieldToInventory(effectiveJson, artifact, "Organisation", "Manufacturer", "DriverProviderName");
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, Artifact.Attribute.VERSION, "DriverVersion", "DriverDate");
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "Description", "Description");
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "Organisation", "Manufacturer", "DriverProviderName");
 
-            mapJsonFieldToInventory(effectiveJson, artifact, "DeviceID", "DeviceID");
-            mapJsonFieldToInventory(effectiveJson, artifact, "PNPDeviceID", "PNPDeviceID");
-            mapJsonFieldToInventory(effectiveJson, artifact, "InstanceId", "InstanceId");
-
-            // according to the documentation on https://learn.microsoft.com/en-us/windows/win32/cimwin32prov/win32-pnpentity
-            // the PNPClass field is not always or never available, but in the dataset I got, it was always available.
-            // luckily, the ClassGuid field is always available and contains a UUID representing the PNPClass.
-            // lookups happen in the PnpClassGuid enum.
-            mapJsonFieldToInventory(effectiveJson, artifact, "PNPClass", "PNPClass", "Class", "DeviceClass");
-            mapJsonFieldToInventory(effectiveJson, artifact, "ClassGuid", "ClassGuid");
-            final String pnpClass = artifact.get("PNPClass");
-            final String pnpClassGuid = artifact.get("ClassGuid");
-            final WindowsInventoryExtractor.PnpClassGuid pnpClassId = WindowsInventoryExtractor.PnpClassGuid.fromPnpClass(pnpClass);
-            final WindowsInventoryExtractor.PnpClassGuid classGuidId = WindowsInventoryExtractor.PnpClassGuid.fromClassGuid(pnpClassGuid);
-            if (pnpClassId != null && classGuidId != null) {
-                if (pnpClassId != classGuidId) {
-                    LOG.warn("PNPClass and ClassGuid do not match for PNP Device, picking from ClassGuid, PNPClass: {}, ClassGuid: {}", pnpClassId, classGuidId);
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "PNPDeviceID", "PNPDeviceID", "DeviceID", "InstanceId");
+                // the PNPDeviceID might not exist on the PnpSignedDriver, so we attempt to find it on the PnpEntity
+                if (matchingPnpDeviceArtifact != null && Objects.equals(constructedDeviceId, signedDriverArtifact.get("PNPDeviceID"))) {
+                    signedDriverArtifact.set("PNPDeviceID", matchingPnpDeviceArtifact.get("PNPDeviceID"));
                 }
-                artifact.set(Artifact.Attribute.TYPE, classGuidId.getArtifactType().getCategory());
-            } else if (pnpClassId != null) {
-                artifact.set(Artifact.Attribute.TYPE, pnpClassId.getArtifactType().getCategory());
-            } else if (classGuidId != null) {
-                artifact.set(Artifact.Attribute.TYPE, classGuidId.getArtifactType().getCategory());
-            } else {
-                if (pnpClassGuid != null || pnpClass != null) {
-                    unknownDeviceClasses.put(pnpClassGuid, ObjectUtils.firstNonNull(pnpClass, pnpClassGuid));
+
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "HardWareID", "HardWareID");
+
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "Driver Location", "Location");
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "Signer", "Signer");
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "DriverName", "DriverName");
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "InfName", "InfName");
+
+                final String artifactType = deriveArtifactTypeAndMapClassInformation(pnpSignedDriver, signedDriverArtifact, d -> d.getPnpDriverType().getCategory());
+                signedDriverArtifact.set(Artifact.Attribute.TYPE, artifactType);
+
+                // clear type if it is UNKNOWN
+                if (ArtifactType.UNKNOWN.getCategory().equals(artifactType) || artifactType == null) {
+                    signedDriverArtifact.set(Artifact.Attribute.TYPE, ArtifactType.DRIVER.getCategory());
+                }
+
+                // append "Driver" to the Id if it does not already end with "Driver" or "driver"
+                if (!signedDriverArtifact.get(Artifact.Attribute.ID).toLowerCase().endsWith("driver")) {
+                    signedDriverArtifact.set(Artifact.Attribute.ID, signedDriverArtifact.get(Artifact.Attribute.ID) + " Driver");
                 }
             }
+        }
+    }
 
-            // clear type if it is UNKNOWN
-            if (ArtifactType.UNKNOWN.getCategory().equals(artifact.get(Artifact.Attribute.TYPE))) {
-                artifact.set(Artifact.Attribute.TYPE, null);
+    private String deriveArtifactTypeAndMapClassInformation(JSONObject effectiveJson, Artifact pnpDeviceArtifact, Function<WindowsPnpClassGuid, String> typeConverter) {
+        mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "PNPClass", "PNPClass", "Class", "DeviceClass");
+        mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "ClassGuid", "ClassGuid");
+
+        final String pnpClass = pnpDeviceArtifact.get("PNPClass");
+        final String pnpClassGuid = pnpDeviceArtifact.get("ClassGuid");
+        final WindowsPnpClassGuid pnpClassId = WindowsPnpClassGuid.fromPnpClass(pnpClass);
+        final WindowsPnpClassGuid classGuidId = WindowsPnpClassGuid.fromClassGuid(pnpClassGuid);
+
+        if (pnpClassId != null && classGuidId != null) {
+            if (pnpClassId != classGuidId) {
+                LOG.warn("PNPClass and ClassGuid do not match for PNP Device, picking from ClassGuid, PNPClass: {}, ClassGuid: {}", pnpClassId, classGuidId);
             }
-
-            mapJsonFieldToInventory(effectiveJson, artifact, "PNP Service", "Service");
-            mapJsonFieldToInventory(effectiveJson, artifact, "PNP Availability", "Availability");
-            mapJsonFieldToInventory(effectiveJson, artifact, "PNP ConfigManagerUserConfig", "ConfigManagerUserConfig");
-
-            // pnp signed driver
-            mapJsonFieldToInventory(effectiveJson, artifact, "Driver Location", "Location");
-            mapJsonFieldToInventory(effectiveJson, artifact, "Signer", "Signer");
-            mapJsonFieldToInventory(effectiveJson, artifact, "DriverName", "DriverName");
-            mapJsonFieldToInventory(effectiveJson, artifact, "InfName", "InfName");
+            return typeConverter.apply(classGuidId);
+        } else if (pnpClassId != null) {
+            return typeConverter.apply(pnpClassId);
+        } else if (classGuidId != null) {
+            return typeConverter.apply(classGuidId);
         }
 
-        // find artifacts with identical 'Id' fields
-        /*final Map<String, List<Artifact>> artifactMap = pnpArtifacts.stream().collect(Collectors.groupingBy(artifact -> artifact.get(Artifact.Attribute.ID)));
-        for (Map.Entry<String, List<Artifact>> entry : artifactMap.entrySet()) {
-            final List<Artifact> artifacts = entry.getValue();
-            if (artifacts.size() > 1) {
-                for (int i = 0; i < artifacts.size(); i++) {
-                    final Artifact artifact = artifacts.get(i);
-                    // final String deviceIdString = ObjectUtils.firstNonNull(artifact.get("DeviceID"), artifact.get("PNPDeviceID"), artifact.get("InstanceId"));
-                    artifact.set(Artifact.Attribute.ID, artifact.get(Artifact.Attribute.ID) + " (" + (i + 1) + ")");
-                }
-            }
-        }*/
-
-        inventory.getArtifacts().addAll(pnpArtifacts);
-
-        if (!unknownDeviceClasses.isEmpty()) {
-            LOG.warn("[{}] unknown PNP Device Classes found, using [{}] as type", unknownDeviceClasses.size(), ArtifactType.CATEGORY_HARDWARE.getCategory());
-            unknownDeviceClasses.forEach((classGuid, pnpClass) -> LOG.warn("  {}: {}", classGuid, pnpClass));
-        }
+        return null;
     }
 
     private String constructEffectivePnpDeviceId(JSONObject effectiveJson) {

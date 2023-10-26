@@ -66,6 +66,10 @@ public class ArtifactType {
         return isOrHasParent(CATEGORY_HARDWARE);
     }
 
+    public boolean isDriver() {
+        return isOrHasParent(DRIVER);
+    }
+
     public boolean isOrHasParent(ArtifactType artifactType) {
         if (this == artifactType) {
             return true;
@@ -121,11 +125,37 @@ public class ArtifactType {
             TEMPERATURE_CONTROL, AESTHETIC_HARDWARE, TRACKING_HARDWARE, WEARABLE
     );
 
-    public static final ArtifactType NETWORK_DRIVER = new ArtifactType("network driver", "ethernet drivers, wifi drivers, bluetooth drivers");
-    public static final ArtifactType DISPLAY_DRIVER = new ArtifactType("display driver", "graphics card drivers, monitor drivers");
-    public static final ArtifactType INPUT_DRIVER = new ArtifactType("input driver", "keyboard drivers, mouse drivers, gamepad drivers");
-    public static final ArtifactType PRINTER_DRIVER = new ArtifactType("printer driver", "printer drivers");
-    public static final ArtifactType DRIVER = new ArtifactType("driver", "top-level category for drivers", NETWORK_DRIVER, DISPLAY_DRIVER, INPUT_DRIVER, PRINTER_DRIVER);
+    public static final ArtifactType COMPUTER_DRIVER = new ArtifactType("computer driver", "System devices, base system hardware");
+    public static final ArtifactType FIRMWARE_DRIVER = new ArtifactType("firmware driver", "System firmware, BIOS, UEFI");
+    public static final ArtifactType SOFTWARE_DEVICE_DRIVER = new ArtifactType("software device driver", "Software-emulated devices, Software-based system components");
+    public static final ArtifactType SYSTEM_DEVICE_DRIVER = new ArtifactType("system device driver", "Base system devices, chipset");
+    public static final ArtifactType IMAGING_DRIVER = new ArtifactType("imaging driver", "Cameras, scanners");
+    public static final ArtifactType KEYBOARD_DRIVER = new ArtifactType("keyboard driver", "Keyboard devices");
+    public static final ArtifactType MOUSE_DRIVER = new ArtifactType("mouse driver", "Mouse devices, trackpads, pointing devices");
+    public static final ArtifactType INPUT_DEVICE_DRIVER = new ArtifactType("input device driver", "Keyboard, mouse, touchpad, touchscreen, gamepad, joystick", KEYBOARD_DRIVER, MOUSE_DRIVER);
+    public static final ArtifactType AUDIO_DRIVER = new ArtifactType("audio driver", "Audio devices, microphones, speakers");
+    public static final ArtifactType MULTIMEDIA_DRIVER = new ArtifactType("multimedia driver", "Audio, video, sound, imaging devices");
+    public static final ArtifactType DISPLAY_ADAPTERS_DRIVER = new ArtifactType("display adapters driver", "Graphics hardware, display output");
+    public static final ArtifactType DISPLAY_DRIVER = new ArtifactType("display driver", "Display monitors, screens");
+    public static final ArtifactType NETWORK_DRIVER = new ArtifactType("network driver", "Ethernet adapters, Wi-Fi cards");
+    public static final ArtifactType PORT_DRIVER = new ArtifactType("port driver", "Serial and parallel ports");
+    public static final ArtifactType PRINT_QUEUES_DRIVER = new ArtifactType("print queue driver", "Print job management");
+    public static final ArtifactType PRINTER_DRIVER = new ArtifactType("printer driver", "Printer devices");
+    public static final ArtifactType PROCESSOR_DRIVER = new ArtifactType("processor driver", "CPU devices");
+    public static final ArtifactType SECURITY_DEVICE_DRIVER = new ArtifactType("security device driver", "Encryption, biometric devices");
+    public static final ArtifactType SOUND_VIDEO_DRIVER = new ArtifactType("sound, video driver", "Sound cards, video cards, game controllers");
+    public static final ArtifactType BLUETOOTH_DRIVER = new ArtifactType("Bluetooth driver", "Bluetooth devices, data transfer, pairing");
+    public static final ArtifactType DISK_DRIVES_DRIVER = new ArtifactType("disk drives driver", "Hard drives, SSDs");
+    public static final ArtifactType USB_DRIVER = new ArtifactType("Universal Serial Bus controller driver", "USB controllers, hubs, devices");
+    public static final ArtifactType STORAGE_DRIVER = new ArtifactType("storage driver", "Disk controllers, storage controllers, usb", DISK_DRIVES_DRIVER, USB_DRIVER);
+    public static final ArtifactType POWER_DRIVER = new ArtifactType("power driver", "Power management, battery management");
+    public static final ArtifactType CARD_DRIVER = new ArtifactType("card driver", "Expansion cards, PCI, PCIe, AGP, ISA, PCMCIA, ExpressCard, Thunderbolt");
+
+    public static final ArtifactType DRIVER = new ArtifactType("driver", "top-level category for drivers",
+            COMPUTER_DRIVER, FIRMWARE_DRIVER, SOFTWARE_DEVICE_DRIVER, SYSTEM_DEVICE_DRIVER, IMAGING_DRIVER, INPUT_DEVICE_DRIVER,
+            AUDIO_DRIVER, DISPLAY_ADAPTERS_DRIVER, DISPLAY_DRIVER, NETWORK_DRIVER, PORT_DRIVER, PRINT_QUEUES_DRIVER, PRINTER_DRIVER,
+            PROCESSOR_DRIVER, SECURITY_DEVICE_DRIVER, SOUND_VIDEO_DRIVER, BLUETOOTH_DRIVER, STORAGE_DRIVER, POWER_DRIVER
+    );
 
     // CATEGORY_SOFTWARE_LIBRARY
     public static final ArtifactType LINUX_PACKAGE = new ArtifactType("package", "linux package");

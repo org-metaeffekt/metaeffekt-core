@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.extractor.windows;
+package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
 
-import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsInventoryExtractor.WindowsAnalysisFiles.Class_Win32_InstalledStoreProgram;
-import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsInventoryExtractor.WindowsAnalysisFiles.Class_Win32_SoftwareElement;
+import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile.Class_Win32_InstalledStoreProgram;
+import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile.Class_Win32_SoftwareElement;
 
 public class WindowsPartExtractorInstalledProduct extends WindowsPartExtractorBase {
 
-    public void parse(Inventory inventory, JSONArray win32ProductJson, WindowsInventoryExtractor.WindowsAnalysisFiles type) {
+    public void parse(Inventory inventory, JSONArray win32ProductJson, WindowsExtractorAnalysisFile type) {
         for (int i = 0; i < win32ProductJson.length(); i++) {
             final JSONObject productJson = win32ProductJson.getJSONObject(i);
 
