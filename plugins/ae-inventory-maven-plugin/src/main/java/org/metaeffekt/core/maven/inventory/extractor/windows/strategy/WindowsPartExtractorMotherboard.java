@@ -16,9 +16,12 @@
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+
+import java.util.StringJoiner;
 
 import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile.Class_Win32_BaseBoard;
 
@@ -29,8 +32,11 @@ public class WindowsPartExtractorMotherboard extends WindowsPartExtractorBase {
         final String serialNumber = getJsonFieldValue(baseBoardJson, "SerialNumber");
         final String product = getJsonFieldValue(baseBoardJson, "Product");
 
-        final Artifact motherboardPnpDriverArtifact = findArtifactOrElseAppendNew(inventory,
+        final Artifact motherboardArtifact = findArtifactOrElseAppendNew(inventory,
                 artifact -> {
+                    if (artifact.isDriver()) {
+                        return false;
+                    }
                     if (pnpDeviceID != null) {
                         return StringUtils.equals(artifact.get("PNPDeviceID"), pnpDeviceID);
                     } else if (serialNumber != null) {
@@ -42,17 +48,31 @@ public class WindowsPartExtractorMotherboard extends WindowsPartExtractorBase {
                     }
                 });
 
-        if (motherboardPnpDriverArtifact.getId() != null) {
-            motherboardPnpDriverArtifact.setId(motherboardPnpDriverArtifact.getId() + " Driver"); // TODO: move this into the pnp driver extractor
+        mapBaseJsonInformationToInventory(baseBoardJson, motherboardArtifact);
+
+        final Pair<String, String> constructedIdComponent = constructArtifactIdComponent(baseBoardJson);
+        if (constructedIdComponent != null) {
+            motherboardArtifact.setId(constructedIdComponent.getLeft());
+            motherboardArtifact.set("Component", constructedIdComponent.getRight());
         }
 
-        final Artifact motherboardArtifact = new Artifact();
-
-        mapBaseJsonInformationToInventory(baseBoardJson, motherboardArtifact);
-        mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, Artifact.Attribute.ID, "Product");
         mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, Artifact.Attribute.VERSION, "Version");
+
         mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "Organisation", "Manufacturer");
+        mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "Product", "Product");
+        mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "Description", "Description", "Caption", "Name", "Tag");
         mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "SerialNumber", "SerialNumber");
+
+        {
+            final StringJoiner busTypeJoiner = new StringJoiner(", ");
+
+            final String primaryBusType = getJsonFieldValue(motherboardJson, "PrimaryBusType");
+            final String secondaryBusType = getJsonFieldValue(motherboardJson, "SecondaryBusType");
+            if (primaryBusType != null) busTypeJoiner.add(primaryBusType);
+            if (secondaryBusType != null) busTypeJoiner.add(secondaryBusType);
+
+            if (busTypeJoiner.length() > 0) motherboardArtifact.set("BusType", busTypeJoiner.toString());
+        }
 
         mapJsonFieldToInventory(motherboardJson, motherboardArtifact, "PNPDeviceID", "PNPDeviceID");
 
@@ -61,5 +81,33 @@ public class WindowsPartExtractorMotherboard extends WindowsPartExtractorBase {
         }
 
         motherboardArtifact.set("WMI Class", Class_Win32_BaseBoard.getTypeName());
+    }
+
+    private Pair<String, String> constructArtifactIdComponent(JSONObject baseBoardJson) {
+        // take fields ("Description"|"Caption"|"Name"|"Tag") + "Product" + "Version"
+        final String description = getJsonFieldValue(baseBoardJson, "Description", "Caption", "Name", "Tag");
+        final String product = getJsonFieldValue(baseBoardJson, "Product");
+        final String version = getJsonFieldValue(baseBoardJson, "Version");
+
+        final StringJoiner idJoiner = new StringJoiner(" ");
+        final StringJoiner componentJoiner = new StringJoiner(" ");
+
+        if (description != null) {
+            idJoiner.add(description);
+            componentJoiner.add(description);
+        }
+        if (product != null) {
+            idJoiner.add(product);
+            componentJoiner.add(product);
+        }
+        if (version != null) {
+            idJoiner.add(version);
+        }
+
+        if (idJoiner.length() > 0) {
+            return Pair.of(idJoiner.toString(), componentJoiner.toString());
+        } else {
+            return null;
+        }
     }
 }

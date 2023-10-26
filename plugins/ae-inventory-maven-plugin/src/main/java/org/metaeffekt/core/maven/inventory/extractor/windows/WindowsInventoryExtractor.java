@@ -86,10 +86,12 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
                 Class_Win32_SoftwareFeatureSoftwareElements.readJsonArrayOrEmpty(analysisDir)
         );
 
-        /*new WindowsPartExtractorMotherboard().parse(inventory,
+        new WindowsPartExtractorMotherboard().parse(inventory,
                 Class_Win32_BaseBoard.readJsonObjectOrEmpty(analysisDir),
                 Class_Win32_MotherboardDevice.readJsonObjectOrEmpty(analysisDir)
-        );*/
+        );
+
+        new WindowsPartExtractorOptionalFeature().parse(inventory, Class_Win32_OptionalFeature.readJsonArrayOrEmpty(analysisDir));
 
         // FIXME: combine with asset information (see AbstractInventoryExtractor#extractInventory)
         for (final Artifact artifact : inventory.getArtifacts()) {
@@ -106,5 +108,4 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
 
         return inventory;
     }
-
 }

@@ -56,6 +56,15 @@ public abstract class WindowsPartExtractorBase {
         return null;
     }
 
+    protected Integer getJsonFieldValueInt(JSONObject json, String... jsonFields) {
+        for (String field : jsonFields) {
+            if (isNumberFieldPresent(json, field)) {
+                return json.getInt(field);
+            }
+        }
+        return null;
+    }
+
     protected <T extends AbstractModelBase> void mapJsonFieldToInventory(JSONObject json, T model, String inventoryField, String... jsonFields) {
         final String fieldValue = getJsonFieldValue(json, jsonFields);
         if (fieldValue != null) {

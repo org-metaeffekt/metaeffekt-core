@@ -164,7 +164,7 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
     }
 
     private String constructEffectivePnpDeviceId(JSONObject effectiveJson) {
-        final String baseId = getJsonFieldValue(effectiveJson, "FriendlyName", "Caption", "Name", "DeviceID", "InstanceId", "PNPDeviceID");
+        final String baseId = getJsonFieldValue(effectiveJson, "FriendlyName", "Caption", "Name", "Description", "DeviceID", "InstanceId", "PNPDeviceID");
 
         // if the baseId is (a drive name E:\ or C:\) then build a replacement Id from the device information as follows:
         //    (Manufacturer | DriverProviderName) (Description) (Unique Identifier from DeviceID)
