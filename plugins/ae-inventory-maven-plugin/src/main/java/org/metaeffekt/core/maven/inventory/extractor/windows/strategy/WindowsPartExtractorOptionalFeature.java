@@ -43,7 +43,7 @@ public class WindowsPartExtractorOptionalFeature extends WindowsPartExtractorBas
 
             final InventoryInfo optionalFeatureInventoryInfo = inventory.findOrCreateInventoryInfo(effectiveFeatureName);
             mapBaseJsonInformationToInventory(featureJson, optionalFeatureInventoryInfo);
-            optionalFeatureInventoryInfo.set("WMI Class", WindowsExtractorAnalysisFile.Class_Win32_OptionalFeature.getTypeName());
+            optionalFeatureInventoryInfo.set("Windows Source", WindowsExtractorAnalysisFile.Class_Win32_OptionalFeature.getTypeName());
 
             optionalFeatureInventoryInfo.set("Name", effectiveFeatureName);
             mapJsonFieldToInventory(featureJson, optionalFeatureInventoryInfo, "Caption", "Caption");

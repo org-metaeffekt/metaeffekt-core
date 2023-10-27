@@ -62,7 +62,13 @@ public enum WindowsExtractorAnalysisFile {
     FileSystemDirsList("FileSystemDirsList", "txt", false),
     FileSystemFilesList("FileSystemFilesList", "txt", false),
 
+    /**
+     * @deprecated was split up into multiple files, use the dedicated files instead
+     */
+    @Deprecated
     RegistrySubtree("RegistrySubtree", "json", false),
+    RegistrySubtree_WindowsUninstall("RegistrySubtree-windows-uninstall", "json", false),
+
     OSversion("OSversion", "txt", false),
     systeminfo("systeminfo", "json", false),
     Get_ComputerInfo("Get-ComputerInfo", "json", false),

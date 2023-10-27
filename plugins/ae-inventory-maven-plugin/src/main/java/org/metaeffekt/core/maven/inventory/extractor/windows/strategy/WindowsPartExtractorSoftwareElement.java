@@ -51,7 +51,7 @@ public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBas
             final Artifact featureArtifact = new Artifact();
             inventory.getArtifacts().add(featureArtifact);
             mapBaseJsonInformationToInventory(softwareFeature, featureArtifact);
-            featureArtifact.set("WMI Class", WindowsExtractorAnalysisFile.Class_Win32_SoftwareFeature.getTypeName());
+            featureArtifact.set("Windows Source", WindowsExtractorAnalysisFile.Class_Win32_SoftwareFeature.getTypeName());
 
             final String productName = getJsonFieldValue(softwareFeature, "ProductName");
             final String name = getJsonFieldValue(softwareFeature, "Name");
@@ -89,6 +89,13 @@ public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBas
 
             if (!softwareElements.isEmpty()) {
                 featureArtifact.set("SoftwareElements", new JSONArray(softwareElements).toString());
+
+                // collect all "Path" values from the software elements into a comma-separated list
+                softwareElements.stream()
+                        .map(e -> getJsonFieldValue(e, "Path"))
+                        .filter(Objects::nonNull)
+                        .reduce((a, b) -> a + ", " + b)
+                        .ifPresent(paths -> featureArtifact.append("System Paths", paths, ", "));
             }
         }
     }

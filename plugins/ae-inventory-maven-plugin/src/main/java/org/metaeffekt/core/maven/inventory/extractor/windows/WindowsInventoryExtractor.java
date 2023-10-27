@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows;
 
+import org.json.JSONArray;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.InventoryExtractor;
@@ -39,7 +40,7 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
     /**
      * Checks if the specified analysis directory contains:
      * <ul>
-     *     <li>any WMI class files</li>
+     *     <li>any Windows Source files</li>
      * </ul>
      *
      * @param analysisDir The analysis directory to be checked.
@@ -65,7 +66,9 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
                 Class_Win32_PnpSignedDriver.readJsonArrayOrEmpty(analysisDir)
         );
 
-        new WindowsPartExtractorBios().parse(inventory, Class_Win32_Bios.readJsonObjectOrEmpty(analysisDir));
+        new WindowsPartExtractorBios().parse(inventory,
+                Class_Win32_Bios.readJsonObjectOrEmpty(analysisDir)
+        );
 
         new WindowsPartExtractorOperatingSystem().parse(inventory,
                 systeminfo.readJsonObjectOrEmpty(analysisDir),
@@ -86,12 +89,33 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
                 Class_Win32_SoftwareFeatureSoftwareElements.readJsonArrayOrEmpty(analysisDir)
         );
 
+        // fill details for specific PnP devices
         new WindowsPartExtractorMotherboard().parse(inventory,
                 Class_Win32_BaseBoard.readJsonObjectOrEmpty(analysisDir),
                 Class_Win32_MotherboardDevice.readJsonObjectOrEmpty(analysisDir)
         );
+        new WindowsPartExtractorOptionalFeature().parse(inventory,
+                Class_Win32_OptionalFeature.readJsonArrayOrEmpty(analysisDir)
+        );
+        new WindowsPartExtractorVideoController().parse(inventory,
+                Class_Win32_VideoController.readJsonObject(analysisDir)
+        );
+        new WindowsPartExtractorNetworkAdapter().parse(inventory,
+                Class_Win32_NetworkAdapter.readJsonArrayOrEmpty(analysisDir)
+        );
+        new WindowsPartExtractorPrinterDriver().parse(inventory,
+                // Class_Win32_Driver does not contain any new information
+                Class_Win32_PrinterDriver.readJsonArrayOrEmpty(analysisDir)
+        );
+        // Class_Win32_SoundDevice does not contain any new information
 
-        new WindowsPartExtractorOptionalFeature().parse(inventory, Class_Win32_OptionalFeature.readJsonArrayOrEmpty(analysisDir));
+
+        new WindowsPartExtractorRegUninstall().parse(inventory,
+                this.firstNonEmptyJsonArray(
+                        RegistrySubtree_WindowsUninstall.readJsonArrayOrEmpty(analysisDir),
+                        RegistrySubtree.readJsonArrayOrEmpty(analysisDir)
+                )
+        );
 
         // FIXME: combine with asset information (see AbstractInventoryExtractor#extractInventory)
         for (final Artifact artifact : inventory.getArtifacts()) {
@@ -99,13 +123,20 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
         }
 
         LOG.info("Windows inventory extraction completed from analysis directory: {}", analysisDir);
-        LOG.info("With results:"); // list count by "WMI Class"
+        LOG.info("With results:"); // list count by "Windows Source"
         inventory.getArtifacts().stream()
-                .collect(Collectors.groupingBy(a -> a.get("WMI Class") == null ? "other" : a.get("WMI Class")))
+                .collect(Collectors.groupingBy(a -> a.get("Windows Source") == null ? "other" : a.get("Windows Source")))
                 .entrySet().stream()
                 .sorted(Comparator.comparingInt(e -> -e.getValue().size()))
                 .forEach(e -> LOG.info("  {}: {}", e.getKey(), e.getValue().size()));
 
         return inventory;
+    }
+
+    private JSONArray firstNonEmptyJsonArray(JSONArray... jsonArrays) {
+        return Arrays.stream(jsonArrays)
+                .filter(jsonArray -> jsonArray != null && !jsonArray.isEmpty())
+                .findFirst()
+                .orElseGet(JSONArray::new);
     }
 }

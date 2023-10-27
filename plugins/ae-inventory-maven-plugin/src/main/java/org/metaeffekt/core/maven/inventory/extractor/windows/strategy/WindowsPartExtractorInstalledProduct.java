@@ -77,7 +77,7 @@ public class WindowsPartExtractorInstalledProduct extends WindowsPartExtractorBa
             mapJsonFieldToInventory(productJson, artifact, "WordCount", "WordCount"); // Win32_Product
 
             if (!artifact.getAttributes().isEmpty()) {
-                artifact.set("WMI Class", type.getTypeName());
+                artifact.set("Windows Source", type.getTypeName());
                 inventory.getArtifacts().add(artifact);
             }
         }

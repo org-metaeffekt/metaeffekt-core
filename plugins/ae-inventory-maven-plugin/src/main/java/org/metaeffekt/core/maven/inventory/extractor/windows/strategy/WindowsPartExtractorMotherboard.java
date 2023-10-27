@@ -49,6 +49,7 @@ public class WindowsPartExtractorMotherboard extends WindowsPartExtractorBase {
                 });
 
         mapBaseJsonInformationToInventory(baseBoardJson, motherboardArtifact);
+        motherboardArtifact.set("Windows Source", Class_Win32_BaseBoard.getTypeName());
 
         final Pair<String, String> constructedIdComponent = constructArtifactIdComponent(baseBoardJson);
         if (constructedIdComponent != null) {
@@ -79,8 +80,6 @@ public class WindowsPartExtractorMotherboard extends WindowsPartExtractorBase {
         if (motherboardArtifact.getAttributes().isEmpty()) {
             inventory.getArtifacts().remove(motherboardArtifact);
         }
-
-        motherboardArtifact.set("WMI Class", Class_Win32_BaseBoard.getTypeName());
     }
 
     private Pair<String, String> constructArtifactIdComponent(JSONObject baseBoardJson) {

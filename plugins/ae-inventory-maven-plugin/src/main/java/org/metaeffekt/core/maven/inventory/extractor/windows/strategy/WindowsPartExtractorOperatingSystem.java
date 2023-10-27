@@ -21,6 +21,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ArtifactType;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,11 @@ public class WindowsPartExtractorOperatingSystem extends WindowsPartExtractorBas
         final Artifact windowsOsArtifact = new Artifact();
 
         mapBaseJsonInformationToInventory(operatingSystemJson, windowsOsArtifact);
+        windowsOsArtifact.set("Windows Source",
+                WindowsExtractorAnalysisFile.systeminfo.getTypeName() + ", "
+                        + WindowsExtractorAnalysisFile.Class_Win32_OperatingSystem.getTypeName() + ", "
+                        + WindowsExtractorAnalysisFile.OSversion.getTypeName() + ", "
+                        + WindowsExtractorAnalysisFile.Get_ComputerInfo.getTypeName());
 
         // find Windows version
         final String[] osVersionParts = parseOsVersionParts(osVersionText); // [10, 0, 19044, 0]

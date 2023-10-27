@@ -61,7 +61,7 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
                 final Artifact pnpDeviceArtifact = new Artifact();
                 inventory.getArtifacts().add(pnpDeviceArtifact);
                 mapBaseJsonInformationToInventory(effectiveJson, pnpDeviceArtifact);
-                pnpDeviceArtifact.set("WMI Class", WindowsExtractorAnalysisFile.Class_Win32_PnPEntity.getTypeName());
+                pnpDeviceArtifact.set("Windows Source", WindowsExtractorAnalysisFile.Class_Win32_PnPEntity.getTypeName());
 
                 pnpDeviceArtifact.set(Artifact.Attribute.ID, constructEffectivePnpDeviceId(effectiveJson));
 
@@ -100,7 +100,7 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
                 final Artifact signedDriverArtifact = new Artifact();
                 inventory.getArtifacts().add(signedDriverArtifact);
                 mapBaseJsonInformationToInventory(pnpSignedDriver, signedDriverArtifact);
-                signedDriverArtifact.set("WMI Class", "Win32_PnpSignedDriver");
+                signedDriverArtifact.set("Windows Source", "Win32_PnpSignedDriver");
 
                 final String constructedDeviceId = constructEffectivePnpDeviceId(pnpSignedDriver);
                 signedDriverArtifact.set(Artifact.Attribute.ID, constructedDeviceId);
