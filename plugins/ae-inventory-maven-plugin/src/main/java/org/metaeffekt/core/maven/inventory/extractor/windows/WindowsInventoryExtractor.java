@@ -49,7 +49,7 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
     @Override
     public boolean applies(File analysisDir) {
         return Arrays.stream(WindowsExtractorAnalysisFile.values())
-                .anyMatch(wmiClass -> new File(analysisDir, wmiClass.getTypeName()).exists());
+                .anyMatch(scanFile -> scanFile.getFile(analysisDir).exists());
     }
 
     @Override
@@ -58,6 +58,8 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
 
     @Override
     public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException {
+        LOG.info("Windows inventory extraction [{}] started with analysis directory: {}", inventoryId, analysisDir);
+
         final Inventory inventory = new Inventory();
 
         new WindowsPartExtractorPlugAndPlay().parse(inventory,
@@ -122,7 +124,28 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
             artifact.set(KEY_SOURCE_PROJECT, inventoryId);
         }
 
-        LOG.info("Windows inventory extraction completed from analysis directory: {}", analysisDir);
+        try {
+            inventory.getArtifacts().sort(Comparator
+                    .comparing(a -> {
+                        final String wmiClass = ((Artifact) a).get("Windows Source");
+                        if (wmiClass == null) return 0;
+                        if (wmiClass.equals("systeminfo, Win32_OperatingSystem, OSversion, Get-ComputerInfo")) return 1;
+                        if (wmiClass.equals(Class_Win32_InstalledStoreProgram.getTypeName())) return 10;
+                        if (wmiClass.equals(RegistrySubtree_WindowsUninstall.getTypeName())) return 20;
+                        if (wmiClass.equals(Class_Win32_InstalledWin32Program.getTypeName())) return 30;
+                        if (wmiClass.equals(Class_Win32_Product.getTypeName())) return 40;
+                        if (wmiClass.equals(Class_Win32_SoftwareFeature.getTypeName())) return 50;
+                        if (wmiClass.equals(Class_Win32_PnPEntity.getTypeName())) return 60;
+                        return 70;
+                    })
+                    .thenComparing(a -> ((Artifact) a).get("Windows Source") == null ? "" : ((Artifact) a).get("Windows Source"))
+                    .thenComparing(a -> ((Artifact) a).get(Artifact.Attribute.TYPE) == null ? "" : ((Artifact) a).get(Artifact.Attribute.TYPE))
+                    .thenComparing(a -> ((Artifact) a).get(Artifact.Attribute.ID) == null ? "" : ((Artifact) a).get(Artifact.Attribute.ID)));
+        } catch (Exception e) {
+            LOG.warn("Failed to sort artifacts in windows extracted inventory", e);
+        }
+
+        LOG.info("Windows inventory extraction completed");
         LOG.info("With results:"); // list count by "Windows Source"
         inventory.getArtifacts().stream()
                 .collect(Collectors.groupingBy(a -> a.get("Windows Source") == null ? "other" : a.get("Windows Source")))
