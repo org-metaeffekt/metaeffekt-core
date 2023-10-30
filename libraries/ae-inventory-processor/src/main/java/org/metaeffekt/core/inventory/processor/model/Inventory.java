@@ -888,7 +888,7 @@ public class Inventory implements Serializable {
             Collections.sort(strings);
             FileUtils.writeLines(file, strings, true);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.warn("Cannot dump inventory into {}", file, e);
         }
     }
 

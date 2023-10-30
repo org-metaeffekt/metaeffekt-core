@@ -19,6 +19,7 @@
         <module>ae-inspect-reader</module>
         <module>ae-inventory-processor</module>
         <module>ae-maven-kernel</module>
+        <module>ae-system-analysis-scripts</module>
         <module>ae-security</module>
     </modules>
 

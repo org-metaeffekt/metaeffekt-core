@@ -58,4 +58,17 @@ public class ParsingUtils {
         //  - multiline values are read until the next line with a colon in detected.
     }
 
+    // FIXME: move to dedicated area or fix at source
+    public static double parseCvssScore(String scoreString) {
+        return parseCvssScore(scoreString, Double.NaN);
+    }
+
+    public static double parseCvssScore(String scoreString, double defaultValue) {
+        if (scoreString == null) {
+            return defaultValue;
+        }
+        // depending on which locale the scores have been created a comma may be used as separator instead of '.'
+        return Double.parseDouble(scoreString.replace(",", "."));
+    }
+
 }

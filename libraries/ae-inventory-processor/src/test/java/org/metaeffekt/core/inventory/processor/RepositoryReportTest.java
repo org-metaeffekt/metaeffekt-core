@@ -256,7 +256,6 @@ public class RepositoryReportTest {
 
         // put asserts here
 
-
     }
 
     @Ignore // needs external resources
@@ -268,18 +267,22 @@ public class RepositoryReportTest {
         InventoryReport report = new InventoryReport();
         prepareReport(inventoryDir, "*.xls", reportDir, report);
 
-        report.setInventoryBomReportEnabled(true);
+        report.setTemplateLanguageSelector("de");
 
         report.setAssetBomReportEnabled(true);
+        report.setIncludeInofficialOsiStatus(true);
+
+        report.setInventoryBomReportEnabled(false);
+        report.setAssessmentReportEnabled(false);
 
         report.setInventoryVulnerabilityReportEnabled(false);
         report.setInventoryVulnerabilityReportSummaryEnabled(false);
-
         report.setInventoryVulnerabilityStatisticsReportEnabled(false);
-
         report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
-
         report.setVulnerabilityScoreThreshold(0.6f);
+
+        report.setFailOnMissingLicense(false);
+        report.setFailOnMissingLicenseFile(false);
 
         report.createReport();
     }
