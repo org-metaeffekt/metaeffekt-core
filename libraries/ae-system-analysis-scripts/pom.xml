@@ -33,7 +33,7 @@
                         <phase>compile</phase>
                     </execution>
                 </executions>
-                <version>HEAD-SNAPSHOT</version>
+                <version>${ae.core.version}</version>
                 <configuration>
                     <inputDirectory>src/main/resources/ae-system-analysis-scripts</inputDirectory>
                     <outputDirectory>${scriptsOutputDirectory}</outputDirectory>
