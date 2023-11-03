@@ -44,10 +44,10 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
      * Anticipates a directory for each package in packageDir. The directory contains the
      * package name only (no other attribute is derived).
      *
-     * @param analysisDir The analysis dir.
-     * @param packageDir The specific (one out of potentially many) packageDocDir.
+     * @param analysisDir        The analysis dir.
+     * @param packageDir         The specific (one out of potentially many) packageDocDir.
      * @param idToPackageInfoMap The resulting {@link PackageInfo} instances are added to the map.
-     * @param docDir The documentation dir.
+     * @param docDir             The documentation dir.
      */
     protected static void packagesFromDocumentationDir(File analysisDir, File packageDir, Map<String,
             PackageInfo> idToPackageInfoMap, boolean docDir) {
@@ -85,6 +85,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
         idToPackageInfoMap.put(packageInfo.name, packageInfo);
     }
 
+    @Override
     public Inventory extractInventory(File analysisDir, String inventoryId, List<String> excludePatterns) throws IOException {
         final String issue = extractIssue(analysisDir);
 
