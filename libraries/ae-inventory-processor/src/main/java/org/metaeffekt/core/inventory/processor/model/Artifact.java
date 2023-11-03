@@ -115,7 +115,7 @@ public class Artifact extends AbstractModelBase {
     }
 
     public Set<String> getProjects() {
-        String projectsString = get(Attribute.PROJECTS);
+        final String projectsString = get(Attribute.PROJECTS);
         if (StringUtils.isEmpty(projectsString)) {
             return Collections.emptySet();
         }
@@ -222,18 +222,28 @@ public class Artifact extends AbstractModelBase {
     }
 
     public void addProject(String project) {
-        if (getProjects() != null && getProjects().contains(project)) return;
+        final Set<String> projects = getProjects();
+        if (projects.contains(project)) return;
 
+        // use append to derive new value
         append(Attribute.PROJECTS.getKey(), project, PROJECT_DELIMITER);
     }
 
     public void merge(Artifact a) {
-        append(Attribute.PROJECTS.getKey(), a.get(Attribute.PROJECTS), PROJECT_DELIMITER);
+
+        // projects merge differently
+        mergeProjects(a);
 
         // merge attributes
         super.merge(a);
 
         deriveArtifactId();
+    }
+
+    private void mergeProjects(Artifact a) {
+        Set<String> projects = new HashSet<>(getProjects());
+        projects.addAll(a.getProjects());
+        setProjects(projects);
     }
 
     /**

@@ -15,11 +15,13 @@
  */
 package org.metaeffekt.core.maven.jira.template;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.tools.generic.EscapeTool;
+import org.metaeffekt.core.maven.jira.util.RegExUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -83,7 +85,19 @@ public class TemplateProcessor {
 
     private VelocityContext arrangeContext(Map<String, Object> data) {
         VelocityContext context = new VelocityContext();
+
         context.put("esc", new EscapeTool());
+
+        context.put("templateProcessor", this);
+
+        context.put("StringEscapeUtils", StringEscapeUtils.class);
+
+        context.put("RegExUtils", RegExUtils.class);
+
+        context.put("Double", Double.class);
+        context.put("Float", Float.class);
+        context.put("String", String.class);
+
         for (Object key : data.keySet()) {
             context.put(key.toString(), data.get(key));
         }

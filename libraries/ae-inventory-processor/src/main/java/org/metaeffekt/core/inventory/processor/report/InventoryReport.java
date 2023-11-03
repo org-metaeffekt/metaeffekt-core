@@ -992,9 +992,13 @@ public class InventoryReport {
         context.put("assetAdapter", assetReportAdapter);
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
-        context.put("RegExpUtils", RegExUtils.class);
+        context.put("RegExUtils", RegExUtils.class);
         context.put("utils", new ReportUtils());
+
+        context.put("Double", Double.class);
         context.put("Float", Float.class);
+        context.put("String", String.class);
+
         context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
