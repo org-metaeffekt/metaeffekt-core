@@ -96,13 +96,13 @@ public class ArtifactType {
     public static final ArtifactType SCANNER = new ArtifactType("scanner", "barcode scanners, fingerprint scanners, biometric scanners");
     public static final ArtifactType INPUT_DEVICE = new ArtifactType("input device", "top-level category for input devices", HUMAN_INTERFACE, SCANNER);
     // OUTPUT_DEVICE
-    public static final ArtifactType SOUND_HARDWARE = new ArtifactType("sound hardware", "dacs, audio interfaces, speakers");
+    public static final ArtifactType AUDIO_HARDWARE = new ArtifactType("audio hardware", "dacs, audio interfaces, speakers");
     public static final ArtifactType IMAGING_HARDWARE = new ArtifactType("imaging hardware", "cameras, video capture cards");
     public static final ArtifactType PRINTER = new ArtifactType("printer", null);
     public static final ArtifactType DISPLAY = new ArtifactType("display", null);
     public static final ArtifactType PROJECTOR = new ArtifactType("projector", null);
     public static final ArtifactType MULTIMEDIA_OUTPUT_DEVICE = new ArtifactType("multimedia output device", "devices that contain both sound and imaging hardware");
-    public static final ArtifactType OUTPUT_DEVICE = new ArtifactType("output device", "top-level category for output devices", SOUND_HARDWARE, IMAGING_HARDWARE, PRINTER, DISPLAY, PROJECTOR, MULTIMEDIA_OUTPUT_DEVICE);
+    public static final ArtifactType OUTPUT_DEVICE = new ArtifactType("output device", "top-level category for output devices", AUDIO_HARDWARE, IMAGING_HARDWARE, PRINTER, DISPLAY, PROJECTOR, MULTIMEDIA_OUTPUT_DEVICE);
     // other hardware
     public static final ArtifactType DATA_STORAGE = new ArtifactType("data storage", "ssds, hard drives, usb drives");
     public static final ArtifactType DEVICE_CONNECTOR = new ArtifactType("device connector", "cables, connectors");

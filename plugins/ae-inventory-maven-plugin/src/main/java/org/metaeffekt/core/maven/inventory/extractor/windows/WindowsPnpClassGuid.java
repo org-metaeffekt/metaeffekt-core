@@ -66,7 +66,7 @@ public enum WindowsPnpClassGuid {
     USBDEVICE("USBDevice", "88bae032-5a81-49f0-bc3d-a4ff138216d6", ArtifactType.DATA_STORAGE, ArtifactType.USB_DRIVER), // USB devices that don't belong to another class
     WPD("WPD", "eec5ad98-8080-425f-922a-dabf3de3f69a", ArtifactType.APPLIANCE, ArtifactType.COMPUTER_DRIVER), // Windows Portable Devices
 
-    AUDIO_PROCESSING_OBJECT("AudioProcessingObject", "5989fce8-9cd0-467d-8a6a-5419e31529d4", ArtifactType.SOUND_HARDWARE, ArtifactType.AUDIO_DRIVER), // audio processing objects (APOs) https://learn.microsoft.com/en-us/windows-hardware/drivers/audio/windows-audio-processing-objects
+    AUDIO_PROCESSING_OBJECT("AudioProcessingObject", "5989fce8-9cd0-467d-8a6a-5419e31529d4", ArtifactType.AUDIO_HARDWARE, ArtifactType.AUDIO_DRIVER), // audio processing objects (APOs) https://learn.microsoft.com/en-us/windows-hardware/drivers/audio/windows-audio-processing-objects
     DOT4("Dot4", "48721b56-6795-11d2-b1a8-0080c72e74a2", ArtifactType.CONTROLLER, ArtifactType.INPUT_DEVICE_DRIVER), // input devices that control multifunction IEEE 1284.4 peripheral devices
     DOT4PRINT("Dot4Print", "49ce6ac8-6f86-11d2-b1e5-0080c72e74a2", ArtifactType.PRINTER, ArtifactType.INPUT_DEVICE_DRIVER), // Dot4 print functions; function on a Dot4 device and has a single child device
     AVC("AVC", "c06ff265-ae09-48f0-812c-16753d7cba83", ArtifactType.CONTROLLER, ArtifactType.DRIVER), // IEEE 1394 devices that support the AVC protocol device class
@@ -88,13 +88,13 @@ public enum WindowsPnpClassGuid {
     LEGACY_DRIVER("LegacyDriver", "8ecc055d-047f-11d1-a537-0000f8753ed1", ArtifactType.DRIVER, ArtifactType.DRIVER), // reserved for system use; legacy drivers (Non-Plug and Play Drivers)
     UNKNOWN("Unknown", "4d36e97e-e325-11ce-bfc1-08002be10318", ArtifactType.UNKNOWN, ArtifactType.UNKNOWN), // reserved for system use; devices that could not be identified as a specific class
     PRINTER_UPGRADE("PrinterUpgrade", "4d36e97a-e325-11ce-bfc1-08002be10318", ArtifactType.PRINTER, ArtifactType.PRINTER_DRIVER), // reserved for system use; printer upgrades
-    SOUND("Sound", "4d36e97c-e325-11ce-bfc1-08002be10318", ArtifactType.SOUND_HARDWARE, ArtifactType.AUDIO_DRIVER), // class is obsolete; sound devices
+    SOUND("Sound", "4d36e97c-e325-11ce-bfc1-08002be10318", ArtifactType.AUDIO_HARDWARE, ArtifactType.AUDIO_DRIVER), // class is obsolete; sound devices
     VOLUME_SNAPSHOT("VolumeSnapshot", "533c5b84-ec70-11d2-9505-00c04f79deaf", ArtifactType.CONTROLLER, ArtifactType.DRIVER), // reserved for system use; Volume Shadow Copy Service (VSS) volume snapshot providers
 
     // found via system scanning
     FIRMWARE("Firmware", "f2e7dd72-6468-4e36-b6f1-6488f42c1b52", ArtifactType.EXTENSION_MODULE, ArtifactType.FIRMWARE_DRIVER), // firmware devices
     SOFTWARE_DEVICE("SoftwareDevice", "62f9c741-b25a-46ce-b54c-9bccce08b6f2", ArtifactType.APPLIANCE, ArtifactType.SOFTWARE_DEVICE_DRIVER), // software-based devices
-    AUDIO_ENDPOINT("AudioEndpoint", "c166523c-fe0c-4a94-a586-f1a80cfbbf3e", ArtifactType.SOUND_HARDWARE, ArtifactType.AUDIO_DRIVER), // audio devices
+    AUDIO_ENDPOINT("AudioEndpoint", "c166523c-fe0c-4a94-a586-f1a80cfbbf3e", ArtifactType.AUDIO_HARDWARE, ArtifactType.AUDIO_DRIVER), // audio devices
     PRINT_QUEUE("PrintQueue", "1ed2bbf9-11f0-4084-b21f-ad83a8e6dcdc", ArtifactType.PRINTER, ArtifactType.PRINT_QUEUES_DRIVER), // print queue devices
     SD_HOST("SDHost", "a0a588a4-c46f-4b37-b7ea-c82fe89870c6", ArtifactType.STORAGE_CONTROLLER, ArtifactType.STORAGE_DRIVER), // SD host controllers
     COMPUTER("Computer", "4d36e966-e325-11ce-bfc1-08002be10318", ArtifactType.APPLIANCE, ArtifactType.COMPUTER_DRIVER), // computer systems
