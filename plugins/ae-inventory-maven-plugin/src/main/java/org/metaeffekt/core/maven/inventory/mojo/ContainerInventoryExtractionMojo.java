@@ -119,7 +119,7 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
 
         // finally we run the extraction
         return extractor.extractInventory(analysisDir,
-                artifactInventoryId, excludes == null ? Collections.EMPTY_LIST : Arrays.asList(excludes));
+                artifactInventoryId, excludes == null ? Collections.emptyList() : Arrays.asList(excludes));
     }
 
     private void filterInventory(Inventory inventory) {
