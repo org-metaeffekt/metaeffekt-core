@@ -593,12 +593,22 @@ public class Artifact extends AbstractModelBase {
 
     /**
      * Uses the information in the {@link Attribute#TYPE} column to determine whether the artifact is a hardware
-     * component.
+     * component via {@link ArtifactType#CATEGORY_HARDWARE}.
      *
      * @return true if the artifact is a hardware component, false otherwise.
      */
     public boolean isHardware() {
         return getArtifactType().map(ArtifactType::isHardware).orElse(false);
+    }
+
+    /**
+     * Uses the information in the {@link Attribute#TYPE} column to determine whether the artifact is a driver via
+     * {@link ArtifactType#DRIVER}.
+     *
+     * @return true if the artifact is a driver, false otherwise.
+     */
+    public boolean isDriver() {
+        return getArtifactType().map(ArtifactType::isDriver).orElse(false);
     }
 
     /**
