@@ -18,7 +18,6 @@ package org.metaeffekt.core.security.cvss;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
@@ -93,79 +92,138 @@ public class CvssSource<T extends CvssVector> {
     }
 
     public static class CvssEntity implements NameProvider {
-        private final String name;
-        private final String sourceName;
-        private final URL url;
+        private final String name; // from partnerName
+        private final String email; // from steps.filter(link.startsWith("mailto:")).map(link.substring("mailto:".length())).findFirst()
+        private final URL url; // from Security Advisories or fallback steps.filter(link.startsWith("http")).findFirst()
+        private final URL cveOrgDetailsLink; // from cveOrgDetailsLink
+
+        private final String description; // from Scope
+        private final String country; // from Country
+        private final String role; // from Program Role
+        private final List<String> organizationTypes; // from Organization Type
+
+        private final CvssEntity topLevelRootPartner; // from Top-Level Root
+        private final CvssEntity rootPartner; // from Root
+
+        private final List<ReportStep> reportSteps; // from steps
+
+        public CvssEntity(String name, String email, URL url, URL cveOrgDetailsLink, String description, String country, String role, List<String> organizationTypes, CvssEntity topLevelRootPartner, CvssEntity rootPartner, List<ReportStep> reportSteps) {
+            this.name = name;
+            this.email = email;
+            this.url = url;
+            this.cveOrgDetailsLink = cveOrgDetailsLink;
+            this.description = description;
+            this.country = country;
+            this.role = role;
+            this.organizationTypes = organizationTypes;
+            this.topLevelRootPartner = topLevelRootPartner;
+            this.rootPartner = rootPartner;
+            this.reportSteps = reportSteps;
+        }
 
         public CvssEntity(String name) {
-            this(name, null, null);
+            this(name, null, null, null, null, null, null, Collections.emptyList(), null, null, Collections.emptyList());
         }
 
-        public CvssEntity(String name, String sourceName) {
-            this(name, sourceName, null);
-        }
-
-        public CvssEntity(String name, String sourceName, String url) {
-            this.name = name;
-            this.sourceName = sourceName;
-
-            if (url == null) {
-                this.url = null;
-            } else {
-                try {
-                    this.url = new URL(url);
-                } catch (MalformedURLException e) {
-                    throw new IllegalArgumentException("Invalid URL for cvss entity " + name + ": " + url, e);
-                }
-            }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getSourceName() {
-            return sourceName;
+        public String getEmail() {
+            return email;
         }
 
         public URL getUrl() {
             return url;
         }
 
-        public final static CvssEntity OTHER = new CvssEntity("OTHER");
-
-        public final static CvssEntity NVD = new CvssEntity("NVD", "nvd@nist.gov", "https://nvd.nist.gov");
-        public final static CvssEntity GHSA = new CvssEntity("GitHub, Inc.", "security-advisories@github.com", "https://github.com/advisories");
-
-        public final static CvssEntity ASSESSMENT = new CvssEntity("Assessment");
-        public final static CvssEntity ASSESSMENT_LOWER = new CvssEntity("lower");
-        public final static CvssEntity ASSESSMENT_HIGHER = new CvssEntity("higher");
-        public final static CvssEntity ASSESSMENT_ALL = new CvssEntity("all");
-
-        public final static List<CvssEntity> ALL = Arrays.asList(
-                NVD, GHSA,
-                ASSESSMENT, ASSESSMENT_LOWER, ASSESSMENT_HIGHER, ASSESSMENT_ALL
-        );
-
-        public static CvssEntity findOrCreateNewFromName(String name) {
-            for (CvssEntity entity : ALL) {
-                if (entity.getName().equalsIgnoreCase(name)) {
-                    return entity;
-                }
-            }
-            return new CvssEntity(name);
+        public URL getCveOrgDetailsLink() {
+            return cveOrgDetailsLink;
         }
 
-        public static CvssEntity findOrCreateNewFromSourceNameOrElse(String sourceName, CvssEntity defaultEntity) {
-            if (sourceName != null) {
-                for (CvssEntity entity : ALL) {
-                    if (entity.getSourceName() != null && entity.getSourceName().equalsIgnoreCase(sourceName)) {
-                        return entity;
-                    }
+        public String getDescription() {
+            return description;
+        }
+
+        public String getCountry() {
+            return country;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public List<String> getOrganizationTypes() {
+            return organizationTypes;
+        }
+
+        public CvssEntity getTopLevelRootPartner() {
+            return topLevelRootPartner;
+        }
+
+        public CvssEntity getRootPartner() {
+            return rootPartner;
+        }
+
+        public List<ReportStep> getReportSteps() {
+            return reportSteps;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return "CvssEntity{" + name
+                    + (email != null ? ", " + email : "")
+                    + (url != null ? " (" + url + ")" : "");
+        }
+
+        public static class ReportStep {
+            private final int stepIndex;
+            private final String title;
+            private final String link;
+
+            public ReportStep(int stepIndex, String title, String link) {
+                this.stepIndex = stepIndex;
+                this.title = title;
+                this.link = link;
+            }
+
+            public int getStepIndex() {
+                return stepIndex;
+            }
+
+            public String getTitle() {
+                return title;
+            }
+
+            public String getLink() {
+                return link;
+            }
+
+            public static ReportStep fromJson(JSONObject json) {
+                return new ReportStep(
+                        json.getInt("stepIndex"),
+                        json.getString("title"),
+                        json.getString("link")
+                );
+            }
+
+            public static List<ReportStep> fromJson(JSONArray json) {
+                if (json == null) return Collections.emptyList();
+                final List<ReportStep> result = new ArrayList<>();
+                for (int i = 0; i < json.length(); i++) {
+                    result.add(fromJson(json.getJSONObject(i)));
                 }
-                return new CvssEntity(sourceName);
-            } else {
-                return defaultEntity;
+                return result;
+            }
+
+            @Override
+            public String toString() {
+                return "StepInfo{" +
+                        "stepIndex=" + stepIndex +
+                        ", title='" + title + '\'' +
+                        ", link='" + link + '\'' +
+                        '}';
             }
         }
     }
@@ -263,14 +321,14 @@ public class CvssSource<T extends CvssVector> {
         final CvssIssuingEntityRole issuingEntityRole;
 
         if (parts.length > 0) {
-            hostingEntity = CvssEntity.findOrCreateNewFromName(unescapeName(parts[0]));
+            hostingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(unescapeName(parts[0]));
 
             if (parts.length == 2) {
                 issuingEntityRole = null;
-                issuingEntity = CvssEntity.findOrCreateNewFromName(unescapeName(parts[1]));
+                issuingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(unescapeName(parts[1]));
             } else if (parts.length == 3) {
                 issuingEntityRole = CvssIssuingEntityRole.findOrCreateNew(unescapeName(parts[1]));
-                issuingEntity = CvssEntity.findOrCreateNewFromName(unescapeName(parts[2]));
+                issuingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(unescapeName(parts[2]));
             } else if (parts.length > 3) {
                 throw new IllegalArgumentException("Invalid CVSS source, requires at most hosting entity, issuing entity role and issuing entity: " + header);
             } else { // parts.length == 1

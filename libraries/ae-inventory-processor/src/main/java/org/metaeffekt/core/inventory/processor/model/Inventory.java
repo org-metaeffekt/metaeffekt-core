@@ -1944,7 +1944,7 @@ public class Inventory implements Serializable {
         for (AbstractModelBase model : models) {
             for (String attribute : model.getAttributes()) {
                 final int maxAttributeLength = Math.max(attribute.length(),
-                        model.get(attribute) != null ? model.get(attribute).length() : 0);
+                        model.get(attribute) != null ? model.get(attribute).replace("\n", "<br>").length() : 0);
                 attributeWidths.put(attribute, Math.max(attributeWidths.getOrDefault(attribute, 0), maxAttributeLength));
             }
         }
@@ -1964,7 +1964,7 @@ public class Inventory implements Serializable {
         // logging each model's attributes
         for (AbstractModelBase model : models) {
             String row = rearrangedAttributeWidths.keySet().stream()
-                    .map(key -> StringUtils.rightPad(model.get(key) != null ? model.get(key) : "", rearrangedAttributeWidths.get(key)))
+                    .map(key -> StringUtils.rightPad(model.get(key) != null ? model.get(key).replace("\n", "<br>") : "", rearrangedAttributeWidths.get(key)))
                     .collect(Collectors.joining(" | ", "| ", " |"));
             LOG.info(row);
         }
@@ -1972,8 +1972,9 @@ public class Inventory implements Serializable {
 
     protected static Map<String, Integer> logModelRearrangeAttributes(Map<String, Integer> attributeWidths) {
         final List<String> desiredOrder = Stream.of(
-                Artifact.Attribute.ID, Artifact.Attribute.COMPONENT, Artifact.Attribute.VERSION, Artifact.Attribute.GROUPID, Artifact.Attribute.TYPE, Artifact.Attribute.URL,
-                VulnerabilityMetaData.Attribute.NAME, VulnerabilityMetaData.Attribute.URL, VulnerabilityMetaData.Attribute.PRODUCT_URIS
+                Artifact.Attribute.ID, VulnerabilityMetaData.Attribute.NAME, Artifact.Attribute.COMPONENT,
+                Artifact.Attribute.VERSION, Artifact.Attribute.GROUPID, Artifact.Attribute.TYPE, Artifact.Attribute.URL,
+                VulnerabilityMetaData.Attribute.URL, VulnerabilityMetaData.Attribute.PRODUCT_URIS
         ).map(AbstractModelBase.Attribute::getKey).collect(Collectors.toList());
         return attributeWidths.entrySet().stream()
                 .sorted(Comparator.comparing(entry -> {
