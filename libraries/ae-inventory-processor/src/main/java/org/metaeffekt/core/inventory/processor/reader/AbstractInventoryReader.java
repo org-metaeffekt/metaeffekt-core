@@ -48,7 +48,9 @@ public abstract class AbstractInventoryReader {
     public static final String WORKSHEET_NAME_VULNERABILITY_DATA = "Vulnerabilities";
     public static final String WORKSHEET_NAME_LICENSE_NOTICES_DATA = "License Notices";
     public static final String WORKSHEET_NAME_LICENSE_DATA = "Licenses";
-    public static final String WORKSHEET_NAME_ADVISORY_DATA = "Advisories";
+    public static final String WORKSHEET_NAME_ADVISORY_DATA = "Security Advisories";
+    public static final String WORKSHEET_NAME_ADVISORY_ALTERNATIVE_1_DATA = "Advisories";
+    public static final String WORKSHEET_NAME_ADVISORY_ALTERNATIVE_2_DATA = "Cert";
 
     private final DataFormatter baseCellDataFormatter = new DataFormatter();
     private final DecimalFormat numericCellDataFormatter = new DecimalFormat();

@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -1815,6 +1816,171 @@ public class Inventory implements Serializable {
             }
         }
         return false;
+    }
+
+    /**
+     * See {@link #logModelAttributesVertical(List, boolean)} with the {@code asTable} parameter set to {@code true}.
+     *
+     * @param models the list of {@link AbstractModelBase} instances whose attributes are to be logged.
+     */
+    public static void logModelAttributesVerticalTable(List<? extends AbstractModelBase> models) {
+        logModelAttributesVertical(models, true);
+    }
+
+    /**
+     * See {@link #logModelAttributesVertical(List, boolean)} with the {@code asTable} parameter set to {@code false}.
+     *
+     * @param models the list of {@link AbstractModelBase} instances whose attributes are to be logged.
+     */
+    public static void logModelAttributesVerticalSimple(List<? extends AbstractModelBase> models) {
+        logModelAttributesVertical(models, false);
+    }
+
+    /**
+     * Logs the attributes of the given models in a vertical format to the info log.
+     * <p>
+     * This method can log the attributes either as a simple list or in a table format, depending on the {@code asTable} parameter.
+     * When {@code asTable} is true, the output is formatted as a markdown table with two columns: one for attribute names and
+     * another for their values.
+     * When {@code asTable} is false, the output is a simple list of attribute-value pairs without additional formatting.
+     * <p>
+     * Note: The method calculates the maximum length of both attribute names and values to ensure proper alignment in the table format.
+     * <h3>Example Output:</h3>
+     * <pre>
+     * // asTable = true
+     * | Attribute    | Value        |
+     * |--------------|--------------|
+     * | name         | Model1       |
+     * | type         | Type1        |
+     * | value        | Value1       |
+     * |              |              |
+     * | name         | Model2       |
+     * | type         | Type2        |
+     * | value        | Value2       |
+     *
+     * // asTable = false
+     * | name         | Model1
+     * | type         | Type1
+     * | value        | Value1
+     *
+     * | name         | Model2
+     * | type         | Type2
+     * | value        | Value2
+     * </pre>
+     *
+     * @param models  the list of {@link AbstractModelBase} instances whose attributes are to be logged.
+     * @param asTable if true, logs the attributes in a table format; logs as a simple list otherwise.
+     * @see #logModelAttributesHorizontalTable(List)
+     */
+    protected static void logModelAttributesVertical(List<? extends AbstractModelBase> models, boolean asTable) {
+        if (models.isEmpty()) {
+            LOG.info("No models to display.");
+        }
+
+        final int maxKeyLength = models.stream()
+                .mapToInt(m -> m.getAttributes().stream().mapToInt(String::length).max().orElse(0))
+                .max().orElse(0);
+
+        final String separatorBetweenModels;
+        final int maxValLength;
+
+        if (asTable) {
+            maxValLength = models.stream()
+                    .mapToInt(m -> m.getAttributes().stream().map(m::get).mapToInt(String::length).max().orElse(0))
+                    .max().orElse(0);
+
+            final String separatorLineDashes = String.format("|%s|%s|", StringUtils.repeat("-", maxKeyLength + 2), StringUtils.repeat("-", maxValLength + 2));
+            separatorBetweenModels = String.format("|%s|%s|", StringUtils.repeat(" ", maxKeyLength + 2), StringUtils.repeat(" ", maxValLength + 2));
+
+            LOG.info("| {} | {} |", StringUtils.rightPad("Attribute", maxKeyLength), StringUtils.rightPad("Value", maxValLength));
+            LOG.info(separatorLineDashes);
+        } else {
+            maxValLength = -1;
+            separatorBetweenModels = "";
+        }
+
+        for (Iterator<? extends AbstractModelBase> iterator = models.iterator(); iterator.hasNext(); ) {
+            iterator.next().logModelAttributesVertical(maxKeyLength, maxValLength);
+            if (iterator.hasNext()) {
+                LOG.info(separatorBetweenModels);
+            }
+        }
+    }
+
+    /**
+     * Logs the attributes of the given models in a horizontal table format to the info log.
+     * <p>
+     * This method logs the attributes of each model in a markdown table format, where each row represents a single model
+     * and each column represents an attribute. The table headers are the attribute names. The method dynamically adjusts
+     * column widths to accommodate the longest string (either an attribute name or its value) in each column.
+     * </p>
+     * <p>
+     * Note: The method first calculates the maximum length of each attribute across all models for proper alignment. It
+     * also calls {@code logModelRearrangeAttributes} to potentially rearrange the output attributes.
+     * </p>
+     * <h3>Example Output:</h3>
+     * <pre>
+     * | Name   | Type   | Other   |
+     * |--------|--------|---------|
+     * | Model1 | Type1  | Value1  |
+     * | Model2 | Type2  | Value2  |
+     * </pre>
+     * <p>
+     * Each attribute name is listed in the header, and each subsequent row contains the values of these attributes for a single model.
+     * </p>
+     *
+     * @param models the list of {@link AbstractModelBase} instances whose attributes are to be logged in a horizontal table format.
+     * @see #logModelRearrangeAttributes(Map)
+     * @see #logModelAttributesVertical(List, boolean)
+     */
+    public static void logModelAttributesHorizontalTable(List<? extends AbstractModelBase> models) {
+        if (models == null || models.isEmpty()) {
+            LOG.info("No models to display.");
+            return;
+        }
+
+        // collecting all unique attribute names and determining max width for each column
+        final Map<String, Integer> attributeWidths = new LinkedHashMap<>();
+        for (AbstractModelBase model : models) {
+            for (String attribute : model.getAttributes()) {
+                final int maxAttributeLength = Math.max(attribute.length(),
+                        model.get(attribute) != null ? model.get(attribute).length() : 0);
+                attributeWidths.put(attribute, Math.max(attributeWidths.getOrDefault(attribute, 0), maxAttributeLength));
+            }
+        }
+
+        final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
+
+        // header and separator
+        final String header = rearrangedAttributeWidths.entrySet().stream()
+                .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(" | ", "| ", " |"));
+        final String separator = rearrangedAttributeWidths.values().stream()
+                .map(integer -> StringUtils.repeat("-", integer + 2))
+                .collect(Collectors.joining("|", "|", "|"));
+        LOG.info(header);
+        LOG.info(separator);
+
+        // logging each model's attributes
+        for (AbstractModelBase model : models) {
+            String row = rearrangedAttributeWidths.keySet().stream()
+                    .map(key -> StringUtils.rightPad(model.get(key) != null ? model.get(key) : "", rearrangedAttributeWidths.get(key)))
+                    .collect(Collectors.joining(" | ", "| ", " |"));
+            LOG.info(row);
+        }
+    }
+
+    protected static Map<String, Integer> logModelRearrangeAttributes(Map<String, Integer> attributeWidths) {
+        final List<String> desiredOrder = Stream.of(
+                Artifact.Attribute.ID, Artifact.Attribute.COMPONENT, Artifact.Attribute.VERSION, Artifact.Attribute.GROUPID, Artifact.Attribute.TYPE, Artifact.Attribute.URL,
+                VulnerabilityMetaData.Attribute.NAME, VulnerabilityMetaData.Attribute.URL, VulnerabilityMetaData.Attribute.PRODUCT_URIS
+        ).map(AbstractModelBase.Attribute::getKey).collect(Collectors.toList());
+        return attributeWidths.entrySet().stream()
+                .sorted(Comparator.comparing(entry -> {
+                    final int index = desiredOrder.indexOf(entry.getKey());
+                    return index == -1 ? Integer.MAX_VALUE : index;
+                }))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
     /**

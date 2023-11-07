@@ -17,8 +17,8 @@ package org.metaeffekt.core.security.cvss;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
-import org.metaeffekt.core.security.cvss.v3.Cvss3;
-import org.metaeffekt.core.security.cvss.v4_0.Cvss4_0;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
+import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,6 +149,34 @@ public abstract class CvssVector {
         return unknownAttributes > 0 ? null : cvssVector;
     }
 
+    public static String getVersionName(Class<? extends CvssVector> clazz) {
+        if (clazz == null) {
+            throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
+        } else if (clazz == Cvss2.class) {
+            return Cvss2.getVersionName();
+        } else if (clazz == Cvss3P1.class) {
+            return Cvss3P1.getVersionName();
+        } else if (clazz == Cvss4P0.class) {
+            return Cvss4P0.getVersionName();
+        } else {
+            throw new IllegalArgumentException("Unknown or unregistered CVSS version: " + clazz.getSimpleName());
+        }
+    }
+
+    public static Class<? extends CvssVector> classFromVersionName(String versionName) {
+        if (versionName == null) {
+            throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
+        } else if (versionName.equals(Cvss2.getVersionName())) {
+            return Cvss2.class;
+        } else if (versionName.equals(Cvss3P1.getVersionName())) {
+            return Cvss3P1.class;
+        } else if (versionName.equals(Cvss4P0.getVersionName())) {
+            return Cvss4P0.class;
+        } else {
+            throw new IllegalArgumentException("Unknown or unregistered CVSS version: " + versionName);
+        }
+    }
+
     /**
      * Attempts to parse the given vector. This is split into two steps:
      * <ol>
@@ -167,9 +195,9 @@ public abstract class CvssVector {
         if (vector.startsWith("CVSS:2.0")) {
             return new Cvss2(vector);
         } else if (vector.startsWith("CVSS:3.1") || vector.startsWith("CVSS:3.0")) {
-            return new Cvss3(vector);
+            return new Cvss3P1(vector);
         } else if (vector.startsWith("CVSS:4.0")) {
-            return new Cvss4_0(vector);
+            return new Cvss4P0(vector);
 
         } else {
             final Cvss2 potentialCvss2Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss2::new);
@@ -177,14 +205,14 @@ public abstract class CvssVector {
                 return potentialCvss2Vector;
             }
 
-            final Cvss3 potentialCvss3Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss3::new);
+            final Cvss3P1 potentialCvss3Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss3P1::new);
             if (potentialCvss3Vector != null) {
                 return potentialCvss3Vector;
             }
 
-            final Cvss4_0 potentialCvss4_0Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss4_0::new);
-            if (potentialCvss4_0Vector != null) {
-                return potentialCvss4_0Vector;
+            final Cvss4P0 potentialCvss4P0Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss4P0::new);
+            if (potentialCvss4P0Vector != null) {
+                return potentialCvss4P0Vector;
             }
 
             LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);

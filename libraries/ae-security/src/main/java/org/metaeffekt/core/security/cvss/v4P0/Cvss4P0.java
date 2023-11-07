@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss.v4_0;
+package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.security.cvss.CvssScoreResult;
@@ -29,9 +29,9 @@ import java.util.stream.Stream;
  * <a href="https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf">https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf</a><br>
  * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a>
  */
-public class Cvss4_0 extends CvssVector {
+public class Cvss4P0 extends CvssVector {
 
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss4_0.class);
+    private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0.class);
 
     public final static String[] VECTOR_PARTS = new String[]{
             "AV", "AC", "AT", "PR", "UI",
@@ -95,15 +95,15 @@ public class Cvss4_0 extends CvssVector {
     // Threat Metrics
     private ExploitMaturity exploitMaturity = ExploitMaturity.NOT_DEFINED; // E
 
-    public Cvss4_0(String vector) {
+    public Cvss4P0(String vector) {
         applyVector(vector);
     }
 
-    public Cvss4_0() {
+    public Cvss4P0() {
     }
 
-    public Cvss4_0MacroVector getMacroVector() {
-        return new Cvss4_0MacroVector(this);
+    public Cvss4P0MacroVector getMacroVector() {
+        return new Cvss4P0MacroVector(this);
     }
 
     @Override
@@ -323,40 +323,40 @@ public class Cvss4_0 extends CvssVector {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Cvss4_0)) return false;
-        Cvss4_0 cvss4_0 = (Cvss4_0) o;
-        return attackVector == cvss4_0.attackVector &&
-                attackComplexity == cvss4_0.attackComplexity &&
-                attackRequirements == cvss4_0.attackRequirements &&
-                privilegesRequired == cvss4_0.privilegesRequired &&
-                userInteraction == cvss4_0.userInteraction &&
-                vulnConfidentialityImpact == cvss4_0.vulnConfidentialityImpact &&
-                vulnIntegrityImpact == cvss4_0.vulnIntegrityImpact &&
-                vulnAvailabilityImpact == cvss4_0.vulnAvailabilityImpact &&
-                subConfidentialityImpact == cvss4_0.subConfidentialityImpact &&
-                subIntegrityImpact == cvss4_0.subIntegrityImpact &&
-                subAvailabilityImpact == cvss4_0.subAvailabilityImpact &&
-                modifiedAttackVector == cvss4_0.modifiedAttackVector &&
-                modifiedAttackComplexity == cvss4_0.modifiedAttackComplexity &&
-                modifiedAttackRequirements == cvss4_0.modifiedAttackRequirements &&
-                modifiedPrivilegesRequired == cvss4_0.modifiedPrivilegesRequired &&
-                modifiedUserInteraction == cvss4_0.modifiedUserInteraction &&
-                modifiedVulnConfidentialityImpact == cvss4_0.modifiedVulnConfidentialityImpact &&
-                modifiedVulnIntegrityImpact == cvss4_0.modifiedVulnIntegrityImpact &&
-                modifiedVulnAvailabilityImpact == cvss4_0.modifiedVulnAvailabilityImpact &&
-                modifiedSubConfidentialityImpact == cvss4_0.modifiedSubConfidentialityImpact &&
-                modifiedSubIntegrityImpact == cvss4_0.modifiedSubIntegrityImpact &&
-                modifiedSubAvailabilityImpact == cvss4_0.modifiedSubAvailabilityImpact &&
-                confidentialityRequirement == cvss4_0.confidentialityRequirement &&
-                integrityRequirement == cvss4_0.integrityRequirement &&
-                availabilityRequirement == cvss4_0.availabilityRequirement &&
-                exploitMaturity == cvss4_0.exploitMaturity &&
-                safety == cvss4_0.safety &&
-                automatable == cvss4_0.automatable &&
-                recovery == cvss4_0.recovery &&
-                valueDensity == cvss4_0.valueDensity &&
-                vulnerabilityResponseEffort == cvss4_0.vulnerabilityResponseEffort &&
-                providerUrgency == cvss4_0.providerUrgency;
+        if (!(o instanceof Cvss4P0)) return false;
+        Cvss4P0 cvss4P0 = (Cvss4P0) o;
+        return attackVector == cvss4P0.attackVector &&
+                attackComplexity == cvss4P0.attackComplexity &&
+                attackRequirements == cvss4P0.attackRequirements &&
+                privilegesRequired == cvss4P0.privilegesRequired &&
+                userInteraction == cvss4P0.userInteraction &&
+                vulnConfidentialityImpact == cvss4P0.vulnConfidentialityImpact &&
+                vulnIntegrityImpact == cvss4P0.vulnIntegrityImpact &&
+                vulnAvailabilityImpact == cvss4P0.vulnAvailabilityImpact &&
+                subConfidentialityImpact == cvss4P0.subConfidentialityImpact &&
+                subIntegrityImpact == cvss4P0.subIntegrityImpact &&
+                subAvailabilityImpact == cvss4P0.subAvailabilityImpact &&
+                modifiedAttackVector == cvss4P0.modifiedAttackVector &&
+                modifiedAttackComplexity == cvss4P0.modifiedAttackComplexity &&
+                modifiedAttackRequirements == cvss4P0.modifiedAttackRequirements &&
+                modifiedPrivilegesRequired == cvss4P0.modifiedPrivilegesRequired &&
+                modifiedUserInteraction == cvss4P0.modifiedUserInteraction &&
+                modifiedVulnConfidentialityImpact == cvss4P0.modifiedVulnConfidentialityImpact &&
+                modifiedVulnIntegrityImpact == cvss4P0.modifiedVulnIntegrityImpact &&
+                modifiedVulnAvailabilityImpact == cvss4P0.modifiedVulnAvailabilityImpact &&
+                modifiedSubConfidentialityImpact == cvss4P0.modifiedSubConfidentialityImpact &&
+                modifiedSubIntegrityImpact == cvss4P0.modifiedSubIntegrityImpact &&
+                modifiedSubAvailabilityImpact == cvss4P0.modifiedSubAvailabilityImpact &&
+                confidentialityRequirement == cvss4P0.confidentialityRequirement &&
+                integrityRequirement == cvss4P0.integrityRequirement &&
+                availabilityRequirement == cvss4P0.availabilityRequirement &&
+                exploitMaturity == cvss4P0.exploitMaturity &&
+                safety == cvss4P0.safety &&
+                automatable == cvss4P0.automatable &&
+                recovery == cvss4P0.recovery &&
+                valueDensity == cvss4P0.valueDensity &&
+                vulnerabilityResponseEffort == cvss4P0.vulnerabilityResponseEffort &&
+                providerUrgency == cvss4P0.providerUrgency;
     }
 
     public void fillLeastSevereBaseMetrics() {
@@ -438,12 +438,12 @@ public class Cvss4_0 extends CvssVector {
 
         // check for no impact on system
         if (Stream.of("VC", "VI", "VA", "SC", "SI", "SA")
-                .map(attr -> Cvss4_0MacroVector.getComparisonMetric(this, attr))
+                .map(attr -> Cvss4P0MacroVector.getComparisonMetric(this, attr))
                 .allMatch(value -> value.getShortIdentifier().equals("N"))) {
             return 0.0;
         }
 
-        final Cvss4_0MacroVector thisMacroVector = this.getMacroVector();
+        final Cvss4P0MacroVector thisMacroVector = this.getMacroVector();
         final double thisMacroVectorScore = thisMacroVector.getLookupTableScore();
         final EqOperations[] eqOperations = EqOperations.getEqImplementations();
 
@@ -455,21 +455,21 @@ public class Cvss4_0 extends CvssVector {
                 .map(eqOp -> eqOp.getHighestSeverityVectors(thisMacroVector))
                 .toArray(String[][]::new);
 
-        final List<Cvss4_0> highestSeverityVectorCombinations = generateCvssPermutations(allHighestSeverityVectors[0], allHighestSeverityVectors[1], allHighestSeverityVectors[2], allHighestSeverityVectors[3], allHighestSeverityVectors[4]);
+        final List<Cvss4P0> highestSeverityVectorCombinations = generateCvssPermutations(allHighestSeverityVectors[0], allHighestSeverityVectors[1], allHighestSeverityVectors[2], allHighestSeverityVectors[3], allHighestSeverityVectors[4]);
 
         if (highestSeverityVectorCombinations.isEmpty()) {
             LOG.warn("No max vectors found for {}", thisMacroVector);
             return 0.0;
         }
 
-        final Map<String, Integer> highestSeverityHammingDistances = Cvss4_0.calculateHammingDistancesByComparingToHighestSeverityVectors(this, highestSeverityVectorCombinations);
+        final Map<String, Integer> highestSeverityHammingDistances = Cvss4P0.calculateHammingDistancesByComparingToHighestSeverityVectors(this, highestSeverityVectorCombinations);
 
         final Average meanScoreAdjustment = new Average();
         for (EqOperations eqOps : eqOperations) {
             // increases the number at the current EQ by 1, leading to a less severe EQ in this factor
             // EQ2: 201000 --> 211000
             // for EQ3/6, up to two vectors are returned due to them not being independent of each other
-            final Cvss4_0MacroVector[] nextLessSevereMacroVector = eqOps.deriveNextLowerMacro(thisMacroVector);
+            final Cvss4P0MacroVector[] nextLessSevereMacroVector = eqOps.deriveNextLowerMacro(thisMacroVector);
             final double nextLowerMacroScore = eqOps.lookupScoresForNextLowerMacro(nextLessSevereMacroVector);
             // available_distance
             // if the next lower macro score does not exist, the result is NaN
@@ -535,23 +535,23 @@ public class Cvss4_0 extends CvssVector {
      * @return A map containing the Hamming distances for each attribute. If no suitable highest severity vector
      * is found, the map will be empty. A warning will be logged in this case.
      */
-    protected static Map<String, Integer> calculateHammingDistancesByComparingToHighestSeverityVectors(Cvss4_0 comparisonVector, List<Cvss4_0> highestSeverityVectors) {
+    protected static Map<String, Integer> calculateHammingDistancesByComparingToHighestSeverityVectors(Cvss4P0 comparisonVector, List<Cvss4P0> highestSeverityVectors) {
         final Map<String, Integer> hammingDistances = new LinkedHashMap<>();
 
-        for (Cvss4_0 maxVector : highestSeverityVectors) {
-            hammingDistances.put("AV", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "AV"), maxVector.getAttackVector()));
-            hammingDistances.put("PR", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "PR"), maxVector.getPrivilegesRequired()));
-            hammingDistances.put("UI", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "UI"), maxVector.getUserInteraction()));
-            hammingDistances.put("AC", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "AC"), maxVector.getAttackComplexity()));
-            hammingDistances.put("AT", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "AT"), maxVector.getAttackRequirements()));
-            hammingDistances.put("VC", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "VC"), maxVector.getVulnConfidentialityImpact()));
-            hammingDistances.put("VI", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "VI"), maxVector.getVulnIntegrityImpact()));
-            hammingDistances.put("VA", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "VA"), maxVector.getVulnAvailabilityImpact()));
+        for (Cvss4P0 maxVector : highestSeverityVectors) {
+            hammingDistances.put("AV", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AV"), maxVector.getAttackVector()));
+            hammingDistances.put("PR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "PR"), maxVector.getPrivilegesRequired()));
+            hammingDistances.put("UI", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "UI"), maxVector.getUserInteraction()));
+            hammingDistances.put("AC", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AC"), maxVector.getAttackComplexity()));
+            hammingDistances.put("AT", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AT"), maxVector.getAttackRequirements()));
+            hammingDistances.put("VC", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VC"), maxVector.getVulnConfidentialityImpact()));
+            hammingDistances.put("VI", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VI"), maxVector.getVulnIntegrityImpact()));
+            hammingDistances.put("VA", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VA"), maxVector.getVulnAvailabilityImpact()));
             // SI and SA are handled below
-            hammingDistances.put("SC", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "SC"), maxVector.getSubConfidentialityImpact()));
-            hammingDistances.put("CR", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "CR"), maxVector.getConfidentialityRequirement()));
-            hammingDistances.put("IR", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "IR"), maxVector.getIntegrityRequirement()));
-            hammingDistances.put("AR", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, "AR"), maxVector.getAvailabilityRequirement()));
+            hammingDistances.put("SC", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "SC"), maxVector.getSubConfidentialityImpact()));
+            hammingDistances.put("CR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "CR"), maxVector.getConfidentialityRequirement()));
+            hammingDistances.put("IR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "IR"), maxVector.getIntegrityRequirement()));
+            hammingDistances.put("AR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AR"), maxVector.getAvailabilityRequirement()));
 
 
             // Handling different conditions for MSI and MSA depending on if SAFETY is selected on their modified counterparts
@@ -561,8 +561,8 @@ public class Cvss4_0 extends CvssVector {
             final String subIntegrityImpactKey = isModifiedSubIntegrityImpactSafety ? "MSI" : "SI";
             final String subAvailabilityImpactKey = isModifiedSubAvailabilityImpactSafety ? "MSA" : "SA";
 
-            hammingDistances.put("SI", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, subIntegrityImpactKey), maxVector.getSubIntegrityImpact()));
-            hammingDistances.put("SA", hammingDistance(Cvss4_0MacroVector.getComparisonMetric(comparisonVector, subAvailabilityImpactKey), maxVector.getSubAvailabilityImpact()));
+            hammingDistances.put("SI", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subIntegrityImpactKey), maxVector.getSubIntegrityImpact()));
+            hammingDistances.put("SA", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subAvailabilityImpactKey), maxVector.getSubAvailabilityImpact()));
 
 
             // Check if any Hamming distance is negative
@@ -579,16 +579,16 @@ public class Cvss4_0 extends CvssVector {
         if (hammingDistances.isEmpty()) {
             LOG.warn("No hamming distances found for [{}]: {}", comparisonVector.getMacroVector(), comparisonVector);
             LOG.info("Max vectors:");
-            for (Cvss4_0 maxVector : highestSeverityVectors) {
-                LOG.info(" {}", toString(new Cvss4_0[]{maxVector}, "AV", "PR", "UI", "AC", "AT", "VC", "VI", "VA", "CR", "IR", "AR", "SC", "SI", "SA", "E"));
+            for (Cvss4P0 maxVector : highestSeverityVectors) {
+                LOG.info(" {}", toString(new Cvss4P0[]{maxVector}, "AV", "PR", "UI", "AC", "AT", "VC", "VI", "VA", "CR", "IR", "AR", "SC", "SI", "SA", "E"));
             }
         }
 
         return hammingDistances;
     }
 
-    private List<Cvss4_0> generateCvssPermutations(String[] eq1_max_vectors, String[] eq2_max_vectors, String[] eq3_eq6_max_vectors, String[] eq4_max_vectors, String[] eq5_max_vectors) {
-        final List<Cvss4_0> HighestSeverityVectors = new ArrayList<>();
+    private List<Cvss4P0> generateCvssPermutations(String[] eq1_max_vectors, String[] eq2_max_vectors, String[] eq3_eq6_max_vectors, String[] eq4_max_vectors, String[] eq5_max_vectors) {
+        final List<Cvss4P0> HighestSeverityVectors = new ArrayList<>();
 
         for (String eq1Max : eq1_max_vectors) {
             for (String eq2Max : eq2_max_vectors) {
@@ -596,7 +596,7 @@ public class Cvss4_0 extends CvssVector {
                     for (String eq4Max : eq4_max_vectors) {
                         for (String eq5Max : eq5_max_vectors) {
                             final String combinedVector = eq1Max + "/" + eq2Max + "/" + eq3Eq6Max + "/" + eq4Max + "/" + eq5Max;
-                            HighestSeverityVectors.add(new Cvss4_0(combinedVector));
+                            HighestSeverityVectors.add(new Cvss4P0(combinedVector));
                         }
                     }
                 }
@@ -679,13 +679,13 @@ public class Cvss4_0 extends CvssVector {
         return ordinal1 - ordinal2;
     }
 
-    public static int hammingDistance(Cvss4_0 v1, Cvss4_0 v2) {
+    public static int hammingDistance(Cvss4P0 v1, Cvss4P0 v2) {
         return Arrays.stream(VECTOR_PARTS)
                 .map(p -> hammingDistance(v1.getVectorArgument(p), v2.getVectorArgument(p)))
                 .reduce(0, Integer::sum);
     }
 
-    public int hammingDistance(Cvss4_0 other) {
+    public int hammingDistance(Cvss4P0 other) {
         return hammingDistance(this, other);
     }
 
@@ -698,8 +698,8 @@ public class Cvss4_0 extends CvssVector {
     }
 
     @Override
-    public Cvss4_0 clone() {
-        return new Cvss4_0(this.toString());
+    public Cvss4P0 clone() {
+        return new Cvss4P0(this.toString());
     }
 
     public static String getVersionName() {
@@ -806,10 +806,10 @@ public class Cvss4_0 extends CvssVector {
         return vector.toString().replaceAll("/$", "");
     }
 
-    public static String toString(Cvss4_0[] vector, String... attributes) {
+    public static String toString(Cvss4P0[] vector, String... attributes) {
         final StringJoiner array = new StringJoiner(", ", "[", "]");
 
-        for (Cvss4_0 v : vector) {
+        for (Cvss4P0 v : vector) {
             array.add(v.toString(attributes));
         }
 
@@ -1781,11 +1781,11 @@ public class Cvss4_0 extends CvssVector {
 
     // static methods
 
-    public static Optional<Cvss4_0> optionalParse(String vector) {
+    public static Optional<Cvss4P0> optionalParse(String vector) {
         if (vector == null || StringUtils.isEmpty(MultiScoreCvssVector.normalizeVector(vector))) {
             return Optional.empty();
         }
 
-        return Optional.of(new Cvss4_0(vector));
+        return Optional.of(new Cvss4P0(vector));
     }
 }

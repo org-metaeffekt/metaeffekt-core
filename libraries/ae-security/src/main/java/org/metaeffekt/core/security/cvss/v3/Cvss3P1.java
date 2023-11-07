@@ -26,7 +26,7 @@ import java.util.Optional;
 /**
  * Model a CvssV3.1 vector and calculate the corresponding scores.
  */
-public class Cvss3 extends MultiScoreCvssVector {
+public class Cvss3P1 extends MultiScoreCvssVector {
 
     // base
     private AttackVector attackVector = AttackVector.NULL;
@@ -56,11 +56,11 @@ public class Cvss3 extends MultiScoreCvssVector {
     private CIARequirement integrityRequirement = CIARequirement.NULL;
     private CIARequirement availabilityRequirement = CIARequirement.NULL;
 
-    public Cvss3(String vector) {
+    public Cvss3P1(String vector) {
         applyVector(vector);
     }
 
-    public Cvss3() {
+    public Cvss3P1() {
     }
 
     @Override
@@ -143,8 +143,8 @@ public class Cvss3 extends MultiScoreCvssVector {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Cvss3)) return false;
-        Cvss3 cvss3 = (Cvss3) o;
+        if (!(o instanceof Cvss3P1)) return false;
+        Cvss3P1 cvss3 = (Cvss3P1) o;
         return attackVector == cvss3.attackVector &&
                 attackComplexity == cvss3.attackComplexity &&
                 privilegesRequired == cvss3.privilegesRequired &&
@@ -956,8 +956,8 @@ public class Cvss3 extends MultiScoreCvssVector {
     }
 
     @Override
-    public Cvss3 clone() {
-        return new Cvss3(toString());
+    public Cvss3P1 clone() {
+        return new Cvss3P1(toString());
     }
 
     @Override
@@ -1018,12 +1018,12 @@ public class Cvss3 extends MultiScoreCvssVector {
                 availabilityRequirement == CIARequirement.NOT_DEFINED;
     }
 
-    public static Optional<Cvss3> optionalParse(String vector) {
+    public static Optional<Cvss3P1> optionalParse(String vector) {
         if (vector == null || StringUtils.isEmpty(MultiScoreCvssVector.normalizeVector(vector))) {
             return Optional.empty();
         }
 
-        return Optional.of(new Cvss3(vector));
+        return Optional.of(new Cvss3P1(vector));
     }
 
     public interface Cvss3Attribute {

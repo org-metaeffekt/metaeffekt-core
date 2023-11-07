@@ -29,8 +29,8 @@ public class AdvisoryMetaData extends AbstractModelBase {
     public static final String STATUS_VALUE_REVIEWED = "reviewed";
 
     public static Comparator<AdvisoryMetaData> CERT_COMPARATOR_NAME_DESC = Comparator.comparing(cm -> cm.get(Attribute.NAME));
+    public static final Comparator<AdvisoryMetaData> CERT_COMPARATOR_LAST_UPDATED_DESC = Comparator.comparing((AdvisoryMetaData cm) -> cm.get(Attribute.UPDATE_DATE)).reversed();
 
-    public static Comparator<Object> CERT_COMPARATOR_LAST_UPDATED_DESC = Comparator.comparing(cm -> ((AdvisoryMetaData) cm).get(Attribute.UPDATE_DATE)).reversed();
 
     public AdvisoryMetaData(AdvisoryMetaData cm) {
         super(cm);
@@ -48,6 +48,18 @@ public class AdvisoryMetaData extends AbstractModelBase {
         SUMMARY("Summary"),
         SOURCE("Source"),
         TYPE("Type"),
+
+        DESCRIPTION("Description"),
+        THREAT("Threat"),
+        RECOMMENDATIONS("Recommendations"),
+        WORKAROUNDS("Workarounds"),
+        ACKNOWLEDGEMENTS("Acknowledgements"),
+        KEYWORDS("Keywords"),
+        REFERENCES("References"),
+        REFERENCED_IDS("Referenced Ids"),
+        DATA_SOURCE("Data Source"),
+        MATCHING_SOURCE("Matching Source"),
+
         CREATE_DATE("Create Date"),
         UPDATE_DATE("Update Date"),
         REVIEW_STATUS("Review Status");

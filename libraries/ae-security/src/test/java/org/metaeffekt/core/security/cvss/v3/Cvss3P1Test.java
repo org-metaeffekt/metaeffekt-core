@@ -21,8 +21,8 @@ import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Cvss3Test {
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss3Test.class);
+public class Cvss3P1Test {
+    private final static Logger LOG = LoggerFactory.getLogger(Cvss3P1Test.class);
 
     @Test
     public void evaluateCvssVectorsTest() {
@@ -96,7 +96,7 @@ public class Cvss3Test {
                 5.5, 3.6, 1.8, 0.0, 4.2, 3.6, 4.2);
 
         {
-            Cvss3 vector = new Cvss3("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H");
+            Cvss3P1 vector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H");
             checkCvssScores(vector,
                     5.5, 3.6, 1.8, 0.0, 0.0, 0.0, 5.5);
 
@@ -118,7 +118,7 @@ public class Cvss3Test {
         }
 
         {
-            Cvss3 vector = new Cvss3("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H");
+            Cvss3P1 vector = new Cvss3P1("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H");
             checkCvssScores(vector,
                     9.8, 5.9, 3.9, 0.0, 0.0, 0.0, 9.8);
 
@@ -144,7 +144,7 @@ public class Cvss3Test {
 
     @Test
     public void modifyVectorTest_NoBaseScores() {
-        Cvss3 vector = new Cvss3();
+        Cvss3P1 vector = new Cvss3P1();
         vector.applyVector("MAV:L/MPR:H");
         checkCvssScores(vector,
                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
@@ -153,34 +153,34 @@ public class Cvss3Test {
     @Test
     public void changeVectorPartsOnlyIfTest() {
         {
-            Cvss3 vector = new Cvss3("AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:L/A:N");
+            Cvss3P1 vector = new Cvss3P1("AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:L/A:N");
             Assert.assertEquals(4.4, vector.getBaseScore(), 0.0);
 
-            vector.applyVectorPartsIfLower(new Cvss3("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
+            vector.applyVectorPartsIfLower(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
 
             Assert.assertEquals("CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:L/I:L/A:N", vector.toString());
             Assert.assertEquals(3.1, vector.getBaseScore(), 0.0);
 
-            vector.applyVectorPartsIfLower(new Cvss3("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
+            vector.applyVectorPartsIfLower(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
             Assert.assertEquals("CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:L/I:L/A:N", vector.toString());
         }
 
         {
-            Cvss3 vector = new Cvss3("AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:L/A:N");
+            Cvss3P1 vector = new Cvss3P1("AV:N/AC:H/PR:L/UI:R/S:C/C:L/I:L/A:N");
             Assert.assertEquals(4.4, vector.getBaseScore(), 0.0);
 
-            vector.applyVectorPartsIfHigher(new Cvss3("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
+            vector.applyVectorPartsIfHigher(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
 
             Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H", vector.toString());
             Assert.assertEquals(9.0, vector.getBaseScore(), 0.0);
 
-            vector.applyVectorPartsIfHigher(new Cvss3("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
+            vector.applyVectorPartsIfHigher(new Cvss3P1("AV:N/AC:L/PR:H/UI:R/S:U/C:H/I:H/A:H"), MultiScoreCvssVector::getBaseScore);
             Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:H/I:H/A:H", vector.toString());
         }
     }
 
     private void applyVectorsAndCalculateCvss3(String vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall, String... apply) {
-        Cvss3 cvss = new Cvss3(vector);
+        Cvss3P1 cvss = new Cvss3P1(vector);
 
         for (String v : apply) {
             cvss.applyVector(v);
@@ -190,11 +190,11 @@ public class Cvss3Test {
     }
 
     private void calculateCvss3(String vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
-        Cvss3 cvss3 = new Cvss3(vector);
+        Cvss3P1 cvss3 = new Cvss3P1(vector);
         checkCvssScores(cvss3, base, impact, exploitability, temporal, environmental, adjImpact, overall);
     }
 
-    private void checkCvssScores(Cvss3 vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
+    private void checkCvssScores(Cvss3P1 vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
 
         // calculate values
         LOG.info("                Vector: [{}]", vector);

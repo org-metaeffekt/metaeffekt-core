@@ -16,6 +16,8 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -28,6 +30,8 @@ import java.util.Set;
  * by the subclass.
  */
 public abstract class AbstractModelBase implements Serializable {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractModelBase.class);
 
     public interface Attribute {
         String getKey();
@@ -301,4 +305,17 @@ public abstract class AbstractModelBase implements Serializable {
         return null;
     }
 
+    public void logModelAttributesVertical() {
+        logModelAttributesVertical(40, -1);
+    }
+
+    public void logModelAttributesVertical(int keyLength) {
+        logModelAttributesVertical(keyLength, -1);
+    }
+
+    protected void logModelAttributesVertical(int keyIndent, int valueIndent) {
+        for (String attribute : this.getAttributes()) {
+            LOG.info("| {} | {}", StringUtils.rightPad(attribute, keyIndent), valueIndent == -1 ? get(attribute) : StringUtils.rightPad(get(attribute), valueIndent) + " |");
+        }
+    }
 }

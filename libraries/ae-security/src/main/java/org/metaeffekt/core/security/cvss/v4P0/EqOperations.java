@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss.v4_0;
+package org.metaeffekt.core.security.cvss.v4P0;
 
 public interface EqOperations {
-    String[] getHighestSeverityVectors(Cvss4_0MacroVector thisMacroVector);
+    String[] getHighestSeverityVectors(Cvss4P0MacroVector thisMacroVector);
 
     String[] getRelevantAttributes();
 
-    Cvss4_0MacroVector[] deriveNextLowerMacro(Cvss4_0MacroVector thisMacroVector);
+    Cvss4P0MacroVector[] deriveNextLowerMacro(Cvss4P0MacroVector thisMacroVector);
 
-    double lookupScoresForNextLowerMacro(Cvss4_0MacroVector[] nextLowerMacro);
+    double lookupScoresForNextLowerMacro(Cvss4P0MacroVector[] nextLowerMacro);
 
     /**
      * Max hamming distance (vector depth) within the equivalence set that the macro vector represents.
@@ -30,14 +30,14 @@ public interface EqOperations {
      * @param thisMacroVector the macro vector to look up the depth for
      * @return the depth of the equivalence set in integers.
      */
-    int lookupMacroVectorDepth(Cvss4_0MacroVector thisMacroVector);
+    int lookupMacroVectorDepth(Cvss4P0MacroVector thisMacroVector);
 
     static EqOperations[] getEqImplementations() {
         return new EqOperations[]{
-                EqOperations1_2_4_5.EqOperations1.getInstanceEq1(),
-                EqOperations1_2_4_5.EqOperations2.getInstanceEq2(),
-                EqOperations1_2_4_5.EqOperations4.getInstanceEq4(),
-                EqOperations1_2_4_5.EqOperations5.getInstanceEq5(),
+                EqOperations1245.EqOperations1.getInstanceEq1(),
+                EqOperations1245.EqOperations2.getInstanceEq2(),
+                EqOperations1245.EqOperations4.getInstanceEq4(),
+                EqOperations1245.EqOperations5.getInstanceEq5(),
                 EqOperations36.getInstance()
         };
     }

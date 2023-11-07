@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss.v4_0;
+package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +25,9 @@ import java.util.function.Predicate;
  * <a href="https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf">https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf</a><br>
  * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a>
  */
-public class Cvss4_0MacroVector {
+public class Cvss4P0MacroVector {
 
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss4_0MacroVector.class);
+    private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0MacroVector.class);
 
     private final EQ eq1;
     private final EQ eq2;
@@ -37,7 +37,7 @@ public class Cvss4_0MacroVector {
     private final EQ eq6;
     private final EQ jointEq3AndEq6;
 
-    public Cvss4_0MacroVector(Cvss4_0 sourceVector) {
+    public Cvss4P0MacroVector(Cvss4P0 sourceVector) {
         this.eq1 = findMatchingEQ("1", EQ1_DEFINITIONS, sourceVector);
         this.eq2 = findMatchingEQ("2", EQ2_DEFINITIONS, sourceVector);
         this.eq3 = findMatchingEQ("3", EQ3_DEFINITIONS, sourceVector);
@@ -47,7 +47,7 @@ public class Cvss4_0MacroVector {
         this.jointEq3AndEq6 = findMatchingEQ("3,6", JOINT_EQ3_EQ6_DEFINITIONS, sourceVector);
     }
 
-    public Cvss4_0MacroVector(EQ eq1, EQ eq2, EQ eq3, EQ eq4, EQ eq5, EQ eq6, EQ jointEq3AndEq6) {
+    public Cvss4P0MacroVector(EQ eq1, EQ eq2, EQ eq3, EQ eq4, EQ eq5, EQ eq6, EQ jointEq3AndEq6) {
         this.eq1 = eq1;
         this.eq2 = eq2;
         this.eq3 = eq3;
@@ -57,7 +57,7 @@ public class Cvss4_0MacroVector {
         this.jointEq3AndEq6 = jointEq3AndEq6;
     }
 
-    private EQ findMatchingEQ(String eqType, EQ[] definitions, Cvss4_0 sourceVector) {
+    private EQ findMatchingEQ(String eqType, EQ[] definitions, Cvss4P0 sourceVector) {
         for (EQ eq : definitions) {
             if (eq.matchesConstraints(sourceVector)) {
                 return eq;
@@ -116,7 +116,7 @@ public class Cvss4_0MacroVector {
     }
 
     public double getLookupTableScore() {
-        return Cvss4_0Lookup.getMacroVectorScore(this);
+        return Cvss4P0Lookup.getMacroVectorScore(this);
     }
 
     @Override
@@ -124,7 +124,7 @@ public class Cvss4_0MacroVector {
         return eq1.getLevel() + eq2.getLevel() + eq3.getLevel() + eq4.getLevel() + eq5.getLevel() + eq6.getLevel();
     }
 
-    public Cvss4_0MacroVector deriveNextLower(int i) {
+    public Cvss4P0MacroVector deriveNextLower(int i) {
         final EQ eq1 = i != 1 ? this.eq1 : getNextLower(EQ1_DEFINITIONS, this.eq1);
         final EQ eq2 = i != 2 ? this.eq2 : getNextLower(EQ2_DEFINITIONS, this.eq2);
         final EQ eq3 = i != 3 ? this.eq3 : getNextLower(EQ3_DEFINITIONS, this.eq3);
@@ -133,7 +133,7 @@ public class Cvss4_0MacroVector {
         final EQ eq6 = i != 6 ? this.eq6 : getNextLower(EQ6_DEFINITIONS, this.eq6);
         final EQ jointEq3AndEq6 = i != 7 ? this.jointEq3AndEq6 : getNextLower(JOINT_EQ3_EQ6_DEFINITIONS, this.jointEq3AndEq6);
 
-        return new Cvss4_0MacroVector(eq1, eq2, eq3, eq4, eq5, eq6, jointEq3AndEq6);
+        return new Cvss4P0MacroVector(eq1, eq2, eq3, eq4, eq5, eq6, jointEq3AndEq6);
     }
 
     private static int getIndexInDefinitions(EQ[] definitions, EQ eq) {
@@ -150,7 +150,7 @@ public class Cvss4_0MacroVector {
         return definitions.length > index + 1 ? definitions[index + 1] : EQ_ERROR_DEFINITION;
     }
 
-    private static boolean is(Cvss4_0 vector, String attribute, String value) {
+    private static boolean is(Cvss4P0 vector, String attribute, String value) {
         final String comparisonValue = getComparisonMetric(vector, attribute).getShortIdentifier();
         // LOG.info("Attribute [{}] has value [{}] -> [{}]", attribute, vector.getVectorArgument(attribute).getShortIdentifier(), comparisonValue); // debugging
         return value.equals(comparisonValue);
@@ -529,8 +529,8 @@ public class Cvss4_0MacroVector {
             )
     };
 
-    private static Cvss4_0 v(String vector) {
-        return new Cvss4_0(vector);
+    private static Cvss4P0 v(String vector) {
+        return new Cvss4P0(vector);
     }
 
     /**
@@ -541,34 +541,34 @@ public class Cvss4_0MacroVector {
      * @param attribute the attribute to get the value for
      * @return the actual value of the attribute
      */
-    public static Cvss4_0.Cvss4_0Attribute getComparisonMetric(Cvss4_0 vector, String attribute) {
-        final Cvss4_0.Cvss4_0Attribute selected = vector.getVectorArgument(attribute);
+    public static Cvss4P0.Cvss4_0Attribute getComparisonMetric(Cvss4P0 vector, String attribute) {
+        final Cvss4P0.Cvss4_0Attribute selected = vector.getVectorArgument(attribute);
 
         // E:X is the same as E:A
-        if ("E".equals(attribute) && Cvss4_0.ExploitMaturity.NOT_DEFINED.equals(selected)) {
-            return Cvss4_0.ExploitMaturity.ATTACKED;
+        if ("E".equals(attribute) && Cvss4P0.ExploitMaturity.NOT_DEFINED.equals(selected)) {
+            return Cvss4P0.ExploitMaturity.ATTACKED;
         }
 
         // The three security requirements metrics have X equivalent to H.
         // CR:X, IR:X, AR:X are the same as CR:H, IR:H, AR:H
-        if (("CR".equals(attribute) || "IR".equals(attribute) || "AR".equals(attribute)) && Cvss4_0.RequirementsCia.NOT_DEFINED.equals(selected)) {
-            return Cvss4_0.RequirementsCia.HIGH;
+        if (("CR".equals(attribute) || "IR".equals(attribute) || "AR".equals(attribute)) && Cvss4P0.RequirementsCia.NOT_DEFINED.equals(selected)) {
+            return Cvss4P0.RequirementsCia.HIGH;
         }
 
         // Special cases for MSI and MSA
         // the SI:S cannot happen in reality, but the reference implementation checks for it, so we do too
-        if ("MSI".equals(attribute) && Cvss4_0.ModifiedSubsequentIntegrityAvailability.NOT_DEFINED.equals(selected)
+        if ("MSI".equals(attribute) && Cvss4P0.ModifiedSubsequentIntegrityAvailability.NOT_DEFINED.equals(selected)
                 && "S".equals(vector.getVectorArgument("SI").getShortIdentifier())) {
-            return Cvss4_0.ModifiedSubsequentIntegrityAvailability.SAFETY;
+            return Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY;
         }
-        if ("MSA".equals(attribute) && Cvss4_0.ModifiedSubsequentIntegrityAvailability.NOT_DEFINED.equals(selected)
+        if ("MSA".equals(attribute) && Cvss4P0.ModifiedSubsequentIntegrityAvailability.NOT_DEFINED.equals(selected)
                 && "S".equals(vector.getVectorArgument("SA").getShortIdentifier())) {
-            return Cvss4_0.ModifiedSubsequentIntegrityAvailability.SAFETY;
+            return Cvss4P0.ModifiedSubsequentIntegrityAvailability.SAFETY;
         }
 
         // All other environmental metrics just overwrite base score values,
         // so if they’re not defined just use the base score value.
-        final Cvss4_0.Cvss4_0Attribute modifiedAttribute = vector.getVectorArgument("M" + attribute);
+        final Cvss4P0.Cvss4_0Attribute modifiedAttribute = vector.getVectorArgument("M" + attribute);
         if (modifiedAttribute != null) {
             String modifiedSelected = modifiedAttribute.getShortIdentifier();
             if (modifiedSelected != null && !"X".equals(modifiedSelected)) {
@@ -586,15 +586,15 @@ public class Cvss4_0MacroVector {
          */
         private final int vectorDepth;
         private final String[] highestSeverityVectorsUnparsed;
-        private final Cvss4_0[] highestSeverityVectors;
-        private final Predicate<Cvss4_0> predicate;
+        private final Cvss4P0[] highestSeverityVectors;
+        private final Predicate<Cvss4P0> predicate;
 
         public EQ(String level, int vectorDepth,
-                  String[] highestSeverityVectors, Predicate<Cvss4_0> predicate) {
+                  String[] highestSeverityVectors, Predicate<Cvss4P0> predicate) {
             this.level = level;
             this.vectorDepth = vectorDepth;
             this.highestSeverityVectorsUnparsed = highestSeverityVectors;
-            this.highestSeverityVectors = Arrays.stream(highestSeverityVectors).map(Cvss4_0::new).toArray(Cvss4_0[]::new);
+            this.highestSeverityVectors = Arrays.stream(highestSeverityVectors).map(Cvss4P0::new).toArray(Cvss4P0[]::new);
             this.predicate = predicate;
         }
 
@@ -610,7 +610,7 @@ public class Cvss4_0MacroVector {
             return vectorDepth;
         }
 
-        public Cvss4_0[] getHighestSeverityVectors() {
+        public Cvss4P0[] getHighestSeverityVectors() {
             return highestSeverityVectors;
         }
 
@@ -618,7 +618,7 @@ public class Cvss4_0MacroVector {
             return highestSeverityVectorsUnparsed;
         }
 
-        public boolean matchesConstraints(Cvss4_0 vector) {
+        public boolean matchesConstraints(Cvss4P0 vector) {
             return predicate.test(vector);
         }
     }

@@ -66,14 +66,15 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         writeArtifacts(inventory, workbook, stylers);
         writeAssetMetaData(inventory, workbook, stylers);
         writeNotices(inventory, workbook, stylers);
-        writeInventoryInfo(inventory, workbook, stylers);
 
         writeComponentPatterns(inventory, workbook, stylers);
-        writeAdvisoryMetaData(inventory, workbook, stylers);
         writeLicenseData(inventory, workbook, stylers);
         writeReportData(inventory, workbook, stylers);
 
         writeVulnerabilities(inventory, workbook, stylers);
+        writeAdvisoryMetaData(inventory, workbook, stylers);
+
+        writeInventoryInfo(inventory, workbook, stylers);
 
         final FileOutputStream out = new FileOutputStream(file);
         try {

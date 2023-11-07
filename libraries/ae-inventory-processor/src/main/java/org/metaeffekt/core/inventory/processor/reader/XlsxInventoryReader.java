@@ -131,7 +131,8 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_DATA);
 
         // for backward compatibility
-        if (sheet == null) sheet = workbook.getSheet("Cert");
+        if (sheet == null) sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_ALTERNATIVE_1_DATA);
+        if (sheet == null) sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_ALTERNATIVE_2_DATA);
 
         if (sheet == null) return;
 

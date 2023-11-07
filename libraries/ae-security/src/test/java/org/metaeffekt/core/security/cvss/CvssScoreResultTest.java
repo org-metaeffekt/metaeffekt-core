@@ -18,13 +18,13 @@ package org.metaeffekt.core.security.cvss;
 import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
-import org.metaeffekt.core.security.cvss.v3.Cvss3;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 
 public class CvssScoreResultTest {
 
     @Test
     public void correctNormalizedCvss3Test() {
-        final CvssScoreResult result = new Cvss3("AV:L/AC:H/PR:L/UI:R/S:C/C:L/I:H/A:N/E:P/RL:T/RC:C/CR:H/IR:L/AR:M/MAV:A/MAC:H/MPR:N/MUI:R/MS:U/MC:L/MI:N/MA:H").calculateScores();
+        final CvssScoreResult result = new Cvss3P1("AV:L/AC:H/PR:L/UI:R/S:C/C:L/I:H/A:N/E:P/RL:T/RC:C/CR:H/IR:L/AR:M/MAV:A/MAC:H/MPR:N/MUI:R/MS:U/MC:L/MI:N/MA:H").calculateScores();
 
         Assert.assertEquals(6.1, result.getBaseScore(), 0.01);
         Assert.assertEquals(4.7, result.getImpactScore(), 0.01);

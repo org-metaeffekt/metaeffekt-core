@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss.v4_0;
+package org.metaeffekt.core.security.cvss.v4P0;
 
-public abstract class EqOperations1_2_4_5 implements EqOperations {
+public abstract class EqOperations1245 implements EqOperations {
 
     @Override
-    public Cvss4_0MacroVector[] deriveNextLowerMacro(Cvss4_0MacroVector thisMacroVector) {
-        return new Cvss4_0MacroVector[]{thisMacroVector.deriveNextLower(getEqNumber())};
+    public Cvss4P0MacroVector[] deriveNextLowerMacro(Cvss4P0MacroVector thisMacroVector) {
+        return new Cvss4P0MacroVector[]{thisMacroVector.deriveNextLower(getEqNumber())};
     }
 
     /**
@@ -30,27 +30,27 @@ public abstract class EqOperations1_2_4_5 implements EqOperations {
      * @return the score for the next lower macro vector
      */
     @Override
-    public double lookupScoresForNextLowerMacro(Cvss4_0MacroVector[] nextLowerMacro) {
+    public double lookupScoresForNextLowerMacro(Cvss4P0MacroVector[] nextLowerMacro) {
         return nextLowerMacro[0].getLookupTableScore();
     }
 
     @Override
-    public String[] getHighestSeverityVectors(Cvss4_0MacroVector thisMacroVector) {
+    public String[] getHighestSeverityVectors(Cvss4P0MacroVector thisMacroVector) {
         return getEq(thisMacroVector).getHighestSeverityVectorsUnparsed();
     }
 
     @Override
-    public int lookupMacroVectorDepth(Cvss4_0MacroVector thisMacroVector) {
+    public int lookupMacroVectorDepth(Cvss4P0MacroVector thisMacroVector) {
         return getEq(thisMacroVector).getVectorDepth();
     }
 
     public abstract int getEqNumber();
 
-    public abstract Cvss4_0MacroVector.EQ getEq(Cvss4_0MacroVector thisMacroVector);
+    public abstract Cvss4P0MacroVector.EQ getEq(Cvss4P0MacroVector thisMacroVector);
 
-    public static class EqOperations1 extends EqOperations1_2_4_5 {
+    public static class EqOperations1 extends EqOperations1245 {
         @Override
-        public Cvss4_0MacroVector.EQ getEq(Cvss4_0MacroVector thisMacroVector) {
+        public Cvss4P0MacroVector.EQ getEq(Cvss4P0MacroVector thisMacroVector) {
             return thisMacroVector.getEq1();
         }
 
@@ -65,9 +65,9 @@ public abstract class EqOperations1_2_4_5 implements EqOperations {
         }
     }
 
-    public static class EqOperations2 extends EqOperations1_2_4_5 {
+    public static class EqOperations2 extends EqOperations1245 {
         @Override
-        public Cvss4_0MacroVector.EQ getEq(Cvss4_0MacroVector thisMacroVector) {
+        public Cvss4P0MacroVector.EQ getEq(Cvss4P0MacroVector thisMacroVector) {
             return thisMacroVector.getEq2();
         }
 
@@ -82,9 +82,9 @@ public abstract class EqOperations1_2_4_5 implements EqOperations {
         }
     }
 
-    public static class EqOperations4 extends EqOperations1_2_4_5 {
+    public static class EqOperations4 extends EqOperations1245 {
         @Override
-        public Cvss4_0MacroVector.EQ getEq(Cvss4_0MacroVector thisMacroVector) {
+        public Cvss4P0MacroVector.EQ getEq(Cvss4P0MacroVector thisMacroVector) {
             return thisMacroVector.getEq4();
         }
 
@@ -99,9 +99,9 @@ public abstract class EqOperations1_2_4_5 implements EqOperations {
         }
     }
 
-    public static class EqOperations5 extends EqOperations1_2_4_5 {
+    public static class EqOperations5 extends EqOperations1245 {
         @Override
-        public Cvss4_0MacroVector.EQ getEq(Cvss4_0MacroVector thisMacroVector) {
+        public Cvss4P0MacroVector.EQ getEq(Cvss4P0MacroVector thisMacroVector) {
             return thisMacroVector.getEq5();
         }
 

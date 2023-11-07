@@ -17,8 +17,8 @@ package org.metaeffekt.core.security.cvss;
 
 
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
-import org.metaeffekt.core.security.cvss.v3.Cvss3;
-import org.metaeffekt.core.security.cvss.v4_0.Cvss4_0;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
+import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 
 public class CvssScoreResult {
     private final CvssVector cvss;
@@ -66,11 +66,11 @@ public class CvssScoreResult {
     }
 
     public boolean isCvss3() {
-        return cvss instanceof Cvss3;
+        return cvss instanceof Cvss3P1;
     }
 
     public boolean isCvss4() {
-        return cvss instanceof Cvss4_0;
+        return cvss instanceof Cvss4P0;
     }
 
     public boolean isBaseDefined() {
@@ -146,7 +146,7 @@ public class CvssScoreResult {
     }
 
     public double getUnNormalizedImpactScoreMax() {
-        if (cvss instanceof Cvss3) {
+        if (cvss instanceof Cvss3P1) {
             return 6.0;
         } else {
             return 10.0;
@@ -154,7 +154,7 @@ public class CvssScoreResult {
     }
 
     public double getUnNormalizedExploitabilityScoreMax() {
-        if (cvss instanceof Cvss3) {
+        if (cvss instanceof Cvss3P1) {
             return 3.9;
         } else {
             return 10.0;
@@ -170,7 +170,7 @@ public class CvssScoreResult {
     }
 
     public double getUnNormalizedAdjustedImpactScoreMax() {
-        if (cvss instanceof Cvss3) {
+        if (cvss instanceof Cvss3P1) {
             return 6.1;
         } else {
             return 10.0;

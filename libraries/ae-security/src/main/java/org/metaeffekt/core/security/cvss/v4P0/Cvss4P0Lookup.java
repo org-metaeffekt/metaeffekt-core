@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss.v4_0;
+package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Cvss4_0Lookup {
+public class Cvss4P0Lookup {
 
     private final static Map<String, Double> MACRO_VECTOR_LOOKUP_TABLE;
 
@@ -32,7 +32,7 @@ public class Cvss4_0Lookup {
         MACRO_VECTOR_LOOKUP_TABLE = new LinkedHashMap<>();
 
         final String path = "cvss/cvss-4.0-mv-lookup.json";
-        try (InputStream inputStream = Cvss4_0Lookup.class.getClassLoader().getResourceAsStream(path)) {
+        try (InputStream inputStream = Cvss4P0Lookup.class.getClassLoader().getResourceAsStream(path)) {
             if (inputStream == null) {
                 throw new IllegalStateException("Cannot find resource: " + path);
             }
@@ -51,7 +51,7 @@ public class Cvss4_0Lookup {
         return MACRO_VECTOR_LOOKUP_TABLE.getOrDefault(macroVector, Double.NaN);
     }
 
-    public static double getMacroVectorScore(Cvss4_0MacroVector macroVector) {
+    public static double getMacroVectorScore(Cvss4P0MacroVector macroVector) {
         return MACRO_VECTOR_LOOKUP_TABLE.getOrDefault(macroVector.toString(), Double.NaN);
     }
 }

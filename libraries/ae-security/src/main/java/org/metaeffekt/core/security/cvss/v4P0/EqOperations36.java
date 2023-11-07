@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss.v4_0;
+package org.metaeffekt.core.security.cvss.v4P0;
 
 public class EqOperations36 implements EqOperations {
     private static final EqOperations36 instance36 = new EqOperations36();
@@ -23,7 +23,7 @@ public class EqOperations36 implements EqOperations {
     }
 
     @Override
-    public String[] getHighestSeverityVectors(Cvss4_0MacroVector thisMacroVector) {
+    public String[] getHighestSeverityVectors(Cvss4P0MacroVector thisMacroVector) {
         return thisMacroVector.getJointEq3AndEq6().getHighestSeverityVectorsUnparsed();
     }
 
@@ -33,34 +33,34 @@ public class EqOperations36 implements EqOperations {
     }
 
     @Override
-    public Cvss4_0MacroVector[] deriveNextLowerMacro(Cvss4_0MacroVector macroVector) {
+    public Cvss4P0MacroVector[] deriveNextLowerMacro(Cvss4P0MacroVector macroVector) {
         final int eq3_val = macroVector.getEq3().getLevelAsInt();
         final int eq6_val = macroVector.getEq6().getLevelAsInt();
-        final Cvss4_0MacroVector eq3eq6_next_lower_macro_left;
-        final Cvss4_0MacroVector eq3eq6_next_lower_macro_right;
+        final Cvss4P0MacroVector eq3eq6_next_lower_macro_left;
+        final Cvss4P0MacroVector eq3eq6_next_lower_macro_right;
 
         if (eq3_val == 1 && eq6_val == 1) {
             // 11 -> 21
-            return new Cvss4_0MacroVector[]{macroVector.deriveNextLower(3)};
+            return new Cvss4P0MacroVector[]{macroVector.deriveNextLower(3)};
         } else if (eq3_val == 0 && eq6_val == 1) {
             // 01 -> 11
-            return new Cvss4_0MacroVector[]{macroVector.deriveNextLower(3)};
+            return new Cvss4P0MacroVector[]{macroVector.deriveNextLower(3)};
         } else if (eq3_val == 1 && eq6_val == 0) {
             // 10 -> 11
-            return new Cvss4_0MacroVector[]{macroVector.deriveNextLower(6)};
+            return new Cvss4P0MacroVector[]{macroVector.deriveNextLower(6)};
         } else if (eq3_val == 0 && eq6_val == 0) {
             // 00 -> 01, 10
             eq3eq6_next_lower_macro_left = macroVector.deriveNextLower(3);
             eq3eq6_next_lower_macro_right = macroVector.deriveNextLower(6);
-            return new Cvss4_0MacroVector[]{eq3eq6_next_lower_macro_left, eq3eq6_next_lower_macro_right};
+            return new Cvss4P0MacroVector[]{eq3eq6_next_lower_macro_left, eq3eq6_next_lower_macro_right};
         } else {
             // 21 -> 32 (does not exist)
-            return new Cvss4_0MacroVector[]{macroVector.deriveNextLower(3).deriveNextLower(6)};
+            return new Cvss4P0MacroVector[]{macroVector.deriveNextLower(3).deriveNextLower(6)};
         }
     }
 
     @Override
-    public double lookupScoresForNextLowerMacro(Cvss4_0MacroVector[] nextLowerMacros) {
+    public double lookupScoresForNextLowerMacro(Cvss4P0MacroVector[] nextLowerMacros) {
         double score_eq3eq6_next_lower_macro_left = Double.NaN;
         double score_eq3eq6_next_lower_macro_right = Double.NaN;
 
@@ -83,7 +83,7 @@ public class EqOperations36 implements EqOperations {
     }
 
     @Override
-    public int lookupMacroVectorDepth(Cvss4_0MacroVector thisMacroVector) {
+    public int lookupMacroVectorDepth(Cvss4P0MacroVector thisMacroVector) {
         return thisMacroVector.getJointEq3AndEq6().getVectorDepth();
     }
 }
