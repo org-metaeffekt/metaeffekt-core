@@ -462,7 +462,7 @@ public class Cvss4P0 extends CvssVector {
             return 0.0;
         }
 
-        final Map<String, Integer> highestSeverityHammingDistances = Cvss4P0.calculateHammingDistancesByComparingToHighestSeverityVectors(this, highestSeverityVectorCombinations);
+        final Map<String, Integer> highestSeveritySeverityDistances = Cvss4P0.calculateSeverityDistancesByComparingToHighestSeverityVectors(this, highestSeverityVectorCombinations);
 
         final Average meanScoreAdjustment = new Average();
         for (EqOperations eqOps : eqOperations) {
@@ -475,21 +475,21 @@ public class Cvss4P0 extends CvssVector {
             // if the next lower macro score does not exist, the result is NaN
             final double availableSeverityReduction = thisMacroVectorScore - nextLowerMacroScore;
 
-            // = max hamming distance in this EQ level
+            // = max severity distance in this EQ level
             final int macroVectorDepth = eqOps.lookupMacroVectorDepth(thisMacroVector);
             // = how much the current macro vector differs from the highest severity vector in this EQ level
-            final int hammingDistanceFromThisToHighestSeverity = Arrays.stream(eqOps.getRelevantAttributes()).mapToInt(highestSeverityHammingDistances::get).sum();
+            final int severityDistanceFromThisToHighestSeverity = Arrays.stream(eqOps.getRelevantAttributes()).mapToInt(highestSeveritySeverityDistances::get).sum();
 
-            // calculate the 'normalized' hamming distance
-            // by converting the hamming distance from this vector to the next higher severity from the [hamming distance] scale into to the [score] scale
+            // calculate the 'normalized' severity distance
+            // by converting the severity distance from this vector to the next higher severity from the [severity distance] scale into to the [score] scale
             if (!Double.isNaN(availableSeverityReduction) && macroVectorDepth != 0.0) {
-                final double percentageToNextHammingDistance = hammingDistanceFromThisToHighestSeverity / (double) macroVectorDepth;
-                final double normalizedHamming = percentageToNextHammingDistance * availableSeverityReduction;
-                meanScoreAdjustment.add(normalizedHamming);
+                final double percentageToNextSeverityDistance = severityDistanceFromThisToHighestSeverity / (double) macroVectorDepth;
+                final double normalizedSeverityDistance = percentageToNextSeverityDistance * availableSeverityReduction;
+                meanScoreAdjustment.add(normalizedSeverityDistance);
             }
         }
 
-        // calculate mean distance based on normalized Hamming distances
+        // calculate mean distance based on normalized severity distances
         // and adjust the original macro vector score by the mean distance
         final double adjustedOriginalMacroVectorScore = thisMacroVectorScore - meanScoreAdjustment.get(0.0);
 
@@ -521,37 +521,37 @@ public class Cvss4P0 extends CvssVector {
     }
 
     /**
-     * Calculates the Hamming distances between a given CVSS vector and a list of highest severity vectors.
-     * The method iterates through the list of highest severity vectors and computes the Hamming distance
+     * Calculates the severity distances between a given CVSS vector and a list of highest severity vectors.
+     * The method iterates through the list of highest severity vectors and computes the severity distance
      * for each attribute between the comparison vector and the highest severity vector.
      * <p>
      * The method stops iterating when it finds the first highest severity vector that has a non-negative
-     * Hamming distance for all attributes when compared to the given CVSS vector. This ensures that the
+     * Severity distance for all attributes when compared to the given CVSS vector. This ensures that the
      * highest severity vector is at least as severe as the comparison vector in every metric.
      * </p>
      *
      * @param comparisonVector       The CVSS vector to compare.
      * @param highestSeverityVectors The list of highest severity vectors to compare against.
-     * @return A map containing the Hamming distances for each attribute. If no suitable highest severity vector
+     * @return A map containing the severity distances for each attribute. If no suitable highest severity vector
      * is found, the map will be empty. A warning will be logged in this case.
      */
-    protected static Map<String, Integer> calculateHammingDistancesByComparingToHighestSeverityVectors(Cvss4P0 comparisonVector, List<Cvss4P0> highestSeverityVectors) {
-        final Map<String, Integer> hammingDistances = new LinkedHashMap<>();
+    protected static Map<String, Integer> calculateSeverityDistancesByComparingToHighestSeverityVectors(Cvss4P0 comparisonVector, List<Cvss4P0> highestSeverityVectors) {
+        final Map<String, Integer> severityDistances = new LinkedHashMap<>();
 
         for (Cvss4P0 maxVector : highestSeverityVectors) {
-            hammingDistances.put("AV", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AV"), maxVector.getAttackVector()));
-            hammingDistances.put("PR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "PR"), maxVector.getPrivilegesRequired()));
-            hammingDistances.put("UI", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "UI"), maxVector.getUserInteraction()));
-            hammingDistances.put("AC", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AC"), maxVector.getAttackComplexity()));
-            hammingDistances.put("AT", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AT"), maxVector.getAttackRequirements()));
-            hammingDistances.put("VC", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VC"), maxVector.getVulnConfidentialityImpact()));
-            hammingDistances.put("VI", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VI"), maxVector.getVulnIntegrityImpact()));
-            hammingDistances.put("VA", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VA"), maxVector.getVulnAvailabilityImpact()));
+            severityDistances.put("AV", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AV"), maxVector.getAttackVector()));
+            severityDistances.put("PR", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "PR"), maxVector.getPrivilegesRequired()));
+            severityDistances.put("UI", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "UI"), maxVector.getUserInteraction()));
+            severityDistances.put("AC", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AC"), maxVector.getAttackComplexity()));
+            severityDistances.put("AT", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AT"), maxVector.getAttackRequirements()));
+            severityDistances.put("VC", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VC"), maxVector.getVulnConfidentialityImpact()));
+            severityDistances.put("VI", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VI"), maxVector.getVulnIntegrityImpact()));
+            severityDistances.put("VA", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "VA"), maxVector.getVulnAvailabilityImpact()));
             // SI and SA are handled below
-            hammingDistances.put("SC", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "SC"), maxVector.getSubConfidentialityImpact()));
-            hammingDistances.put("CR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "CR"), maxVector.getConfidentialityRequirement()));
-            hammingDistances.put("IR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "IR"), maxVector.getIntegrityRequirement()));
-            hammingDistances.put("AR", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AR"), maxVector.getAvailabilityRequirement()));
+            severityDistances.put("SC", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "SC"), maxVector.getSubConfidentialityImpact()));
+            severityDistances.put("CR", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "CR"), maxVector.getConfidentialityRequirement()));
+            severityDistances.put("IR", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "IR"), maxVector.getIntegrityRequirement()));
+            severityDistances.put("AR", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, "AR"), maxVector.getAvailabilityRequirement()));
 
 
             // Handling different conditions for MSI and MSA depending on if SAFETY is selected on their modified counterparts
@@ -561,30 +561,30 @@ public class Cvss4P0 extends CvssVector {
             final String subIntegrityImpactKey = isModifiedSubIntegrityImpactSafety ? "MSI" : "SI";
             final String subAvailabilityImpactKey = isModifiedSubAvailabilityImpactSafety ? "MSA" : "SA";
 
-            hammingDistances.put("SI", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subIntegrityImpactKey), maxVector.getSubIntegrityImpact()));
-            hammingDistances.put("SA", hammingDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subAvailabilityImpactKey), maxVector.getSubAvailabilityImpact()));
+            severityDistances.put("SI", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subIntegrityImpactKey), maxVector.getSubIntegrityImpact()));
+            severityDistances.put("SA", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subAvailabilityImpactKey), maxVector.getSubAvailabilityImpact()));
 
 
-            // Check if any Hamming distance is negative
-            final boolean anyNegative = hammingDistances.values().stream().anyMatch(val -> val < 0);
+            // Check if any severity distance is negative
+            final boolean anyNegative = severityDistances.values().stream().anyMatch(val -> val < 0);
 
             if (!anyNegative) {
                 // found the first vector that is >= the comparison vector in every metric
                 break;
             } else {
-                hammingDistances.clear();
+                severityDistances.clear();
             }
         }
 
-        if (hammingDistances.isEmpty()) {
-            LOG.warn("No hamming distances found for [{}]: {}", comparisonVector.getMacroVector(), comparisonVector);
+        if (severityDistances.isEmpty()) {
+            LOG.warn("No severity distances found for [{}]: {}", comparisonVector.getMacroVector(), comparisonVector);
             LOG.info("Max vectors:");
             for (Cvss4P0 maxVector : highestSeverityVectors) {
                 LOG.info(" {}", toString(new Cvss4P0[]{maxVector}, "AV", "PR", "UI", "AC", "AT", "VC", "VI", "VA", "CR", "IR", "AR", "SC", "SI", "SA", "E"));
             }
         }
 
-        return hammingDistances;
+        return severityDistances;
     }
 
     private List<Cvss4P0> generateCvssPermutations(String[] eq1_max_vectors, String[] eq2_max_vectors, String[] eq3_eq6_max_vectors, String[] eq4_max_vectors, String[] eq5_max_vectors) {
@@ -605,7 +605,7 @@ public class Cvss4P0 extends CvssVector {
         return HighestSeverityVectors;
     }
 
-    public static int hammingDistance(Cvss4_0Attribute part1, Cvss4_0Attribute part2) {
+    public static int severityDistance(Cvss4_0Attribute part1, Cvss4_0Attribute part2) {
         final Cvss4_0Attribute worseCaseAttribute1;
         final Cvss4_0Attribute worseCaseAttribute2;
 
@@ -624,7 +624,7 @@ public class Cvss4P0 extends CvssVector {
         final Class<?> clazz2 = worseCaseAttribute2.getClass();
 
         if (!clazz1.isEnum() || !clazz2.isEnum()) {
-            LOG.warn("Cannot compute hamming distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
+            LOG.warn("Cannot compute severity distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
             return 0;
         }
 
@@ -661,7 +661,7 @@ public class Cvss4P0 extends CvssVector {
                 effectiveAttribute2 = worseCaseAttribute2;
 
             } else {
-                LOG.warn("Cannot compute hamming distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
+                LOG.warn("Cannot compute severity distance for [{}] and [{}], assuming distance is 0", worseCaseAttribute1, worseCaseAttribute2);
                 return 0;
             }
 
@@ -679,14 +679,14 @@ public class Cvss4P0 extends CvssVector {
         return ordinal1 - ordinal2;
     }
 
-    public static int hammingDistance(Cvss4P0 v1, Cvss4P0 v2) {
+    public static int severityDistance(Cvss4P0 v1, Cvss4P0 v2) {
         return Arrays.stream(VECTOR_PARTS)
-                .map(p -> hammingDistance(v1.getVectorArgument(p), v2.getVectorArgument(p)))
+                .map(p -> severityDistance(v1.getVectorArgument(p), v2.getVectorArgument(p)))
                 .reduce(0, Integer::sum);
     }
 
-    public int hammingDistance(Cvss4P0 other) {
-        return hammingDistance(this, other);
+    public int severityDistance(Cvss4P0 other) {
+        return severityDistance(this, other);
     }
 
     @Override

@@ -43,7 +43,7 @@ public class Cvss4_P_0Test {
         Assert.assertEquals(vectorString, cvss4P0.toString());
         Assert.assertEquals("102201", cvss4P0.getMacroVector().toString());
         Assert.assertEquals("1", cvss4P0.getMacroVector().getEq1().getLevel());
-        Assert.assertEquals(0, cvss4P0.hammingDistance(cvss4P0)); // distance to itself is 0
+        Assert.assertEquals(0, cvss4P0.severityDistance(cvss4P0)); // distance to itself is 0
         Assert.assertEquals(5.3, cvss4P0.getMacroVector().getLookupTableScore(), 0.01);
     }
 

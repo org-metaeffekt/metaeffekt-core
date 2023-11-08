@@ -20,7 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.metaeffekt.core.security.cvss.CvssSource.CvssEntity;
-import org.metaeffekt.core.security.cvss.CvssSource.CvssEntity.ReportStep;
+import org.metaeffekt.core.security.cvss.CvssSource.ReportStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,11 +42,16 @@ public class KnownCvssEntities {
     public static final Map<String, CvssEntity> ENTITIES_BY_EMAIL = new HashMap<>();
 
     static {
-        // https://nvd.nist.gov/vuln/cvmap --> https://nvd.nist.gov/vuln/cvmap/search
-        // https://www.cve.org/PartnerInformation/ListofPartners
+        // NIST CNAs are listed on the:
+        //  - official NVD site https://nvd.nist.gov/vuln/cvmap --> https://nvd.nist.gov/vuln/cvmap/search
+        //  - on cve.org https://www.cve.org/PartnerInformation/ListofPartners
+        // the below file cna.json has been generated automatically by extracting contents from the cve.org site.
+        // if an update is required, please either let the authors of this file know or update the file directly by
+        // using the schema file provided in the resources directory.
         parseEntitiesFromResource("/cvss/entities/cna.json", KnownCvssEntities.class);
-        parseEntitiesFromResource("/cvss/entities/nist.json", KnownCvssEntities.class);
+        // assessment "status" files
         parseEntitiesFromResource("/cvss/entities/assessment.json", KnownCvssEntities.class);
+        // others, such as advisory providers or ones that are not listed in the CNA list
         parseEntitiesFromResource("/cvss/entities/other.json", KnownCvssEntities.class);
     }
 
@@ -54,6 +59,8 @@ public class KnownCvssEntities {
 
     public final static CvssEntity NVD = ENTITIES_BY_KEYNAME.get("NIST_NVD");
     public final static CvssEntity GHSA = ObjectUtils.firstNonNull(ENTITIES_BY_KEYNAME.get("CVE_CNA_GITHUB_M"), ENTITIES_BY_NAME.get("GitHub, Inc."));
+    public final static CvssEntity CERT_SEI = ENTITIES_BY_KEYNAME.get("CERT_SEI");
+    public final static CvssEntity MSRC = ENTITIES_BY_KEYNAME.get("MSRC");
 
     public final static CvssEntity ASSESSMENT = ENTITIES_BY_KEYNAME.get("ASSESSMENT");
     public final static CvssEntity ASSESSMENT_LOWER = ENTITIES_BY_KEYNAME.get("ASSESSMENT_LOWER");

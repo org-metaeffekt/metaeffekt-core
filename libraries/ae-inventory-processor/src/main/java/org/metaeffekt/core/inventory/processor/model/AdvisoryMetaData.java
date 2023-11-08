@@ -60,6 +60,8 @@ public class AdvisoryMetaData extends AbstractModelBase {
         DATA_SOURCE("Data Source"),
         MATCHING_SOURCE("Matching Source"),
 
+        CVSS_VECTORS("CVSS Vectors"),
+
         CREATE_DATE("Create Date"),
         UPDATE_DATE("Update Date"),
         REVIEW_STATUS("Review Status");

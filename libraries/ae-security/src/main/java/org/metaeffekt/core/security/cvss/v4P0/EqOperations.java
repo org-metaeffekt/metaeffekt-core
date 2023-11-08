@@ -25,7 +25,7 @@ public interface EqOperations {
     double lookupScoresForNextLowerMacro(Cvss4P0MacroVector[] nextLowerMacro);
 
     /**
-     * Max hamming distance (vector depth) within the equivalence set that the macro vector represents.
+     * Max severity distance (vector depth) within the equivalence set that the macro vector represents.
      *
      * @param thisMacroVector the macro vector to look up the depth for
      * @return the depth of the equivalence set in integers.

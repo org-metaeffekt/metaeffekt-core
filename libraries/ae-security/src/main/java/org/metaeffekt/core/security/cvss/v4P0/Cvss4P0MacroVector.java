@@ -582,7 +582,7 @@ public class Cvss4P0MacroVector {
     public static class EQ {
         private final String level;
         /**
-         * Also described as the "max hamming distance" within the EQ, meaning the space the EQ covers.
+         * Also described as the "max severity distance" within the EQ, meaning the space the EQ covers.
          */
         private final int vectorDepth;
         private final String[] highestSeverityVectorsUnparsed;

@@ -75,10 +75,6 @@ public class CvssSource<T extends CvssVector> {
         return vectorClass;
     }
 
-    public <NT extends CvssVector> CvssSource<NT> withCvssVersion(Class<NT> vectorClass) {
-        return new CvssSource<>(hostingEntity, issuingEntityRole, issuingEntity, vectorClass);
-    }
-
     public T parseVector(String vector) {
         if (vectorClass == null) {
             throw new IllegalStateException("No vector class specified for CVSS source: " + this);
@@ -89,6 +85,24 @@ public class CvssSource<T extends CvssVector> {
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse vector [" + vector + "] for CVSS source: " + this, e);
         }
+    }
+
+    public <NT extends CvssVector> CvssSource<NT> deriveSource(Class<NT> vectorClass) {
+        return new CvssSource<>(hostingEntity, issuingEntityRole, issuingEntity, vectorClass);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CvssSource<?> that = (CvssSource<?>) o;
+        return Objects.equals(hostingEntity, that.hostingEntity) && Objects.equals(issuingEntity, that.issuingEntity)
+                && Objects.equals(issuingEntityRole, that.issuingEntityRole) && Objects.equals(vectorClass, that.vectorClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(hostingEntity, issuingEntity, issuingEntityRole, vectorClass);
     }
 
     public static class CvssEntity implements NameProvider {
@@ -177,54 +191,89 @@ public class CvssSource<T extends CvssVector> {
                     + (url != null ? " (" + url + ")" : "");
         }
 
-        public static class ReportStep {
-            private final int stepIndex;
-            private final String title;
-            private final String link;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CvssEntity that = (CvssEntity) o;
+            return Objects.equals(name, that.name) && Objects.equals(email, that.email) && Objects.equals(url, that.url)
+                    && Objects.equals(cveOrgDetailsLink, that.cveOrgDetailsLink) && Objects.equals(description, that.description)
+                    && Objects.equals(country, that.country) && Objects.equals(role, that.role) && Objects.equals(organizationTypes, that.organizationTypes)
+                    && Objects.equals(topLevelRootPartner, that.topLevelRootPartner) && Objects.equals(rootPartner, that.rootPartner)
+                    && Objects.equals(reportSteps, that.reportSteps);
+        }
 
-            public ReportStep(int stepIndex, String title, String link) {
-                this.stepIndex = stepIndex;
-                this.title = title;
-                this.link = link;
-            }
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, email, url, cveOrgDetailsLink, description, country, role, organizationTypes,
+                    topLevelRootPartner, rootPartner, reportSteps);
+        }
 
-            public int getStepIndex() {
-                return stepIndex;
-            }
+        public <T extends CvssVector> CvssSource<T> deriveSource(Class<T> vectorClass) {
+            return new CvssSource<>(this, vectorClass);
+        }
+    }
 
-            public String getTitle() {
-                return title;
-            }
+    public static class ReportStep {
+        private final int stepIndex;
+        private final String title;
+        private final String link;
 
-            public String getLink() {
-                return link;
-            }
+        public ReportStep(int stepIndex, String title, String link) {
+            this.stepIndex = stepIndex;
+            this.title = title;
+            this.link = link;
+        }
 
-            public static ReportStep fromJson(JSONObject json) {
-                return new ReportStep(
-                        json.getInt("stepIndex"),
-                        json.getString("title"),
-                        json.getString("link")
-                );
-            }
+        public int getStepIndex() {
+            return stepIndex;
+        }
 
-            public static List<ReportStep> fromJson(JSONArray json) {
-                if (json == null) return Collections.emptyList();
-                final List<ReportStep> result = new ArrayList<>();
-                for (int i = 0; i < json.length(); i++) {
-                    result.add(fromJson(json.getJSONObject(i)));
-                }
-                return result;
-            }
+        public String getTitle() {
+            return title;
+        }
 
-            @Override
-            public String toString() {
-                return "StepInfo{" +
-                        "stepIndex=" + stepIndex +
-                        ", title='" + title + '\'' +
-                        ", link='" + link + '\'' +
-                        '}';
+        public String getLink() {
+            return link;
+        }
+
+        public static ReportStep fromJson(JSONObject json) {
+            return new ReportStep(
+                    json.getInt("stepIndex"),
+                    json.getString("title"),
+                    json.getString("link")
+            );
+        }
+
+        public static List<ReportStep> fromJson(JSONArray json) {
+            if (json == null) return Collections.emptyList();
+            final List<ReportStep> result = new ArrayList<>();
+            for (int i = 0; i < json.length(); i++) {
+                result.add(fromJson(json.getJSONObject(i)));
             }
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "StepInfo{" +
+                    "stepIndex=" + stepIndex +
+                    ", title='" + title + '\'' +
+                    ", link='" + link + '\'' +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ReportStep that = (ReportStep) o;
+            return stepIndex == that.stepIndex && Objects.equals(title, that.title) && Objects.equals(link, that.link);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(stepIndex, title, link);
         }
     }
 
@@ -252,6 +301,19 @@ public class CvssSource<T extends CvssVector> {
                 }
             }
             return new CvssIssuingEntityRole(name);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CvssIssuingEntityRole that = (CvssIssuingEntityRole) o;
+            return Objects.equals(name, that.name);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name);
         }
     }
 
@@ -362,35 +424,6 @@ public class CvssSource<T extends CvssVector> {
         for (String header : headers) {
             if (!header.startsWith("CVSS")) continue;
             result.put(header, fromColumnHeaderString(header));
-        }
-
-        return result;
-    }
-
-    public static JSONArray toJson(Map<CvssSource<?>, CvssVector> vectorsMap) {
-        final JSONArray result = new JSONArray();
-
-        for (Map.Entry<CvssSource<?>, CvssVector> entry : vectorsMap.entrySet()) {
-            final CvssSource<?> source = entry.getKey();
-            final CvssVector vector = entry.getValue();
-
-            final JSONObject jsonEntry = new JSONObject();
-            jsonEntry.put("source", source.toColumnHeaderString());
-            jsonEntry.put("vector", vector.toString());
-            result.put(jsonEntry);
-        }
-
-        return result;
-    }
-
-    public static Map<CvssSource<?>, CvssVector> fromJson(JSONArray jsonArray) {
-        final Map<CvssSource<?>, CvssVector> result = new LinkedHashMap<>();
-
-        for (int i = 0; i < jsonArray.length(); i++) {
-            final JSONObject jsonEntry = jsonArray.getJSONObject(i);
-            final CvssSource<?> source = fromColumnHeaderString(jsonEntry.getString("source"));
-            final CvssVector vector = source.parseVector(jsonEntry.getString("vector"));
-            result.put(source, vector);
         }
 
         return result;
