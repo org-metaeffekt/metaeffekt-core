@@ -541,8 +541,8 @@ public class Cvss4P0MacroVector {
      * @param attribute the attribute to get the value for
      * @return the actual value of the attribute
      */
-    public static Cvss4P0.Cvss4_0Attribute getComparisonMetric(Cvss4P0 vector, String attribute) {
-        final Cvss4P0.Cvss4_0Attribute selected = vector.getVectorArgument(attribute);
+    public static Cvss4P0.Cvss4P0Attribute getComparisonMetric(Cvss4P0 vector, String attribute) {
+        final Cvss4P0.Cvss4P0Attribute selected = vector.getVectorArgument(attribute);
 
         // E:X is the same as E:A
         if ("E".equals(attribute) && Cvss4P0.ExploitMaturity.NOT_DEFINED.equals(selected)) {
@@ -568,7 +568,7 @@ public class Cvss4P0MacroVector {
 
         // All other environmental metrics just overwrite base score values,
         // so if they’re not defined just use the base score value.
-        final Cvss4P0.Cvss4_0Attribute modifiedAttribute = vector.getVectorArgument("M" + attribute);
+        final Cvss4P0.Cvss4P0Attribute modifiedAttribute = vector.getVectorArgument("M" + attribute);
         if (modifiedAttribute != null) {
             String modifiedSelected = modifiedAttribute.getShortIdentifier();
             if (modifiedSelected != null && !"X".equals(modifiedSelected)) {

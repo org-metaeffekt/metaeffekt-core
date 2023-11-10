@@ -16,12 +16,9 @@
 package org.metaeffekt.core.security.cvss;
 
 import org.junit.Test;
-import org.metaeffekt.core.security.cvss.condition.ConditionTree;
-import org.metaeffekt.core.security.cvss.condition.ConditionTree.ComparisonRule;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 public class SourcedCvssVectorTest {
 
@@ -29,18 +26,11 @@ public class SourcedCvssVectorTest {
     public void cloneSourceTest() {
         SourcedCvssVector<Cvss3P1> sourcedVector = new SourcedCvssVector<>(
                 new CvssSource<>(KnownCvssEntities.NVD, Cvss3P1.class),
-                "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
-                new ConditionTree().and(new ComparisonRule("test", ComparisonRule.EQUALS, "key"))
+                "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N"
         );
 
         SourcedCvssVector<Cvss3P1> clone = sourcedVector.clone();
         clone.equals(sourcedVector);
         assertEquals(sourcedVector, clone);
-
-        clone.setApplicabilityCondition(new ConditionTree().and(new ComparisonRule("test", ComparisonRule.EQUALS, "key2")));
-        assertNotEquals(sourcedVector, clone);
-
-        assertEquals("{\"op\":\"==\",\"se\":[\"key\"],\"va\":\"test\"}", sourcedVector.getApplicabilityCondition().getOrRules().get(0).getRules().get(0).toJson().toString());
-        assertEquals("{\"op\":\"==\",\"se\":[\"key2\"],\"va\":\"test\"}", clone.getApplicabilityCondition().getOrRules().get(0).getRules().get(0).toJson().toString());
     }
 }

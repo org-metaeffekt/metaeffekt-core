@@ -28,6 +28,83 @@ import java.util.stream.Stream;
 /**
  * <a href="https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf">https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf</a><br>
  * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a>
+ * <p>
+ *
+ * <pre>Score<sub>interpolated</sub>(V) = Score<sub>base</sub>(MV) − Mean(Score<sub>EQ</sub>)</pre>
+ * <pre>Score<sub>EQ</sub> = ProportionDistance(V, EQ) × ScoreRange(MV, EQ)</pre>
+ * <pre>ProportionDistance(V, EQ)</sub> = SeverityDistance(V, MacroVector) / Depth(MacroVector)</pre>
+ *
+ * <ul>
+ *     <li>
+ *         <code>Score<sub>interpolated</sub>(V)</code><br>
+ *         is the final calculated score for the vector.
+ * <p>
+ *     </li>
+ *     <li>
+ *         <code>Score<sub>base</sub>(MV)</code><br>
+ *         is the base score for the MacroVector as determined by the highest severity vector within that MacroVector by looking up the score in a lookup table.
+ * <p>
+ *     </li>
+ *     <li>
+ *         <code>Mean(scores)</code><br>
+ *         takes the average score over all the EQ (Equivalence) groups that are applicable to the vector.
+ * <p>
+ *     </li>
+ *     <li>
+ *         <code>Score<sub>EQ</sub></code><br>
+ *         is a list of proportional score adjustments for each EQ group, calculated by a sub-formula.
+ * <p>
+ *     </li>
+ *     <li>
+ *         <code>ProportionDistance(V, EQ)</code> (severity distance scale)<br>
+ *         calculated as the severity distance (the number of metric value changes needed to reach the vector from the highest severity vector within the same MacroVector) divided by the depth of the MacroVector for that EQ group.
+ *         This yields a value between 0 and 1, calculated by a sub-formula.<br>
+ * <p>
+ *     </li>
+ *     <li>
+ *         <code>SeverityDistance(V, MacroVector)</code> (severity distance scale)<br>
+ *         is the number of metric value changes needed to reach the vector V from the highest severity vector within the same MacroVector.
+ * <p>
+ *     </li>
+ *     <li>
+ *         <code>Depth(MacroVector)</code> (severity distance scale)<br>
+ *         is the total number of metric value changes within a MacroVector from its highest to lowest severity vectors. It essentially represents the amount of changes that can be made within the MacroVector.
+ * <p>
+ *     </li>
+ *     <li>
+ *         <code>ScoreRange(MV, EQ)</code> (CVSS score scale)<br>
+ *         is the difference in score between the highest and lowest severity vectors within the MacroVector for a given EQ group. This value represents the potential score span within the MacroVector.
+ *     </li>
+ * </ul>
+ * <p>
+ * It is important to distinguish the two scales that are at play here:
+ *
+ * <ul>
+ *     <li>
+ *         <h4>Severity Distance Scale</h4>
+ *         This scale is associated with the vector metrics and their values.<br>
+ *         A change of +/-1 on this scale represents a change of a single metric one value up or down (moving from a less severe configuration to a more severe one, or vice versa).
+ * <p>
+ *     </li>
+ *     <li>
+ *         <h4>CVSS Score Scale</h4>
+ *         It quantifies the severity of the vulnerability in a range, from 0 to 10, with higher values indicating more severe vulnerabilities.
+ *     </li>
+ * </ul>
+ *
+ * <h4>Handling Inapplicable EQ Groups in Score Calculation</h4>
+ * In some cases, certain EQ (Equivalence) groups may not contribute to the mean score calculation.
+ * This scenario can arise when:
+ * <ul>
+ *     <li>
+ *         EQ groups contain metrics with non-numeric values such as 'Not Defined' (X), which
+ *         cannot be directly used in numerical score computation.
+ *     </li>
+ *     <li>
+ *         The vulnerability context makes specific EQ groups irrelevant or inapplicable,
+ *         and thus their contribution to the mean score is not considered.
+ *     </li>
+ * </ul>
  */
 public class Cvss4P0 extends CvssVector {
 
@@ -231,7 +308,7 @@ public class Cvss4P0 extends CvssVector {
         return true;
     }
 
-    protected Cvss4_0Attribute getVectorArgument(String identifier) {
+    protected Cvss4P0Attribute getVectorArgument(String identifier) {
         switch (identifier) {
             // Base Metrics: Exploitability Metrics
             case "AV":
@@ -565,7 +642,7 @@ public class Cvss4P0 extends CvssVector {
             severityDistances.put("SA", severityDistance(Cvss4P0MacroVector.getComparisonMetric(comparisonVector, subAvailabilityImpactKey), maxVector.getSubAvailabilityImpact()));
 
 
-            // Check if any severity distance is negative
+            // check if any severity distance is negative
             final boolean anyNegative = severityDistances.values().stream().anyMatch(val -> val < 0);
 
             if (!anyNegative) {
@@ -605,9 +682,9 @@ public class Cvss4P0 extends CvssVector {
         return HighestSeverityVectors;
     }
 
-    public static int severityDistance(Cvss4_0Attribute part1, Cvss4_0Attribute part2) {
-        final Cvss4_0Attribute worseCaseAttribute1;
-        final Cvss4_0Attribute worseCaseAttribute2;
+    public static int severityDistance(Cvss4P0Attribute part1, Cvss4P0Attribute part2) {
+        final Cvss4P0Attribute worseCaseAttribute1;
+        final Cvss4P0Attribute worseCaseAttribute2;
 
         if ("X".equals(part1.getShortIdentifier())) { // if the values are not set, assume the worst case
             worseCaseAttribute1 = part1.getWorseCase();
@@ -628,15 +705,15 @@ public class Cvss4P0 extends CvssVector {
             return 0;
         }
 
-        final Cvss4_0Attribute effectiveAttribute1;
-        final Cvss4_0Attribute effectiveAttribute2;
+        final Cvss4P0Attribute effectiveAttribute1;
+        final Cvss4P0Attribute effectiveAttribute2;
 
         final Enum<?> worseCaseEnum1 = (Enum<?>) worseCaseAttribute1;
         final Enum<?> worseCaseEnum2 = (Enum<?>) worseCaseAttribute2;
 
         if (!clazz1.equals(clazz2)) {
             // the classes not being the same may happen if the user selected a modified version of the attribute.
-            // in this case, the Cvss4_0MacroVector#getComparisonMetric method will return the modified version of the
+            // in this case, the Cvss4P0MacroVector#getComparisonMetric method will return the modified version of the
             // attribute, which we have to use here for both attributes.
             // so, attempt to find an identical enum value in the modified enum.
             final boolean isModifiedAttribute1 = worseCaseAttribute1.getClass().getSimpleName().startsWith("Modified");
@@ -645,7 +722,7 @@ public class Cvss4P0 extends CvssVector {
             // use the enum arrays to determine the value in the other enum
             // unmodified --> modified enum based on the short identifier
             if (isModifiedAttribute1 && !isModifiedAttribute2) {
-                final Cvss4_0Attribute[] enum1Values = (Cvss4_0Attribute[]) worseCaseEnum1.getClass().getEnumConstants();
+                final Cvss4P0Attribute[] enum1Values = (Cvss4P0Attribute[]) worseCaseEnum1.getClass().getEnumConstants();
                 effectiveAttribute1 = worseCaseAttribute1;
                 effectiveAttribute2 = Arrays.stream(enum1Values)
                         .filter(v -> v.getShortIdentifier().equals(worseCaseAttribute2.getShortIdentifier()))
@@ -653,7 +730,7 @@ public class Cvss4P0 extends CvssVector {
                         .orElseThrow(() -> new IllegalStateException("Cannot find modified enum value for " + worseCaseAttribute2));
 
             } else if (!isModifiedAttribute1 && isModifiedAttribute2) {
-                final Cvss4_0Attribute[] enum2Values = (Cvss4_0Attribute[]) worseCaseEnum2.getClass().getEnumConstants();
+                final Cvss4P0Attribute[] enum2Values = (Cvss4P0Attribute[]) worseCaseEnum2.getClass().getEnumConstants();
                 effectiveAttribute1 = Arrays.stream(enum2Values)
                         .filter(v -> v.getShortIdentifier().equals(worseCaseAttribute1.getShortIdentifier()))
                         .findFirst()
@@ -816,7 +893,7 @@ public class Cvss4P0 extends CvssVector {
         return array.toString();
     }
 
-    private <T extends Cvss4_0Attribute> void appendIfNotDefault(StringBuilder vector, String partName, T currentValue, T defaultValue) {
+    private <T extends Cvss4P0Attribute> void appendIfNotDefault(StringBuilder vector, String partName, T currentValue, T defaultValue) {
         if (currentValue != defaultValue) {
             vector.append(partName).append(":").append(currentValue.getShortIdentifier()).append("/");
         }
@@ -829,11 +906,11 @@ public class Cvss4P0 extends CvssVector {
 
     // CVSS 4.0 attributes definitions
 
-    public enum AttackVector implements Cvss4_0Attribute { // AV
+    public enum AttackVector implements Cvss4P0Attribute { // AV
         /**
          * <b>X IS NOT A VALID VALUE FOR THIS ATTRIBUTE!</b><br>
          * But in order to allow for building vectors with partial information that are applied onto other vectors, such
-         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4_0)</code> method, this value is required as marker.
+         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
         NETWORK("NETWORK", "N"),
@@ -849,7 +926,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static AttackVector fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, AttackVector.class, NETWORK);
+            return Cvss4P0Attribute.fromString(part, AttackVector.class, NETWORK);
         }
 
         @Override
@@ -863,11 +940,11 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum AttackComplexity implements Cvss4_0Attribute { // AC
+    public enum AttackComplexity implements Cvss4P0Attribute { // AC
         /**
          * <b>X IS NOT A VALID VALUE FOR THIS ATTRIBUTE!</b><br>
          * But in order to allow for building vectors with partial information that are applied onto other vectors, such
-         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4_0)</code> method, this value is required as marker.
+         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
         LOW("LOW", "L"),
@@ -881,7 +958,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static AttackComplexity fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, AttackComplexity.class, LOW);
+            return Cvss4P0Attribute.fromString(part, AttackComplexity.class, LOW);
         }
 
         @Override
@@ -895,11 +972,11 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum AttackRequirements implements Cvss4_0Attribute { // AT
+    public enum AttackRequirements implements Cvss4P0Attribute { // AT
         /**
          * <b>X IS NOT A VALID VALUE FOR THIS ATTRIBUTE!</b><br>
          * But in order to allow for building vectors with partial information that are applied onto other vectors, such
-         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4_0)</code> method, this value is required as marker.
+         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
         NONE("NONE", "N"),
@@ -913,7 +990,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static AttackRequirements fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, AttackRequirements.class, NONE);
+            return Cvss4P0Attribute.fromString(part, AttackRequirements.class, NONE);
         }
 
         @Override
@@ -927,11 +1004,11 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum PrivilegesRequired implements Cvss4_0Attribute { // PR
+    public enum PrivilegesRequired implements Cvss4P0Attribute { // PR
         /**
          * <b>X IS NOT A VALID VALUE FOR THIS ATTRIBUTE!</b><br>
          * But in order to allow for building vectors with partial information that are applied onto other vectors, such
-         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4_0)</code> method, this value is required as marker.
+         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
         NONE("NONE", "N"),
@@ -946,7 +1023,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static PrivilegesRequired fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, PrivilegesRequired.class, NONE);
+            return Cvss4P0Attribute.fromString(part, PrivilegesRequired.class, NONE);
         }
 
         @Override
@@ -960,11 +1037,11 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum UserInteraction implements Cvss4_0Attribute { // UI
+    public enum UserInteraction implements Cvss4P0Attribute { // UI
         /**
          * <b>X IS NOT A VALID VALUE FOR THIS ATTRIBUTE!</b><br>
          * But in order to allow for building vectors with partial information that are applied onto other vectors, such
-         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4_0)</code> method, this value is required as marker.
+         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
         NONE("NONE", "N"),
@@ -979,7 +1056,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static UserInteraction fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, UserInteraction.class, NONE);
+            return Cvss4P0Attribute.fromString(part, UserInteraction.class, NONE);
         }
 
         @Override
@@ -993,11 +1070,11 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum VulnerabilityCia implements Cvss4_0Attribute { // VC, VI, VA
+    public enum VulnerabilityCia implements Cvss4P0Attribute { // VC, VI, VA
         /**
          * <b>X IS NOT A VALID VALUE FOR THIS ATTRIBUTE!</b><br>
          * But in order to allow for building vectors with partial information that are applied onto other vectors, such
-         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4_0)</code> method, this value is required as marker.
+         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
         HIGH("HIGH", "H"),
@@ -1012,7 +1089,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static VulnerabilityCia fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, VulnerabilityCia.class, NONE);
+            return Cvss4P0Attribute.fromString(part, VulnerabilityCia.class, NONE);
         }
 
         @Override
@@ -1026,11 +1103,11 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum SubsequentCia implements Cvss4_0Attribute { // SC, SI, SA
+    public enum SubsequentCia implements Cvss4P0Attribute { // SC, SI, SA
         /**
          * <b>X IS NOT A VALID VALUE FOR THIS ATTRIBUTE!</b><br>
          * But in order to allow for building vectors with partial information that are applied onto other vectors, such
-         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4_0)</code> method, this value is required as marker.
+         * as with the <code>VulnerabilityStatus#applyCvss4(Cvss4P0)</code> method, this value is required as marker.
          */
         NOT_DEFINED("NOT_DEFINED", "X"),
         /**
@@ -1051,7 +1128,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static SubsequentCia fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, SubsequentCia.class, NONE);
+            return Cvss4P0Attribute.fromString(part, SubsequentCia.class, NONE);
         }
 
         @Override
@@ -1065,7 +1142,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum Safety implements Cvss4_0Attribute { // S
+    public enum Safety implements Cvss4P0Attribute { // S
         NOT_DEFINED("NOT_DEFINED", "X"),
         NEGLIGIBLE("NEGLIGIBLE", "N"),
         PRESENT("PRESENT", "P");
@@ -1078,7 +1155,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static Safety fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, Safety.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, Safety.class, NOT_DEFINED);
         }
 
         @Override
@@ -1092,7 +1169,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum Automatable implements Cvss4_0Attribute { // AU
+    public enum Automatable implements Cvss4P0Attribute { // AU
         NOT_DEFINED("NOT_DEFINED", "X"),
         NO("NO", "N"),
         YES("YES", "Y");
@@ -1105,7 +1182,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static Automatable fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, Automatable.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, Automatable.class, NOT_DEFINED);
         }
 
         @Override
@@ -1119,7 +1196,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum Recovery implements Cvss4_0Attribute { // R
+    public enum Recovery implements Cvss4P0Attribute { // R
         NOT_DEFINED("NOT_DEFINED", "X"),
         AUTOMATIC("AUTOMATIC", "A"),
         USER("USER", "U"),
@@ -1133,7 +1210,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static Recovery fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, Recovery.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, Recovery.class, NOT_DEFINED);
         }
 
         @Override
@@ -1147,7 +1224,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ValueDensity implements Cvss4_0Attribute { // V
+    public enum ValueDensity implements Cvss4P0Attribute { // V
         NOT_DEFINED("NOT_DEFINED", "X"),
         DIFFUSE("DIFFUSE", "D"),
         CONCENTRATED("CONCENTRATED", "C");
@@ -1160,7 +1237,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ValueDensity fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ValueDensity.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ValueDensity.class, NOT_DEFINED);
         }
 
         @Override
@@ -1174,7 +1251,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum VulnerabilityResponseEffort implements Cvss4_0Attribute { // RE
+    public enum VulnerabilityResponseEffort implements Cvss4P0Attribute { // RE
         NOT_DEFINED("NOT_DEFINED", "X"),
         LOW("LOW", "L"),
         MODERATE("MODERATE", "M"),
@@ -1188,7 +1265,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static VulnerabilityResponseEffort fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, VulnerabilityResponseEffort.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, VulnerabilityResponseEffort.class, NOT_DEFINED);
         }
 
         @Override
@@ -1202,7 +1279,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ProviderUrgency implements Cvss4_0Attribute { // U
+    public enum ProviderUrgency implements Cvss4P0Attribute { // U
         NOT_DEFINED("NOT_DEFINED", "X"),
         CLEAR("CLEAR", "Clear"),
         GREEN("GREEN", "Green"),
@@ -1217,7 +1294,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ProviderUrgency fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ProviderUrgency.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ProviderUrgency.class, NOT_DEFINED);
         }
 
         @Override
@@ -1231,7 +1308,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedAttackVector implements Cvss4_0Attribute { // MAV
+    public enum ModifiedAttackVector implements Cvss4P0Attribute { // MAV
         NOT_DEFINED("NOT_DEFINED", "X"),
         NETWORK("NETWORK", "N"),
         ADJACENT_NETWORK("ADJACENT", "A"),
@@ -1246,7 +1323,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedAttackVector fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedAttackVector.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedAttackVector.class, NOT_DEFINED);
         }
 
         @Override
@@ -1260,7 +1337,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedAttackComplexity implements Cvss4_0Attribute { // MAC
+    public enum ModifiedAttackComplexity implements Cvss4P0Attribute { // MAC
         NOT_DEFINED("NOT_DEFINED", "X"),
         LOW("LOW", "L"),
         HIGH("HIGH", "H");
@@ -1273,7 +1350,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedAttackComplexity fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedAttackComplexity.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedAttackComplexity.class, NOT_DEFINED);
         }
 
         @Override
@@ -1287,7 +1364,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedAttackRequirements implements Cvss4_0Attribute { // MAT
+    public enum ModifiedAttackRequirements implements Cvss4P0Attribute { // MAT
         NOT_DEFINED("NOT_DEFINED", "X"),
         NONE("NONE", "N"),
         PRESENT("PRESENT", "P");
@@ -1300,7 +1377,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedAttackRequirements fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedAttackRequirements.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedAttackRequirements.class, NOT_DEFINED);
         }
 
         @Override
@@ -1314,7 +1391,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedPrivilegesRequired implements Cvss4_0Attribute { // MPR
+    public enum ModifiedPrivilegesRequired implements Cvss4P0Attribute { // MPR
         NOT_DEFINED("NOT_DEFINED", "X"),
         NONE("NONE", "N"),
         LOW("LOW", "L"),
@@ -1328,7 +1405,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedPrivilegesRequired fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedPrivilegesRequired.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedPrivilegesRequired.class, NOT_DEFINED);
         }
 
         @Override
@@ -1342,7 +1419,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedUserInteraction implements Cvss4_0Attribute { // MUI
+    public enum ModifiedUserInteraction implements Cvss4P0Attribute { // MUI
         NOT_DEFINED("NOT_DEFINED", "X"),
         NONE("NONE", "N"),
         PASSIVE("PASSIVE", "P"),
@@ -1356,7 +1433,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedUserInteraction fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedUserInteraction.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedUserInteraction.class, NOT_DEFINED);
         }
 
         @Override
@@ -1370,7 +1447,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedVulnerabilityCia implements Cvss4_0Attribute { // MVC, MVI, MVA
+    public enum ModifiedVulnerabilityCia implements Cvss4P0Attribute { // MVC, MVI, MVA
         NOT_DEFINED("NOT_DEFINED", "X"),
         HIGH("HIGH", "H"),
         LOW("LOW", "L"),
@@ -1384,7 +1461,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedVulnerabilityCia fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedVulnerabilityCia.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedVulnerabilityCia.class, NOT_DEFINED);
         }
 
         @Override
@@ -1398,7 +1475,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedSubsequentConfidentiality implements Cvss4_0Attribute { // MSC
+    public enum ModifiedSubsequentConfidentiality implements Cvss4P0Attribute { // MSC
         NOT_DEFINED("NOT_DEFINED", "X"),
         HIGH("HIGH", "H"),
         LOW("LOW", "L"),
@@ -1412,7 +1489,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedSubsequentConfidentiality fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedSubsequentConfidentiality.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedSubsequentConfidentiality.class, NOT_DEFINED);
         }
 
         @Override
@@ -1426,7 +1503,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ModifiedSubsequentIntegrityAvailability implements Cvss4_0Attribute { // MSI, MSA
+    public enum ModifiedSubsequentIntegrityAvailability implements Cvss4P0Attribute { // MSI, MSA
         NOT_DEFINED("NOT_DEFINED", "X"),
         SAFETY("SAFETY", "S"),
         HIGH("HIGH", "H"),
@@ -1441,7 +1518,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ModifiedSubsequentIntegrityAvailability fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ModifiedSubsequentIntegrityAvailability.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ModifiedSubsequentIntegrityAvailability.class, NOT_DEFINED);
         }
 
         @Override
@@ -1455,7 +1532,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum RequirementsCia implements Cvss4_0Attribute { // CR, IR, AR
+    public enum RequirementsCia implements Cvss4P0Attribute { // CR, IR, AR
         NOT_DEFINED("NOT_DEFINED", "X"),
         HIGH("HIGH", "H"),
         MEDIUM("MEDIUM", "M"),
@@ -1469,7 +1546,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static RequirementsCia fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, RequirementsCia.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, RequirementsCia.class, NOT_DEFINED);
         }
 
         @Override
@@ -1483,7 +1560,7 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public enum ExploitMaturity implements Cvss4_0Attribute { // E
+    public enum ExploitMaturity implements Cvss4P0Attribute { // E
         NOT_DEFINED("NOT_DEFINED", "X"),
         UNREPORTED("UNREPORTED", "U"),
         POC("POC", "P"),
@@ -1497,7 +1574,7 @@ public class Cvss4P0 extends CvssVector {
         }
 
         public static ExploitMaturity fromString(String part) {
-            return Cvss4_0Attribute.fromString(part, ExploitMaturity.class, NOT_DEFINED);
+            return Cvss4P0Attribute.fromString(part, ExploitMaturity.class, NOT_DEFINED);
         }
 
         @Override
@@ -1511,12 +1588,12 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
-    public interface Cvss4_0Attribute {
+    public interface Cvss4P0Attribute {
         String getShortIdentifier();
 
-        Cvss4_0Attribute getWorseCase();
+        Cvss4P0Attribute getWorseCase();
 
-        static <T extends Cvss4_0Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
+        static <T extends Cvss4P0Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
             return Arrays.stream(clazz.getEnumConstants()).filter(value -> value.getShortIdentifier().equalsIgnoreCase(part)).findFirst().orElse(defaultValue);
         }
     }

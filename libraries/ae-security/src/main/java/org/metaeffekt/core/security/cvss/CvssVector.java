@@ -80,11 +80,11 @@ public abstract class CvssVector {
         return appliedCount;
     }
 
-    <T extends CvssVector> void applyVectorPartsIf(String vector, Function<T, Double> scoreType, boolean lower) {
-        if (vector == null) return;
+    <T extends CvssVector> CvssVector applyVectorPartsIf(String vector, Function<T, Double> scoreType, boolean lower) {
+        if (vector == null) return this;
 
         final String normalizedVector = normalizeVector(vector);
-        if (normalizedVector.isEmpty()) return;
+        if (normalizedVector.isEmpty()) return this;
 
         final String[] arguments = normalizedVector.split("/");
 
@@ -117,21 +117,24 @@ public abstract class CvssVector {
                 LOG.debug("Unknown vector argument: [{}]", argument);
             }
         }
+
+        return this;
     }
 
-    public void applyVector(CvssVector vector) {
-        if (vector == null) return;
+    public CvssVector applyVector(CvssVector vector) {
+        if (vector == null) return this;
         applyVector(vector.toString());
+        return this;
     }
 
-    public <T extends CvssVector> void applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
-        if (vector == null) return;
-        applyVectorPartsIf(vector.toString(), scoreType, true);
+    public <T extends CvssVector> CvssVector applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
+        if (vector == null) return this;
+        return applyVectorPartsIf(vector.toString(), scoreType, true);
     }
 
-    public <T extends CvssVector> void applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
-        if (vector == null) return;
-        applyVectorPartsIf(vector.toString(), scoreType, false);
+    public <T extends CvssVector> CvssVector applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
+        if (vector == null) return this;
+        return applyVectorPartsIf(vector.toString(), scoreType, false);
     }
 
     protected static String normalizeVector(String vector) {

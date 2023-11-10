@@ -317,7 +317,7 @@ public class CvssSource<T extends CvssVector> {
         }
     }
 
-    private interface NameProvider {
+    public interface NameProvider {
         String getName();
     }
 

@@ -16,7 +16,7 @@
 package org.metaeffekt.core.security.cvss;
 
 import org.json.JSONArray;
-import org.metaeffekt.core.security.cvss.condition.ConditionTree;
+import org.json.JSONObject;
 
 import java.util.*;
 
@@ -45,7 +45,7 @@ public class SourcedCvssVectorSet implements Cloneable {
         this.setAllCvssVectors(other);
     }
 
-    public void removeForSourceAndCondition(CvssSource<?> source, ConditionTree condition) {
+    public void removeForSourceAndCondition(CvssSource<?> source, JSONObject condition) {
         this.cvssVectors.removeIf(sourcedCvssVector -> Objects.equals(sourcedCvssVector.getCvssSource(), source) && Objects.equals(sourcedCvssVector.getApplicabilityCondition(), condition));
     }
 

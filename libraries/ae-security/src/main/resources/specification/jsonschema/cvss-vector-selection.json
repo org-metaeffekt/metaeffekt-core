@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://www.metaeffekt.com/schema/core-security/latest/cvss-vector-selection.json",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/cvssRule"
+  },
+  "definitions": {
+    "cvssRule": {
+      "type": "object",
+      "description": "Defines a rule for selecting and merging CVSS vectors. Each rule consists of a selector to pick vectors and a method to merge them.",
+      "properties": {
+        "selector": {
+          "type": "array",
+          "description": "An array of source selector entries. Each entry defines criteria to select a CVSS vector. The entries are evaluated in order, and the first match is selected.",
+          "items": {
+            "$ref": "#/definitions/sourceSelectorEntry"
+          }
+        },
+        "method": {
+          "$ref": "#/definitions/mergingMethod",
+          "description": "Defines the method used to merge CVSS vectors. See #/definitions/mergingMethod for more detail."
+        }
+      },
+      "required": [
+        "selector",
+        "method"
+      ]
+    },
+    "sourceSelectorEntry": {
+      "type": "object",
+      "description": "Specifies criteria for selecting a CVSS vector based on its source. The criteria include host, issuer role, and issuer. All specified criteria must match (AND operation).",
+      "properties": {
+        "host": {
+          "type": "array",
+          "description": "List of host entities. Strings can be '*' for any host or be prefixed with 'not:' to indicate inversion. All listed host entries must match.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issuerRole": {
+          "type": "array",
+          "description": "List of issuer roles. Strings can be '*' for any role or be prefixed with 'not:' to indicate inversion. All listed role entries must match.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issuer": {
+          "type": "array",
+          "description": "List of issuers. Strings can be '*' for any issuer or be prefixed with 'not:' to indicate inversion. All listed issuer entries must match.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "host",
+        "issuerRole",
+        "issuer"
+      ]
+    },
+    "mergingMethod": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "LOWER",
+        "HIGHER",
+        "OVERWRITE"
+      ],
+      "description": "Specifies the method for merging CVSS vectors. ALL appends all vector parts specified. LOWER only applies parts that result in a lower/equal overall score, HIGHER does the opposite. OVERWRITE replaces the existing vector with the selected one."
+    }
+  }
+}
