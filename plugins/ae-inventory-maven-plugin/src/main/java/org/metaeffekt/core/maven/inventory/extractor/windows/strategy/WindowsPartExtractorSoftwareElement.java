@@ -19,6 +19,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
 import org.slf4j.Logger;
@@ -82,7 +83,7 @@ public class WindowsPartExtractorSoftwareElement extends WindowsPartExtractorBas
 
             mapJsonFieldToInventory(softwareFeature, featureArtifact, "Description", "Description");
             mapJsonFieldToInventory(softwareFeature, featureArtifact, "Caption", "Caption");
-            mapJsonFieldToInventory(softwareFeature, featureArtifact, "Organisation", "Vendor");
+            mapJsonFieldToInventory(softwareFeature, featureArtifact, Constants.KEY_ORGANIZATION, "Vendor");
 
             mapJsonFieldToInventory(softwareFeature, featureArtifact, "InstallDate", "InstallDate");
             mapJsonFieldToInventory(softwareFeature, featureArtifact, "InstallState", "InstallState");

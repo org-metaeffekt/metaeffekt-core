@@ -19,6 +19,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ArtifactType;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsPnpClassGuid;
@@ -67,7 +68,7 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
 
                 mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, Artifact.Attribute.VERSION, "DriverVersion", "DriverDate");
                 mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "Description", "Description");
-                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "Organisation", "Manufacturer", "DriverProviderName");
+                mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, Constants.KEY_ORGANIZATION, "Manufacturer", "DriverProviderName");
 
                 // theses three values are always the same
                 mapJsonFieldToInventory(effectiveJson, pnpDeviceArtifact, "PNPDeviceID", "PNPDeviceID", "DeviceID", "InstanceId");
@@ -109,7 +110,7 @@ public class WindowsPartExtractorPlugAndPlay extends WindowsPartExtractorBase {
 
                 mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, Artifact.Attribute.VERSION, "DriverVersion", "DriverDate");
                 mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "Description", "Description");
-                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "Organisation", "Manufacturer", "DriverProviderName");
+                mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, Constants.KEY_ORGANIZATION, "Manufacturer", "DriverProviderName");
 
                 mapJsonFieldToInventory(pnpSignedDriver, signedDriverArtifact, "PNPDeviceID", "PNPDeviceID", "DeviceID", "InstanceId");
                 // the PNPDeviceID might not exist on the PnpSignedDriver, so we attempt to find it on the PnpEntity

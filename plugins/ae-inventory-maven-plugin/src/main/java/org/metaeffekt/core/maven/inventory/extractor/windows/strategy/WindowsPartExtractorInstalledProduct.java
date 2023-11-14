@@ -18,6 +18,7 @@ package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
 
@@ -41,7 +42,7 @@ public class WindowsPartExtractorInstalledProduct extends WindowsPartExtractorBa
                 mapJsonFieldToInventory(productJson, artifact, Artifact.Attribute.COMPONENT, "Name");
             }
             mapJsonFieldToInventory(productJson, artifact, Artifact.Attribute.VERSION, "Version");
-            mapJsonFieldToInventory(productJson, artifact, "Organisation", "Vendor", "Manufacturer");
+            mapJsonFieldToInventory(productJson, artifact, Constants.KEY_ORGANIZATION, "Vendor", "Manufacturer");
             mapJsonFieldToInventory(productJson, artifact, "Description", "Description", "Caption", "Name");
 
             // identification

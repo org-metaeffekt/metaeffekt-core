@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.StringJoiner;
@@ -59,7 +60,7 @@ public class WindowsPartExtractorMotherboard extends WindowsPartExtractorBase {
 
         mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, Artifact.Attribute.VERSION, "Version");
 
-        mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "Organisation", "Manufacturer");
+        mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, Constants.KEY_ORGANIZATION, "Manufacturer");
         mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "Product", "Product");
         mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "Description", "Description", "Caption", "Name", "Tag");
         mapJsonFieldToInventory(baseBoardJson, motherboardArtifact, "SerialNumber", "SerialNumber");
