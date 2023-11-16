@@ -16,15 +16,19 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class PreFormattedEscapeUtils {
 
-    private Map<String, String> symbols = new HashMap<>();
-    private Map<String, String> characters = new HashMap<>();
-    private Map<String, String> tags = new HashMap<>();
+    private final Map<String, String> symbols = new HashMap<>();
+    private final Map<String, String> characters = new HashMap<>();
+
+    // escaped Pair.of(start, end) --> unescaped Pair.of(start, end)
+    // e.g. Pair.of("&lt;li&gt;", "&lt;/li&gt;") --> Pair.of("<li>", "</li>")
+    private final Map<Pair<String, String>, Pair<String, String>> balancedTags = new HashMap<>();
 
     public PreFormattedEscapeUtils() {
         putEscaped(symbols, "&copy;");
@@ -32,89 +36,101 @@ public class PreFormattedEscapeUtils {
         putEscaped(characters, "&lt;");
         putEscaped(characters, "&gt;");
 
-        putEscaped(tags, "<lq>");
-        putEscaped(tags, "</lq>");
+        putBalancedEscaped(balancedTags, "<lq>", "</lq>");
 
-        putEscaped(tags, "<p>");
-        putEscaped(tags, "</p>");
-        putEscaped(tags, "<p/>");
+        putBalancedEscaped(balancedTags, "<p>", "</p>");
+        putBalancedEscaped(balancedTags, "<p>", "<p/>");
 
-        putEscaped(tags, "<ol>");
-        putEscaped(tags, "</ol>");
+        putBalancedEscaped(balancedTags, "<ol>", "</ol>");
+        putBalancedEscaped(balancedTags, "<ul>", "</ul>");
+        putBalancedEscaped(balancedTags, "<li>", "</li>");
 
-        putEscaped(tags, "<ul>");
-        putEscaped(tags, "</ul>");
+        putBalancedEscaped(balancedTags, "<i>", "</i>");
+        putBalancedEscaped(balancedTags, "<b>", "</b>");
+        putBalancedEscaped(balancedTags, "<codeph>", "</codeph>");
 
-        putEscaped(tags, "<li>");
-        putEscaped(tags, "</li>");
-
-        putEscaped(tags, "<codeph>");
-        putEscaped(tags, "</codeph>");
-
-        putEscaped(tags, "<i>");
-        putEscaped(tags, "</i>");
-
-        putEscaped(tags, "<b>");
-        putEscaped(tags, "</b>");
-
-        putEscapedAndRedefine(tags, "<h1>", "<p><b>");
-        putEscapedAndRedefine(tags, "</h1>", "</b></p>");
-
-        putEscapedAndRedefine(tags, "<h2>", "<p><b>");
-        putEscapedAndRedefine(tags, "</h2>", "</b></p>");
-
-        putEscapedAndRedefine(tags, "<h3>", "<p><b>");
-        putEscapedAndRedefine(tags, "</h3>", "</b></p>");
-
+        putBalancedEscaped(balancedTags, "<p><b>", "</b></p>");
+        putBalancedEscapedAndRedefine(balancedTags, "<p><b>", "</b></p>", "<h3>", "</h3>");
+        putBalancedEscapedAndRedefine(balancedTags, "<p><b>", "</b></p>", "<h2>", "</h2>");
+        putBalancedEscapedAndRedefine(balancedTags, "<p><b>", "</b></p>", "<h1>", "</h1>");
     }
 
     private void putEscaped(Map<String, String> map, String value) {
         map.put(value, StringEscapeUtils.escapeXml(value));
     }
 
-    private void putEscapedAndRedefine(Map<String, String> map, String value, String refinedValue) {
-        map.put(value, StringEscapeUtils.escapeXml(value));
+    private void putBalancedEscaped(Map<Pair<String, String>, Pair<String, String>> map, String startTag, String endTag) {
+        map.put(Pair.of(StringEscapeUtils.escapeXml(startTag), StringEscapeUtils.escapeXml(endTag)), Pair.of(startTag, endTag));
+    }
+
+    private void putBalancedEscapedAndRedefine(Map<Pair<String, String>, Pair<String, String>> map, String replacementStartTag, String replacementEndTag, String startTag, String endTag) {
+        map.put(Pair.of(StringEscapeUtils.escapeXml(startTag), StringEscapeUtils.escapeXml(endTag)), Pair.of(replacementStartTag, replacementEndTag));
     }
 
     public String xml(String string) {
-        if (string == null)  return null;
-        String escaped = string;
+        if (string == null) return null;
 
-        // pass 1: start and end tags
-        for (Map.Entry<String, String> entry : tags.entrySet()) {
-            escaped = escaped.replace(entry.getValue(), entry.getKey());
+        // escape all xml
+        String escaped = StringEscapeUtils.escapeXml(string);
+
+        // unescape in certain cases
+
+        // pass 1: balanced start and end tags
+        for (Map.Entry<Pair<String, String>, Pair<String, String>> entry : balancedTags.entrySet()) {
+            if (isBalanced(escaped, entry.getKey().getLeft(), entry.getKey().getRight())) {
+                escaped = applyUnescape(escaped, entry.getKey().getLeft(), entry.getValue().getLeft());
+                escaped = applyUnescape(escaped, entry.getKey().getRight(), entry.getValue().getRight());
+            }
         }
 
         // pass 2: symbols
         for (Map.Entry<String, String> entry : symbols.entrySet()) {
-            escaped = escaped.replace(entry.getValue(), entry.getKey());
+            escaped = applyUnescape(escaped, entry.getValue(), entry.getKey());
         }
 
         // pass 3: chars
         for (Map.Entry<String, String> entry : characters.entrySet()) {
-            escaped = escaped.replace(entry.getValue(), entry.getKey());
-        }
-
-        escaped = StringEscapeUtils.escapeXml(StringEscapeUtils.unescapeXml(escaped));
-
-        // pass 1: start and end tags
-        for (Map.Entry<String, String> entry : tags.entrySet()) {
-            escaped = escaped.replace(entry.getValue(), entry.getKey());
-        }
-
-        // pass 2: symbols
-        for (Map.Entry<String, String> entry : symbols.entrySet()) {
-            escaped = escaped.replace(entry.getValue(), entry.getKey());
-        }
-
-        // pass 3: chars
-        for (Map.Entry<String, String> entry : characters.entrySet()) {
-            escaped = escaped.replace(entry.getValue(), entry.getKey());
+            escaped = applyUnescape(escaped, entry.getValue(), entry.getKey());
         }
 
         return escaped;
     }
 
+    private boolean isBalanced(String string, String startTag, String endTag) {
+        if (string == null) return false;
+        if (!string.contains(startTag)) return false;
+        if (!string.contains(endTag)) return false;
+
+        int weight = 0;
+
+        for (int i = 0; i < string.length(); i++) {
+            if (string.startsWith(startTag, i)) {
+                weight++;
+                i += startTag.length() - 1;
+            } else if (string.startsWith(endTag, i)) {
+                weight--;
+                i += endTag.length() - 1;
+            }
+            if (weight < 0) {
+                return false;
+            }
+        }
+
+        return weight == 0;
+    }
+
+    private String applyUnescape(String string, String find, String replace) {
+        return string.replace(find, replace);
+    }
+
+    /**
+     * Replaces the <code>@</code> character with <code>%40</code>.
+     *
+     * @param string The string to be processed.
+     * @return The processed string.
+     * @deprecated Method should either be renamed or removed.
+     */
+    @Deprecated
     public Object purl(String string) {
         return string.replace("@", "%40");
     }

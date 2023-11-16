@@ -119,7 +119,7 @@ public class WindowsPartExtractorOperatingSystem extends WindowsPartExtractorBas
             mapJsonFieldToInventory(systeminfoJson, windowsOsArtifact, Constants.KEY_ARCHITECTURE, "OS Architecture", "System Type");
         }
 
-        mapJsonFieldToInventory(systeminfoJson, windowsOsArtifact, "Organisation", "OS Manufacturer");
+        mapJsonFieldToInventory(systeminfoJson, windowsOsArtifact, Constants.KEY_ORGANIZATION, "OS Manufacturer");
 
         mapJsonFieldToInventory(systeminfoJson, windowsOsArtifact, "Registered Owner", "Registered Owner", "Registered Organization");
         if (!windowsOsArtifact.has("Registered Owner")) {
