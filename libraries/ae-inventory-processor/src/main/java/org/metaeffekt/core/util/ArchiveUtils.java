@@ -21,13 +21,13 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Untar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -220,7 +220,9 @@ public class ArchiveUtils {
                 unpackAndClose(xzIn, targetFile);
             } catch (Exception ex) {
                 // report commons compress exception only and indicate fallback
-                LOG.warn("Cannot untar file [{}]. Attempting native untar.", file, ex);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Cannot untar file [{}]. {}. Attempting native untar.", file, ex.getMessage());
+                }
                 // fallback to native support on command line
                 Process exec = Runtime.getRuntime().exec("tar -xf " + file.getAbsolutePath() + " -C " + targetFile.getAbsolutePath());
                 FileUtils.waitForProcess(exec);

@@ -1,0 +1,10 @@
+jetty-10.0.17 - 09 October 2023
+ + 9777 CrossOriginFilter does not return Vary header on no-cors mode
+ + 9928 Backport `Request.getBeginNanoTime()`
+ + 10473 Startup Script reports `ok` too fast, and doesn't wait for actual
+   start of Jetty
+ + 10547 Cannot customize Executor on WebSocketClient
+ + 10679 Review HTTP/2 rate control
+
+
+[EXTRACT]

@@ -205,7 +205,7 @@ public class RepositoryReportTest {
 
     @Test
     public void testAntPatternMatcher() {
-        String path = "/Users/kklein/workspace/spring-boot-example/documentation/spring-boot-war/target/bomscan/spring-boot-sample-war-1.5.4.RELEASE-war/org/springframework/boot/loader/LaunchedURLClassLoader.class";
+        String path = "/spring-boot-example/documentation/spring-boot-war/target/bomscan/spring-boot-sample-war-1.5.4.RELEASE-war/org/springframework/boot/loader/LaunchedURLClassLoader.class";
         AntPathMatcher matcher = new AntPathMatcher();
         Assert.assertTrue(matcher.match("/**/org/springframework/boot/loader/**/*", path));
     }

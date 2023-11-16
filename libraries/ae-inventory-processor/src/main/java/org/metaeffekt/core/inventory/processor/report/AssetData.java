@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.metaeffekt.core.inventory.processor.model.*;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +35,8 @@ public class AssetData {
     private Map<String, AssetLicenseData> assetIdAssetLicenseDataMap = new HashMap<>();
 
     private Inventory inventory;
+
+    private boolean includesOpenCoDESimilarLicense = false;
 
     public static AssetData fromArtifacts(Inventory filteredInventory) {
         AssetData assetData = new AssetData();
@@ -83,6 +85,12 @@ public class AssetData {
                     assetIdAssociatedLicenseMap.computeIfAbsent(assetId, c -> new HashSet<>()).add(associatedLicense);
 
                     assetAssociatedLicenses.add(associatedLicense);
+
+                    final String openCodeStatus = licenseData.get("Open CoDE Status");
+                    if ("(approved)".equalsIgnoreCase(openCodeStatus)) {
+                        includesOpenCoDESimilarLicense = true;
+                    }
+
                 }
                 assetIdAssetLicenseDataMap.put(assetId, createAssetLicenseData(assetMetaData, assetAssociatedLicenses));
             }
@@ -199,4 +207,7 @@ public class AssetData {
         return false;
     }
 
+    public boolean isIncludesOpenCoDESimilarLicense() {
+        return includesOpenCoDESimilarLicense;
+    }
 }

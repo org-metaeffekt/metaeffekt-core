@@ -29,7 +29,8 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_TRU
 @Ignore
 public class ExternalRepositoryReportTest {
 
-    private static final File INVENTORY_DIR = new File("/Users/kklein/workspace/spring-boot-example/inventory/src/main/resources");
+    private static final File INVENTORY_DIR = new File("<path-to-inventory-folder>");
+
     private static final String INVENTORY_INCLUDES = "inventory/*.xls";
     private static final String LICENSE_FOLDER = "licenses";
     private static final String COMPONENT_FOLDER = "components";
@@ -51,7 +52,7 @@ public class ExternalRepositoryReportTest {
     public void testValidateInventoryProcessor_WorkbenchInput() throws IOException {
         boolean enableDeleteObsolete = false;
 
-        final File inventoryDir = new File("/Users/kklein/workspace/ae-workbench-input/common");
+        final File inventoryDir = new File("<path-to-workbench-inventory-dir>");
         final Inventory inventory = InventoryUtils.readInventory(inventoryDir, INVENTORY_INCLUDES);
 
         File licensesDir = new File(inventoryDir, LICENSE_FOLDER);

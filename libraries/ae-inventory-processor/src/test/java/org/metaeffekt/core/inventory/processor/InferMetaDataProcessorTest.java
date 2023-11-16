@@ -31,7 +31,7 @@ public class InferMetaDataProcessorTest {
     @Test
     public void testInfer() throws IOException {
 
-        File inventoryFile = new File("/Users/kklein/workspace/metaeffekt-container-annex/documentation/ae-container-annex/target/inventory-container/analysis/ae-container-extractor-inventory.xls");
+        File inventoryFile = new File("<path-to-inventory>");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
         Properties properties = new Properties();

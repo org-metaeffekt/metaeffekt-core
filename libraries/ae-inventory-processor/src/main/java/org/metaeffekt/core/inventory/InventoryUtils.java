@@ -155,7 +155,7 @@ public abstract class InventoryUtils {
 
     public static void removeAssetAttribute(String key, Inventory inventory) {
         for (AssetMetaData assetMetaData : inventory.getAssetMetaData()) {
-            if (assetMetaData == null) {
+            if (assetMetaData != null) {
                 assetMetaData.set(key, null);
             }
         }

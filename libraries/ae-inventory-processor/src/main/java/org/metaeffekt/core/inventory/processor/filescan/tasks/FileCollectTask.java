@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
-import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -29,7 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
 
@@ -58,6 +57,12 @@ public class FileCollectTask extends ScanTask {
         }
 
         final File file = fileRef.getFile();
+
+        // ignore empty files
+        if (file.length() == 0) return;
+
+        // FIXME: how to deal with symlinks (ignore?; only include target)
+
         final String fileName = file.getName();
         final String filePath = fileRef.getPath();
 

@@ -18,14 +18,18 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 /**
  * Class to capture component patterns for matching artifacts during scans.
  */
 public class ComponentPatternData extends AbstractModelBase {
 
+    private transient Supplier<Inventory> expansionInventorySupplier;
+
     public ComponentPatternData(ComponentPatternData cpd) {
         super(cpd);
+        this.expansionInventorySupplier = cpd.expansionInventorySupplier;
     }
 
     public ComponentPatternData() {
@@ -144,4 +148,11 @@ public class ComponentPatternData extends AbstractModelBase {
         set(attribute.getKey(), value);
     }
 
+    public void setExpansionInventorySupplier(Supplier<Inventory> expansionInventorySupplier) {
+        this.expansionInventorySupplier = expansionInventorySupplier;
+    }
+
+    public Supplier<Inventory> getExpansionInventorySupplier() {
+        return expansionInventorySupplier;
+    }
 }

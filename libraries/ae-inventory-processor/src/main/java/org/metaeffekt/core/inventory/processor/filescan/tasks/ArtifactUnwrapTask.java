@@ -21,7 +21,6 @@ import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,6 @@ import java.util.Optional;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CHECKSUM;
 import static org.metaeffekt.core.util.ArchiveUtils.unpackIfPossible;
 
@@ -102,9 +100,11 @@ public class ArtifactUnwrapTask extends ScanTask {
         // read the scan classification on artifact level (created by FileSystemScanExecutor inspecting content)
         final boolean artifactWithScanClassification = artifact.hasClassification(HINT_SCAN);
 
-        // we implicitly try to unwrap if the artifact is not known and ends with jar; FIXME: include also other suffixes
+        // we implicitly try to unwrap if the artifact is not known and ends with jar; FIXME: include also other suffixes, make configurable
         final boolean implicitUnwrap = artifactWithScanClassification ||
-                (!referenceArtifact.isPresent() && !file.getName().toLowerCase().endsWith(".jar"));
+                (!referenceArtifact.isPresent() &&
+                        !file.getName().toLowerCase().endsWith(".jar") &&
+                        !file.getName().toLowerCase().endsWith(".xar"));
 
         if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap) && unpackIfPossible(file, targetFolder, issues)) {
             // unpack successful...

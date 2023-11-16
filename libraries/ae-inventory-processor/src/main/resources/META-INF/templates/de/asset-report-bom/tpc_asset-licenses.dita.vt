@@ -18,11 +18,18 @@
         werden kann.
     </p>
     #if ($assetData.isLicenseSubstructureRequired())
-        <fn callout="*" id="id-footnote">
+        <fn callout="&#948;" id="id-footnote">
             Lizenzen mit Variationen aber inhaltlich &#228;hnlichen Eigenschaften werden durch eine repr&#228;sentative
             Lizenz in der Auflistung zusammengefasst dargestellt.
             Die Details der Auspr&#228;gungen oder Variationen der Lizenz werden in separaten Abschnitten detailliert
             wiedergegeben. Freigaben von Lizenzvariationen sind ggf. nur f&#252;r bestimmte Auspr&#228;gungen vorhanden.
+        </fn>
+    #end
+    #if ($assetData.isIncludesOpenCoDESimilarLicense())
+        <fn callout="&#949;" id="id-opencode-similar">
+            Open CoDE erm&#246;glicht eine abgeleitete Freigabe bei Lizenz&#228;hnlichkeit. Siehe L&#196;.4 unter
+            <xref href="https://wikijs.opencode.de/de/Hilfestellungen_und_Richtlinien/Lizenzcompliance" type="html" scope="external">
+                https://wikijs.opencode.de/de/Hilfestellungen_und_Richtlinien/Lizenzcompliance</xref>.
         </fn>
     #end
 

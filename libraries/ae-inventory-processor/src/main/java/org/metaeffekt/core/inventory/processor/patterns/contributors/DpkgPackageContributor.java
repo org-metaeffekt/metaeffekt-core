@@ -407,6 +407,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 continue;
             }
 
+            // FIXME: review with JKR; these files have not been covered
+            fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
+            fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
+            fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
+
             // create, fill and add the pattern
             ComponentPatternData componentPatternData = new ComponentPatternData();
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
