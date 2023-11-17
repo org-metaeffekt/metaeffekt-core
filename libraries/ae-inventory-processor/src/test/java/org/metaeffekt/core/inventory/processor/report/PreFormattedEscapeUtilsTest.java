@@ -81,4 +81,24 @@ public class PreFormattedEscapeUtilsTest {
         final String input = "<h3>To understand the subtle</h3><h2>differences <p><b>between</p></b> HTML and</b> XHTML</h2><h1>it is important to understand</h1>";
         Assert.assertEquals("<p><b>To understand the subtle</b></p><p><b>differences <p>&lt;b&gt;between</p>&lt;/b&gt; HTML and&lt;/b&gt; XHTML</b></p><p><b>it is important to understand</b></p>", escapeUtils.xml(input));
     }
+
+    @Test
+    public void testEscaping() {
+
+        Assert.assertEquals("&copy;", escapeUtils.xml("&copy;"));
+        Assert.assertEquals("Copyright &copy; 2021 metaeffekt", escapeUtils.xml("Copyright &copy; 2021 metaeffekt"));
+        Assert.assertEquals("Copyright &#169; 2021 metaeffekt", escapeUtils.xml("Copyright © 2021 metaeffekt"));
+
+        Assert.assertEquals("<lq>Copyright &#169; 2021 metaeffekt</lq>", escapeUtils.xml("<lq>Copyright © 2021 metaeffekt</lq>"));
+        Assert.assertEquals("<p>Copyright &#169; 2021 metaeffekt</p>", escapeUtils.xml("<p>Copyright © 2021 metaeffekt</p>"));
+
+        // event if already escaped the result removed the escapes
+
+        Assert.assertEquals("Copyright &#169; 2021 metaeffekt", escapeUtils.xml("Copyright &#169; 2021 metaeffekt"));
+        Assert.assertEquals("<codeph>Paragraph</codeph>", escapeUtils.xml("<codeph>Paragraph</codeph>"));
+        Assert.assertEquals("<p>Paragraph</p>", escapeUtils.xml("&lt;p&gt;Paragraph&lt;/p&gt;"));
+
+        Assert.assertEquals("<p>Paragraph</p>&lt;", escapeUtils.xml("&lt;p&gt;Paragraph&lt;/p&gt;&lt;"));
+    }
+    
 }

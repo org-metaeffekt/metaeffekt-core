@@ -71,7 +71,7 @@ public class PreFormattedEscapeUtils {
         if (string == null) return null;
 
         // escape all xml
-        String escaped = StringEscapeUtils.escapeXml(string);
+        String escaped = StringEscapeUtils.escapeXml(StringEscapeUtils.unescapeXml(string));
 
         // unescape in certain cases
 
