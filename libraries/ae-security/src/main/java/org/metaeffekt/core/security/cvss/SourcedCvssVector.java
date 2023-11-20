@@ -17,13 +17,14 @@ package org.metaeffekt.core.security.cvss;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
 import java.util.*;
 
 public class SourcedCvssVector<T extends CvssVector> implements Cloneable {
 
     private final T cvssVector;
-    private final CvssSource<T> cvssSource;
+    private final List<CvssSource<T>> cvssSources;
     private final JSONObject applicabilityCondition;
 
     public SourcedCvssVector(CvssSource<T> source, T vector) {
@@ -36,15 +37,29 @@ public class SourcedCvssVector<T extends CvssVector> implements Cloneable {
 
     public SourcedCvssVector(CvssSource<T> source, T vector, JSONObject applicabilityCondition) {
         assertNotNull(source, vector);
-        this.cvssSource = source;
+        this.cvssSources = Collections.singletonList(source);
         this.cvssVector = vector;
         this.applicabilityCondition = applicabilityCondition;
     }
 
     public SourcedCvssVector(CvssSource<T> source, String vector, JSONObject applicabilityCondition) {
         assertNotNull(source, vector);
-        this.cvssSource = source;
-        this.cvssVector = this.cvssSource.parseVector(vector);
+        this.cvssSources = Collections.singletonList(source);
+        this.cvssVector = this.getCvssSource().parseVector(vector);
+        this.applicabilityCondition = applicabilityCondition;
+    }
+
+    public SourcedCvssVector(Collection<CvssSource<T>> source, T vector, JSONObject applicabilityCondition) {
+        assertNotNull(source, vector);
+        this.cvssSources = new ArrayList<>(source);
+        this.cvssVector = vector;
+        this.applicabilityCondition = applicabilityCondition;
+    }
+
+    public SourcedCvssVector(Collection<CvssSource<T>> source, String vector, JSONObject applicabilityCondition) {
+        assertNotNull(source, vector);
+        this.cvssSources = new ArrayList<>(source);
+        this.cvssVector = this.getCvssSource().parseVector(vector);
         this.applicabilityCondition = applicabilityCondition;
     }
 
@@ -60,6 +75,18 @@ public class SourcedCvssVector<T extends CvssVector> implements Cloneable {
         return fromUnknownType(source, vector, null);
     }
 
+    public static <T extends CvssVector> SourcedCvssVector<T> fromUnknownType(Collection<CvssSource<T>> source, CvssVector vector, JSONObject applicabilityCondition) {
+        assertNotNull(source, vector);
+        if (source.stream().noneMatch(s -> s.getVectorClass() == vector.getClass())) {
+            throw new IllegalArgumentException("Source [" + source + "] is not compatible with vector [" + vector + "]");
+        }
+        return new SourcedCvssVector<>(source, (T) vector, applicabilityCondition);
+    }
+
+    public static <T extends CvssVector> SourcedCvssVector<T> fromUnknownType(Collection<CvssSource<T>> source, CvssVector vector) {
+        return fromUnknownType(source, vector, null);
+    }
+
     public JSONObject getApplicabilityCondition() {
         return applicabilityCondition;
     }
@@ -69,17 +96,21 @@ public class SourcedCvssVector<T extends CvssVector> implements Cloneable {
     }
 
     public CvssSource<T> getCvssSource() {
-        return cvssSource;
+        return cvssSources.get(0);
+    }
+
+    public List<CvssSource<T>> getCvssSources() {
+        return cvssSources;
     }
 
     @Override
     public SourcedCvssVector<T> clone() {
-        return fromUnknownType(this.cvssSource, this.cvssVector.clone(), this.applicabilityCondition == null ? null : new JSONObject(this.applicabilityCondition.toString()));
+        return fromUnknownType(this.cvssSources, this.cvssVector.clone(), this.applicabilityCondition == null ? null : new JSONObject(this.applicabilityCondition.toString()));
     }
 
     @Override
     public String toString() {
-        return "{" + cvssSource + ": " + cvssVector + (applicabilityCondition != null ? " " + applicabilityCondition : "") + "}";
+        return "{" + cvssSources + ": " + cvssVector + (applicabilityCondition != null ? " " + applicabilityCondition : "") + "}";
     }
 
     @Override
@@ -87,17 +118,21 @@ public class SourcedCvssVector<T extends CvssVector> implements Cloneable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SourcedCvssVector<?> that = (SourcedCvssVector<?>) o;
-        return Objects.equals(cvssVector, that.cvssVector) && Objects.equals(cvssSource, that.cvssSource) && Objects.equals(applicabilityCondition, that.applicabilityCondition);
+        return Objects.equals(cvssVector, that.cvssVector) && Objects.equals(cvssSources, that.cvssSources) && Objects.equals(applicabilityCondition, that.applicabilityCondition);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cvssVector, cvssSource, applicabilityCondition);
+        return Objects.hash(cvssVector, cvssSources, applicabilityCondition);
+    }
+
+    public BakedCvssVectorScores<T> bakeScores() {
+        return BakedCvssVectorScores.fromNullableCvss(this);
     }
 
     public JSONObject toJson() {
         final JSONObject json = new JSONObject();
-        json.put("source", cvssSource.toColumnHeaderString());
+        json.put("sources", new JSONArray(cvssSources.stream().map(CvssSource::toColumnHeaderString).toArray()));
         json.put("vector", cvssVector.toString());
         if (applicabilityCondition != null) {
             json.put("condition", applicabilityCondition);
@@ -106,12 +141,28 @@ public class SourcedCvssVector<T extends CvssVector> implements Cloneable {
     }
 
     public static <T extends CvssVector> SourcedCvssVector<T> fromJson(JSONObject json) {
-        final CvssSource<T> source = (CvssSource<T>) CvssSource.fromColumnHeaderString(json.getString("source"));
-        final T vector = source.parseVector(json.getString("vector"));
-        if (json.has("condition")) {
-            return new SourcedCvssVector<>(source, vector, json.getJSONObject("condition"));
+        final List<CvssSource<T>> sources;
+        if (json.has("source")) {
+            final CvssSource<T> source = (CvssSource<T>) CvssSource.fromColumnHeaderString(json.getString("source"));
+            sources = Collections.singletonList(source);
+        } else if (json.has("sources")) {
+            final JSONArray sourcesJson = json.getJSONArray("sources");
+            sources = new ArrayList<>();
+            for (int i = 0; i < sourcesJson.length(); i++) {
+                sources.add((CvssSource<T>) CvssSource.fromColumnHeaderString(sourcesJson.getString(i)));
+            }
+            if (sources.isEmpty()) {
+                throw new IllegalArgumentException("No sources found in json [" + json + "]");
+            }
         } else {
-            return new SourcedCvssVector<>(source, vector);
+            throw new IllegalArgumentException("No source or sources found in json [" + json + "]");
+        }
+
+        final T vector = sources.get(0).parseVector(json.getString("vector"));
+        if (json.has("condition")) {
+            return new SourcedCvssVector<>(sources, vector, json.getJSONObject("condition"));
+        } else {
+            return new SourcedCvssVector<>(sources, vector, null);
         }
     }
 
@@ -134,9 +185,28 @@ public class SourcedCvssVector<T extends CvssVector> implements Cloneable {
         return new SourcedCvssVector<>(cloneBase.getCvssSource(), cloneBase.getCvssVector(), applicabilityCondition);
     }
 
+    public SourcedCvssVector<T> deriveVector(T vector) {
+        final SourcedCvssVector<T> cloneBase = this.clone();
+        return new SourcedCvssVector<>(cloneBase.getCvssSource(), vector, cloneBase.getApplicabilityCondition());
+    }
+
+    public SourcedCvssVector<T> deriveAppendSourceSetVector(CvssSource<T> source, T vector) {
+        final SourcedCvssVector<T> cloneBase = this.clone();
+        final ArrayList<CvssSource<T>> modifiableSourcesList = new ArrayList<>(cloneBase.getCvssSources());
+        modifiableSourcesList.add(source);
+        return new SourcedCvssVector<>(modifiableSourcesList, vector, cloneBase.getApplicabilityCondition());
+    }
+
     public static void assertNotNull(CvssSource<?> source, Object vector) {
         if (source == null || vector == null) {
             throw new IllegalArgumentException("Source [" + source + "] and vector [" + vector + "] must not be null");
         }
+    }
+
+    private static <T extends CvssVector> void assertNotNull(Collection<CvssSource<T>> sources, Object vector) {
+        if (sources == null || vector == null) {
+            throw new IllegalArgumentException("Sources [" + sources + "] and vector [" + vector + "] must not be null");
+        }
+        sources.forEach(source -> assertNotNull(source, vector));
     }
 }

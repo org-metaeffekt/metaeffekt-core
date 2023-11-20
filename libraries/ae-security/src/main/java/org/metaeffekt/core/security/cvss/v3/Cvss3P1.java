@@ -16,9 +16,9 @@
 package org.metaeffekt.core.security.cvss.v3;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.security.cvss.CvssScoreResult;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -242,7 +242,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         double exploitCodeMaturityFactor = exploitCodeMaturity == ExploitCodeMaturity.NULL ? ExploitCodeMaturity.NOT_DEFINED.factor : exploitCodeMaturity.factor;
         double remediationLevelFactor = remediationLevel == RemediationLevel.NULL ? RemediationLevel.NOT_DEFINED.factor : remediationLevel.factor;
         double reportConfidenceFactor = reportConfidence == ReportConfidence.NULL ? ReportConfidence.NOT_DEFINED.factor : reportConfidence.factor;
-        return getBaseScore() * exploitCodeMaturityFactor * remediationLevelFactor * reportConfidenceFactor;
+        double baseScore = getBaseScore();
+        return baseScore * exploitCodeMaturityFactor * remediationLevelFactor * reportConfidenceFactor;
     }
 
     @Override
@@ -421,8 +422,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     }
 
     @Override
-    public CvssScoreResult calculateScores() {
-        return new CvssScoreResult(this);
+    public BakedCvssVectorScores<Cvss3P1> bakeScores() {
+        return new BakedCvssVectorScores<>(this);
     }
 
     public String getAttackComplexity() {
@@ -689,6 +690,44 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         } else {
             return vector.toString().replaceAll("/$", "");
         }
+    }
+
+    @Override
+    public int size() {
+        int size = 0;
+
+        if (attackVector != AttackVector.NOT_DEFINED && attackVector != AttackVector.NULL) size++;
+        if (attackComplexity != AttackComplexity.NOT_DEFINED && attackComplexity != AttackComplexity.NULL) size++;
+        if (privilegesRequired != PrivilegesRequired.NOT_DEFINED && privilegesRequired != PrivilegesRequired.NULL)
+            size++;
+        if (userInteraction != UserInteraction.NOT_DEFINED && userInteraction != UserInteraction.NULL) size++;
+        if (scope != Scope.NOT_DEFINED && scope != Scope.NULL) size++;
+        if (confidentialityImpact != CIAImpact.NOT_DEFINED && confidentialityImpact != CIAImpact.NULL) size++;
+        if (integrityImpact != CIAImpact.NOT_DEFINED && integrityImpact != CIAImpact.NULL) size++;
+        if (availabilityImpact != CIAImpact.NOT_DEFINED && availabilityImpact != CIAImpact.NULL) size++;
+        if (exploitCodeMaturity != ExploitCodeMaturity.NOT_DEFINED && exploitCodeMaturity != ExploitCodeMaturity.NULL)
+            size++;
+        if (remediationLevel != RemediationLevel.NOT_DEFINED && remediationLevel != RemediationLevel.NULL) size++;
+        if (reportConfidence != ReportConfidence.NOT_DEFINED && reportConfidence != ReportConfidence.NULL) size++;
+        if (modifiedAttackVector != AttackVector.NOT_DEFINED && modifiedAttackVector != AttackVector.NULL) size++;
+        if (modifiedAttackComplexity != AttackComplexity.NOT_DEFINED && modifiedAttackComplexity != AttackComplexity.NULL)
+            size++;
+        if (modifiedPrivilegesRequired != PrivilegesRequired.NOT_DEFINED && modifiedPrivilegesRequired != PrivilegesRequired.NULL)
+            size++;
+        if (modifiedUserInteraction != UserInteraction.NOT_DEFINED && modifiedUserInteraction != UserInteraction.NULL)
+            size++;
+        if (modifiedScope != Scope.NOT_DEFINED && modifiedScope != Scope.NULL) size++;
+        if (modifiedConfidentialityImpact != CIAImpact.NOT_DEFINED && modifiedConfidentialityImpact != CIAImpact.NULL)
+            size++;
+        if (modifiedIntegrityImpact != CIAImpact.NOT_DEFINED && modifiedIntegrityImpact != CIAImpact.NULL) size++;
+        if (modifiedAvailabilityImpact != CIAImpact.NOT_DEFINED && modifiedAvailabilityImpact != CIAImpact.NULL) size++;
+        if (confidentialityRequirement != CIARequirement.NOT_DEFINED && confidentialityRequirement != CIARequirement.NULL)
+            size++;
+        if (integrityRequirement != CIARequirement.NOT_DEFINED && integrityRequirement != CIARequirement.NULL) size++;
+        if (availabilityRequirement != CIARequirement.NOT_DEFINED && availabilityRequirement != CIARequirement.NULL)
+            size++;
+
+        return size;
     }
 
     public enum AttackVector implements Cvss3Attribute {

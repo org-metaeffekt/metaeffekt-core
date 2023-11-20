@@ -348,6 +348,24 @@ public class CvssSource<T extends CvssVector> {
         return vectorVersion + " " + escapeName(hostingEntity.getName()) + (issuingEntityRole != null ? "-" + escapeName(issuingEntityRole.getName()) : "") + (issuingEntity != null ? "-" + escapeName(issuingEntity.getName()) : "");
     }
 
+    public static <T extends CvssVector> String toCombinedColumnHeaderString(Collection<CvssSource<T>> sources) {
+        if (sources.isEmpty()) return "";
+
+        final String vectorVersion;
+        final CvssSource<T> firstSource = sources.iterator().next();
+        try {
+            vectorVersion = CvssVector.getVersionName(firstSource.getVectorClass());
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unsupported CVSS version [" + firstSource.getVectorClass() + "] in CVSS source: " + firstSource);
+        }
+
+        final StringJoiner joiner = new StringJoiner(" + ", vectorVersion + " ", "");
+        for (CvssSource<T> source : sources) {
+            joiner.add(escapeName(source.getHostingEntity().getName()) + (source.getIssuingEntityRole() != null ? "-" + escapeName(source.getIssuingEntityRole().getName()) : "") + (source.getIssuingEntity() != null ? "-" + escapeName(source.getIssuingEntity().getName()) : ""));
+        }
+        return joiner.toString();
+    }
+
     @Override
     public String toString() {
         String vectorVersion;

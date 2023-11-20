@@ -16,7 +16,7 @@
 package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.security.cvss.CvssScoreResult;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.slf4j.Logger;
@@ -28,20 +28,20 @@ import java.util.stream.Stream;
 /**
  * <a href="https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf">https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf</a><br>
  * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a>
- * <p>
  *
- * <pre>Score<sub>interpolated</sub>(V) = Score<sub>base</sub>(MV) − Mean(Score<sub>EQ</sub>)</pre>
- * <pre>Score<sub>EQ</sub> = ProportionDistance(V, EQ) × ScoreRange(MV, EQ)</pre>
- * <pre>ProportionDistance(V, EQ)</sub> = SeverityDistance(V, MacroVector) / Depth(MacroVector)</pre>
+ * <p>
+ * <pre>ScoreInterpolated(V) = ScoreBase(MV) − Mean(ScoreEQ)</pre>
+ * <pre>ScoreEQ = ProportionDistance(V, EQ) × ScoreRange(MV, EQ)</pre>
+ * <pre>ProportionDistance(V, EQ) = SeverityDistance(V, MacroVector) / Depth(MacroVector)</pre>
  *
  * <ul>
  *     <li>
- *         <code>Score<sub>interpolated</sub>(V)</code><br>
+ *         <code>ScoreInterpolated(V)</code><br>
  *         is the final calculated score for the vector.
  * <p>
  *     </li>
  *     <li>
- *         <code>Score<sub>base</sub>(MV)</code><br>
+ *         <code>ScoreBase(MV)</code><br>
  *         is the base score for the MacroVector as determined by the highest severity vector within that MacroVector by looking up the score in a lookup table.
  * <p>
  *     </li>
@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  * <p>
  *     </li>
  *     <li>
- *         <code>Score<sub>EQ</sub></code><br>
+ *         <code>ScoreEQ</code><br>
  *         is a list of proportional score adjustments for each EQ group, calculated by a sub-formula.
  * <p>
  *     </li>
@@ -76,33 +76,19 @@ import java.util.stream.Stream;
  *         is the difference in score between the highest and lowest severity vectors within the MacroVector for a given EQ group. This value represents the potential score span within the MacroVector.
  *     </li>
  * </ul>
+ *
  * <p>
  * It is important to distinguish the two scales that are at play here:
- *
  * <ul>
  *     <li>
- *         <h4>Severity Distance Scale</h4>
+ *         <b>Severity Distance Scale</b>
  *         This scale is associated with the vector metrics and their values.<br>
  *         A change of +/-1 on this scale represents a change of a single metric one value up or down (moving from a less severe configuration to a more severe one, or vice versa).
  * <p>
  *     </li>
  *     <li>
- *         <h4>CVSS Score Scale</h4>
+ *         <b>CVSS Score Scale</b>
  *         It quantifies the severity of the vulnerability in a range, from 0 to 10, with higher values indicating more severe vulnerabilities.
- *     </li>
- * </ul>
- *
- * <h4>Handling Inapplicable EQ Groups in Score Calculation</h4>
- * In some cases, certain EQ (Equivalence) groups may not contribute to the mean score calculation.
- * This scenario can arise when:
- * <ul>
- *     <li>
- *         EQ groups contain metrics with non-numeric values such as 'Not Defined' (X), which
- *         cannot be directly used in numerical score computation.
- *     </li>
- *     <li>
- *         The vulnerability context makes specific EQ groups irrelevant or inapplicable,
- *         and thus their contribution to the mean score is not considered.
  *     </li>
  * </ul>
  */
@@ -872,6 +858,46 @@ public class Cvss4P0 extends CvssVector {
         return vector.toString().replaceAll("/$", "");
     }
 
+    @Override
+    public int size() {
+        int size = 0;
+
+        if (attackVector != AttackVector.NOT_DEFINED) size++;
+        if (attackComplexity != AttackComplexity.NOT_DEFINED) size++;
+        if (attackRequirements != AttackRequirements.NOT_DEFINED) size++;
+        if (privilegesRequired != PrivilegesRequired.NOT_DEFINED) size++;
+        if (userInteraction != UserInteraction.NOT_DEFINED) size++;
+        if (vulnConfidentialityImpact != VulnerabilityCia.NOT_DEFINED) size++;
+        if (vulnIntegrityImpact != VulnerabilityCia.NOT_DEFINED) size++;
+        if (vulnAvailabilityImpact != VulnerabilityCia.NOT_DEFINED) size++;
+        if (subConfidentialityImpact != SubsequentCia.NOT_DEFINED) size++;
+        if (subIntegrityImpact != SubsequentCia.NOT_DEFINED) size++;
+        if (subAvailabilityImpact != SubsequentCia.NOT_DEFINED) size++;
+        if (safety != Safety.NOT_DEFINED) size++;
+        if (automatable != Automatable.NOT_DEFINED) size++;
+        if (recovery != Recovery.NOT_DEFINED) size++;
+        if (valueDensity != ValueDensity.NOT_DEFINED) size++;
+        if (vulnerabilityResponseEffort != VulnerabilityResponseEffort.NOT_DEFINED) size++;
+        if (providerUrgency != ProviderUrgency.NOT_DEFINED) size++;
+        if (modifiedAttackVector != ModifiedAttackVector.NOT_DEFINED) size++;
+        if (modifiedAttackComplexity != ModifiedAttackComplexity.NOT_DEFINED) size++;
+        if (modifiedAttackRequirements != ModifiedAttackRequirements.NOT_DEFINED) size++;
+        if (modifiedPrivilegesRequired != ModifiedPrivilegesRequired.NOT_DEFINED) size++;
+        if (modifiedUserInteraction != ModifiedUserInteraction.NOT_DEFINED) size++;
+        if (modifiedVulnConfidentialityImpact != ModifiedVulnerabilityCia.NOT_DEFINED) size++;
+        if (modifiedVulnIntegrityImpact != ModifiedVulnerabilityCia.NOT_DEFINED) size++;
+        if (modifiedVulnAvailabilityImpact != ModifiedVulnerabilityCia.NOT_DEFINED) size++;
+        if (modifiedSubConfidentialityImpact != ModifiedSubsequentConfidentiality.NOT_DEFINED) size++;
+        if (modifiedSubIntegrityImpact != ModifiedSubsequentIntegrityAvailability.NOT_DEFINED) size++;
+        if (modifiedSubAvailabilityImpact != ModifiedSubsequentIntegrityAvailability.NOT_DEFINED) size++;
+        if (confidentialityRequirement != RequirementsCia.NOT_DEFINED) size++;
+        if (integrityRequirement != RequirementsCia.NOT_DEFINED) size++;
+        if (availabilityRequirement != RequirementsCia.NOT_DEFINED) size++;
+        if (exploitMaturity != ExploitMaturity.NOT_DEFINED) size++;
+
+        return size;
+    }
+
     public String toString(String... attributes) {
         final StringBuilder vector = new StringBuilder();
         vector.append("CVSS:4.0/");
@@ -900,8 +926,8 @@ public class Cvss4P0 extends CvssVector {
     }
 
     @Override
-    public CvssScoreResult calculateScores() {
-        return new CvssScoreResult(this);
+    public BakedCvssVectorScores<Cvss4P0> bakeScores() {
+        return new BakedCvssVectorScores<>(this);
     }
 
     // CVSS 4.0 attributes definitions

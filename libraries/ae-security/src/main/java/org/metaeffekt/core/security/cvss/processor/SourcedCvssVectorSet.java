@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss;
+package org.metaeffekt.core.security.cvss.processor;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.metaeffekt.core.security.cvss.CvssSource;
+import org.metaeffekt.core.security.cvss.CvssVector;
+import org.metaeffekt.core.security.cvss.SourcedCvssVector;
 
 import java.util.*;
 
@@ -38,11 +41,11 @@ public class SourcedCvssVectorSet implements Cloneable {
      * @param other The CvssVectorSet to be cloned.
      */
     public SourcedCvssVectorSet(SourcedCvssVectorSet other) {
-        this.setAllCvssVectors(other);
+        this.addAllCvssVectors(other);
     }
 
     public SourcedCvssVectorSet(Collection<SourcedCvssVector<?>> other) {
-        this.setAllCvssVectors(other);
+        this.addAllCvssVectors(other);
     }
 
     public void removeForSourceAndCondition(CvssSource<?> source, JSONObject condition) {
@@ -57,9 +60,9 @@ public class SourcedCvssVectorSet implements Cloneable {
      * @param source The source for which the vector is being set.
      * @param vector The {@link CvssVector} to be set.
      */
-    public <T extends CvssVector> void setCvssVector(CvssSource<T> source, T vector) {
+    public <T extends CvssVector> void addCvssVector(CvssSource<T> source, T vector) {
         SourcedCvssVector.assertNotNull(source, vector);
-        this.setCvssVector(new SourcedCvssVector<>(source, vector));
+        this.addCvssVector(new SourcedCvssVector<>(source, vector));
     }
 
     /**
@@ -74,12 +77,12 @@ public class SourcedCvssVectorSet implements Cloneable {
      * @throws IllegalArgumentException if source or vector is null.
      * @throws IllegalStateException    if the vector string cannot be parsed into a {@link CvssVector} instance of type T.
      */
-    public <T extends CvssVector> void setCvssVector(CvssSource<T> source, String vector) {
+    public <T extends CvssVector> void addCvssVector(CvssSource<T> source, String vector) {
         SourcedCvssVector.assertNotNull(source, vector);
-        this.setCvssVector(new SourcedCvssVector<>(source, vector));
+        this.addCvssVector(new SourcedCvssVector<>(source, vector));
     }
 
-    public <T extends CvssVector> void setCvssVector(SourcedCvssVector<T> sourcedVector) {
+    public <T extends CvssVector> void addCvssVector(SourcedCvssVector<T> sourcedVector) {
         this.removeForSourceAndCondition(sourcedVector.getCvssSource(), sourcedVector.getApplicabilityCondition());
         this.cvssVectors.add(sourcedVector);
     }
@@ -93,17 +96,17 @@ public class SourcedCvssVectorSet implements Cloneable {
      * @param vector The {@link CvssVector} to be set.
      * @throws IllegalArgumentException if source or vector is null or if they are not compatible.
      */
-    public void setCvssVectorUnchecked(CvssSource<?> source, CvssVector vector) {
+    public void addCvssVectorUnchecked(CvssSource<?> source, CvssVector vector) {
         SourcedCvssVector.assertNotNull(source, vector);
-        this.setCvssVector(SourcedCvssVector.fromUnknownType(source, vector));
+        this.addCvssVector(SourcedCvssVector.fromUnknownType(source, vector));
     }
 
-    public void setAllCvssVectors(SourcedCvssVectorSet other) {
-        other.cvssVectors.forEach(this::setCvssVector);
+    public void addAllCvssVectors(SourcedCvssVectorSet other) {
+        other.cvssVectors.forEach(this::addCvssVector);
     }
 
-    public void setAllCvssVectors(Collection<SourcedCvssVector<?>> other) {
-        other.forEach(this::setCvssVector);
+    public void addAllCvssVectors(Collection<SourcedCvssVector<?>> other) {
+        other.forEach(this::addCvssVector);
     }
 
     public List<SourcedCvssVector<?>> getCvssVectors() {
@@ -127,6 +130,10 @@ public class SourcedCvssVectorSet implements Cloneable {
 
     public int size() {
         return cvssVectors.size();
+    }
+
+    public void clear() {
+        cvssVectors.clear();
     }
 
     @Override

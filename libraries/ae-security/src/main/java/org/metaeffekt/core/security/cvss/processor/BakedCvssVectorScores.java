@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.security.cvss;
+package org.metaeffekt.core.security.cvss.processor;
 
 
+import org.metaeffekt.core.security.cvss.CvssSource;
+import org.metaeffekt.core.security.cvss.CvssVector;
+import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
+import org.metaeffekt.core.security.cvss.SourcedCvssVector;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 
-public class CvssScoreResult {
-    private final CvssVector cvss;
+import java.util.List;
+
+public class BakedCvssVectorScores<T extends CvssVector> {
+
+    private final T cvss;
+    private final List<CvssSource<T>> sources;
+
     private final double base;
     private final double impact;
     private final double exploitability;
@@ -30,10 +39,17 @@ public class CvssScoreResult {
     private final double adjustedImpact;
     private final double overall;
 
-    public CvssScoreResult(CvssVector cvss) {
+    public BakedCvssVectorScores(T cvss) {
+        this(cvss, null);
+    }
+
+    public BakedCvssVectorScores(T cvss, List<CvssSource<T>> sources) {
         this.cvss = cvss;
+        this.sources = sources;
+
         this.base = cvss.getBaseScore();
         this.overall = cvss.getOverallScore();
+
         if (cvss instanceof MultiScoreCvssVector) {
             final MultiScoreCvssVector cast = ((MultiScoreCvssVector) cvss);
             this.impact = cast.getImpactScore();
@@ -50,15 +66,40 @@ public class CvssScoreResult {
         }
     }
 
-    public static CvssScoreResult fromNullableCvss(CvssVector cvss) {
+    public static <T extends CvssVector> BakedCvssVectorScores<T> fromNullableCvss(SourcedCvssVector<T> cvss) {
         if (cvss == null) {
             return null;
         }
-        return new CvssScoreResult(cvss);
+        return new BakedCvssVectorScores<T>(cvss.getCvssVector(), cvss.getCvssSources());
     }
 
-    public CvssVector getCvss() {
+    public static <T extends CvssVector> BakedCvssVectorScores<T> fromNullableCvss(T cvss) {
+        if (cvss == null) {
+            return null;
+        }
+        return new BakedCvssVectorScores<>(cvss);
+    }
+
+    public T getCvss() {
         return cvss;
+    }
+
+    public List<CvssSource<T>> getSources() {
+        return sources;
+    }
+
+    public CvssSource<T> getLatestSource() {
+        if (sources != null && !sources.isEmpty()) {
+            return sources.get(sources.size() - 1);
+        }
+        return null;
+    }
+
+    public CvssSource<T> getInitialSource() {
+        if (sources != null && !sources.isEmpty()) {
+            return sources.get(0);
+        }
+        return null;
     }
 
     public boolean isCvss2() {

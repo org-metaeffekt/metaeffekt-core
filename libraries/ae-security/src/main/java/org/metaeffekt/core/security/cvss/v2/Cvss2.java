@@ -16,7 +16,7 @@
 package org.metaeffekt.core.security.cvss.v2;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.security.cvss.CvssScoreResult;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
@@ -458,8 +458,8 @@ public class Cvss2 extends MultiScoreCvssVector {
     }
 
     @Override
-    public CvssScoreResult calculateScores() {
-        return new CvssScoreResult(this);
+    public BakedCvssVectorScores<Cvss2> bakeScores() {
+        return new BakedCvssVectorScores<>(this);
     }
 
     private static double round(double value, int precision) {
@@ -509,6 +509,28 @@ public class Cvss2 extends MultiScoreCvssVector {
         vector.append("AR:").append(availabilityRequirement.shortIdentifier);
 
         return vector.toString().replaceAll("[^:/]+:X", "").replaceAll("/{2,}", "/").replaceAll("/$", "").replaceAll("^/", "");
+    }
+
+    @Override
+    public int size() {
+        int size = 0;
+
+        if (accessVector != AccessVector.NULL) size++;
+        if (accessComplexity != AccessComplexity.NULL) size++;
+        if (authentication != Authentication.NULL) size++;
+        if (confidentialityImpact != CIAImpact.NULL) size++;
+        if (integrityImpact != CIAImpact.NULL) size++;
+        if (availabilityImpact != CIAImpact.NULL) size++;
+        if (exploitability != Exploitability.NULL) size++;
+        if (remediationLevel != RemediationLevel.NULL) size++;
+        if (reportConfidence != ReportConfidence.NULL) size++;
+        if (collateralDamagePotential != CollateralDamagePotential.NULL) size++;
+        if (targetDistribution != TargetDistribution.NULL) size++;
+        if (confidentialityRequirement != CIARequirement.NULL) size++;
+        if (integrityRequirement != CIARequirement.NULL) size++;
+        if (availabilityRequirement != CIARequirement.NULL) size++;
+
+        return size;
     }
 
     public enum AccessVector implements Cvss2Attribute {

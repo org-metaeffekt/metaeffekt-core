@@ -17,14 +17,15 @@ package org.metaeffekt.core.security.cvss;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 
-public class CvssScoreResultTest {
+public class BakedCvssVectorScoresTest {
 
     @Test
     public void correctNormalizedCvss3Test() {
-        final CvssScoreResult result = new Cvss3P1("AV:L/AC:H/PR:L/UI:R/S:C/C:L/I:H/A:N/E:P/RL:T/RC:C/CR:H/IR:L/AR:M/MAV:A/MAC:H/MPR:N/MUI:R/MS:U/MC:L/MI:N/MA:H").calculateScores();
+        final BakedCvssVectorScores<Cvss3P1> result = new Cvss3P1("AV:L/AC:H/PR:L/UI:R/S:C/C:L/I:H/A:N/E:P/RL:T/RC:C/CR:H/IR:L/AR:M/MAV:A/MAC:H/MPR:N/MUI:R/MS:U/MC:L/MI:N/MA:H").bakeScores();
 
         Assert.assertEquals(6.1, result.getBaseScore(), 0.01);
         Assert.assertEquals(4.7, result.getImpactScore(), 0.01);
@@ -51,7 +52,7 @@ public class CvssScoreResultTest {
 
     @Test
     public void correctNormalizedCvss2Test() {
-        final CvssScoreResult result = new Cvss2("AV:N/AC:L/Au:N/C:P/I:N/A:N/E:U/RL:W/RC:UR/CDP:L/TD:M/CR:M/IR:H/AR:L").calculateScores();
+        final BakedCvssVectorScores<Cvss2> result = new Cvss2("AV:N/AC:L/Au:N/C:P/I:N/A:N/E:U/RL:W/RC:UR/CDP:L/TD:M/CR:M/IR:H/AR:L").bakeScores();
 
         Assert.assertEquals(5.0, result.getBaseScore(), 0.01);
         Assert.assertEquals(2.9, result.getImpactScore(), 0.01);

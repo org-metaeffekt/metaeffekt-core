@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +67,7 @@ public abstract class MultiScoreCvssVector extends CvssVector {
                 .orElse(null);
     }
 
-    public static double getMaxScore(Function<CvssScoreResult, Double> scoreType, CvssScoreResult... cvsses) {
+    public static double getMaxScore(Function<BakedCvssVectorScores, Double> scoreType, BakedCvssVectorScores... cvsses) {
         return Arrays.stream(cvsses)
                 .filter(Objects::nonNull)
                 .map(scoreType)

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.security.cvss;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
@@ -33,6 +34,8 @@ public abstract class CvssVector {
 
     public abstract String getWebEditorLink();
 
+    public abstract int size();
+
     public abstract double getBaseScore();
 
     public abstract double getOverallScore();
@@ -46,12 +49,12 @@ public abstract class CvssVector {
      */
     protected abstract void completeVector();
 
-    public abstract CvssScoreResult calculateScores();
+    public abstract BakedCvssVectorScores<? extends CvssVector> bakeScores();
 
     protected abstract boolean applyVectorArgument(String identifier, String value);
 
     @Override
-    protected abstract CvssVector clone();
+    public abstract CvssVector clone();
 
     public int applyVector(String vector) {
         if (vector == null) return 0;
@@ -80,13 +83,15 @@ public abstract class CvssVector {
         return appliedCount;
     }
 
-    <T extends CvssVector> CvssVector applyVectorPartsIf(String vector, Function<T, Double> scoreType, boolean lower) {
-        if (vector == null) return this;
+    <T extends CvssVector> int applyVectorPartsIf(String vector, Function<T, Double> scoreType, boolean lower) {
+        if (vector == null) return 0;
 
         final String normalizedVector = normalizeVector(vector);
-        if (normalizedVector.isEmpty()) return this;
+        if (normalizedVector.isEmpty()) return 0;
 
         final String[] arguments = normalizedVector.split("/");
+
+        int appliedPartsCount = 0;
 
         for (String argument : arguments) {
             if (StringUtils.isEmpty(argument)) continue;
@@ -104,12 +109,12 @@ public abstract class CvssVector {
 
                 if (lower) {
                     if (newScore <= currentScore) {
-                        this.applyVectorArgument(parts[0], parts[1]);
+                        appliedPartsCount += this.applyVectorArgument(parts[0], parts[1]) ? 1 : 0;
                         this.completeVector();
                     }
                 } else {
                     if (newScore >= currentScore) {
-                        this.applyVectorArgument(parts[0], parts[1]);
+                        appliedPartsCount += this.applyVectorArgument(parts[0], parts[1]) ? 1 : 0;
                         this.completeVector();
                     }
                 }
@@ -118,22 +123,27 @@ public abstract class CvssVector {
             }
         }
 
-        return this;
+        return appliedPartsCount;
     }
 
-    public CvssVector applyVector(CvssVector vector) {
+    public int applyVector(CvssVector vector) {
+        if (vector == null) return 0;
+        return applyVector(vector.toString());
+    }
+
+    public CvssVector applyVectorChain(CvssVector vector) {
         if (vector == null) return this;
         applyVector(vector.toString());
         return this;
     }
 
-    public <T extends CvssVector> CvssVector applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
-        if (vector == null) return this;
+    public <T extends CvssVector> int applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
+        if (vector == null) return 0;
         return applyVectorPartsIf(vector.toString(), scoreType, true);
     }
 
-    public <T extends CvssVector> CvssVector applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
-        if (vector == null) return this;
+    public <T extends CvssVector> int applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
+        if (vector == null) return 0;
         return applyVectorPartsIf(vector.toString(), scoreType, false);
     }
 
