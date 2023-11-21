@@ -40,7 +40,7 @@ public abstract class CvssVector {
 
     public abstract double getOverallScore();
 
-    public abstract boolean isBaseDefined();
+    public abstract boolean isBaseFullyDefined();
 
     public abstract boolean isAnyBaseDefined();
 

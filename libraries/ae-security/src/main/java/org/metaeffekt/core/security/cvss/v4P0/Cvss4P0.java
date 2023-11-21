@@ -16,9 +16,9 @@
 package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -437,7 +437,7 @@ public class Cvss4P0 extends CvssVector {
     }
 
     @Override
-    public boolean isBaseDefined() {
+    public boolean isBaseFullyDefined() {
         return attackVector != AttackVector.NOT_DEFINED
                 && attackComplexity != AttackComplexity.NOT_DEFINED
                 && attackRequirements != AttackRequirements.NOT_DEFINED
@@ -483,7 +483,28 @@ public class Cvss4P0 extends CvssVector {
                 || availabilityRequirement != RequirementsCia.NOT_DEFINED;
     }
 
+    public boolean isEnvironmentalFullyDefined() {
+        return modifiedAttackVector != ModifiedAttackVector.NOT_DEFINED
+                && modifiedAttackComplexity != ModifiedAttackComplexity.NOT_DEFINED
+                && modifiedAttackRequirements != ModifiedAttackRequirements.NOT_DEFINED
+                && modifiedPrivilegesRequired != ModifiedPrivilegesRequired.NOT_DEFINED
+                && modifiedUserInteraction != ModifiedUserInteraction.NOT_DEFINED
+                && modifiedVulnConfidentialityImpact != ModifiedVulnerabilityCia.NOT_DEFINED
+                && modifiedVulnIntegrityImpact != ModifiedVulnerabilityCia.NOT_DEFINED
+                && modifiedVulnAvailabilityImpact != ModifiedVulnerabilityCia.NOT_DEFINED
+                && modifiedSubConfidentialityImpact != ModifiedSubsequentConfidentiality.NOT_DEFINED
+                && modifiedSubIntegrityImpact != ModifiedSubsequentIntegrityAvailability.NOT_DEFINED
+                && modifiedSubAvailabilityImpact != ModifiedSubsequentIntegrityAvailability.NOT_DEFINED
+                && confidentialityRequirement != RequirementsCia.NOT_DEFINED
+                && integrityRequirement != RequirementsCia.NOT_DEFINED
+                && availabilityRequirement != RequirementsCia.NOT_DEFINED;
+    }
+
     public boolean isAnyThreatDefined() {
+        return exploitMaturity != ExploitMaturity.NOT_DEFINED;
+    }
+
+    public boolean isThreatFullyDefined() {
         return exploitMaturity != ExploitMaturity.NOT_DEFINED;
     }
 
@@ -495,7 +516,7 @@ public class Cvss4P0 extends CvssVector {
     @Override
     public double getBaseScore() {
         // check if base is undefined
-        if (!isBaseDefined()) {
+        if (!isBaseFullyDefined()) {
             return 0.0;
         }
 

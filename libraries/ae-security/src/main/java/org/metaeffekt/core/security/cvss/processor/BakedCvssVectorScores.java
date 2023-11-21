@@ -58,11 +58,11 @@ public class BakedCvssVectorScores<T extends CvssVector> {
             this.environmental = cast.getEnvironmentalScore();
             this.adjustedImpact = cast.getAdjustedImpactScore();
         } else {
-            this.impact = -1.0;
-            this.exploitability = -1.0;
-            this.temporal = -1.0;
-            this.environmental = -1.0;
-            this.adjustedImpact = -1.0;
+            this.impact = Double.NaN;
+            this.exploitability = Double.NaN;
+            this.temporal = Double.NaN;
+            this.environmental = Double.NaN;
+            this.adjustedImpact = Double.NaN;
         }
     }
 
@@ -115,15 +115,15 @@ public class BakedCvssVectorScores<T extends CvssVector> {
     }
 
     public boolean isBaseDefined() {
-        return cvss.isBaseDefined();
+        return cvss.isBaseFullyDefined();
     }
 
     public boolean isTemporalDefined() {
-        return cvss instanceof MultiScoreCvssVector && ((MultiScoreCvssVector) cvss).isTemporalDefined();
+        return cvss instanceof MultiScoreCvssVector && ((MultiScoreCvssVector) cvss).isAnyTemporalDefined();
     }
 
     public boolean isEnvironmentalDefined() {
-        return cvss instanceof MultiScoreCvssVector && ((MultiScoreCvssVector) cvss).isEnvironmentalDefined();
+        return cvss instanceof MultiScoreCvssVector && ((MultiScoreCvssVector) cvss).isAnyEnvironmentalDefined();
     }
 
     public double getBaseScore() {

@@ -397,7 +397,7 @@ public class CvssSelector implements Cloneable {
             return matchesHost && matchesIssuer && matchesRole;
         }
 
-        private <T extends CvssSource.NameProvider> boolean matchListWithSource(List<SourceSelectorEntryEntry<T>> list, T sourceAttribute) {
+        private <T extends CvssSource.EntityNameProvider> boolean matchListWithSource(List<SourceSelectorEntryEntry<T>> list, T sourceAttribute) {
             // all of these operators have been chosen carefully, please only change them if you know what you are doing
             if (sourceAttribute == null && list.isEmpty()) {
                 return true;
@@ -434,7 +434,7 @@ public class CvssSelector implements Cloneable {
             return new SourceSelectorEntry(hostingEntities, issuingEntityRoles, issuingEntities);
         }
 
-        private static String getPotentiallyInvertedOrNullName(CvssSource.NameProvider nameProvider, boolean inverted) {
+        private static String getPotentiallyInvertedOrNullName(CvssSource.EntityNameProvider nameProvider, boolean inverted) {
             if (nameProvider == null) return null;
             if (inverted) {
                 return "not:" + nameProvider.getName();
@@ -471,7 +471,7 @@ public class CvssSelector implements Cloneable {
         public final static CvssIssuingEntityRole EMPTY_ROLE = null;
     }
 
-    public static class SourceSelectorEntryEntry<T extends CvssSource.NameProvider> implements Cloneable {
+    public static class SourceSelectorEntryEntry<T extends CvssSource.EntityNameProvider> implements Cloneable {
         private final T value;
         private final boolean inverted;
 
@@ -503,7 +503,7 @@ public class CvssSelector implements Cloneable {
          * @param checkValue The value to compare this instances value to.
          * @return true if the values match, false otherwise.
          */
-        public boolean matches(CvssSource.NameProvider checkValue) {
+        public boolean matches(CvssSource.EntityNameProvider checkValue) {
             final String checkName = checkValue == null ? null : checkValue.getName();
             final String thisName = value == null ? null : value.getName();
 
@@ -537,7 +537,7 @@ public class CvssSelector implements Cloneable {
             return (inverted ? "not:" : "") + (value == null ? "" : value.getName());
         }
 
-        public static <T extends CvssSource.NameProvider> SourceSelectorEntryEntry<T> fromString(String value, Function<String, T> extractor) {
+        public static <T extends CvssSource.EntityNameProvider> SourceSelectorEntryEntry<T> fromString(String value, Function<String, T> extractor) {
             if (value == null) return null;
             if (value.startsWith("not:")) {
                 final String param = value.substring(4);
@@ -848,10 +848,10 @@ public class CvssSelector implements Cloneable {
 
     public enum VectorEvaluatorOperation {
         IS_NULL(Objects::isNull),
-        IS_BASE_FULLY_DEFINED(CvssVector::isBaseDefined),
+        IS_BASE_FULLY_DEFINED(CvssVector::isBaseFullyDefined),
         IS_BASE_PARTIALLY_DEFINED(CvssVector::isAnyBaseDefined),
-        IS_ENVIRONMENTAL_PARTIALLY_DEFINED(vector -> vector instanceof MultiScoreCvssVector ? (((MultiScoreCvssVector) vector).isEnvironmentalDefined()) : (vector instanceof Cvss4P0 ? ((Cvss4P0) vector).isAnyEnvironmentalDefined() : false)),
-        IS_TEMPORAL_PARTIALLY_DEFINED(vector -> vector instanceof MultiScoreCvssVector ? (((MultiScoreCvssVector) vector).isTemporalDefined()) : false),
+        IS_ENVIRONMENTAL_PARTIALLY_DEFINED(vector -> vector instanceof MultiScoreCvssVector ? (((MultiScoreCvssVector) vector).isAnyEnvironmentalDefined()) : (vector instanceof Cvss4P0 ? ((Cvss4P0) vector).isAnyEnvironmentalDefined() : false)),
+        IS_TEMPORAL_PARTIALLY_DEFINED(vector -> vector instanceof MultiScoreCvssVector ? (((MultiScoreCvssVector) vector).isAnyTemporalDefined()) : false),
         IS_THREAT_PARTIALLY_DEFINED(vector -> vector instanceof MultiScoreCvssVector ? false : (vector instanceof Cvss4P0 ? ((Cvss4P0) vector).isAnyThreatDefined() : false));
 
         private final Predicate<CvssVector> predicate;

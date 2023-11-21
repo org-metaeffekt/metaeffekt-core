@@ -205,7 +205,7 @@ public class Cvss3P1Test {
         LOG.info("   Environmental score: [{}]", vector.getEnvironmentalScore());
         LOG.info(" Adjusted impact score: [{}]", vector.getAdjustedImpactScore());
         LOG.info("         Overall score: [{}]", vector.getOverallScore());
-        LOG.info("            Has scores: [{} {} {}]", vector.isBaseDefined(), vector.isTemporalDefined(), vector.isEnvironmentalDefined());
+        LOG.info("            Has scores: [{} {} {}]", vector.isBaseFullyDefined(), vector.isAnyTemporalDefined(), vector.isAnyEnvironmentalDefined());
         LOG.info("\n");
 
         Assert.assertEquals(base, vector.getBaseScore(), 0.01);

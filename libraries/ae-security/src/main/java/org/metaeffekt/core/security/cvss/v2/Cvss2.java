@@ -16,10 +16,10 @@
 package org.metaeffekt.core.security.cvss.v2;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
+import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -187,8 +187,8 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getTemporalScore() {
-        if (!isBaseDefined()) return 0;
-        if (!isTemporalDefined()) return 0;
+        if (!isBaseFullyDefined()) return 0;
+        if (!isAnyTemporalDefined()) return 0;
         return round(calculateTemporalScore(), 1);
     }
 
@@ -213,8 +213,8 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getEnvironmentalScore() {
-        if (!isBaseDefined()) return 0;
-        if (!isEnvironmentalDefined()) return 0;
+        if (!isBaseFullyDefined()) return 0;
+        if (!isAnyEnvironmentalDefined()) return 0;
         return round(calculateEnvironmentalScore(), 1);
     }
 
@@ -272,15 +272,15 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getAdjustedImpactScore() {
-        if (isEnvironmentalDefined())
+        if (isAnyEnvironmentalDefined())
             return round(calculateAdjustedImpact(), 1);
         return 0.0;
     }
 
     @Override
     public double getOverallScore() {
-        if (isEnvironmentalDefined()) return getEnvironmentalScore();
-        else if (isTemporalDefined()) return getTemporalScore();
+        if (isAnyEnvironmentalDefined()) return getEnvironmentalScore();
+        else if (isAnyTemporalDefined()) return getTemporalScore();
         return getBaseScore();
     }
 
@@ -406,39 +406,55 @@ public class Cvss2 extends MultiScoreCvssVector {
     }
 
     @Override
-    public boolean isBaseDefined() {
-        return accessVector != AccessVector.NULL &&
-                accessComplexity != AccessComplexity.NULL &&
-                authentication != Authentication.NULL &&
-                confidentialityImpact != CIAImpact.NULL &&
-                integrityImpact != CIAImpact.NULL &&
-                availabilityImpact != CIAImpact.NULL;
+    public boolean isBaseFullyDefined() {
+        return accessVector != AccessVector.NULL
+                && accessComplexity != AccessComplexity.NULL
+                && authentication != Authentication.NULL
+                && confidentialityImpact != CIAImpact.NULL
+                && integrityImpact != CIAImpact.NULL
+                && availabilityImpact != CIAImpact.NULL;
     }
 
     @Override
     public boolean isAnyBaseDefined() {
-        return accessVector != AccessVector.NULL ||
-                accessComplexity != AccessComplexity.NULL ||
-                authentication != Authentication.NULL ||
-                confidentialityImpact != CIAImpact.NULL ||
-                integrityImpact != CIAImpact.NULL ||
-                availabilityImpact != CIAImpact.NULL;
+        return accessVector != AccessVector.NULL
+                || accessComplexity != AccessComplexity.NULL
+                || authentication != Authentication.NULL
+                || confidentialityImpact != CIAImpact.NULL
+                || integrityImpact != CIAImpact.NULL
+                || availabilityImpact != CIAImpact.NULL;
     }
 
     @Override
-    public boolean isTemporalDefined() {
-        return exploitability != Exploitability.NULL ||
-                remediationLevel != RemediationLevel.NULL ||
-                reportConfidence != ReportConfidence.NULL;
+    public boolean isAnyTemporalDefined() {
+        return exploitability != Exploitability.NULL
+                || remediationLevel != RemediationLevel.NULL
+                || reportConfidence != ReportConfidence.NULL;
     }
 
     @Override
-    public boolean isEnvironmentalDefined() {
-        return collateralDamagePotential != CollateralDamagePotential.NULL ||
-                targetDistribution != TargetDistribution.NULL ||
-                confidentialityRequirement != CIARequirement.NULL ||
-                integrityRequirement != CIARequirement.NULL ||
-                availabilityRequirement != CIARequirement.NULL;
+    public boolean isTemporalFullyDefined() {
+        return exploitability != Exploitability.NULL
+                && remediationLevel != RemediationLevel.NULL
+                && reportConfidence != ReportConfidence.NULL;
+    }
+
+    @Override
+    public boolean isAnyEnvironmentalDefined() {
+        return collateralDamagePotential != CollateralDamagePotential.NULL
+                || targetDistribution != TargetDistribution.NULL
+                || confidentialityRequirement != CIARequirement.NULL
+                || integrityRequirement != CIARequirement.NULL
+                || availabilityRequirement != CIARequirement.NULL;
+    }
+
+    @Override
+    public boolean isEnvironmentalFullyDefined() {
+        return collateralDamagePotential != CollateralDamagePotential.NULL
+                && targetDistribution != TargetDistribution.NULL
+                && confidentialityRequirement != CIARequirement.NULL
+                && integrityRequirement != CIARequirement.NULL
+                && availabilityRequirement != CIARequirement.NULL;
     }
 
     @Override
@@ -806,7 +822,7 @@ public class Cvss2 extends MultiScoreCvssVector {
     }
 
     private void cleanupTemporalVectorParts() {
-        if (isTemporalDefined()) {
+        if (isAnyTemporalDefined()) {
             exploitability = exploitability == Exploitability.NULL ? Exploitability.NOT_DEFINED : exploitability;
             remediationLevel = remediationLevel == RemediationLevel.NULL ? RemediationLevel.NOT_DEFINED : remediationLevel;
             reportConfidence = reportConfidence == ReportConfidence.NULL ? ReportConfidence.NOT_DEFINED : reportConfidence;
@@ -818,7 +834,7 @@ public class Cvss2 extends MultiScoreCvssVector {
     }
 
     private void cleanupEnvironmentalVectorParts() {
-        if (isEnvironmentalDefined()) {
+        if (isAnyEnvironmentalDefined()) {
             collateralDamagePotential = collateralDamagePotential == CollateralDamagePotential.NULL ? CollateralDamagePotential.NOT_DEFINED : collateralDamagePotential;
             targetDistribution = targetDistribution == TargetDistribution.NULL ? TargetDistribution.NOT_DEFINED : targetDistribution;
             confidentialityRequirement = confidentialityRequirement == CIARequirement.NULL ? CIARequirement.NOT_DEFINED : confidentialityRequirement;

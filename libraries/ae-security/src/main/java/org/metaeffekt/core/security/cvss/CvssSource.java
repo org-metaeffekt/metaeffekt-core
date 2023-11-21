@@ -105,7 +105,7 @@ public class CvssSource<T extends CvssVector> {
         return Objects.hash(hostingEntity, issuingEntity, issuingEntityRole, vectorClass);
     }
 
-    public static class CvssEntity implements NameProvider {
+    public static class CvssEntity implements EntityNameProvider {
         private final String name; // from partnerName
         private final String email; // from steps.filter(link.startsWith("mailto:")).map(link.substring("mailto:".length())).findFirst()
         private final URL url; // from Security Advisories or fallback steps.filter(link.startsWith("http")).findFirst()
@@ -277,7 +277,7 @@ public class CvssSource<T extends CvssVector> {
         }
     }
 
-    public static class CvssIssuingEntityRole implements NameProvider {
+    public static class CvssIssuingEntityRole implements EntityNameProvider {
         private final String name;
 
         public CvssIssuingEntityRole(String name) {
@@ -317,21 +317,22 @@ public class CvssSource<T extends CvssVector> {
         }
     }
 
-    public interface NameProvider {
+    public interface EntityNameProvider {
         String getName();
-    }
 
-    private static String escapeName(String name) {
-        return name
-                .replace("_", "\\_")
-                .replace("-", "_");
-    }
 
-    private static String unescapeName(String name) {
-        // make sure to only translate those "_" back into "-" that do not have a "\\" in front of them
-        return name
-                .replaceAll("(?<!\\\\)_", "-")
-                .replace("\\_", "_");
+        default String getEscapedName() {
+            return getName()
+                    .replace("_", "\\_")
+                    .replace("-", "_");
+        }
+
+        static String unescapeEntityName(String name) {
+            // make sure to only translate those "_" back into "-" that do not have a "\\" in front of them
+            return name
+                    .replaceAll("(?<!\\\\)_", "-")
+                    .replace("\\_", "_");
+        }
     }
 
     public String toColumnHeaderString() {
@@ -345,7 +346,7 @@ public class CvssSource<T extends CvssVector> {
             throw new IllegalStateException("No hosting entity specified for CVSS source: " + this);
         }
 
-        return vectorVersion + " " + escapeName(hostingEntity.getName()) + (issuingEntityRole != null ? "-" + escapeName(issuingEntityRole.getName()) : "") + (issuingEntity != null ? "-" + escapeName(issuingEntity.getName()) : "");
+        return vectorVersion + " " + hostingEntity.getEscapedName() + (issuingEntityRole != null ? "-" + issuingEntityRole.getEscapedName() : "") + (issuingEntity != null ? "-" + issuingEntity.getEscapedName() : "");
     }
 
     public static <T extends CvssVector> String toCombinedColumnHeaderString(Collection<CvssSource<T>> sources) {
@@ -361,7 +362,7 @@ public class CvssSource<T extends CvssVector> {
 
         final StringJoiner joiner = new StringJoiner(" + ", vectorVersion + " ", "");
         for (CvssSource<T> source : sources) {
-            joiner.add(escapeName(source.getHostingEntity().getName()) + (source.getIssuingEntityRole() != null ? "-" + escapeName(source.getIssuingEntityRole().getName()) : "") + (source.getIssuingEntity() != null ? "-" + escapeName(source.getIssuingEntity().getName()) : ""));
+            joiner.add(source.getHostingEntity().getEscapedName() + (source.getIssuingEntityRole() != null ? "-" + source.getIssuingEntityRole().getEscapedName() : "") + (source.getIssuingEntity() != null ? "-" + source.getIssuingEntity().getEscapedName() : ""));
         }
         return joiner.toString();
     }
@@ -401,14 +402,14 @@ public class CvssSource<T extends CvssVector> {
         final CvssIssuingEntityRole issuingEntityRole;
 
         if (parts.length > 0) {
-            hostingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(unescapeName(parts[0]));
+            hostingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(EntityNameProvider.unescapeEntityName(parts[0]));
 
             if (parts.length == 2) {
                 issuingEntityRole = null;
-                issuingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(unescapeName(parts[1]));
+                issuingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(EntityNameProvider.unescapeEntityName(parts[1]));
             } else if (parts.length == 3) {
-                issuingEntityRole = CvssIssuingEntityRole.findOrCreateNew(unescapeName(parts[1]));
-                issuingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(unescapeName(parts[2]));
+                issuingEntityRole = CvssIssuingEntityRole.findOrCreateNew(EntityNameProvider.unescapeEntityName(parts[1]));
+                issuingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew(EntityNameProvider.unescapeEntityName(parts[2]));
             } else if (parts.length > 3) {
                 throw new IllegalArgumentException("Invalid CVSS source, requires at most hosting entity, issuing entity role and issuing entity: " + header);
             } else { // parts.length == 1

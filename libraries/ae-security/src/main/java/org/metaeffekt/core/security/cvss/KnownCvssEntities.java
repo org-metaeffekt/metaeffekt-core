@@ -47,7 +47,7 @@ public class KnownCvssEntities {
         //  - on cve.org https://www.cve.org/PartnerInformation/ListofPartners
         // the below file cna.json has been generated automatically by extracting contents from the cve.org site.
         // if an update is required, please either let the authors of this file know or update the file directly by
-        // using the schema file provided in the resources directory.
+        // using the schema file provided in the "resources" directory.
         parseEntitiesFromResource("/cvss/entities/cna.json", KnownCvssEntities.class);
         // assessment "status" files
         parseEntitiesFromResource("/cvss/entities/assessment.json", KnownCvssEntities.class);

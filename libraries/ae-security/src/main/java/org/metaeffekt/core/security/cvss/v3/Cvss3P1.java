@@ -181,7 +181,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
      */
     @Override
     public double getBaseScore() {
-        if (!isBaseDefined()) return 0;
+        if (!isBaseFullyDefined()) return 0;
         double impact = calculateImpactScore();
         if (impact <= 0) return 0.0;
         if (!scope.changed)
@@ -238,7 +238,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
      * @return The Cvss Temporal Score.
      */
     private double calculateTemporalScore() {
-        if (!isTemporalDefined()) return 0;
+        if (!isAnyTemporalDefined()) return 0;
         double exploitCodeMaturityFactor = exploitCodeMaturity == ExploitCodeMaturity.NULL ? ExploitCodeMaturity.NOT_DEFINED.factor : exploitCodeMaturity.factor;
         double remediationLevelFactor = remediationLevel == RemediationLevel.NULL ? RemediationLevel.NOT_DEFINED.factor : remediationLevel.factor;
         double reportConfidenceFactor = reportConfidence == ReportConfidence.NULL ? ReportConfidence.NOT_DEFINED.factor : reportConfidence.factor;
@@ -248,7 +248,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public double getTemporalScore() {
-        return isBaseDefined() ? roundUp(calculateTemporalScore()) : 0;
+        return isBaseFullyDefined() ? roundUp(calculateTemporalScore()) : 0;
     }
 
     /**
@@ -260,8 +260,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
      */
     @Override
     public double getEnvironmentalScore() {
-        if (!isBaseDefined()) return 0;
-        if (!isEnvironmentalDefined()) return 0;
+        if (!isBaseFullyDefined()) return 0;
+        if (!isAnyEnvironmentalDefined()) return 0;
 
         double modifiedImpact = calculateAdjustedImpact();
         if (modifiedImpact <= 0) return 0;
@@ -313,8 +313,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public double getAdjustedImpactScore() {
-        if (!isBaseDefined()) return 0;
-        if (!isEnvironmentalDefined()) return 0;
+        if (!isBaseFullyDefined()) return 0;
+        if (!isAnyEnvironmentalDefined()) return 0;
 
         return Math.max(0, round(calculateAdjustedImpact(), 1));
     }
@@ -343,8 +343,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public double getOverallScore() {
-        if (isEnvironmentalDefined()) return getEnvironmentalScore();
-        else if (isTemporalDefined()) return getTemporalScore();
+        if (isAnyEnvironmentalDefined()) return getEnvironmentalScore();
+        else if (isAnyTemporalDefined()) return getTemporalScore();
         return getBaseScore();
     }
 
@@ -354,49 +354,71 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     }
 
     @Override
-    public boolean isBaseDefined() {
-        return attackVector != AttackVector.NULL &&
-                attackComplexity != AttackComplexity.NULL &&
-                privilegesRequired != PrivilegesRequired.NULL &&
-                userInteraction != UserInteraction.NULL &&
-                scope != Scope.NULL &&
-                confidentialityImpact != CIAImpact.NULL &&
-                integrityImpact != CIAImpact.NULL &&
-                availabilityImpact != CIAImpact.NULL;
+    public boolean isBaseFullyDefined() {
+        return attackVector != AttackVector.NULL
+                && attackComplexity != AttackComplexity.NULL
+                && privilegesRequired != PrivilegesRequired.NULL
+                && userInteraction != UserInteraction.NULL
+                && scope != Scope.NULL
+                && confidentialityImpact != CIAImpact.NULL
+                && integrityImpact != CIAImpact.NULL
+                && availabilityImpact != CIAImpact.NULL;
     }
 
     @Override
     public boolean isAnyBaseDefined() {
-        return attackVector != AttackVector.NULL ||
-                attackComplexity != AttackComplexity.NULL ||
-                privilegesRequired != PrivilegesRequired.NULL ||
-                userInteraction != UserInteraction.NULL ||
-                scope != Scope.NULL ||
-                confidentialityImpact != CIAImpact.NULL ||
-                integrityImpact != CIAImpact.NULL ||
-                availabilityImpact != CIAImpact.NULL;
+        return attackVector != AttackVector.NULL
+                || attackComplexity != AttackComplexity.NULL
+                || privilegesRequired != PrivilegesRequired.NULL
+                || userInteraction != UserInteraction.NULL
+                || scope != Scope.NULL
+                || confidentialityImpact != CIAImpact.NULL
+                || integrityImpact != CIAImpact.NULL
+                || availabilityImpact != CIAImpact.NULL;
     }
 
     @Override
-    public boolean isTemporalDefined() {
-        return exploitCodeMaturity != ExploitCodeMaturity.NULL ||
-                remediationLevel != RemediationLevel.NULL ||
-                reportConfidence != ReportConfidence.NULL;
+    public boolean isAnyTemporalDefined() {
+        return exploitCodeMaturity != ExploitCodeMaturity.NULL
+                || remediationLevel != RemediationLevel.NULL
+                || reportConfidence != ReportConfidence.NULL;
     }
 
     @Override
-    public boolean isEnvironmentalDefined() {
-        return modifiedAttackVector != AttackVector.NULL ||
-                modifiedAttackComplexity != AttackComplexity.NULL ||
-                modifiedPrivilegesRequired != PrivilegesRequired.NULL ||
-                modifiedUserInteraction != UserInteraction.NULL ||
-                modifiedScope != Scope.NULL ||
-                modifiedConfidentialityImpact != CIAImpact.NULL ||
-                modifiedIntegrityImpact != CIAImpact.NULL ||
-                modifiedAvailabilityImpact != CIAImpact.NULL ||
-                confidentialityRequirement != CIARequirement.NULL ||
-                integrityRequirement != CIARequirement.NULL ||
-                availabilityRequirement != CIARequirement.NULL;
+    public boolean isTemporalFullyDefined() {
+        return exploitCodeMaturity != ExploitCodeMaturity.NULL
+                && remediationLevel != RemediationLevel.NULL
+                && reportConfidence != ReportConfidence.NULL;
+    }
+
+    @Override
+    public boolean isAnyEnvironmentalDefined() {
+        return modifiedAttackVector != AttackVector.NULL
+                || modifiedAttackComplexity != AttackComplexity.NULL
+                || modifiedPrivilegesRequired != PrivilegesRequired.NULL
+                || modifiedUserInteraction != UserInteraction.NULL
+                || modifiedScope != Scope.NULL
+                || modifiedConfidentialityImpact != CIAImpact.NULL
+                || modifiedIntegrityImpact != CIAImpact.NULL
+                || modifiedAvailabilityImpact != CIAImpact.NULL
+                || confidentialityRequirement != CIARequirement.NULL
+                || integrityRequirement != CIARequirement.NULL
+                || availabilityRequirement != CIARequirement.NULL;
+    }
+
+    @Override
+    public boolean isEnvironmentalFullyDefined() {
+        return modifiedAttackVector != AttackVector.NULL
+                && modifiedAttackComplexity != AttackComplexity.NULL
+                && modifiedPrivilegesRequired != PrivilegesRequired.NULL
+                && modifiedUserInteraction != UserInteraction.NULL
+                && modifiedScope != Scope.NULL
+                && modifiedConfidentialityImpact != CIAImpact.NULL
+                && modifiedIntegrityImpact != CIAImpact.NULL
+                && modifiedAvailabilityImpact != CIAImpact.NULL
+                && confidentialityRequirement != CIARequirement.NULL
+                && integrityRequirement != CIARequirement.NULL
+                && availabilityRequirement != CIARequirement.NULL;
     }
 
     @Override
@@ -645,8 +667,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
      */
     @Override
     public String getWebEditorLink() {
-        final String vectorString = this.toString(!isEnvironmentalDefined());
-        if (this.isEnvironmentalDefined() || this.isTemporalDefined()) {
+        final String vectorString = this.toString(!isAnyEnvironmentalDefined());
+        if (this.isAnyEnvironmentalDefined() || this.isAnyTemporalDefined()) {
             return String.format("https://www.first.org/cvss/calculator/3.1#%s", vectorString);
         } else {
             return String.format("https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator?vector=%s&version=3.1", vectorString.replace(this.getName() + "/", ""));
@@ -1006,7 +1028,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     }
 
     private void cleanupTemporalVectorParts() {
-        if (isTemporalDefined()) {
+        if (isAnyTemporalDefined()) {
             exploitCodeMaturity = exploitCodeMaturity == ExploitCodeMaturity.NULL ? ExploitCodeMaturity.NOT_DEFINED : exploitCodeMaturity;
             remediationLevel = remediationLevel == RemediationLevel.NULL ? RemediationLevel.NOT_DEFINED : remediationLevel;
             reportConfidence = reportConfidence == ReportConfidence.NULL ? ReportConfidence.NOT_DEFINED : reportConfidence;
@@ -1018,7 +1040,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     }
 
     private void cleanupEnvironmentalVectorParts() {
-        if (isEnvironmentalDefined()) {
+        if (isAnyEnvironmentalDefined()) {
             modifiedAttackVector = modifiedAttackVector == AttackVector.NULL ? AttackVector.NOT_DEFINED : modifiedAttackVector;
             modifiedAttackComplexity = modifiedAttackComplexity == AttackComplexity.NULL ? AttackComplexity.NOT_DEFINED : modifiedAttackComplexity;
             modifiedPrivilegesRequired = modifiedPrivilegesRequired == PrivilegesRequired.NULL ? PrivilegesRequired.NOT_DEFINED : modifiedPrivilegesRequired;

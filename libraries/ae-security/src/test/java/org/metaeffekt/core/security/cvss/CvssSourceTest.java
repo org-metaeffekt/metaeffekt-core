@@ -92,13 +92,24 @@ public class CvssSourceTest {
 
     @Test
     public void fromUnknownColumnHeaderEscapeCharactersTest() {
-        {
-            final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO_HOST-DEMO_\\_ROLE-DEMO_ISSUER\\_");
-            Assert.assertEquals(Cvss2.class, nvdCnaNvdEntitySource.getVectorClass());
-            Assert.assertEquals("DEMO-HOST", nvdCnaNvdEntitySource.getHostingEntity().getName());
-            Assert.assertEquals("DEMO-ISSUER_", nvdCnaNvdEntitySource.getIssuingEntity().getName());
-            Assert.assertEquals("DEMO-_ROLE", nvdCnaNvdEntitySource.getIssuingEntityRole().getName());
-        }
+        final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO_HOST-DEMO_\\_ROLE-DEMO_ISSUER\\_");
+        Assert.assertEquals(Cvss2.class, nvdCnaNvdEntitySource.getVectorClass());
+        Assert.assertEquals("DEMO-HOST", nvdCnaNvdEntitySource.getHostingEntity().getName());
+        Assert.assertEquals("DEMO-ISSUER_", nvdCnaNvdEntitySource.getIssuingEntity().getName());
+        Assert.assertEquals("DEMO-_ROLE", nvdCnaNvdEntitySource.getIssuingEntityRole().getName());
+    }
+
+    @Test
+    public void parseDashEmailTest() {
+        final CvssSource.CvssEntity issuingEntity = KnownCvssEntities.findByNameOrMailOrCreateNew("security-alert@emc.com");
+        final String escapedIssuingEntityName = issuingEntity.getEscapedName();
+        Assert.assertEquals("security_alert@emc.com", escapedIssuingEntityName);
+
+        final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss3P1.getVersionName() + " NVD-CNA-" + escapedIssuingEntityName);
+        Assert.assertEquals(Cvss3P1.class, nvdCnaNvdEntitySource.getVectorClass());
+        Assert.assertEquals("NVD", nvdCnaNvdEntitySource.getHostingEntity().getName());
+        Assert.assertEquals("CNA", nvdCnaNvdEntitySource.getIssuingEntityRole().getName());
+        Assert.assertEquals("security-alert@emc.com", nvdCnaNvdEntitySource.getIssuingEntity().getName());
     }
 
     @Test

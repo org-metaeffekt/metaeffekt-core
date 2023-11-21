@@ -99,7 +99,7 @@ public class Cvss2Test {
         LOG.info("   Environmental score: [{}]", cvss2.getEnvironmentalScore());
         LOG.info(" Adjusted impact score: [{}]", cvss2.getAdjustedImpactScore());
         LOG.info("         Overall score: [{}]", cvss2.getOverallScore());
-        LOG.info("            Has scores: [{} {} {}]", cvss2.isBaseDefined(), cvss2.isTemporalDefined(), cvss2.isEnvironmentalDefined());
+        LOG.info("            Has scores: [{} {} {}]", cvss2.isBaseFullyDefined(), cvss2.isAnyTemporalDefined(), cvss2.isAnyEnvironmentalDefined());
         LOG.info("\n");
 
         Assert.assertEquals(base, cvss2.getBaseScore(), 0.01);

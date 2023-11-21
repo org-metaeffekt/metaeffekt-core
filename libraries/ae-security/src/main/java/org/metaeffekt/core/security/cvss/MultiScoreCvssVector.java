@@ -44,9 +44,13 @@ public abstract class MultiScoreCvssVector extends CvssVector {
         return ranges.getRange(getOverallScore());
     }
 
-    public abstract boolean isTemporalDefined();
+    public abstract boolean isAnyTemporalDefined();
 
-    public abstract boolean isEnvironmentalDefined();
+    public abstract boolean isTemporalFullyDefined();
+
+    public abstract boolean isAnyEnvironmentalDefined();
+
+    public abstract boolean isEnvironmentalFullyDefined();
 
     public abstract void clearTemporal();
 
