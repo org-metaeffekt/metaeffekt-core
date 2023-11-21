@@ -23,7 +23,6 @@ import org.metaeffekt.core.security.cvss.CvssSource.CvssEntity;
 import org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
-import org.metaeffekt.core.security.cvss.SourcedCvssVector;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,18 +53,18 @@ public class CvssSelector implements Cloneable {
         this(rules, Collections.emptyList(), Collections.emptyList());
     }
 
-    public <T extends CvssVector> SourcedCvssVector<T> selectVector(Collection<SourcedCvssVector<T>> vectors) {
-        SourcedCvssVector<T> effective = null;
+    public <T extends CvssVector<T>> T selectVector(Collection<CvssVector<T>> vectors) {
+        CvssVector<T> effective = null;
         final Map<String, Integer> stats = new HashMap<>();
 
         for (CvssRule rule : rules) {
-            final SourcedCvssVector<T> chosenVector = rule.getSourceSelector().selectVector(vectors);
+            final CvssVector<T> chosenVector = rule.getSourceSelector().selectVector(vectors);
 
             final List<SelectorVectorEvaluator> vectorEvaluators = rule.getVectorEvaluators();
 
             boolean skip = false;
             for (SelectorVectorEvaluator vectorEvaluator : vectorEvaluators) {
-                if (vectorEvaluator.evaluate(chosenVector == null ? null : chosenVector.getCvssVector())) {
+                if (vectorEvaluator.evaluate(chosenVector)) {
                     final EvaluatorAction action = vectorEvaluator.getAction();
                     if (action == EvaluatorAction.RETURN_NULL) {
                         return null;
@@ -75,11 +74,11 @@ public class CvssSelector implements Cloneable {
                         skip = true;
                         break;
                     } else if (action == EvaluatorAction.RETURN_PREVIOUS) {
-                        return effective;
+                        return (T) effective;
                     }
                 }
             }
-            if ((chosenVector == null || chosenVector.getCvssVector() == null) & vectorEvaluators.isEmpty()) {
+            if (chosenVector == null && vectorEvaluators.isEmpty()) {
                 for (SelectorStatsCollector collector : rule.getStatsCollectors()) {
                     collector.apply(stats, 0, 1, () -> 0);
                 }
@@ -92,11 +91,12 @@ public class CvssSelector implements Cloneable {
                     effective = chosenVector.clone();
 
                     for (SelectorStatsCollector collector : rule.getStatsCollectors()) {
-                        collector.apply(stats, 1, 0, effective.getCvssVector()::size);
+                        collector.apply(stats, 1, 0, effective::size);
                     }
                 } else {
-                    final Pair<T, Integer> result = rule.getMergingMethod().mergeVectors(effective.getCvssVector(), chosenVector.getCvssVector());
-                    effective = effective.deriveAppendSourceSetVector(chosenVector.getCvssSource(), result.getLeft());
+                    final Pair<T, Integer> result = rule.getMergingMethod().mergeVectors(effective, chosenVector);
+                    effective = result.getLeft();
+                    effective.addSource(chosenVector.getCvssSource());
 
                     for (SelectorStatsCollector collector : rule.getStatsCollectors()) {
                         collector.apply(stats, 1, 0, result::getRight);
@@ -123,7 +123,7 @@ public class CvssSelector implements Cloneable {
         }
 
         for (SelectorVectorEvaluator vectorEvaluator : selectorVectorEvaluators) {
-            if (vectorEvaluator.evaluate(effective == null ? null : effective.getCvssVector())) {
+            if (vectorEvaluator.evaluate(effective)) {
                 final EvaluatorAction action = vectorEvaluator.getAction();
                 if (action == EvaluatorAction.RETURN_NULL) {
                     return null;
@@ -133,19 +133,19 @@ public class CvssSelector implements Cloneable {
             }
         }
 
-        return effective;
+        return (T) effective;
     }
 
-    public <T extends CvssVector> SourcedCvssVector<T> selectVector(Collection<SourcedCvssVector<?>> vectors, Class<T> vectorClass) {
-        final List<SourcedCvssVector<T>> checkVectors = vectors.stream()
-                .filter(v -> vectorClass.isAssignableFrom(v.getCvssVector().getClass()))
-                .map(v -> (SourcedCvssVector<T>) v)
+    public <T extends CvssVector<T>> T selectVector(Collection<CvssVector<?>> vectors, Class<T> vectorClass) {
+        final List<CvssVector<T>> checkVectors = vectors.stream()
+                .filter(v -> vectorClass.isAssignableFrom(v.getClass()))
+                .map(v -> (CvssVector<T>) v)
                 .collect(Collectors.toList());
 
         return selectVector(checkVectors);
     }
 
-    public <T extends CvssVector> SourcedCvssVector<T> selectVector(SourcedCvssVectorSet vectors, Class<T> vectorClass) {
+    public <T extends CvssVector<T>> T selectVector(CvssVectorSet vectors, Class<T> vectorClass) {
         return selectVector(vectors.getCvssVectors(), vectorClass);
     }
 
@@ -312,9 +312,9 @@ public class CvssSelector implements Cloneable {
             this.preferredSources = Arrays.asList(preferredSources);
         }
 
-        public <T extends CvssVector> SourcedCvssVector<T> selectVector(Collection<SourcedCvssVector<T>> vectors) {
+        public <T extends CvssVector<T>> CvssVector<T> selectVector(Collection<CvssVector<T>> vectors) {
             for (SourceSelectorEntry source : preferredSources) {
-                for (SourcedCvssVector<T> vector : vectors) {
+                for (CvssVector<T> vector : vectors) {
                     if (source.matches(vector.getCvssSource())) {
                         return vector;
                     }
@@ -323,9 +323,9 @@ public class CvssSelector implements Cloneable {
             return null;
         }
 
-        public SourcedCvssVector<? extends CvssVector> selectVectorUnchecked(Collection<SourcedCvssVector<? extends CvssVector>> vectors) {
+        public CvssVector<? extends CvssVector<?>> selectVectorUnchecked(Collection<CvssVector<? extends CvssVector<?>>> vectors) {
             for (SourceSelectorEntry source : preferredSources) {
-                for (SourcedCvssVector<? extends CvssVector> vector : vectors) {
+                for (CvssVector<? extends CvssVector<?>> vector : vectors) {
                     if (source.matches(vector.getCvssSource())) {
                         return vector;
                     }
@@ -774,28 +774,26 @@ public class CvssSelector implements Cloneable {
          * Represents a merging method that applies all parts of the newCvssVector to the base CvssVector.
          */
         ALL((base, newVector) -> {
-            final CvssVector clone = base.clone();
-            final int parts = clone.applyVector(newVector);
+            final CvssVector<?> clone = base.clone();
+            final int parts = clone.applyVector(newVector.toString());
             return Pair.of(clone, parts);
         }),
         /**
          * Represents a merging method that selectively includes attributes.
          * Apply all parts of the newCvssVector to the base CvssVector if it results in a lower/equal overall score.
          */
-        // LOWER((base, newVector) -> base.clone().applyVectorPartsIfLower(newVector, CvssVector::getOverallScore)),
         LOWER((base, newVector) -> {
-            final CvssVector clone = base.clone();
-            final int parts = clone.applyVectorPartsIfLower(newVector, CvssVector::getOverallScore);
+            final CvssVector<?> clone = base.clone();
+            final int parts = clone.applyVectorPartsIfLower(newVector.toString(), CvssVector::getOverallScore);
             return Pair.of(clone, parts);
         }),
         /**
          * Represents a merging method that selectively includes attributes.
          * Apply all parts of the newCvssVector to the base CvssVector if it results in a higher/equal overall score.
          */
-        // HIGHER((base, newVector) -> base.clone().applyVectorPartsIfHigher(newVector, CvssVector::getOverallScore)),
         HIGHER((base, newVector) -> {
-            final CvssVector clone = base.clone();
-            final int parts = clone.applyVectorPartsIfHigher(newVector, CvssVector::getOverallScore);
+            final CvssVector<?> clone = base.clone();
+            final int parts = clone.applyVectorPartsIfHigher(newVector.toString(), CvssVector::getOverallScore);
             return Pair.of(clone, parts);
         }),
         /**
@@ -803,13 +801,13 @@ public class CvssSelector implements Cloneable {
          */
         OVERWRITE((base, newVector) -> Pair.of(newVector.clone(), 0));
 
-        private final BiFunction<CvssVector, CvssVector, Pair<CvssVector, Integer>> mergingFunction;
+        private final BiFunction<CvssVector<?>, CvssVector<?>, Pair<CvssVector<?>, Integer>> mergingFunction;
 
-        MergingMethod(BiFunction<CvssVector, CvssVector, Pair<CvssVector, Integer>> mergingFunction) {
+        MergingMethod(BiFunction<CvssVector<?>, CvssVector<?>, Pair<CvssVector<?>, Integer>> mergingFunction) {
             this.mergingFunction = mergingFunction;
         }
 
-        public <T extends CvssVector> Pair<T, Integer> mergeVectors(T base, T newVector) {
+        public <T extends CvssVector<T>> Pair<T, Integer> mergeVectors(CvssVector<T> base, CvssVector<T> newVector) {
             return (Pair<T, Integer>) mergingFunction.apply(base, newVector);
         }
     }

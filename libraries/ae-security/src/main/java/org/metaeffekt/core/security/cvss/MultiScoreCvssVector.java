@@ -15,18 +15,36 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 
-public abstract class MultiScoreCvssVector extends CvssVector {
+public abstract class MultiScoreCvssVector<T extends CvssVector<T>> extends CvssVector<T> {
 
     private final static Logger LOG = LoggerFactory.getLogger(MultiScoreCvssVector.class);
+
+    public MultiScoreCvssVector() {
+        super();
+    }
+
+    public MultiScoreCvssVector(CvssSource<T> source) {
+        super(source);
+    }
+
+    public MultiScoreCvssVector(CvssSource<T> source, JSONObject applicabilityCondition) {
+        super(source, applicabilityCondition);
+    }
+
+    public MultiScoreCvssVector(Collection<CvssSource<T>> sources, JSONObject applicabilityCondition) {
+        super(sources, applicabilityCondition);
+    }
 
     public abstract double getImpactScore();
 
@@ -56,7 +74,7 @@ public abstract class MultiScoreCvssVector extends CvssVector {
 
     public abstract void clearEnvironmental();
 
-    public static double getMaxScore(Function<MultiScoreCvssVector, Double> scoreType, MultiScoreCvssVector... cvsses) {
+    public static <T extends MultiScoreCvssVector<T>> double getMaxScore(Function<MultiScoreCvssVector<T>, Double> scoreType, MultiScoreCvssVector<T>... cvsses) {
         return Arrays.stream(cvsses)
                 .filter(Objects::nonNull)
                 .map(scoreType)
@@ -64,14 +82,14 @@ public abstract class MultiScoreCvssVector extends CvssVector {
                 .orElse(-1.0);
     }
 
-    public static <T extends MultiScoreCvssVector> T getMaxVector(Function<T, Double> scoreType, T... cvsses) {
+    public static <T extends MultiScoreCvssVector<T>> T getMaxVector(Function<T, Double> scoreType, T... cvsses) {
         return Arrays.stream(cvsses)
                 .filter(Objects::nonNull)
                 .max(Comparator.comparingDouble(scoreType::apply))
                 .orElse(null);
     }
 
-    public static double getMaxScore(Function<BakedCvssVectorScores, Double> scoreType, BakedCvssVectorScores... cvsses) {
+    public static <T extends MultiScoreCvssVector<T>> double getMaxScore(Function<BakedCvssVectorScores<T>, Double> scoreType, BakedCvssVectorScores<T>... cvsses) {
         return Arrays.stream(cvsses)
                 .filter(Objects::nonNull)
                 .map(scoreType)

@@ -16,6 +16,8 @@
 package org.metaeffekt.core.security.cvss;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
@@ -23,12 +25,37 @@ import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class CvssVector {
+public abstract class CvssVector<T extends CvssVector<T>> {
 
     private final static Logger LOG = LoggerFactory.getLogger(CvssVector.class);
+
+    protected final List<CvssSource<T>> sources = new ArrayList<>();
+    protected final JSONObject applicabilityCondition;
+
+    protected BakedCvssVectorScores<T> bakedScores;
+
+    public CvssVector() {
+        this.applicabilityCondition = new JSONObject();
+    }
+
+    public CvssVector(CvssSource<T> source) {
+        this.addSource(source);
+        this.applicabilityCondition = new JSONObject();
+    }
+
+    public CvssVector(CvssSource<T> source, JSONObject applicabilityCondition) {
+        this.addSource(source);
+        this.applicabilityCondition = applicabilityCondition;
+    }
+
+    public CvssVector(Collection<CvssSource<T>> sources, JSONObject applicabilityCondition) {
+        this.addSources(sources);
+        this.applicabilityCondition = applicabilityCondition;
+    }
 
     public abstract String getName();
 
@@ -49,12 +76,72 @@ public abstract class CvssVector {
      */
     protected abstract void completeVector();
 
-    public abstract BakedCvssVectorScores<? extends CvssVector> bakeScores();
-
     protected abstract boolean applyVectorArgument(String identifier, String value);
 
     @Override
-    public abstract CvssVector clone();
+    public abstract T clone();
+
+    protected abstract BakedCvssVectorScores<T> bakeScores();
+
+    public BakedCvssVectorScores<T> getBakedScores() {
+        if (bakedScores == null) {
+            bakedScores = bakeScores();
+        }
+        return bakedScores;
+    }
+
+    public JSONObject getApplicabilityCondition() {
+        return applicabilityCondition;
+    }
+
+    public void putAllApplicabilityCondition(Map<String, Object> condition) {
+        for (String key : condition.keySet()) {
+            applicabilityCondition.put(key, condition.get(key));
+        }
+    }
+
+    public void putAllApplicabilityCondition(JSONObject condition) {
+        for (String key : condition.keySet()) {
+            applicabilityCondition.put(key, condition.get(key));
+        }
+    }
+
+    /* SOURCES */
+
+    public void addSource(CvssSource<T> source) {
+        Objects.requireNonNull(source, "Vector source must not be null");
+        this.sources.add(source);
+    }
+
+    public void addSources(Collection<CvssSource<T>> sources) {
+        Objects.requireNonNull(sources, "Vector sources collection must not be null when adding multiple sources");
+        sources.forEach(source -> Objects.requireNonNull(source, "Vector source must not be null when adding multiple sources " + sources));
+        this.sources.addAll(sources);
+    }
+
+    public List<CvssSource<T>> getCvssSources() {
+        return sources;
+    }
+
+    public CvssSource<T> getLatestSource() {
+        if (sources != null && !sources.isEmpty()) {
+            return sources.get(sources.size() - 1);
+        }
+        return null;
+    }
+
+    public CvssSource<T> getInitialSource() {
+        if (sources != null && !sources.isEmpty()) {
+            return sources.get(0);
+        }
+        return null;
+    }
+
+    public CvssSource<T> getCvssSource() {
+        return getInitialSource();
+    }
+
+    /* APPLYING VECTORS */
 
     public int applyVector(String vector) {
         if (vector == null) return 0;
@@ -80,10 +167,11 @@ public abstract class CvssVector {
 
         completeVector();
 
+        bakedScores = null;
         return appliedCount;
     }
 
-    <T extends CvssVector> int applyVectorPartsIf(String vector, Function<T, Double> scoreType, boolean lower) {
+    int applyVectorPartsIf(String vector, Function<T, Double> scoreType, boolean lower) {
         if (vector == null) return 0;
 
         final String normalizedVector = normalizeVector(vector);
@@ -97,8 +185,7 @@ public abstract class CvssVector {
             if (StringUtils.isEmpty(argument)) continue;
             final String[] parts = argument.split(":", 2);
 
-            final CvssVector cloneBase = this.clone();
-            final T clone = (T) cloneBase;
+            final T clone = this.clone();
 
             final double currentScore = scoreType.apply(clone);
 
@@ -123,28 +210,39 @@ public abstract class CvssVector {
             }
         }
 
+        bakedScores = null;
         return appliedPartsCount;
     }
 
-    public int applyVector(CvssVector vector) {
+    public int applyVector(CvssVector<T> vector) {
         if (vector == null) return 0;
         return applyVector(vector.toString());
     }
 
-    public CvssVector applyVectorChain(CvssVector vector) {
+    public CvssVector<T> applyVectorAndReturn(CvssVector<T> vector) {
         if (vector == null) return this;
         applyVector(vector.toString());
         return this;
     }
 
-    public <T extends CvssVector> int applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
+    public int applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
         if (vector == null) return 0;
         return applyVectorPartsIf(vector.toString(), scoreType, true);
     }
 
-    public <T extends CvssVector> int applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
+    public int applyVectorPartsIfLower(String vector, Function<T, Double> scoreType) {
+        if (vector == null) return 0;
+        return applyVectorPartsIf(vector, scoreType, true);
+    }
+
+    public int applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
         if (vector == null) return 0;
         return applyVectorPartsIf(vector.toString(), scoreType, false);
+    }
+
+    public int applyVectorPartsIfHigher(String vector, Function<T, Double> scoreType) {
+        if (vector == null) return 0;
+        return applyVectorPartsIf(vector, scoreType, false);
     }
 
     protected static String normalizeVector(String vector) {
@@ -156,27 +254,27 @@ public abstract class CvssVector {
                 .trim();
     }
 
-    public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
+    public static <T extends CvssVector<T>> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
         final T cvssVector = constructor.get();
         final int unknownAttributes = cvssVector.applyVector(vector);
         return unknownAttributes > 0 ? null : cvssVector;
     }
 
-    public static String getVersionName(Class<? extends CvssVector> clazz) {
+    public static <T extends CvssVector<T>> String getVersionName(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
-        } else if (clazz == Cvss2.class) {
+        } else if (Cvss2.class.isAssignableFrom(clazz)) {
             return Cvss2.getVersionName();
-        } else if (clazz == Cvss3P1.class) {
+        } else if (Cvss3P1.class.isAssignableFrom(clazz)) {
             return Cvss3P1.getVersionName();
-        } else if (clazz == Cvss4P0.class) {
+        } else if (Cvss4P0.class.isAssignableFrom(clazz)) {
             return Cvss4P0.getVersionName();
         } else {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: " + clazz.getSimpleName());
         }
     }
 
-    public static Class<? extends CvssVector> classFromVersionName(String versionName) {
+    public static Class<? extends CvssVector<?>> classFromVersionName(String versionName) {
         if (versionName == null) {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
         } else if (versionName.equals(Cvss2.getVersionName())) {
@@ -200,7 +298,7 @@ public abstract class CvssVector {
      * @param vector the vector to parse
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
-    public static CvssVector parseVector(String vector) {
+    public static CvssVector<?> parseVector(String vector) {
         if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector))) {
             return null;
         }
@@ -231,5 +329,68 @@ public abstract class CvssVector {
             LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
             return null;
         }
+    }
+
+    /* SERIALIZATION */
+
+    public JSONObject toJson() {
+        final JSONObject json = new JSONObject();
+        json.put("sources", new JSONArray(sources.stream().map(CvssSource::toColumnHeaderString).toArray()));
+        json.put("vector", toString());
+        if (applicabilityCondition != null) {
+            json.put("condition", applicabilityCondition);
+        }
+        return json;
+    }
+
+    public static <T extends CvssVector<T>> CvssVector<T> fromJson(JSONObject json) {
+        final List<CvssSource<T>> sources;
+        if (json.has("source")) {
+            final CvssSource<T> source = (CvssSource<T>) CvssSource.fromColumnHeaderString(json.getString("source"));
+            sources = Collections.singletonList(source);
+        } else if (json.has("sources")) {
+            final JSONArray sourcesJson = json.getJSONArray("sources");
+            sources = new ArrayList<>();
+            for (int i = 0; i < sourcesJson.length(); i++) {
+                sources.add((CvssSource<T>) CvssSource.fromColumnHeaderString(sourcesJson.getString(i)));
+            }
+            if (sources.isEmpty()) {
+                throw new IllegalArgumentException("No sources found in json [" + json + "]");
+            }
+        } else {
+            sources = Collections.emptyList();
+        }
+
+        final T vector;
+        if (!sources.isEmpty()) {
+            vector = sources.get(0).parseVector(json.getString("vector"));
+        } else {
+            vector = (T) parseVector(json.getString("vector"));
+        }
+
+        if (json.has("condition")) {
+            final JSONObject condition = json.getJSONObject("condition");
+            for (String key : condition.keySet()) {
+                vector.getApplicabilityCondition().put(key, condition.get(key));
+            }
+            vector.addSources(sources);
+        } else {
+            vector.addSources(sources);
+        }
+        return vector;
+    }
+
+    public static JSONArray toJson(List<CvssVector<?>> vectorsList) {
+        final JSONArray json = new JSONArray();
+        vectorsList.forEach(sourcedCvssVector -> json.put(sourcedCvssVector.toJson()));
+        return json;
+    }
+
+    public static List<CvssVector<?>> fromJson(JSONArray json) {
+        final List<CvssVector<?>> vectorsList = new ArrayList<>();
+        for (int i = 0; i < json.length(); i++) {
+            vectorsList.add(CvssVector.fromJson(json.getJSONObject(i)));
+        }
+        return vectorsList;
     }
 }

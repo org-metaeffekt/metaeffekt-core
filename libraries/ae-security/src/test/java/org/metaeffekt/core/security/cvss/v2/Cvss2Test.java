@@ -27,13 +27,13 @@ public class Cvss2Test {
     public void cvss2Test() {
         // CVE-2021-29425
         calculateCvss2("AV:N/AC:L/Au:N/C:P/I:N/A:N",
-                5.0, 2.9, 10.0, 0, 0, 0, 5.0);
+                5.0, 2.9, 10.0, Double.NaN, Double.NaN, Double.NaN, 5.0);
         calculateCvss2("AV:N/AC:L/Au:N/C:P/I:N/A:N/E:U/RL:W/RC:UR/CDP:L/TD:M/CR:M/IR:H/AR:L",
                 5.0, 2.9, 10.0, 3.8, 3.3, 2.9, 3.3);
 
         // CVE-2002-0392
         calculateCvss2("AV:N/AC:L/Au:N/C:P/I:P/A:P",
-                7.5, 6.4, 10.0, 0, 0, 0, 7.5);
+                7.5, 6.4, 10.0, Double.NaN, Double.NaN, Double.NaN, 7.5);
         calculateCvss2("AV:N/AC:L/Au:N/C:P/I:P/A:P/E:F/RL:OF/RC:C/CDP:H/TD:H/CR:M/IR:M/AR:H",
                 7.5, 6.4, 10.0, 6.2, 8.3, 7.2, 8.3);
 
@@ -48,10 +48,10 @@ public class Cvss2Test {
                 5.0, 2.9, 10.0, 4.8, 6.3, 2.9, 6.3);
 
         calculateCvss2("AV:N/AC:L/Au:M/C:C/I:P/A:P",
-                7.3, 8.5, 6.4, 0.0, 0.0, 0.0, 7.3);
+                7.3, 8.5, 6.4, Double.NaN, Double.NaN, Double.NaN, 7.3);
 
         calculateCvss2("AV:A/AC:M/Au:N/C:P/I:N/A:P/CDP:MH/TD:L/CR:L/IR:L/AR:L",
-                4.3, 4.9, 5.5, 0.0, 1.4, 2.7, 1.4);
+                4.3, 4.9, 5.5, Double.NaN, 1.4, 2.7, 1.4);
 
         // these two vectors would previously have calculated an incorrect environmental score due to a rounding error
         // in the adjusted base score calculation
@@ -71,16 +71,16 @@ public class Cvss2Test {
                 9.3, 10.0, 8.6, 6.2, 1.6, 10.0, 1.6);
 
         calculateCvss2("AV:N/AC:M/Au:N/C:C/I:C/A:C/E:ND/RL:ND/RC:UC",
-                9.3, 10.0, 8.6, 8.4, 0.0, 0.0, 8.4);
+                9.3, 10.0, 8.6, 8.4, Double.NaN, Double.NaN, 8.4);
         calculateCvss2("AV:N/AC:M/Au:N/C:C/I:C/A:C/RC:UC",
-                9.3, 10.0, 8.6, 8.4, 0.0, 0.0, 8.4);
+                9.3, 10.0, 8.6, 8.4, Double.NaN, Double.NaN, 8.4);
     }
 
     @Test
     public void modifyVectorTest_NoBaseScores() {
         Cvss2 vector = new Cvss2();
         vector.applyVector("CDP:LM");
-        checkScores(vector, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        checkScores(vector, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
     }
 
     private void calculateCvss2(String vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
@@ -88,26 +88,27 @@ public class Cvss2Test {
         checkScores(cvss2, base, impact, exploitability, temporal, environmental, adjImpact, overall);
     }
 
-    private void checkScores(Cvss2 cvss2, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
+    private void checkScores(Cvss2 vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
         // calculate values
-        LOG.info("                 Input: [{}]", cvss2);
-        LOG.info("                Vector: [{}]", cvss2);
-        LOG.info("            Base score: [{}]", cvss2.getBaseScore());
-        LOG.info("          Impact score: [{}]", cvss2.getImpactScore());
-        LOG.info("  Exploitability score: [{}]", cvss2.getExploitabilityScore());
-        LOG.info("        Temporal score: [{}]", cvss2.getTemporalScore());
-        LOG.info("   Environmental score: [{}]", cvss2.getEnvironmentalScore());
-        LOG.info(" Adjusted impact score: [{}]", cvss2.getAdjustedImpactScore());
-        LOG.info("         Overall score: [{}]", cvss2.getOverallScore());
-        LOG.info("            Has scores: [{} {} {}]", cvss2.isBaseFullyDefined(), cvss2.isAnyTemporalDefined(), cvss2.isAnyEnvironmentalDefined());
+        LOG.info("                 Input: [{}]", vector);
+        LOG.info("                Vector: [{}]", vector);
+        LOG.info("            Base score: [{}]", vector.getBaseScore());
+        LOG.info("          Impact score: [{}]", vector.getImpactScore());
+        LOG.info("  Exploitability score: [{}]", vector.getExploitabilityScore());
+        LOG.info("        Temporal score: [{}]", vector.getTemporalScore());
+        LOG.info("   Environmental score: [{}]", vector.getEnvironmentalScore());
+        LOG.info(" Adjusted impact score: [{}]", vector.getAdjustedImpactScore());
+        LOG.info("         Overall score: [{}]", vector.getOverallScore());
+        LOG.info("            Has scores: [{} {} {}]", vector.isBaseFullyDefined(), vector.isAnyTemporalDefined(), vector.isAnyEnvironmentalDefined());
+        LOG.info("                  Link: {}", vector.getWebEditorLink());
         LOG.info("\n");
 
-        Assert.assertEquals(base, cvss2.getBaseScore(), 0.01);
-        Assert.assertEquals(impact, cvss2.getImpactScore(), 0.01);
-        Assert.assertEquals(exploitability, cvss2.getExploitabilityScore(), 0.01);
-        Assert.assertEquals(temporal, cvss2.getTemporalScore(), 0.01);
-        Assert.assertEquals(environmental, cvss2.getEnvironmentalScore(), 0.01);
-        Assert.assertEquals(adjImpact, cvss2.getAdjustedImpactScore(), 0.01);
-        Assert.assertEquals(overall, cvss2.getOverallScore(), 0.01);
+        Assert.assertEquals(base, vector.getBaseScore(), 0.01);
+        Assert.assertEquals(impact, vector.getImpactScore(), 0.01);
+        Assert.assertEquals(exploitability, vector.getExploitabilityScore(), 0.01);
+        Assert.assertEquals(temporal, vector.getTemporalScore(), 0.01);
+        Assert.assertEquals(environmental, vector.getEnvironmentalScore(), 0.01);
+        Assert.assertEquals(adjImpact, vector.getAdjustedImpactScore(), 0.01);
+        Assert.assertEquals(overall, vector.getOverallScore(), 0.01);
     }
 }

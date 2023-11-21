@@ -24,38 +24,38 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public class BakedCvssSelectionResult {
+public class CvssSelectionResult {
 
-    private final static Logger LOG = LoggerFactory.getLogger(BakedCvssSelectionResult.class);
+    private final static Logger LOG = LoggerFactory.getLogger(CvssSelectionResult.class);
 
-    private final SourcedCvssVectorSet bakedCvssVectors;
+    private final CvssVectorSet allVectors;
 
-    private final BakedCvssVectorScores<Cvss2> baseCvss2;
-    private final BakedCvssVectorScores<Cvss2> effectiveCvss2;
+    private final Cvss2 baseCvss2;
+    private final Cvss2 effectiveCvss2;
 
-    private final BakedCvssVectorScores<Cvss3P1> baseCvss3;
-    private final BakedCvssVectorScores<Cvss3P1> effectiveCvss3;
+    private final Cvss3P1 baseCvss3;
+    private final Cvss3P1 effectiveCvss3;
 
-    private final BakedCvssVectorScores<Cvss4P0> baseCvss4;
-    private final BakedCvssVectorScores<Cvss4P0> effectiveCvss4;
+    private final Cvss4P0 baseCvss4;
+    private final Cvss4P0 effectiveCvss4;
 
-    private final BakedCvssVectorScores<?> selectedBaseCvss;
-    private final BakedCvssVectorScores<?> selectedEffectiveCvss;
+    private final CvssVector<?> selectedBaseCvss;
+    private final CvssVector<?> selectedEffectiveCvss;
 
-    public BakedCvssSelectionResult(SourcedCvssVectorSet bakedCvssVectors,
-                                    CvssSelector baseSelector, CvssSelector effectiveSelector,
-                                    List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy
+    public CvssSelectionResult(CvssVectorSet allVectors,
+                               CvssSelector baseSelector, CvssSelector effectiveSelector,
+                               List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy
     ) {
-        this.bakedCvssVectors = bakedCvssVectors;
+        this.allVectors = allVectors;
 
-        this.baseCvss2 = BakedCvssVectorScores.fromNullableCvss(baseSelector.selectVector(bakedCvssVectors, Cvss2.class));
-        this.effectiveCvss2 = BakedCvssVectorScores.fromNullableCvss(effectiveSelector.selectVector(bakedCvssVectors, Cvss2.class));
+        this.baseCvss2 = baseSelector.selectVector(allVectors, Cvss2.class);
+        this.effectiveCvss2 = effectiveSelector.selectVector(allVectors, Cvss2.class);
 
-        this.baseCvss3 = BakedCvssVectorScores.fromNullableCvss(baseSelector.selectVector(bakedCvssVectors, Cvss3P1.class));
-        this.effectiveCvss3 = BakedCvssVectorScores.fromNullableCvss(effectiveSelector.selectVector(bakedCvssVectors, Cvss3P1.class));
+        this.baseCvss3 = baseSelector.selectVector(allVectors, Cvss3P1.class);
+        this.effectiveCvss3 = effectiveSelector.selectVector(allVectors, Cvss3P1.class);
 
-        this.baseCvss4 = BakedCvssVectorScores.fromNullableCvss(baseSelector.selectVector(bakedCvssVectors, Cvss4P0.class));
-        this.effectiveCvss4 = BakedCvssVectorScores.fromNullableCvss(effectiveSelector.selectVector(bakedCvssVectors, Cvss4P0.class));
+        this.baseCvss4 = baseSelector.selectVector(allVectors, Cvss4P0.class);
+        this.effectiveCvss4 = effectiveSelector.selectVector(allVectors, Cvss4P0.class);
 
         this.selectedBaseCvss = this.selectVersionedCvss(versionSelectionPolicy, this.baseCvss2, this.baseCvss3, this.baseCvss4);
         this.selectedEffectiveCvss = this.selectVersionedCvss(versionSelectionPolicy, this.effectiveCvss2, this.effectiveCvss3, this.effectiveCvss4);
@@ -73,15 +73,15 @@ public class BakedCvssSelectionResult {
         return this.hasBaseCvss() || this.hasEffectiveCvss();
     }
 
-    public BakedCvssVectorScores<?> getSelectedEffectiveIfAvailableOtherwiseBase() {
+    public CvssVector<?> getSelectedEffectiveIfAvailableOtherwiseBase() {
         if (this.selectedEffectiveCvss != null) return this.selectedEffectiveCvss;
         else return this.selectedBaseCvss;
     }
 
-    private BakedCvssVectorScores<?> selectVersionedCvss(List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy, BakedCvssVectorScores<?>... vectorScores) {
-        final BakedCvssVectorScores<Cvss2> foundV2 = this.findOfVersion(Cvss2.class, vectorScores);
-        final BakedCvssVectorScores<Cvss3P1> foundV3 = this.findOfVersion(Cvss3P1.class, vectorScores);
-        final BakedCvssVectorScores<Cvss4P0> foundV4 = this.findOfVersion(Cvss4P0.class, vectorScores);
+    private CvssVector<?> selectVersionedCvss(List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy, CvssVector<?>... vectorScores) {
+        final CvssVector<Cvss2> foundV2 = this.findOfVersion(Cvss2.class, vectorScores);
+        final CvssVector<Cvss3P1> foundV3 = this.findOfVersion(Cvss3P1.class, vectorScores);
+        final CvssVector<Cvss4P0> foundV4 = this.findOfVersion(Cvss4P0.class, vectorScores);
 
         if (foundV2 == null && foundV3 == null && foundV4 == null) return null;
 
@@ -96,8 +96,8 @@ public class BakedCvssSelectionResult {
             switch (cvssSelectionPolicy) {
                 case HIGHEST: {
                     int highestScore = -1;
-                    BakedCvssVectorScores<?> highestScoreVector = null;
-                    for (BakedCvssVectorScores<?> vectorScore : vectorScores) {
+                    CvssVector<?> highestScoreVector = null;
+                    for (CvssVector<?> vectorScore : vectorScores) {
                         if (vectorScore != null && vectorScore.getOverallScore() > highestScore) {
                             highestScore = (int) vectorScore.getOverallScore();
                             highestScoreVector = vectorScore;
@@ -108,8 +108,8 @@ public class BakedCvssSelectionResult {
                 break;
                 case LOWEST:
                     int lowestScore = Integer.MAX_VALUE;
-                    BakedCvssVectorScores<?> lowestScoreVector = null;
-                    for (BakedCvssVectorScores<?> vectorScore : vectorScores) {
+                    CvssVector<?> lowestScoreVector = null;
+                    for (CvssVector<?> vectorScore : vectorScores) {
                         if (vectorScore != null && vectorScore.getOverallScore() < lowestScore) {
                             lowestScore = (int) vectorScore.getOverallScore();
                             lowestScoreVector = vectorScore;
@@ -143,48 +143,48 @@ public class BakedCvssSelectionResult {
         return null;
     }
 
-    private <T extends CvssVector> BakedCvssVectorScores<T> findOfVersion(Class<T> cvssVersion, BakedCvssVectorScores<?>... vectorScores) {
-        for (int i = 0; i < vectorScores.length; i++) {
-            if (vectorScores[i] != null && vectorScores[i].getCvss() != null && vectorScores[i].getCvss().getClass().equals(cvssVersion)) {
-                return (BakedCvssVectorScores<T>) vectorScores[i];
+    private <T extends CvssVector<T>> CvssVector<T> findOfVersion(Class<T> cvssVersion, CvssVector<?>... vectors) {
+        for (CvssVector<?> vector : vectors) {
+            if (vector != null && vector.getClass().equals(cvssVersion)) {
+                return (CvssVector<T>) vector;
             }
         }
         return null;
     }
 
-    public SourcedCvssVectorSet getBakedCvssVectors() {
-        return bakedCvssVectors;
+    public CvssVectorSet getAllVectors() {
+        return allVectors;
     }
 
-    public BakedCvssVectorScores<Cvss2> getBaseCvss2() {
+    public Cvss2 getBaseCvss2() {
         return baseCvss2;
     }
 
-    public BakedCvssVectorScores<Cvss2> getEffectiveCvss2() {
+    public Cvss2 getEffectiveCvss2() {
         return effectiveCvss2;
     }
 
-    public BakedCvssVectorScores<Cvss3P1> getBaseCvss3() {
+    public Cvss3P1 getBaseCvss3() {
         return baseCvss3;
     }
 
-    public BakedCvssVectorScores<Cvss3P1> getEffectiveCvss3() {
+    public Cvss3P1 getEffectiveCvss3() {
         return effectiveCvss3;
     }
 
-    public BakedCvssVectorScores<Cvss4P0> getBaseCvss4() {
+    public Cvss4P0 getBaseCvss4() {
         return baseCvss4;
     }
 
-    public BakedCvssVectorScores<Cvss4P0> getEffectiveCvss4() {
+    public Cvss4P0 getEffectiveCvss4() {
         return effectiveCvss4;
     }
 
-    public BakedCvssVectorScores<?> getSelectedBaseCvss() {
+    public CvssVector<?> getSelectedBaseCvss() {
         return selectedBaseCvss;
     }
 
-    public BakedCvssVectorScores<?> getSelectedEffectiveCvss() {
+    public CvssVector<?> getSelectedEffectiveCvss() {
         return selectedEffectiveCvss;
     }
 

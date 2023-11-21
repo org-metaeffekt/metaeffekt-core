@@ -15,22 +15,15 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 
-import static org.junit.Assert.assertEquals;
-
-public class SourcedCvssVectorTest {
+public class CvssVectorTest {
 
     @Test
-    public void cloneSourceTest() {
-        SourcedCvssVector<Cvss3P1> sourcedVector = new SourcedCvssVector<>(
-                new CvssSource<>(KnownCvssEntities.NVD, Cvss3P1.class),
-                "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N"
-        );
-
-        SourcedCvssVector<Cvss3P1> clone = sourcedVector.clone();
-        clone.equals(sourcedVector);
-        assertEquals(sourcedVector, clone);
+    public void parseStaticVersionTest() {
+        Assert.assertEquals(Cvss3P1.class, CvssVector.classFromVersionName(Cvss3P1.getVersionName()));
     }
+
 }

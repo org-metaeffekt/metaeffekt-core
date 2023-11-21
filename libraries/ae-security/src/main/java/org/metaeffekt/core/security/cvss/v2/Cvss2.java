@@ -16,18 +16,21 @@
 package org.metaeffekt.core.security.cvss.v2;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
+import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
  * Model a CvssV2 vector and calculate the corresponding scores.
  */
-public class Cvss2 extends MultiScoreCvssVector {
+public class Cvss2 extends MultiScoreCvssVector<Cvss2> {
 
     // base
     private AccessVector accessVector = AccessVector.NULL;
@@ -49,11 +52,27 @@ public class Cvss2 extends MultiScoreCvssVector {
     private CIARequirement integrityRequirement = CIARequirement.NULL;
     private CIARequirement availabilityRequirement = CIARequirement.NULL;
 
-    public Cvss2(String vector) {
-        applyVector(vector);
+    public Cvss2() {
+        super();
     }
 
-    public Cvss2() {
+    public Cvss2(String vector) {
+        super.applyVector(vector);
+    }
+
+    public Cvss2(String vector, CvssSource<Cvss2> source) {
+        super(source);
+        super.applyVector(vector);
+    }
+
+    public Cvss2(String vector, CvssSource<Cvss2> source, JSONObject applicabilityCondition) {
+        super(source, applicabilityCondition);
+        super.applyVector(vector);
+    }
+
+    public Cvss2(String vector, Collection<CvssSource<Cvss2>> sources, JSONObject applicabilityCondition) {
+        super(sources, applicabilityCondition);
+        super.applyVector(vector);
     }
 
     @Override
@@ -137,6 +156,7 @@ public class Cvss2 extends MultiScoreCvssVector {
      */
     @Override
     public double getBaseScore() {
+        if (!isBaseFullyDefined()) return Double.NaN;
         double impact = calculateImpactScore();
         return round(((0.6 * impact) + (0.4 * calculateExploitabilityScore()) - 1.5) * f(impact), 1);
     }
@@ -152,6 +172,7 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getImpactScore() {
+        if (!isBaseFullyDefined()) return Double.NaN;
         return round(calculateImpactScore(), 1);
     }
 
@@ -166,6 +187,7 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getExploitabilityScore() {
+        if (!isBaseFullyDefined()) return Double.NaN;
         return round(calculateExploitabilityScore(), 1);
     }
 
@@ -187,8 +209,8 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getTemporalScore() {
-        if (!isBaseFullyDefined()) return 0;
-        if (!isAnyTemporalDefined()) return 0;
+        if (!isBaseFullyDefined()) return Double.NaN;
+        if (!isAnyTemporalDefined()) return Double.NaN;
         return round(calculateTemporalScore(), 1);
     }
 
@@ -213,8 +235,8 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getEnvironmentalScore() {
-        if (!isBaseFullyDefined()) return 0;
-        if (!isAnyEnvironmentalDefined()) return 0;
+        if (!isBaseFullyDefined()) return Double.NaN;
+        if (!isAnyEnvironmentalDefined()) return Double.NaN;
         return round(calculateEnvironmentalScore(), 1);
     }
 
@@ -272,9 +294,9 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public double getAdjustedImpactScore() {
-        if (isAnyEnvironmentalDefined())
-            return round(calculateAdjustedImpact(), 1);
-        return 0.0;
+        if (!isBaseFullyDefined()) return Double.NaN;
+        if (!isAnyEnvironmentalDefined()) return Double.NaN;
+        return round(calculateAdjustedImpact(), 1);
     }
 
     @Override
@@ -812,7 +834,7 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public Cvss2 clone() {
-        return new Cvss2(toString());
+        return new Cvss2(toString(), super.sources, super.applicabilityCondition);
     }
 
     @Override

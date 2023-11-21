@@ -45,19 +45,19 @@ public class Cvss3P1Test {
                 4.5, 3.6, 0.9, 3.7, 2.1, 2.1, 2.1);
 
         calculateCvss3("AV:N/AC:L/PR:H/UI:R/S:U/C:N/I:N/A:H",
-                4.5, 3.6, 0.9, 0, 0, 0, 4.5);
+                4.5, 3.6, 0.9, Double.NaN, Double.NaN, Double.NaN, 4.5);
 
         calculateCvss3("AV:N/AC:L/PR:H/UI:R/S:U/C:N/I:N/A:H/E:P/RL:X/RC:X",
-                4.5, 3.6, 0.9, 4.3, 0, 0, 4.3);
+                4.5, 3.6, 0.9, 4.3, Double.NaN, Double.NaN, 4.3);
 
         calculateCvss3("AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:X/IR:L/AR:M/MAV:N/MAC:H/MPR:N/MUI:R/MS:C/MC:X/MI:X/MA:N",
                 5.9, 3.6, 2.2, 5.0, 0, 0, 0);
 
         calculateCvss3("AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:H/E:P/RL:O/RC:C",
-                7.1, 5.2, 1.8, 6.4, 0, 0, 6.4);
+                7.1, 5.2, 1.8, 6.4, Double.NaN, Double.NaN, 6.4);
 
         calculateCvss3("CVSS:3.1/AV:N/AC:H/PR:H/UI:R/S:U/C:H/I:H/A:H/E:P/RL:O",
-                6.4, 5.9, 0.5, 5.8, 0, 0, 5.8);
+                6.4, 5.9, 0.5, 5.8, Double.NaN, Double.NaN, 5.8);
 
         calculateCvss3("CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/MAV:N/MAC:H/MPR:N/MUI:R/MS:C/MC:L/MA:N/IR:L/AR:M",
                 5.9, 3.6, 2.2, 5.0, 2.9, 1.4, 2.9);
@@ -69,50 +69,50 @@ public class Cvss3P1Test {
                 8.0, 6.0, 1.3, 8.0, 8.1, 6.1, 8.1);
 
         calculateCvss3("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
-                6.8, 5.9, 0.9, 0, 0, 0, 6.8);
+                6.8, 5.9, 0.9, Double.NaN, Double.NaN, Double.NaN, 6.8);
 
         calculateCvss3("AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H/E:H/RL:W/RC:C/CR:H/IR:L/AR:H/MAV:N/MAC:H/MPR:L/MUI:N/MC:H/MI:L/MA:H/MS:X",
                 10.0, 6.0, 3.9, 9.7, 8.4, 6.1, 8.4);
         calculateCvss3("AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H/E:H/RL:W/RC:C/MAV:N/MAC:H/MPR:L/MUI:N/MC:H/MI:L/MA:H/CR:H/IR:L/AR:H",
                 10.0, 6.0, 3.9, 9.7, 8.4, 6.1, 8.4);
 
-        // WARNING: leaving away the base vector is not an intended use case. this calculator still supports it; but normalizes to 0.0
+        // not all base metrics defined
         calculateCvss3("CVSS:3.1/E:U/RL:T/MAV:P/MAC:H/MPR:H/MUI:R/MS:U/AR:M",
-                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+                Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
 
         calculateCvss3("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
-                5.5, 3.6, 1.8, 0.0, 0.0, 0.0, 5.5);
+                5.5, 3.6, 1.8, Double.NaN, Double.NaN, Double.NaN, 5.5);
     }
 
     @Test
     public void evaluateCvssVectorsVerifyIncompleteVectorIsExtendedTest() {
         calculateCvss3("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H/CR:X/IR:X/AR:X/MAV:L/MAC:X/MPR:H/MUI:X/MS:X/MC:X/MI:X/MA:X",
-                5.5, 3.6, 1.8, 0.0, 4.2, 3.6, 4.2);
+                5.5, 3.6, 1.8, Double.NaN, 4.2, 3.6, 4.2);
 
         calculateCvss3("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H/MAV:L/MPR:H" + "/CR:X/IR:X/AR:X/MAC:X/MUI:X/MS:X/MC:X/MI:X/MA:X",
-                5.5, 3.6, 1.8, 0.0, 4.2, 3.6, 4.2);
+                5.5, 3.6, 1.8, Double.NaN, 4.2, 3.6, 4.2);
 
         calculateCvss3("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H/MAV:L/MPR:H",
-                5.5, 3.6, 1.8, 0.0, 4.2, 3.6, 4.2);
+                5.5, 3.6, 1.8, Double.NaN, 4.2, 3.6, 4.2);
 
         {
             Cvss3P1 vector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H");
             checkCvssScores(vector,
-                    5.5, 3.6, 1.8, 0.0, 0.0, 0.0, 5.5);
+                    5.5, 3.6, 1.8, Double.NaN, Double.NaN, Double.NaN, 5.5);
 
             vector.applyVector("MAV:L/MPR:H");
             checkCvssScores(vector,
-                    5.5, 3.6, 1.8, 0.0, 4.2, 3.6, 4.2);
+                    5.5, 3.6, 1.8, Double.NaN, 4.2, 3.6, 4.2);
 
             vector.applyVector("CR:X/IR:X/AR:X/MAC:X/MUI:X/MS:X/MC:X/MI:X/MA:X");
             checkCvssScores(vector,
-                    5.5, 3.6, 1.8, 0.0, 4.2, 3.6, 4.2);
+                    5.5, 3.6, 1.8, Double.NaN, 4.2, 3.6, 4.2);
 
             Assert.assertEquals("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H/MAV:L/MPR:H", vector.toString());
 
             vector.applyVector("CR:X/IR:X/AR:X/MAC:X/MUI:X/MS:X/MC:X/MI:X/MA:X/MAV:X/MPR:X");
             checkCvssScores(vector,
-                    5.5, 3.6, 1.8, 0.0, 0.0, 0.0, 5.5);
+                    5.5, 3.6, 1.8, Double.NaN, Double.NaN, Double.NaN, 5.5);
 
             Assert.assertEquals("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H", vector.toString());
         }
@@ -120,7 +120,7 @@ public class Cvss3P1Test {
         {
             Cvss3P1 vector = new Cvss3P1("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H");
             checkCvssScores(vector,
-                    9.8, 5.9, 3.9, 0.0, 0.0, 0.0, 9.8);
+                    9.8, 5.9, 3.9, Double.NaN, Double.NaN, Double.NaN, 9.8);
 
             vector.applyVector("E:P/RL:T/RC:R/CR:X/IR:M/AR:X/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:L/MI:N/MA:X");
             checkCvssScores(vector,
@@ -147,7 +147,7 @@ public class Cvss3P1Test {
         Cvss3P1 vector = new Cvss3P1();
         vector.applyVector("MAV:L/MPR:H");
         checkCvssScores(vector,
-                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+                Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
     }
 
     @Test
@@ -206,6 +206,7 @@ public class Cvss3P1Test {
         LOG.info(" Adjusted impact score: [{}]", vector.getAdjustedImpactScore());
         LOG.info("         Overall score: [{}]", vector.getOverallScore());
         LOG.info("            Has scores: [{} {} {}]", vector.isBaseFullyDefined(), vector.isAnyTemporalDefined(), vector.isAnyEnvironmentalDefined());
+        LOG.info("                  Link: {}", vector.getWebEditorLink());
         LOG.info("\n");
 
         Assert.assertEquals(base, vector.getBaseScore(), 0.01);

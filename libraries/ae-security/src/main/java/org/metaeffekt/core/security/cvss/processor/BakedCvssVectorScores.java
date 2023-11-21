@@ -16,20 +16,13 @@
 package org.metaeffekt.core.security.cvss.processor;
 
 
-import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
-import org.metaeffekt.core.security.cvss.SourcedCvssVector;
-import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
-import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 
-import java.util.List;
+public class BakedCvssVectorScores<T extends CvssVector<T>> {
 
-public class BakedCvssVectorScores<T extends CvssVector> {
-
-    private final T cvss;
-    private final List<CvssSource<T>> sources;
+    private final CvssVector<T> vector;
 
     private final double base;
     private final double impact;
@@ -39,19 +32,14 @@ public class BakedCvssVectorScores<T extends CvssVector> {
     private final double adjustedImpact;
     private final double overall;
 
-    public BakedCvssVectorScores(T cvss) {
-        this(cvss, null);
-    }
+    public BakedCvssVectorScores(CvssVector<T> vector) {
+        this.vector = vector;
 
-    public BakedCvssVectorScores(T cvss, List<CvssSource<T>> sources) {
-        this.cvss = cvss;
-        this.sources = sources;
+        this.base = vector.getBaseScore();
+        this.overall = vector.getOverallScore();
 
-        this.base = cvss.getBaseScore();
-        this.overall = cvss.getOverallScore();
-
-        if (cvss instanceof MultiScoreCvssVector) {
-            final MultiScoreCvssVector cast = ((MultiScoreCvssVector) cvss);
+        if (vector instanceof MultiScoreCvssVector) {
+            final MultiScoreCvssVector<T> cast = ((MultiScoreCvssVector<T>) vector);
             this.impact = cast.getImpactScore();
             this.exploitability = cast.getExploitabilityScore();
             this.temporal = cast.getTemporalScore();
@@ -66,64 +54,11 @@ public class BakedCvssVectorScores<T extends CvssVector> {
         }
     }
 
-    public static <T extends CvssVector> BakedCvssVectorScores<T> fromNullableCvss(SourcedCvssVector<T> cvss) {
-        if (cvss == null) {
-            return null;
-        }
-        return new BakedCvssVectorScores<T>(cvss.getCvssVector(), cvss.getCvssSources());
-    }
-
-    public static <T extends CvssVector> BakedCvssVectorScores<T> fromNullableCvss(T cvss) {
+    public static <T extends CvssVector<T>> BakedCvssVectorScores<T> fromNullableCvss(CvssVector<T> cvss) {
         if (cvss == null) {
             return null;
         }
         return new BakedCvssVectorScores<>(cvss);
-    }
-
-    public T getCvss() {
-        return cvss;
-    }
-
-    public List<CvssSource<T>> getSources() {
-        return sources;
-    }
-
-    public CvssSource<T> getLatestSource() {
-        if (sources != null && !sources.isEmpty()) {
-            return sources.get(sources.size() - 1);
-        }
-        return null;
-    }
-
-    public CvssSource<T> getInitialSource() {
-        if (sources != null && !sources.isEmpty()) {
-            return sources.get(0);
-        }
-        return null;
-    }
-
-    public boolean isCvss2() {
-        return cvss instanceof Cvss2;
-    }
-
-    public boolean isCvss3() {
-        return cvss instanceof Cvss3P1;
-    }
-
-    public boolean isCvss4() {
-        return cvss instanceof Cvss4P0;
-    }
-
-    public boolean isBaseDefined() {
-        return cvss.isBaseFullyDefined();
-    }
-
-    public boolean isTemporalDefined() {
-        return cvss instanceof MultiScoreCvssVector && ((MultiScoreCvssVector) cvss).isAnyTemporalDefined();
-    }
-
-    public boolean isEnvironmentalDefined() {
-        return cvss instanceof MultiScoreCvssVector && ((MultiScoreCvssVector) cvss).isAnyEnvironmentalDefined();
     }
 
     public double getBaseScore() {
@@ -152,6 +87,34 @@ public class BakedCvssVectorScores<T extends CvssVector> {
 
     public double getOverallScore() {
         return overall;
+    }
+
+    public boolean isBaseScoreAvailable() {
+        return !Double.isNaN(base);
+    }
+
+    public boolean isImpactScoreAvailable() {
+        return !Double.isNaN(impact);
+    }
+
+    public boolean isExploitabilityScoreAvailable() {
+        return !Double.isNaN(exploitability);
+    }
+
+    public boolean isTemporalScoreAvailable() {
+        return !Double.isNaN(temporal);
+    }
+
+    public boolean isEnvironmentalScoreAvailable() {
+        return !Double.isNaN(environmental);
+    }
+
+    public boolean isAdjustedImpactScoreAvailable() {
+        return !Double.isNaN(adjustedImpact);
+    }
+
+    public boolean isOverallScoreAvailable() {
+        return !Double.isNaN(overall);
     }
 
     public boolean hasNormalizedBaseScore() {
@@ -187,7 +150,7 @@ public class BakedCvssVectorScores<T extends CvssVector> {
     }
 
     public double getUnNormalizedImpactScoreMax() {
-        if (cvss instanceof Cvss3P1) {
+        if (vector instanceof Cvss3P1) {
             return 6.0;
         } else {
             return 10.0;
@@ -195,7 +158,7 @@ public class BakedCvssVectorScores<T extends CvssVector> {
     }
 
     public double getUnNormalizedExploitabilityScoreMax() {
-        if (cvss instanceof Cvss3P1) {
+        if (vector instanceof Cvss3P1) {
             return 3.9;
         } else {
             return 10.0;
@@ -211,7 +174,7 @@ public class BakedCvssVectorScores<T extends CvssVector> {
     }
 
     public double getUnNormalizedAdjustedImpactScoreMax() {
-        if (cvss instanceof Cvss3P1) {
+        if (vector instanceof Cvss3P1) {
             return 6.1;
         } else {
             return 10.0;
@@ -252,7 +215,7 @@ public class BakedCvssVectorScores<T extends CvssVector> {
 
     @Override
     public String toString() {
-        return cvss.toString();
+        return vector.toString();
     }
 
     /**

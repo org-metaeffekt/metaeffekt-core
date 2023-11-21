@@ -16,6 +16,8 @@
 package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
+import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
@@ -92,7 +94,7 @@ import java.util.stream.Stream;
  *     </li>
  * </ul>
  */
-public class Cvss4P0 extends CvssVector {
+public class Cvss4P0 extends CvssVector<Cvss4P0> {
 
     private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0.class);
 
@@ -158,11 +160,28 @@ public class Cvss4P0 extends CvssVector {
     // Threat Metrics
     private ExploitMaturity exploitMaturity = ExploitMaturity.NOT_DEFINED; // E
 
-    public Cvss4P0(String vector) {
-        applyVector(vector);
+    public Cvss4P0() {
+        super();
     }
 
-    public Cvss4P0() {
+    public Cvss4P0(String vector) {
+        super();
+        super.applyVector(vector);
+    }
+
+    public Cvss4P0(String vector, CvssSource<Cvss4P0> source) {
+        super(source);
+        super.applyVector(vector);
+    }
+
+    public Cvss4P0(String vector, CvssSource<Cvss4P0> source, JSONObject applicabilityCondition) {
+        super(source, applicabilityCondition);
+        super.applyVector(vector);
+    }
+
+    public Cvss4P0(String vector, Collection<CvssSource<Cvss4P0>> sources, JSONObject applicabilityCondition) {
+        super(sources, applicabilityCondition);
+        super.applyVector(vector);
     }
 
     public Cvss4P0MacroVector getMacroVector() {
@@ -783,7 +802,7 @@ public class Cvss4P0 extends CvssVector {
 
     @Override
     public Cvss4P0 clone() {
-        return new Cvss4P0(this.toString());
+        return new Cvss4P0(this.toString(), super.sources, super.applicabilityCondition);
     }
 
     public static String getVersionName() {

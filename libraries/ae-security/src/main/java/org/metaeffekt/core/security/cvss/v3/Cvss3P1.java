@@ -16,17 +16,20 @@
 package org.metaeffekt.core.security.cvss.v3;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
+import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
  * Model a CvssV3.1 vector and calculate the corresponding scores.
  */
-public class Cvss3P1 extends MultiScoreCvssVector {
+public class Cvss3P1 extends MultiScoreCvssVector<Cvss3P1> {
 
     // base
     private AttackVector attackVector = AttackVector.NULL;
@@ -56,11 +59,28 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     private CIARequirement integrityRequirement = CIARequirement.NULL;
     private CIARequirement availabilityRequirement = CIARequirement.NULL;
 
-    public Cvss3P1(String vector) {
-        applyVector(vector);
+    public Cvss3P1() {
+        super();
     }
 
-    public Cvss3P1() {
+    public Cvss3P1(String vector) {
+        super();
+        super.applyVector(vector);
+    }
+
+    public Cvss3P1(String vector, CvssSource<Cvss3P1> source) {
+        super(source);
+        super.applyVector(vector);
+    }
+
+    public Cvss3P1(String vector, CvssSource<Cvss3P1> source, JSONObject applicabilityCondition) {
+        super(source, applicabilityCondition);
+        super.applyVector(vector);
+    }
+
+    public Cvss3P1(String vector, Collection<CvssSource<Cvss3P1>> sources, JSONObject applicabilityCondition) {
+        super(sources, applicabilityCondition);
+        super.applyVector(vector);
     }
 
     @Override
@@ -181,7 +201,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
      */
     @Override
     public double getBaseScore() {
-        if (!isBaseFullyDefined()) return 0;
+        if (!isBaseFullyDefined()) return Double.NaN;
         double impact = calculateImpactScore();
         if (impact <= 0) return 0.0;
         if (!scope.changed)
@@ -203,6 +223,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public double getImpactScore() {
+        if (!isBaseFullyDefined()) return Double.NaN;
         return round(calculateImpactScore(), 1);
     }
 
@@ -229,6 +250,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public double getExploitabilityScore() {
+        if (!isBaseFullyDefined()) return Double.NaN;
         return round(calculateExploitabilityScore(), 1);
     }
 
@@ -248,7 +270,9 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public double getTemporalScore() {
-        return isBaseFullyDefined() ? roundUp(calculateTemporalScore()) : 0;
+        if (!isBaseFullyDefined()) return Double.NaN;
+        if (!isAnyTemporalDefined()) return Double.NaN;
+        return roundUp(calculateTemporalScore());
     }
 
     /**
@@ -260,8 +284,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
      */
     @Override
     public double getEnvironmentalScore() {
-        if (!isBaseFullyDefined()) return 0;
-        if (!isAnyEnvironmentalDefined()) return 0;
+        if (!isBaseFullyDefined()) return Double.NaN;
+        if (!isAnyEnvironmentalDefined()) return Double.NaN;
 
         double modifiedImpact = calculateAdjustedImpact();
         if (modifiedImpact <= 0) return 0;
@@ -313,8 +337,8 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public double getAdjustedImpactScore() {
-        if (!isBaseFullyDefined()) return 0;
-        if (!isAnyEnvironmentalDefined()) return 0;
+        if (!isBaseFullyDefined()) return Double.NaN;
+        if (!isAnyEnvironmentalDefined()) return Double.NaN;
 
         return Math.max(0, round(calculateAdjustedImpact(), 1));
     }
@@ -1018,7 +1042,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
 
     @Override
     public Cvss3P1 clone() {
-        return new Cvss3P1(toString());
+        return new Cvss3P1(toString(), super.sources, super.applicabilityCondition);
     }
 
     @Override
