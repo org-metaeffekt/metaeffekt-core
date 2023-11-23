@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class WindowsPartExtractorNetworkAdapter extends WindowsPartExtractorBase
         mapBaseJsonInformationToInventory(networkAdapterJson, videoControllerArtifact);
         videoControllerArtifact.set("Windows Source", Class_Win32_NetworkAdapter.getTypeName());
 
-        mapJsonFieldToInventory(networkAdapterJson, videoControllerArtifact, "Organisation", "Manufacturer");
+        mapJsonFieldToInventory(networkAdapterJson, videoControllerArtifact, Constants.KEY_ORGANIZATION, "Manufacturer");
 
         mapJsonFieldToInventory(networkAdapterJson, videoControllerArtifact, "MACAddress", "MACAddress");
         mapJsonFieldToInventory(networkAdapterJson, videoControllerArtifact, "TimeOfLastReset", "TimeOfLastReset");

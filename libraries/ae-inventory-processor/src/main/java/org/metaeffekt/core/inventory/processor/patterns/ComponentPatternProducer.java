@@ -30,8 +30,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
 import static org.metaeffekt.core.util.FileUtils.*;
 
 public class ComponentPatternProducer {
@@ -79,7 +81,22 @@ public class ComponentPatternProducer {
             "/__about__.py",
 
             // debian status files
-            "/status"
+            "/status",
+
+            // node runtime
+            "/node/node_version.h",
+
+            // nordeck license summary
+            "app/lib/licenses.json",
+
+            // java openjdk/openjre dervied
+            "/release",
+
+            // jetty
+            "/jetty/version.txt",
+
+            // web applications
+            "/web-inf/web.xml"
     };
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
@@ -114,6 +131,11 @@ public class ComponentPatternProducer {
         componentPatternContributors.add(new NextcloudAppInfoContributor());
         componentPatternContributors.add(new ComposerLockContributor());
         componentPatternContributors.add(new XWikiExtensionComponentPatternContributor());
+        componentPatternContributors.add(new NodeRuntimeComponentPatternContributor());
+        componentPatternContributors.add(new NordeckAppComponentPatternContributor());
+        componentPatternContributors.add(new JavaRuntimeComponentPatternContributor());
+        componentPatternContributors.add(new JettyComponentPatternContributor());
+        componentPatternContributors.add(new WebApplicationComponentPatternContributor());
 
         // record component pattern qualifiers for deduplication purposes
         final Set<String> deduplicationQualifierSet = new HashSet<>();
@@ -216,6 +238,15 @@ public class ComponentPatternProducer {
         for (MatchResult matchResult : componentPatterns) {
             final Artifact derivedArtifact = matchResult.deriveArtifact(fileSystemScanContext.getBaseDir());
             fileSystemScanContext.contribute(derivedArtifact);
+
+            final Supplier<Inventory> expansionInventorySupplier = matchResult.componentPatternData.getExpansionInventorySupplier();
+            if (expansionInventorySupplier != null) {
+
+                for (Artifact artifact : expansionInventorySupplier.get().getArtifacts()) {
+                    artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+                    fileSystemScanContext.contribute(artifact);
+                }
+            }
         }
     }
 
@@ -247,11 +278,11 @@ public class ComponentPatternProducer {
                         continue;
                     }
 
-                    // match absolute inlcude patterns
+                    // match absolute include patterns
                     if (matches(normalizedIncludePattern.absolutePatterns, absolutePathFromBaseDir)) {
                         // marked matched
                         artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
-                        artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+                        artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
@@ -284,7 +315,7 @@ public class ComponentPatternProducer {
                         if (!matches(normalizedExcludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
                             if (matches(normalizedIncludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
                                 artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
-                                artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+                                artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
                                 if (LOG.isDebugEnabled()) {
                                     LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
@@ -328,9 +359,9 @@ public class ComponentPatternProducer {
         }
     }
 
-    private static class NormalizedPatternSet {
-        private Set<String> relativePatterns = new LinkedHashSet<>();
-        private Set<String> absolutePatterns = new LinkedHashSet<>();
+    public static class NormalizedPatternSet {
+        public Set<String> relativePatterns = new LinkedHashSet<>();
+        public Set<String> absolutePatterns = new LinkedHashSet<>();
     }
 
     /**
@@ -340,7 +371,7 @@ public class ComponentPatternProducer {
      * @param commaSeparatedPatterns
      * @return
      */
-    private NormalizedPatternSet normalizePattern(String commaSeparatedPatterns) {
+    public static NormalizedPatternSet normalizePattern(String commaSeparatedPatterns) {
         final NormalizedPatternSet normalizedPatternSet = new NormalizedPatternSet();
         if (commaSeparatedPatterns == null) return normalizedPatternSet;
         final String[] patterns = commaSeparatedPatterns.split(",");
@@ -454,7 +485,7 @@ public class ComponentPatternProducer {
                             copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, fileChecksumOrAsterisk);
 
                             final File file = new File(normalizedPath);
-                            final String assetIdChain = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN);
+                            final String assetIdChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
                             matchedComponentPatterns.add(new MatchResult(copyCpd, file,
                                 computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), assetIdChain));
                         }

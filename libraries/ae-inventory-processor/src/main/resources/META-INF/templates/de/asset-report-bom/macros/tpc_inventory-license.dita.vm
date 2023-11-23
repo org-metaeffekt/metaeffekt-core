@@ -72,7 +72,7 @@
     "submitted" : "eingereicht",
     "not submitted" : "nicht eingereicht",
     "pending" : "ausstehend",
-    "withdrawn" : "zur252;ckgezogen",
+    "withdrawn" : "zur&#252;ckgezogen",
     "rejected" : "abgelehnt",
     "ineligible" : "ungeeignet",
     "unclear" : "unklar"
@@ -84,14 +84,19 @@
 #end
 #set($openCoDEStatusMap = {
     "approved" : "ja",
-    "(approved)" : "(ja)",
+    "(approved)" : "ja",
     "not approved" : "nein"
+})
+#set($openCoDESimilarMap = {
+    "(approved)" : "x"
 })
 #set($approved="approved")
     <tbody>
         #foreach($license in $licenseList)
             #if (!$license.contains(" + "))
                 #set($licenseData=$inventory.findMatchingLicenseData($license))
+                #set($openCoDEMappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                #set($openCoDESimilar=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDESimilarMap))
                 <row>
                     #if ($handleSubstructure && $assetData.isLicenseSubstructureRequired($license))
                         <entry>
@@ -105,9 +110,12 @@
                                  #if ($mappedStatus)$mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#end
                                #else&nbsp;#end</entry>
                         <entry>#if ($licenseData)
-                                 #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
-                                 #if ($mappedStatus)$mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>#end
-                               #else&nbsp;#end</entry>
+                            #if ($assetData.isIncludesOpenCoDESimilarLicense() && $utils.notEmpty($openCoDESimilar))
+                                #if ($openCoDEMappedStatus)$openCoDEMappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-opencode-similar" type="fn"/>#end
+                            #else
+                                #if ($openCoDEMappedStatus)$openCoDEMappedStatus#end
+                            #end
+                        #else&nbsp;#end</entry>
                     #else
                         <entry>
                             <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
@@ -116,7 +124,13 @@
                         </entry>
                         <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                         <entry>#if ($licenseData)$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;")#else&nbsp;#end</entry>
-                        <entry>#if ($licenseData)$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap, "&nbsp;")#end</entry>
+                        <entry>#if ($licenseData)
+                            #if ($assetData.isIncludesOpenCoDESimilarLicense() && $utils.notEmpty($openCoDESimilar))
+                                #if ($openCoDEMappedStatus)$openCoDEMappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-opencode-similar" type="fn"/>#end
+                            #else
+                                #if ($openCoDEMappedStatus)$openCoDEMappedStatus#end
+                            #end
+                        #else&nbsp;#end</entry>
                     #end
                     <entry>
                         <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">

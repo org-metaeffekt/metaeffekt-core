@@ -169,6 +169,9 @@ public class DependenciesDitaReport {
         Template template = velocityEngine.getTemplate(templateResourcePath);
         StringWriter sw = new StringWriter();
         VelocityContext context = new VelocityContext();
+
+        context.put("report", this);
+
         context.put("internalDependencies", internalDependencies);
         context.put("externalDependencies", externalDependencies);
         context.put("projectId", artifactId);

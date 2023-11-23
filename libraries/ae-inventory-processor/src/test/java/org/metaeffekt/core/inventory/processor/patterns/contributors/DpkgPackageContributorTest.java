@@ -27,6 +27,8 @@ import static org.junit.Assert.assertTrue;
 
 public class DpkgPackageContributorTest {
     DpkgPackageContributor cpc = new DpkgPackageContributor();
+
+    // FIXME: move test resources to component-pattern-contributor; apply conventions
     File cpcTestBaseDir = new File("src/test/resources/test-cpc-dpkg");
 
     @Test

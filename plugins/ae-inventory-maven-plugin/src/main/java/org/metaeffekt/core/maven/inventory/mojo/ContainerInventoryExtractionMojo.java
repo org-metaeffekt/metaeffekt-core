@@ -81,7 +81,8 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
                             if (!project.startsWith("/")) {
                                 sb.append("/");
                             }
-                            sb.append(project);
+                            // we always normalize to linux paths
+                            sb.append(FileUtils.normalizePathToLinux(project));
                         }
                     }
 

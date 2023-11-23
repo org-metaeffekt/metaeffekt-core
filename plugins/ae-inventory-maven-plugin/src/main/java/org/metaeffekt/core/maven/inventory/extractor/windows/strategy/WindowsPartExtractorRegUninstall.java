@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtractorAnalysisFile;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public class WindowsPartExtractorRegUninstall extends WindowsPartExtractorBase {
 
         mapJsonFieldToInventory(properties, productArtifact, Artifact.Attribute.ID, "DisplayName", "PSChildName");
         mapJsonFieldToInventory(properties, productArtifact, Artifact.Attribute.VERSION, "DisplayVersion");
-        mapJsonFieldToInventory(properties, productArtifact, "Organisation", "Publisher");
+        mapJsonFieldToInventory(properties, productArtifact, Constants.KEY_ORGANIZATION, "Publisher");
 
         if (productArtifact.get(Artifact.Attribute.ID) == null) {
             LOG.warn("Failed to extract artifact Id for registry uninstall entry: {}", regUninstallJson);

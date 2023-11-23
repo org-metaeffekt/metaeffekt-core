@@ -18,6 +18,7 @@ package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ArtifactType;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 public class WindowsPartExtractorBios extends WindowsPartExtractorBase {
@@ -34,7 +35,7 @@ public class WindowsPartExtractorBios extends WindowsPartExtractorBase {
         //   The "Version" field is used as fallback.
         mapJsonFieldToInventory(biosJson, artifact, "Version", "SMBIOSBIOSVersion", "Version");
 
-        mapJsonFieldToInventory(biosJson, artifact, "Organisation", "Manufacturer");
+        mapJsonFieldToInventory(biosJson, artifact, Constants.KEY_ORGANIZATION, "Manufacturer");
         mapJsonFieldToInventory(biosJson, artifact, "SerialNumber", "SerialNumber");
         mapJsonFieldToInventory(biosJson, artifact, "ReleaseDate", "ReleaseDate");
 
