@@ -15,127 +15,205 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONArray;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatusHistoryEntry;
+import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
+import org.metaeffekt.core.security.cvss.CvssVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * <pre>
+ * Severity │ Applicable │ Not Applicable │ In Review │ Insignificant │ Void │ Total │ Assessed
+ * ─────────┼────────────┼────────────────┼───────────┼───────────────┼──────┼───────┼─────────
+ * Critical │          0 │              0 │         0 │             0 │    0 │     0 │      n/a
+ *     High │          0 │              0 │         9 │             0 │    1 │    10 │   10,0 %
+ *   Medium │          0 │              0 │       184 │             0 │    0 │   184 │    0,0 %
+ *      Low │          0 │              0 │        38 │             0 │    0 │    38 │    0,0 %
+ * </pre>
+ */
 public class StatisticsOverviewTable {
 
     private static final Logger LOG = LoggerFactory.getLogger(StatisticsOverviewTable.class);
 
-    private final Map<String, Map<String, Object>> severityStatusCountMap = new LinkedHashMap<>();
+    private final List<SeverityToStatusRow> rows = new ArrayList<>();
+    private final boolean usesEffectiveSeverity;
 
-    private void addSeverityCategory(String severityCategory) {
-        severityStatusCountMap.putIfAbsent(normalize(severityCategory), new LinkedHashMap<>());
+    public StatisticsOverviewTable(boolean usesEffectiveSeverity) {
+        this.usesEffectiveSeverity = usesEffectiveSeverity;
     }
 
-    private void addStatus(String status) {
+    public List<SeverityToStatusRow> getRows() {
+        return rows;
+    }
+
+    public boolean isUsesEffectiveSeverity() {
+        return usesEffectiveSeverity;
+    }
+
+    protected void incrementCount(CentralSecurityPolicyConfiguration securityPolicy, String severity, String status) {
+        if (severity == null || status == null) {
+            LOG.warn("Severity [{}] or status [{}] is null. Skipping incrementCount.", severity, status);
+            return;
+        }
+
+        final String normalizedSeverity = normalize(severity);
         final String normalizedStatus = normalize(status);
-        severityStatusCountMap.values().forEach(m -> m.putIfAbsent(normalizedStatus, 0));
+
+        final SeverityToStatusRow row = findOrCreateRowBySeverity(securityPolicy, normalizedSeverity);
+        row.incrementCount(normalizedStatus);
     }
 
-    private void incrementCount(String severity, String status) {
-        severity = normalize(severity);
-        status = normalize(status);
-        addSeverityCategory(severity);
-        addStatus(status);
-        severityStatusCountMap.get(severity).put(status, ((Integer) severityStatusCountMap.get(severity).get(status)) + 1);
+    protected SeverityToStatusRow findOrCreateRowBySeverity(CentralSecurityPolicyConfiguration securityPolicy, String severity) {
+        final String normalizedSeverity = normalize(severity);
+        return rows.stream()
+                .filter(row -> row.isSeverity(normalizedSeverity))
+                .findFirst()
+                .orElseGet(() -> {
+                    final SeverityToStatusRow row = new SeverityToStatusRow(securityPolicy, normalizedSeverity);
+                    this.rows.add(row);
+                    return row;
+                });
+    }
+
+    public SeverityToStatusRow findRowBySeverity(String severity) {
+        final String normalizedSeverity = normalize(severity);
+        return rows.stream()
+                .filter(row -> row.isSeverity(normalizedSeverity))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public static StatisticsOverviewTable buildTableStrFilterAdvisor(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, String filterAdvisory, boolean useEffectiveSeverityScores) {
+        final AeaaContentIdentifiers filterCertAsAeaaContentIdentifiers = StringUtils.isEmpty(filterAdvisory) ? null : AeaaContentIdentifiers.fromContentIdentifierName(filterAdvisory);
+        return buildTable(securityPolicy, inputVulnerabilities, filterCertAsAeaaContentIdentifiers, useEffectiveSeverityScores);
+    }
+
+    public static StatisticsOverviewTable buildTable(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, AeaaContentIdentifiers filterAdvisory, boolean useEffectiveSeverity) {
+        final StatisticsOverviewTable table = new StatisticsOverviewTable(useEffectiveSeverity);
+
+        final Collection<AeaaVulnerability> effectiveVulnerabilities;
+        if (filterAdvisory != null) {
+            effectiveVulnerabilities = StatisticsOverviewTable.filterVulnerabilitiesForAdvisories(inputVulnerabilities, filterAdvisory);
+        } else {
+            effectiveVulnerabilities = inputVulnerabilities;
+        }
+
+        final List<String> requiredSeverityCategories = Arrays.stream(securityPolicy.getCvssSeverityRanges().getRanges())
+                .sorted(Comparator.reverseOrder())
+                .map(CvssSeverityRanges.SeverityRange::getName)
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+        final List<String> requiredStatusCategories = securityPolicy.getVulnerabilityStatusDisplayMapperStatusNames();
+
+        // add the default severity categories
+        for (String severityCategory : requiredSeverityCategories) {
+            table.findOrCreateRowBySeverity(securityPolicy, severityCategory);
+        }
+
+        // count the individual severity and status combinations
+        for (AeaaVulnerability vulnerability : effectiveVulnerabilities) {
+
+            // status in effectiveStatus
+            final AeaaVulnerabilityStatusHistoryEntry latestStatusEntry = vulnerability.getOrCreateNewVulnerabilityStatus().getLatestActiveStatusHistoryEntry();
+            final String baseStatus = latestStatusEntry != null && latestStatusEntry.getStatus() != null ? latestStatusEntry.getStatus() : "";
+            final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapperFunction().apply(baseStatus);
+
+            // severity in effectiveSeverity
+            final CvssVector<?> vector = useEffectiveSeverity ? vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase() : vulnerability.getCvssSelectionResult().getSelectedBaseCvss();
+            final String effectiveSeverity;
+            if (vector == null || (useEffectiveSeverity && (VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE.equals(baseStatus) || VulnerabilityMetaData.STATUS_VALUE_VOID.equals(baseStatus)))) {
+                effectiveSeverity = "none";
+            } else {
+                final CvssSeverityRanges.SeverityRange severityRange = securityPolicy.getCvssSeverityRanges().getRange(vector.getBakedScores().getOverallScore());
+                effectiveSeverity = severityRange.getName();
+            }
+
+            table.incrementCount(securityPolicy, effectiveSeverity, effectiveStatus);
+        }
+
+        table.getRows().forEach(row -> row.updateCalculatedColumns(securityPolicy));
+
+        // remove 'none' if all but the 'assessed' column are 0
+        final SeverityToStatusRow noneEntry = table.findRowBySeverity("none");
+        if (noneEntry != null) {
+            // remove the 'none' entry if the content does not contribute any further
+            // information. That is when only 0s are included.
+            // n/a cannot occur here, as the queried values are all integers.
+            final boolean allZero = noneEntry.getStatusCountMap().values().stream().allMatch(i -> i == 0);
+            if (allZero) {
+                table.rows.remove(noneEntry);
+            }
+        }
+
+        table.getRows().forEach(row -> row.rearrangeStatusCategories(requiredStatusCategories));
+
+        LOG.debug("Generated {} Overview Table for [{}] vulnerabilities with{}:\n{}", useEffectiveSeverity ? "effective" : "provided", effectiveVulnerabilities.size(), filterAdvisory == null ? "out advisory filtering" : " advisory filtering using [" + filterAdvisory + "]", table);
+        return table;
     }
 
     public List<String> getHeaders() {
-        List<String> headers = new ArrayList<>();
-        headers.add("Severity");
-        headers.addAll(severityStatusCountMap.values().stream().findFirst().orElse(new LinkedHashMap<>()).keySet());
-        return headers.stream().map(this::capitalizeWords).collect(Collectors.toList());
+        final List<String> headers = new ArrayList<>();
+        headers.add("severity");
+
+        final Set<String> severityHeadersFromRows = new LinkedHashSet<>();
+        for (SeverityToStatusRow row : rows) {
+            severityHeadersFromRows.addAll(row.keySet());
+        }
+        headers.addAll(severityHeadersFromRows);
+
+        headers.add("total");
+        headers.add("assessed");
+
+        return headers.stream().map(StatisticsOverviewTable::capitalizeWords).collect(Collectors.toList());
     }
 
     public List<String> getSeverityCategories() {
-        return severityStatusCountMap.keySet().stream().map(this::capitalizeWords).collect(Collectors.toList());
+        return rows.stream().map(SeverityToStatusRow::getSeverity).map(StatisticsOverviewTable::capitalizeWords).collect(Collectors.toList());
     }
 
-    public List<Integer> getCountsForSeverityCategory(String severityCategory) {
-        severityCategory = normalize(severityCategory);
-        List<Integer> countList = new ArrayList<>();
-        if (severityStatusCountMap.containsKey(severityCategory)) {
-            for (String status : severityStatusCountMap.get(severityCategory).keySet()) {
-                if (!status.equals("assessed") && !status.equals("% assessed")) {
-                    countList.add((Integer) severityStatusCountMap.get(severityCategory).get(status));
-                }
-            }
+    public int getIntersectionCount(String severity, String status) {
+        final SeverityToStatusRow row = findRowBySeverity(severity);
+        if (row == null) return 0;
+        return row.getCount(status);
+    }
+
+    public List<String> getTableRowValues(String severity) {
+        final SeverityToStatusRow row = findRowBySeverity(severity);
+        if (row == null) return Collections.emptyList();
+        final List<String> values = new ArrayList<>();
+        values.add(row.getCapitalizedSeverity());
+        for (String status : row.keySet()) {
+            values.add(String.valueOf(row.getCount(status)));
         }
-        return countList;
-    }
-
-    public List<Object> getValuesForSeverityCategory(String severityCategory) {
-        severityCategory = normalize(severityCategory);
-        List<Object> countList = new ArrayList<>();
-        if (severityStatusCountMap.containsKey(severityCategory)) {
-            for (String status : severityStatusCountMap.get(severityCategory).keySet()) {
-                countList.add(severityStatusCountMap.get(severityCategory).get(status));
-            }
-        }
-        return countList;
-    }
-
-    public List<Integer> getCountsForStatus(String status) {
-        final String normalizedStatus = normalize(status);
-        List<Integer> counts = new ArrayList<>();
-        for (String severityCategory : severityStatusCountMap.keySet()) {
-            final Integer i = (Integer) severityStatusCountMap.get(severityCategory).get(normalizedStatus);
-            if (i != null) counts.add(i);
-        }
-        return counts;
-    }
-
-    public int getTotalForStatus(String status) {
-        return getCountsForStatus(status).stream()
-                .mapToInt(Integer::intValue).sum();
-    }
-
-    public int getTotalForSeverity(String severity) {
-        severity = normalize(severity);
-        if (severityStatusCountMap.containsKey(severity)) {
-            final Object total = severityStatusCountMap.get(severity).getOrDefault("total", 0);
-            if (total instanceof Number) {
-                return (Integer) total;
-            } else if (total instanceof String && StringUtils.isNumeric((String) total)) {
-                return Integer.parseInt((String) total);
-            }
-        }
-        return 0;
+        values.add(String.valueOf(row.getTotal()));
+        values.add(row.getAssessed());
+        return values;
     }
 
     /**
      * Checks if the table is empty.<br>
-     * The table is considered empty if all cells have the value "0", except for the "% assessed" column.
+     * The table is considered empty if all cells have the value "0".
      *
      * @return true if the table is empty, false otherwise.
      */
     public boolean isEmpty() {
-        for (Map<String, Object> m : severityStatusCountMap.values()) {
-            for (Map.Entry<String, Object> e : m.entrySet()) {
-                if (!e.getKey().equals("assessed") && !e.getKey().equals("% assessed")) {
-                    if ((Integer) e.getValue() != 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
+        return rows.stream()
+                .allMatch(row -> row.getTotal() == 0);
     }
 
-    private String normalize(String s) {
+    protected static String normalize(String s) {
         return s.toLowerCase();
     }
 
-    private String capitalizeWords(String s) {
+    private static String capitalizeWords(String s) {
         if (s == null || s.isEmpty()) {
             return s;
         }
@@ -144,206 +222,59 @@ public class StatisticsOverviewTable {
                 .collect(Collectors.joining(" "));
     }
 
-    private static String getSeverityFromVMD(VulnerabilityMetaData vulnerabilityMetaData, boolean modified) {
-
-        if (modified) {
-            if (vulnerabilityMetaData.isStatus("not applicable") || vulnerabilityMetaData.isStatus("void")) {
-                return "none";
-            }
-        }
-
-        return ObjectUtils.firstNonNull(
-                modified ? vulnerabilityMetaData.get("CVSS Modified Severity (v3)") : null,
-                vulnerabilityMetaData.get("CVSS Unmodified Severity (v3)"),
-                modified ? vulnerabilityMetaData.get("CVSS Modified Severity (v2)") : null,
-                vulnerabilityMetaData.get("CVSS Unmodified Severity (v2)"),
-                "none"
-        );
-    }
-
-    private static void filterVulnerabilityMetaDataForAdvisories(Collection<VulnerabilityMetaData> vmds, String filterCert) {
-        vmds.removeIf(
-                vmd -> {
-                    String adv = vmd.get("Advisories");
-                    if (adv == null) return true;
-                    JSONArray advisories = new JSONArray(adv);
-                    for (int j = 0; j < advisories.length(); j++) {
-                        if (advisories.optJSONObject(j).optString("source", "").equals(filterCert)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
-        );
-    }
-
-    private static String getVulnerabilityStatus(VulnerabilityMetaData vulnerabilityMetaData, VulnerabilityReportAdapter adapter) {
-        return adapter.getStatusText(vulnerabilityMetaData);
-    }
-
-    public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), null, false, vulnerabilityStatusMapper);
-    }
-
-    public static StatisticsOverviewTable fromInventoryModified(VulnerabilityReportAdapter adapter, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), null, true, vulnerabilityStatusMapper);
-    }
-
-    public static StatisticsOverviewTable fromInventoryUnmodified(VulnerabilityReportAdapter adapter, String filterCert, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), filterCert, false, vulnerabilityStatusMapper);
-    }
-
-    public static StatisticsOverviewTable fromInventoryModified(VulnerabilityReportAdapter adapter, String filterCert, Function<String, String> vulnerabilityStatusMapper) {
-        return StatisticsOverviewTable.fromVmd(adapter, adapter.inventory.getVulnerabilityMetaData(), filterCert, true, vulnerabilityStatusMapper);
-    }
-
-    public static StatisticsOverviewTable fromVmd(VulnerabilityReportAdapter adapter, Collection<VulnerabilityMetaData> inputVmds, String filterCert, boolean useModifiedSeverity, Function<String, String> vulnerabilityStatusMapper) {
-        final Collection<VulnerabilityMetaData> vmds = new ArrayList<>(inputVmds);
-        if (filterCert != null && !filterCert.isEmpty()) {
-            StatisticsOverviewTable.filterVulnerabilityMetaDataForAdvisories(vmds, filterCert);
-        }
-
-        final StatisticsOverviewTable table = new StatisticsOverviewTable();
-
-        // add the default severity categories in the case there are no vulnerabilities with that category
-        for (String severityCategory : new String[]{"critical", "high", "medium", "low"}) {
-            table.addSeverityCategory(severityCategory);
-        }
-
-        // the columns and rows have to be created first, for them to be added in the correct order below
-        for (VulnerabilityMetaData vmd : vmds) {
-            final String severity = StatisticsOverviewTable.getSeverityFromVMD(vmd, useModifiedSeverity);
-            table.addSeverityCategory(severity);
-        }
-        final Set<String> allStatuses = new HashSet<>();
-        for (VulnerabilityMetaData vmd : vmds) {
-            final String status = vulnerabilityStatusMapper.apply(StatisticsOverviewTable.getVulnerabilityStatus(vmd, adapter));
-            allStatuses.add(status);
-        }
-
-        // add the default status columns
-        if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_ABSTRACTED) {
-            for (String status : new String[]{"affected", "potentially affected", "not affected"}) {
-                table.addStatus(status);
-            }
-        }
-
-        allStatuses.stream().sorted((o1, o2) -> {
-            final String[] order = new String[]{
-                    "applicable", "in review", "not applicable", "insignificant", "void",
-                    "affected", "potentially affected", "not affected"};
-            return Integer.compare(Arrays.asList(order).indexOf(o1), Arrays.asList(order).indexOf(o2));
-        }).forEach(table::addStatus);
-
-        // now that the cells exist, count the individual severity and status combinations
-        for (VulnerabilityMetaData vmd : vmds) {
-            final String status = vulnerabilityStatusMapper.apply(StatisticsOverviewTable.getVulnerabilityStatus(vmd, adapter));
-            final String severity = StatisticsOverviewTable.getSeverityFromVMD(vmd, useModifiedSeverity);
-
-            table.incrementCount(severity, status);
-        }
-
-        // add up the total number of vulnerabilities for each severity category
-        for (Map.Entry<String, Map<String, Object>> severityMap : table.severityStatusCountMap.entrySet()) {
-            int total = 0;
-            for (Map.Entry<String, Object> statusMap : severityMap.getValue().entrySet()) {
-                total += (Integer) statusMap.getValue();
-            }
-            severityMap.getValue().put("total", total);
-        }
-
-        // find the % of assessed vulnerabilities for each severity category
-        for (Map.Entry<String, Map<String, Object>> severityMap : table.severityStatusCountMap.entrySet()) {
-            final int applicable = (Integer) severityMap.getValue().getOrDefault("applicable", 0);
-            final int notApplicable = useModifiedSeverity ? 0 : (Integer) severityMap.getValue().getOrDefault("not applicable", 0);
-            final int inReview = (Integer) severityMap.getValue().getOrDefault("in review", 0);
-            final int insignificant = (Integer) severityMap.getValue().getOrDefault("insignificant", 0);
-            final int voidCat = (Integer) severityMap.getValue().getOrDefault("void", 0);
-
-            final int affected = (Integer) severityMap.getValue().getOrDefault("affected", 0);
-            final int potentiallyAffected = (Integer) severityMap.getValue().getOrDefault("potentially affected", 0);
-            final int notAffected = (Integer) severityMap.getValue().getOrDefault("not affected", 0);
-
-            if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_DEFAULT) {
-                final int total = inReview + applicable + notApplicable + insignificant + voidCat;
-
-                if (total == 0) {
-                    severityMap.getValue().put("assessed", "n/a");
-                } else {
-                    final double ratio = ((double) (applicable + notApplicable + voidCat)) / total;
-                    severityMap.getValue().put("assessed", String.format(Locale.GERMANY, "%.1f %%", ratio * 100));
-                }
-            } else if (vulnerabilityStatusMapper == VULNERABILITY_STATUS_MAPPER_ABSTRACTED) {
-                final int total = affected + potentiallyAffected + notAffected;
-
-                if (total == 0) {
-                    severityMap.getValue().put("assessed", "n/a");
-                } else {
-                    final double ratio = ((double) (affected + notAffected)) / total;
-                    severityMap.getValue().put("assessed", String.format(Locale.GERMANY, "%.1f %%", ratio * 100));
-                }
-            }
-        }
-
-        // remove 'none' if all but the 'assessed' column are 0
-        final Map<String, Object> noneEntry = table.severityStatusCountMap.get("none");
-        if (noneEntry != null) {
-            // remove the 'none' entry if the content does not contribute any further
-            // information. That is when only 0 and n/a are included.
-            if (noneEntry.values().stream().allMatch(obj -> {
-                final String str = String.valueOf(obj);
-                return "0".equals(str) || "0 %".equals(str) || "n/a".equals(str);
-            })) {
-                table.severityStatusCountMap.remove("none");
-            }
-        }
-
-        LOG.debug("Generated Overview Table for [{}] vulnerabilities:\n{}", vmds.size(), table);
-
-        return table;
-    }
-
-    private void removeStatus(String status) {
-        for (Map<String, Object> m : severityStatusCountMap.values()) {
-            m.remove(status);
-        }
+    private static List<AeaaVulnerability> filterVulnerabilitiesForAdvisories(Collection<AeaaVulnerability> vulnerabilities, AeaaContentIdentifiers filterCert) {
+        return vulnerabilities.stream()
+                .filter(v -> v.getSecurityAdvisories().stream().anyMatch(a -> a.getEntrySource().equals(filterCert)))
+                .collect(Collectors.toList());
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder();
+        final List<SeverityToStatusRow> severityToStatusRows = getRows();
+        final List<String> headers = getHeaders();
 
-        final List<List<String>> rows = new ArrayList<>();
-        rows.add(getHeaders());
-        for (String severityCategory : getSeverityCategories()) {
-            final List<String> row = new ArrayList<>();
-            row.add(severityCategory);
-            row.addAll(getCountsForSeverityCategory(severityCategory).stream().map(String::valueOf).collect(Collectors.toList()));
-            rows.add(row);
+        final String[][] cells = new String[severityToStatusRows.size() + 1][headers.size()];
+
+        // fill header
+        for (int i = 0; i < headers.size(); i++) {
+            cells[0][i] = headers.get(i);
         }
 
-        final int[] columnWidths = new int[rows.get(0).size()];
-        for (List<String> row : rows) {
-            for (int i = 0; i < row.size(); i++) {
-                columnWidths[i] = Math.max(columnWidths[i], row.get(i).length());
+        // fill cells
+        for (int i = 1; i < severityToStatusRows.size() + 1; i++) {
+            final SeverityToStatusRow row = severityToStatusRows.get(i - 1);
+            cells[i][0] = row.getCapitalizedSeverity();
+            for (int j = 1; j < headers.size() - 2; j++) {
+                cells[i][j] = String.valueOf(row.getCount(headers.get(j)));
+            }
+            cells[i][cells[i].length - 2] = String.valueOf(row.getTotal());
+            cells[i][cells[i].length - 1] = row.getAssessed();
+        }
+
+        // calculate column widths
+        final int[] columnWidths = new int[headers.size()];
+        for (int i = 0; i < cells.length; i++) {
+            for (int j = 0; j < columnWidths.length; j++) {
+                columnWidths[j] = Math.max(columnWidths[j], cells[i][j] == null ? 4 : cells[i][j].length());
             }
         }
 
-        boolean isFirst = true;
-        for (List<String> row : rows) {
-            for (int i = 0; i < row.size(); i++) {
-                sb.append(String.format("%" + columnWidths[i] + "s", row.get(i)));
-                if (i < row.size() - 1) {
+        // build table
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < cells.length; i++) {
+            final String[] row = cells[i];
+            for (int j = 0; j < row.length; j++) {
+                sb.append(String.format("%" + columnWidths[j] + "s", row[j]));
+                if (j < row.length - 1) {
                     sb.append(" │ ");
                 }
             }
             sb.append("\n");
 
-            if (isFirst) {
-                isFirst = false;
-                for (int i = 0; i < columnWidths.length; i++) {
-                    sb.append(String.join("", Collections.nCopies(columnWidths[i], "─")));
-                    if (i < columnWidths.length - 1) {
+            if (i == 0) {
+                for (int j = 0; j < columnWidths.length; j++) {
+                    sb.append(String.join("", Collections.nCopies(columnWidths[j], "─")));
+                    if (j < columnWidths.length - 1) {
                         sb.append("─┼─");
                     }
                 }
@@ -354,63 +285,122 @@ public class StatisticsOverviewTable {
         return sb.toString();
     }
 
-    public final static Function<String, String> VULNERABILITY_STATUS_MAPPER_DEFAULT = name -> {
-        if ("Applicable".equalsIgnoreCase(name)) {
-            return "Applicable";
+    public static class SeverityToStatusRow {
+        private final String severity;
+        private final Map<String, Integer> statusCountMap = new LinkedHashMap<>();
+        private int total;
+        private String assessed;
+
+        public SeverityToStatusRow(CentralSecurityPolicyConfiguration securityPolicy, String severity) {
+            if (severity == null) {
+                throw new IllegalArgumentException("Severity must not be null when constructing row.");
+            }
+            this.severity = severity;
+
+            for (String requiredCategories : securityPolicy.getVulnerabilityStatusDisplayMapperStatusNames()) {
+                this.statusCountMap.put(requiredCategories, 0);
+            }
         }
 
-        // FIXME: when whould the status be Potential Vulnerability?
-        if ("Potential Vulnerability".equalsIgnoreCase(name)) {
-            return "Applicable";
+        public String getSeverity() {
+            return this.severity;
         }
 
-        return name;
-    };
-
-    /**
-     * Where the category
-     * <ul>
-     *     <li>
-     *         <code>not affected</code> covers vulnerabilities with status <code>not applicable</code>,
-     *         <code>void</code> or <code>insignificant</code>
-     *     </li>
-     *     <li>
-     *         <code>potentially affected</code> covers vulnerabilities <code>in review</code> and have not yet been
-     *         fully assessed (no category)
-     *     </li>
-     *     <li>
-     *         <code>affected</code> covers reviewed and assesses as <code>applicable</code> vulnerabilities
-     *     </li>
-     * </ul>
-     * see <code>AEAA-221</code> for more details.
-     */
-    public final static Function<String, String> VULNERABILITY_STATUS_MAPPER_ABSTRACTED = name -> {
-        if (StringUtils.isEmpty(name)) { // in review (implicit)
-            return "potentially affected";
+        public String getCapitalizedSeverity() {
+            return capitalizeWords(this.severity);
         }
 
-        switch (name) {
-            case VulnerabilityMetaData.STATUS_VALUE_APPLICABLE:
-            case VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT: // here the explicit set status insignificant
-                return "affected";
-
-            case VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE:
-            case VulnerabilityMetaData.STATUS_VALUE_VOID:
-                return "not affected";
-
-            case "in review":
-                return "potentially affected";
-
-            default:
-                return name;
+        public Map<String, Integer> getStatusCountMap() {
+            return this.statusCountMap;
         }
-    };
 
-    public static Function<String, String> getStatusMapperFunction(String statusMapper) {
-        if ("abstracted".equals(statusMapper)) {
-            return StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_ABSTRACTED;
-        } else {
-            return StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT;
+        public Set<String> keySet() {
+            return this.statusCountMap.keySet();
+        }
+
+        public int getTotal() {
+            return this.total;
+        }
+
+        public String getAssessed() {
+            return this.assessed;
+        }
+
+        public int getCount(String status) {
+            final String normalizedStatus = normalize(status);
+            return this.statusCountMap.getOrDefault(normalizedStatus, 0);
+        }
+
+        public void updateCalculatedColumns(CentralSecurityPolicyConfiguration securityPolicy) {
+            this.assessed = calculateAssessed(securityPolicy);
+            this.total = calculateTotal();
+        }
+
+        private int calculateTotal() {
+            return this.statusCountMap.values().stream().mapToInt(Integer::intValue).sum();
+        }
+
+        protected String calculateAssessed(CentralSecurityPolicyConfiguration securityPolicy) {
+            int total = 0;
+            for (String totalName : securityPolicy.getVulnerabilityStatusDisplayMapperStatusNames()) {
+                total += this.statusCountMap.getOrDefault(totalName, 0);
+            }
+
+            int assessed = 0;
+            for (String assessedName : securityPolicy.getVulnerabilityStatusDisplayMapperAssessedStatusNames()) {
+                assessed += this.statusCountMap.getOrDefault(assessedName, 0);
+            }
+
+            if (total == 0) {
+                return "n/a";
+            } else {
+                final double ratio = ((double) assessed) / total;
+                return String.format(Locale.GERMANY, "%.1f %%", ratio * 100);
+            }
+
+        }
+
+        public boolean isSeverity(String severity) {
+            return Objects.equals(this.severity, severity);
+        }
+
+        public int incrementCount(String status) {
+            final int newValue = this.statusCountMap.getOrDefault(status, 0) + 1;
+            this.statusCountMap.put(status, newValue);
+            return newValue;
+        }
+
+        public void rearrangeStatusCategories(List<String> statusCategories) {
+            final Map<String, Integer> rearrangedStatusCountMap = new LinkedHashMap<>();
+            for (String statusCategory : statusCategories) {
+                rearrangedStatusCountMap.put(statusCategory, this.statusCountMap.getOrDefault(statusCategory, 0));
+            }
+            for (String statusCategory : this.statusCountMap.keySet()) {
+                if (!rearrangedStatusCountMap.containsKey(statusCategory)) {
+                    rearrangedStatusCountMap.put(statusCategory, this.statusCountMap.getOrDefault(statusCategory, 0));
+                }
+            }
+            this.statusCountMap.clear();
+            this.statusCountMap.putAll(rearrangedStatusCountMap);
+        }
+
+        public List<String> getTableRowValues() {
+            final List<String> values = new ArrayList<>();
+            values.add(getCapitalizedSeverity());
+            for (String status : keySet()) {
+                values.add(String.valueOf(getCount(status)));
+            }
+            values.add(String.valueOf(getTotal()));
+            values.add(getAssessed());
+            return values;
+        }
+
+        @Override
+        public String toString() {
+            return "SeverityToStatusRow{" +
+                    "severity='" + severity + '\'' +
+                    ", statusCountMap=" + statusCountMap +
+                    '}';
         }
     }
 }

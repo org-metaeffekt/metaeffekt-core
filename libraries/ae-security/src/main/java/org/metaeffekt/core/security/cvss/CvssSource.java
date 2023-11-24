@@ -21,7 +21,7 @@ import org.json.JSONObject;
 import java.net.URL;
 import java.util.*;
 
-public class CvssSource<T extends CvssVector> {
+public class CvssSource<T extends CvssVector<T>> {
 
     private final CvssEntity hostingEntity;
     private final CvssEntity issuingEntity;
@@ -87,7 +87,7 @@ public class CvssSource<T extends CvssVector> {
         }
     }
 
-    public <NT extends CvssVector> CvssSource<NT> deriveSource(Class<NT> vectorClass) {
+    public <NT extends CvssVector<NT>> CvssSource<NT> deriveSource(Class<NT> vectorClass) {
         return new CvssSource<>(hostingEntity, issuingEntityRole, issuingEntity, vectorClass);
     }
 
@@ -209,7 +209,7 @@ public class CvssSource<T extends CvssVector> {
                     topLevelRootPartner, rootPartner, reportSteps);
         }
 
-        public <T extends CvssVector> CvssSource<T> deriveSource(Class<T> vectorClass) {
+        public <T extends CvssVector<T>> CvssSource<T> deriveSource(Class<T> vectorClass) {
             return new CvssSource<>(this, vectorClass);
         }
     }
@@ -349,18 +349,26 @@ public class CvssSource<T extends CvssVector> {
         return vectorVersion + " " + hostingEntity.getEscapedName() + (issuingEntityRole != null ? "-" + issuingEntityRole.getEscapedName() : "") + (issuingEntity != null ? "-" + issuingEntity.getEscapedName() : "");
     }
 
-    public static <T extends CvssVector> String toCombinedColumnHeaderString(Collection<CvssSource<T>> sources) {
+    public static <T extends CvssVector<T>> String toCombinedColumnHeaderString(Collection<CvssSource<T>> sources) {
+        return toCombinedColumnHeaderString(sources, true);
+    }
+
+    public static <T extends CvssVector<T>> String toCombinedColumnHeaderString(Collection<CvssSource<T>> sources, boolean includeVersion) {
         if (sources.isEmpty()) return "";
 
         final String vectorVersion;
-        final CvssSource<T> firstSource = sources.iterator().next();
-        try {
-            vectorVersion = CvssVector.getVersionName(firstSource.getVectorClass());
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Unsupported CVSS version [" + firstSource.getVectorClass() + "] in CVSS source: " + firstSource);
+        if (includeVersion) {
+            final CvssSource<T> firstSource = sources.iterator().next();
+            try {
+                vectorVersion = CvssVector.getVersionName(firstSource.getVectorClass()) + " ";
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Unsupported CVSS version [" + firstSource.getVectorClass() + "] in CVSS source: " + firstSource);
+            }
+        } else {
+            vectorVersion = "";
         }
 
-        final StringJoiner joiner = new StringJoiner(" + ", vectorVersion + " ", "");
+        final StringJoiner joiner = new StringJoiner(" + ", vectorVersion, "");
         for (CvssSource<T> source : sources) {
             joiner.add(source.getHostingEntity().getEscapedName() + (source.getIssuingEntityRole() != null ? "-" + source.getIssuingEntityRole().getEscapedName() : "") + (source.getIssuingEntity() != null ? "-" + source.getIssuingEntity().getEscapedName() : ""));
         }
@@ -388,7 +396,7 @@ public class CvssSource<T extends CvssVector> {
         final String version = versionRest[0];
         final String rest = versionRest[1];
 
-        final Class<? extends CvssVector> cvssVectorClass;
+        final Class<? extends CvssVector<?>> cvssVectorClass;
         try {
             cvssVectorClass = CvssVector.classFromVersionName(version);
         } catch (Exception e) {
@@ -420,10 +428,10 @@ public class CvssSource<T extends CvssVector> {
             throw new IllegalArgumentException("Invalid CVSS source, requires at least hosting entity: " + header);
         }
 
-        return new CvssSource<>(hostingEntity, issuingEntityRole, issuingEntity, cvssVectorClass);
+        return new CvssSource(hostingEntity, issuingEntityRole, issuingEntity, cvssVectorClass);
     }
 
-    public static Map<String, CvssSource<? extends CvssVector>> fromMultipleColumnHeaderStrings(Set<String> headers) {
+    public static Map<String, CvssSource<? extends CvssVector<?>>> fromMultipleColumnHeaderStrings(Set<String> headers) {
         final Map<String, CvssSource<?>> result = new LinkedHashMap<>();
 
         for (String header : headers) {
@@ -437,7 +445,7 @@ public class CvssSource<T extends CvssVector> {
         return result;
     }
 
-    public static Map<String, CvssSource<? extends CvssVector>> fromMultipleColumnHeaderStringsThrowing(Set<String> headers) {
+    public static Map<String, CvssSource<? extends CvssVector<?>>> fromMultipleColumnHeaderStringsThrowing(Set<String> headers) {
         final Map<String, CvssSource<?>> result = new LinkedHashMap<>();
 
         for (String header : headers) {

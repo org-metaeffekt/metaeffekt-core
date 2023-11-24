@@ -95,8 +95,7 @@ public class CvssSelector implements Cloneable {
                     }
                 } else {
                     final Pair<T, Integer> result = rule.getMergingMethod().mergeVectors(effective, chosenVector);
-                    effective = result.getLeft();
-                    effective.addSource(chosenVector.getCvssSource());
+                    effective = result.getLeft().deriveAddSource(chosenVector.getCvssSource());
 
                     for (SelectorStatsCollector collector : rule.getStatsCollectors()) {
                         collector.apply(stats, 1, 0, result::getRight);

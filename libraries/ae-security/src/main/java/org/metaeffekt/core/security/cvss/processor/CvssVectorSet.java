@@ -56,8 +56,7 @@ public class CvssVectorSet implements Cloneable {
     }
 
     public <T extends CvssVector<T>> void addCvssVector(CvssSource<T> source, String cvssVector) {
-        final T vector = source.parseVector(cvssVector);
-        vector.addSource(source);
+        final T vector = source.parseVector(cvssVector).deriveAddSource(source);
         this.addCvssVector(vector);
     }
 

@@ -108,12 +108,24 @@ public abstract class CvssVector<T extends CvssVector<T>> {
 
     /* SOURCES */
 
-    public void addSource(CvssSource<T> source) {
+    public T deriveAddSource(CvssSource<T> source) {
+        final T clone = this.clone();
+        clone.addSource(source);
+        return clone;
+    }
+
+    public T deriveAddSources(Collection<CvssSource<T>> sources) {
+        final T clone = this.clone();
+        clone.addSources(sources);
+        return clone;
+    }
+
+    protected void addSource(CvssSource<T> source) {
         Objects.requireNonNull(source, "Vector source must not be null");
         this.sources.add(source);
     }
 
-    public void addSources(Collection<CvssSource<T>> sources) {
+    protected void addSources(Collection<CvssSource<T>> sources) {
         Objects.requireNonNull(sources, "Vector sources collection must not be null when adding multiple sources");
         sources.forEach(source -> Objects.requireNonNull(source, "Vector source must not be null when adding multiple sources " + sources));
         this.sources.addAll(sources);
@@ -124,14 +136,14 @@ public abstract class CvssVector<T extends CvssVector<T>> {
     }
 
     public CvssSource<T> getLatestSource() {
-        if (sources != null && !sources.isEmpty()) {
+        if (!sources.isEmpty()) {
             return sources.get(sources.size() - 1);
         }
         return null;
     }
 
     public CvssSource<T> getInitialSource() {
-        if (sources != null && !sources.isEmpty()) {
+        if (!sources.isEmpty()) {
             return sources.get(0);
         }
         return null;
@@ -139,6 +151,10 @@ public abstract class CvssVector<T extends CvssVector<T>> {
 
     public CvssSource<T> getCvssSource() {
         return getInitialSource();
+    }
+
+    public String getCombinedCvssSource(boolean includeVersion) {
+        return CvssSource.toCombinedColumnHeaderString(sources, includeVersion);
     }
 
     /* APPLYING VECTORS */

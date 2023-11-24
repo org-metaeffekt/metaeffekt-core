@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report;
+package org.metaeffekt.core.inventory.processor.report.model;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -261,7 +261,7 @@ public class AdvisoryData {
             new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     );
 
-    static String normalizeDate(String string) {
+    public static String normalizeDate(String string) {
         if (string == null) return "n.a.";
 
         final Date parsedDate = tryParse(string);

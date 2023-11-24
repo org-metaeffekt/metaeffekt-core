@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -27,15 +28,18 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.report.adapter.AssessmentReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
-import org.metaeffekt.core.util.ParsingUtils;
 import org.metaeffekt.core.util.RegExUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -151,9 +155,17 @@ public class InventoryReport {
 
     /**
      * Insignificant threshold for CVSS scores on vulnerabilities.
+     *
+     * @deprecated use {@link CentralSecurityPolicyConfiguration#setInsignificantThreshold(double)} instead.
      */
+    @Deprecated
     private float vulnerabilityScoreThreshold = 7.0f;
+    @Deprecated
     private float minimumVulnerabilityIncludeScore = Float.MIN_VALUE;
+    /**
+     * @deprecated use {@link CentralSecurityPolicyConfiguration#setIncludeVulnerabilitiesWithAdvisoryProviders(List)} instead.
+     */
+    @Deprecated
     private final List<String> vulnerabilityAdvisoryFilter = new ArrayList<>();
 
     /**
@@ -164,13 +176,11 @@ public class InventoryReport {
 
     /**
      * What mapper to use when generating the header row for the overview tables.<br>
-     * Currently supported are:
-     * <ul>
-     *     <li><code>default</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_DEFAULT}</li>
-     *     <li><code>abstracted</code> from {@link StatisticsOverviewTable#VULNERABILITY_STATUS_MAPPER_ABSTRACTED}</li>
-     * </ul>
+     *
+     * @deprecated use {@link CentralSecurityPolicyConfiguration#setVulnerabilityStatusDisplayMapper(String)} instead.
      */
-    private Function<String, String> overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT;
+    @Deprecated
+    private Function<String, String> overviewTablesVulnerabilityStatusMappingFunction = str -> str;
 
     /**
      * A space-separated list of CVSS-versions to be used to determine the effective score of a vulnerability.<br>
@@ -180,7 +190,10 @@ public class InventoryReport {
      *     <li>{@link VulnerabilityReportAdapter#CVSS_SCORING_PREFERENCE_MAX} which uses the in this order <code>max</code>, <code>v3</code>, then <code>v2</code></li>
      * </ul>
      */
+    @Deprecated
     private String cvssScoringPreference = VulnerabilityReportAdapter.CVSS_SCORING_PREFERENCE_LATEST_FIRST;
+
+    private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
     /**
      * An array of advisory types to include in the report. The default is to include all types by using the value
@@ -192,7 +205,10 @@ public class InventoryReport {
      *     <li><code>alert</code></li>
      *     <li><code>news</code></li>
      * </ul>
+     *
+     * @deprecated use {@link CentralSecurityPolicyConfiguration#setIncludeAdvisoryTypes(List)} instead.
      */
+    @Deprecated
     private List<String> includeAdvisoryTypes = new ArrayList<>();
 
     {
@@ -204,8 +220,8 @@ public class InventoryReport {
     /**
      * Some report use cases do not require/desire the vulnerabilities in the inventory to be filtered. Adversely to
      * previous handling (all inventories were filtered) the default is here <code>false</code>. The relevance of the
-     * vulnerability is determined by the use case of the inventory and not structural. Also some inventories may not
-     * detail the artifacts-level information and anly provide assets and asset-level assessment information.
+     * vulnerability is determined by the use case of the inventory and not structural. Also, some inventories may not
+     * detail the artifacts-level information and only provide assets and asset-level assessment information.
      */
     private boolean filterVulnerabilitiesNotCoveredByArtifacts = false;
 
@@ -566,13 +582,16 @@ public class InventoryReport {
             projectInventory.filterVulnerabilityMetaData();
         }
 
+        // FIXME: Reimplement this somewhere else, most likely in the VulnerabilityReportAdapter
         // filter the vulnerability metadata to only include those with a score larger than the min score
-        if (getMinimumVulnerabilityIncludeScore() >= 0) {
-            final VulnerabilityReportAdapter adapter = new VulnerabilityReportAdapter(
-                    projectInventory, cvssScoringPreference, vulnerabilityScoreThreshold, includeAdvisoryTypes);
+        /*if (getMinimumVulnerabilityIncludeScore() >= 0) {
+            final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
+                    projectInventory, securityPolicy,
+                    includeAdvisoryTypes
+            );
 
             projectInventory.getVulnerabilityMetaData().removeIf(vmd -> {
-                final String compareScore = adapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
+                final String compareScore = vulnerabilityReportAdapter.getUnmodifiedCvssScoreByScoringPreference(vmd, cvssScoringPreference);
                 if (StringUtils.isNotBlank(compareScore)) {
                     try {
                         return ParsingUtils.parseCvssScore(compareScore) < getMinimumVulnerabilityIncludeScore();
@@ -582,7 +601,7 @@ public class InventoryReport {
                 }
                 return false;
             });
-        }
+        }*/
 
         // write reports
         if (inventoryBomReportEnabled) {
@@ -696,6 +715,20 @@ public class InventoryReport {
         final Resource[] resources = resolver.getResources(vtClasspathResourcePattern);
         final Resource parentResource = resolver.getResource(templateBaseDir);
         final String parentPath = parentResource.getURI().toASCIIString();
+
+        // build adapters
+        // FIXME: use adapter for:
+        //        - review filtered inventory approach (filtering only for artifacts with "relevant" flag)
+        //        - move score threshold filter
+        final Inventory filteredInventory = projectInventory.getFilteredInventory();
+
+        final AssetReportAdapter assetReportAdapter = new AssetReportAdapter(filteredInventory);
+        final AssessmentReportAdapter assessmentReportAdapter = new AssessmentReportAdapter(projectInventory);
+        final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
+                projectInventory, securityPolicy,
+                includeAdvisoryTypes
+        );
+
         for (Resource r : resources) {
             String filePath = r.getURI().toASCIIString();
             String path = filePath.replace(parentPath, "");
@@ -703,10 +736,58 @@ public class InventoryReport {
             String targetFileName = r.getFilename().replace(".vt", "");
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
-
             final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
-            produceDita(projectInventory, filePath, targetReportPath, reportContext);
+
+            // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
+            // FIXME: Replace this with a runtime check since this information is now easily accessible inside the AeaaVulnerability instances
+            filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityReportAdapter, filteredInventory.getVulnerabilityMetaData());
+
+            produceDita(
+                    projectInventory, filteredInventory,
+                    assetReportAdapter, vulnerabilityReportAdapter, assessmentReportAdapter,
+                    filePath, targetReportPath, reportContext
+            );
         }
+    }
+
+    private void produceDita(Inventory projectInventory, Inventory filteredInventory,
+                             AssetReportAdapter assetReportAdapter, VulnerabilityReportAdapter vulnerabilityReportAdapter, AssessmentReportAdapter assessmentReportAdapter,
+                             String templateResourcePath, File target, ReportContext reportContext) throws Exception {
+        LOG.info("Producing Dita for template [{}]", templateResourcePath);
+
+        final Properties properties = new Properties();
+        properties.put(Velocity.RESOURCE_LOADER, "class, file");
+        properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
+        properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
+        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
+        properties.put(Velocity.SET_NULL_ALLOWED, true);
+
+        final VelocityEngine velocityEngine = new VelocityEngine(properties);
+        final Template template = velocityEngine.getTemplate(templateResourcePath);
+        final StringWriter sw = new StringWriter();
+        final VelocityContext context = new VelocityContext();
+
+        // regarding the report we only use the filtered inventory for the time being
+        context.put("inventory", filteredInventory);
+        context.put("vulnerabilityAdapter", vulnerabilityReportAdapter);
+        context.put("assessmentReportAdapter", assessmentReportAdapter);
+        context.put("assetAdapter", assetReportAdapter);
+        context.put("report", this);
+        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
+        context.put("RegExUtils", RegExUtils.class);
+        context.put("utils", new ReportUtils());
+
+        context.put("Double", Double.class);
+        context.put("Float", Float.class);
+        context.put("String", String.class);
+
+        context.put("targetReportDir", this.targetReportDir);
+
+        context.put("reportContext", reportContext);
+
+        template.merge(context, sw);
+
+        FileUtils.write(target, sw.toString(), "UTF-8");
     }
 
     public boolean evaluateNotices(Inventory projectInventory, List<String> licenses) {
@@ -766,7 +847,7 @@ public class InventoryReport {
                     LOG.error("[missing license file] in folder [{}]", licenseFolderName);
                 } else {
                     if (reportedLicenseFolders.size() <= 10) {
-                    LOG.warn("[missing license file] in folder [{}]", licenseFolderName);
+                        LOG.warn("[missing license file] in folder [{}]", licenseFolderName);
                     }
                     if (reportedLicenseFolders.size() == 10) {
                         LOG.warn("[missing license file] - logging no further warnings for classifier.");
@@ -950,73 +1031,31 @@ public class InventoryReport {
         }
     }
 
-    private void filterVulnerabilityMetadataByAdvisoryFilter(
-            VulnerabilityReportAdapter adapter, List<VulnerabilityMetaData> vulnerabilityMetaData) {
-        if (vulnerabilityAdvisoryFilter.size() > 0) {
+    /**
+     * Filters the vulnerability metadata by the advisory filter.
+     *
+     * @param adapter               the vulnerability report adapter containing the advisory filter
+     * @param vulnerabilityMetaData the vulnerability metadata to filter
+     * @deprecated Use {@link VulnerabilityReportAdapter#getEffectiveVulnerabilities()} instead.
+     */
+    @Deprecated
+    private void filterVulnerabilityMetadataByAdvisoryFilter(VulnerabilityReportAdapter adapter, List<VulnerabilityMetaData> vulnerabilityMetaData) {
+        if (!vulnerabilityAdvisoryFilter.isEmpty()) {
             vulnerabilityMetaData.removeIf(vmd ->
                     adapter.getAdvisories(vmd).stream()
                             .noneMatch(advisory -> vulnerabilityAdvisoryFilter.contains(advisory.getSource())));
         }
     }
 
-    private void produceDita(Inventory projectInventory, String templateResourcePath, File target, ReportContext reportContext) throws Exception {
-        LOG.info("Producing Dita for template [{}]", templateResourcePath);
-
-        final Properties properties = new Properties();
-        properties.put(Velocity.RESOURCE_LOADER, "class, file");
-        properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
-        properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
-        properties.put(Velocity.SET_NULL_ALLOWED, true);
-
-        final VelocityEngine velocityEngine = new VelocityEngine(properties);
-        final Template template = velocityEngine.getTemplate(templateResourcePath);
-        final StringWriter sw = new StringWriter();
-        final VelocityContext context = new VelocityContext();
-
-        // FIXME: review filtered inventory approach; move score threshold filter out; use adapter
-        final Inventory filteredInventory = projectInventory.getFilteredInventory();
-
-        final AssetReportAdapter assetReportAdapter = new AssetReportAdapter(filteredInventory);
-        final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
-                filteredInventory, cvssScoringPreference, vulnerabilityScoreThreshold, includeAdvisoryTypes);
-        final AssessmentReportAdapter assessmentReportAdapter = new AssessmentReportAdapter(projectInventory);
-
-        // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
-        filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityReportAdapter, filteredInventory.getVulnerabilityMetaData());
-
-        // regarding the report we only use the filtered inventory for the time being
-        context.put("inventory", filteredInventory);
-        context.put("vulnerabilityAdapter", vulnerabilityReportAdapter);
-        context.put("assessmentReportAdapter", assessmentReportAdapter);
-        context.put("assetAdapter", assetReportAdapter);
-        context.put("report", this);
-        context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
-        context.put("RegExUtils", RegExUtils.class);
-        context.put("utils", new ReportUtils());
-
-        context.put("Double", Double.class);
-        context.put("Float", Float.class);
-        context.put("String", String.class);
-
-        context.put("targetReportDir", this.targetReportDir);
-
-        context.put("reportContext", reportContext);
-
-        template.merge(context, sw);
-
-        FileUtils.write(target, sw.toString(), "UTF-8");
+    private static void logHeaderBox(String str) {
+        LOG.info(repeat("*", str.length() + 4));
+        LOG.info("* {} *", str);
+        LOG.info(repeat("*", str.length() + 4));
     }
 
     private static String repeat(String str, int count) {
         if (count <= 0) return "";
         return IntStream.range(0, count).mapToObj(i -> str).collect(Collectors.joining());
-    }
-
-    private static void logHeaderBox(String str) {
-        LOG.info(repeat("*", str.length() + 4));
-        LOG.info("* {} *", str);
-        LOG.info(repeat("*", str.length() + 4));
     }
 
     public File getDiffInventoryFile() {
@@ -1344,7 +1383,8 @@ public class InventoryReport {
     }
 
     public void setOverviewTablesVulnerabilityStatusMappingFunction(String function) {
-        this.overviewTablesVulnerabilityStatusMappingFunction = StatisticsOverviewTable.getStatusMapperFunction(function);
+        LOG.error("overviewTablesVulnerabilityStatusMappingFunction is no longer supported. Please use security policy configuration instead for value [{}]", function);
+        this.overviewTablesVulnerabilityStatusMappingFunction = str -> str;
     }
 
     public void setCvssScoringPreference(String cvssScoringPreference) {

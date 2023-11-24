@@ -29,9 +29,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Cvss4_P_0Test {
+public class Cvss4P0Test {
 
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss4_P_0Test.class);
+    private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0Test.class);
 
     private final static File CVSS_RESOURCE_DIR = new File("src/test/resources/cvss");
 

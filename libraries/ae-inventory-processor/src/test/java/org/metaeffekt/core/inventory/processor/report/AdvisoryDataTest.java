@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.report.model.AdvisoryData;
 
 import java.io.File;
 import java.io.IOException;

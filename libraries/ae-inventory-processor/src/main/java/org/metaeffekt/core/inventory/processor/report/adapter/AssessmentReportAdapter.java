@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report;
+package org.metaeffekt.core.inventory.processor.report.adapter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -49,13 +49,14 @@ public class AssessmentReportAdapter {
 
         if (vulnerabilities != null && !vulnerabilities.isEmpty()) {
             if (useModifiedSeverity) {
-                final StatisticsOverviewTable table = StatisticsOverviewTable.fromVmd(new VulnerabilityReportAdapter(new Inventory()), vulnerabilities, null, useModifiedSeverity, StatisticsOverviewTable.VULNERABILITY_STATUS_MAPPER_DEFAULT);
+                // TODO: Rewrite this
+                // final StatisticsOverviewTableOld table = StatisticsOverviewTableOld.fromVmd(new VulnerabilityReportAdapter(new Inventory()), vulnerabilities, null, useModifiedSeverity, StatisticsOverviewTableOld.VULNERABILITY_STATUS_MAPPER_DEFAULT);
 
-                counts.criticalCounter = table.getTotalForSeverity("critical");
-                counts.highCounter = table.getTotalForSeverity("high");
-                counts.mediumCounter = table.getTotalForSeverity("medium");
-                counts.lowCounter = table.getTotalForSeverity("low");
-                counts.noneCounter = table.getTotalForSeverity("none");
+                // counts.criticalCounter = table.getTotalForSeverity("critical");
+                // counts.highCounter = table.getTotalForSeverity("high");
+                // counts.mediumCounter = table.getTotalForSeverity("medium");
+                // counts.lowCounter = table.getTotalForSeverity("low");
+                // counts.noneCounter = table.getTotalForSeverity("none");
 
             } else {
                 for (VulnerabilityMetaData vulnerabilityMetaData : vulnerabilities) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report;
+package org.metaeffekt.core.inventory.processor.report.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.*;

@@ -24,7 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
-import org.metaeffekt.core.inventory.processor.report.VulnerabilityReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;

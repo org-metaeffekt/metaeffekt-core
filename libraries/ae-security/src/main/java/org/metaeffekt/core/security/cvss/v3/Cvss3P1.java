@@ -260,7 +260,7 @@ public class Cvss3P1 extends MultiScoreCvssVector<Cvss3P1> {
      * @return The Cvss Temporal Score.
      */
     private double calculateTemporalScore() {
-        if (!isAnyTemporalDefined()) return 0;
+        if (!isAnyTemporalDefined()) return Double.NaN;
         double exploitCodeMaturityFactor = exploitCodeMaturity == ExploitCodeMaturity.NULL ? ExploitCodeMaturity.NOT_DEFINED.factor : exploitCodeMaturity.factor;
         double remediationLevelFactor = remediationLevel == RemediationLevel.NULL ? RemediationLevel.NOT_DEFINED.factor : remediationLevel.factor;
         double reportConfidenceFactor = reportConfidence == ReportConfidence.NULL ? ReportConfidence.NOT_DEFINED.factor : reportConfidence.factor;

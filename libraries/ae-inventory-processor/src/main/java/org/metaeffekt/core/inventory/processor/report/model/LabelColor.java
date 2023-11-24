@@ -13,24 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report;
+package org.metaeffekt.core.inventory.processor.report.model;
 
-public class LabelData {
+public class LabelColor {
 
-    private String text;
-    private LabelColor labelColor;
+    private final String background;
+    private final String foreground;
 
-    public LabelData(String text, LabelColor labelColor) {
-        this.text = text;
-        this.labelColor = labelColor;
+    public LabelColor(String background, String foreground) {
+        this.background = background;
+        this.foreground = foreground;
     }
 
-    public LabelColor getLabelColor() {
-        return labelColor;
+    public String getBackground() {
+        return background;
     }
 
-    public String getText() {
-        return text;
+    public String getForeground() {
+        return foreground;
     }
 
 }
