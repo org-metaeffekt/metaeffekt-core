@@ -54,9 +54,9 @@
 <tgroup cols="5">
     <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
     <colspec colname="COLSPEC1" colnum="2" colwidth="18*" />
-    <colspec colname="COLSPEC2" colnum="3" colwidth="12*" />
+    <colspec colname="COLSPEC2" colnum="3" colwidth="13*" />
     <colspec colname="COLSPEC3" colnum="4" colwidth="11*" />
-    <colspec colname="COLSPEC4" colnum="5" colwidth="9*" />
+    <colspec colname="COLSPEC4" colnum="5" colwidth="8*" />
     <thead>
         <row>
             <entry colname="COLSPEC0" valign="top">Lizenz</entry>
