@@ -19,6 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +36,7 @@ public enum AeaaContentIdentifiers {
     MSRC("MSRC", Pattern.compile("(MSRC-(?:CVE|CAN)-([0-9]{4})-([0-9]{4,})|ADV(\\d+))", Pattern.CASE_INSENSITIVE), AeaaMsrcAdvisorEntry.class, AeaaMsrcAdvisorEntry::new),
     /**
      * <a href="https://github.com/github/advisory-database">
-     *     Pattern source</a>.
+     * Pattern source</a>.
      */
     GHSA("GHSA", Pattern.compile("GHSA(-[23456789cfghjmpqrvwx]{4}){3}"), AeaaGhsaAdvisorEntry.class, AeaaGhsaAdvisorEntry::new),
     CVE("CVE", Pattern.compile("((?:CVE|CAN)-([0-9]{4})-([0-9]{4,}))", Pattern.CASE_INSENSITIVE), null, null),
@@ -43,6 +45,8 @@ public enum AeaaContentIdentifiers {
     NVD("NVD", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
     ASSESSMENT_STATUS("Assessment Status", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
     UNKNOWN("UNKNOWN", Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE), null, null);
+
+    private static final Logger LOG = LoggerFactory.getLogger(AeaaContentIdentifiers.class);
 
     private final String wellFormedName;
     private final Pattern pattern;
@@ -202,6 +206,8 @@ public enum AeaaContentIdentifiers {
                 }
             }
         }
+
+        LOG.debug("Failed to parse content identifier name [{}], returning {}", name, UNKNOWN);
 
         return UNKNOWN;
     }

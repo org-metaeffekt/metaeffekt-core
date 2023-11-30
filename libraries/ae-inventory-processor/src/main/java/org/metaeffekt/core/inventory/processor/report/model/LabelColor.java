@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model;
 
+import java.awt.*;
+
 public class LabelColor {
 
     private final String background;
@@ -33,4 +35,31 @@ public class LabelColor {
         return foreground;
     }
 
+    /**
+     * Converts a HEX color into a label color by evaluating the background brightness and setting the foreground to
+     * either black or white based on that.
+     *
+     * @param color The background color to use.
+     * @return A LabelColor containing background and foreground colors.
+     */
+    public static LabelColor getLabelColorForBackgroundColor(String color) {
+        if (color != null) {
+            int rgb = Integer.parseInt(color.substring(1), 16);
+            int r = (rgb >> 16) & 0xff;
+            int g = (rgb >> 8) & 0xff;
+            int b = (rgb) & 0xff;
+            double luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            String backgroundColor = luma < 120 ? "white" : "black";
+            return new LabelColor(color, backgroundColor);
+        }
+        return new LabelColor("#cfcfc4", "black");
+    }
+
+    public static LabelColor getLabelColorForBackgroundColor(int r, int g, int b) {
+        return getLabelColorForBackgroundColor(String.format("#%02x%02x%02x", r, g, b));
+    }
+
+    public static LabelColor getLabelColorForBackgroundColor(Color color) {
+        return getLabelColorForBackgroundColor(color.getRed(), color.getGreen(), color.getBlue());
+    }
 }

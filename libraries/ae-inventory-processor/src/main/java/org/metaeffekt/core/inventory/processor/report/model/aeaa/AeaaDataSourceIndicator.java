@@ -21,6 +21,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -92,6 +93,34 @@ public class AeaaDataSourceIndicator {
     @Override
     public String toString() {
         return "DataSourceIndicator[" + dataSource + " --> " + (matchReason == null ? "unspecified" : matchReason.toJson()) + "]";
+    }
+
+    public static class AssessmentStatusReason extends Reason {
+        public final static String TYPE = "assessment-status";
+
+        private final String originFile;
+
+        public AssessmentStatusReason(String originFile) {
+            super(TYPE);
+            this.originFile = originFile;
+        }
+
+        public String getOriginFile() {
+            return originFile;
+        }
+
+        public String getOriginFileName() {
+            if (originFile == null || originFile.isEmpty() || originFile.equals("no-file")) {
+                return "no-file";
+            }
+            return new File(originFile).getName();
+        }
+
+        @Override
+        public JSONObject toJson() {
+            return super.toJson()
+                    .put("originFile", originFile);
+        }
     }
 
     public static class VulnerabilityReason extends Reason {
@@ -323,6 +352,8 @@ public class AeaaDataSourceIndicator {
                     return new AnyReason(json.optString("description", null));
                 case AnyArtifactReason.TYPE:
                     return new AnyArtifactReason(json);
+                case AssessmentStatusReason.TYPE:
+                    return new AssessmentStatusReason(json.optString("originFile", null));
                 default:
                     throw new IllegalArgumentException("Unknown reason type: " + type + "\nIn reason JSON:" + json);
             }

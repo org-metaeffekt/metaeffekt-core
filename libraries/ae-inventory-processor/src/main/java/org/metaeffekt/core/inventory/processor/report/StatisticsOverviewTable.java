@@ -101,7 +101,7 @@ public class StatisticsOverviewTable {
 
         final Collection<AeaaVulnerability> effectiveVulnerabilities;
         if (filterAdvisory != null) {
-            effectiveVulnerabilities = StatisticsOverviewTable.filterVulnerabilitiesForAdvisories(inputVulnerabilities, filterAdvisory);
+            effectiveVulnerabilities = CentralSecurityPolicyConfiguration.filterVulnerabilitiesForAdvisories(inputVulnerabilities, Collections.singleton(filterAdvisory));
         } else {
             effectiveVulnerabilities = inputVulnerabilities;
         }
@@ -111,7 +111,7 @@ public class StatisticsOverviewTable {
                 .map(CvssSeverityRanges.SeverityRange::getName)
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
-        final List<String> requiredStatusCategories = securityPolicy.getVulnerabilityStatusDisplayMapperStatusNames();
+        final List<String> requiredStatusCategories = securityPolicy.getVulnerabilityStatusDisplayMapper().getStatusNames();
 
         // add the default severity categories
         for (String severityCategory : requiredSeverityCategories) {
@@ -124,7 +124,7 @@ public class StatisticsOverviewTable {
             // status in effectiveStatus
             final AeaaVulnerabilityStatusHistoryEntry latestStatusEntry = vulnerability.getOrCreateNewVulnerabilityStatus().getLatestActiveStatusHistoryEntry();
             final String baseStatus = latestStatusEntry != null && latestStatusEntry.getStatus() != null ? latestStatusEntry.getStatus() : "";
-            final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapperFunction().apply(baseStatus);
+            final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapper().getMapper().apply(baseStatus);
 
             // severity in effectiveSeverity
             final CvssVector<?> vector = useEffectiveSeverity ? vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase() : vulnerability.getCvssSelectionResult().getSelectedBaseCvss();
@@ -213,19 +213,13 @@ public class StatisticsOverviewTable {
         return s.toLowerCase();
     }
 
-    private static String capitalizeWords(String s) {
+    public static String capitalizeWords(String s) {
         if (s == null || s.isEmpty()) {
             return s;
         }
         return Arrays.stream(s.split(" "))
                 .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
                 .collect(Collectors.joining(" "));
-    }
-
-    private static List<AeaaVulnerability> filterVulnerabilitiesForAdvisories(Collection<AeaaVulnerability> vulnerabilities, AeaaContentIdentifiers filterCert) {
-        return vulnerabilities.stream()
-                .filter(v -> v.getSecurityAdvisories().stream().anyMatch(a -> a.getEntrySource().equals(filterCert)))
-                .collect(Collectors.toList());
     }
 
     @Override
@@ -288,8 +282,9 @@ public class StatisticsOverviewTable {
     public static class SeverityToStatusRow {
         private final String severity;
         private final Map<String, Integer> statusCountMap = new LinkedHashMap<>();
-        private int total;
-        private String assessed;
+        private int total = 0;
+        private int assessedCount = 0;
+        private String assessed = "undefined";
 
         public SeverityToStatusRow(CentralSecurityPolicyConfiguration securityPolicy, String severity) {
             if (severity == null) {
@@ -297,7 +292,7 @@ public class StatisticsOverviewTable {
             }
             this.severity = severity;
 
-            for (String requiredCategories : securityPolicy.getVulnerabilityStatusDisplayMapperStatusNames()) {
+            for (String requiredCategories : securityPolicy.getVulnerabilityStatusDisplayMapper().getStatusNames()) {
                 this.statusCountMap.put(requiredCategories, 0);
             }
         }
@@ -322,6 +317,10 @@ public class StatisticsOverviewTable {
             return this.total;
         }
 
+        public int getAssessedCount() {
+            return assessedCount;
+        }
+
         public String getAssessed() {
             return this.assessed;
         }
@@ -333,6 +332,7 @@ public class StatisticsOverviewTable {
 
         public void updateCalculatedColumns(CentralSecurityPolicyConfiguration securityPolicy) {
             this.assessed = calculateAssessed(securityPolicy);
+            this.assessedCount = getExactAssessedCount(securityPolicy);
             this.total = calculateTotal();
         }
 
@@ -342,14 +342,11 @@ public class StatisticsOverviewTable {
 
         protected String calculateAssessed(CentralSecurityPolicyConfiguration securityPolicy) {
             int total = 0;
-            for (String totalName : securityPolicy.getVulnerabilityStatusDisplayMapperStatusNames()) {
+            for (String totalName : securityPolicy.getVulnerabilityStatusDisplayMapper().getStatusNames()) {
                 total += this.statusCountMap.getOrDefault(totalName, 0);
             }
 
-            int assessed = 0;
-            for (String assessedName : securityPolicy.getVulnerabilityStatusDisplayMapperAssessedStatusNames()) {
-                assessed += this.statusCountMap.getOrDefault(assessedName, 0);
-            }
+            final int assessed = getExactAssessedCount(securityPolicy);
 
             if (total == 0) {
                 return "n/a";
@@ -357,7 +354,14 @@ public class StatisticsOverviewTable {
                 final double ratio = ((double) assessed) / total;
                 return String.format(Locale.GERMANY, "%.1f %%", ratio * 100);
             }
+        }
 
+        protected int getExactAssessedCount(CentralSecurityPolicyConfiguration securityPolicy) {
+            int assessed = 0;
+            for (String assessedName : securityPolicy.getVulnerabilityStatusDisplayMapper().getAssessedStatusNames()) {
+                assessed += this.statusCountMap.getOrDefault(assessedName, 0);
+            }
+            return assessed;
         }
 
         public boolean isSeverity(String severity) {

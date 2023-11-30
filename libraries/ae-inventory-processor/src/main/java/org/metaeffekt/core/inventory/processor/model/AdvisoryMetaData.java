@@ -24,6 +24,7 @@ import java.util.Comparator;
 public class AdvisoryMetaData extends AbstractModelBase {
 
     public static final String STATUS_VALUE_UNAFFECTED = "unaffected";
+    public static final String STATUS_VALUE_UNCLASSIFIED = "unclassified";
     public static final String STATUS_VALUE_NEW = "new";
     public static final String STATUS_VALUE_IN_REVIEW = "in review";
     public static final String STATUS_VALUE_REVIEWED = "reviewed";

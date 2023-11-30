@@ -31,6 +31,7 @@ import org.metaeffekt.core.security.cvss.processor.CvssSelector;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 import static org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
@@ -53,7 +54,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private final List<String> includeVulnerabilitiesWithAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
     private final List<String> includeAdvisoryTypes = new ArrayList<>(Collections.singletonList("all"));
 
-    private String vulnerabilityStatusDisplayMapper = KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED;
+    private String vulnerabilityStatusDisplayMapperName = "unmodified";
+    private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED;
 
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
         this.cvssSeverityRanges = cvssSeverityRanges == null ? CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString() : cvssSeverityRanges;
@@ -137,11 +139,18 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this;
     }
 
+    public boolean isVulnerabilityInsignificant(AeaaVulnerability vulnerability) {
+        if (insignificantThreshold == -1.0) return true;
+        final CvssVector<?> vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
+        final double score = vector == null ? 0.0 : vector.getOverallScore();
+        return score <= insignificantThreshold;
+    }
+
     public double getIncludeScoreThreshold() {
         return this.includeScoreThreshold;
     }
 
-    public boolean isVulnerabilityIncludedRegardingIncludeScoreThreshold(AeaaVulnerability vulnerability) {
+    public boolean isVulnerabilityAboveIncludeScoreThreshold(AeaaVulnerability vulnerability) {
         if (includeScoreThreshold == -1.0) return true;
         final CvssVector<?> vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
         final double score = vector == null ? 0.0 : vector.getOverallScore();
@@ -162,12 +171,22 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (includeVulnerabilitiesWithAdvisoryProviders.contains("all")) {
             return true;
         }
-        for (AeaaContentIdentifiers advisoryProvider : vulnerability.getReferencedContentIds().keySet()) {
-            if (includeVulnerabilitiesWithAdvisoryProviders.contains(advisoryProvider.getWellFormedName())) {
-                return true;
-            }
-        }
-        return false;
+
+        final List<AeaaContentIdentifiers> filter = includeVulnerabilitiesWithAdvisoryProviders.stream()
+                .map(AeaaContentIdentifiers::fromContentIdentifierName)
+                .collect(Collectors.toList());
+
+        return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
+    }
+
+    public static List<AeaaVulnerability> filterVulnerabilitiesForAdvisories(Collection<AeaaVulnerability> vulnerabilities, Collection<AeaaContentIdentifiers> filter) {
+        return vulnerabilities.stream()
+                .filter(v -> isVulnerabilityIncludedRegardingAdvisoryProviders(v, filter))
+                .collect(Collectors.toList());
+    }
+
+    public static boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability, Collection<AeaaContentIdentifiers> filter) {
+        return vulnerability.getSecurityAdvisories().stream().anyMatch(a -> filter.contains(a.getEntrySource()));
     }
 
     public CentralSecurityPolicyConfiguration setIncludeAdvisoryTypes(List<String> includeAdvisoryTypes) {
@@ -184,41 +203,27 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (includeAdvisoryTypes.contains("all")) {
             return true;
         }
-        return includeAdvisoryTypes.contains(advisory.getEntrySource().getWellFormedName());
+        return includeAdvisoryTypes.contains(advisory.getType());
     }
 
     public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(String vulnerabilityStatusDisplayMapper) {
-        this.vulnerabilityStatusDisplayMapper = vulnerabilityStatusDisplayMapper;
-        getStatusMapperFunction(vulnerabilityStatusDisplayMapper);
+        this.vulnerabilityStatusDisplayMapperName = vulnerabilityStatusDisplayMapper;
+        this.vulnerabilityStatusDisplayMapper = CentralSecurityPolicyConfiguration.getStatusMapperByName(vulnerabilityStatusDisplayMapper);
         return this;
     }
 
-    public Function<String, String> getVulnerabilityStatusDisplayMapperFunction() {
-        return getStatusMapperFunction(vulnerabilityStatusDisplayMapper);
+    public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper) {
+        this.vulnerabilityStatusDisplayMapperName = vulnerabilityStatusDisplayMapper.getName();
+        this.vulnerabilityStatusDisplayMapper = vulnerabilityStatusDisplayMapper;
+        return this;
     }
 
-    public List<String> getVulnerabilityStatusDisplayMapperStatusNames() {
-        if (KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED.equals(vulnerabilityStatusDisplayMapper)) {
-            return Arrays.asList("affected", "potentially affected", "not affected");
-        } else if (KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.equals(vulnerabilityStatusDisplayMapper)) {
-            return Arrays.asList("applicable", "in review", "not applicable", "insignificant", "void");
-        } else {
-            return Collections.emptyList();
+    public VulnerabilityStatusMapper getVulnerabilityStatusDisplayMapper() {
+        if (this.vulnerabilityStatusDisplayMapper == null
+                || !this.vulnerabilityStatusDisplayMapperName.equals(this.vulnerabilityStatusDisplayMapper.getName())) {
+            this.setVulnerabilityStatusDisplayMapper(this.vulnerabilityStatusDisplayMapperName);
         }
-    }
-
-    public List<String> getVulnerabilityStatusDisplayMapperAssessedStatusNames() {
-        if (KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED.equals(vulnerabilityStatusDisplayMapper)) {
-            return Arrays.asList("affected", "not affected");
-        } else if (KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.equals(vulnerabilityStatusDisplayMapper)) {
-            return Arrays.asList("applicable", "not applicable", "void");
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    public String getVulnerabilityStatusDisplayMapperName() {
-        return vulnerabilityStatusDisplayMapper;
+        return this.vulnerabilityStatusDisplayMapper;
     }
 
     @Override
@@ -232,7 +237,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("includeScoreThreshold", includeScoreThreshold);
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
         configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
-        configuration.put("vulnerabilityStatusDisplayMapper", vulnerabilityStatusDisplayMapper);
+        configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
 
         return configuration;
     }
@@ -246,7 +251,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
-        super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapper", this::setVulnerabilityStatusDisplayMapper);
+        super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
     }
 
     @Override
@@ -267,7 +272,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             misconfigurations.add(new ProcessMisconfiguration("includeScoreThreshold", "Include score threshold must be between 0.0 and 10.0 or be -1.0"));
         }
         try {
-            getStatusMapperFunction(vulnerabilityStatusDisplayMapper);
+            this.getVulnerabilityStatusDisplayMapper();
         } catch (IllegalArgumentException e) {
             misconfigurations.add(new ProcessMisconfiguration("vulnerabilityStatusDisplayMapper", "Unknown status mapper: " + vulnerabilityStatusDisplayMapper));
         }
@@ -324,72 +329,94 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new SelectorVectorEvaluator(VectorEvaluatorOperation.IS_BASE_FULLY_DEFINED, true, EvaluatorAction.RETURN_NULL)
     ));
 
-    public final static String KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = "VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED";
-    public final static String KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED = "VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED";
+    public static class VulnerabilityStatusMapper {
+        private final String name;
+        private final Function<String, String> mapper;
+        private final List<String> statusNames;
+        private final List<String> assessedStatusNames;
 
-    public final static Function<String, String> VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = name -> {
-        if ("Applicable".equalsIgnoreCase(name)) {
-            return "Applicable";
+        public VulnerabilityStatusMapper(String name, List<String> statusNames, List<String> assessedStatusNames, Function<String, String> mapper) {
+            this.name = name;
+            this.mapper = mapper;
+            this.statusNames = statusNames;
+            this.assessedStatusNames = assessedStatusNames;
         }
 
-        // FIXME: when would the status be "Potential Vulnerability"?
-        if ("Potential Vulnerability".equalsIgnoreCase(name)) {
-            return "Applicable";
+        public String getName() {
+            return name;
         }
 
-        if (StringUtils.isEmpty(name)) {
-            return "In Review";
+        public Function<String, String> getMapper() {
+            return mapper;
         }
 
-        return name;
-    };
-
-    /**
-     * Where the category
-     * <ul>
-     *     <li>
-     *         <code>not affected</code> covers vulnerabilities with status <code>not applicable</code>,
-     *         <code>void</code> or <code>insignificant</code>
-     *     </li>
-     *     <li>
-     *         <code>potentially affected</code> covers vulnerabilities <code>in review</code> and have not yet been
-     *         fully assessed (no category)
-     *     </li>
-     *     <li>
-     *         <code>affected</code> covers reviewed and assesses as <code>applicable</code> vulnerabilities
-     *     </li>
-     * </ul>
-     * see <code>AEAA-221</code> for more details.
-     */
-    public final static Function<String, String> VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED = name -> {
-        if (StringUtils.isEmpty(name)) { // in review (implicit)
-            return "potentially affected";
+        public List<String> getStatusNames() {
+            return statusNames;
         }
 
-        switch (name) {
-            case VulnerabilityMetaData.STATUS_VALUE_APPLICABLE:
-            case VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT:
-                return "affected";
+        public List<String> getAssessedStatusNames() {
+            return assessedStatusNames;
+        }
+    }
 
-            case VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE:
-            case VulnerabilityMetaData.STATUS_VALUE_VOID:
-                return "not affected";
+    public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = new VulnerabilityStatusMapper(
+            "unmodified",
+            Arrays.asList("applicable", "in review", "not applicable", "insignificant", "void"),
+            Arrays.asList("applicable", "not applicable", "void"),
+            name -> {
+                if (StringUtils.isEmpty(name)) {
+                    return VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW;
+                }
 
-            case "in review":
-                return "potentially affected";
+                if (VulnerabilityMetaData.STATUS_VALUE_APPLICABLE.equalsIgnoreCase(name)) {
+                    return VulnerabilityMetaData.STATUS_VALUE_APPLICABLE;
+                }
 
-            default:
+                // FIXME: when would the status be "Potential Vulnerability"?
+                if ("potential vulnerability".equalsIgnoreCase(name)) {
+                    return VulnerabilityMetaData.STATUS_VALUE_APPLICABLE;
+                }
+
                 return name;
-        }
-    };
+            }
+    );
 
-    protected static Function<String, String> getStatusMapperFunction(String statusMapper) {
-        if (KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED.equals(statusMapper)) {
-            return VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED;
-        } else if (KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.equals(statusMapper)) {
-            return VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED;
-        } else {
-            throw new IllegalArgumentException("Unknown status mapper: " + statusMapper);
-        }
+    public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED = new VulnerabilityStatusMapper(
+            "abstracted",
+            Arrays.asList("affected", "potentially affected", "not affected"),
+            Arrays.asList("affected", "not affected"),
+            name -> {
+                if (StringUtils.isEmpty(name)) { // in review (implicit)
+                    return "potentially affected";
+                }
+
+                switch (name) {
+                    case VulnerabilityMetaData.STATUS_VALUE_APPLICABLE:
+                        return "affected";
+
+                    case VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE:
+                    case VulnerabilityMetaData.STATUS_VALUE_VOID:
+                        return "not affected";
+
+                    case VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT:
+                    case VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW:
+                        return "potentially affected";
+
+                    default:
+                        return name;
+                }
+            }
+    );
+
+    private final static List<VulnerabilityStatusMapper> REGISTERED_VULNERABILITY_STATUS_DISPLAY_MAPPERS = Arrays.asList(
+            VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED,
+            VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED
+    );
+
+    public static VulnerabilityStatusMapper getStatusMapperByName(String name) {
+        return REGISTERED_VULNERABILITY_STATUS_DISPLAY_MAPPERS.stream()
+                .filter(m -> m.getName().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown status mapper: " + name));
     }
 }

@@ -15,110 +15,71 @@
  */
 package org.metaeffekt.core.inventory.processor.report.adapter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerabilityContextInventory;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import static org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData.*;
+import static org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable.SeverityToStatusRow;
+import static org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable.buildTable;
 
 public class AssessmentReportAdapter {
 
-    private Inventory inventory;
+    private final Inventory inventory;
+    private final CentralSecurityPolicyConfiguration securityPolicy;
 
-    public AssessmentReportAdapter(Inventory inventory) {
+    public AssessmentReportAdapter(Inventory inventory, CentralSecurityPolicyConfiguration securityPolicy) {
         this.inventory = inventory;
+        this.securityPolicy = securityPolicy;
     }
 
     public List<AssetMetaData> getAssets() {
-        final List<AssetMetaData> assetMetaData = new ArrayList<>(inventory.getAssetMetaData());
-        assetMetaData.sort(Comparator.comparing(o -> o.get("Name"), String::compareToIgnoreCase));
-        return assetMetaData;
+        return inventory.getAssetMetaData().stream()
+                .sorted(Comparator.comparing(o -> o.get(AssetMetaData.Attribute.NAME), String::compareToIgnoreCase))
+                .collect(Collectors.toList());
     }
 
-    public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useModifiedSeverity) {
-        // check for asset-specific assessment
-        final String assessment = assetMetaData.get("Assessment");
-        final List<VulnerabilityMetaData> vulnerabilities = inventory.getVulnerabilityMetaData(assessment);
+    public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useEffectiveSeverity) {
+        final AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
+        vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
+        vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
+
+        final Set<AeaaVulnerability> vulnerabilities = vAssetInventory.getShallowCopyVulnerabilities();
 
         final VulnerabilityCounts counts = new VulnerabilityCounts();
 
         if (vulnerabilities != null && !vulnerabilities.isEmpty()) {
-            if (useModifiedSeverity) {
-                // TODO: Rewrite this
-                // final StatisticsOverviewTableOld table = StatisticsOverviewTableOld.fromVmd(new VulnerabilityReportAdapter(new Inventory()), vulnerabilities, null, useModifiedSeverity, StatisticsOverviewTableOld.VULNERABILITY_STATUS_MAPPER_DEFAULT);
+            final StatisticsOverviewTable statisticsOverviewTable = buildTable(this.securityPolicy, vulnerabilities, null, useEffectiveSeverity);
 
-                // counts.criticalCounter = table.getTotalForSeverity("critical");
-                // counts.highCounter = table.getTotalForSeverity("high");
-                // counts.mediumCounter = table.getTotalForSeverity("medium");
-                // counts.lowCounter = table.getTotalForSeverity("low");
-                // counts.noneCounter = table.getTotalForSeverity("none");
+            counts.assessedCounter = statisticsOverviewTable.getRows().stream()
+                    .map(SeverityToStatusRow::getAssessedCount)
+                    .reduce(0, Integer::sum);
+            counts.totalCounter = statisticsOverviewTable.getRows().stream()
+                    .map(SeverityToStatusRow::getTotal)
+                    .reduce(0, Integer::sum);
 
-            } else {
-                for (VulnerabilityMetaData vulnerabilityMetaData : vulnerabilities) {
-                    final String severity = getSeverity(vulnerabilityMetaData, useModifiedSeverity);
-
-                    switch (severity.toLowerCase()) {
-                        case "critical":
-                            counts.criticalCounter++;
-                            break;
-                        case "high":
-                            counts.highCounter++;
-                            break;
-                        case "medium":
-                            counts.mediumCounter++;
-                            break;
-                        case "low":
-                            counts.lowCounter++;
-                            break;
-                        case "none":
-                            counts.noneCounter++;
-                            break;
-                    }
-                }
-            }
-
-            for (VulnerabilityMetaData vulnerabilityMetaData : vulnerabilities) {
-                final boolean isAssessed = vulnerabilityMetaData.isStatus(STATUS_VALUE_APPLICABLE) ||
-                        vulnerabilityMetaData.isStatus(STATUS_VALUE_NOTAPPLICABLE) ||
-                        vulnerabilityMetaData.isStatus(STATUS_VALUE_VOID);
-
-                if (isAssessed) {
-                    counts.assessedCounter++;
-                }
-                counts.totalCounter++;
-            }
+            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("critical"), counts::setCriticalCounter);
+            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("high"), counts::setHighCounter);
+            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("medium"), counts::setMediumCounter);
+            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("low"), counts::setLowCounter);
+            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("none"), counts::setNoneCounter);
         }
 
         return counts;
     }
 
-    private String getSeverity(VulnerabilityMetaData vulnerabilityMetaData, boolean useModifiedSeverities) {
-        String severity = null;
-        if (useModifiedSeverities) {
-            severity = vulnerabilityMetaData.get("CVSS Modified Severity (v3)");
-            if (StringUtils.isEmpty(severity)) {
-                severity = vulnerabilityMetaData.get("CVSS Modified Severity (v2)");
-            }
+    private void applyTotalCountIfNotNull(SeverityToStatusRow row, Consumer<Integer> consumer) {
+        if (row != null) {
+            consumer.accept(row.getTotal());
         }
-
-        if (StringUtils.isEmpty(severity)) {
-            severity = vulnerabilityMetaData.get("CVSS Unmodified Severity (v3)");
-        }
-
-        if (StringUtils.isEmpty(severity)) {
-            severity = vulnerabilityMetaData.get("CVSS Unmodified Severity (v2)");
-        }
-
-        if (StringUtils.isEmpty(severity)) {
-            severity = "none";
-        }
-
-        return severity;
     }
 
     /**
@@ -159,6 +120,34 @@ public class AssessmentReportAdapter {
 
         public long getAssessedCounter() {
             return assessedCounter;
+        }
+
+        public void setCriticalCounter(long criticalCounter) {
+            this.criticalCounter = criticalCounter;
+        }
+
+        public void setHighCounter(long highCounter) {
+            this.highCounter = highCounter;
+        }
+
+        public void setMediumCounter(long mediumCounter) {
+            this.mediumCounter = mediumCounter;
+        }
+
+        public void setLowCounter(long lowCounter) {
+            this.lowCounter = lowCounter;
+        }
+
+        public void setNoneCounter(long noneCounter) {
+            this.noneCounter = noneCounter;
+        }
+
+        public void setAssessedCounter(long assessedCounter) {
+            this.assessedCounter = assessedCounter;
+        }
+
+        public void setTotalCounter(long totalCounter) {
+            this.totalCounter = totalCounter;
         }
     }
 

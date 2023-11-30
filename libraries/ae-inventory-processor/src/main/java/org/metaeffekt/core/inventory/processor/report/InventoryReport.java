@@ -263,6 +263,10 @@ public class InventoryReport {
 
     private String templateLanguageSelector = "en";
 
+    public CentralSecurityPolicyConfiguration getSecurityPolicy() {
+        return securityPolicy;
+    }
+
     public boolean createReport() throws Exception {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
 
@@ -723,11 +727,11 @@ public class InventoryReport {
         final Inventory filteredInventory = projectInventory.getFilteredInventory();
 
         final AssetReportAdapter assetReportAdapter = new AssetReportAdapter(filteredInventory);
-        final AssessmentReportAdapter assessmentReportAdapter = new AssessmentReportAdapter(projectInventory);
         final VulnerabilityReportAdapter vulnerabilityReportAdapter = new VulnerabilityReportAdapter(
                 projectInventory, securityPolicy,
                 includeAdvisoryTypes
         );
+        final AssessmentReportAdapter assessmentReportAdapter = new AssessmentReportAdapter(projectInventory, securityPolicy);
 
         for (Resource r : resources) {
             String filePath = r.getURI().toASCIIString();
@@ -740,7 +744,7 @@ public class InventoryReport {
 
             // if an advisory filter is set, filter out all vulnerabilities that do not contain a filter advisory source
             // FIXME: Replace this with a runtime check since this information is now easily accessible inside the AeaaVulnerability instances
-            filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityReportAdapter, filteredInventory.getVulnerabilityMetaData());
+            vulnerabilityReportAdapter.filterVulnerabilityMetadataByAdvisoryFilter(vulnerabilityAdvisoryFilter, filteredInventory.getVulnerabilityMetaData());
 
             produceDita(
                     projectInventory, filteredInventory,
@@ -1028,22 +1032,6 @@ public class InventoryReport {
         // verify something was copied
         if (!new File(sourceRootDir, sourcePath).exists()) {
             throw new IllegalStateException("Files copied, but no result in found in target location");
-        }
-    }
-
-    /**
-     * Filters the vulnerability metadata by the advisory filter.
-     *
-     * @param adapter               the vulnerability report adapter containing the advisory filter
-     * @param vulnerabilityMetaData the vulnerability metadata to filter
-     * @deprecated Use {@link VulnerabilityReportAdapter#getEffectiveVulnerabilities()} instead.
-     */
-    @Deprecated
-    private void filterVulnerabilityMetadataByAdvisoryFilter(VulnerabilityReportAdapter adapter, List<VulnerabilityMetaData> vulnerabilityMetaData) {
-        if (!vulnerabilityAdvisoryFilter.isEmpty()) {
-            vulnerabilityMetaData.removeIf(vmd ->
-                    adapter.getAdvisories(vmd).stream()
-                            .noneMatch(advisory -> vulnerabilityAdvisoryFilter.contains(advisory.getSource())));
         }
     }
 

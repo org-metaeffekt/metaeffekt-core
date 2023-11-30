@@ -41,10 +41,10 @@ import java.util.stream.Collectors;
 public class StatisticsOverviewTableTest {
 
     private final CentralSecurityPolicyConfiguration unmodifiedMapperSecurityPolicy = new CentralSecurityPolicyConfiguration()
-            .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED)
+            .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED)
             .setInsignificantThreshold(0.0);
     private final CentralSecurityPolicyConfiguration abstractedMapperSecurityPolicy = new CentralSecurityPolicyConfiguration()
-            .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.KEY_VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
+            .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
             .setInsignificantThreshold(0.0);
 
     @Test
@@ -211,7 +211,7 @@ public class StatisticsOverviewTableTest {
         final List<AeaaVulnerability> vulnerabilities = new ArrayList<>();
 
         vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.CRITICAL.getV3())); // affected
-        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, Severity.CRITICAL.getV3())); // affected
+        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, Severity.CRITICAL.getV3())); // potentially affected
         vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(null, Severity.CRITICAL.getV3())); // potentially affected
         vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, Severity.CRITICAL.getV3())); // not affected
         vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_VOID, Severity.CRITICAL.getV3())); // not affected
@@ -231,7 +231,7 @@ public class StatisticsOverviewTableTest {
 
         Assert.assertEquals(constructList("Severity", "Affected", "Potentially Affected", "Not Affected", "Total", "Assessed"), table.getHeaders());
         Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), table.getSeverityCategories());
-        Assert.assertEquals(constructList("Critical", 2, 1, 2, 5, "80,0 %"), table.getTableRowValues("critical"));
+        Assert.assertEquals(constructList("Critical", 1, 2, 2, 5, "60,0 %"), table.getTableRowValues("critical"));
         Assert.assertEquals(constructList("High", 2, 0, 0, 2, "100,0 %"), table.getTableRowValues("high"));
         Assert.assertEquals(constructList("Medium", 0, 3, 0, 3, "0,0 %"), table.getTableRowValues("medium"));
         Assert.assertEquals(constructList("Low", 2, 2, 0, 4, "50,0 %"), table.getTableRowValues("low"));

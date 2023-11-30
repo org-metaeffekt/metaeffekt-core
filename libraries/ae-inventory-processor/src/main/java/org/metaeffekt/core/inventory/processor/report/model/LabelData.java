@@ -17,8 +17,8 @@ package org.metaeffekt.core.inventory.processor.report.model;
 
 public class LabelData {
 
-    private String text;
-    private LabelColor labelColor;
+    private final String text;
+    private final LabelColor labelColor;
 
     public LabelData(String text, LabelColor labelColor) {
         this.text = text;
@@ -32,5 +32,4 @@ public class LabelData {
     public String getText() {
         return text;
     }
-
 }
