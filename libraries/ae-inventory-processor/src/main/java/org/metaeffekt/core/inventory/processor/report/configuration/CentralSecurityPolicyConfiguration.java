@@ -28,21 +28,29 @@ import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
 import org.metaeffekt.core.security.cvss.processor.CvssSelectionResult.CvssScoreVersionSelectionPolicy;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;
+import org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
+import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
-import static org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
 
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
 
     private String cvssSeverityRanges = CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString();
     private CvssSeverityRanges cachedCvssSeverityRanges;
 
-    private JSONObject baseCvssSelector = CVSS_SELECTOR_BASE.toJson();
-    private JSONObject effectiveCvssSelector = CVSS_SELECTOR_EFFECTIVE.toJson();
+    private String baseCvssSelector = CVSS_SELECTOR_BASE.toJson().toString();
+    private String effectiveCvssSelector = CVSS_SELECTOR_EFFECTIVE.toJson().toString();
     private CvssSelector cachedBaseCvssSelector;
     private CvssSelector cachedEffectiveCvssSelector;
 
@@ -54,8 +62,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private final List<String> includeVulnerabilitiesWithAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
     private final List<String> includeAdvisoryTypes = new ArrayList<>(Collections.singletonList("all"));
 
-    private String vulnerabilityStatusDisplayMapperName = "unmodified";
-    private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED;
+    private String vulnerabilityStatusDisplayMapperName = "default";
+    private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT;
 
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
         this.cvssSeverityRanges = cvssSeverityRanges == null ? CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString() : cvssSeverityRanges;
@@ -78,41 +86,41 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public CentralSecurityPolicyConfiguration setBaseCvssSelector(JSONObject baseCvssSelector) {
-        this.baseCvssSelector = baseCvssSelector;
-        this.cachedBaseCvssSelector = fromJson(this.baseCvssSelector);
+        this.baseCvssSelector = baseCvssSelector.toString();
+        this.cachedBaseCvssSelector = CvssSelector.fromJson(baseCvssSelector);
         return this;
     }
 
     public CentralSecurityPolicyConfiguration setBaseCvssSelector(CvssSelector baseCvssSelector) {
-        this.baseCvssSelector = baseCvssSelector.toJson();
+        this.baseCvssSelector = baseCvssSelector.toJson().toString();
         this.cachedBaseCvssSelector = baseCvssSelector;
         return this;
     }
 
     public CvssSelector getBaseCvssSelector() {
         if (this.cachedBaseCvssSelector == null) {
-            this.baseCvssSelector = this.baseCvssSelector == null ? CVSS_SELECTOR_BASE.toJson() : this.baseCvssSelector;
-            this.cachedBaseCvssSelector = fromJson(this.baseCvssSelector);
+            this.baseCvssSelector = this.baseCvssSelector == null ? CVSS_SELECTOR_BASE.toJson().toString() : this.baseCvssSelector;
+            this.cachedBaseCvssSelector = CvssSelector.fromJson(this.baseCvssSelector);
         }
         return this.cachedBaseCvssSelector;
     }
 
     public CentralSecurityPolicyConfiguration setEffectiveCvssSelector(JSONObject effectiveCvssSelector) {
-        this.effectiveCvssSelector = effectiveCvssSelector;
-        this.cachedEffectiveCvssSelector = fromJson(this.effectiveCvssSelector);
+        this.effectiveCvssSelector = effectiveCvssSelector.toString();
+        this.cachedEffectiveCvssSelector = CvssSelector.fromJson(this.effectiveCvssSelector);
         return this;
     }
 
     public CentralSecurityPolicyConfiguration setEffectiveCvssSelector(CvssSelector effectiveCvssSelector) {
-        this.effectiveCvssSelector = effectiveCvssSelector.toJson();
+        this.effectiveCvssSelector = effectiveCvssSelector.toJson().toString();
         this.cachedEffectiveCvssSelector = effectiveCvssSelector;
         return this;
     }
 
     public CvssSelector getEffectiveCvssSelector() {
         if (this.cachedEffectiveCvssSelector == null) {
-            this.effectiveCvssSelector = this.effectiveCvssSelector == null ? CVSS_SELECTOR_EFFECTIVE.toJson() : this.effectiveCvssSelector;
-            this.cachedEffectiveCvssSelector = fromJson(this.effectiveCvssSelector);
+            this.effectiveCvssSelector = this.effectiveCvssSelector == null ? CVSS_SELECTOR_EFFECTIVE.toJson().toString() : this.effectiveCvssSelector;
+            this.cachedEffectiveCvssSelector = CvssSelector.fromJson(this.effectiveCvssSelector);
         }
         return this.cachedEffectiveCvssSelector;
     }
@@ -151,9 +159,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public boolean isVulnerabilityAboveIncludeScoreThreshold(AeaaVulnerability vulnerability) {
-        if (includeScoreThreshold == -1.0) return true;
+        if (includeScoreThreshold == -1.0 || includeScoreThreshold == Double.MIN_VALUE) return true;
         final CvssVector<?> vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
         final double score = vector == null ? 0.0 : vector.getOverallScore();
+        return score >= includeScoreThreshold;
+    }
+
+    public boolean isVulnerabilityAboveIncludeScoreThreshold(double score) {
+        if (includeScoreThreshold == -1.0 || includeScoreThreshold == Double.MIN_VALUE) return true;
         return score >= includeScoreThreshold;
     }
 
@@ -168,13 +181,17 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability) {
-        if (includeVulnerabilitiesWithAdvisoryProviders.contains("all")) {
+        if (includeVulnerabilitiesWithAdvisoryProviders.contains("all") || includeVulnerabilitiesWithAdvisoryProviders.contains("ALL")) {
             return true;
         }
 
         final List<AeaaContentIdentifiers> filter = includeVulnerabilitiesWithAdvisoryProviders.stream()
                 .map(AeaaContentIdentifiers::fromContentIdentifierName)
                 .collect(Collectors.toList());
+
+        if (filter.contains(AeaaContentIdentifiers.UNKNOWN)) {
+            LOG.warn("Unknown advisory provider in includeVulnerabilitiesWithAdvisoryProviders [{}], must be one of {}", includeVulnerabilitiesWithAdvisoryProviders, AeaaContentIdentifiers.values());
+        }
 
         return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
     }
@@ -200,10 +217,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public boolean isSecurityAdvisoryIncludedRegardingEntrySourceType(AeaaAdvisoryEntry advisory) {
-        if (includeAdvisoryTypes.contains("all")) {
+        return isSecurityAdvisoryIncludedRegardingEntrySourceType(advisory.getType());
+    }
+
+    public boolean isSecurityAdvisoryIncludedRegardingEntrySourceType(String advisoryType) {
+        if (includeAdvisoryTypes.contains("all") || includeAdvisoryTypes.contains("ALL")) {
             return true;
         }
-        return includeAdvisoryTypes.contains(advisory.getType());
+        return includeAdvisoryTypes.contains(advisoryType);
     }
 
     public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(String vulnerabilityStatusDisplayMapper) {
@@ -238,6 +259,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
         configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
         configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
+        configuration.put("cvssVersionSelectionPolicy", cvssVersionSelectionPolicy);
 
         return configuration;
     }
@@ -245,13 +267,26 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Override
     public void setProperties(LinkedHashMap<String, Object> properties) {
         super.loadStringProperty(properties, "cvssSeverityRanges", this::setCvssSeverityRanges);
-        super.loadStringProperty(properties, "baseCvssSelector", selector -> setBaseCvssSelector(fromJson(new JSONObject(selector))));
-        super.loadStringProperty(properties, "effectiveCvssSelector", selector -> setEffectiveCvssSelector(fromJson(new JSONObject(selector))));
+        super.loadProperty(properties, "baseCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector)));
+        super.loadProperty(properties, "effectiveCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector)));
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
         super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
+        super.loadListProperty(properties, "cvssVersionSelectionPolicy", value -> CvssScoreVersionSelectionPolicy.valueOf(String.valueOf(value)), this::setCvssVersionSelectionPolicy);
+    }
+
+    private JSONObject parseJsonObjectFromProperties(Object input) {
+        if (input instanceof String) {
+            return new JSONObject((String) input);
+        } else if (input instanceof JSONObject) {
+            return (JSONObject) input;
+        } else if (input instanceof Map) {
+            return new JSONObject((Map<?, ?>) input);
+        } else {
+            throw new IllegalArgumentException("Cannot parse JSON from input: " + input);
+        }
     }
 
     @Override
@@ -276,10 +311,47 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         } catch (IllegalArgumentException e) {
             misconfigurations.add(new ProcessMisconfiguration("vulnerabilityStatusDisplayMapper", "Unknown status mapper: " + vulnerabilityStatusDisplayMapper));
         }
+        if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
+            misconfigurations.add(new ProcessMisconfiguration("cvssVersionSelectionPolicy", "CVSS version selection policy must not be null or empty"));
+        }
+    }
+
+    public static CentralSecurityPolicyConfiguration fromFile(File jsonFile) throws IOException {
+        LOG.info("Loading security policy configuration from: {}", jsonFile.getAbsolutePath());
+
+        final String json;
+        try {
+            json = FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IOException("Failed to read security policy configuration file from: " + jsonFile.getAbsolutePath(), e);
+        }
+
+        final JSONObject jsonObject;
+        try {
+            jsonObject = new JSONObject(json);
+        } catch (Exception e) {
+            throw new IOException("Failed to parse security policy configuration file as JSON object from: " + jsonFile.getAbsolutePath() + "\nWith content: " + json, e);
+        }
+
+        final CentralSecurityPolicyConfiguration configuration = new CentralSecurityPolicyConfiguration();
+        final Map<String, Object> policyConfigurationMap = jsonObject.toMap();
+        configuration.setProperties(new LinkedHashMap<>(policyConfigurationMap));
+
+        final List<ProcessMisconfiguration> misconfigurations = new ArrayList<>();
+        configuration.collectMisconfigurations(misconfigurations);
+        if (!misconfigurations.isEmpty()) {
+            throw new IOException(
+                    "Security policy configuration file contains a misconfiguration from: " + jsonFile.getAbsolutePath() +
+                            "\nWith content: " + json +
+                            "\nWith misconfigurations: " + misconfigurations.stream().map(ProcessMisconfiguration::toString).collect(Collectors.joining("\n"))
+            );
+        }
+
+        return configuration;
     }
 
     public final static CvssSelector CVSS_SELECTOR_BASE = new CvssSelector(Collections.singletonList(
-            new CvssRule(MergingMethod.ALL,
+            new CvssRule(CvssSelector.MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
                     // MSRC
@@ -296,7 +368,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     ));
 
     public final static CvssSelector CVSS_SELECTOR_EFFECTIVE = new CvssSelector(Arrays.asList(
-            new CvssRule(MergingMethod.ALL,
+            new CvssRule(CvssSelector.MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
                     // MSRC
@@ -311,22 +383,22 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY)
             ),
             // assessment
-            new CvssRule(MergingMethod.ALL,
-                    Collections.singletonList(new SelectorStatsCollector("assessment", StatsCollectorProvider.PRESENCE, StatsCollectorSetType.ADD)),
+            new CvssRule(CvssSelector.MergingMethod.ALL,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
                     new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_ALL)),
-            new CvssRule(MergingMethod.LOWER,
-                    Collections.singletonList(new SelectorStatsCollector("assessment", StatsCollectorProvider.PRESENCE, StatsCollectorSetType.ADD)),
+            new CvssRule(CvssSelector.MergingMethod.LOWER,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
                     new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_LOWER)),
-            new CvssRule(MergingMethod.HIGHER,
-                    Collections.singletonList(new SelectorStatsCollector("assessment", StatsCollectorProvider.PRESENCE, StatsCollectorSetType.ADD)),
+            new CvssRule(CvssSelector.MergingMethod.HIGHER,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
                     new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER))
     ), Collections.singletonList(
-            new SelectorStatsEvaluator("assessment", StatsEvaluatorOperation.EQUAL, EvaluatorAction.RETURN_NULL, 0)
+            new SelectorStatsEvaluator("assessment", CvssSelector.StatsEvaluatorOperation.EQUAL, CvssSelector.EvaluatorAction.RETURN_NULL, 0)
     ), Collections.singletonList(
-            new SelectorVectorEvaluator(VectorEvaluatorOperation.IS_BASE_FULLY_DEFINED, true, EvaluatorAction.RETURN_NULL)
+            new SelectorVectorEvaluator(CvssSelector.VectorEvaluatorOperation.IS_BASE_FULLY_DEFINED, true, CvssSelector.EvaluatorAction.RETURN_NULL)
     ));
 
     public static class VulnerabilityStatusMapper {
@@ -357,6 +429,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         public List<String> getAssessedStatusNames() {
             return assessedStatusNames;
         }
+
+        public VulnerabilityStatusMapper withName(String name) {
+            return new VulnerabilityStatusMapper(name, statusNames, assessedStatusNames, mapper);
+        }
     }
 
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = new VulnerabilityStatusMapper(
@@ -380,6 +456,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 return name;
             }
     );
+
+    public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT = VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.withName("default");
 
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED = new VulnerabilityStatusMapper(
             "abstracted",
@@ -410,6 +488,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     private final static List<VulnerabilityStatusMapper> REGISTERED_VULNERABILITY_STATUS_DISPLAY_MAPPERS = Arrays.asList(
             VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED,
+            VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT,
             VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED
     );
 

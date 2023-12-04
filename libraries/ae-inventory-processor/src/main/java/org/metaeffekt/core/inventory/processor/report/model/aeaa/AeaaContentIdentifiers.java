@@ -44,7 +44,8 @@ public enum AeaaContentIdentifiers {
     CPE("CPE", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
     NVD("NVD", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
     ASSESSMENT_STATUS("Assessment Status", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
-    UNKNOWN("UNKNOWN", Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE), null, null);
+    UNKNOWN("UNKNOWN", Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE), null, null),
+    ALL("ALL", Pattern.compile("ALL", Pattern.CASE_INSENSITIVE), null, null);
 
     private static final Logger LOG = LoggerFactory.getLogger(AeaaContentIdentifiers.class);
 

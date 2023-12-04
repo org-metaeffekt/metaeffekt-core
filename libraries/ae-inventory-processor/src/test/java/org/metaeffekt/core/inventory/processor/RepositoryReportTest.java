@@ -23,6 +23,8 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
@@ -31,6 +33,8 @@ import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -245,10 +249,13 @@ public class RepositoryReportTest {
         final InventoryReport report = new InventoryReport();
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
-        //report.addVulnerabilityAdvisoryFilter("CERT-FR"); // this also filters out the 'void' vulnerability
-        report.addGenerateOverviewTablesForAdvisories("CERT-FR", "CERT-SEI", "MSRC", "GHSA");
-        report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
+
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+
+        report.addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers.ALL);
+        report.getSecurityPolicy()
+                // .setIncludeVulnerabilitiesWithAdvisoryProviders(Collections.singletonList("GHSA"))
+                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
 
         report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
@@ -267,7 +274,7 @@ public class RepositoryReportTest {
         InventoryReport report = new InventoryReport();
         prepareReport(inventoryDir, "*.xls", reportDir, report);
 
-        report.setTemplateLanguageSelector("de");
+        report.setTemplateLanguageSelector("en");
 
         report.setAssetBomReportEnabled(true);
         report.setIncludeInofficialOsiStatus(true);
@@ -275,11 +282,15 @@ public class RepositoryReportTest {
         report.setInventoryBomReportEnabled(false);
         report.setAssessmentReportEnabled(false);
 
-        report.setInventoryVulnerabilityReportEnabled(false);
-        report.setInventoryVulnerabilityReportSummaryEnabled(false);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
-        report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
-        report.setVulnerabilityScoreThreshold(0.6f);
+        report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+
+        report.addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers.CERT_FR, AeaaContentIdentifiers.CERT_SEI, AeaaContentIdentifiers.MSRC, AeaaContentIdentifiers.GHSA);
+        report.getSecurityPolicy()
+                .setInsignificantThreshold(0.6f)
+                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
+                .setIncludeAdvisoryTypes(Collections.singletonList("all"));
 
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
@@ -316,9 +327,6 @@ public class RepositoryReportTest {
     private void prepareReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setVulnerabilityScoreThreshold(7);
-        report.setMinimumVulnerabilityIncludeScore(0);
-
         report.setInventoryBomReportEnabled(true);
         report.setInventoryVulnerabilityReportEnabled(true);
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
@@ -336,9 +344,12 @@ public class RepositoryReportTest {
 
         report.setTargetReportDir(new File(reportTarget, "report"));
 
-        report.setIncludeAdvisoryTypes("alert, notice");
-
-        report.setMinimumVulnerabilityIncludeScore(7);
+        report.addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers.CERT_FR, AeaaContentIdentifiers.GHSA, AeaaContentIdentifiers.CERT_SEI, AeaaContentIdentifiers.MSRC);
+        report.getSecurityPolicy()
+                .setInsignificantThreshold(7)
+                .setIncludeScoreThreshold(0)
+                .setIncludeAdvisoryTypes(Arrays.asList("alert", "notice"))
+                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
 
         reportTarget.mkdirs();
 

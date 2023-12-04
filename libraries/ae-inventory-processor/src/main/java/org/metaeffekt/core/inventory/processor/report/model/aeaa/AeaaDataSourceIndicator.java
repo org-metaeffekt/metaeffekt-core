@@ -123,6 +123,32 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    public static class ArtifactGhsaReason extends ArtifactReason {
+        public final static String TYPE = "artifact-ghsa";
+
+        private final String coordinates;
+
+        public ArtifactGhsaReason(Artifact artifact, String coordinates) {
+            super(TYPE, artifact);
+            this.coordinates = coordinates;
+        }
+
+        protected ArtifactGhsaReason(JSONObject artifactData, String coordinates) {
+            super(TYPE, artifactData);
+            this.coordinates = coordinates;
+        }
+
+        public String getCoordinates() {
+            return coordinates;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            return super.toJson()
+                    .put("coordinates", coordinates);
+        }
+    }
+
     public static class VulnerabilityReason extends Reason {
         public final static String TYPE = "vulnerability";
 
@@ -347,6 +373,11 @@ public class AeaaDataSourceIndicator {
                             json,
                             json.optString("msrcProductId", null),
                             json.getJSONArray("kbIds").toList().stream().map(Object::toString).toArray(String[]::new)
+                    );
+                case ArtifactGhsaReason.TYPE:
+                    return new ArtifactGhsaReason(
+                            json,
+                            json.optString("coordinates", null)
                     );
                 case AnyReason.TYPE:
                     return new AnyReason(json.optString("description", null));

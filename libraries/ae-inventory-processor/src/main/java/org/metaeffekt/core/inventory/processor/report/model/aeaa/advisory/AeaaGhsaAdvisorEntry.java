@@ -18,7 +18,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory;
 import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
-import org.metaeffekt.core.inventory.processor.report.model.AdvisoryData;
+import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaTimeUtils;
 import org.slf4j.Logger;
@@ -99,7 +99,7 @@ public class AeaaGhsaAdvisorEntry extends AeaaAdvisoryEntry {
 
     @Override
     public String getType() {
-        return AdvisoryData.normalizeType("alert");
+        return AdvisoryUtils.normalizeType("alert");
     }
 
     /* TYPE CONVERSION METHODS */

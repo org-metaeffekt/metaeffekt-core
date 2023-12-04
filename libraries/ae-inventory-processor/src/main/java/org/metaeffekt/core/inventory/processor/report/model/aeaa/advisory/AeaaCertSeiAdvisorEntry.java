@@ -17,7 +17,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory;
 
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
-import org.metaeffekt.core.inventory.processor.report.model.AdvisoryData;
+import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +56,7 @@ public class AeaaCertSeiAdvisorEntry extends AeaaAdvisoryEntry {
 
     @Override
     public String getType() {
-        return AdvisoryData.normalizeType("alert");
+        return AdvisoryUtils.normalizeType("alert");
     }
 
     /* TYPE CONVERSION METHODS */

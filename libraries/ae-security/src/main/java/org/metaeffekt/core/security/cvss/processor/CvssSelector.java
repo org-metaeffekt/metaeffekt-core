@@ -167,6 +167,16 @@ public class CvssSelector implements Cloneable {
                 .put("vectorEval", vectorEvaluators);
     }
 
+    public static CvssSelector fromJson(String jsonString) {
+        final JSONObject json;
+        try {
+            json = new JSONObject(jsonString);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to parse json string as JSONObject for CvssSelector: " + jsonString, e);
+        }
+        return fromJson(json);
+    }
+
     public static CvssSelector fromJson(JSONObject json) {
         final JSONArray jsonRules = json.optJSONArray("rules");
         final List<CvssRule> rules;

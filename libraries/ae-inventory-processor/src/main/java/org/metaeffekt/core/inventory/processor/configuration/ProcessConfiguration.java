@@ -143,7 +143,7 @@ public abstract class ProcessConfiguration {
                 if (value instanceof String) {
                     consumer.accept((String) value);
                 } else {
-                    throw new IllegalArgumentException("Property '" + key + "' must be a string.");
+                    throw createPropertyException(key, value, "string");
                 }
             }
         } catch (Exception e) {
@@ -159,7 +159,7 @@ public abstract class ProcessConfiguration {
             } else if (value instanceof String) {
                 consumer.accept(Boolean.valueOf((String) value));
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be a boolean.");
+                throw createPropertyException(key, value, "boolean");
             }
         }
     }
@@ -174,7 +174,7 @@ public abstract class ProcessConfiguration {
             } else if (value instanceof String) {
                 consumer.accept(Integer.valueOf((String) value));
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be an integer.");
+                throw createPropertyException(key, value, "integer");
             }
         }
     }
@@ -189,7 +189,7 @@ public abstract class ProcessConfiguration {
             } else if (value instanceof String) {
                 consumer.accept(Long.valueOf((String) value));
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be a long.");
+                throw createPropertyException(key, value, "long");
             }
         }
     }
@@ -204,7 +204,7 @@ public abstract class ProcessConfiguration {
             } else if (value instanceof String) {
                 consumer.accept(Double.valueOf((String) value));
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be a double.");
+                throw createPropertyException(key, value, "double");
             }
         }
     }
@@ -226,7 +226,7 @@ public abstract class ProcessConfiguration {
                         .collect(Collectors.toList());
                 consumer.accept(convertedList);
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be a list.");
+                throw createPropertyException(key, value, "collection");
             }
         }
     }
@@ -241,7 +241,7 @@ public abstract class ProcessConfiguration {
                         .collect(Collectors.toSet());
                 consumer.accept(convertedList);
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be a list.");
+                throw createPropertyException(key, value, "collection");
             }
         }
     }
@@ -255,7 +255,7 @@ public abstract class ProcessConfiguration {
                 subConfiguration.setProperties(new LinkedHashMap<>(valueMap));
                 consumer.accept(subConfiguration);
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be a map.");
+                throw createPropertyException(key, value, "map");
             }
         }
     }
@@ -279,8 +279,12 @@ public abstract class ProcessConfiguration {
                         .collect(Collectors.toList());
                 consumer.accept(convertedList);
             } else {
-                throw new IllegalArgumentException("Property '" + key + "' must be a list.");
+                throw createPropertyException(key, value, "list");
             }
         }
+    }
+
+    protected IllegalArgumentException createPropertyException(String key, Object value, String expectedType) {
+        return new IllegalArgumentException("Property '" + key + "' must be a '" + expectedType + "' on " + getClass().getSimpleName() + " from " + value);
     }
 }

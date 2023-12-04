@@ -20,7 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.report.model.AdvisoryData;
+import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.msrc.AeaaMsThreat;
@@ -157,7 +157,7 @@ public class AeaaMsrcAdvisorEntry extends AeaaAdvisoryEntry {
 
     @Override
     public String getType() {
-        return AdvisoryData.normalizeType("alert");
+        return AdvisoryUtils.normalizeType("alert");
     }
 
     /* TYPE CONVERSION METHODS */
