@@ -221,6 +221,256 @@ public class CvssSelector implements Cloneable {
         return new CvssSelector(this.rules.stream().map(CvssRule::clone).collect(Collectors.toList()));
     }
 
+    public String explain() {
+        return explain(null);
+    }
+
+    public String explain(String selectorName) {
+        final StringBuilder explanation = new StringBuilder();
+
+        if (!rules.isEmpty()) {
+            if (selectorName != null) {
+                explanation.append("The [").append(selectorName).append("]");
+            } else {
+                explanation.append("The");
+            }
+            explanation.append(" CVSS Selector contains [").append(rules.size()).append("] rule").append(rules.size() == 1 ? "" : "s").append(" that will be applied in the following order:\n");
+            final StringJoiner rulesExplanation = new StringJoiner("\n- ", "- ", "");
+
+            for (CvssRule rule : rules) {
+                final StringBuilder ruleExplanation = new StringBuilder();
+
+                {
+                    final StringJoiner ruleSegmentsJoiner = new StringJoiner(", ");
+
+                    for (SourceSelectorEntry source : rule.getSourceSelector().getPreferredSources()) {
+                        final StringJoiner ruleSegments = new StringJoiner("-", "[", "]");
+
+                        if (source.getHostingEntities().isEmpty()) {
+                            ruleSegments.add("*");
+                        } else if (source.getHostingEntities().size() == 1) {
+                            ruleSegments.add(source.getHostingEntities().get(0).toString());
+                        } else {
+                            ruleSegments.add(source.getHostingEntities().stream().map(Object::toString).collect(Collectors.joining(" AND ", "(", ")")));
+                        }
+                        if (source.getIssuingEntityRoles().isEmpty()) {
+                            ruleSegments.add("*");
+                        } else if (source.getIssuingEntityRoles().size() == 1) {
+                            ruleSegments.add(source.getIssuingEntityRoles().get(0).toString());
+                        } else {
+                            ruleSegments.add(source.getIssuingEntityRoles().stream().map(Object::toString).collect(Collectors.joining(" AND ", "(", ")")));
+                        }
+                        if (source.getIssuingEntities().isEmpty()) {
+                            ruleSegments.add("*");
+                        } else if (source.getIssuingEntities().size() == 1) {
+                            ruleSegments.add(source.getIssuingEntities().get(0).toString());
+                        } else {
+                            ruleSegments.add(source.getIssuingEntities().stream().map(Object::toString).collect(Collectors.joining(" AND ", "(", ")")));
+                        }
+
+                        ruleSegmentsJoiner.add(ruleSegments.toString());
+                    }
+
+                    if (rule.getSourceSelector().getPreferredSources().size() == 1) {
+                        ruleExplanation.append("If present, the ").append(ruleSegmentsJoiner).append(" vector is selected.");
+                    } else {
+                        ruleExplanation.append("The first matching vector is selected: ").append(ruleSegmentsJoiner);
+                    }
+                }
+
+                {
+                    if (!rule.getVectorEvaluators().isEmpty()) {
+                        ruleExplanation.append("\nThe following [").append(rule.getVectorEvaluators().size()).append("]").append(" vector evaluator").append(rule.getVectorEvaluators().size() == 1 ? "" : "s").append(" will be applied to the selected vector before applying it to the resulting vector:\n");
+
+                        final StringJoiner vectorEvaluatorsJoiner = new StringJoiner("\n- ", "- ", "");
+
+                        for (SelectorVectorEvaluator vectorEvaluator : rule.getVectorEvaluators()) {
+                            final Map<VectorEvaluatorOperation, Boolean> operations = vectorEvaluator.getOperations();
+                            final EvaluatorAction action = vectorEvaluator.getAction();
+
+                            final StringBuilder operationsBuilder = new StringBuilder();
+
+                            if (operations.isEmpty()) {
+                                operationsBuilder.append("Since no selector is specified, the following is always applied: ");
+                            } else {
+                                operationsBuilder.append("If the selected vector is ")
+                                        .append(operations.entrySet().stream().map(e -> e.getKey().toPotentiallyInvertedPrettyString(e.getValue())).collect(Collectors.joining("] AND [", "[", "]")))
+                                        .append(", then ");
+                            }
+
+                            if (action == EvaluatorAction.RETURN_NULL) {
+                                operationsBuilder.append("[no vector is returned].");
+                            } else if (action == EvaluatorAction.RETURN_PREVIOUS) {
+                                operationsBuilder.append("the [previous vector is returned].");
+                            } else if (action == EvaluatorAction.FAIL) {
+                                operationsBuilder.append("the [evaluation fails].");
+                            } else if (action == EvaluatorAction.SKIP) {
+                                operationsBuilder.append("the [evaluation is skipped].");
+                            } else {
+                                operationsBuilder.append("[no (known) operation is specified].");
+                            }
+
+                            vectorEvaluatorsJoiner.add(operationsBuilder.toString());
+                        }
+
+                        ruleExplanation.append(vectorEvaluatorsJoiner);
+                    }
+                }
+
+                ruleExplanation.append("\nFrom the selected vector, ");
+
+                if (rule.getMergingMethod() == MergingMethod.ALL) {
+                    ruleExplanation.append("[all] vector components are applied to the resulting vector.");
+                } else if (rule.getMergingMethod() == MergingMethod.LOWER) {
+                    ruleExplanation.append("only vector components that lead to a [lower or equal] score on the resulting vector are applied.");
+                } else if (rule.getMergingMethod() == MergingMethod.HIGHER) {
+                    ruleExplanation.append("only vector components that lead to a [higher or equal] score on the resulting vector are applied.");
+                } else if (rule.getMergingMethod() == MergingMethod.OVERWRITE) {
+                    ruleExplanation.append("the resulting vector is [overwritten].");
+                } else {
+                    ruleExplanation.append("No (known) operation is specified for the merging method.");
+                }
+
+                {
+                    if (!rule.getStatsCollectors().isEmpty()) {
+                        ruleExplanation.append("\nThe following [").append(rule.getStatsCollectors().size()).append("] statistics collector").append(rule.getStatsCollectors().size() == 1 ? "" : "s").append(" will also be applied to the selected vector:\n");
+
+                        final StringJoiner statsJoiner = new StringJoiner("\n- ", "- ", "");
+
+                        for (SelectorStatsCollector statsCollector : rule.getStatsCollectors()) {
+                            final StringBuilder statsExplanation = new StringBuilder();
+
+                            if (statsCollector.getProvider() == StatsCollectorProvider.ABSENCE) {
+                                statsExplanation.append("If no vector is returned from the selection, ");
+                            } else if (statsCollector.getProvider() == StatsCollectorProvider.PRESENCE) {
+                                statsExplanation.append("If a vector is returned from the selection, ");
+                            } else if (statsCollector.getProvider() == StatsCollectorProvider.APPLIED_PARTS_COUNT) {
+                                statsExplanation.append("If a vector is returned from the selection, ");
+                            }
+
+                            if (statsCollector.getSetType() == StatsCollectorSetType.MAX) {
+                                statsExplanation.append("the larger value between ");
+                            } else if (statsCollector.getSetType() == StatsCollectorSetType.MIN) {
+                                statsExplanation.append("the smaller value between ");
+                            }
+
+                            if (statsCollector.getProvider() == StatsCollectorProvider.ABSENCE) {
+                                statsExplanation.append("[1] ");
+                            } else if (statsCollector.getProvider() == StatsCollectorProvider.PRESENCE) {
+                                statsExplanation.append("[1] ");
+                            } else if (statsCollector.getProvider() == StatsCollectorProvider.APPLIED_PARTS_COUNT) {
+                                statsExplanation.append("the [amount of applied vector components] ");
+                            }
+
+                            if (statsCollector.getSetType() == StatsCollectorSetType.ADD) {
+                                statsExplanation.append("is added to ");
+                            } else if (statsCollector.getSetType() == StatsCollectorSetType.SUBTRACT) {
+                                statsExplanation.append("is subtracted from ");
+                            } else if (statsCollector.getSetType() == StatsCollectorSetType.MAX) {
+                                statsExplanation.append("and the previous value is set to ");
+                            } else if (statsCollector.getSetType() == StatsCollectorSetType.MIN) {
+                                statsExplanation.append("and the previous value is set to ");
+                            } else if (statsCollector.getSetType() == StatsCollectorSetType.SET) {
+                                statsExplanation.append("is set to ");
+                            }
+
+                            statsExplanation.append("the stats collector attribute [" + statsCollector.getAttributeName() + "].");
+
+                            statsJoiner.add(statsExplanation);
+                        }
+
+                        ruleExplanation.append(statsJoiner);
+                    }
+                }
+
+                rulesExplanation.add(ruleExplanation.toString().replace("\n", "\n  "));
+            }
+
+            explanation.append(rulesExplanation);
+
+        } else { // rules.isEmpty()
+            explanation.append("The CVSS Selector contains no rules. The resulting vector will be [not defined].");
+        }
+
+        if (!statsEvaluatorActions.isEmpty()) {
+            if (explanation.length() > 0) {
+                explanation.append("\n\n");
+            }
+            explanation.append("After finishing the cvss selection, [").append(statsEvaluatorActions.size()).append("] statistics evaluator").append(statsEvaluatorActions.size() == 1 ? "" : "s").append(" will be applied to the resulting vector:\n");
+
+            final StringJoiner statsEvaluatorJoiner = new StringJoiner("\n- ", "- ", "");
+
+            for (SelectorStatsEvaluator statsEvaluatorAction : statsEvaluatorActions) {
+                final StringBuilder statsEvaluatorExplanation = new StringBuilder();
+
+                statsEvaluatorExplanation.append("If the stats collector attribute [").append(statsEvaluatorAction.getAttributeName()).append("] is [")
+                        .append(statsEvaluatorAction.getComparator().name().replace("_", " ").toLowerCase()).append("] to [").append(statsEvaluatorAction.getComparisonValue()).append("], then ");
+
+                if (statsEvaluatorAction.getAction() == EvaluatorAction.RETURN_NULL) {
+                    statsEvaluatorExplanation.append("[no vector is returned].");
+                } else if (statsEvaluatorAction.getAction() == EvaluatorAction.FAIL) {
+                    statsEvaluatorExplanation.append("the [evaluation fails].");
+                } else if (statsEvaluatorAction.getAction() == EvaluatorAction.SKIP) {
+                    statsEvaluatorExplanation.append("the [evaluation would be skipped], this action is not supported for stats evaluators however so nothing will happen.");
+                } else if (statsEvaluatorAction.getAction() == EvaluatorAction.RETURN_PREVIOUS) {
+                    statsEvaluatorExplanation.append("the [previous vector would be returned], this action is not supported for stats evaluators however so nothing will happen.");
+                } else {
+                    statsEvaluatorExplanation.append("[no (known) operation is specified].");
+                }
+
+                statsEvaluatorJoiner.add(statsEvaluatorExplanation);
+            }
+
+            explanation.append(statsEvaluatorJoiner);
+        }
+
+        {
+            if (!selectorVectorEvaluators.isEmpty()) {
+                if (!statsEvaluatorActions.isEmpty()) {
+                    explanation.append("\nAdditionally, [");
+                } else {
+                    explanation.append("\n\nAfter finishing the cvss selection, [");
+                }
+                explanation.append(selectorVectorEvaluators.size()).append("] vector evaluator").append(selectorVectorEvaluators.size() == 1 ? "" : "s").append(" will be applied to the resulting vector:\n");
+
+                final StringJoiner vectorEvaluatorsJoiner = new StringJoiner("\n- ", "- ", "");
+
+                for (SelectorVectorEvaluator vectorEvaluator : selectorVectorEvaluators) {
+                    final Map<VectorEvaluatorOperation, Boolean> operations = vectorEvaluator.getOperations();
+                    final EvaluatorAction action = vectorEvaluator.getAction();
+
+                    final StringBuilder operationsBuilder = new StringBuilder();
+
+                    if (operations.isEmpty()) {
+                        operationsBuilder.append("Since no selector is specified, the following is always applied: ");
+                    } else {
+                        operationsBuilder.append("If the resulting vector is ")
+                                .append(operations.entrySet().stream().map(e -> e.getKey().toPotentiallyInvertedPrettyString(e.getValue())).collect(Collectors.joining("] AND [", "[", "]")))
+                                .append(", then ");
+                    }
+
+                    if (action == EvaluatorAction.RETURN_NULL) {
+                        operationsBuilder.append("[no vector is returned].");
+                    } else if (action == EvaluatorAction.RETURN_PREVIOUS) {
+                        operationsBuilder.append("the [previous vector is returned].");
+                    } else if (action == EvaluatorAction.FAIL) {
+                        operationsBuilder.append("the [evaluation fails].");
+                    } else if (action == EvaluatorAction.SKIP) {
+                        operationsBuilder.append("the [evaluation is skipped].");
+                    } else {
+                        operationsBuilder.append("[no (known) operation is specified].");
+                    }
+
+                    vectorEvaluatorsJoiner.add(operationsBuilder.toString());
+                }
+
+                explanation.append(vectorEvaluatorsJoiner);
+            }
+        }
+
+        return explanation.toString();
+    }
+
     public static class CvssRule implements Cloneable {
         private final SourceSelector sourceSelector;
         private final MergingMethod mergingMethod;
@@ -394,6 +644,18 @@ public class CvssSelector implements Cloneable {
 
         public SourceSelectorEntry(CvssEntity hostingEntity, CvssIssuingEntityRole issuingEntityRole, CvssEntity issuingEntity) {
             this(hostingEntity, issuingEntityRole, issuingEntity, false, false, false);
+        }
+
+        public List<SourceSelectorEntryEntry<CvssEntity>> getHostingEntities() {
+            return hostingEntities;
+        }
+
+        public List<SourceSelectorEntryEntry<CvssEntity>> getIssuingEntities() {
+            return issuingEntities;
+        }
+
+        public List<SourceSelectorEntryEntry<CvssIssuingEntityRole>> getIssuingEntityRoles() {
+            return issuingEntityRoles;
         }
 
         public boolean matches(CvssSource source) {
@@ -676,6 +938,10 @@ public class CvssSelector implements Cloneable {
             return true;
         }
 
+        public Map<VectorEvaluatorOperation, Boolean> getOperations() {
+            return operations;
+        }
+
         public EvaluatorAction getAction() {
             return action;
         }
@@ -873,6 +1139,10 @@ public class CvssSelector implements Cloneable {
 
         public String toPotentiallyInvertedString(boolean inverted) {
             return (inverted ? "not:" : "") + name();
+        }
+
+        public String toPotentiallyInvertedPrettyString(boolean inverted) {
+            return (inverted ? "not " : "") + name().toLowerCase().replace("_", " ").replace("is", "").replaceAll(" +", " ").replace("null", "not defined").trim();
         }
 
         public static Pair<VectorEvaluatorOperation, Boolean> extractPotentiallyInverted(String value) {
