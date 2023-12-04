@@ -149,7 +149,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public boolean isVulnerabilityInsignificant(AeaaVulnerability vulnerability) {
         if (insignificantThreshold == -1.0) return true;
-        final CvssVector<?> vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
+        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
         final double score = vector == null ? 0.0 : vector.getOverallScore();
         return score <= insignificantThreshold;
     }
@@ -160,7 +160,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public boolean isVulnerabilityAboveIncludeScoreThreshold(AeaaVulnerability vulnerability) {
         if (includeScoreThreshold == -1.0 || includeScoreThreshold == Double.MIN_VALUE) return true;
-        final CvssVector<?> vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
+        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
         final double score = vector == null ? 0.0 : vector.getOverallScore();
         return score >= includeScoreThreshold;
     }
@@ -363,7 +363,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     // CERT-SEI
-                    new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY)
+                    new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    // any other, but not assessment
+                    new SourceSelectorEntry(
+                            Arrays.asList(new SourceSelectorEntryEntry<>(KnownCvssEntities.ASSESSMENT, true)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ROLE)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ENTITY))
+                    )
             )
     ));
 
@@ -380,7 +386,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     // CERT-SEI
-                    new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY)
+                    new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    // any other, but not assessment
+                    new SourceSelectorEntry(
+                            Arrays.asList(new SourceSelectorEntryEntry<>(KnownCvssEntities.ASSESSMENT, true)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ROLE)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ENTITY))
+                    )
             ),
             // assessment
             new CvssRule(CvssSelector.MergingMethod.ALL,

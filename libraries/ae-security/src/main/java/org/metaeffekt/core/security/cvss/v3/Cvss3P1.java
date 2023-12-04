@@ -29,7 +29,7 @@ import java.util.Optional;
 /**
  * Model a CvssV3.1 vector and calculate the corresponding scores.
  */
-public class Cvss3P1 extends MultiScoreCvssVector<Cvss3P1> {
+public class Cvss3P1 extends MultiScoreCvssVector {
 
     // base
     private AttackVector attackVector = AttackVector.NULL;
@@ -68,17 +68,17 @@ public class Cvss3P1 extends MultiScoreCvssVector<Cvss3P1> {
         super.applyVector(vector);
     }
 
-    public Cvss3P1(String vector, CvssSource<Cvss3P1> source) {
+    public Cvss3P1(String vector, CvssSource source) {
         super(source);
         super.applyVector(vector);
     }
 
-    public Cvss3P1(String vector, CvssSource<Cvss3P1> source, JSONObject applicabilityCondition) {
+    public Cvss3P1(String vector, CvssSource source, JSONObject applicabilityCondition) {
         super(source, applicabilityCondition);
         super.applyVector(vector);
     }
 
-    public Cvss3P1(String vector, Collection<CvssSource<Cvss3P1>> sources, JSONObject applicabilityCondition) {
+    public Cvss3P1(String vector, Collection<CvssSource> sources, JSONObject applicabilityCondition) {
         super(sources, applicabilityCondition);
         super.applyVector(vector);
     }
@@ -468,8 +468,8 @@ public class Cvss3P1 extends MultiScoreCvssVector<Cvss3P1> {
     }
 
     @Override
-    public BakedCvssVectorScores<Cvss3P1> bakeScores() {
-        return new BakedCvssVectorScores<>(this);
+    public BakedCvssVectorScores bakeScores() {
+        return new BakedCvssVectorScores(this);
     }
 
     public String getAttackComplexity() {

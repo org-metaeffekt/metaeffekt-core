@@ -30,7 +30,7 @@ import java.util.Optional;
 /**
  * Model a CvssV2 vector and calculate the corresponding scores.
  */
-public class Cvss2 extends MultiScoreCvssVector<Cvss2> {
+public class Cvss2 extends MultiScoreCvssVector {
 
     // base
     private AccessVector accessVector = AccessVector.NULL;
@@ -60,17 +60,17 @@ public class Cvss2 extends MultiScoreCvssVector<Cvss2> {
         super.applyVector(vector);
     }
 
-    public Cvss2(String vector, CvssSource<Cvss2> source) {
+    public Cvss2(String vector, CvssSource source) {
         super(source);
         super.applyVector(vector);
     }
 
-    public Cvss2(String vector, CvssSource<Cvss2> source, JSONObject applicabilityCondition) {
+    public Cvss2(String vector, CvssSource source, JSONObject applicabilityCondition) {
         super(source, applicabilityCondition);
         super.applyVector(vector);
     }
 
-    public Cvss2(String vector, Collection<CvssSource<Cvss2>> sources, JSONObject applicabilityCondition) {
+    public Cvss2(String vector, Collection<CvssSource> sources, JSONObject applicabilityCondition) {
         super(sources, applicabilityCondition);
         super.applyVector(vector);
     }
@@ -496,8 +496,8 @@ public class Cvss2 extends MultiScoreCvssVector<Cvss2> {
     }
 
     @Override
-    public BakedCvssVectorScores<Cvss2> bakeScores() {
-        return new BakedCvssVectorScores<>(this);
+    public BakedCvssVectorScores bakeScores() {
+        return new BakedCvssVectorScores(this);
     }
 
     private static double round(double value, int precision) {

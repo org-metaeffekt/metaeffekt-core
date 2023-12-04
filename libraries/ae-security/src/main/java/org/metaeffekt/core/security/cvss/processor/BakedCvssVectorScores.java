@@ -20,9 +20,9 @@ import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 
-public class BakedCvssVectorScores<T extends CvssVector<T>> {
+public class BakedCvssVectorScores {
 
-    private final CvssVector<T> vector;
+    private final CvssVector vector;
 
     private final double base;
     private final double impact;
@@ -32,14 +32,14 @@ public class BakedCvssVectorScores<T extends CvssVector<T>> {
     private final double adjustedImpact;
     private final double overall;
 
-    public BakedCvssVectorScores(CvssVector<T> vector) {
+    public BakedCvssVectorScores(CvssVector vector) {
         this.vector = vector;
 
         this.base = vector.getBaseScore();
         this.overall = vector.getOverallScore();
 
         if (vector instanceof MultiScoreCvssVector) {
-            final MultiScoreCvssVector<T> cast = ((MultiScoreCvssVector<T>) vector);
+            final MultiScoreCvssVector cast = ((MultiScoreCvssVector) vector);
             this.impact = cast.getImpactScore();
             this.exploitability = cast.getExploitabilityScore();
             this.temporal = cast.getTemporalScore();
@@ -54,11 +54,11 @@ public class BakedCvssVectorScores<T extends CvssVector<T>> {
         }
     }
 
-    public static <T extends CvssVector<T>> BakedCvssVectorScores<T> fromNullableCvss(CvssVector<T> cvss) {
+    public static BakedCvssVectorScores fromNullableCvss(CvssVector cvss) {
         if (cvss == null) {
             return null;
         }
-        return new BakedCvssVectorScores<>(cvss);
+        return new BakedCvssVectorScores(cvss);
     }
 
     public double getBaseScore() {

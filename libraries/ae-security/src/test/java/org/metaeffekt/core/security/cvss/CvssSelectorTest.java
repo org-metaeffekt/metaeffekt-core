@@ -35,10 +35,10 @@ public class CvssSelectorTest {
                 new CvssRule(MergingMethod.OVERWRITE, new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.EMPTY_ROLE, SourceSelectorEntry.EMPTY_ENTITY))
         ));
 
-        CvssVector<Cvss3P1> nvdVector = new Cvss3P1("", new CvssSource<>(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
-        CvssVector<Cvss3P1> msrcVector = new Cvss3P1("", new CvssSource<>(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
+        CvssVector nvdVector = new Cvss3P1("", new CvssSource(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
+        CvssVector msrcVector = new Cvss3P1("", new CvssSource(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
 
-        Cvss3P1 effective = selector.selectVector(Arrays.asList(nvdVector, msrcVector));
+        CvssVector effective = selector.selectVector(Arrays.asList(nvdVector, msrcVector));
         assertEquals(msrcVector, effective);
     }
 
@@ -63,14 +63,14 @@ public class CvssSelectorTest {
 
         final CvssSelector reParsedSelector = fromJson(baseSelector.toJson());
 
-        Cvss3P1 baseMsrcVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
-        Cvss3P1 baseNvdNvdVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
-        Cvss3P1 baseNvdGhsaVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA, Cvss3P1.class));
+        Cvss3P1 baseMsrcVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
+        Cvss3P1 baseNvdNvdVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
+        Cvss3P1 baseNvdGhsaVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA, Cvss3P1.class));
 
-        Cvss3P1 assessmentAllPartsVector = new Cvss3P1("CVSS:3.1/MAV:N", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
-        Cvss3P1 assessmentLowerPartsMacVector = new Cvss3P1("CVSS:3.1/MAC:H", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
-        Cvss3P1 assessmentHigherPartsMacVector = new Cvss3P1("CVSS:3.1/MAC:L", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss3P1.class));
-        Cvss3P1 assessmentHigherPartsMavVector = new Cvss3P1("CVSS:3.1/MAV:L", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss3P1.class));
+        Cvss3P1 assessmentAllPartsVector = new Cvss3P1("CVSS:3.1/MAV:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
+        Cvss3P1 assessmentLowerPartsMacVector = new Cvss3P1("CVSS:3.1/MAC:H", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
+        Cvss3P1 assessmentHigherPartsMacVector = new Cvss3P1("CVSS:3.1/MAC:L", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss3P1.class));
+        Cvss3P1 assessmentHigherPartsMavVector = new Cvss3P1("CVSS:3.1/MAV:L", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss3P1.class));
 
         // picks baseNvdNvdVector
         assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", reParsedSelector.selectVector(Arrays.asList(baseMsrcVector, baseNvdNvdVector, baseNvdGhsaVector)).toString());
@@ -97,9 +97,9 @@ public class CvssSelectorTest {
                         new SourceSelectorEntry(SourceSelectorEntry.ANY_ENTITY, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY))
         ));
 
-        Cvss3P1 nvdEmptyVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
-        Cvss3P1 nvdNvdVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
-        Cvss3P1 msrcEmptyVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
+        Cvss3P1 nvdEmptyVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
+        Cvss3P1 nvdNvdVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
+        Cvss3P1 msrcEmptyVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
 
 
         // picks nvdEmptyVector
@@ -120,8 +120,8 @@ public class CvssSelectorTest {
                         new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY, true, false, false))
         ));
 
-        Cvss3P1 nvdEmptyVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
-        Cvss3P1 assessmentAllPartsVector = new Cvss3P1("CVSS:3.1/MAV:N", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
+        Cvss3P1 nvdEmptyVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
+        Cvss3P1 assessmentAllPartsVector = new Cvss3P1("CVSS:3.1/MAV:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
 
         // picks nvdEmptyVector
         assertEquals(nvdEmptyVector.toString(), selector.selectVector(Arrays.asList(nvdEmptyVector, assessmentAllPartsVector)).toString());
@@ -141,9 +141,9 @@ public class CvssSelectorTest {
                         new SourceSelectorEntry(SourceSelectorEntry.ANY_ENTITY, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY))
         ));
 
-        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
-        Cvss3P1 fullNvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
-        Cvss3P1 emptyVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(null, null, null, Cvss3P1.class));
+        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
+        Cvss3P1 fullNvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
+        Cvss3P1 emptyVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(null, null, null, Cvss3P1.class));
 
         // picks fullNvdVector
         assertEquals(fullNvdVector.toString(), baseSelector.selectVector(Arrays.asList(nvdVector, emptyVector, fullNvdVector)).toString());
@@ -177,11 +177,11 @@ public class CvssSelectorTest {
                         ))
         ));
 
-        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
-        Cvss3P1 fullNvdVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
-        Cvss3P1 ghsaVector = new Cvss3P1("CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.GHSA, null, null, Cvss3P1.class));
-        Cvss3P1 emptyVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(null, null, null, Cvss3P1.class));
-        Cvss3P1 assessmentVector = new Cvss3P1("CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.ASSESSMENT, null, null, Cvss3P1.class));
+        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
+        Cvss3P1 fullNvdVector = new Cvss3P1("CVSS:3.1/AV:P/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
+        Cvss3P1 ghsaVector = new Cvss3P1("CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.GHSA, null, null, Cvss3P1.class));
+        Cvss3P1 emptyVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(null, null, null, Cvss3P1.class));
+        Cvss3P1 assessmentVector = new Cvss3P1("CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.ASSESSMENT, null, null, Cvss3P1.class));
 
         // picks first that is not assessmentVector or ghsaVector
         assertEquals(nvdVector.toString(), selector.selectVector(Arrays.asList(assessmentVector, nvdVector, emptyVector, fullNvdVector)).toString());
@@ -228,10 +228,10 @@ public class CvssSelectorTest {
 
     private static void notFoundStrategyTestAssertions(CvssSelector failSelector, CvssSelector returnNullSelector, CvssSelector returnPreviousSelector) {
         // never matches
-        Cvss3P1 msrcVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
-        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
-        Cvss3P1 ghsaVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA, Cvss3P1.class));
-        Cvss3P1 certSeiVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.CERT_SEI, null, null, Cvss3P1.class));
+        Cvss3P1 msrcVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.MSRC, null, null, Cvss3P1.class));
+        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
+        Cvss3P1 ghsaVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA, Cvss3P1.class));
+        Cvss3P1 certSeiVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.CERT_SEI, null, null, Cvss3P1.class));
 
         try {
             failSelector.selectVector(Arrays.asList(msrcVector));
@@ -300,10 +300,10 @@ public class CvssSelectorTest {
                 new SelectorStatsEvaluator("absence-test", StatsEvaluatorOperation.GREATER_OR_EQUAL, EvaluatorAction.RETURN_NULL, 1)
         ), Collections.emptyList());
 
-        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource<>(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
-        Cvss3P1 assessmentAllPartsVector = new Cvss3P1("CVSS:3.1/MAV:N", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
-        Cvss3P1 assessmentLowerPartsMacVector = new Cvss3P1("CVSS:3.1/MAC:H", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
-        Cvss3P1 assessmentLowerActuallyHigherPartsMacVector = new Cvss3P1("CVSS:3.1/MS:C", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
+        Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
+        Cvss3P1 assessmentAllPartsVector = new Cvss3P1("CVSS:3.1/MAV:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
+        Cvss3P1 assessmentLowerPartsMacVector = new Cvss3P1("CVSS:3.1/MAC:H", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
+        Cvss3P1 assessmentLowerActuallyHigherPartsMacVector = new Cvss3P1("CVSS:3.1/MS:C", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
 
         statsEvaluatorTestAssertions(cvssSelectorEffectivePresence, nvdVector, assessmentAllPartsVector, assessmentLowerPartsMacVector, assessmentLowerActuallyHigherPartsMacVector, cvssSelectorEffectiveAbsence);
 

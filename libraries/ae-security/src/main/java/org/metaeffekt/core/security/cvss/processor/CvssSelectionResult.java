@@ -39,8 +39,8 @@ public class CvssSelectionResult {
     private final Cvss4P0 baseCvss4;
     private final Cvss4P0 effectiveCvss4;
 
-    private final CvssVector<?> selectedBaseCvss;
-    private final CvssVector<?> selectedEffectiveCvss;
+    private final CvssVector selectedBaseCvss;
+    private final CvssVector selectedEffectiveCvss;
 
     public CvssSelectionResult(CvssVectorSet allVectors,
                                CvssSelector baseSelector, CvssSelector effectiveSelector,
@@ -73,15 +73,15 @@ public class CvssSelectionResult {
         return this.hasBaseCvss() || this.hasEffectiveCvss();
     }
 
-    public CvssVector<?> getSelectedEffectiveIfAvailableOtherwiseBase() {
+    public CvssVector getSelectedEffectiveIfAvailableOtherwiseBase() {
         if (this.selectedEffectiveCvss != null) return this.selectedEffectiveCvss;
         else return this.selectedBaseCvss;
     }
 
-    private CvssVector<?> selectVersionedCvss(List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy, CvssVector<?>... vectorScores) {
-        final CvssVector<Cvss2> foundV2 = this.findOfVersion(Cvss2.class, vectorScores);
-        final CvssVector<Cvss3P1> foundV3 = this.findOfVersion(Cvss3P1.class, vectorScores);
-        final CvssVector<Cvss4P0> foundV4 = this.findOfVersion(Cvss4P0.class, vectorScores);
+    private CvssVector selectVersionedCvss(List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy, CvssVector... vectorScores) {
+        final CvssVector foundV2 = this.findOfVersion(Cvss2.class, vectorScores);
+        final CvssVector foundV3 = this.findOfVersion(Cvss3P1.class, vectorScores);
+        final CvssVector foundV4 = this.findOfVersion(Cvss4P0.class, vectorScores);
 
         if (foundV2 == null && foundV3 == null && foundV4 == null) return null;
 
@@ -96,8 +96,8 @@ public class CvssSelectionResult {
             switch (cvssSelectionPolicy) {
                 case HIGHEST: {
                     int highestScore = -1;
-                    CvssVector<?> highestScoreVector = null;
-                    for (CvssVector<?> vectorScore : vectorScores) {
+                    CvssVector highestScoreVector = null;
+                    for (CvssVector vectorScore : vectorScores) {
                         if (vectorScore != null && vectorScore.getOverallScore() > highestScore) {
                             highestScore = (int) vectorScore.getOverallScore();
                             highestScoreVector = vectorScore;
@@ -108,8 +108,8 @@ public class CvssSelectionResult {
                 break;
                 case LOWEST:
                     int lowestScore = Integer.MAX_VALUE;
-                    CvssVector<?> lowestScoreVector = null;
-                    for (CvssVector<?> vectorScore : vectorScores) {
+                    CvssVector lowestScoreVector = null;
+                    for (CvssVector vectorScore : vectorScores) {
                         if (vectorScore != null && vectorScore.getOverallScore() < lowestScore) {
                             lowestScore = (int) vectorScore.getOverallScore();
                             lowestScoreVector = vectorScore;
@@ -143,10 +143,10 @@ public class CvssSelectionResult {
         return null;
     }
 
-    private <T extends CvssVector<T>> CvssVector<T> findOfVersion(Class<T> cvssVersion, CvssVector<?>... vectors) {
-        for (CvssVector<?> vector : vectors) {
+    private <T extends CvssVector> T findOfVersion(Class<T> cvssVersion, CvssVector... vectors) {
+        for (CvssVector vector : vectors) {
             if (vector != null && vector.getClass().equals(cvssVersion)) {
-                return (CvssVector<T>) vector;
+                return (T) vector;
             }
         }
         return null;
@@ -180,11 +180,11 @@ public class CvssSelectionResult {
         return effectiveCvss4;
     }
 
-    public CvssVector<?> getSelectedBaseCvss() {
+    public CvssVector getSelectedBaseCvss() {
         return selectedBaseCvss;
     }
 
-    public CvssVector<?> getSelectedEffectiveCvss() {
+    public CvssVector getSelectedEffectiveCvss() {
         return selectedEffectiveCvss;
     }
 

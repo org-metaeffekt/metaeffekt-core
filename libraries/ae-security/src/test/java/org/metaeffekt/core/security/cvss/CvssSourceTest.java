@@ -25,21 +25,21 @@ public class CvssSourceTest {
 
     @Test
     public void toColumnHeaderTest() {
-        Assert.assertEquals(Cvss2.getVersionName() + " NVD-CNA-NVD", new CvssSource<>(KnownCvssEntities.NVD, CvssSource.CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss2.class).toColumnHeaderString());
-        Assert.assertEquals(Cvss2.getVersionName() + " NVD-CNA-GitHub, Inc.", new CvssSource<>(KnownCvssEntities.NVD, CvssSource.CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA, Cvss2.class).toColumnHeaderString());
+        Assert.assertEquals(Cvss2.getVersionName() + " NVD-CNA-NVD", new CvssSource(KnownCvssEntities.NVD, CvssSource.CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss2.class).toColumnHeaderString());
+        Assert.assertEquals(Cvss2.getVersionName() + " NVD-CNA-GitHub, Inc.", new CvssSource(KnownCvssEntities.NVD, CvssSource.CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA, Cvss2.class).toColumnHeaderString());
 
-        Assert.assertEquals(Cvss2.getVersionName() + " Assessment-lower", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss2.class).toColumnHeaderString());
-        Assert.assertEquals(Cvss2.getVersionName() + " Assessment-higher", new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss2.class).toColumnHeaderString());
-        Assert.assertEquals(Cvss2.getVersionName() + " Assessment", new CvssSource<>(KnownCvssEntities.ASSESSMENT, Cvss2.class).toColumnHeaderString());
+        Assert.assertEquals(Cvss2.getVersionName() + " Assessment-lower", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss2.class).toColumnHeaderString());
+        Assert.assertEquals(Cvss2.getVersionName() + " Assessment-higher", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss2.class).toColumnHeaderString());
+        Assert.assertEquals(Cvss2.getVersionName() + " Assessment", new CvssSource(KnownCvssEntities.ASSESSMENT, Cvss2.class).toColumnHeaderString());
 
-        Assert.assertEquals(Cvss3P1.getVersionName() + " Assessment", new CvssSource<>(KnownCvssEntities.ASSESSMENT, Cvss3P1.class).toColumnHeaderString());
-        Assert.assertEquals(Cvss4P0.getVersionName() + " Assessment", new CvssSource<>(KnownCvssEntities.ASSESSMENT, Cvss4P0.class).toColumnHeaderString());
+        Assert.assertEquals(Cvss3P1.getVersionName() + " Assessment", new CvssSource(KnownCvssEntities.ASSESSMENT, Cvss3P1.class).toColumnHeaderString());
+        Assert.assertEquals(Cvss4P0.getVersionName() + " Assessment", new CvssSource(KnownCvssEntities.ASSESSMENT, Cvss4P0.class).toColumnHeaderString());
     }
 
     @Test
     public void fromColumnHeaderTest() {
         {
-            final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " NVD-CNA-NVD");
+            final CvssSource nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " NVD-CNA-NVD");
             Assert.assertEquals(Cvss2.class, nvdCnaNvdEntitySource.getVectorClass());
             Assert.assertEquals(KnownCvssEntities.NVD, nvdCnaNvdEntitySource.getHostingEntity());
             Assert.assertEquals(KnownCvssEntities.NVD, nvdCnaNvdEntitySource.getIssuingEntity());
@@ -47,7 +47,7 @@ public class CvssSourceTest {
         }
 
         {
-            final CvssSource<?> nvdCnaGhsaEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " NVD-CNA-GitHub, Inc.");
+            final CvssSource nvdCnaGhsaEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " NVD-CNA-GitHub, Inc.");
             Assert.assertEquals(Cvss2.class, nvdCnaGhsaEntitySource.getVectorClass());
             Assert.assertEquals(KnownCvssEntities.NVD, nvdCnaGhsaEntitySource.getHostingEntity());
             Assert.assertEquals(KnownCvssEntities.GHSA, nvdCnaGhsaEntitySource.getIssuingEntity());
@@ -55,7 +55,7 @@ public class CvssSourceTest {
         }
 
         {
-            final CvssSource<?> assessmentLowerEntitySource = CvssSource.fromColumnHeaderString(Cvss3P1.getVersionName() + " Assessment-lower");
+            final CvssSource assessmentLowerEntitySource = CvssSource.fromColumnHeaderString(Cvss3P1.getVersionName() + " Assessment-lower");
             Assert.assertEquals(Cvss3P1.class, assessmentLowerEntitySource.getVectorClass());
             Assert.assertEquals(KnownCvssEntities.ASSESSMENT, assessmentLowerEntitySource.getHostingEntity());
             Assert.assertEquals(KnownCvssEntities.ASSESSMENT_LOWER, assessmentLowerEntitySource.getIssuingEntity());
@@ -63,7 +63,7 @@ public class CvssSourceTest {
         }
 
         {
-            final CvssSource<?> assessmentLowerEntitySource = CvssSource.fromColumnHeaderString(Cvss4P0.getVersionName() + " Assessment");
+            final CvssSource assessmentLowerEntitySource = CvssSource.fromColumnHeaderString(Cvss4P0.getVersionName() + " Assessment");
             Assert.assertEquals(Cvss4P0.class, assessmentLowerEntitySource.getVectorClass());
             Assert.assertEquals(KnownCvssEntities.ASSESSMENT, assessmentLowerEntitySource.getHostingEntity());
             Assert.assertNull(assessmentLowerEntitySource.getIssuingEntity());
@@ -74,7 +74,7 @@ public class CvssSourceTest {
     @Test
     public void fromUnknownColumnHeaderTest() {
         {
-            final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO:HOST-DEMO:ROLE-DEMO:ISSUER");
+            final CvssSource nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO:HOST-DEMO:ROLE-DEMO:ISSUER");
             Assert.assertEquals(Cvss2.class, nvdCnaNvdEntitySource.getVectorClass());
             Assert.assertEquals("DEMO:HOST", nvdCnaNvdEntitySource.getHostingEntity().getName());
             Assert.assertEquals("DEMO:ISSUER", nvdCnaNvdEntitySource.getIssuingEntity().getName());
@@ -82,7 +82,7 @@ public class CvssSourceTest {
         }
 
         {
-            final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO:HOST-DEMO:ISSUER");
+            final CvssSource nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO:HOST-DEMO:ISSUER");
             Assert.assertEquals(Cvss2.class, nvdCnaNvdEntitySource.getVectorClass());
             Assert.assertEquals("DEMO:HOST", nvdCnaNvdEntitySource.getHostingEntity().getName());
             Assert.assertEquals("DEMO:ISSUER", nvdCnaNvdEntitySource.getIssuingEntity().getName());
@@ -92,7 +92,7 @@ public class CvssSourceTest {
 
     @Test
     public void fromUnknownColumnHeaderEscapeCharactersTest() {
-        final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO_HOST-DEMO_\\_ROLE-DEMO_ISSUER\\_");
+        final CvssSource nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss2.getVersionName() + " DEMO_HOST-DEMO_\\_ROLE-DEMO_ISSUER\\_");
         Assert.assertEquals(Cvss2.class, nvdCnaNvdEntitySource.getVectorClass());
         Assert.assertEquals("DEMO-HOST", nvdCnaNvdEntitySource.getHostingEntity().getName());
         Assert.assertEquals("DEMO-ISSUER_", nvdCnaNvdEntitySource.getIssuingEntity().getName());
@@ -105,7 +105,7 @@ public class CvssSourceTest {
         final String escapedIssuingEntityName = issuingEntity.getEscapedName();
         Assert.assertEquals("security_alert@emc.com", escapedIssuingEntityName);
 
-        final CvssSource<?> nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss3P1.getVersionName() + " NVD-CNA-" + escapedIssuingEntityName);
+        final CvssSource nvdCnaNvdEntitySource = CvssSource.fromColumnHeaderString(Cvss3P1.getVersionName() + " NVD-CNA-" + escapedIssuingEntityName);
         Assert.assertEquals(Cvss3P1.class, nvdCnaNvdEntitySource.getVectorClass());
         Assert.assertEquals("NVD", nvdCnaNvdEntitySource.getHostingEntity().getName());
         Assert.assertEquals("CNA", nvdCnaNvdEntitySource.getIssuingEntityRole().getName());

@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
  */
 public class CvssVectorSet implements Cloneable {
 
-    private final List<CvssVector<?>> cvssVectors = new ArrayList<>();
+    private final List<CvssVector> cvssVectors = new ArrayList<>();
 
     public CvssVectorSet() {
     }
@@ -47,24 +47,24 @@ public class CvssVectorSet implements Cloneable {
         this.addAllCvssVectors(other);
     }
 
-    public CvssVectorSet(Collection<CvssVector<?>> other) {
+    public CvssVectorSet(Collection<CvssVector> other) {
         this.addAllCvssVectors(other);
     }
 
-    public void removeForSourceAndCondition(CvssSource<?> source, JSONObject condition) {
+    public void removeForSourceAndCondition(CvssSource source, JSONObject condition) {
         this.cvssVectors.removeIf(sourcedCvssVector -> Objects.equals(sourcedCvssVector.getCvssSource(), source) && Objects.equals(sourcedCvssVector.getApplicabilityCondition(), condition));
     }
 
-    public <T extends CvssVector<T>> void addCvssVector(CvssSource<T> source, String cvssVector) {
-        final T vector = source.parseVector(cvssVector).deriveAddSource(source);
+    public void addCvssVector(CvssSource source, String cvssVector) {
+        final CvssVector vector = source.parseVector(cvssVector).deriveAddSource(source);
         this.addCvssVector(vector);
     }
 
-    public void addCvssVector(CvssVector<?> cvssVector) {
+    public void addCvssVector(CvssVector cvssVector) {
         this.cvssVectors.add(cvssVector);
     }
 
-    public void addAllCvssVectors(Collection<CvssVector<?>> cvssVectors) {
+    public void addAllCvssVectors(Collection<CvssVector> cvssVectors) {
         this.cvssVectors.addAll(cvssVectors);
     }
 
@@ -72,12 +72,12 @@ public class CvssVectorSet implements Cloneable {
         this.cvssVectors.addAll(vectorSet.getCvssVectors().stream().map(CvssVector::clone).collect(Collectors.toList()));
     }
 
-    public List<CvssVector<?>> getCvssVectors() {
+    public List<CvssVector> getCvssVectors() {
         return cvssVectors;
     }
 
-    public <T extends CvssVector<T>> CvssVector<T> getCvssVectorBySource(CvssSource<T> source) {
-        return (CvssVector<T>) this.cvssVectors.stream()
+    public CvssVector getCvssVectorBySource(CvssSource source) {
+        return this.cvssVectors.stream()
                 .filter(sourcedCvssVector -> sourcedCvssVector.getCvssSources().stream().anyMatch(s -> s.equals(source)))
                 .findFirst()
                 .orElse(null);

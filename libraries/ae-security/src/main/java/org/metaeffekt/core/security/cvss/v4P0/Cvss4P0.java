@@ -94,7 +94,7 @@ import java.util.stream.Stream;
  *     </li>
  * </ul>
  */
-public class Cvss4P0 extends CvssVector<Cvss4P0> {
+public class Cvss4P0 extends CvssVector {
 
     private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0.class);
 
@@ -169,17 +169,17 @@ public class Cvss4P0 extends CvssVector<Cvss4P0> {
         super.applyVector(vector);
     }
 
-    public Cvss4P0(String vector, CvssSource<Cvss4P0> source) {
+    public Cvss4P0(String vector, CvssSource source) {
         super(source);
         super.applyVector(vector);
     }
 
-    public Cvss4P0(String vector, CvssSource<Cvss4P0> source, JSONObject applicabilityCondition) {
+    public Cvss4P0(String vector, CvssSource source, JSONObject applicabilityCondition) {
         super(source, applicabilityCondition);
         super.applyVector(vector);
     }
 
-    public Cvss4P0(String vector, Collection<CvssSource<Cvss4P0>> sources, JSONObject applicabilityCondition) {
+    public Cvss4P0(String vector, Collection<CvssSource> sources, JSONObject applicabilityCondition) {
         super(sources, applicabilityCondition);
         super.applyVector(vector);
     }
@@ -966,8 +966,8 @@ public class Cvss4P0 extends CvssVector<Cvss4P0> {
     }
 
     @Override
-    public BakedCvssVectorScores<Cvss4P0> bakeScores() {
-        return new BakedCvssVectorScores<>(this);
+    public BakedCvssVectorScores bakeScores() {
+        return new BakedCvssVectorScores(this);
     }
 
     // CVSS 4.0 attributes definitions

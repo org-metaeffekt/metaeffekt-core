@@ -268,20 +268,20 @@ public class StatisticsOverviewTableTest {
         }
     }
 
-    private AeaaVulnerability createVulnerabilityUnmodifiedSeverity(String status, CvssVector<?> cvssVector, AeaaContentIdentifiers... advisoryProviders) {
+    private AeaaVulnerability createVulnerabilityUnmodifiedSeverity(String status, CvssVector cvssVector, AeaaContentIdentifiers... advisoryProviders) {
         return createVulnerabilityMultipleSeverities(status, cvssVector, null, advisoryProviders);
     }
 
-    private AeaaVulnerability createVulnerabilityMultipleSeverities(String status, CvssVector<?> cvssVectorProvided, CvssVector<?> cvssVectorEffective, AeaaContentIdentifiers... advisoryProviders) {
+    private AeaaVulnerability createVulnerabilityMultipleSeverities(String status, CvssVector cvssVectorProvided, CvssVector cvssVectorEffective, AeaaContentIdentifiers... advisoryProviders) {
         final AeaaVulnerability vulnerability = new AeaaVulnerability(status + "-" + (cvssVectorProvided == null ? null : cvssVectorProvided.getOverallScore()) + "-" + (cvssVectorEffective == null ? null : cvssVectorEffective.getOverallScore()) + "-" + Arrays.toString(advisoryProviders) + "-" + UUID.randomUUID());
 
         if (cvssVectorProvided != null) {
-            final CvssVector<?> vector = cvssVectorProvided.deriveAddSource(new CvssSource<>(KnownCvssEntities.NVD, cvssVectorProvided.getClass()));
+            final CvssVector vector = cvssVectorProvided.deriveAddSource(new CvssSource(KnownCvssEntities.NVD, cvssVectorProvided.getClass()));
             vulnerability.getCvssVectors().addCvssVector(vector);
         }
 
         if (cvssVectorEffective != null) {
-            final CvssVector<?> vector = cvssVectorEffective.deriveAddSource(new CvssSource<>(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, cvssVectorEffective.getClass()));
+            final CvssVector vector = cvssVectorEffective.deriveAddSource(new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, cvssVectorEffective.getClass()));
             vulnerability.getCvssVectors().addCvssVector(vector);
         }
 

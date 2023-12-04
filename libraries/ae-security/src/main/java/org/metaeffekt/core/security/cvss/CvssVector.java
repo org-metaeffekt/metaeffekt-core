@@ -29,30 +29,30 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class CvssVector<T extends CvssVector<T>> {
+public abstract class CvssVector {
 
     private final static Logger LOG = LoggerFactory.getLogger(CvssVector.class);
 
-    protected final List<CvssSource<T>> sources = new ArrayList<>();
+    protected final List<CvssSource> sources = new ArrayList<>();
     protected final JSONObject applicabilityCondition;
 
-    protected BakedCvssVectorScores<T> bakedScores;
+    protected BakedCvssVectorScores bakedScores;
 
     public CvssVector() {
         this.applicabilityCondition = new JSONObject();
     }
 
-    public CvssVector(CvssSource<T> source) {
+    public CvssVector(CvssSource source) {
         this.addSource(source);
         this.applicabilityCondition = new JSONObject();
     }
 
-    public CvssVector(CvssSource<T> source, JSONObject applicabilityCondition) {
+    public CvssVector(CvssSource source, JSONObject applicabilityCondition) {
         this.addSource(source);
         this.applicabilityCondition = applicabilityCondition;
     }
 
-    public CvssVector(Collection<CvssSource<T>> sources, JSONObject applicabilityCondition) {
+    public CvssVector(Collection<CvssSource> sources, JSONObject applicabilityCondition) {
         this.addSources(sources);
         this.applicabilityCondition = applicabilityCondition;
     }
@@ -79,11 +79,11 @@ public abstract class CvssVector<T extends CvssVector<T>> {
     protected abstract boolean applyVectorArgument(String identifier, String value);
 
     @Override
-    public abstract T clone();
+    public abstract CvssVector clone();
 
-    protected abstract BakedCvssVectorScores<T> bakeScores();
+    protected abstract BakedCvssVectorScores bakeScores();
 
-    public BakedCvssVectorScores<T> getBakedScores() {
+    public BakedCvssVectorScores getBakedScores() {
         if (bakedScores == null) {
             bakedScores = bakeScores();
         }
@@ -108,48 +108,48 @@ public abstract class CvssVector<T extends CvssVector<T>> {
 
     /* SOURCES */
 
-    public T deriveAddSource(CvssSource<T> source) {
-        final T clone = this.clone();
+    public CvssVector deriveAddSource(CvssSource source) {
+        final CvssVector clone = this.clone();
         clone.addSource(source);
         return clone;
     }
 
-    public T deriveAddSources(Collection<CvssSource<T>> sources) {
-        final T clone = this.clone();
+    public CvssVector deriveAddSources(Collection<CvssSource> sources) {
+        final CvssVector clone = this.clone();
         clone.addSources(sources);
         return clone;
     }
 
-    protected void addSource(CvssSource<T> source) {
+    protected void addSource(CvssSource source) {
         Objects.requireNonNull(source, "Vector source must not be null");
         this.sources.add(source);
     }
 
-    protected void addSources(Collection<CvssSource<T>> sources) {
+    protected void addSources(Collection<CvssSource> sources) {
         Objects.requireNonNull(sources, "Vector sources collection must not be null when adding multiple sources");
         sources.forEach(source -> Objects.requireNonNull(source, "Vector source must not be null when adding multiple sources " + sources));
         this.sources.addAll(sources);
     }
 
-    public List<CvssSource<T>> getCvssSources() {
+    public List<CvssSource> getCvssSources() {
         return sources;
     }
 
-    public CvssSource<T> getLatestSource() {
+    public CvssSource getLatestSource() {
         if (!sources.isEmpty()) {
             return sources.get(sources.size() - 1);
         }
         return null;
     }
 
-    public CvssSource<T> getInitialSource() {
+    public CvssSource getInitialSource() {
         if (!sources.isEmpty()) {
             return sources.get(0);
         }
         return null;
     }
 
-    public CvssSource<T> getCvssSource() {
+    public CvssSource getCvssSource() {
         return getInitialSource();
     }
 
@@ -187,7 +187,7 @@ public abstract class CvssVector<T extends CvssVector<T>> {
         return appliedCount;
     }
 
-    int applyVectorPartsIf(String vector, Function<T, Double> scoreType, boolean lower) {
+    int applyVectorPartsIf(String vector, Function<CvssVector, Double> scoreType, boolean lower) {
         if (vector == null) return 0;
 
         final String normalizedVector = normalizeVector(vector);
@@ -201,7 +201,7 @@ public abstract class CvssVector<T extends CvssVector<T>> {
             if (StringUtils.isEmpty(argument)) continue;
             final String[] parts = argument.split(":", 2);
 
-            final T clone = this.clone();
+            final CvssVector clone = this.clone();
 
             final double currentScore = scoreType.apply(clone);
 
@@ -230,33 +230,33 @@ public abstract class CvssVector<T extends CvssVector<T>> {
         return appliedPartsCount;
     }
 
-    public int applyVector(CvssVector<T> vector) {
+    public int applyVector(CvssVector vector) {
         if (vector == null) return 0;
         return applyVector(vector.toString());
     }
 
-    public CvssVector<T> applyVectorAndReturn(CvssVector<T> vector) {
+    public CvssVector applyVectorAndReturn(CvssVector vector) {
         if (vector == null) return this;
         applyVector(vector.toString());
         return this;
     }
 
-    public int applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
+    public <T extends CvssVector> int applyVectorPartsIfLower(T vector, Function<T, Double> scoreType) {
         if (vector == null) return 0;
-        return applyVectorPartsIf(vector.toString(), scoreType, true);
+        return applyVectorPartsIf(vector.toString(), (Function<CvssVector, Double>) scoreType, true);
     }
 
-    public int applyVectorPartsIfLower(String vector, Function<T, Double> scoreType) {
+    public int applyVectorPartsIfLower(String vector, Function<CvssVector, Double> scoreType) {
         if (vector == null) return 0;
         return applyVectorPartsIf(vector, scoreType, true);
     }
 
-    public int applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
+    public <T extends CvssVector> int applyVectorPartsIfHigher(T vector, Function<T, Double> scoreType) {
         if (vector == null) return 0;
-        return applyVectorPartsIf(vector.toString(), scoreType, false);
+        return applyVectorPartsIf(vector.toString(), (Function<CvssVector, Double>) scoreType, false);
     }
 
-    public int applyVectorPartsIfHigher(String vector, Function<T, Double> scoreType) {
+    public int applyVectorPartsIfHigher(String vector, Function<CvssVector, Double> scoreType) {
         if (vector == null) return 0;
         return applyVectorPartsIf(vector, scoreType, false);
     }
@@ -270,13 +270,13 @@ public abstract class CvssVector<T extends CvssVector<T>> {
                 .trim();
     }
 
-    public static <T extends CvssVector<T>> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
+    public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
         final T cvssVector = constructor.get();
         final int unknownAttributes = cvssVector.applyVector(vector);
         return unknownAttributes > 0 ? null : cvssVector;
     }
 
-    public static <T extends CvssVector<T>> String getVersionName(Class<T> clazz) {
+    public static <T extends CvssVector> String getVersionName(Class<T> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
         } else if (Cvss2.class.isAssignableFrom(clazz)) {
@@ -290,7 +290,7 @@ public abstract class CvssVector<T extends CvssVector<T>> {
         }
     }
 
-    public static Class<? extends CvssVector<?>> classFromVersionName(String versionName) {
+    public static Class<? extends CvssVector> classFromVersionName(String versionName) {
         if (versionName == null) {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
         } else if (versionName.equals(Cvss2.getVersionName())) {
@@ -314,7 +314,7 @@ public abstract class CvssVector<T extends CvssVector<T>> {
      * @param vector the vector to parse
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
-    public static CvssVector<?> parseVector(String vector) {
+    public static CvssVector parseVector(String vector) {
         if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector))) {
             return null;
         }
@@ -359,16 +359,16 @@ public abstract class CvssVector<T extends CvssVector<T>> {
         return json;
     }
 
-    public static <T extends CvssVector<T>> CvssVector<T> fromJson(JSONObject json) {
-        final List<CvssSource<T>> sources;
+    public static CvssVector fromJson(JSONObject json) {
+        final List<CvssSource> sources;
         if (json.has("source")) {
-            final CvssSource<T> source = (CvssSource<T>) CvssSource.fromColumnHeaderString(json.getString("source"));
+            final CvssSource source = CvssSource.fromColumnHeaderString(json.getString("source"));
             sources = Collections.singletonList(source);
         } else if (json.has("sources")) {
             final JSONArray sourcesJson = json.getJSONArray("sources");
             sources = new ArrayList<>();
             for (int i = 0; i < sourcesJson.length(); i++) {
-                sources.add((CvssSource<T>) CvssSource.fromColumnHeaderString(sourcesJson.getString(i)));
+                sources.add(CvssSource.fromColumnHeaderString(sourcesJson.getString(i)));
             }
             if (sources.isEmpty()) {
                 throw new IllegalArgumentException("No sources found in json [" + json + "]");
@@ -377,11 +377,11 @@ public abstract class CvssVector<T extends CvssVector<T>> {
             sources = Collections.emptyList();
         }
 
-        final T vector;
+        final CvssVector vector;
         if (!sources.isEmpty()) {
             vector = sources.get(0).parseVector(json.getString("vector"));
         } else {
-            vector = (T) parseVector(json.getString("vector"));
+            vector = parseVector(json.getString("vector"));
         }
 
         if (json.has("condition")) {
@@ -396,14 +396,14 @@ public abstract class CvssVector<T extends CvssVector<T>> {
         return vector;
     }
 
-    public static JSONArray toJson(List<CvssVector<?>> vectorsList) {
+    public static JSONArray toJson(List<CvssVector> vectorsList) {
         final JSONArray json = new JSONArray();
         vectorsList.forEach(sourcedCvssVector -> json.put(sourcedCvssVector.toJson()));
         return json;
     }
 
-    public static List<CvssVector<?>> fromJson(JSONArray json) {
-        final List<CvssVector<?>> vectorsList = new ArrayList<>();
+    public static List<CvssVector> fromJson(JSONArray json) {
+        final List<CvssVector> vectorsList = new ArrayList<>();
         for (int i = 0; i < json.length(); i++) {
             vectorsList.add(CvssVector.fromJson(json.getJSONObject(i)));
         }
