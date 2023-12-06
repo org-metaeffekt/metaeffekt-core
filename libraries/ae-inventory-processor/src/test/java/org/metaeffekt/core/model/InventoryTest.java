@@ -585,9 +585,9 @@ public class InventoryTest {
         initialInventory.getArtifacts().add(artifact);
 
         final VulnerabilityMetaData vmd = new VulnerabilityMetaData();
-        vmd.set(VulnerabilityMetaData.Attribute.V2_SCORE, "9.8");
-        vmd.set(VulnerabilityMetaData.Attribute.V3_SCORE, "9.0");
-        vmd.set(VulnerabilityMetaData.Attribute.MAX_SCORE, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.SCORE_IMPACT, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL, "9.0");
+        vmd.set(VulnerabilityMetaData.Attribute.SCORE_EXPLOITABILITY, "9.8");
         vmd.set(VulnerabilityMetaData.Attribute.URL, url);
         initialInventory.getVulnerabilityMetaData().add(vmd);
 
@@ -639,9 +639,9 @@ public class InventoryTest {
         final Inventory initialInventory = new Inventory();
 
         final VulnerabilityMetaData vmd = dummyVulnerabilityMetaData();
-        vmd.set(VulnerabilityMetaData.Attribute.V2_SCORE, "9.8");
-        vmd.set(VulnerabilityMetaData.Attribute.V3_SCORE, "0934348.300");
-        vmd.set(VulnerabilityMetaData.Attribute.MAX_SCORE, "934348.3");
+        vmd.set(VulnerabilityMetaData.Attribute.SCORE_IMPACT, "9.8");
+        vmd.set(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL, "0934348.300");
+        vmd.set(VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL, "934348.3");
         vmd.set("Other number 1", "345.632");
         vmd.set("Other number 2", "344,344.632");
         initialInventory.getVulnerabilityMetaData().add(vmd);
@@ -651,9 +651,9 @@ public class InventoryTest {
 
         final Inventory readInventory = new InventoryReader().readInventory(xlsInventoryFile);
         Assert.assertEquals(1, readInventory.getVulnerabilityMetaData().size());
-        Assert.assertEquals("9.8", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.V2_SCORE));
-        Assert.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.V3_SCORE));
-        Assert.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.MAX_SCORE));
+        Assert.assertEquals("9.8", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_IMPACT));
+        Assert.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL));
+        Assert.assertEquals("934348.3", readInventory.getVulnerabilityMetaData().get(0).get(VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL));
         Assert.assertEquals("345.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 1"));
         Assert.assertEquals("344,344.632", readInventory.getVulnerabilityMetaData().get(0).get("Other number 2"));
 

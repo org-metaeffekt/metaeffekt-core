@@ -127,12 +127,13 @@ public class StatisticsOverviewTable {
             final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapper().getMapper().apply(baseStatus);
 
             // severity in effectiveSeverity
-            final CvssVector vector = useEffectiveSeverity ? vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase() : vulnerability.getCvssSelectionResult().getSelectedBaseCvss();
+            final CvssVector vector = useEffectiveSeverity ? vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial() : vulnerability.getCvssSelectionResult().getSelectedInitialCvss();
             final String effectiveSeverity;
             if (vector == null || (useEffectiveSeverity && (VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE.equals(baseStatus) || VulnerabilityMetaData.STATUS_VALUE_VOID.equals(baseStatus)))) {
                 effectiveSeverity = "none";
             } else {
-                final CvssSeverityRanges.SeverityRange severityRange = securityPolicy.getCvssSeverityRanges().getRange(vector.getBakedScores().getOverallScore());
+                final double overallScore = vector.getBakedScores().getOverallScore();
+                final CvssSeverityRanges.SeverityRange severityRange = securityPolicy.getCvssSeverityRanges().getRange(overallScore);
                 effectiveSeverity = severityRange.getName();
             }
 

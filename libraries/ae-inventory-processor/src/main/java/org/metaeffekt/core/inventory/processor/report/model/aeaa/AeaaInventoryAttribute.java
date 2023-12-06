@@ -57,7 +57,7 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     /**
      * Stores IDs of referenced content, such as advisories.
      */
-    VULNERABILITY_REFERENCED_CONTENT_IDS("Referenced Content IDs"),
+    VULNERABILITY_REFERENCED_CONTENT_IDS("Referenced Content Ids"),
     MATCHES_ON_MS_PRODUCT_ID(MS_PRODUCT_ID.getKey()),
     VULNERABILITIES_FIXED_BY_KB("Vulnerability fixed by KB"),
     INAPPLICABLE_CVE("Inapplicable CVE"),

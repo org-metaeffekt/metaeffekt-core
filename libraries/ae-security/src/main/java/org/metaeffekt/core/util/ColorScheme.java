@@ -111,6 +111,15 @@ public enum ColorScheme {
         return name().toLowerCase().replace("_", "-");
     }
 
+    public Color getTextColor() {
+        final double lightness = (0.2126 * color.getRed() + 0.7152 * color.getGreen() + 0.0722 * color.getBlue()) / 255;
+        return lightness < 0.5 ? TEXT_COLOR_WHITE.color : TEXT_COLOR_BLACK.color;
+    }
+
+    public String getHexTextColor() {
+        return toHex(getTextColor());
+    }
+
     public static String cssRoot() {
         final StringJoiner rootContent = new StringJoiner(";--");
         for (ColorScheme value : values()) {

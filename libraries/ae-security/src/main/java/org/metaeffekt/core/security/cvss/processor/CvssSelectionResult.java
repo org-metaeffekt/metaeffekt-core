@@ -30,17 +30,17 @@ public class CvssSelectionResult {
 
     private final CvssVectorSet allVectors;
 
-    private final Cvss2 baseCvss2;
-    private final Cvss2 effectiveCvss2;
+    private final Cvss2 initialCvss2;
+    private final Cvss2 contextCvss2;
 
-    private final Cvss3P1 baseCvss3;
-    private final Cvss3P1 effectiveCvss3;
+    private final Cvss3P1 initialCvss3;
+    private final Cvss3P1 contextCvss3;
 
-    private final Cvss4P0 baseCvss4;
-    private final Cvss4P0 effectiveCvss4;
+    private final Cvss4P0 initialCvss4;
+    private final Cvss4P0 contextCvss4;
 
-    private final CvssVector selectedBaseCvss;
-    private final CvssVector selectedEffectiveCvss;
+    private final CvssVector selectedInitialCvss;
+    private final CvssVector selectedContextCvss;
 
     public CvssSelectionResult(CvssVectorSet allVectors,
                                CvssSelector baseSelector, CvssSelector effectiveSelector,
@@ -48,34 +48,34 @@ public class CvssSelectionResult {
     ) {
         this.allVectors = allVectors;
 
-        this.baseCvss2 = baseSelector.selectVector(allVectors, Cvss2.class);
-        this.effectiveCvss2 = effectiveSelector.selectVector(allVectors, Cvss2.class);
+        this.initialCvss2 = baseSelector.selectVector(allVectors, Cvss2.class);
+        this.contextCvss2 = effectiveSelector.selectVector(allVectors, Cvss2.class);
 
-        this.baseCvss3 = baseSelector.selectVector(allVectors, Cvss3P1.class);
-        this.effectiveCvss3 = effectiveSelector.selectVector(allVectors, Cvss3P1.class);
+        this.initialCvss3 = baseSelector.selectVector(allVectors, Cvss3P1.class);
+        this.contextCvss3 = effectiveSelector.selectVector(allVectors, Cvss3P1.class);
 
-        this.baseCvss4 = baseSelector.selectVector(allVectors, Cvss4P0.class);
-        this.effectiveCvss4 = effectiveSelector.selectVector(allVectors, Cvss4P0.class);
+        this.initialCvss4 = baseSelector.selectVector(allVectors, Cvss4P0.class);
+        this.contextCvss4 = effectiveSelector.selectVector(allVectors, Cvss4P0.class);
 
-        this.selectedBaseCvss = this.selectVersionedCvss(versionSelectionPolicy, this.baseCvss2, this.baseCvss3, this.baseCvss4);
-        this.selectedEffectiveCvss = this.selectVersionedCvss(versionSelectionPolicy, this.effectiveCvss2, this.effectiveCvss3, this.effectiveCvss4);
+        this.selectedInitialCvss = this.selectVersionedCvss(versionSelectionPolicy, this.initialCvss2, this.initialCvss3, this.initialCvss4);
+        this.selectedContextCvss = this.selectVersionedCvss(versionSelectionPolicy, this.contextCvss2, this.contextCvss3, this.contextCvss4);
     }
 
-    public boolean hasBaseCvss() {
-        return this.baseCvss2 != null || this.baseCvss3 != null || this.baseCvss4 != null;
+    public boolean hasInitialCvss() {
+        return this.initialCvss2 != null || this.initialCvss3 != null || this.initialCvss4 != null;
     }
 
-    public boolean hasEffectiveCvss() {
-        return this.effectiveCvss2 != null || this.effectiveCvss3 != null || this.effectiveCvss4 != null;
+    public boolean hasContextCvss() {
+        return this.contextCvss2 != null || this.contextCvss3 != null || this.contextCvss4 != null;
     }
 
     public boolean hasAnyCvss() {
-        return this.hasBaseCvss() || this.hasEffectiveCvss();
+        return this.hasInitialCvss() || this.hasContextCvss();
     }
 
-    public CvssVector getSelectedEffectiveIfAvailableOtherwiseBase() {
-        if (this.selectedEffectiveCvss != null) return this.selectedEffectiveCvss;
-        else return this.selectedBaseCvss;
+    public CvssVector getSelectedContextIfAvailableOtherwiseInitial() {
+        if (this.selectedContextCvss != null) return this.selectedContextCvss;
+        else return this.selectedInitialCvss;
     }
 
     private CvssVector selectVersionedCvss(List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy, CvssVector... vectorScores) {
@@ -156,36 +156,51 @@ public class CvssSelectionResult {
         return allVectors;
     }
 
-    public Cvss2 getBaseCvss2() {
-        return baseCvss2;
+    public Cvss2 getInitialCvss2() {
+        return initialCvss2;
     }
 
-    public Cvss2 getEffectiveCvss2() {
-        return effectiveCvss2;
+    public Cvss2 getContextCvss2() {
+        return contextCvss2;
     }
 
-    public Cvss3P1 getBaseCvss3() {
-        return baseCvss3;
+    public Cvss3P1 getInitialCvss3() {
+        return initialCvss3;
     }
 
-    public Cvss3P1 getEffectiveCvss3() {
-        return effectiveCvss3;
+    public Cvss3P1 getContextCvss3() {
+        return contextCvss3;
     }
 
-    public Cvss4P0 getBaseCvss4() {
-        return baseCvss4;
+    public Cvss4P0 getInitialCvss4() {
+        return initialCvss4;
     }
 
-    public Cvss4P0 getEffectiveCvss4() {
-        return effectiveCvss4;
+    public Cvss4P0 getContextCvss4() {
+        return contextCvss4;
     }
 
-    public CvssVector getSelectedBaseCvss() {
-        return selectedBaseCvss;
+    public CvssVector getSelectedInitialCvss() {
+        return selectedInitialCvss;
     }
 
-    public CvssVector getSelectedEffectiveCvss() {
-        return selectedEffectiveCvss;
+    public CvssVector getSelectedContextCvss() {
+        return selectedContextCvss;
+    }
+
+    @Override
+    public String toString() {
+        return "CvssSelectionResult{" +
+                "allVectors=" + allVectors +
+                ", initialCvss2=" + initialCvss2 +
+                ", contextCvss2=" + contextCvss2 +
+                ", initialCvss3=" + initialCvss3 +
+                ", contextCvss3=" + contextCvss3 +
+                ", initialCvss4=" + initialCvss4 +
+                ", contextCvss4=" + contextCvss4 +
+                ", selectedInitialCvss=" + selectedInitialCvss +
+                ", selectedContextCvss=" + selectedContextCvss +
+                '}';
     }
 
     public enum CvssScoreVersionSelectionPolicy {

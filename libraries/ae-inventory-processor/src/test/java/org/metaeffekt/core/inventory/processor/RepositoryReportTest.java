@@ -177,37 +177,6 @@ public class RepositoryReportTest {
     }
 
     @Test
-    public void testVulnerabilityMetaData() throws IOException {
-        File inventoryFile = new File(INVENTORY_DIR, "artifact-inventory.xls");
-        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
-
-        Assert.assertNotNull(inventory.getVulnerabilityMetaData());
-        Assert.assertEquals(16, inventory.getVulnerabilityMetaData().size());
-
-        List<VulnerabilityMetaData> applicableVulnerabilities = VulnerabilityMetaData.filterApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
-        Assert.assertEquals(3, applicableVulnerabilities.size());
-
-        LOG.info("Applicable:");
-        applicableVulnerabilities.stream()
-                .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
-                .forEach(LOG::info);
-
-        List<VulnerabilityMetaData> notApplicableVulnerabilities = VulnerabilityMetaData.filterNotApplicableVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
-        Assert.assertEquals(10, notApplicableVulnerabilities.size());
-
-        List<VulnerabilityMetaData> insignificantVulnerabilities = VulnerabilityMetaData.filterInsignificantVulnerabilities(inventory.getVulnerabilityMetaData(), 7.0f);
-        Assert.assertEquals(3, insignificantVulnerabilities.size());
-
-        LOG.info("Not Applicable:");
-        notApplicableVulnerabilities.stream()
-                .map(vmd -> vmd.get(VulnerabilityMetaData.Attribute.NAME) + " " + vmd.get(VulnerabilityMetaData.Attribute.MAX_SCORE))
-                .forEach(LOG::info);
-
-        File targetFile = new File("target/test-inventory.xls");
-        new InventoryWriter().writeInventory(inventory, targetFile);
-    }
-
-    @Test
     public void testAntPatternMatcher() {
         String path = "/spring-boot-example/documentation/spring-boot-war/target/bomscan/spring-boot-sample-war-1.5.4.RELEASE-war/org/springframework/boot/loader/LaunchedURLClassLoader.class";
         AntPathMatcher matcher = new AntPathMatcher();
@@ -280,7 +249,7 @@ public class RepositoryReportTest {
         report.setIncludeInofficialOsiStatus(true);
 
         report.setInventoryBomReportEnabled(false);
-        report.setAssessmentReportEnabled(false);
+        report.setAssessmentReportEnabled(true);
 
         report.setInventoryVulnerabilityReportEnabled(true);
         report.setInventoryVulnerabilityReportSummaryEnabled(true);

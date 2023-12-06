@@ -131,8 +131,13 @@ public class XlsHSSFInventorySheetCellStylers {
 
         this.contentStyleCvssScoresDoubleValue = InventorySheetCellStyler.createStyler(
                 context -> {
-                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.MAX_SCORE,
-                            VulnerabilityMetaData.Attribute.V3_SCORE, VulnerabilityMetaData.Attribute.V2_SCORE);
+                    final boolean isCorrectHeader = context.isHeaderEither(
+                            VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL,
+                            VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL,
+                            VulnerabilityMetaData.Attribute.SCORE_BASE,
+                            VulnerabilityMetaData.Attribute.SCORE_EXPLOITABILITY,
+                            VulnerabilityMetaData.Attribute.SCORE_IMPACT
+                    );
                     if (!isCorrectHeader) {
                         return false;
                     }

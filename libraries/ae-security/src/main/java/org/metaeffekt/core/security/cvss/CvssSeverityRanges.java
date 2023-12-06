@@ -39,22 +39,22 @@ public class CvssSeverityRanges {
     public CvssSeverityRanges(String input) {
         if (StringUtils.isEmpty(input)) {
             LOG.warn("No severity ranges defined. Using default (v3) ranges.");
-            ranges = CVSS_3_SEVERITY_RANGES.ranges;
+            this.ranges = CVSS_3_SEVERITY_RANGES.ranges;
             return;
         }
 
         if (input.equals("cvss3") || input.equals("cvss4")) {
-            ranges = CVSS_3_SEVERITY_RANGES.ranges;
+            this.ranges = CVSS_3_SEVERITY_RANGES.ranges;
 
         } else if (input.equals("cvss2")) {
-            ranges = CVSS_2_SEVERITY_RANGES.ranges;
+            this.ranges = CVSS_2_SEVERITY_RANGES.ranges;
 
         } else {
-            final String[] split = input.split(", ?");
-            ranges = new SeverityRange[split.length];
+            final String[] splitRangesInputs = input.split(", ?");
+            this.ranges = new SeverityRange[splitRangesInputs.length];
 
-            for (int i = 0; i < split.length; i++) {
-                ranges[i] = new SeverityRange(split[i]);
+            for (int i = 0; i < splitRangesInputs.length; i++) {
+                this.ranges[i] = new SeverityRange(splitRangesInputs[i], i);
             }
         }
     }
@@ -76,22 +76,25 @@ public class CvssSeverityRanges {
         private final String name;
         private final ColorScheme color;
         private final double floor, ceil;
+        private final int index;
 
-        private SeverityRange(String input) {
+        private SeverityRange(String input, int index) {
             Matcher matcher = RANGE_PATTERN.matcher(input);
             if (!matcher.matches()) {
                 throw new IllegalArgumentException("Range pattern does not match format [NAME:COLOR:FLOOR:CEIL] in " + input);
             }
-            name = matcher.group(1).trim();
-            color = ColorScheme.getColor(matcher.group(2));
-            if (color == null) {
+            this.name = matcher.group(1).trim();
+            this.color = ColorScheme.getColor(matcher.group(2));
+            if (this.color == null) {
                 throw new IllegalArgumentException("Range color unknown in [" + input + "]. available colors are [" + getAvailableColors() + "]");
             }
-            floor = Double.parseDouble(matcher.group(3).trim());
-            ceil = Double.parseDouble(matcher.group(4).trim());
-            if (floor > ceil) {
-                throw new IllegalArgumentException("Range floor [" + floor + "] must be smaller than range ceil [" + ceil + "] in [" + input + "]");
+            this.floor = Double.parseDouble(matcher.group(3).trim());
+            this.ceil = Double.parseDouble(matcher.group(4).trim());
+            if (this.floor > this.ceil) {
+                throw new IllegalArgumentException("Range floor [" + this.floor + "] must be smaller than range ceil [" + this.ceil + "] in [" + input + "]");
             }
+
+            this.index = index;
         }
 
         public boolean matches(double score) {
@@ -114,6 +117,10 @@ public class CvssSeverityRanges {
             return ceil;
         }
 
+        public int getIndex() {
+            return index;
+        }
+
         private final static Pattern RANGE_PATTERN = Pattern.compile("([^:]+):([^:]+):([^:]+):([^:]+)");
 
         @Override
@@ -132,7 +139,7 @@ public class CvssSeverityRanges {
         return Arrays.stream(ranges).map(SeverityRange::toString).collect(Collectors.joining(","));
     }
 
-    public final static SeverityRange UNDEFINED_SEVERITY_RANGE = new SeverityRange("Undefined:strong-gray:-100.0:100.0");
+    public final static SeverityRange UNDEFINED_SEVERITY_RANGE = new SeverityRange("Undefined:strong-gray:-100.0:100.0", -1);
 
     public static final CvssSeverityRanges CVSS_2_SEVERITY_RANGES = new CvssSeverityRanges("Low:strong-yellow:0.0:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-red:7.0:10.0");
     public static final CvssSeverityRanges CVSS_3_SEVERITY_RANGES = new CvssSeverityRanges("None:pastel-gray:0.0:0.0,Low:strong-yellow:0.1:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-dark-orange:7.0:8.9,Critical:strong-red:9.0:10.0");

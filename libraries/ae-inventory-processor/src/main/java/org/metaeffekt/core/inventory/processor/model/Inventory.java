@@ -1648,27 +1648,6 @@ public class Inventory implements Serializable {
         return new ArrayList<>(vulnerabilityMetaData.keySet());
     }
 
-    @Deprecated // is still used be the german translation; preserve until translation is completely revised
-    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
-    }
-
-    @Deprecated // is still used be the german translation; preserve until translation is completely revised
-    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold) {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
-    }
-
-    @Deprecated // is still used be the german translation; preserve until translation is completely revised
-    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
-        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
-    }
-
     public List<AdvisoryMetaData> getAdvisoryMetaData() {
         return advisoryMetaData;
     }

@@ -27,7 +27,7 @@ public class AdvisoryUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(AdvisoryUtils.class);
 
-    private final static Map<String, List<String>> TYPE_NORMALIZATION_MAP = new HashMap<String, List<String>>() {{
+    public final static Map<String, List<String>> TYPE_NORMALIZATION_MAP = new HashMap<String, List<String>>() {{
         put("notice", Arrays.asList(
                 "notice", "info", "Description", "tag",
                 "avis", "ioc", "cti", "information" // CERT-FR

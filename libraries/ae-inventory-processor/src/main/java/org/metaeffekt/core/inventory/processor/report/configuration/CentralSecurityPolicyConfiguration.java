@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessConfiguration;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessMisconfiguration;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
@@ -49,10 +50,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private String cvssSeverityRanges = CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString();
     private CvssSeverityRanges cachedCvssSeverityRanges;
 
-    private String baseCvssSelector = CVSS_SELECTOR_BASE.toJson().toString();
-    private String effectiveCvssSelector = CVSS_SELECTOR_EFFECTIVE.toJson().toString();
-    private CvssSelector cachedBaseCvssSelector;
-    private CvssSelector cachedEffectiveCvssSelector;
+    private String initialCvssSelector = CVSS_SELECTOR_INITIAL.toJson().toString();
+    private String contextCvssSelector = CVSS_SELECTOR_CONTEXT.toJson().toString();
+    private CvssSelector cachedInitialCvssSelector;
+    private CvssSelector cachedContextCvssSelector;
 
     private List<CvssScoreVersionSelectionPolicy> cvssVersionSelectionPolicy = new ArrayList<>(Collections.singletonList(CvssScoreVersionSelectionPolicy.LATEST));
 
@@ -85,44 +86,44 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this.cachedCvssSeverityRanges;
     }
 
-    public CentralSecurityPolicyConfiguration setBaseCvssSelector(JSONObject baseCvssSelector) {
-        this.baseCvssSelector = baseCvssSelector.toString();
-        this.cachedBaseCvssSelector = CvssSelector.fromJson(baseCvssSelector);
+    public CentralSecurityPolicyConfiguration setInitialCvssSelector(JSONObject initialCvssSelector) {
+        this.initialCvssSelector = initialCvssSelector.toString();
+        this.cachedInitialCvssSelector = CvssSelector.fromJson(initialCvssSelector);
         return this;
     }
 
     public CentralSecurityPolicyConfiguration setBaseCvssSelector(CvssSelector baseCvssSelector) {
-        this.baseCvssSelector = baseCvssSelector.toJson().toString();
-        this.cachedBaseCvssSelector = baseCvssSelector;
+        this.initialCvssSelector = baseCvssSelector.toJson().toString();
+        this.cachedInitialCvssSelector = baseCvssSelector;
         return this;
     }
 
-    public CvssSelector getBaseCvssSelector() {
-        if (this.cachedBaseCvssSelector == null) {
-            this.baseCvssSelector = this.baseCvssSelector == null ? CVSS_SELECTOR_BASE.toJson().toString() : this.baseCvssSelector;
-            this.cachedBaseCvssSelector = CvssSelector.fromJson(this.baseCvssSelector);
+    public CvssSelector getInitialCvssSelector() {
+        if (this.cachedInitialCvssSelector == null) {
+            this.initialCvssSelector = this.initialCvssSelector == null ? CVSS_SELECTOR_INITIAL.toJson().toString() : this.initialCvssSelector;
+            this.cachedInitialCvssSelector = CvssSelector.fromJson(this.initialCvssSelector);
         }
-        return this.cachedBaseCvssSelector;
+        return this.cachedInitialCvssSelector;
     }
 
-    public CentralSecurityPolicyConfiguration setEffectiveCvssSelector(JSONObject effectiveCvssSelector) {
-        this.effectiveCvssSelector = effectiveCvssSelector.toString();
-        this.cachedEffectiveCvssSelector = CvssSelector.fromJson(this.effectiveCvssSelector);
+    public CentralSecurityPolicyConfiguration setContextCvssSelector(JSONObject contextCvssSelector) {
+        this.contextCvssSelector = contextCvssSelector.toString();
+        this.cachedContextCvssSelector = CvssSelector.fromJson(this.contextCvssSelector);
         return this;
     }
 
     public CentralSecurityPolicyConfiguration setEffectiveCvssSelector(CvssSelector effectiveCvssSelector) {
-        this.effectiveCvssSelector = effectiveCvssSelector.toJson().toString();
-        this.cachedEffectiveCvssSelector = effectiveCvssSelector;
+        this.contextCvssSelector = effectiveCvssSelector.toJson().toString();
+        this.cachedContextCvssSelector = effectiveCvssSelector;
         return this;
     }
 
-    public CvssSelector getEffectiveCvssSelector() {
-        if (this.cachedEffectiveCvssSelector == null) {
-            this.effectiveCvssSelector = this.effectiveCvssSelector == null ? CVSS_SELECTOR_EFFECTIVE.toJson().toString() : this.effectiveCvssSelector;
-            this.cachedEffectiveCvssSelector = CvssSelector.fromJson(this.effectiveCvssSelector);
+    public CvssSelector getContextCvssSelector() {
+        if (this.cachedContextCvssSelector == null) {
+            this.contextCvssSelector = this.contextCvssSelector == null ? CVSS_SELECTOR_CONTEXT.toJson().toString() : this.contextCvssSelector;
+            this.cachedContextCvssSelector = CvssSelector.fromJson(this.contextCvssSelector);
         }
-        return this.cachedEffectiveCvssSelector;
+        return this.cachedContextCvssSelector;
     }
 
     public void setCvssVersionSelectionPolicy(List<CvssScoreVersionSelectionPolicy> cvssVersionSelectionPolicy) {
@@ -149,7 +150,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public boolean isVulnerabilityInsignificant(AeaaVulnerability vulnerability) {
         if (insignificantThreshold == -1.0) return true;
-        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
+        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial();
         final double score = vector == null ? 0.0 : vector.getOverallScore();
         return score <= insignificantThreshold;
     }
@@ -160,7 +161,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public boolean isVulnerabilityAboveIncludeScoreThreshold(AeaaVulnerability vulnerability) {
         if (includeScoreThreshold == -1.0 || includeScoreThreshold == Double.MIN_VALUE) return true;
-        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedEffectiveIfAvailableOtherwiseBase();
+        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial();
         final double score = vector == null ? 0.0 : vector.getOverallScore();
         return score >= includeScoreThreshold;
     }
@@ -252,8 +253,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         final LinkedHashMap<String, Object> configuration = new LinkedHashMap<>();
 
         configuration.put("cvssSeverityRanges", cvssSeverityRanges);
-        configuration.put("baseCvssSelector", baseCvssSelector);
-        configuration.put("effectiveCvssSelector", effectiveCvssSelector);
+        configuration.put("initialCvssSelector", initialCvssSelector);
+        configuration.put("contextCvssSelector", contextCvssSelector);
         configuration.put("insignificantThreshold", insignificantThreshold);
         configuration.put("includeScoreThreshold", includeScoreThreshold);
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
@@ -267,8 +268,12 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Override
     public void setProperties(LinkedHashMap<String, Object> properties) {
         super.loadStringProperty(properties, "cvssSeverityRanges", this::setCvssSeverityRanges);
-        super.loadProperty(properties, "baseCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector)));
-        super.loadProperty(properties, "effectiveCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector)));
+
+        super.loadProperty(properties, "baseCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector))); // deprecated
+        super.loadProperty(properties, "initialCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector)));
+        super.loadProperty(properties, "effectiveCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector))); // deprecated
+        super.loadProperty(properties, "contextCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector)));
+
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
@@ -291,28 +296,57 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     @Override
     protected void collectMisconfigurations(List<ProcessMisconfiguration> misconfigurations) {
-        if (cvssSeverityRanges == null) {
+        if (this.cvssSeverityRanges == null) {
             misconfigurations.add(new ProcessMisconfiguration("cvssSeverityRanges", "CVSS severity ranges must not be null"));
         }
-        if (baseCvssSelector == null) {
-            misconfigurations.add(new ProcessMisconfiguration("baseCvssSelector", "Base CVSS selector must not be null"));
+        if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
+            misconfigurations.add(new ProcessMisconfiguration("cvssVersionSelectionPolicy", "CVSS version selection policy must not be null or empty"));
         }
-        if (effectiveCvssSelector == null) {
-            misconfigurations.add(new ProcessMisconfiguration("effectiveCvssSelector", "Effective CVSS selector must not be null"));
+
+        if (this.initialCvssSelector == null) {
+            misconfigurations.add(new ProcessMisconfiguration("initialCvssSelector", "Initial CVSS selector must not be null"));
         }
+        try {
+            this.getInitialCvssSelector();
+        } catch (IllegalArgumentException e) {
+            misconfigurations.add(new ProcessMisconfiguration("initialCvssSelector", "Invalid initial selector syntax: " + initialCvssSelector));
+        }
+        if (contextCvssSelector == null) {
+            misconfigurations.add(new ProcessMisconfiguration("contextCvssSelector", "Context CVSS selector must not be null"));
+        }
+        try {
+            this.getContextCvssSelector();
+        } catch (IllegalArgumentException e) {
+            misconfigurations.add(new ProcessMisconfiguration("contextCvssSelector", "Invalid context selector syntax: " + contextCvssSelector));
+        }
+
         if ((insignificantThreshold < 0.0 && insignificantThreshold != -1) || insignificantThreshold > 10.0) {
             misconfigurations.add(new ProcessMisconfiguration("insignificantThreshold", "Insignificant threshold must be between 0.0 and 10.0 or be -1.0"));
         }
         if ((includeScoreThreshold < 0.0 && includeScoreThreshold != -1) || includeScoreThreshold > 10.0) {
             misconfigurations.add(new ProcessMisconfiguration("includeScoreThreshold", "Include score threshold must be between 0.0 and 10.0 or be -1.0"));
         }
+
         try {
             this.getVulnerabilityStatusDisplayMapper();
         } catch (IllegalArgumentException e) {
             misconfigurations.add(new ProcessMisconfiguration("vulnerabilityStatusDisplayMapper", "Unknown status mapper: " + vulnerabilityStatusDisplayMapper));
         }
-        if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
-            misconfigurations.add(new ProcessMisconfiguration("cvssVersionSelectionPolicy", "CVSS version selection policy must not be null or empty"));
+
+        for (String provider : includeVulnerabilitiesWithAdvisoryProviders) {
+            if (provider == null) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null"));
+            } else if ( !"all".equalsIgnoreCase(provider) && AeaaContentIdentifiers.fromContentIdentifierName(provider) == AeaaContentIdentifiers.UNKNOWN) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + Arrays.toString(AeaaContentIdentifiers.values())));
+            }
+        }
+
+        for (String advisoryType : includeAdvisoryTypes) {
+            if (advisoryType == null) {
+                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryTypes", "Advisory type must not be null"));
+            } else if ( !"all".equalsIgnoreCase(advisoryType) && AdvisoryUtils.TYPE_NORMALIZATION_MAP.get(advisoryType) == null) {
+                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryTypes", "Unknown advisory type: " + advisoryType + ", must be one of " + AdvisoryUtils.TYPE_NORMALIZATION_MAP.keySet()));
+            }
         }
     }
 
@@ -350,7 +384,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return configuration;
     }
 
-    public final static CvssSelector CVSS_SELECTOR_BASE = new CvssSelector(Collections.singletonList(
+    public final static CvssSelector CVSS_SELECTOR_INITIAL = new CvssSelector(Collections.singletonList(
             new CvssRule(CvssSelector.MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
@@ -373,7 +407,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             )
     ));
 
-    public final static CvssSelector CVSS_SELECTOR_EFFECTIVE = new CvssSelector(Arrays.asList(
+    public final static CvssSelector CVSS_SELECTOR_CONTEXT = new CvssSelector(Arrays.asList(
             new CvssRule(CvssSelector.MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
@@ -418,12 +452,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         private final Function<String, String> mapper;
         private final List<String> statusNames;
         private final List<String> assessedStatusNames;
+        private final String jsMappingFunction;
 
-        public VulnerabilityStatusMapper(String name, List<String> statusNames, List<String> assessedStatusNames, Function<String, String> mapper) {
+        public VulnerabilityStatusMapper(String name, List<String> statusNames, List<String> assessedStatusNames, Function<String, String> mapper, String jsMappingFunction) {
             this.name = name;
             this.mapper = mapper;
             this.statusNames = statusNames;
             this.assessedStatusNames = assessedStatusNames;
+            this.jsMappingFunction = jsMappingFunction;
         }
 
         public String getName() {
@@ -442,15 +478,19 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             return assessedStatusNames;
         }
 
+        public String getJsMappingFunction(String name) {
+            return "function " + name + "(status) { " + jsMappingFunction + " }";
+        }
+
         public VulnerabilityStatusMapper withName(String name) {
-            return new VulnerabilityStatusMapper(name, statusNames, assessedStatusNames, mapper);
+            return new VulnerabilityStatusMapper(name, statusNames, assessedStatusNames, mapper, jsMappingFunction);
         }
     }
 
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = new VulnerabilityStatusMapper(
             "unmodified",
-            Arrays.asList("applicable", "in review", "not applicable", "insignificant", "void"),
-            Arrays.asList("applicable", "not applicable", "void"),
+            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, VulnerabilityMetaData.STATUS_VALUE_VOID),
+            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_VOID),
             name -> {
                 if (StringUtils.isEmpty(name)) {
                     return VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW;
@@ -466,8 +506,16 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 }
 
                 return name;
-            }
-    );
+            },
+            "if (status === null || status === '') { " +
+                    "return '" + VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW + "'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_APPLICABLE + "') { " +
+                    "return '" + VulnerabilityMetaData.STATUS_VALUE_APPLICABLE + "'; " +
+                    "} else if (status === 'potential vulnerability') { " +
+                    "return '" + VulnerabilityMetaData.STATUS_VALUE_APPLICABLE + "'; " +
+                    "} else { " +
+                    "return status; " +
+                    "}");
 
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT = VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.withName("default");
 
@@ -495,13 +543,55 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     default:
                         return name;
                 }
-            }
-    );
+            },
+            "if (status === null || status === '') { " +
+                    "return 'potentially affected'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_APPLICABLE + "') { " +
+                    "return 'affected'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE + "') { " +
+                    "return 'not affected'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_VOID + "') { " +
+                    "return 'not affected'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT + "') { " +
+                    "return 'potentially affected'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW + "') { " +
+                    "return 'potentially affected'; " +
+                    "} else { " +
+                    "return status; " +
+                    "}");
+
+    public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_REVIEW_STATE = new VulnerabilityStatusMapper(
+            "review state",
+            Arrays.asList("reviewed", VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, VulnerabilityMetaData.STATUS_VALUE_VOID),
+            Arrays.asList("reviewed", VulnerabilityMetaData.STATUS_VALUE_VOID),
+            name -> {
+                final String baseMappedName = VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.getMapper().apply(name);
+
+                switch (baseMappedName) {
+                    case VulnerabilityMetaData.STATUS_VALUE_APPLICABLE:
+                    case VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE:
+                        return "reviewed";
+                    default:
+                        return baseMappedName;
+                }
+            },
+            VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.getJsMappingFunction("internalUnmodifiedMapper") +
+                    "status = internalUnmodifiedMapper(status);" +
+                    "if (status === null || status === '') { " +
+                    "return '" + VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW + "'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_APPLICABLE + "') { " +
+                    "return 'reviewed'; " +
+                    "} else if (status === '" + VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE + "') { " +
+                    "return 'reviewed'; " +
+                    "} else { " +
+                    "return status; " +
+                    "}");
 
     private final static List<VulnerabilityStatusMapper> REGISTERED_VULNERABILITY_STATUS_DISPLAY_MAPPERS = Arrays.asList(
             VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED,
             VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT,
-            VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED
+            VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED,
+            VULNERABILITY_STATUS_DISPLAY_MAPPER_REVIEW_STATE
     );
 
     public static VulnerabilityStatusMapper getStatusMapperByName(String name) {

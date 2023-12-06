@@ -436,6 +436,15 @@ public class CvssSource {
 
         for (String header : headers) {
             if (!header.startsWith("CVSS")) continue;
+
+            if (header.equalsIgnoreCase("CVSS Initial Overall")
+                    || header.equalsIgnoreCase("CVSS Context Overall")
+                    || header.equalsIgnoreCase("CVSS Initial Base")
+                    || header.equalsIgnoreCase("CVSS Initial Exploitability")
+                    || header.equalsIgnoreCase("CVSS Initial Impact")) {
+                continue;
+            }
+
             try {
                 result.put(header, fromColumnHeaderString(header));
             } catch (Exception ignored) {
@@ -450,6 +459,15 @@ public class CvssSource {
 
         for (String header : headers) {
             if (!header.startsWith("CVSS")) continue;
+
+            if (header.equalsIgnoreCase("CVSS Initial Overall")
+                    || header.equalsIgnoreCase("CVSS Context Overall")
+                    || header.equalsIgnoreCase("CVSS Initial Base")
+                    || header.equalsIgnoreCase("CVSS Initial Exploitability")
+                    || header.equalsIgnoreCase("CVSS Initial Impact")) {
+                continue;
+            }
+
             result.put(header, fromColumnHeaderString(header));
         }
 

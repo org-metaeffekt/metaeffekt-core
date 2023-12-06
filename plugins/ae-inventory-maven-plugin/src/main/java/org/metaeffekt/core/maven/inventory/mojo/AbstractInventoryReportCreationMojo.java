@@ -333,11 +333,18 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         // vulnerability settings
         if (securityPolicyFile != null) {
             try {
+                getLog().info("Reading security policy from securityPolicyFile: file://" + securityPolicyFile.getAbsolutePath());
                 securityPolicy = CentralSecurityPolicyConfiguration.fromFile(securityPolicyFile);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to read securityPolicyFile: " + e.getMessage(), e);
             }
         }
+
+        getLog().info("");
+        getLog().info("-------------------< Security Policy Configuration >--------------------");
+        this.securityPolicy.logConfiguration();
+        getLog().info("");
+
         report.setSecurityPolicy(securityPolicy);
         report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         report.addGenerateOverviewTablesForAdvisories(generateOverviewTablesForAdvisories);

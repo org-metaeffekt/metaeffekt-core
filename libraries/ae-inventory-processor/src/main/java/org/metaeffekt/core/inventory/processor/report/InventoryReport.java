@@ -242,6 +242,7 @@ public class InventoryReport {
     }
 
     protected Inventory readGlobalInventory() throws IOException {
+        LOG.info("Reading global inventory for inventory report from {}", referenceInventoryDir);
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
 
