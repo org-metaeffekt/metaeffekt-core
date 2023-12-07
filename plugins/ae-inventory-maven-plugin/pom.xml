@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.97.0</version>
         <relativePath>../</relativePath>
     </parent>
 
@@ -64,7 +64,6 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version>
         </dependency>
 
         <!-- Due to the runtime dependency from POI to log4j-api the scope is managed to runtime -->
