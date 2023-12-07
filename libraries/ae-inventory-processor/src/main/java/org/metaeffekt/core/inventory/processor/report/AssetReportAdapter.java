@@ -48,12 +48,14 @@ public class AssetReportAdapter {
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
             Pair.of("Repository", "Repository"),
-            Pair.of("Tag", "Version"),
+            Pair.of("Tag", "Tag"),
             Pair.of("Size", "Size"),
             Pair.of("Operating System", "Os"),
             Pair.of("Architecture", "Architecture"),
             Pair.of("Created", "Created"),
-            Pair.of("Image Id / Hash", "Image Id"),
+            Pair.of("Image Id", "Image Id"),
+            Pair.of("Image Digest", "Digest"),
+            Pair.of("Supplier", "Supplier"),
     };
 
     Pair<String, String>[] applianceKeyList = new Pair[] {

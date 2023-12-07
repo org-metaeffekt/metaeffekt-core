@@ -1,4 +1,5 @@
 #macro (insertLicenseAssetTopic $license)
+    #set($isExpression=$license.contains(" + "))
     #set($folder=$inventory.getLicenseFolder($license))
     #set($assetLicenseDataList=$assetData.evaluateAssets($license))
     #if(!$assetLicenseDataList.isEmpty())
@@ -7,7 +8,7 @@
         <body>
             <p>
                 Nachfolgende Tabelle listet den Softwarebestand im Bezug zu $report.xmlEscapeString($license).
-                #if($folder)
+                #if($folder && !$isExpression)
                     Hinweise oder Inhalte der Lizenz k&#246;nnen in
                     <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$report.xmlEscapeString($license)
                         [external]</xref> nachgeschlagen werden.
