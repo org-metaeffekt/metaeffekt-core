@@ -52,7 +52,9 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
                 AdvisoryMetaData.Attribute.KEYWORDS.getKey(),
                 AdvisoryMetaData.Attribute.REFERENCED_IDS.getKey(),
                 AdvisoryMetaData.Attribute.CREATE_DATE.getKey(),
+                AdvisoryMetaData.Attribute.CREATE_DATE_FORMATTED.getKey(),
                 AdvisoryMetaData.Attribute.UPDATE_DATE.getKey(),
+                AdvisoryMetaData.Attribute.UPDATE_DATE_FORMATTED.getKey(),
                 AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey(),
                 AdvisoryMetaData.Attribute.DATA_SOURCE.getKey(),
                 AdvisoryMetaData.Attribute.CVSS_VECTORS.getKey()
@@ -499,9 +501,11 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
 
         if (createDate != null) {
             amd.set(AdvisoryMetaData.Attribute.CREATE_DATE, Long.toString(this.createDate.getTime()));
+            amd.set(AdvisoryMetaData.Attribute.CREATE_DATE_FORMATTED, AeaaTimeUtils.formatNormalizedDate(this.createDate));
         }
         if (updateDate != null) {
             amd.set(AdvisoryMetaData.Attribute.UPDATE_DATE, Long.toString(this.updateDate.getTime()));
+            amd.set(AdvisoryMetaData.Attribute.UPDATE_DATE_FORMATTED, AeaaTimeUtils.formatNormalizedDate(this.updateDate));
         }
 
         if (!this.cvssVectors.isEmpty()) {

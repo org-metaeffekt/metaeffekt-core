@@ -64,7 +64,9 @@ public class AdvisoryMetaData extends AbstractModelBase {
         CVSS_VECTORS("CVSS Vectors"),
 
         CREATE_DATE("Create Date"),
+        CREATE_DATE_FORMATTED("Formatted Create Date"),
         UPDATE_DATE("Update Date"),
+        UPDATE_DATE_FORMATTED("Formatted Update Date"),
         REVIEW_STATUS("Review Status");
 
         private String key;
