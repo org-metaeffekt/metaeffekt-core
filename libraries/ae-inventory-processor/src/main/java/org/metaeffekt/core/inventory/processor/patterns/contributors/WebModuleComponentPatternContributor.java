@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.metaeffekt.core.inventory.processor.adapter.LicenseSummaryAdapter;
+import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -48,7 +50,9 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         final File parentDir = anchorParentDir.getParentFile();
         final File contextBaseDir = anchorParentDir.getParentFile();
 
-        Artifact artifact = new Artifact();
+        final Artifact artifact = new Artifact();
+
+        Inventory inventoryFromPackageLock = null;
 
         // attempt reading web modules metadata
         try {
@@ -75,8 +79,14 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                     artifact.setId(webModule.name + "-" + webModule.version);
                 }
             }
+
+            if (webModule.packageLockJsonFile != null) {
+                inventoryFromPackageLock = new NpmPackageLockAdapter().createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath);
+            }
+
         } catch (IOException e) {
             // it was an attempts
+            LOG.warn("Unable to parse web module parts: " + e.getMessage(), e);
         }
 
         // construct component pattern
@@ -93,6 +103,11 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDir.getName() + "/**/*");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+
+        if (inventoryFromPackageLock != null) {
+            final Inventory expansionInventory = inventoryFromPackageLock;
+            componentPatternData.setExpansionInventorySupplier(() -> expansionInventory);
+        }
 
         return Collections.singletonList(componentPatternData);
     }
@@ -141,6 +156,8 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
             return true;
         }
+
+        File packageLockJsonFile;
     }
 
     public void createInventory(File scanDir) throws IOException {
@@ -234,11 +251,11 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
     protected void parseModuleDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
         switch(artifact.getId()) {
+            case "package-lock.json":
             case "composer.json":
             case "package.json":
             case ".bower.json":
             case "bower.json":
-            case "package-lock.json":
                 parseDetails(artifact, project, webModule, baseDir);
         }
     }
@@ -304,6 +321,12 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             } catch (Exception e) {
                 LOG.warn("Cannot parse web module information: [{}]", packageJsonFile);
             }
+
+            // in case of a package-lock.json file; keep the reference
+            if (packageJsonFile.getName().endsWith("package-lock.json")) {
+                webModule.packageLockJsonFile = packageJsonFile;
+            }
+
         }
     }
 

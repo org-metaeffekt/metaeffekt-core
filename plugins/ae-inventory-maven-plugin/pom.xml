@@ -64,7 +64,6 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version>
         </dependency>
 
         <!-- Due to the runtime dependency from POI to log4j-api the scope is managed to runtime -->

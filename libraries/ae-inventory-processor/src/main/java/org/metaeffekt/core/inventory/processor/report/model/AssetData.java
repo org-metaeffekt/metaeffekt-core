@@ -86,9 +86,11 @@ public class AssetData {
 
                     assetAssociatedLicenses.add(associatedLicense);
 
-                    final String openCodeStatus = licenseData.get("Open CoDE Status");
-                    if ("(approved)".equalsIgnoreCase(openCodeStatus)) {
-                        includesOpenCoDESimilarLicense = true;
+                    if (licenseData != null) {
+                        final String openCodeStatus = licenseData.get("Open CoDE Status");
+                        if ("(approved)".equalsIgnoreCase(openCodeStatus)) {
+                            includesOpenCoDESimilarLicense = true;
+                        }
                     }
 
                 }

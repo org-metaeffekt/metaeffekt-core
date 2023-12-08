@@ -17,7 +17,7 @@
         Please note, that a license / license expression may be associated with several assets.
     </p>
     #if ($assetData.isLicenseSubstructureRequired())
-        <fn callout="*" id="id-footnote">License variations of the same kind are displayed as
+        <fn id="id-footnote">License variations of the same kind are displayed as
           single license. The variations are detailed in the corresponding paragraphs.
           An approval or license status may only be applicable for individual variants.</fn>
     #end
