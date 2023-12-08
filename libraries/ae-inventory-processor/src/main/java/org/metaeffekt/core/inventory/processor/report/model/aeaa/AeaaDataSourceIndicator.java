@@ -179,25 +179,45 @@ public class AeaaDataSourceIndicator {
         public final static String TYPE = "artifact-cpe";
 
         private final String cpe;
+        private final String configuration;
 
         public ArtifactCpeReason(Artifact artifact, String cpe) {
             super(TYPE, artifact);
             this.cpe = cpe;
+            this.configuration = null;
         }
 
         protected ArtifactCpeReason(JSONObject artifactData, String cpe) {
             super(TYPE, artifactData);
             this.cpe = cpe;
+            this.configuration = null;
+        }
+
+        public ArtifactCpeReason(Artifact artifact, String cpe, String configuration) {
+            super(TYPE, artifact);
+            this.cpe = cpe;
+            this.configuration = configuration;
+        }
+
+        protected ArtifactCpeReason(JSONObject artifactData, String cpe, String configuration) {
+            super(TYPE, artifactData);
+            this.cpe = cpe;
+            this.configuration = configuration;
         }
 
         public String getCpe() {
             return cpe;
         }
 
+        public String getConfiguration() {
+            return configuration;
+        }
+
         @Override
         public JSONObject toJson() {
             return super.toJson()
-                    .put("cpe", cpe);
+                    .put("cpe", cpe)
+                    .put("configuration", configuration);
         }
     }
 
@@ -366,7 +386,8 @@ public class AeaaDataSourceIndicator {
                 case ArtifactCpeReason.TYPE:
                     return new ArtifactCpeReason(
                             json,
-                            json.optString("cpe", null)
+                            json.optString("cpe", null),
+                            json.optString("configuration", null)
                     );
                 case MsrcProductReason.TYPE:
                     return new MsrcProductReason(
