@@ -2,16 +2,15 @@ package javatests;
 
 import common.JarPreparator;
 import common.Preparator;
-import org.junit.*;
 import inventory.InventoryScanner;
+import org.junit.*;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static genericTests.CheckInvariants.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
-public class JenkinsTest {
+public class BouncyCastle {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -23,8 +22,8 @@ public class JenkinsTest {
     @BeforeClass
     public static void prepare() {
         preparator = new JarPreparator()
-                .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
-                .setName(JenkinsTest.class.getName());
+                .setSource("https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar")
+                .setName(BouncyCastle.class.getName());
     }
     
     @Before
