@@ -1,7 +1,6 @@
 package common;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
