@@ -16,7 +16,7 @@ public class JenkinsTest {
     private static Preparator preparator;
 
     @BeforeClass
-    public static void prepare() throws Exception{
+    public static void prepare() {
         preparator = new JarPreparator()
                 .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
                 .setName(JenkinsTest.class.getName());

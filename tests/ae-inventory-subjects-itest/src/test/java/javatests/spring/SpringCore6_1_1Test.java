@@ -16,7 +16,7 @@ public class SpringCore6_1_1Test {
     private static Preparator preparator;
 
     @BeforeClass
-    public static void prepare() throws Exception{
+    public static void prepare() {
         preparator = new JarPreparator()
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/6.1.1/spring-core-6.1.1.jar")
                 .setName(SpringCore6_1_1Test.class.getName());

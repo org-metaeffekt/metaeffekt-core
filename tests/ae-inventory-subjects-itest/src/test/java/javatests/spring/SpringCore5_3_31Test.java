@@ -16,7 +16,7 @@ public class SpringCore5_3_31Test {
     private static Preparator preparator;
 
     @BeforeClass
-    public static void prepare() throws Exception{
+    public static void prepare() {
         preparator = new JarPreparator()
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/5.3.31/spring-core-5.3.31.jar")
                 .setName(SpringCore5_3_31Test.class.getName());

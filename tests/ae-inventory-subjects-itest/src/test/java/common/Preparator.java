@@ -2,8 +2,6 @@ package common;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 
 public interface Preparator {
 

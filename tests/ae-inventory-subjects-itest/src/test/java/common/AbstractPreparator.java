@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URL;
-import java.sql.SQLOutput;
 
 public abstract class AbstractPreparator implements Preparator {
 

@@ -1,6 +1,5 @@
 package javatests;
 
-import common.AbstractPreparator;
 import common.JarPreparator;
 import common.Preparator;
 import org.junit.Assert;
@@ -18,7 +17,7 @@ public class FbmsWarTest {
     private static Preparator preparator;
 
     @BeforeClass
-    public static void prepare() throws Exception{
+    public static void prepare() {
         preparator = new JarPreparator()
                 .setSource("https://repo1.maven.org/maven2/org/jasig/portal/fbms/fbms-webapp/1.3.1/fbms-webapp-1.3.1.war")
                 .setName(FbmsWarTest.class.getName());

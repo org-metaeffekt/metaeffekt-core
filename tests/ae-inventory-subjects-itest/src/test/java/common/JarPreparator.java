@@ -1,13 +1,12 @@
 package common;
 
 import org.apache.commons.io.FileUtils;
-import org.metaeffekt.core.inventory.InventoryUtils;
+import org.junit.Assert;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
