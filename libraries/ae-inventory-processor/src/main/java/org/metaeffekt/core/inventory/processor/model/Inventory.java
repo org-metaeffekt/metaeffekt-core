@@ -1865,7 +1865,10 @@ public class Inventory implements Serializable {
 
         if (asTable) {
             maxValLength = models.stream()
-                    .mapToInt(m -> m.getAttributes().stream().map(m::get).mapToInt(String::length).max().orElse(0))
+                    .mapToInt(m -> m.getAttributes().stream()
+                            .map(attribute -> (String) m.get(attribute)) // removing the cast will fail the GitHub action build
+                            .mapToInt(value -> ((String) value).length())
+                            .max().orElse(0))
                     .max().orElse(0);
 
             final String separatorLineDashes = String.format("|%s|%s|", StringUtils.repeat("-", maxKeyLength + 2), StringUtils.repeat("-", maxValLength + 2));
