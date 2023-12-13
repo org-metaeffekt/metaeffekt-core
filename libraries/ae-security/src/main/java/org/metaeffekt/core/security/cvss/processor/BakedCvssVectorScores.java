@@ -219,13 +219,17 @@ public class BakedCvssVectorScores {
     }
 
     /**
-     * Maps the range (0 - max) of the score to the range of the normalized score (0 - 10).
+     * Maps the range (0 - max) of the score to the range of the normalized score (0 - 10).<br>
+     * If the score is NaN, the score is returned as is.
      *
      * @param score the score to normalize
      * @param max   the maximum value of the score
      * @return the normalized score
      */
     public double normalizeScore(double score, double max) {
+        if (Double.isNaN(score)) {
+            return score;
+        }
         if (max == 10.0) {
             return score;
         }
