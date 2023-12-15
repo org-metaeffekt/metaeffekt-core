@@ -12,14 +12,19 @@ public class CheckInvariants {
 
     }
     public static void assertNoErrors(InventoryScanner scanner) {
-        assertThat(scanner.getErrorlist()).as("Artifacts should not have errors after parsing.").isEmpty();
+        scanner.selectAllArtifacts()
+                .hasNoErrors();
     }
 
     public static void assertAtLeastOneArtifact(InventoryScanner scanner) {
-        assertThat(scanner.getArtifacts()).as("Artifactlist should not be empty").isNotEmpty();
+        scanner.selectAllArtifacts()
+                .hasSizeGreaterThan(1000);
     }
 
     public static void assertNoMissingTypes(InventoryScanner scanner) {
-        assertThat(scanner.getMissingTypelist()).as("Artifactlist should have type identified").isEmpty();
+        scanner.selectAllArtifacts()
+                .filter(artifact -> artifact.get("Type") == null)
+                .as("Artifcatlist with missing type")
+                .mustBeEmpty();
     }
 }

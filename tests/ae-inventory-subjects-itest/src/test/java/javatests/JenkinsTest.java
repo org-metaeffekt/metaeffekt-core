@@ -2,14 +2,13 @@ package javatests;
 
 import common.JarPreparator;
 import common.Preparator;
-import org.junit.*;
 import inventory.InventoryScanner;
+import org.junit.*;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static genericTests.CheckInvariants.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class JenkinsTest {
 
@@ -18,6 +17,7 @@ public class JenkinsTest {
     private static Preparator preparator;
     
     private Inventory inventory;
+
     private InventoryScanner scanner;
 
     @BeforeClass
@@ -33,13 +33,13 @@ public class JenkinsTest {
         this.scanner = new InventoryScanner(inventory);
     }
 
-
     @Ignore
     @Test
     public void clear() throws Exception{
         Assert.assertTrue(preparator.clear());
 
     }
+
     @Ignore
     @Test
     public void inventorize() throws Exception{
@@ -72,5 +72,11 @@ public class JenkinsTest {
         ;
     }
 
+    @Test public void typesMustBeSet() {
+        scanner.selectAllArtifacts()
+                .filter(artifact -> artifact.get("Type") == null)
+                .as("Artifcatlist with missing type")
+                .mustBeEmpty();
+    }
 
 }
