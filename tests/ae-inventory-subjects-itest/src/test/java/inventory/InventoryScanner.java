@@ -1,5 +1,7 @@
 package inventory;
 
+import inventory.dsl.ArtifactListSize;
+import inventory.dsl.ArtifactPredicate;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
@@ -43,5 +45,11 @@ public class InventoryScanner {
 
     public Artifacts selectAllArtifacts() {
         return new Artifacts(inventory.getArtifacts(), "All artifacts");
+    }
+
+    public ArtifactListSize select(ArtifactPredicate artifactPredicate) {
+        return selectAllArtifacts()
+                .filter(artifactPredicate.getArtifactPredicate())
+                .as(artifactPredicate.getDescription());
     }
 }

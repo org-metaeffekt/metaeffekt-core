@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static genericTests.CheckInvariants.*;
+import static inventory.dsl.ArtifactPredicate.*;
 
 public class JenkinsTest {
 
@@ -76,6 +77,20 @@ public class JenkinsTest {
         scanner.selectAllArtifacts()
                 .filter(artifact -> artifact.get("Type") == null)
                 .as("Artifcatlist with missing type")
+                .mustBeEmpty();
+    }
+
+    @Test public void typesMustBeSetPredicate() {
+        scanner.select(MissingType)
+                .mustBeEmpty();
+    }
+    @Test public void noErrorsExist() {
+        scanner.select(ErrorExist)
+                .mustBeEmpty();
+    }
+
+    @Test public void versionMissmatch(){
+        scanner.select(IdMissmatchesVersion)
                 .mustBeEmpty();
     }
 

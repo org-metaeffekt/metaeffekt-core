@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static genericTests.CheckInvariants.*;
+import static inventory.dsl.ArtifactPredicate.IdMissmatchesVersion;
 
 public class BouncyCastle {
 
@@ -53,22 +54,9 @@ public class BouncyCastle {
         assertInvariants(scanner);
     }
 
-    @Test
-    public void artifactExists() throws Exception{
-        assertAtLeastOneArtifact(scanner);
-    }
-
-    @Test
-    public void noErrors() throws Exception {
-        assertNoErrors(scanner);
-    }
-
-    @Test
-    public void checkBasics() throws Exception {
-        scanner.selectAllArtifacts()
-                .hasSizeGreaterThan(1)
-                .hasNoErrors()
-        ;
+    @Test public void versionMissmatch(){
+        scanner.select(IdMissmatchesVersion)
+                .mustBeEmpty();
     }
 
 
