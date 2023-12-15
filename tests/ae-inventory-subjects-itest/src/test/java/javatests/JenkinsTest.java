@@ -67,7 +67,7 @@ public class JenkinsTest {
     @Test
     public void checkBasics() throws Exception {
         scanner.selectAllArtifacts()
-                .hasSizeGreaterThan(1)
+                .hasSizeGreaterThan(30)
                 .hasNoErrors()
         ;
     }
