@@ -36,6 +36,10 @@ public class PrepareScanDirectoryCommand {
      * @param excludes The includes lists ant-style patterns for copying form sourceDir.
      */
     public void prepareScanDirectory(File sourceDir, File scanDir, String[] includes, String[] excludes) {
+        if (scanDir.equals(sourceDir)) {
+            return;
+        }
+
         final Project project = new Project();
 
         // delete scan directory (content is progressively unpacked)

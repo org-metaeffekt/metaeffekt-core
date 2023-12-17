@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ISSUE;
 
@@ -139,6 +140,26 @@ public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
                 assetMetaData.set("Author", String.valueOf(element.getAuthor()));
                 assetMetaData.set("Architecture", String.valueOf(element.getArchitecture()));
                 assetMetaData.set("Os", String.valueOf(element.getOs()));
+                assetMetaData.set("Primary", ASSET_MARKER);
+                assetMetaData.set("Qualifier", qualifier);
+
+                final List<String> repoDigests = element.getRepoDigests();
+                if (repoDigests != null) {
+                    for (String repoDigest : repoDigests) {
+                        int atIndex = repoDigest.lastIndexOf("@");
+                        if (atIndex > 0) {
+                            final String repo = repoDigest.substring(0, atIndex);
+                            assetMetaData.set("Repository", repo);
+                            final String digest = repoDigest.substring(atIndex + 1);
+                            assetMetaData.set("Digest", digest);
+
+                            // FIXME: currently we pick the first non-localhost
+                            if (!repo.contains("localhost")) {
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         } catch (Exception e) {
             LOG.error("Cannot parse container inspection file {} for {}:{}.", containerInspectionFile, repo, tag, e);
