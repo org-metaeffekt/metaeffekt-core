@@ -1,7 +1,6 @@
 package javatests;
 
 import common.JarPreparator;
-import common.Preparator;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -9,12 +8,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FbmsWarTest {
+public class FbmsWarTest extends TestBasicInvariants {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
-
-    private static Preparator preparator;
 
     @BeforeClass
     public static void prepare() {

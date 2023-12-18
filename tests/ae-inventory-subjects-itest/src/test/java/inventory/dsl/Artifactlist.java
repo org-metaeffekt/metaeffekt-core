@@ -1,6 +1,7 @@
 package inventory.dsl;
 
 import inventory.Artifacts;
+import inventory.dsl.predicates.NamedArtifactPredicate;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.List;
@@ -20,6 +21,16 @@ public interface Artifactlist {
                         filter(predicate).
                         collect(Collectors.toList()),
                 getDescription())
+                ;
+    }
+
+    default Artifacts filter(NamedArtifactPredicate namedPredicate){
+        return new Artifacts(
+                getArtifactlist().
+                        stream().
+                        filter(namedPredicate.getArtifactPredicate()).
+                        collect(Collectors.toList()),
+                namedPredicate.getDescription())
                 ;
     }
 

@@ -1,4 +1,4 @@
-package inventory.dsl;
+package inventory.dsl.predicates;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
@@ -9,4 +9,5 @@ public interface NamedArtifactPredicate {
     Predicate<Artifact> getArtifactPredicate();
 
     String getDescription();
+
 }

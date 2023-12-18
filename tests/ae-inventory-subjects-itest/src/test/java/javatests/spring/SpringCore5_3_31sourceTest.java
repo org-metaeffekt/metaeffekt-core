@@ -1,7 +1,7 @@
 package javatests.spring;
 
 import common.JarPreparator;
-import common.Preparator;
+import javatests.TestBasicInvariants;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -9,11 +9,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SpringCore5_3_31sourceTest {
+public class SpringCore5_3_31sourceTest extends TestBasicInvariants {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
-    private static Preparator preparator;
 
     @BeforeClass
     public static void prepare(){
@@ -21,7 +19,6 @@ public class SpringCore5_3_31sourceTest {
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/5.3.31/spring-core-5.3.31-sources.jar")
                 .setName(SpringCore5_3_31sourceTest.class.getName());
     }
-
 
     @Ignore
     @Test

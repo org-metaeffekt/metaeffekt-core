@@ -1,6 +1,6 @@
 package inventory;
 
-import inventory.dsl.ArtifactErrors;
+import inventory.dsl.ArtifactListLogger;
 import inventory.dsl.ArtifactListSize;
 import inventory.dsl.Artifactlist;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -9,8 +9,8 @@ import java.util.List;
 
 public class Artifacts implements
         Artifactlist,
-        ArtifactErrors,
-        ArtifactListSize
+        ArtifactListSize,
+        ArtifactListLogger
 {
 
     private final List<Artifact> artifactlist;
