@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -259,7 +260,8 @@ public class RepositoryReportTest {
         report.getSecurityPolicy()
                 .setInsignificantThreshold(0.6f)
                 .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
-                .setIncludeAdvisoryTypes(Collections.singletonList("all"));
+                .setIncludeAdvisoryTypes(Arrays.asList("alert", "news", "notice"))
+                .setIncludeVulnerabilitiesWithAdvisoryProviders("CERT-FR");
 
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
