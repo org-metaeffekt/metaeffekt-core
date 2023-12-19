@@ -1174,6 +1174,39 @@ public class InventoryReport {
         return s;
     }
 
+    /**
+     * Escapes a string to be used as a valid and safe HTML (id) attribute.<br>
+     * It will replace all characters that are not alphanumeric, underscore or dash with an underscore.<br>
+     * If the string is blank, a default ID will be generated from a UUID.<br>
+     * If the string starts with a digit, an underscore will be prepended.
+     * <p>
+     * Example usage and expected outputs:
+     * <pre>
+     * xmlEscapeStringAttribute(" ")          = starts with "defaultId"
+     * xmlEscapeStringAttribute(null)         = starts with "defaultId"
+     * xmlEscapeStringAttribute("normalId")   = "normalId"
+     * xmlEscapeStringAttribute("invalid!Id") = "invalid_Id"
+     * xmlEscapeStringAttribute("invalid Id") = "invalid_Id"
+     * xmlEscapeStringAttribute("1invalidId") = "_1invalidId"
+     * xmlEscapeStringAttribute("invalidChars!@#$%^&amp;*()\"'") = "invalidChars____________"
+     * </pre>
+     *
+     * @param input the string to be escaped
+     * @return a safe HTML attribute value
+     */
+    public static String xmlEscapeStringAttribute(String input) {
+        if (StringUtils.isBlank(input)) {
+            return "defaultId" + UUID.randomUUID();
+        }
+
+        final String safeId = input.replaceAll("[^A-Za-z0-9\\-_]", "_");
+
+        if (!safeId.isEmpty() && Character.isDigit(safeId.charAt(0))) {
+            return "_" + safeId;
+        } else {
+            return safeId;
+        }
+    }
 
     public String xmlEscapeLicense(String license) {
         return xmlEscapeName(license, false);

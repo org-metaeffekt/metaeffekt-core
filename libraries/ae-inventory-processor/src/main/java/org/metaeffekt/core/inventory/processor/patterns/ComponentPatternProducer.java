@@ -40,7 +40,7 @@ public class ComponentPatternProducer {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
-    public static final String[] FILE_SUFFIX_LIST = new String[] {
+    public static final String[] FILE_SUFFIX_LIST = new String[]{
 
             // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into
             // context.
@@ -197,7 +197,7 @@ public class ComponentPatternProducer {
     }
 
     public void matchAndApplyComponentPatterns(final Inventory componentPatternSourceInventory,
-                           FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
+                                               FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
 
         final List<MatchResult> matchedComponentPatterns = matchComponentPatterns(
                 fileSystemScanContext.getInventory(), componentPatternSourceInventory, fileSystemScanContext, applyDeferred);
@@ -251,7 +251,7 @@ public class ComponentPatternProducer {
     }
 
     private void markFilesCoveredByComponentPatterns(List<MatchResult> matchedComponentDataOnAnchor,
-                     List<MatchResult> matchResultsWithoutFileMatches, FileSystemScanContext fileSystemScanContext) {
+                                                     List<MatchResult> matchResultsWithoutFileMatches, FileSystemScanContext fileSystemScanContext) {
 
         // remove the matched files covered by the matched component patterns
         for (MatchResult matchResult : matchedComponentDataOnAnchor) {
@@ -286,9 +286,9 @@ public class ComponentPatternProducer {
 
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
-                                cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
-                                cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
-                                relativePathFromBaseDir);
+                                    cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
+                                    cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
+                                    relativePathFromBaseDir);
                         }
 
                         // continue adding
@@ -319,9 +319,9 @@ public class ComponentPatternProducer {
 
                                 if (LOG.isDebugEnabled()) {
                                     LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
-                                        cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
-                                        cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
-                                        relativePathFromBaseDir);
+                                            cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
+                                            cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
+                                            relativePathFromBaseDir);
                                 }
 
                                 matched = true;
@@ -368,8 +368,8 @@ public class ComponentPatternProducer {
      * Splits the comma-separated patterns into individual patterns and sorts the patterns into relative and absolute
      * pattern. The {@link NormalizedPatternSet} uses LinkedHashSets to unify the patterns, while preserving the order.
      *
-     * @param commaSeparatedPatterns
-     * @return
+     * @param commaSeparatedPatterns The comma-separated patterns to normalize.
+     * @return The normalized pattern set according to the rules above.
      */
     public static NormalizedPatternSet normalizePattern(String commaSeparatedPatterns) {
         final NormalizedPatternSet normalizedPatternSet = new NormalizedPatternSet();
@@ -393,13 +393,14 @@ public class ComponentPatternProducer {
     /**
      * Matches the component patterns. The inventory remains unmodified.
      *
-     * @param inputInventory The inventory carrying the current scan result that is examined for component patterns.
+     * @param inputInventory                  The inventory carrying the current scan result that is examined for component patterns.
      * @param componentPatternSourceInventory The inventory to take component patterns from.
-     *
+     * @param fileSystemScanContext           The file system scan context to use.
+     * @param applyDeferred                   Whether to apply deferred component patterns.
      * @return List of matched / potential component patterns.
      */
     public List<MatchResult> matchComponentPatterns(final Inventory inputInventory, final Inventory componentPatternSourceInventory,
-                                        FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
+                                                    FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
 
         // match component patterns using version anchor; results in matchedComponentPatterns
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
@@ -487,7 +488,7 @@ public class ComponentPatternProducer {
                             final File file = new File(normalizedPath);
                             final String assetIdChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
                             matchedComponentPatterns.add(new MatchResult(copyCpd, file,
-                                computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), assetIdChain));
+                                    computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), assetIdChain));
                         }
                     }
                 }

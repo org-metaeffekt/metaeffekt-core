@@ -62,6 +62,7 @@ public abstract class AbstractInventoryWriter {
      * @param orderedColumnHeaders the list of column headers
      * @param models               the models
      * @param maxCellLength        the maximum cell length
+     * @param <T>                  the model type
      * @return the map of column headers and how many columns they span
      */
     protected <T extends AbstractModelBase> LinkedHashMap<String, Integer> splitIntoMultipleColumns(Collection<String> orderedColumnHeaders, Collection<T> models, int maxCellLength) {
