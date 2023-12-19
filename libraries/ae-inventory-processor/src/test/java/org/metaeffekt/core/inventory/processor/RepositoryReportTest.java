@@ -19,7 +19,10 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.LicenseData;
+import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
@@ -33,8 +36,6 @@ import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Arrays;
 import java.util.List;
 
@@ -222,7 +223,7 @@ public class RepositoryReportTest {
 
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
-        report.addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers.ALL);
+        report.addGenerateOverviewTablesForAdvisories("ALL");
         report.getSecurityPolicy()
                 // .setIncludeVulnerabilitiesWithAdvisoryProviders(Collections.singletonList("GHSA"))
                 .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
@@ -261,7 +262,8 @@ public class RepositoryReportTest {
                 .setInsignificantThreshold(0.6f)
                 .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
                 .setIncludeAdvisoryTypes(Arrays.asList("alert", "news", "notice"))
-                .setIncludeVulnerabilitiesWithAdvisoryProviders("CERT-FR");
+                .setIncludeAdvisoryProviders(Arrays.asList("CERT_FR", "CERT-SEI", "MSRC", "GHSA"))
+                .setIncludeVulnerabilitiesWithAdvisoryProviders(Arrays.asList("all"));
 
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);

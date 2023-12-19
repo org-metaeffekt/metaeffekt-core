@@ -1265,12 +1265,27 @@ public class InventoryReport {
             LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", providers, Arrays.toString(AeaaContentIdentifiers.values()));
         }
 
-        if (providers.contains(AeaaContentIdentifiers.ALL)) {
-            this.generateOverviewTablesForAdvisories.clear();
-            this.generateOverviewTablesForAdvisories.addAll(Arrays.stream(AeaaContentIdentifiers.values()).filter(AeaaContentIdentifiers::isAdvisoryProvider).collect(Collectors.toList()));
-        } else {
-            this.generateOverviewTablesForAdvisories.addAll(providers);
+        providers.stream()
+                .filter(AeaaContentIdentifiers::isAdvisoryProvider)
+                .forEach(this.generateOverviewTablesForAdvisories::add);
+    }
+
+    public void addGenerateOverviewTablesForAdvisories(String... providers) {
+        if (providers == null || providers.length == 0) {
+            return;
         }
+        this.addGenerateOverviewTablesForAdvisories(Arrays.stream(providers)
+                .map(AeaaContentIdentifiers::fromName)
+                .collect(Collectors.toList()));
+    }
+
+    public void addGenerateOverviewTablesForAdvisoriesByString(Collection<String> providers) {
+        if (providers == null || providers.isEmpty()) {
+            return;
+        }
+        this.addGenerateOverviewTablesForAdvisories(providers.stream()
+                .map(AeaaContentIdentifiers::fromName)
+                .collect(Collectors.toList()));
     }
 
     public void setTargetReportDir(File reportTarget) {

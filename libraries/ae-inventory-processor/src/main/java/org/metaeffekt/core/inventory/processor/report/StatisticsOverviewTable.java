@@ -92,7 +92,7 @@ public class StatisticsOverviewTable {
     }
 
     public static StatisticsOverviewTable buildTableStrFilterAdvisor(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, String filterAdvisory, boolean useEffectiveSeverityScores) {
-        final AeaaContentIdentifiers filterCertAsAeaaContentIdentifiers = StringUtils.isEmpty(filterAdvisory) ? null : AeaaContentIdentifiers.fromContentIdentifierName(filterAdvisory);
+        final AeaaContentIdentifiers filterCertAsAeaaContentIdentifiers = StringUtils.isEmpty(filterAdvisory) ? null : AeaaContentIdentifiers.fromName(filterAdvisory);
         return buildTable(securityPolicy, inputVulnerabilities, filterCertAsAeaaContentIdentifiers, useEffectiveSeverityScores);
     }
 

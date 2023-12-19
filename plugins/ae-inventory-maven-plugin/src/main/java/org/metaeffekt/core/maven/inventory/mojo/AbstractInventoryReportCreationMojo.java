@@ -261,12 +261,12 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * only evaluating the vulnerabilities containing the respecting provider.
      * If left empty, no additional table will be created.
      * <p>
-     * See {@link AeaaContentIdentifiers} for all available providers.<br>
-     * To address all providers, use <code>{@link AeaaContentIdentifiers#ALL}</code>.
+     * See {@link AeaaContentIdentifiers} for all available providers. Use the well-formed names.<br>
+     * To address all providers, use <code>ALL</code>.
      *
      * @parameter
      */
-    private List<AeaaContentIdentifiers> generateOverviewTablesForAdvisories = new ArrayList<>();
+    private List<String> generateOverviewTablesForAdvisories = new ArrayList<>();
 
     // other template parameters
 
@@ -333,10 +333,10 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         // vulnerability settings
         if (securityPolicyFile != null) {
             try {
-                getLog().info("Reading security policy from securityPolicyFile: file://" + securityPolicyFile.getAbsolutePath());
+                getLog().info("Reading security policy from securityPolicyFile: file://" + securityPolicyFile.getCanonicalPath());
                 securityPolicy = CentralSecurityPolicyConfiguration.fromFile(securityPolicyFile);
             } catch (Exception e) {
-                throw new RuntimeException("Failed to read securityPolicyFile: " + e.getMessage(), e);
+                throw new RuntimeException("Failed to read securityPolicyFile from file://" + securityPolicyFile.getAbsolutePath() + " " + e.getMessage(), e);
             }
         }
 
@@ -347,7 +347,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         report.setSecurityPolicy(securityPolicy);
         report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
-        report.addGenerateOverviewTablesForAdvisories(generateOverviewTablesForAdvisories);
+        report.addGenerateOverviewTablesForAdvisoriesByString(generateOverviewTablesForAdvisories);
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);

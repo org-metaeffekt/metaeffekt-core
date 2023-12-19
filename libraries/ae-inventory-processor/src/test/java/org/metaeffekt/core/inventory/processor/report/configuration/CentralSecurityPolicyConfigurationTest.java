@@ -19,6 +19,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaCertFrAdvisorEntry;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaCertSeiAdvisorEntry;
 import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
@@ -141,5 +143,58 @@ public class CentralSecurityPolicyConfigurationTest {
 
         securityPolicy.setIncludeAdvisoryTypes(Arrays.asList("some-other", "notice", "alert", "news"));
         Assert.assertFalse(securityPolicy.collectMisconfigurations().isEmpty());
+    }
+
+    @Test
+    public void anyProviderTest() {
+        Assert.assertFalse(CentralSecurityPolicyConfiguration.isAny(null));
+        Assert.assertFalse(CentralSecurityPolicyConfiguration.isAny(""));
+
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("any"));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("ANY"));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("all"));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("ALL"));
+    }
+
+    @Test
+    public void anyProviderListTest() {
+        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny(null));
+        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Collections.emptyList()));
+
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("any")));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("ANY")));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("all")));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("ALL")));
+
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("any", "all")));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("ANY", "ALL")));
+
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("any", "some-other")));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("ANY", "SOME-OTHER")));
+
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("some-other", "any")));
+        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("SOME-OTHER", "ANY")));
+
+        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("some-other", "another-other")));
+        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("SOME-OTHER", "ANOTHER-OTHER")));
+    }
+
+    @Test
+    public void isAdvisoryContainedRegardingSourceTest() {
+        final CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
+        final AeaaCertFrAdvisorEntry certFr = new AeaaCertFrAdvisorEntry();
+        final AeaaCertSeiAdvisorEntry certSei = new AeaaCertSeiAdvisorEntry();
+
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("all")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("ANY")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("cERT-Fr")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("CERT-FR")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("CERT_FR")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Arrays.asList("CERT_FR", "CERT-SEI")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assert.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("CERT_SEI")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assert.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("CERT-SEI")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonList("CERT-SEI")).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));
+        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Arrays.asList("CERT-FR", "any")).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));
     }
 }

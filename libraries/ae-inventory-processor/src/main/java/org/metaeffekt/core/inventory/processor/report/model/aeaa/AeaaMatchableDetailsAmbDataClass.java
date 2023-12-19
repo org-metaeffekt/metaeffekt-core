@@ -198,7 +198,7 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
             Arrays.stream(dataFillingSources.split(", ?"))
                     .filter(StringUtils::hasText)
                     .distinct()
-                    .map(AeaaContentIdentifiers::fromContentIdentifierName)
+                    .map(AeaaContentIdentifiers::fromName)
                     .forEach(this::addDataSource);
         }
     }
@@ -248,7 +248,7 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         if (input.containsKey("dataSources")) {
             final String sources = input.get("dataSources").toString();
             for (String source : sources.split(", ?")) {
-                this.addDataSource(AeaaContentIdentifiers.fromContentIdentifierName(source));
+                this.addDataSource(AeaaContentIdentifiers.fromName(source));
             }
         }
 

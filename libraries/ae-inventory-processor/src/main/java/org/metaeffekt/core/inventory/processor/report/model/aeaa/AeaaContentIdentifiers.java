@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Mirrors structure of <code>com.metaeffekt.mirror.contents.ContentIdentifiers</code>
+ * until separation of inventory report generation from ae core inventory processor.
+ */
 public enum AeaaContentIdentifiers {
     CERT_FR("CERT-FR", Pattern.compile("((?:CERTFR|CERTA)-\\d+-(?:ACT|AVI|ALE|INF)-\\d+(?:-\\d+)?)", Pattern.CASE_INSENSITIVE), AeaaCertFrAdvisorEntry.class, AeaaCertFrAdvisorEntry::new),
     CERT_SEI("CERT-SEI", Pattern.compile("(VU#(\\d+))", Pattern.CASE_INSENSITIVE), AeaaCertSeiAdvisorEntry.class, AeaaCertSeiAdvisorEntry::new),
@@ -44,8 +49,7 @@ public enum AeaaContentIdentifiers {
     CPE("CPE", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
     NVD("NVD", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
     ASSESSMENT_STATUS("Assessment Status", Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE), null, null),
-    UNKNOWN("UNKNOWN", Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE), null, null),
-    ALL("ALL", Pattern.compile("ALL", Pattern.CASE_INSENSITIVE), null, null);
+    UNKNOWN("UNKNOWN", Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE), null, null);
 
     private static final Logger LOG = LoggerFactory.getLogger(AeaaContentIdentifiers.class);
 
@@ -163,13 +167,13 @@ public enum AeaaContentIdentifiers {
 
     public static AeaaContentIdentifiers extractSourceFromJson(JSONObject json) {
         final String source = json.optString("source", "unknown");
-        final AeaaContentIdentifiers parsedSource = AeaaContentIdentifiers.fromContentIdentifierName(source);
+        final AeaaContentIdentifiers parsedSource = AeaaContentIdentifiers.fromName(source);
         return parsedSource == null ? UNKNOWN : parsedSource;
     }
 
     public static AeaaContentIdentifiers extractSourceFromAdvisor(AdvisoryMetaData amd) {
         final String source = amd.get(AdvisoryMetaData.Attribute.SOURCE);
-        final AeaaContentIdentifiers parsedSource = AeaaContentIdentifiers.fromContentIdentifierName(source);
+        final AeaaContentIdentifiers parsedSource = AeaaContentIdentifiers.fromName(source);
         return parsedSource == null ? UNKNOWN : parsedSource;
     }
 
@@ -197,7 +201,7 @@ public enum AeaaContentIdentifiers {
         return result;
     }
 
-    public static AeaaContentIdentifiers fromContentIdentifierName(String name) {
+    public static AeaaContentIdentifiers fromName(String name) {
         final String[] names = name.toLowerCase().split(", ");
 
         for (String n : names) {
@@ -208,24 +212,33 @@ public enum AeaaContentIdentifiers {
             }
         }
 
+        for (String n : names) {
+            for (AeaaContentIdentifiers id : AeaaContentIdentifiers.values()) {
+                if (id.getWellFormedName().equalsIgnoreCase(n)) {
+                    return id;
+                }
+            }
+        }
+
         LOG.debug("Failed to parse content identifier name [{}], returning {}", name, UNKNOWN);
 
         return UNKNOWN;
     }
 
-    public static List<AeaaContentIdentifiers> fromContentIdentifierNames(String name) {
+    public static List<AeaaContentIdentifiers> fromNames(String name) {
         if (StringUtils.isEmpty(name)) return new ArrayList<>();
 
         final String[] names = name.toLowerCase().split(", ");
+        final List<String> listNames = Arrays.asList(names);
 
-        if (Arrays.asList(names).contains("any")) {
+        if (CentralSecurityPolicyConfiguration.containsAny(listNames)) {
             return Arrays.stream(AeaaContentIdentifiers.values())
                     .filter(id -> !UNKNOWN.equals(id))
                     .collect(Collectors.toList());
         }
 
         return Arrays.stream(names)
-                .map(AeaaContentIdentifiers::fromContentIdentifierName)
+                .map(AeaaContentIdentifiers::fromName)
                 .distinct()
                 .filter(id -> !UNKNOWN.equals(id))
                 .collect(Collectors.toList());

@@ -61,6 +61,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private double includeScoreThreshold = -1.0;
 
     private final List<String> includeVulnerabilitiesWithAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
+    private final List<String> includeAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
     private final List<String> includeAdvisoryTypes = new ArrayList<>(Collections.singletonList("all"));
 
     private String vulnerabilityStatusDisplayMapperName = "default";
@@ -182,12 +183,12 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability) {
-        if (includeVulnerabilitiesWithAdvisoryProviders.contains("all") || includeVulnerabilitiesWithAdvisoryProviders.contains("ALL")) {
+        if (containsAny(includeVulnerabilitiesWithAdvisoryProviders)) {
             return true;
         }
 
         final List<AeaaContentIdentifiers> filter = includeVulnerabilitiesWithAdvisoryProviders.stream()
-                .map(AeaaContentIdentifiers::fromContentIdentifierName)
+                .map(AeaaContentIdentifiers::fromName)
                 .collect(Collectors.toList());
 
         if (filter.contains(AeaaContentIdentifiers.UNKNOWN)) {
@@ -207,6 +208,16 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return vulnerability.getSecurityAdvisories().stream().anyMatch(a -> filter.contains(a.getEntrySource()));
     }
 
+    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(List<String> includeAdvisoryProviders) {
+        this.includeAdvisoryProviders.clear();
+        this.includeAdvisoryProviders.addAll(includeAdvisoryProviders);
+        return this;
+    }
+
+    public List<String> getIncludeAdvisoryProviders() {
+        return includeAdvisoryProviders;
+    }
+
     public CentralSecurityPolicyConfiguration setIncludeAdvisoryTypes(List<String> includeAdvisoryTypes) {
         this.includeAdvisoryTypes.clear();
         this.includeAdvisoryTypes.addAll(includeAdvisoryTypes);
@@ -222,10 +233,29 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public boolean isSecurityAdvisoryIncludedRegardingEntrySourceType(String advisoryType) {
-        if (includeAdvisoryTypes.contains("all") || includeAdvisoryTypes.contains("ALL")) {
+        if (containsAny(includeAdvisoryTypes)) {
             return true;
         }
         return includeAdvisoryTypes.contains(advisoryType);
+    }
+
+    public boolean isSecurityAdvisoryIncludedRegardingEntryProvider(AeaaAdvisoryEntry advisory) {
+        if (containsAny(includeAdvisoryProviders)) {
+            return true;
+        }
+        return includeAdvisoryProviders.stream()
+                .map(AeaaContentIdentifiers::fromName)
+                .anyMatch(source -> source == advisory.getEntrySource());
+    }
+
+    public boolean isSecurityAdvisoryIncludedRegardingEntryProvider(String providerName) {
+        if (containsAny(includeAdvisoryProviders)) {
+            return true;
+        }
+        final AeaaContentIdentifiers search = AeaaContentIdentifiers.fromName(providerName);
+        return includeAdvisoryProviders.stream()
+                .map(AeaaContentIdentifiers::fromName)
+                .anyMatch(source -> source == search);
     }
 
     public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(String vulnerabilityStatusDisplayMapper) {
@@ -258,6 +288,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("insignificantThreshold", insignificantThreshold);
         configuration.put("includeScoreThreshold", includeScoreThreshold);
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
+        configuration.put("includeAdvisoryProviders", includeAdvisoryProviders);
         configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
         configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
         configuration.put("cvssVersionSelectionPolicy", cvssVersionSelectionPolicy);
@@ -277,6 +308,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
+        super.loadListProperty(properties, "includeAdvisoryProviders", String::valueOf, this::setIncludeAdvisoryProviders);
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
         super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
         super.loadListProperty(properties, "cvssVersionSelectionPolicy", value -> CvssScoreVersionSelectionPolicy.valueOf(String.valueOf(value)), this::setCvssVersionSelectionPolicy);
@@ -336,7 +368,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         for (String provider : includeVulnerabilitiesWithAdvisoryProviders) {
             if (provider == null) {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null"));
-            } else if ( !"all".equalsIgnoreCase(provider) && AeaaContentIdentifiers.fromContentIdentifierName(provider) == AeaaContentIdentifiers.UNKNOWN) {
+            } else if (!CentralSecurityPolicyConfiguration.isAny(provider) && AeaaContentIdentifiers.fromName(provider) == AeaaContentIdentifiers.UNKNOWN) {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + Arrays.toString(AeaaContentIdentifiers.values())));
             }
         }
@@ -344,8 +376,16 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         for (String advisoryType : includeAdvisoryTypes) {
             if (advisoryType == null) {
                 misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryTypes", "Advisory type must not be null"));
-            } else if ( !"all".equalsIgnoreCase(advisoryType) && AdvisoryUtils.TYPE_NORMALIZATION_MAP.get(advisoryType) == null) {
+            } else if (!CentralSecurityPolicyConfiguration.isAny(advisoryType) && AdvisoryUtils.TYPE_NORMALIZATION_MAP.get(advisoryType) == null) {
                 misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryTypes", "Unknown advisory type: " + advisoryType + ", must be one of " + AdvisoryUtils.TYPE_NORMALIZATION_MAP.keySet()));
+            }
+        }
+
+        for (String provider : includeAdvisoryProviders) {
+            if (provider == null) {
+                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null"));
+            } else if (!CentralSecurityPolicyConfiguration.isAny(provider) && AeaaContentIdentifiers.fromName(provider) == AeaaContentIdentifiers.UNKNOWN) {
+                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + Arrays.toString(AeaaContentIdentifiers.values())));
             }
         }
     }
@@ -599,5 +639,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 .filter(m -> m.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown status mapper: " + name));
+    }
+
+    public static boolean containsAny(Collection<String> collection) {
+        return collection != null && !collection.isEmpty()
+                && (collection.contains("ALL") || collection.contains("all") || collection.contains("ANY") || collection.contains("any"));
+    }
+
+    public static boolean isAny(String value) {
+        return StringUtils.isNotEmpty(value) && (value.equalsIgnoreCase("all") || value.equalsIgnoreCase("any"));
     }
 }
