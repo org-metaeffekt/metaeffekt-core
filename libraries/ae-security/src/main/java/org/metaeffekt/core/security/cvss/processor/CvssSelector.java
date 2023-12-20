@@ -70,24 +70,7 @@ import java.util.stream.Collectors;
  * </ol>
  * <p>Let’s assume that we have the following inventory:</p>
  * <table>
- *    <tbody>
- *       <tr>
- *          <th>
- *             <p><strong>Type</strong></p>
- *          </th>
- *          <th>
- *             <p><strong>Id</strong></p>
- *          </th>
- *          <th>
- *             <p><strong>CVSS Vectors</strong></p>
- *          </th>
- *          <th>
- *             <p><strong>Other properties</strong></p>
- *          </th>
- *       </tr>
- *    </tbody>
- * </table>
- * <table>
+ *    <caption>Inventory of artifacts, vulnerabilities and security advisories</caption>
  *    <tbody>
  *       <tr>
  *          <th>
@@ -163,6 +146,7 @@ import java.util.stream.Collectors;
  * </table>
  * <p>Then the selection process on CVE-2020-1234 would be the following, assuming the default values of the security configuration:</p>
  * <table>
+ *    <caption>General selection process</caption>
  *    <tbody>
  *       <tr>
  *          <th>
@@ -178,6 +162,7 @@ import java.util.stream.Collectors;
  *    </tbody>
  * </table>
  * <table>
+ *    <caption>Selection process for CVSS vectors on CVE-2020-1234</caption>
  *    <tbody>
  *       <tr>
  *          <th>
