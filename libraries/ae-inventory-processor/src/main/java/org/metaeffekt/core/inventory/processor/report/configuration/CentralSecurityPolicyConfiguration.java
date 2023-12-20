@@ -51,6 +51,7 @@ import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole
  * <p>
  * An overview of the available parameters in the following table.
  * <table>
+ *     <caption>Available parameters</caption>
  *     <tr>
  *         <th>Name / Effective name</th>
  *         <th>Type</th>
@@ -564,6 +565,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * reporting stage. Even if configured differently in the {@link CentralSecurityPolicyConfiguration}, some display
      * elements will still force a certain display mapper for consistency.
      * <table>
+     *     <caption>Mapper overview</caption>
      *     <tr>
      *         <th>Initial Status</th>
      *         <th>unmodified / default</th>
