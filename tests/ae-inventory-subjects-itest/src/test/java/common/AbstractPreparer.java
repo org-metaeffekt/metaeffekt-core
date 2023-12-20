@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.net.URL;
 
-public abstract class AbstractPreparator implements Preparator {
+public abstract class AbstractPreparer implements Preparer {
 
-    private final Logger LOG = LoggerFactory.getLogger(AbstractPreparator.class);
+    private final Logger LOG = LoggerFactory.getLogger(AbstractPreparer.class);
 
     String url;
     String name;
@@ -31,13 +31,13 @@ public abstract class AbstractPreparator implements Preparator {
         return Testconfig.getInventoryFolder() + myDir;
     }
 
-    public Preparator setSource(String url) {
+    public Preparer setSource(String url) {
         this.url = url;
         return this;
     }
 
     @Override
-    public Preparator setName(String testname) {
+    public Preparer setName(String testname) {
         this.name = testname;
         this.myDir = name.replace(".", "/") + "/";
         return this;

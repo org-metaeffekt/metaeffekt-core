@@ -9,7 +9,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class JarPreparator extends AbstractPreparator {
+public class UrlPreparer extends AbstractPreparer {
 
     public boolean inventorize(boolean overwrite) throws Exception {
         String inventoryfile = getInventoryFolder()+"scan-inventory.ser";

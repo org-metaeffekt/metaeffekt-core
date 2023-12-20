@@ -1,6 +1,6 @@
 package javatests;
 
-import common.JarPreparator;
+import common.UrlPreparer;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static inventory.dsl.predicates.IdMissmatchesVersion.idMissmatchesVersion;
+import static inventory.dsl.predicates.IdMissmatchesVersion.idMismatchingVersion;
 
 public class BouncyCastleTest extends TestBasicInvariants {
 
@@ -16,7 +16,7 @@ public class BouncyCastleTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparator = new JarPreparator()
+        preparer = new UrlPreparer()
                 .setSource("https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar")
                 .setName(BouncyCastleTest.class.getName());
     }
@@ -24,23 +24,24 @@ public class BouncyCastleTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparator.clear());
+        Assert.assertTrue(preparer.clear());
 
     }
 
     @Ignore
     @Test
-    public void inventorize() throws Exception {
-        Assert.assertTrue(preparator.rebuildInventory());
+    public void analyse() throws Exception {
+        Assert.assertTrue(preparer.rebuildInventory());
     }
 
     //TODO
     @Ignore
     @Test
-    public void versionMissmatch() {
-        getScannerAfterInvariants()
-                .select(idMissmatchesVersion)
-                .mustBeEmpty();
+    public void versionMismatch() {
+        getAnalysisAfterInvariants()
+                .selectArtifacts(idMismatchingVersion)
+                .logArtifactList("Type")
+                .assertEmpty();
     }
 
 

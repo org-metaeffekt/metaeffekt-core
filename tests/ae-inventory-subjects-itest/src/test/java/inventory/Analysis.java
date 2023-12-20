@@ -6,10 +6,10 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.List;
 
-public class InventoryScanner {
+public class Analysis {
     private final Inventory inventory;
 
-    public InventoryScanner(Inventory inventory) {
+    public Analysis(Inventory inventory) {
         this.inventory = inventory;
     }
 
@@ -17,12 +17,12 @@ public class InventoryScanner {
         return inventory.getArtifacts();
     }
 
-    public Artifacts select() {
-        return new Artifacts(inventory.getArtifacts(), "All artifacts");
+    public ArtifactList selectArtifacts() {
+        return new ArtifactList(inventory.getArtifacts(), "All artifacts");
     }
 
-    public Artifacts select(NamedArtifactPredicate artifactPredicate) {
-        return select()
+    public ArtifactList selectArtifacts(NamedArtifactPredicate artifactPredicate) {
+        return selectArtifacts()
                 .filter(artifactPredicate.getArtifactPredicate())
                 .as(artifactPredicate.getDescription());
     }

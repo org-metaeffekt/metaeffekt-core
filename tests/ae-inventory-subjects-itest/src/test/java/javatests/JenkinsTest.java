@@ -1,6 +1,7 @@
 package javatests;
 
-import common.JarPreparator;
+import common.UrlPreparer;
+import inventory.dsl.predicates.attributes.Exists;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -8,11 +9,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static inventory.dsl.predicates.IdMissmatchesVersion.idMissmatchesVersion;
+import static inventory.dsl.predicates.IdMissmatchesVersion.idMismatchingVersion;
 import static inventory.dsl.predicates.Not.not;
-import static inventory.dsl.predicates.attributes.Exists.exists;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
+import static inventory.dsl.predicates.TrivialPredicates.trivialReturnAllElements;
+import static inventory.dsl.predicates.TrivialPredicates.trivialReturnNoElements;
+import static inventory.dsl.predicates.attributes.Exists.withAttribute;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 
 public class JenkinsTest extends TestBasicInvariants {
 
@@ -20,7 +22,7 @@ public class JenkinsTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparator = new JarPreparator()
+        preparer = new UrlPreparer()
                 .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
                 .setName(JenkinsTest.class.getName());
     }
@@ -28,13 +30,13 @@ public class JenkinsTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparator.clear());
+        Assert.assertTrue(preparer.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(preparator.rebuildInventory());
+        Assert.assertTrue(preparer.rebuildInventory());
     }
 
 
@@ -42,30 +44,44 @@ public class JenkinsTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void typesMustBeSetPredicate() {
-        getScanner()
-                .select(not(exists(TYPE)))
-                .mustBeEmpty();
+        getAnalysis()
+                .selectArtifacts(not(Exists.withAttribute(TYPE)))
+                .assertEmpty();
     }
 
     //TODO
     @Ignore
     @Test
     public void noErrorsExist() {
-        getScannerAfterInvariants()
-                .select(exists(VERSION))
-                .mustBeEmpty();
+        getAnalysisAfterInvariants()
+                .selectArtifacts(withAttribute("Errors"))
+                .assertEmpty();
     }
 
     //TODO
     @Ignore
     @Test
     public void versionMissmatch() {
-        getScanner()
-                .select(exists(VERSION))
-                .hasSizeGreaterThan(0)
+        getAnalysis()
+                .selectArtifacts(withAttribute(VERSION))
+                .assertNotEmpty()
                 .logArtifactList()
-                .filter(idMissmatchesVersion)
-                .mustBeEmpty();
+                .assertEmpty(idMismatchingVersion);
+    }
+
+    @Ignore
+    @Test
+    public void trivialPredicates() {
+        getAnalysis()
+                .selectArtifacts(not(withAttribute(CHECKSUM)))
+                .assertEmpty(trivialReturnNoElements)
+                .assertNotEmpty(trivialReturnAllElements)
+                .logArtifactListWithAllAtributes()
+                .logInfo()
+                .logInfo("Typed List:")
+                .filter(withAttribute(TYPE)).as("Artifact has Type")
+                .assertNotEmpty()
+                .logArtifactListWithAllAtributes();
     }
 
 }

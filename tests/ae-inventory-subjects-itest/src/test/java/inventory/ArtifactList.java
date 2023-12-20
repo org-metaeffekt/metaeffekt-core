@@ -2,23 +2,22 @@ package inventory;
 
 import inventory.dsl.ArtifactListLogger;
 import inventory.dsl.ArtifactListSize;
-import inventory.dsl.Artifactlist;
+import inventory.dsl.ArtifactListFilter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.List;
 
-public class Artifacts implements
-        Artifactlist,
+public class ArtifactList implements
+        ArtifactListFilter,
         ArtifactListSize,
-        ArtifactListLogger
-{
+        ArtifactListLogger {
 
     private final List<Artifact> artifactlist;
 
     private String description;
 
-    public Artifacts(List<Artifact> artifacts, String description) {
-        this.artifactlist =artifacts;
+    public ArtifactList(List<Artifact> artifacts, String description) {
+        this.artifactlist = artifacts;
         this.description = description;
     }
 
@@ -28,12 +27,12 @@ public class Artifacts implements
     }
 
     @Override
-    public List<Artifact> getArtifactlist() {
+    public List<Artifact> getArtifactList() {
         return artifactlist;
     }
 
     @Override
-    public Artifacts setDescription(String description) {
+    public ArtifactList setDescription(String description) {
         this.description = description;
         return this;
     }

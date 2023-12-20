@@ -1,6 +1,6 @@
 package javatests;
 
-import common.JarPreparator;
+import common.UrlPreparer;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -14,7 +14,7 @@ public class FbmsWarTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparator = new JarPreparator()
+        preparer = new UrlPreparer()
                 .setSource("https://repo1.maven.org/maven2/org/jasig/portal/fbms/fbms-webapp/1.3.1/fbms-webapp-1.3.1.war")
                 .setName(FbmsWarTest.class.getName());
     }
@@ -23,18 +23,18 @@ public class FbmsWarTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(preparator.clear());
+        Assert.assertTrue(preparer.clear());
 
     }
     @Ignore
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(preparator.rebuildInventory());
+        Assert.assertTrue(preparer.rebuildInventory());
 
     }
     @Test
     public void first() throws Exception{
-        LOG.info(preparator.getInventory().toString());
+        LOG.info(preparer.getInventory().toString());
 
     }
 }
