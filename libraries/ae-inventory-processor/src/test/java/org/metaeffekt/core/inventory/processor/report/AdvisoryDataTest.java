@@ -33,8 +33,7 @@ public class AdvisoryDataTest {
 
         final VulnerabilityMetaData vulnerabilityMetaData = selectVulnerability(inventory, "CVE-2019-17571");
 
-        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromJson(
-                vulnerabilityMetaData.get("Advisories"));
+        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromJson(vulnerabilityMetaData.get("Advisories"));
         final AdvisoryData advisoryData = advisoryDataList.get(0);
 
         Assert.assertEquals("CERTFR-2020-AVI-350", advisoryData.getId());
@@ -51,8 +50,7 @@ public class AdvisoryDataTest {
 
         final VulnerabilityMetaData vulnerabilityMetaData = selectVulnerability(inventory, "CVE-2021-44228");
 
-        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromJson(
-                vulnerabilityMetaData.get("Advisories"));
+        final List<AdvisoryData> advisoryDataList = AdvisoryData.fromJson(vulnerabilityMetaData.get("Advisories"));
         final AdvisoryData advisoryData = advisoryDataList.get(0);
 
         Assert.assertEquals("MSRC-CVE-2021-44228", advisoryData.getId());

@@ -48,12 +48,14 @@ public class AssetReportAdapter {
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
             Pair.of("Repository", "Repository"),
-            Pair.of("Tag", "Version"),
+            Pair.of("Tag", "Tag"),
             Pair.of("Size", "Size"),
             Pair.of("Operating System", "Os"),
             Pair.of("Architecture", "Architecture"),
             Pair.of("Created", "Created"),
-            Pair.of("Image Id / Hash", "Image Id"),
+            Pair.of("Image Id", "Image Id"),
+            Pair.of("Image Digest", "Digest"),
+            Pair.of("Supplier", "Supplier"),
     };
 
     Pair<String, String>[] applianceKeyList = new Pair[] {
@@ -66,7 +68,8 @@ public class AssetReportAdapter {
     Pair<String, String>[] defaultKeyList = new Pair[] {
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
-            Pair.of("Hash (SHA-1)", "Hash (SHA-1)")
+            Pair.of("Checksum (MD5)", "Checksum (MD5)"),
+            Pair.of("Hash (SHA-256)", "Hash (SHA-256)")
     };
 
     Pair<String, String>[] directoryKeyList = new Pair[] {

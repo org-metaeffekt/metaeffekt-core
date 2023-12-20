@@ -275,14 +275,18 @@ public class RepositoryReportTest {
         report.setInventoryBomReportEnabled(false);
         report.setAssessmentReportEnabled(false);
 
-        report.setInventoryVulnerabilityReportEnabled(false);
-        report.setInventoryVulnerabilityReportSummaryEnabled(false);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+
         report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
         report.setVulnerabilityScoreThreshold(0.6f);
 
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
+
+        report.addVulnerabilityAdvisoryFilter("CERT-FR");
+        report.setIncludeAdvisoryTypes("alert, news, notice");
 
         report.createReport();
     }

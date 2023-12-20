@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -48,36 +49,49 @@ public class NpmPackageLockAdapter {
 
     private void populateInventory(File packageLockJsonFile, Inventory inventory, String path) throws IOException {
         final String json = FileUtils.readFileToString(packageLockJsonFile, FileUtils.ENCODING_UTF_8);
-        JSONObject obj = new JSONObject(json);
+        final JSONObject obj = new JSONObject(json);
         addDependencies(obj, inventory, path, "dependencies");
         addDependencies(obj, inventory, path, "peerDependencies");
+        addDependencies(obj, inventory, path, "packages");
     }
 
     private void addDependencies(JSONObject obj, Inventory inventory, String path, String dependencyTag) {
-        if (!obj.has(dependencyTag)) return;
-        JSONObject dependencies = obj.getJSONObject(dependencyTag);
-        for (String key : dependencies.keySet()) {
-            JSONObject dep = dependencies.getJSONObject(key);
+        final String prefix = "node_modules/";
 
-            String version = dep.getString("version");
-            String url = dep.has("resolved") ? dep.getString("resolved") : null;
+        if (obj.has(dependencyTag)) {
+            final JSONObject dependencies = obj.getJSONObject(dependencyTag);
+            for (String key : dependencies.keySet()) {
+                if (StringUtils.isBlank(key)) continue;
 
-            Artifact artifact = new Artifact();
+                final JSONObject dep = dependencies.getJSONObject(key);
 
-            artifact.setId(key + "-" + version);
-            artifact.setComponent(key);
-            artifact.setVersion(version);
-            artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
-            artifact.setUrl(url);
-            artifact.set(Constants.KEY_PATH_IN_ASSET, path);
+                String version = dep.getString("version");
+                String url = dep.has("resolved") ? dep.getString("resolved") : null;
 
-            boolean production = !dep.has("dev") || !dep.getBoolean("dev");
+                Artifact artifact = new Artifact();
 
-            // only consider production artifacts
-            if (production) {
-                inventory.getArtifacts().add(artifact);
+                String module = key;
+                int index = module.lastIndexOf(prefix);
+                if (index != -1) {
+                    module = module.substring(index + prefix.length());
+                }
 
-                addDependencies(dep, inventory, path, dependencyTag);
+                artifact.setId(module + "-" + version);
+                artifact.setComponent(module);
+                artifact.setVersion(version);
+                artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+                artifact.setUrl(url);
+                artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
+
+                boolean production = !dep.has("dev") || !dep.getBoolean("dev");
+
+                // only consider production artifacts
+                if (production) {
+                    inventory.getArtifacts().add(artifact);
+
+                    // validate whether this is still required
+                    addDependencies(dep, inventory, path, dependencyTag);
+                }
             }
         }
     }

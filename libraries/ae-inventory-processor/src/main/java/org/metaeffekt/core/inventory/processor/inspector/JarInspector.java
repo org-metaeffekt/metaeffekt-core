@@ -374,20 +374,23 @@ public class JarInspector extends AbstractJarInspector {
         // match against filename:
         //  strict matching. we find artifact ids and versions.
         //  we check and apply only when one of the following checks succeed:
-        //  - either the filename matches "<artifactID>-<version>-<classifier(s)>.jar
-        //  - or it matches               "<artifactID>-<version>.jar"
-        //  - or it matches               "<artifactID>.jar"
+        //  - either the filename matches "<artifactId>-<version>-<classifier(s)>.jar
+        //  - or it matches               "<artifactId>-<version>.jar"
+        //  - or it matches               "<artifactId>.jar"
+        //  - or it matches               "<groupId>.<artifactId>-<version>.jar"
         // keep these definitions strict to not produce "weird" data.
 
+        // check id versus filename
         if (dummyArtifact.getId() != null && dummyArtifact.get("ARTIFACT_ID") == null) {
             if (dummyArtifact.getId().equals(fileName)) {
                 return true;
             }
         }
 
-        final Pattern pattern1 = Pattern.compile(Pattern.quote(dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) +
-                "-" + dummyArtifact.getVersion()) +
-                "[-\\.].*");
+        final Pattern pattern1 = Pattern.compile(
+                ".*[\\.]{0,1}" +    // filter groupid or any other prefix; <artifactId>-<version> is enought evidence
+                Pattern.quote(dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" + dummyArtifact.getVersion()) +
+                "[-\\._].*");
         if (pattern1.matcher(fileName).matches()) {
             return true;
         }
@@ -438,7 +441,7 @@ public class JarInspector extends AbstractJarInspector {
             }
         }
 
-        return foundArtifactIds.size() > 1 || foundGroupIds.size() > 1 || foundVersions.size() > 1;
+        return foundGroupIds.size() > 1 || foundVersions.size() > 1;
     }
 
     private List<Artifact> processArtifact(Artifact artifact, ProjectPathParam projectPathParam) {

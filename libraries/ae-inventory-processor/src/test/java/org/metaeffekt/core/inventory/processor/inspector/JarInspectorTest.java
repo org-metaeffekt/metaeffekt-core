@@ -182,4 +182,5 @@ public class JarInspectorTest {
         assertEquals("dummy-artifact-deep", artifact.getArtifactId());
         assertEquals("0.0.1", artifact.getVersion());
     }
+
 }

@@ -86,6 +86,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
         } catch (IOException e) {
             // it was an attempts
+            LOG.warn("Unable to parse web module parts: " + e.getMessage(), e);
         }
 
         // construct component pattern
