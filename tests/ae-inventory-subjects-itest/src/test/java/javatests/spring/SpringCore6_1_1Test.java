@@ -1,6 +1,6 @@
 package javatests.spring;
 
-import common.JarPreparator;
+import common.UrlPreparer;
 import javatests.TestBasicInvariants;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -15,7 +15,7 @@ public class SpringCore6_1_1Test extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparator = new JarPreparator()
+        preparer = new UrlPreparer()
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/6.1.1/spring-core-6.1.1.jar")
                 .setName(SpringCore6_1_1Test.class.getName());
     }
@@ -24,17 +24,17 @@ public class SpringCore6_1_1Test extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(preparator.clear());
+        Assert.assertTrue(preparer.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(preparator.rebuildInventory());
+        Assert.assertTrue(preparer.rebuildInventory());
     }
 
     @Test
     public void first() throws Exception{
-        LOG.info(preparator.getInventory().toString());
+        LOG.info(preparer.getInventory().toString());
     }
 }

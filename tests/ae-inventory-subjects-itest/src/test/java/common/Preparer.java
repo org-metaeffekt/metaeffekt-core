@@ -3,11 +3,11 @@ package common;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 
-public interface Preparator {
+public interface Preparer {
 
-    Preparator setName(String testname);
+    Preparer setName(String testname);
 
-    Preparator setSource(String source);
+    Preparer setSource(String source);
 
     boolean clear() throws Exception;
 

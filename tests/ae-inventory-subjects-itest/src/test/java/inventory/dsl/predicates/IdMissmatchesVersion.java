@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class IdMissmatchesVersion implements NamedArtifactPredicate {
 
-    public static final NamedArtifactPredicate idMissmatchesVersion = new IdMissmatchesVersion();
+    public static final NamedArtifactPredicate idMismatchingVersion = new IdMissmatchesVersion();
 
     private static final Logger LOG = LoggerFactory.getLogger(IdMissmatchesVersion.class);
 
@@ -20,7 +20,7 @@ public class IdMissmatchesVersion implements NamedArtifactPredicate {
     public static boolean evaluate(Artifact artifact) {
         final String VERSION = artifact.get(Artifact.Attribute.VERSION);
         final String ID = artifact.get(Artifact.Attribute.ID);
-        if(!ID.toLowerCase().endsWith(".jar")) return false;
+        if (!ID.toLowerCase().endsWith(".jar")) return false;
         LOG.info("matching ID: " + ID + " with VERSION: " + VERSION);
         String basename = ID.substring(0, ID.length() - 4);
         Matcher m = p.matcher(basename);

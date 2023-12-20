@@ -13,16 +13,19 @@ public class Exists implements NamedArtifactPredicate {
         this.attribute = attribute;
     }
 
-    public static NamedArtifactPredicate exists(Artifact.Attribute attribute){
+    public static NamedArtifactPredicate withAttribute(Artifact.Attribute attribute){
         return new Exists(attribute.getKey());
     }
 
-    public static NamedArtifactPredicate exists(String attribute){
+    public static NamedArtifactPredicate withAttribute(String attribute){
         return new Exists(attribute);
     }
     @Override
     public Predicate<Artifact> getArtifactPredicate() {
-        return artifact -> artifact.get(attribute) != null;
+        return artifact -> {
+            //System.out.println(attribute + " is "+(artifact.get(attribute) != null) + " in "+artifact.getId());
+            return artifact.get(attribute) != null;
+             };
     }
 
 
