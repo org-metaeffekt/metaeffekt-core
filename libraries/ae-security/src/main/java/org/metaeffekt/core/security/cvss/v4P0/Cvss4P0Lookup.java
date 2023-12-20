@@ -24,6 +24,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Access to the <code>cvss/cvss-4.0-mv-lookup.json</code> resource.<br>
+ * Sourced from
+ * <a href="https://github.com/RedHatProductSecurity/cvss-v4-calculator/blob/main/cvss_lookup.js">https://github.com/RedHatProductSecurity/cvss-v4-calculator/blob/main/cvss_lookup.js</a>.
+ */
 public class Cvss4P0Lookup {
 
     private final static Map<String, Double> MACRO_VECTOR_LOOKUP_TABLE;

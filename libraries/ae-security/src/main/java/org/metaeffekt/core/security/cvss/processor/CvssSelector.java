@@ -31,6 +31,324 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 
+/**
+ * <h2>Effective CVSS Selection</h2>
+ * <p>
+ *     This documentation entry aims to explain how the selection process of effective CVSS vectors for vulnerabilities using the central security policy configuration (may) take place, and how the effective scores and severities are calculated.<br>
+ *     For this, the <code>initialCvssSelector</code>, <code>contextCvssSelector</code>, <code>cvssVersionSelectionPolicy</code> and the <code>cvssSeverityRanges</code> properties of the security policy are used.
+ * </p>
+ * <p>The selection process happens in three steps, with another one added for calculating the CVSS scores:</p>
+ * <ol>
+ *    <li>
+ *       <p>Collection of all CVSS vectors on the vulnerability</p>
+ *       <ol>
+ *          <li>
+ *             <p>collect a set of all CVSS vectors on the vulnerability itself</p>
+ *          </li>
+ *          <li>
+ *             <p>find the related security advisories and add all vectors to the set, evaluating the conditions if present</p>
+ *          </li>
+ *       </ol>
+ *    </li>
+ *    <li>
+ *       <p>Use the CVSS Selectors to find one vector per schema version</p>
+ *       <ol>
+ *          <li>
+ *             <p>evaluate the initialCvssSelector per version present in the set of vectors to obtain the selected (currently three versioned) vectors</p>
+ *          </li>
+ *          <li>
+ *             <p>evaluate the contextCvssSelector per version present in the set of vectors to obtain the selected (currently three versioned) vectors</p>
+ *          </li>
+ *       </ol>
+ *    </li>
+ *    <li>
+ *       <p>Use the cvssVersionSelectionPolicy to reduce the selected vectors to a single vector per selector</p>
+ *    </li>
+ *    <li>
+ *       <p>Calculate your scores using the vectors and use the cvssSeverityRanges to determine the severity ranges of the scores.</p>
+ *    </li>
+ * </ol>
+ * <p>Let’s assume that we have the following inventory:</p>
+ * <table>
+ *    <tbody>
+ *       <tr>
+ *          <th>
+ *             <p><strong>Type</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Id</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>CVSS Vectors</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Other properties</strong></p>
+ *          </th>
+ *       </tr>
+ *    </tbody>
+ * </table>
+ * <table>
+ *    <tbody>
+ *       <tr>
+ *          <th>
+ *             <p><strong>Type</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Id</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>CVSS Vectors</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Other properties</strong></p>
+ *          </th>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>Artifact</p>
+ *          </td>
+ *          <td>
+ *             <p>Windows 10 Pro</p>
+ *          </td>
+ *          <td>
+ *             <p>&nbsp;</p>
+ *          </td>
+ *          <td>
+ *             <p>MS Product ID = 5678<br>Vulnerabilities = CVE-2020-1234</p>
+ *          </td>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>Vulnerability</p>
+ *          </td>
+ *          <td>
+ *             <p>CVE-2020-1234</p>
+ *          </td>
+ *          <td>
+ *             <p>CVSS:3.1 NVD-CNA-NVD, CVSS:2.0 NVD-CNA-GitHub Inc., CVSS:2.0 Assessment-all, CVSS:2.0 Assessment-lower</p>
+ *          </td>
+ *          <td>
+ *             <p>Referenced Ids = GHSA-1234-5678-9101, MSRC-CVE-2020-1234 (simplified format)<br>Matching Source = Windows 10 Pro (simplified format)</p>
+ *          </td>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>Security Advisory</p>
+ *          </td>
+ *          <td>
+ *             <p>GHSA-1234-5678-9101</p>
+ *          </td>
+ *          <td>
+ *             <p>CVSS:2.0 GitHub Inc.</p>
+ *          </td>
+ *          <td>
+ *             <p>&nbsp;</p>
+ *          </td>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>Security Advisory</p>
+ *          </td>
+ *          <td>
+ *             <p>MSRC-CVE-2020-1234</p>
+ *          </td>
+ *          <td>
+ *             <p>CVSS:3.1 Microsoft Corporation (MS Product ID = 1234), CVSS:3.1 Microsoft Corporation (MS Product ID = 5678)</p>
+ *          </td>
+ *          <td>
+ *             <p>&nbsp;</p>
+ *          </td>
+ *       </tr>
+ *    </tbody>
+ * </table>
+ * <p>Then the selection process on CVE-2020-1234 would be the following, assuming the default values of the security configuration:</p>
+ * <table>
+ *    <tbody>
+ *       <tr>
+ *          <th>
+ *             <p><strong>Step</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Notes</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Result</strong></p>
+ *          </th>
+ *       </tr>
+ *    </tbody>
+ * </table>
+ * <table>
+ *    <tbody>
+ *       <tr>
+ *          <th>
+ *             <p><strong>Step</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Notes</strong></p>
+ *          </th>
+ *          <th>
+ *             <p><strong>Result</strong></p>
+ *          </th>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>1. Collect vectors</p>
+ *          </td>
+ *          <td>
+ *             <p>Pick all vectors directly on the vulnerability, add the ones from the related security advisories:</p>
+ *             <ul>
+ *                <li>
+ *                   <p>CVE-2020-1234 → CVSS:3.1 NVD-CNA-NVD CVSS:2.0 NVD-CNA-GitHub Inc. CVSS:2.0 Assessment-all CVSS:2.0 Assessment-lower</p>
+ *                </li>
+ *                <li>
+ *                   <p>GHSA-1234-5678-9101 → CVSS:2.0 GitHub Inc.</p>
+ *                </li>
+ *                <li>
+ *                   <p>MSRC-CVE-2020-1234 → CVSS:3.1 Microsoft Corporation (MS Product ID = 5678) Which filters out CVSS:3.1 Microsoft Corporation (MS Product ID = 1234), since the vulnerability was not matched on an artifact with that product id.</p>
+ *                </li>
+ *             </ul>
+ *          </td>
+ *          <td>
+ *             <p>CVSS:3.1 NVD-CNA-NVD CVSS:3.1 Microsoft Corporation (MS Product ID = 5678) CVSS:2.0 NVD-CNA-GitHub Inc. CVSS:2.0 GitHub Inc. CVSS:2.0 Assessment-all CVSS:2.0 Assessment-lower</p>
+ *          </td>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>2. CVSS Selectors</p>
+ *          </td>
+ *          <td>
+ *             <p>Evaluate the individual vectors using each vector version to (currently) obtain up to 6 vectors. In our case, this results in 3 vectors:</p>
+ *             <ul>
+ *                <li>
+ *                   <p>initial:</p>
+ *                   <ul>
+ *                      <li>
+ *                         <p>version 2.0:</p>
+ *                         <ul>
+ *                            <li>
+ *                               <p>rule 1 selects the NVD-CNA-GitHub, Inc. source</p>
+ *                            </li>
+ *                         </ul>
+ *                      </li>
+ *                      <li>
+ *                         <p>version 3.1:</p>
+ *                         <ul>
+ *                            <li>
+ *                               <p>rule 1 selects the NVD-CNA-NVD source</p>
+ *                            </li>
+ *                         </ul>
+ *                      </li>
+ *                   </ul>
+ *                </li>
+ *                <li>
+ *                   <p>context</p>
+ *                   <ul>
+ *                      <li>
+ *                         <p>version 2.0:</p>
+ *                         <ul>
+ *                            <li>
+ *                               <p>rule 1 selects the NVD-CNA-GitHub, Inc. source</p>
+ *                            </li>
+ *                            <li>
+ *                               <p>rule 2 selects the Assessment-*-all source and applies all vector components on top of the current result vector</p>
+ *                            </li>
+ *                            <li>
+ *                               <p>rule 3 selects the Assessment-*-lower source and applies vector components that lead to a lower or equal overall score on top of the current result vector</p>
+ *                            </li>
+ *                         </ul>
+ *                      </li>
+ *                      <li>
+ *                         <p>version 3.1:</p>
+ *                         <ul>
+ *                            <li>
+ *                               <p>rule 1 selects the NVD-CNA-NVD source</p>
+ *                            </li>
+ *                            <li>
+ *                               <p>statistics evaluator 1 finds that no assessment vector was applied, therefore no vector is returned</p>
+ *                            </li>
+ *                         </ul>
+ *                      </li>
+ *                   </ul>
+ *                </li>
+ *             </ul>
+ *          </td>
+ *          <td>
+ *             <ul>
+ *                <li>
+ *                   <p>initial:</p>
+ *                   <ul>
+ *                      <li>
+ *                         <p>version 2.0: CVSS:2.0 NVD-CNA-GitHub Inc.</p>
+ *                      </li>
+ *                      <li>
+ *                         <p>version 3.1: CVSS:3.1 NVD-CNA-NVD</p>
+ *                      </li>
+ *                   </ul>
+ *                </li>
+ *                <li>
+ *                   <p>context:</p>
+ *                   <ul>
+ *                      <li>
+ *                         <p>version 2.0: CVSS:2.0 NVD-CNA-GitHub Inc. + Assessment-all + Assessment-lower</p>
+ *                      </li>
+ *                      <li>
+ *                         <p>version 3.1: no vector selected</p>
+ *                      </li>
+ *                   </ul>
+ *                </li>
+ *             </ul>
+ *          </td>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>3. Version selection</p>
+ *          </td>
+ *          <td>
+ *             <p>Since the default is latest, simply pick the latest CVSS vector version.</p>
+ *             <ul>
+ *                <li>
+ *                   <p>The initial vector selection contains a 3.1 vector, which is newer than 2.0, so it is selected.</p>
+ *                </li>
+ *                <li>
+ *                   <p>The context vector selection does not contain a 3.1 or 4.0 vector, so 2.0 is used as fallback.</p>
+ *                </li>
+ *             </ul>
+ *          </td>
+ *          <td>
+ *             <ul>
+ *                <li>
+ *                   <p>initial:</p>
+ *                   <ul>
+ *                      <li>
+ *                         <p>version 3.1: CVSS:3.1 NVD-CNA-NVD</p>
+ *                      </li>
+ *                   </ul>
+ *                </li>
+ *                <li>
+ *                   <p>context:</p>
+ *                   <ul>
+ *                      <li>
+ *                         <p>version 2.0: CVSS:2.0 NVD-CNA-GitHub Inc. + Assessment-all + Assessment-lower</p>
+ *                      </li>
+ *                   </ul>
+ *                </li>
+ *             </ul>
+ *          </td>
+ *       </tr>
+ *       <tr>
+ *          <td>
+ *             <p>4. Score calculation</p>
+ *          </td>
+ *          <td>
+ *             <p>Now the severity ranges can be used to determine the severity categories of the scores calculated by the selected CVSS vectors. This step will be skipped here, since we only used the sources property of the vectors, and did not actually use the actual vector components.</p>
+ *          </td>
+ *          <td>
+ *             <p>&nbsp;</p>
+ *          </td>
+ *       </tr>
+ *    </tbody>
+ * </table>
+ */
 public class CvssSelector implements Cloneable {
 
     private final static Logger LOG = LoggerFactory.getLogger(CvssSelector.class);

@@ -33,7 +33,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class KnownCvssEntities {
+/**
+ * A utility class containing known {@link CvssEntity} and
+ * {@link org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole} instances with their metadata.
+ * <p>
+ * Either retrieve entities via the {@link KnownCvssEntities#findByNameOrMail(String)} or
+ * {@link KnownCvssEntities#findByNameOrMailOrCreateNew(String)} methods or use the static fields to access the most
+ * common entities. The creation method will not append the entity to the known entities.
+ * <p>
+ * The files used for building the known entities are located in the <code>resources/cvss/entities</code> directory of
+ * this project. These files follow the JSON schema defined in
+ * <code>resources/specification/jsonschema/cvss-entities.json</code>.
+ * <p>
+ * Use the {@link KnownCvssEntities#parseEntitiesFromJson(JSONObject)} method to add additional entities from a JSON
+ * object to the known entities, so that the Vulnerability Assessment Dashboard and Inventory Report can use them and
+ * display according links.
+ */
+public abstract class KnownCvssEntities {
 
     private final static Logger LOG = LoggerFactory.getLogger(KnownCvssEntities.class);
 

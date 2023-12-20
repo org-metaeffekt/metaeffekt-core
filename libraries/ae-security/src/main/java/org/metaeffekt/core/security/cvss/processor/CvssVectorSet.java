@@ -27,8 +27,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * Represents a set of CVSS vectors associated with their respective sources.<br>
- * The {@link CvssVectorSet} class provides methods to manipulate and retrieve CVSS vectors.
+ * Represents a list of CVSS vectors.<br>
+ * The {@link CvssVectorSet} class provides methods to add, manipulate and retrieve CVSS vectors based on several
+ * conditions.<br>
+ * A method {@link CvssVectorSet#removeForSourceAndCondition(CvssSource, JSONObject)} exists that allows for removing
+ * vectors that remove a vector based on the combination of a {@link CvssSource} vector applicability condition.
  */
 public class CvssVectorSet implements Cloneable {
 

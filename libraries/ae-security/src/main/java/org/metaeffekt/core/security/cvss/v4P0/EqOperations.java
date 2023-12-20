@@ -15,6 +15,13 @@
  */
 package org.metaeffekt.core.security.cvss.v4P0;
 
+/**
+ * In the calculation of the CVSS:4.0 score, five (3 and 6 have to be considered together, as they are not independent)
+ * equivalence classes (EQs) with each contributing some part to the final score, have to be considered.<br>
+ * Each of the five EQs has a set of relevant attributes and other properties that make their contribution unique form
+ * the other EQs.<br>
+ * This class serves as the base interface for these separate operations.
+ */
 public interface EqOperations {
     String[] getHighestSeverityVectors(Cvss4P0MacroVector thisMacroVector);
 

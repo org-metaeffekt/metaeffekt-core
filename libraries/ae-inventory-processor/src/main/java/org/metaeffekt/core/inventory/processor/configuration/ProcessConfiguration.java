@@ -25,6 +25,31 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * Base class for configurations classes. Used by the
+ * {@link org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration} and other
+ * classes containing configuration parameters for the inventory enrichment process.<br>
+ * A configuration class usually has several qualities:
+ * <ul>
+ *     <li>
+ *         Contains fields of types that are settable via a maven configuration, meaning only collections, primitive
+ *         data types, enums, and other classes that then need to be filled in the configuration.
+ *     </li>
+ *     <li>
+ *         Setters allow for the builder pattern, always returning <code>this</code>.
+ *     </li>
+ *     <li>
+ *         Has a method {@link ProcessConfiguration#getProperties()} and a counterpart
+ *         {@link ProcessConfiguration#setProperties(LinkedHashMap)} that allow for loading and storing the
+ *         configuration from and to a map. Use the <code>loadProperties</code> methods to load the properties from the
+ *         map.
+ *     </li>
+ *     <li>
+ *         Can provide customized information on what fields are misconfigured via the
+ *         {@link ProcessConfiguration#collectMisconfigurations()} method.
+ *     </li>
+ * </ul>
+ */
 public abstract class ProcessConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessConfiguration.class);

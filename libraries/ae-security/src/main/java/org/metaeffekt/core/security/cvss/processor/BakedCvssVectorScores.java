@@ -20,6 +20,16 @@ import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 
+/**
+ * Pre-calculated scores for all available scores calculated from a {@link CvssVector} instance.<br>
+ * Either call the constructor of this class, passing a vector, or use the {@link CvssVector#getBakedScores()} method to
+ * obtain a cached version.<br>
+ * Make sure to regenerate the baked scores after updating the vector yourself. If a value was unable to be
+ * calculated, the score will have the value NaN.
+ * <p>
+ * Use the normalization methods of this class to get a score that has its possible value range mapped to 0.0-10.0. This
+ * is used for the CVSS:3.1 exploitability and impact scores, which only range to 3.9 and 6.0/6.1.
+ */
 public class BakedCvssVectorScores {
 
     private final CvssVector vector;

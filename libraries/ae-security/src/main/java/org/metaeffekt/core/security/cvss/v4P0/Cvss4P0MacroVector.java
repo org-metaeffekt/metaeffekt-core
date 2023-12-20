@@ -23,7 +23,8 @@ import java.util.function.Predicate;
 
 /**
  * <a href="https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf">https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf</a><br>
- * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a>
+ * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a><br>
+ * See the {@link Cvss4P0} class documentation for more information on how this is used.
  */
 public class Cvss4P0MacroVector {
 
@@ -567,7 +568,7 @@ public class Cvss4P0MacroVector {
         }
 
         // All other environmental metrics just overwrite base score values,
-        // so if they’re not defined just use the base score value.
+        // so if they're not defined just use the base score value.
         final Cvss4P0.Cvss4P0Attribute modifiedAttribute = vector.getVectorArgument("M" + attribute);
         if (modifiedAttribute != null) {
             String modifiedSelected = modifiedAttribute.getShortIdentifier();

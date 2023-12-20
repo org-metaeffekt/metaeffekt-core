@@ -27,7 +27,18 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- * Model a CvssV3.1 vector and calculate the corresponding scores.
+ * Class for modeling a CVSS:3.1 Vector, allowing for manipulating the vector components and calculating scores.
+ * <p>
+ * The scores provided by the 3.1 specification are:
+ * <ul>
+ *     <li>base (requires all base components)</li>
+ *     <li>impact (requires all base components)</li>
+ *     <li>exploitability (requires all base components)</li>
+ *     <li>temporal (requires all base attributes and at least one temporal component)</li>
+ *     <li>adjusted impact (requires all base attributes and at least one environmental component)</li>
+ *     <li>environmental (requires all base attributes and at least one environmental component)</li>
+ * </ul>
+ * See the definitions of the individual scoring methods for the equations used for the scores.
  */
 public class Cvss3P1 extends MultiScoreCvssVector {
 

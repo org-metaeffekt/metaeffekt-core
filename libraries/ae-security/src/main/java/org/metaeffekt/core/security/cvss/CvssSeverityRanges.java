@@ -26,6 +26,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * In order to map CVSS scores to a human-readable severity category name, the {@link CvssSeverityRanges} class allows
+ * for the definition of multiple {@link SeverityRange}s that define a lower and upper score boundary, together with the
+ * category name and a color.
+ * <p>
+ * In most cases, the {@link CvssSeverityRanges#CVSS_3_SEVERITY_RANGES} should be used, which is also the default value
+ * for all operations.
+ */
 public class CvssSeverityRanges {
 
     private static final Logger LOG = LoggerFactory.getLogger(CvssSeverityRanges.class);

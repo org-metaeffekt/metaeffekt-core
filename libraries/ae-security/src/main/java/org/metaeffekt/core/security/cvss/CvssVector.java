@@ -29,6 +29,25 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Base class for modeling CVSS Vectors.
+ * <p>
+ * The list of sources represents the following logic:
+ * <ul>
+ *     <li>
+ *         If a no source is listed, the source of the vector is either unknown, irrelevant for the current task and therefore left away, not required or was forgotten to be added.
+ *     </li>
+ *     <li>
+ *         If a single source is listed, the vector is directly sourced from the provided source and was not modified.
+ *     </li>
+ *     <li>
+ *         If more than a single source is listed, other sourced vectors have been applied onto this vector in the given order. The only process provided by this library at this time that does this is the {@link org.metaeffekt.core.security.cvss.processor.CvssSelector#selectVector(Collection)}.
+ *     </li>
+ * </ul>
+ * <p>
+ * It also provides the option to cache the calculated CVSS scores in a {@link BakedCvssVectorScores} instance to reduce the amount of times a score has to be recalculated if it is known that the scores will have to be calculated multiple times.<br>
+ * Note that you have to recalculate these values yourself if you changed the CVSS vector components via the individual setters. Using the {@link CvssVector#applyVector(String)} (and related) methods will clear the cache automatically.
+ */
 public abstract class CvssVector {
 
     private final static Logger LOG = LoggerFactory.getLogger(CvssVector.class);
@@ -88,6 +107,10 @@ public abstract class CvssVector {
             bakedScores = bakeScores();
         }
         return bakedScores;
+    }
+
+    public void clearBakedScores() {
+        bakedScores = null;
     }
 
     public JSONObject getApplicabilityCondition() {

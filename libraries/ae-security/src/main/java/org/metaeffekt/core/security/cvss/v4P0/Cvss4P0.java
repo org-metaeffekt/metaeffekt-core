@@ -30,7 +30,21 @@ import java.util.stream.Stream;
 /**
  * <a href="https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf">https://www.first.org/cvss/v4-0/cvss-v40-specification.pdf</a><br>
  * <a href="https://www.first.org/cvss/v4.0/specification-document">https://www.first.org/cvss/v4.0/specification-document</a>
- *
+ * <p>
+ * Class for modeling a CVSS:4.0 Vector, allowing for manipulating the vector components and calculating scores.
+ * <p>
+ * The 4.0 specification only specifies a single resulting score, that is to be interpreted differently depending on the
+ * components used to calculate it:
+ * <ul>
+ *     <li>CVSS-B: Base metrics</li>
+ *     <li>CVSS-BE: Base and Environmental metrics</li>
+ *     <li>CVSS-BT: Base and Threat metrics</li>
+ *     <li>CVSS-BTE: Base, Threat, Environmental metrics</li>
+ * </ul>
+ * See the paragraphs below to learn how a CVSS:4.0 Vector score is calculated and the individual methods to learn more
+ * about the specifics of each step.
+ * <p>
+ * The following formulae have been created from the implementation and are not provided by the standard.
  * <p>
  * <pre>ScoreInterpolated(V) = ScoreBase(MV) − Mean(ScoreEQ)</pre>
  * <pre>ScoreEQ = ProportionDistance(V, EQ) × ScoreRange(MV, EQ)</pre>
@@ -83,14 +97,15 @@ import java.util.stream.Stream;
  * It is important to distinguish the two scales that are at play here:
  * <ul>
  *     <li>
- *         <b>Severity Distance Scale</b>
+ *         <b>Severity Distance Scale</b><br>
  *         This scale is associated with the vector metrics and their values.<br>
  *         A change of +/-1 on this scale represents a change of a single metric one value up or down (moving from a less severe configuration to a more severe one, or vice versa).
  * <p>
  *     </li>
  *     <li>
- *         <b>CVSS Score Scale</b>
- *         It quantifies the severity of the vulnerability in a range, from 0 to 10, with higher values indicating more severe vulnerabilities.
+ *         <b>CVSS Score Scale</b><br>
+ *         It quantifies the severity of the vulnerability in a range from 0 to 10, with higher values indicating more severe vulnerabilities. The smallest possible change of the score on this scale is 0.1.<br>
+ *         A score of this scoring scale will be displayed alongside the vector/vulnerability.
  *     </li>
  * </ul>
  */

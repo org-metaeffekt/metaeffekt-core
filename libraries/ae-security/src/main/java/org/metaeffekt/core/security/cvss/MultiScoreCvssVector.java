@@ -26,6 +26,17 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.Function;
 
+/**
+ * Base class of the CVSS:2.0 and CVSS:3.1 vectors. Allows for (at least) calculating the following scores:
+ * <ul>
+ *     <li>base</li>
+ *     <li>impact</li>
+ *     <li>exploitability</li>
+ *     <li>temporal</li>
+ *     <li>adjusted impact</li>
+ *     <li>environmental</li>
+ * </ul>
+ */
 public abstract class MultiScoreCvssVector extends CvssVector {
 
     private final static Logger LOG = LoggerFactory.getLogger(MultiScoreCvssVector.class);

@@ -22,8 +22,19 @@ import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.List;
 
+/**
+ * Contains the <strong>initial</strong> (aka provided, unmodified) and <strong>context</strong> (aka effective,
+ * modified) matched results for all supported CVSS versions using the {@link CvssSelector#selectVector(Collection)}
+ * method of the provided <code>initialSelector</code> and <code>contextSelector</code>.<br>
+ * Finally, it will use the <code>versionSelectionPolicy</code> to select one of the versioned vectors per initial and
+ * context to determine the selected (to be used) CVSS vectors.
+ * <p>
+ * The versioned vectors will be displayed in radar charts, tables and more, while the selected vectors will be used as
+ * basis for the related scoring operations, such as vulnerability severity calculation and other overview charts.
+ */
 public class CvssSelectionResult {
 
     private final static Logger LOG = LoggerFactory.getLogger(CvssSelectionResult.class);
@@ -43,19 +54,19 @@ public class CvssSelectionResult {
     private final CvssVector selectedContextCvss;
 
     public CvssSelectionResult(CvssVectorSet allVectors,
-                               CvssSelector baseSelector, CvssSelector effectiveSelector,
+                               CvssSelector initialSelector, CvssSelector contextSelector,
                                List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy
     ) {
         this.allVectors = allVectors;
 
-        this.initialCvss2 = baseSelector.selectVector(allVectors, Cvss2.class);
-        this.contextCvss2 = effectiveSelector.selectVector(allVectors, Cvss2.class);
+        this.initialCvss2 = initialSelector.selectVector(allVectors, Cvss2.class);
+        this.contextCvss2 = contextSelector.selectVector(allVectors, Cvss2.class);
 
-        this.initialCvss3 = baseSelector.selectVector(allVectors, Cvss3P1.class);
-        this.contextCvss3 = effectiveSelector.selectVector(allVectors, Cvss3P1.class);
+        this.initialCvss3 = initialSelector.selectVector(allVectors, Cvss3P1.class);
+        this.contextCvss3 = contextSelector.selectVector(allVectors, Cvss3P1.class);
 
-        this.initialCvss4 = baseSelector.selectVector(allVectors, Cvss4P0.class);
-        this.contextCvss4 = effectiveSelector.selectVector(allVectors, Cvss4P0.class);
+        this.initialCvss4 = initialSelector.selectVector(allVectors, Cvss4P0.class);
+        this.contextCvss4 = contextSelector.selectVector(allVectors, Cvss4P0.class);
 
         this.selectedInitialCvss = this.selectVersionedCvss(versionSelectionPolicy, this.initialCvss2, this.initialCvss3, this.initialCvss4);
         this.selectedContextCvss = this.selectVersionedCvss(versionSelectionPolicy, this.contextCvss2, this.contextCvss3, this.contextCvss4);

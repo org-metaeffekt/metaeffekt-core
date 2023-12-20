@@ -43,6 +43,76 @@ import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 
+/**
+ * Configuration class implementing {@link ProcessConfiguration}.<br>
+ * Encapsulates parameters defining the way how data is handled, modified, filtered and displayed throughout the
+ * inventory enrichment and finally the Vulnerability Assessment Dashboard and Inventory Report.<br>
+ * Any filtering properties only apply at the last steps of the pipelines.
+ * <p>
+ * An overview of the available parameters in the following table.
+ * <table>
+ *     <tr>
+ *         <th>Name / Effective name</th>
+ *         <th>Type</th>
+ *         <th>Description</th>
+ *         <th>Default value</th>
+ *     </tr>
+ *     <tr>
+ *         <td>cvssSeverityRanges<br>cachedCvssSeverityRanges</td>
+ *         <td><code>String &rarr; CvssSeverityRanges</code></td>
+ *         <td>Used to convert a CVSS score into a severity category for displaying in the report/VAD.</td>
+ *         <td><code>None:pastel-gray:0.0:0.0,Low:strong-yellow:0.1:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-dark-orange:7.0:8.9,Critical:strong-red:9.0:10.0</code></td>
+ *     </tr>
+ *     <tr>
+ *         <td>initialCvssSelector<br>cachedInitialCvssSelector</td>
+ *         <td><code>String &rarr; JSONObject &rarr; CvssSelector</code></td>
+ *         <td>Specifies rules that are applied step by step to overlay several selected vectors from different sources to calculate a resulting vector. This rule will be applied per CVSS version, meaning there will be multiple selected vectors. See the <code>cvssVersionSelectionPolicy</code> parameter to change what vector version is selected for displaying and calculations (severity, status &hellip;).<br>The default selector as seen on the right will only select provided vectors from several data sources, starting with the NVD and working its way through several other providers.<br>This selector will provide the &ldquo;provided&rdquo; or &ldquo;base&rdquo; vectors.</td>
+ *         <td>JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_INITIAL}</td>
+ *     </tr>
+ *     <tr>
+ *         <td>contextCvssSelector<br>cachedContextCvssSelector</td>
+ *         <td><code>String &rarr; JSONObject &rarr; CvssSelector</code></td>
+ *         <td>See <code>initialCvssSelector</code> for more information.<br>This selector will provide the &ldquo;effective&rdquo; (with assessment) vectors.</td>
+ *         <td>JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_CONTEXT}</td>
+ *     </tr>
+ *     <tr>
+ *         <td>insignificantThreshold</td>
+ *         <td><code>double</code></td>
+ *         <td>All vulnerabilities without a manually set status with a score equal/lower to the configured value will be considered &ldquo;insignificant&rdquo;. The vulnerability will obtain this status automatically when displayed in the report/VAD.</td>
+ *         <td><code>7.0</code></td>
+ *     </tr>
+ *     <tr>
+ *         <td>includeScoreThreshold</td>
+ *         <td><code>double</code></td>
+ *         <td>All vulnerabilities with a score lower than the configured value will be excluded from the report/VAD. <code>-1.0</code> can be used to disable this check.</td>
+ *         <td><code>-1.0</code></td>
+ *     </tr>
+ *     <tr>
+ *         <td>includeVulnerabilitiesWithAdvisoryProviders</td>
+ *         <td><code>List&lt;String&gt;</code></td>
+ *         <td>A list of <code>ContentIdentifiers.name()</code> or <code>ContentIdentifiers.getWellFormedName()</code> that will be evaluated for each vulnerability. If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the report. <code>all</code> can be used to ignore this check.<br>Example: <code>[CERT_FR, CERT_SEI, MSRC, GHSA]</code></td>
+ *         <td><code>[all]</code></td>
+ *     </tr>
+ *     <tr>
+ *         <td>includeAdvisoryTypes</td>
+ *         <td><code>List&lt;String&gt;</code></td>
+ *         <td>A list of ContentIdentifiers that will be evaluated for each advisory. If the advisory provider does not appear in the list of identifiers, it will not be included in the report/VAD. <code>all</code> can be used to include all advisories.<br>Example: <code>[alert, notice, news]</code></td>
+ *         <td><code>[all]</code></td>
+ *     </tr>
+ *     <tr>
+ *         <td>vulnerabilityStatusDisplayMapperName<br>vulnerabilityStatusDisplayMapper</td>
+ *         <td><code>String &rarr; VulnerabilityStatusMapper</code></td>
+ *         <td>The mapping method to use when displaying vulnerability statuses. The specified mapping method will only be used in selected fields, in the other occasions the unmodified mapper is used, which will only mark unreviewed (no status) vulnerabilities as in review.<br>Available mappers are: default, unmodified, abstracted, review state<br>Where default is the same as unmodified.<br>review state only differs from unmodified such that it groups applicable and not applicable into a reviewed category.</td>
+ *         <td><code>default</code></td>
+ *     </tr>
+ *     <tr>
+ *         <td>cvssVersionSelectionPolicy</td>
+ *         <td><code>List&lt;CvssScoreVersionSelectionPolicy&gt;</code></td>
+ *         <td>A list of <code>CvssScoreVersionSelectionPolicy</code> (enum) entries, where you can pick from:<br>HIGHEST, LOWEST, LATEST, OLDEST, V2, V3, V4,<br>The first selector finding a result in the baseCvssSelector / effectiveCvssSelector will be used to be displayed for the vulnerability and for further calculations.<br>The only selectors that can return no result even if there are multiple available are the version-specific selectors (V2, V3, V4), so it is wise to end your selector in one of the others if you consider using the version-specific ones as your main selector.</td>
+ *         <td><code>[LATEST]</code></td>
+ *     </tr>
+ * </table>
+ */
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
@@ -487,6 +557,76 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new SelectorVectorEvaluator(CvssSelector.VectorEvaluatorOperation.IS_BASE_FULLY_DEFINED, true, CvssSelector.EvaluatorAction.RETURN_NULL)
     ));
 
+    /**
+     * Defines a java mapper {@link Function} and a string that represents the mapper function as a JavaScript
+     * function.<br>
+     * As of writing this entry, there are three distinct supported official mappers used for different purposes in the
+     * reporting stage. Even if configured differently in the {@link CentralSecurityPolicyConfiguration}, some display
+     * elements will still force a certain display mapper for consistency.
+     * <table>
+     *     <tr>
+     *         <th>Initial Status</th>
+     *         <th>unmodified / default</th>
+     *         <th>abstracted</th>
+     *         <th>review state</th>
+     *     </tr>
+     *     <tr>
+     *         <td>null / empty</td>
+     *         <td><code>in review</code></td>
+     *         <td><code>potentially affected</code></td>
+     *         <td><code>in review</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td>in review</td>
+     *         <td><code>in review</code></td>
+     *         <td><code>potentially affected</code></td>
+     *         <td><code>in review</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td>applicable</td>
+     *         <td><code>applicable</code></td>
+     *         <td><code>affected</code></td>
+     *         <td><code>reviewed</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td>not applicable</td>
+     *         <td><code>not applicable</code></td>
+     *         <td><code>not affected</code></td>
+     *         <td><code>reviewed</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td>insignificant</td>
+     *         <td><code>insignificant</code></td>
+     *         <td><code>potentially affected</code></td>
+     *         <td><code>insignificant</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td>void</td>
+     *         <td><code>void</code></td>
+     *         <td><code>not affected</code></td>
+     *         <td><code>void</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td>other</td>
+     *         <td><code>other</code></td>
+     *         <td><code>other</code></td>
+     *         <td><code>other</code></td>
+     *     </tr>
+     *     <tr>
+     *         <td>Usage</td>
+     *         <td>
+     *             The VAD uses this mapper at almost all places and is not configurable otherwise.<br>
+     *             Is the default mapper for the status chapters in the Report and the Report overview table.
+     *         </td>
+     *         <td>
+     *             Is intended to be used in the Report, but never used as default, except for the summary report title page summary.
+     *         </td>
+     *         <td>
+     *             Is currently only used for the overview chart in the VAD.
+     *         </td>
+     *     </tr>
+     * </table>
+     */
     public static class VulnerabilityStatusMapper {
         private final String name;
         private final Function<String, String> mapper;
