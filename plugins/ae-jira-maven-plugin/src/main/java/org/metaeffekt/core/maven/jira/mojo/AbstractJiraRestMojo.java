@@ -62,6 +62,8 @@ public abstract class AbstractJiraRestMojo extends AbstractJiraMojo {
      * @param jql the JIRA Query Language statement to be processed
      *
      * @return The search result
+     *
+     * @throws IOException IOExceptions may be thrown when accessing files on the filesystem.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected Object getSearchResult(String jql) throws IOException {

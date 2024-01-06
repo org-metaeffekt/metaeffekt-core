@@ -37,7 +37,7 @@ public class NpmPackageLockAdapter {
      *
      * @return An inventory popoulated with the runtime modules defined in the package json file.
      *
-     * @throws IOException
+     * @throws IOException May throw {@link IOException} when accessing and parsing the packageLockJsonFile.
      */
     public Inventory createInventoryFromPackageLock(File packageLockJsonFile, String relPath) throws IOException {
         final Inventory inventory = new Inventory();

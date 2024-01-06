@@ -368,8 +368,9 @@ public class ComponentPatternProducer {
      * Splits the comma-separated patterns into individual patterns and sorts the patterns into relative and absolute
      * pattern. The {@link NormalizedPatternSet} uses LinkedHashSets to unify the patterns, while preserving the order.
      *
-     * @param commaSeparatedPatterns
-     * @return
+     * @param commaSeparatedPatterns Comma-separated patterns for normalization.
+     *
+     * @return The {@link NormalizedPatternSet}.
      */
     public static NormalizedPatternSet normalizePattern(String commaSeparatedPatterns) {
         final NormalizedPatternSet normalizedPatternSet = new NormalizedPatternSet();
@@ -395,6 +396,8 @@ public class ComponentPatternProducer {
      *
      * @param inputInventory The inventory carrying the current scan result that is examined for component patterns.
      * @param componentPatternSourceInventory The inventory to take component patterns from.
+     * @param fileSystemScanContext The {@link FileSystemScanContext} to use.
+     * @param applyDeferred Indicates whether to apply deferred component patterns.
      *
      * @return List of matched / potential component patterns.
      */
