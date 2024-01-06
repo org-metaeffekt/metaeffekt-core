@@ -227,7 +227,4 @@ public class ArtifactType {
         }
     }
 
-    /*public static void main(String[] args) {
-        System.out.println(toMarkdownString());
-    }*/
 }
