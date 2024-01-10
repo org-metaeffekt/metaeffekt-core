@@ -1,3 +1,0 @@
-Sample text of dual license.
-
-AlphaBeta is licensed either under license A or license B.

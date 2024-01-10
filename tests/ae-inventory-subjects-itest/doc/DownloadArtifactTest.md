@@ -5,12 +5,12 @@
 ### Parent Class
 The test should extend
 ```java 
-org.metaeffekt.core.itest.javatests.TestBasicInvariants
+org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants
 ```
 Common behavior regarding the Inventory and Analysis is implemented in that base class.
 
 ### Define Artifact
-Define the URL of the Download-Artifact
+#### Define the URL of the Download-Artifact
 ```java
     @BeforeClass
     public static void prepare() {
@@ -19,9 +19,19 @@ Define the URL of the Download-Artifact
                 .setName(JenkinsTest.class.getName());
     }
 ```
-
+#### If you like to use a reference Inventory
+The referred Inventory folder should be placed under src/test/ressources
+```java
+    @BeforeClass
+    public static void prepare() {
+        preparer = new UrlPreparer()
+                .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
+                .setReferenceInventory("myreferenceinventory")
+                .setName(JenkinsTest.class.getName());
+    }
+```
 ### Define trigger methods
-Manually trigger new *download* (clear) and *inventorization* (rebuild) of downloaded Artifact
+To manually trigger a new *download* call the **clear** test and **inventorize** (rescan) of downloaded Artifact
 ```java
     @Ignore
     @Test

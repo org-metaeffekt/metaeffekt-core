@@ -1,6 +1,6 @@
-package org.metaeffekt.core.itest.javatests;
+package org.metaeffekt.core.itest.javaartifacts;
 
-import org.metaeffekt.core.itest.common.UrlPreparer;
+import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;

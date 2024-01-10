@@ -4,25 +4,34 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
+/**
+ * These trivial predicates are used during test development. You can implement the test asserts and filters
+ * with these first and replace them when the Code under test becomes ready.
+ */
 public class TrivialPredicates implements NamedArtifactPredicate{
-    
+    /**
+     * Will return the whole collection when filtered.
+     */
     public static NamedArtifactPredicate trivialReturnAllElements = new TrivialPredicates(true);
 
+    /**
+    * Will return an empty collection when filtered.
+     */
     public static NamedArtifactPredicate trivialReturnNoElements = new TrivialPredicates(false);
     
-    private boolean value;
+    private boolean returnAll;
 
-    public TrivialPredicates(boolean value) {
-        this.value = value;
+    public TrivialPredicates(boolean returnAll) {
+        this.returnAll = returnAll;
     }
 
     @Override
     public Predicate<Artifact> getArtifactPredicate() {
-        return artifact -> value;
+        return artifact -> returnAll;
     }
 
     @Override
     public String getDescription() {
-        return value ? "All Elements":"No Elements";
+        return returnAll ? "All Elements":"No Elements";
     }
 }

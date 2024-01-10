@@ -1,4 +1,4 @@
-package org.metaeffekt.core.itest.common;
+package org.metaeffekt.core.itest.common.download;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -12,6 +12,9 @@ public class Not implements NamedArtifactPredicate {
         this.input = input;
     }
 
+    /**
+     * Return the inverted meaning for a filterpredicate.
+     */
     public static NamedArtifactPredicate not(NamedArtifactPredicate input){
         return new Not(input);
     }

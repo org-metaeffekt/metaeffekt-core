@@ -1,6 +1,7 @@
-package org.metaeffekt.core.itest.javatests;
+package org.metaeffekt.core.itest.javaartifacts.spring;
 
-import org.metaeffekt.core.itest.common.UrlPreparer;
+import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -8,15 +9,16 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FbmsWarTest extends TestBasicInvariants {
+public class SpringCore5_3_31Test extends TestBasicInvariants {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
 
     @BeforeClass
     public static void prepare() {
         preparer = new UrlPreparer()
-                .setSource("https://repo1.maven.org/maven2/org/jasig/portal/fbms/fbms-webapp/1.3.1/fbms-webapp-1.3.1.war")
-                .setName(FbmsWarTest.class.getName());
+                .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/5.3.31/spring-core-5.3.31.jar")
+                .setName(SpringCore5_3_31Test.class.getName());
     }
 
 

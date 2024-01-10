@@ -1,4 +1,4 @@
-package org.metaeffekt.core.itest.common;
+package org.metaeffekt.core.itest.common.download;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;

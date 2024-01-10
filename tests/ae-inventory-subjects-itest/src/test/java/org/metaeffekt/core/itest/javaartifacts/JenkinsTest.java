@@ -1,6 +1,6 @@
-package org.metaeffekt.core.itest.javatests;
+package org.metaeffekt.core.itest.javaartifacts;
 
-import org.metaeffekt.core.itest.common.UrlPreparer;
+import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.metaeffekt.core.itest.inventory.dsl.predicates.attributes.Exists;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -12,6 +12,10 @@ import org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.idMismatchingVersion;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnAllElements;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnNoElements;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.attributes.Exists.withAttribute;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 
@@ -44,7 +48,7 @@ public class JenkinsTest extends TestBasicInvariants {
     @Test
     public void typesMustBeSetPredicate() {
         getAnalysis()
-                .selectArtifacts(Not.not(Exists.withAttribute(TYPE)))
+                .selectArtifacts(not(withAttribute(TYPE)))
                 .assertEmpty();
     }
 
@@ -53,7 +57,7 @@ public class JenkinsTest extends TestBasicInvariants {
     @Test
     public void noErrorsExist() {
         getAnalysisAfterInvariants()
-                .selectArtifacts(Exists.withAttribute("Errors"))
+                .selectArtifacts(withAttribute("Errors"))
                 .assertEmpty();
     }
 
@@ -62,10 +66,10 @@ public class JenkinsTest extends TestBasicInvariants {
     @Test
     public void versionMissmatch() {
         getAnalysis()
-                .selectArtifacts(Exists.withAttribute(VERSION))
+                .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
                 .logArtifactList()
-                .assertEmpty(IdMissmatchesVersion.idMismatchingVersion);
+                .assertEmpty(idMismatchingVersion);
     }
 
     @Ignore
@@ -73,12 +77,12 @@ public class JenkinsTest extends TestBasicInvariants {
     public void trivialPredicates() {
         getAnalysis()
                 .selectArtifacts()
-                .assertEmpty(TrivialPredicates.trivialReturnNoElements)
-                .assertNotEmpty(TrivialPredicates.trivialReturnAllElements)
+                .assertEmpty(trivialReturnNoElements)
+                .assertNotEmpty(trivialReturnAllElements)
                 .logArtifactListWithAllAtributes()
                 .logInfo()
                 .logInfo("Typed List:")
-                .filter(Exists.withAttribute(TYPE))
+                .filter(withAttribute(TYPE))
                 .as("Artifact has Type")
                 .assertNotEmpty()
                 .logArtifactListWithAllAtributes();
@@ -90,10 +94,9 @@ public class JenkinsTest extends TestBasicInvariants {
     public void namedLists() {
         getAnalysis()
                 .selectArtifacts()
-                .logInfo("Typed List:")
-                .filter(Exists.withAttribute(TYPE)).as("Artifact has Type")
-                .assertNotEmpty()
-                .logArtifactListWithAllAtributes();
+                .logInfo("List with a Name:")
+                .filter(withAttribute(TYPE)).as("Artifact has Type")
+                .assertEmpty();
 
     }
 

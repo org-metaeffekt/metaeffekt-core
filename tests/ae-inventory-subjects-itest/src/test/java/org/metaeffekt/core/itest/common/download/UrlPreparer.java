@@ -1,9 +1,10 @@
-package org.metaeffekt.core.itest.common;
+package org.metaeffekt.core.itest.common.download;
 
 import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.itest.common.AbstractPreparer;
 
 import java.io.File;
 import java.net.MalformedURLException;

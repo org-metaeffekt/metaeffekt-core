@@ -14,10 +14,12 @@ public abstract class AbstractPreparer implements Preparer {
 
     private final Logger LOG = LoggerFactory.getLogger(AbstractPreparer.class);
 
-    String url;
+    protected String url;
     String name;
     private Inventory inventory;
     private String myDir = "";
+
+    private String referenceInventory = "";
 
     public String getDownloadFolder() {
         return Testconfig.getDownloadFolder() + myDir;
@@ -78,12 +80,20 @@ public abstract class AbstractPreparer implements Preparer {
     }
 
     public Inventory readReferenceInventory() throws Exception {
-        URL url = this.getClass().getResource("/" + myDir + "referenceinventory/");
+        if(referenceInventory.isEmpty()) return new Inventory();
+        URL url = this.getClass().getResource("/"+referenceInventory);
         if (url == null) {
-            LOG.info("No reference inventory found");
+            LOG.error("reference inventory not found: "+referenceInventory);
             return new Inventory();
         }
+        LOG.info("Loading reference inventory: "+referenceInventory);
         File file = new File(url.getFile());
         return InventoryUtils.readInventory(file, "*.xls");
+    }
+
+    @Override
+    public Preparer setReferenceInventory(String referenceinventory) {
+        this.referenceInventory = referenceinventory;
+        return this;
     }
 }

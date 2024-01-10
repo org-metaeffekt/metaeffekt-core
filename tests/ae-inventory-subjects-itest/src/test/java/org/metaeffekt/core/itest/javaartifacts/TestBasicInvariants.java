@@ -1,4 +1,4 @@
-package org.metaeffekt.core.itest.javatests;
+package org.metaeffekt.core.itest.javaartifacts;
 
 import org.metaeffekt.core.itest.common.Preparer;
 import org.metaeffekt.core.itest.genericTests.CheckInvariants;

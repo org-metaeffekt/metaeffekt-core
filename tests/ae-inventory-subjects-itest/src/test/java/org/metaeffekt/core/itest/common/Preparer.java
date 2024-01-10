@@ -22,4 +22,6 @@ public interface Preparer {
     Inventory getInventory() throws Exception;
 
     Inventory readReferenceInventory() throws Exception;
+
+    Preparer setReferenceInventory(String referenceinventory);
 }

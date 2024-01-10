@@ -1,7 +1,7 @@
-package org.metaeffekt.core.itest.javatests.spring;
+package org.metaeffekt.core.itest.javaartifacts.spring;
 
-import org.metaeffekt.core.itest.common.UrlPreparer;
-import org.metaeffekt.core.itest.javatests.TestBasicInvariants;
+import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
