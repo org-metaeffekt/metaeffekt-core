@@ -96,6 +96,7 @@ public class Cvss2 extends MultiScoreCvssVector {
                 accessComplexity = AccessComplexity.fromString(value);
                 break;
             case "AU":
+            case "Au":
                 authentication = Authentication.fromString(value);
                 break;
             case "C":
@@ -208,14 +209,15 @@ public class Cvss2 extends MultiScoreCvssVector {
      * @return The Cvss Temporal Score.
      */
     private double calculateTemporalScore() {
-        double exp, rem, rep;
+        final double baseScore, exp, rem, rep;
+        baseScore = getBaseScore();
         if (exploitability == Exploitability.NULL) exp = Exploitability.NOT_DEFINED.factor;
         else exp = exploitability.factor;
         if (remediationLevel == RemediationLevel.NULL) rem = RemediationLevel.NOT_DEFINED.factor;
         else rem = remediationLevel.factor;
         if (reportConfidence == ReportConfidence.NULL) rep = ReportConfidence.NOT_DEFINED.factor;
         else rep = reportConfidence.factor;
-        return getBaseScore() * exp * rem * rep;
+        return baseScore * exp * rem * rep;
     }
 
     @Override

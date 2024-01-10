@@ -24,6 +24,8 @@ import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -609,15 +611,23 @@ public class Cvss4P0 extends CvssVector {
 
         // calculate mean distance based on normalized severity distances
         // and adjust the original macro vector score by the mean distance
-        final double adjustedOriginalMacroVectorScore = thisMacroVectorScore - meanScoreAdjustment.get(0.0);
+        final double adjustedOriginalMacroVectorScore = thisMacroVectorScore - meanScoreAdjustment.getOrDefault(0.0);
 
         if (adjustedOriginalMacroVectorScore < 0) {
             return 0.0;
         } else if (adjustedOriginalMacroVectorScore > 10) {
             return 10.0;
         } else {
-            return Double.parseDouble(String.format(Locale.US, "%.1f", adjustedOriginalMacroVectorScore));
+            return Double.parseDouble(javaScriptToFixed(adjustedOriginalMacroVectorScore, 1));
         }
+    }
+
+    private String javaScriptToFixed(double number, int fractionDigits) {
+        // set scale to round half up, which is the behavior in JS's toFixed
+        return new BigDecimal(number)
+                .setScale(fractionDigits, RoundingMode.HALF_UP)
+                .toPlainString()
+                .replace(",", ".");
     }
 
     private static class Average {
@@ -629,7 +639,7 @@ public class Cvss4P0 extends CvssVector {
             count++;
         }
 
-        public Double get(Double defaultValue) {
+        public Double getOrDefault(Double defaultValue) {
             if (count == 0) {
                 return defaultValue;
             } else {
@@ -877,13 +887,13 @@ public class Cvss4P0 extends CvssVector {
         appendIfNotDefault(vector, "SI", subIntegrityImpact, SubsequentCia.NOT_DEFINED);
         appendIfNotDefault(vector, "SA", subAvailabilityImpact, SubsequentCia.NOT_DEFINED);
 
-        // Supplemental Metrics
-        appendIfNotDefault(vector, "S", safety, Safety.NOT_DEFINED);
-        appendIfNotDefault(vector, "AU", automatable, Automatable.NOT_DEFINED);
-        appendIfNotDefault(vector, "R", recovery, Recovery.NOT_DEFINED);
-        appendIfNotDefault(vector, "V", valueDensity, ValueDensity.NOT_DEFINED);
-        appendIfNotDefault(vector, "RE", vulnerabilityResponseEffort, VulnerabilityResponseEffort.NOT_DEFINED);
-        appendIfNotDefault(vector, "U", providerUrgency, ProviderUrgency.NOT_DEFINED);
+        // Threat Metrics
+        appendIfNotDefault(vector, "E", exploitMaturity, ExploitMaturity.NOT_DEFINED);
+
+        // Environmental (Security Requirements)
+        appendIfNotDefault(vector, "CR", confidentialityRequirement, RequirementsCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "IR", integrityRequirement, RequirementsCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "AR", availabilityRequirement, RequirementsCia.NOT_DEFINED);
 
         // Environmental (Modified Base Metrics): Exploitability Metrics
         appendIfNotDefault(vector, "MAV", modifiedAttackVector, ModifiedAttackVector.NOT_DEFINED);
@@ -902,13 +912,13 @@ public class Cvss4P0 extends CvssVector {
         appendIfNotDefault(vector, "MSI", modifiedSubIntegrityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED);
         appendIfNotDefault(vector, "MSA", modifiedSubAvailabilityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED);
 
-        // Environmental (Security Requirements)
-        appendIfNotDefault(vector, "CR", confidentialityRequirement, RequirementsCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "IR", integrityRequirement, RequirementsCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "AR", availabilityRequirement, RequirementsCia.NOT_DEFINED);
-
-        // Threat Metrics
-        appendIfNotDefault(vector, "E", exploitMaturity, ExploitMaturity.NOT_DEFINED);
+        // Supplemental Metrics
+        appendIfNotDefault(vector, "S", safety, Safety.NOT_DEFINED);
+        appendIfNotDefault(vector, "AU", automatable, Automatable.NOT_DEFINED);
+        appendIfNotDefault(vector, "R", recovery, Recovery.NOT_DEFINED);
+        appendIfNotDefault(vector, "V", valueDensity, ValueDensity.NOT_DEFINED);
+        appendIfNotDefault(vector, "RE", vulnerabilityResponseEffort, VulnerabilityResponseEffort.NOT_DEFINED);
+        appendIfNotDefault(vector, "U", providerUrgency, ProviderUrgency.NOT_DEFINED);
 
         return vector.toString().replaceAll("/$", "");
     }

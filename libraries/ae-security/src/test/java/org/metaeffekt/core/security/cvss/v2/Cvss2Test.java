@@ -59,6 +59,9 @@ public class Cvss2Test {
                 5.5, 8.5, 2.5, 4.0, 3.4, 8.6, 3.4);
         calculateCvss2("AV:N/AC:H/Au:M/C:P/I:N/A:N/E:U/RL:W/RC:UR/CDP:L/TD:M/CR:M/IR:L/AR:H",
                 1.7, 2.9, 3.2, 1.3, 1.7, 2.9, 1.7);
+
+        calculateCvss2("AV:N/AC:H/Au:M/C:P/I:P/A:C/E:H/RL:TF/RC:UR/CDP:LM/TD:L/CR:M/IR:H/AR:M",
+                5.8, 8.5, 3.2, 5.0, 1.7, 8.9, 1.7);
     }
 
     @Test
@@ -74,6 +77,15 @@ public class Cvss2Test {
                 9.3, 10.0, 8.6, 8.4, Double.NaN, Double.NaN, 8.4);
         calculateCvss2("AV:N/AC:M/Au:N/C:C/I:C/A:C/RC:UC",
                 9.3, 10.0, 8.6, 8.4, Double.NaN, Double.NaN, 8.4);
+    }
+
+    @Test
+    public void negativeEnvironmentalScoreTest() {
+        // happens because CDP is None and TD is High/Medium
+        calculateCvss2("AV:L/AC:H/Au:M/C:P/I:N/A:N/E:H/RL:OF/RC:UC/CDP:N/TD:H/CR:L/IR:L/AR:L",
+                0.8, 2.9, 1.2, 0.6, -0.1, 1.4, -0.1);
+        calculateCvss2("AV:L/AC:H/Au:M/C:P/I:N/A:N/E:H/RL:OF/RC:UC/CDP:N/TD:M/CR:L/IR:L/AR:L",
+                0.8, 2.9, 1.2, 0.6, -0.1, 1.4, -0.1);
     }
 
     @Test

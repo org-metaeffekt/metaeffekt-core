@@ -17,6 +17,7 @@ package org.metaeffekt.core.security.cvss.v4P0;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,17 @@ public class Cvss4P0Test {
     private final static File CVSS_RESOURCE_DIR = new File("src/test/resources/cvss");
 
     @Test
+    @Ignore
+    public void customTest() {
+        final String vectorString = "CVSS:4.0/AV:P/AC:H/AT:P/PR:L/UI:P/VC:L/VI:L/VA:L/SC:H/SI:L/SA:L/E:U/IR:M/AR:H/MAT:P/MPR:N/MUI:P/MVC:N/MVI:L/MVA:L/MSC:L/MSI:L/MSA:S/S:P/R:I/U:Red";
+        final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
+
+        LOG.info("{}", cvss4P0);
+        LOG.info("{}", cvss4P0.getMacroVector());
+        LOG.info("{}", cvss4P0.getBaseScore());
+    }
+
+    @Test
     public void initialTest() {
         final String vectorString = "CVSS:4.0/AV:N/AC:L/AT:N/PR:H/UI:N/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N";
         final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
@@ -45,6 +57,16 @@ public class Cvss4P0Test {
         Assert.assertEquals("1", cvss4P0.getMacroVector().getEq1().getLevel());
         Assert.assertEquals(0, cvss4P0.severityDistance(cvss4P0)); // distance to itself is 0
         Assert.assertEquals(5.3, cvss4P0.getMacroVector().getLookupTableScore(), 0.01);
+    }
+
+    @Test
+    public void jsToFixedBehaviourTest() {
+        final String vectorString = "CVSS:4.0/AV:P/AC:H/AT:P/PR:L/UI:P/VC:L/VI:L/VA:L/SC:H/SI:L/SA:L/E:U/IR:M/AR:H/MAT:P/MPR:N/MUI:P/MVC:N/MVI:L/MVA:L/MSC:L/MSI:L/MSA:S/S:P/R:I/U:Red";
+        final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
+
+        Assert.assertEquals(vectorString, cvss4P0.toString());
+        Assert.assertEquals("212021", cvss4P0.getMacroVector().toString());
+        Assert.assertEquals(0.9, cvss4P0.getBaseScore(), 0.01);
     }
 
     @Test
@@ -58,6 +80,9 @@ public class Cvss4P0Test {
         final Map<String, String> exceptionVectors = new LinkedHashMap<>();
 
         for (String line : lines) {
+            if (line.isEmpty()) {
+                continue;
+            }
             try {
                 final String[] parts = line.split(" ");
                 final String vectorString = parts[0];

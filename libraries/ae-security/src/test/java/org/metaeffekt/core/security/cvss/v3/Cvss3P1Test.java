@@ -82,6 +82,11 @@ public class Cvss3P1Test {
 
         calculateCvss3("CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
                 5.5, 3.6, 1.8, Double.NaN, Double.NaN, Double.NaN, 5.5);
+
+        calculateCvss3("CVSS:3.1/AV:A/AC:L/PR:N/UI:N/S:C/C:N/I:L/A:L/E:H/RC:R/MAV:N/MPR:L/MC:N/MI:H/MA:H/CR:L/IR:H/AR:H",
+                6.1, 2.7, 2.8, 5.9, 9.6, 6.1, 9.6);
+        calculateCvss3("CVSS:3.1/AV:L/AC:L/PR:H/UI:N/S:C/C:L/I:H/A:L/E:H/MAC:H/MPR:N/MUI:N/MC:N/MI:N/MA:N/IR:M",
+                7.3, 5.3, 1.5, 7.3, 0.0, 0.0, 0.0);
     }
 
     @Test
@@ -197,7 +202,7 @@ public class Cvss3P1Test {
     private void checkCvssScores(Cvss3P1 vector, double base, double impact, double exploitability, double temporal, double environmental, double adjImpact, double overall) {
 
         // calculate values
-        LOG.info("                Vector: [{}]", vector);
+        LOG.info("                Vector: [{}]", vector.toString(false));
         LOG.info("            Base score: [{}]", vector.getBaseScore());
         LOG.info("          Impact score: [{}]", vector.getImpactScore());
         LOG.info("  Exploitability score: [{}]", vector.getExploitabilityScore());
