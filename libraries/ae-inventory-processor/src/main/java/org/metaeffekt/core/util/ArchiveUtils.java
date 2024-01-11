@@ -63,6 +63,8 @@ public class ArchiveUtils {
         zipExtensions.add("aar");
         zipExtensions.add("sar");
         zipExtensions.add("nupkg");
+        // whl: python / pip wheel files (used for distribution binary dependencies like libraries)
+        zipExtensions.add("whl");
 
         gzipExtensions.add("gzip");
         gzipExtensions.add("gz");
