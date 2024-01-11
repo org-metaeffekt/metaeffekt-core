@@ -54,27 +54,40 @@ public class ArchiveUtils {
 
     static {
         zipExtensions.add("war");
+        // zip: regular zip archives
         zipExtensions.add("zip");
         zipExtensions.add("nar");
+        // jar: java archives
         zipExtensions.add("jar");
         zipExtensions.add("xar");
         zipExtensions.add("webjar");
         zipExtensions.add("ear");
         zipExtensions.add("aar");
         zipExtensions.add("sar");
+        // nupkg: nuget package (special zip)
         zipExtensions.add("nupkg");
         // whl: python / pip wheel files (used for distribution binary dependencies like libraries)
         zipExtensions.add("whl");
 
+        // gzip: gzip compressed file, less commonly used extention than ".gz"
         gzipExtensions.add("gzip");
+        // gz: gzip compressed file
         gzipExtensions.add("gz");
 
+        // tar: various archive formats derived from an old "tape archive" utility
         tarExtensions.add("tar");
-        tarExtensions.add("rpm"); // RPMs contain further metadata; how to handle them to not get lost? Generate summary file?
+        // TODO: RPMs contain further metadata; how to handle them to not get lost? Generate summary file?
+        // rpm: RPM (/ redhat) package manager packages
+        tarExtensions.add("rpm");
+        // bz2: bzip2 format compressed files
         tarExtensions.add("bz2");
+        // xz: compression format xz(see also "lzma")
         tarExtensions.add("xz");
+        // tgz: sometimes used as a shorthand for ".tar.gz"
         tarExtensions.add("tgz");
+        // deb: debian package archive
         tarExtensions.add("deb");
+        // apk: android package (for apps, special zip), alpine linux package (special tar file)
         tarExtensions.add("apk");
 
         jmodExtensions.add("jmod");
