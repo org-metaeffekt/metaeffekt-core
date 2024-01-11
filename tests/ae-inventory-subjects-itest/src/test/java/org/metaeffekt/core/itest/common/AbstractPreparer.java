@@ -63,13 +63,13 @@ public abstract class AbstractPreparer implements Preparer {
 
     @Override
     public boolean rebuildInventory() throws Exception {
-        download(false);
-        return inventorize(true);
+        return load(false) &&
+                inventorize(true);
     }
 
     @Override
     public Inventory getInventory() throws Exception {
-        download(false);
+        load(false);
         inventorize(false);
         loadInventory();
         return inventory;
@@ -80,13 +80,13 @@ public abstract class AbstractPreparer implements Preparer {
     }
 
     public Inventory readReferenceInventory() throws Exception {
-        if(referenceInventory.isEmpty()) return new Inventory();
-        URL url = this.getClass().getResource("/"+referenceInventory);
+        if (referenceInventory.isEmpty()) return new Inventory();
+        URL url = this.getClass().getResource("/" + referenceInventory);
         if (url == null) {
-            LOG.error("reference inventory not found: "+referenceInventory);
+            LOG.error("reference inventory not found: " + referenceInventory);
             return new Inventory();
         }
-        LOG.info("Loading reference inventory: "+referenceInventory);
+        LOG.info("Loading reference inventory: " + referenceInventory);
         File file = new File(url.getFile());
         return InventoryUtils.readInventory(file, "*.xls");
     }

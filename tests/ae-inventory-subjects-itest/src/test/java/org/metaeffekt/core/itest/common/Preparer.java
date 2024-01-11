@@ -11,7 +11,7 @@ public interface Preparer {
 
     boolean clear() throws Exception;
 
-    boolean download(boolean overwrite) throws Exception;
+    boolean load(boolean overwrite) throws Exception;
 
     boolean inventorize(boolean overwrite) throws Exception;
 

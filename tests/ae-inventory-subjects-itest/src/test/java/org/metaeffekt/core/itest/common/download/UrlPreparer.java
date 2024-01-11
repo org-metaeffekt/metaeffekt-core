@@ -1,16 +1,23 @@
 package org.metaeffekt.core.itest.common.download;
 
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.itest.common.AbstractPreparer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
 public class UrlPreparer extends AbstractPreparer {
+
+    private final Logger LOG = LoggerFactory.getLogger(UrlPreparer.class);
+
 
     public boolean inventorize(boolean overwrite) throws Exception {
         String inventoryfile = getInventoryFolder()+"scan-inventory.ser";
@@ -58,15 +65,28 @@ public class UrlPreparer extends AbstractPreparer {
         return true;
     }
 
-    public boolean download(boolean overwrite) throws MalformedURLException {
+    private void httpDownload(String artifactfile) throws MalformedURLException {
+        new WebAccess().fetchResponseBodyFromUrlToFile(new URL(url), new File(artifactfile));
+    }
+
+    private void filecopy(String artifactfile) throws IOException {
+        File source = new File(new URL(url).getFile());
+        File target = new File(artifactfile);
+        FileUtils.copyFile(source,target);
+    }
+
+    public boolean load(boolean overwrite) throws IOException {
         String[] filenameparts = url.split("/");
         String filename = filenameparts[filenameparts.length - 1];
         String artifactfile = getDownloadFolder()+ filename;
         if (overwrite || !new File(artifactfile).exists()) {
             new File(getDownloadFolder()).mkdirs();
-                new WebAccess().fetchResponseBodyFromUrlToFile(new URL(url), new File(artifactfile));
+            if(url.startsWith("http"))
+                httpDownload(artifactfile);
+            if(url.startsWith("file"))
+                filecopy(artifactfile);
         }
-        return true;
+        return new File(artifactfile).exists();
     }
 
 }
