@@ -21,17 +21,29 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.ParsingUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PythonModuleComponentPatternContributor extends ComponentPatternContributor {
+    private static final Logger LOG = LoggerFactory.getLogger(PythonModuleComponentPatternContributor.class);
+
+    // TODO: unify suffixes and other checks like in "applies"
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add(".dist-info/metadata");
+        add(".dist-info/record");
+        add(".dist-info/wheel");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
+        //FIXME: this triggers THRICE, creating three identical component patterns for one unpacked wheel. is that OK?
         return pathInContext.endsWith(".dist-info/METADATA")
                 || pathInContext.endsWith(".dist-info/RECORD")
                 || pathInContext.endsWith(".dist-info/WHEEL");
@@ -44,9 +56,16 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         final File anchorParentDir = anchorFile.getParentFile();
         final File contextBaseDir = anchorParentDir.getParentFile();
 
+        // this one doesn't seem to be doing anything
         String includePattern = relativeAnchorPath.replace("/" + anchorFile.getName(), "") + "/**/*";
 
+        // TODO: something is definitely wrong here, some NOOP include patterns and some weird-looking ones
+        // TODO: include binary libraries or not?
+
+        includePattern += "," + anchorFile.getParentFile().getName() + "/**/*";
+
         Artifact artifact = new Artifact();
+        // TODO: only output "module name - version" in id
         artifact.setId(relativeAnchorPath.replace(".dist-info/"+ anchorFile.getName(), ""));
 
         if (anchorFile.getName().equals("METADATA") && anchorFile.exists()) {
@@ -66,6 +85,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
                 artifact.set("Package Specified Licenses", licenseExpression);
 
             } catch (IOException e) {
+                LOG.debug("IOException while trying to parse a METADATA file at [{}].", anchorFile);
             }
         } else {
             // in case it is not a METADATA file we extract name and version from the path
@@ -92,8 +112,10 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
                         .map(s -> FileUtils.asRelativePath(contextBaseDir, new File(anchorFile.getParentFile().getParentFile(), s)) + "/**/*")
                         .collect(Collectors.joining(","));
             } catch (IOException e) {
+                LOG.debug("IOException while trying to parse top_level.txt at [{}]." , topLevelInfo);
             }
         } else {
+            // FIXME: this creates VERY inclusive paths like "numpy/**/*" which didn't even do anything in testing
             // in case no top_level.txt exists we use the current component name
             includePattern += "," + artifact.getComponent() + "/**/*";
         }
@@ -112,5 +134,10 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
 
         return Collections.singletonList(componentPatternData);
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 }

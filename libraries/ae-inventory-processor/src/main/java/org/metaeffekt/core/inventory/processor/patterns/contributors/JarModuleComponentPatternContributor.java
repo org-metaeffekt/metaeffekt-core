@@ -24,13 +24,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
 
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/pom.xml");
+    }});
+
     @Override
     public boolean applies(String pathInContext) {
+        // FIXME: toLowerCase is platform-dependent without locale specification. is this intentional?
         pathInContext = pathInContext.toLowerCase();
         return (pathInContext.contains("/meta-inf/maven/") && pathInContext.endsWith("/pom.xml"));
     }
@@ -103,6 +109,11 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set("Group Id", artifact.getGroupId());
 
         return Collections.singletonList(componentPatternData);
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private void mergeArtifact(Artifact artifact, Artifact fromXml) {

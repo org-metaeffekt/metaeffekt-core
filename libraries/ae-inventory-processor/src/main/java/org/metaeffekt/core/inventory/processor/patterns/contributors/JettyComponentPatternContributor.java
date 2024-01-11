@@ -22,10 +22,15 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class JettyComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/jetty/version.txt");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
@@ -62,6 +67,11 @@ public class JettyComponentPatternContributor extends ComponentPatternContributo
             throw new RuntimeException(e);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private static String parseVersionFromVersionFile(File anchorFile) throws IOException {

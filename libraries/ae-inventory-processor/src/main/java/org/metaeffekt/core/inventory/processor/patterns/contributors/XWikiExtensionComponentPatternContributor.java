@@ -25,10 +25,15 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class XWikiExtensionComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add(".xed");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
@@ -90,6 +95,11 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private static String optStringValue(Element documentElement, String key) {

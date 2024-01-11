@@ -23,11 +23,16 @@ import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 public class JavaRuntimeComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/release");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
@@ -63,6 +68,11 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
             throw new RuntimeException(e);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     public static class ReleasedPackageData {

@@ -25,6 +25,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -35,6 +36,10 @@ public class GemSpecContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(GemSpecContributor.class);
 
     public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem";
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
+        add(".gemspec");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
@@ -144,6 +149,11 @@ public class GemSpecContributor extends ComponentPatternContributor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private static String optStringValue(Element documentElement, String key) {

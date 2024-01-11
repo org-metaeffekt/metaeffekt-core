@@ -15,15 +15,23 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class UnwrappedEclipseBundleContributor extends ComponentPatternContributor {
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/about.html");
+        add("/about.ini");
+        add("/about.properties");
+        add("/about.mappings");
+    }});
+
+
     @Override
     public boolean applies(String pathInContext) {
         return pathInContext.endsWith("about.html")
@@ -54,5 +62,10 @@ public class UnwrappedEclipseBundleContributor extends ComponentPatternContribut
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/" + id + "/**/*");
 
         return Collections.singletonList(componentPatternData);
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 }

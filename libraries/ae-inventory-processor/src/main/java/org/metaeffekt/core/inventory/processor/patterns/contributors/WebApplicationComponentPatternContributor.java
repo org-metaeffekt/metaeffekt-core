@@ -23,6 +23,7 @@ import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -30,8 +31,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/web-inf/web.xml");
+    }});
 
-    @Override
+        @Override
     public boolean applies(String pathInContext) {
         return pathInContext.toLowerCase().endsWith("/web-inf/web.xml");
     }
@@ -83,6 +87,11 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
             throw new RuntimeException(e);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private String parseNameFromVersionPropertyFile(File file) {

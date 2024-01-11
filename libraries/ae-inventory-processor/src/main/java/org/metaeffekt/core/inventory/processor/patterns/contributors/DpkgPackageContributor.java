@@ -28,7 +28,12 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -37,6 +42,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(DpkgPackageContributor.class);
 
     protected static final Pattern hexStringPattern = Pattern.compile("^[a-fA-F0-9]+$");
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/status");
+    }});
 
     @SuppressWarnings("unused")
     public static class DpkgStatusFileEntry {
@@ -191,6 +200,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     public boolean applies(String pathInContext) {
         // The default location under root is var/lib/dpkg.
         // if this part matches, make the bet that this is a debian file system and run package file inclusions.
+
+        // FIXME: "equals" check won't take into account any potential tar system dumps or such where
+        //  pathInContext would look something like [myRootDump.tar]/var/lib/dpkg/status
 
         // could also match files from ./info/ as anchors?
         return pathInContext.equals("var/lib/dpkg/status");
@@ -432,5 +444,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
 
         return componentPatterns;
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 }

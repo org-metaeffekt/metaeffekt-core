@@ -40,66 +40,81 @@ public class ComponentPatternProducer {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
+    //FIXME: there needs to be a runtime sanity check for these: UPPERCASE won't do us well when checking against lower
     public static final String[] FILE_SUFFIX_LIST = new String[] {
 
+            // TODO: many of the anchor patterns ignore context. some of them don't but then their applies method does.
+            //  this redundancy makes for uglier code and doing the same work twice. can we find a better method?
             // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into
             // context.
 
-            // ruby; order matters; start from the ones you regard more appropriate
-            ".gemspec",
-
-            ".xed",
-
-            // web modules
-            // prioritize bower components; in general, better metadata first
-            ".bower.json",
-            "/bower.json",
-            "/package-lock.json",
-            "/package.json",
-            "/composer.json",
-
-            // nextcloud appinfo
-            "/appinfo/info.xml",
-
-            // container marker
-            "/json",
-
-            // eclipse bundles
-            "/about.html",
-            "/about.ini",
-            "/about.properties",
-            "/about.mappings",
-
-            // jars
-            "/pom.xml",
-
+            // FIXME: there is some unnecessary disarray between many file suffixes and the cpc's "applies" method.
+            //  one of these is the python modules contributor, that doesn't deal with __init__ at all, but registered
+            //  it in the default file suffix list anyway.
             // python modules
-            "/METADATA",
-            "/RECORD",
-            "/WHEEL",
+            "/metadata",
+            "/record",
+            "/wheel",
             "/__init__.py",
             "/__about__.py",
-
-            // debian status files
-            "/status",
-
-            // node runtime
-            "/node/node_version.h",
-
-            // nordeck license summary
-            "app/lib/licenses.json",
-
-            // java openjdk/openjre dervied
-            "/release",
-
-            // jetty
-            "/jetty/version.txt",
-
-            // web applications
-            "/web-inf/web.xml"
     };
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
+
+    /**
+     * Processes given contributors and collects their suffixes in lowercase form.
+     * @param contributors the list of contributors to be added
+     * @return collection of lowercase suffixes
+     */
+    protected Set<String> getRelevantSuffixes(List<ComponentPatternContributor> contributors) {
+        // TODO: should defaults disappear once we spec every contributor to state its suffixes?
+        Set<String> relevantSuffixes = new HashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
+
+        // for checking whether i did everything correctly and don't need defaults any more
+        Set<String> uncoveredDefaults = new LinkedHashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
+
+        for (ComponentPatternContributor cpc : contributors) {
+            Collection<String> suffixes = cpc.getSuffixes();
+
+            if (suffixes == null) {
+                LOG.error(
+                        "Component pattern contributor [{}] has null suffix list.",
+                        cpc.getClass().getName()
+                );
+                continue;
+            }
+
+            if (suffixes.isEmpty()) {
+                LOG.warn(
+                        "Component pattern contributor [{}] doesn't register any suffixes.",
+                        cpc.getClass().getName()
+                );
+                continue;
+            }
+
+            for (String suffix : cpc.getSuffixes()) {
+                String lowercasedSuffix = suffix.toLowerCase(Locale.ENGLISH);
+                if (!suffix.equals(lowercasedSuffix)) {
+                    LOG.debug(
+                            "Suffix [{}] of [{}] was not lowercase, then lowercased automagically.",
+                            suffix,
+                            cpc.getClass().getName()
+                    );
+                }
+                relevantSuffixes.add(lowercasedSuffix);
+
+                uncoveredDefaults.remove(suffix.toLowerCase(Locale.ENGLISH));
+            }
+        }
+
+        // we want to remove defaults eventually to make the system modular. output may need discussion
+        if (!uncoveredDefaults.isEmpty()) {
+            LOG.info("Some defaults have not been covered by component pattern contributors: [{}] ",
+                    uncoveredDefaults);
+        }
+
+        return relevantSuffixes;
+    }
 
     public void extractComponentPatterns(FileSystemScanContext fileSystemScanContext, Inventory targetInventory) {
 
@@ -140,46 +155,53 @@ public class ComponentPatternProducer {
         // record component pattern qualifiers for deduplication purposes
         final Set<String> deduplicationQualifierSet = new HashSet<>();
 
+        // collect possible file suffixes before scanning
+        Collection<String> relevantSuffixes = getRelevantSuffixes(componentPatternContributors);
+
         // for each include pattern (by priority) try to identify a component pattern
-        for (String fileSuffix : FILE_SUFFIX_LIST) {
+        for (String pathInContext : filesByPathLength) {
+            {
+                // early abort if file suffix is not registered
+                // FIXME: toLowerCase without locale is platform-dependent and error-prone.
+                //  is this intentionally platform-dependent?
+                String pathInContextLowerCase = pathInContext.toLowerCase();
+                if (relevantSuffixes.stream().noneMatch(pathInContextLowerCase::endsWith)) {
+                    // skip this file as it doesn't match registered suffixes
+                    continue;
+                }
+            }
 
-            for (String pathInContext : filesByPathLength) {
-                // FIXME: toLowerCase for paths is error-prone and (lack of specified Locale) platform-dependent
-                if (!pathInContext.toLowerCase().endsWith(fileSuffix)) continue;
+            final Artifact artifact = pathToArtifactMap.get(pathInContext);
+            final String checksum = artifact.getChecksum();
 
-                final Artifact artifact = pathToArtifactMap.get(pathInContext);
-                final String checksum = artifact.getChecksum();
+            // try to apply contributors
+            for (ComponentPatternContributor cpc : componentPatternContributors) {
+                if (cpc.applies(pathInContext)) {
+                    final List<ComponentPatternData> componentPatternDataList =
+                            cpc.contribute(baseDir, pathInContext, checksum);
 
-                // apply contributors
-                for (ComponentPatternContributor cpc : componentPatternContributors) {
-                    if (cpc.applies(pathInContext)) {
+                    if (!componentPatternDataList.isEmpty()) {
+                        for (ComponentPatternData cpd : componentPatternDataList) {
+                            LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
 
-                        final List<ComponentPatternData> componentPatternDataList =
-                                cpc.contribute(baseDir, pathInContext, checksum);
-
-                        if (!componentPatternDataList.isEmpty()) {
-                            for (ComponentPatternData cpd : componentPatternDataList) {
-                                LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
-
-                                // FIXME: defer to 2nd pass
-                                final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
-                                if ("unspecific".equalsIgnoreCase(version)) {
-                                    continue;
-                                }
-
-                                final String qualifier = cpd.deriveQualifier();
-                                if (!deduplicationQualifierSet.contains(qualifier)) {
-                                    targetInventory.getComponentPatternData().add(cpd);
-                                    deduplicationQualifierSet.add(qualifier);
-                                }
-
-                                cpd.validate(cpc.getClass().getName());
+                            // FIXME: defer to 2nd pass
+                            final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
+                            if ("unspecific".equalsIgnoreCase(version)) {
+                                continue;
                             }
-                        }
 
-                        // the first contributor wins
-                        break;
+                            final String qualifier = cpd.deriveQualifier();
+                            if (!deduplicationQualifierSet.contains(qualifier)) {
+                                targetInventory.getComponentPatternData().add(cpd);
+                                deduplicationQualifierSet.add(qualifier);
+                            }
+
+                            cpd.validate(cpc.getClass().getName());
+                        }
                     }
+
+                    // the first contributor wins
+                    break;
                 }
             }
         }
