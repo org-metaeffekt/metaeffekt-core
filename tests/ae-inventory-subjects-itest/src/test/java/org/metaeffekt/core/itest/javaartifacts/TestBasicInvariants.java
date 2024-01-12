@@ -5,7 +5,7 @@ import org.metaeffekt.core.itest.genericTests.CheckInvariants;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-public abstract class TestBasicInvariants {
+public abstract class TestBasicInvariants implements AnalysisTemplate {
 
     static protected Preparer preparer;
 
@@ -16,7 +16,6 @@ public abstract class TestBasicInvariants {
     public Inventory getInventory() throws Exception {
         if (inventory == null) {
             this.inventory = preparer.getInventory();
-            System.out.println(inventory);
         }
         return inventory;
     }

@@ -11,7 +11,8 @@ public class CheckInvariants {
 
     public static void assertInvariants(Analysis analysis){
         assertAtLeastOneArtifact(analysis);
-        //assertNoMissingTypes(scanner);
+        // TODO Type detection not stable / available for all artifatcs
+        //assertNoMissingTypes(analysis);
         assertNoErrors(analysis);
     }
 

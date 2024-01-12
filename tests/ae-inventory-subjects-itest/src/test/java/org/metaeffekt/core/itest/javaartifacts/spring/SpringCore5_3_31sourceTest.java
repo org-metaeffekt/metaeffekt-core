@@ -30,12 +30,10 @@ public class SpringCore5_3_31sourceTest extends TestBasicInvariants {
     @Test
     public void inventorize() throws Exception{
         Assert.assertTrue(preparer.rebuildInventory());
-
     }
 
     @Test
     public void first() throws Exception{
         LOG.info(preparer.getInventory().toString());
-
     }
 }

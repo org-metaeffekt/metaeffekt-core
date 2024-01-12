@@ -40,7 +40,7 @@ public abstract class AbstractPreparer implements Preparer {
 
     @Override
     public Preparer setName(String testname) {
-        this.name = testname;
+        this.name = testname.replace("org.metaeffekt.core.itest.","");
         this.myDir = name.replace(".", "/") + "/";
         return this;
     }
