@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
+
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
@@ -36,8 +38,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
 
     @Override
     public boolean applies(String pathInContext) {
-        // FIXME: toLowerCase is platform-dependent without locale specification. is this intentional?
-        pathInContext = pathInContext.toLowerCase();
+        pathInContext = pathInContext.toLowerCase(PATH_LOCALE);
         return (pathInContext.contains("/meta-inf/maven/") && pathInContext.endsWith("/pom.xml"));
     }
 

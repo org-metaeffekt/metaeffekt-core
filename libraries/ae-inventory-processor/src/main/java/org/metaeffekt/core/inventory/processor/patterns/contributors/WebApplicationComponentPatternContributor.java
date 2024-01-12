@@ -30,6 +30,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.*;
+
 public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/web-inf/web.xml");
@@ -37,7 +39,7 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
 
         @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.toLowerCase().endsWith("/web-inf/web.xml");
+        return pathInContext.toLowerCase(PATH_LOCALE).endsWith("/web-inf/web.xml");
     }
 
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
@@ -56,7 +58,7 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
                         FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-                String derivedPart = webXmlData.displayName.toLowerCase();
+                String derivedPart = webXmlData.displayName.toLowerCase(PATH_LOCALE);
                 if (StringUtils.isNotEmpty(version)) {
                     derivedPart = derivedPart + "-" + version;
                 }

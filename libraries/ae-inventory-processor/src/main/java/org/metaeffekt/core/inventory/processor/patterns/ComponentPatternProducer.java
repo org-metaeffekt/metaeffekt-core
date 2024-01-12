@@ -59,6 +59,16 @@ public class ComponentPatternProducer {
             "/__about__.py",
     };
 
+    /**
+     * Consolidate locale settings across contributors.<br>
+     * These should probably both be equal or both equal english.<br>
+     * The They are mainly here to avoid using platform-specific locales in contributors.
+     */
+    public static final class localeConstants {
+        public static final Locale PATH_LOCALE = Locale.ENGLISH;
+        public static final Locale OTHER_LOCALE = Locale.ENGLISH;
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternProducer.class);
 
     /**
@@ -93,7 +103,8 @@ public class ComponentPatternProducer {
             }
 
             for (String suffix : cpc.getSuffixes()) {
-                String lowercasedSuffix = suffix.toLowerCase(Locale.ENGLISH);
+                // use path locale since we will be using suffixes to compare paths
+                String lowercasedSuffix = suffix.toLowerCase(localeConstants.PATH_LOCALE);
                 if (!suffix.equals(lowercasedSuffix)) {
                     LOG.debug(
                             "Suffix [{}] of [{}] was not lowercase, then lowercased automagically.",
@@ -103,7 +114,7 @@ public class ComponentPatternProducer {
                 }
                 relevantSuffixes.add(lowercasedSuffix);
 
-                uncoveredDefaults.remove(suffix.toLowerCase(Locale.ENGLISH));
+                uncoveredDefaults.remove(suffix.toLowerCase(localeConstants.PATH_LOCALE));
             }
         }
 
@@ -162,9 +173,7 @@ public class ComponentPatternProducer {
         for (String pathInContext : filesByPathLength) {
             {
                 // early abort if file suffix is not registered
-                // FIXME: toLowerCase without locale is platform-dependent and error-prone.
-                //  is this intentionally platform-dependent?
-                String pathInContextLowerCase = pathInContext.toLowerCase();
+                String pathInContextLowerCase = pathInContext.toLowerCase(localeConstants.PATH_LOCALE);
                 if (relevantSuffixes.stream().noneMatch(pathInContextLowerCase::endsWith)) {
                     // skip this file as it doesn't match registered suffixes
                     continue;
