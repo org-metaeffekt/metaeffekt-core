@@ -115,11 +115,16 @@ public class ArtifactUnwrapTask extends ScanTask {
 
             if (explicitExclude || implicitExclude) {
                 if (implicitExclude) {
-                    LOG.info("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
+                    // apply implicit exclusion only for sub-artifacts
+                    final FileRef parentPath = new FileRef(fileRef.getFile().getParentFile().getAbsolutePath());
+                    if (!parentPath.getPath().equals(fileSystemScanContext.getBaseDir().getPath())) {
+                        LOG.info("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
+                        markForDelete = true;
+                    }
                 } else {
                     LOG.info("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
+                    markForDelete = true;
                 }
-                markForDelete = true;
             }
 
             if (markForDelete) {

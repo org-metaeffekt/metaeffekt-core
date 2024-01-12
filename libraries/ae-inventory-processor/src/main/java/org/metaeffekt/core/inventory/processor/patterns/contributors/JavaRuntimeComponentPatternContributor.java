@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
@@ -65,6 +66,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
     }
 
     public static class ReleasedPackageData {
+        String name;
         String os;
         String arch;
         String type;
@@ -81,9 +83,36 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
     }
 
     private ReleasedPackageData parsePackageData(File anchorFile) throws IOException {
+        final ReleasedPackageData releasedPackageData = new ReleasedPackageData();
+
+        parseReleaseFile(anchorFile, releasedPackageData);
+
+        // check whether properties exist
+        final File file = FileUtils.findSingleFile(anchorFile.getParentFile(), "*.properties");
+        if (file != null) {
+            parseAddonProperties(releasedPackageData, file);
+        }
+
+        modulatePackageData(releasedPackageData);
+
+        return releasedPackageData;
+    }
+
+    private void parseAddonProperties(ReleasedPackageData releasedPackageData, File file) {
+        final Properties properties = PropertiesUtils.loadPropertiesFile(file);
+
+        if (releasedPackageData.implementorVersion == null) {
+            releasedPackageData.implementorVersion = properties.getProperty("java.vendor.version");
+        }
+        if (releasedPackageData.implementor == null) {
+            releasedPackageData.implementor = properties.getProperty("java.vm.vendor");
+        }
+    }
+
+    private ReleasedPackageData parseReleaseFile(File anchorFile, ReleasedPackageData data) {
         final Properties p = PropertiesUtils.loadPropertiesFile(anchorFile);
 
-        final ReleasedPackageData data = new ReleasedPackageData();
+        data.name = anchorFile.getParentFile().getName();
 
         data.implementor = parseProperty(p, "IMPLEMENTOR", "Java");
         data.implementorVersion = parseProperty(p, "IMPLEMENTOR_VERSION", null);
@@ -91,17 +120,20 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
         data.runtimeVersion = parseProperty(p, "JAVA_RUNTIME_VERSION", null);
         data.url = parseProperty(p, "SOURCE_REPO", null);
         data.type = parseProperty(p, "IMAGE_TYPE", "jdk");
-
         data.arch = parseProperty(p, "OS_ARCH", null);
         data.os = parseProperty(p, "OS_NAME", null);
 
+        return data;
+    }
+
+    private void modulatePackageData(ReleasedPackageData data) {
         // map known constructs
         if ("Oracle Corporation".equals(data.implementor)) {
             data.implementor = "Oracle";
         }
 
         boolean evidenceForOpenJdk = false;
-        evidenceForOpenJdk |= anchorFile.getParentFile().getName().toLowerCase().contains("openjdk");
+        evidenceForOpenJdk |= data.name.toLowerCase().contains("openjdk");
         evidenceForOpenJdk |= data.implementor.toLowerCase().contains("openjdk");
 
         if (StringUtils.isNotBlank(data.implementorVersion)) {
@@ -138,8 +170,6 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
         data.componentPart += "-" + data.version;
 
         data.componentName = data.implementor + " " + prefix;
-
-        return data;
     }
 
     private String parseProperty(Properties p, String key, String defaultValue) {

@@ -112,5 +112,25 @@ public class JavaRuntimeComponentPatternContributorTest {
         Assertions.assertThat(componentRelease).isNull();
     }
 
+    @Test
+    public void testVariant006() {
+        File file = new File("src/test/resources/component-pattern-contributor/java-runtime-006/release");
+
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "release", FileUtils.computeMD5Checksum(file));
+
+        Assertions.assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+
+        final String componentPart = cpd.get(COMPONENT_PART);
+        final String componentName = cpd.get(COMPONENT_NAME);
+        final String componentVersion = cpd.get(COMPONENT_VERSION);
+        final String componentRelease = cpd.get("Release");
+
+        Assertions.assertThat(componentPart).isEqualTo("temurin-jdk-17.0.2");
+        Assertions.assertThat(componentName).isEqualTo("Java Temurin");
+        Assertions.assertThat(componentVersion).isEqualTo("17.0.2");
+        Assertions.assertThat(componentRelease).isEqualTo("8");
+    }
 
 }

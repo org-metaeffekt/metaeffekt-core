@@ -9,7 +9,7 @@
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
         <version>HEAD-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>ae-artifact-publish-maven-plugin</artifactId>

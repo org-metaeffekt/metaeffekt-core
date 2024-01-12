@@ -15,23 +15,26 @@
  */
 package org.metaeffekt.core.itest.javaartifacts;
 
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FbmsWarTest extends TestBasicInvariants {
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class JustJEclipseBundleTest extends TestBasicInvariants {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
         preparer = new UrlPreparer()
-                .setSource("https://repo1.maven.org/maven2/org/jasig/portal/fbms/fbms-webapp/1.3.1/fbms-webapp-1.3.1.war")
-                .setName(FbmsWarTest.class.getName());
+                .setSource("https://download.eclipse.org/justj/jres/17/updates/release/17.0.2/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")
+                .setName(JustJEclipseBundleTest.class.getName());
     }
 
     @Ignore
@@ -49,6 +52,23 @@ public class FbmsWarTest extends TestBasicInvariants {
     @Test
     public void first() throws Exception{
         LOG.info(preparer.getInventory().toString());
+    }
+
+    @Test
+    public void testCompositionAnalysis() throws Exception {
+        final Inventory inventory = preparer.getInventory();
+
+        inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
+
+        assertThat(inventory.findArtifact(
+            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).isNotNull();
+        assertThat(inventory.findArtifact(
+            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).isNotNull();
+        assertThat(inventory.findArtifact(
+            "temurin-jdk-17.0.2")).isNotNull();
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(3);
+
     }
 
 }

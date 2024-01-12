@@ -15,23 +15,26 @@
  */
 package org.metaeffekt.core.itest.javaartifacts;
 
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FbmsWarTest extends TestBasicInvariants {
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class CommonsBeanutilsEclipseBundleTest extends TestBasicInvariants {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
         preparer = new UrlPreparer()
-                .setSource("https://repo1.maven.org/maven2/org/jasig/portal/fbms/fbms-webapp/1.3.1/fbms-webapp-1.3.1.war")
-                .setName(FbmsWarTest.class.getName());
+                .setSource("https://download.eclipse.org/virgo/release/updatesite/3.6.2.RELEASE/plugins/org.apache.commons.collections_3.2.0.v201005080500.jar")
+                .setName(CommonsBeanutilsEclipseBundleTest.class.getName());
     }
 
     @Ignore
@@ -49,6 +52,18 @@ public class FbmsWarTest extends TestBasicInvariants {
     @Test
     public void first() throws Exception{
         LOG.info(preparer.getInventory().toString());
+    }
+
+    @Test
+    public void testCompositionAnalysis() throws Exception {
+        final Inventory inventory= preparer.getInventory();
+
+        inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
+
+        assertThat(inventory.findArtifact(
+                "org.apache.commons.collections_3.2.0.v201005080500.jar")).isNotNull();
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1);
     }
 
 }

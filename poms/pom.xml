@@ -12,7 +12,7 @@
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core</artifactId>
         <version>HEAD-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modules>

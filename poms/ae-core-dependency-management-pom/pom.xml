@@ -8,7 +8,7 @@
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
         <version>HEAD-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>ae-core-dependency-management-pom</artifactId>
@@ -611,6 +611,13 @@
                 <artifactId>xz</artifactId>
                 <version>${tukaani.xz.version}</version>
                 <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+                <version>${log4j-to-slf4j.version}</version>
+                <scope>test</scope>
             </dependency>
 
         </dependencies>
