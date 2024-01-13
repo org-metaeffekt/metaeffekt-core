@@ -23,6 +23,9 @@ import java.util.Comparator;
 
 public class CertMetaData extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     public static final String STATUS_VALUE_UNAFFECTED = "unaffected";
     public static final String STATUS_VALUE_NEW = "new";
     public static final String STATUS_VALUE_IN_REVIEW = "in review";

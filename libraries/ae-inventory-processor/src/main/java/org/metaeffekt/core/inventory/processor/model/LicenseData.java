@@ -25,6 +25,9 @@ import java.util.List;
  */
 public class LicenseData extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     public LicenseData(LicenseData ld) {
         super(ld);
     }

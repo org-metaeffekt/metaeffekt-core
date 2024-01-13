@@ -28,6 +28,9 @@ import java.util.Set;
  */
 public class AssetLicenseData {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     private final List<String> licenses;
 
     private final String assetId;

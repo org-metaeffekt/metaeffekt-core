@@ -22,6 +22,9 @@ import java.util.Collection;
 
 public class InventoryInfo extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     public InventoryInfo(InventoryInfo info) {
         super(info);
     }

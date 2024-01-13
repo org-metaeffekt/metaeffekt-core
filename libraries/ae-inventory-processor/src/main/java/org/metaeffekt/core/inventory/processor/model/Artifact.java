@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     private static final String DELIMITER_DASH = "-";
     private static final char DELIMITER_DOT = '.';
     private static final char DELIMITER_COLON = ':';

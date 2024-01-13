@@ -29,6 +29,9 @@ import java.util.Set;
  */
 public abstract class AbstractModelBase implements Serializable {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     public interface Attribute {
         String getKey();
     }

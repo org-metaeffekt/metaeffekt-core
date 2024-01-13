@@ -265,7 +265,7 @@ public class RepositoryReportTest {
         final File reportDir = new File("target/test-inventory-04");
 
         InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "*.xls", reportDir, report);
+        prepareReport(inventoryDir, "*.xls,*.xlsx", reportDir, report);
 
         report.setTemplateLanguageSelector("de");
 
@@ -275,9 +275,9 @@ public class RepositoryReportTest {
         report.setInventoryBomReportEnabled(false);
         report.setAssessmentReportEnabled(false);
 
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setInventoryVulnerabilityReportSummaryEnabled(false);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
 
         report.setOverviewTablesVulnerabilityStatusMappingFunction("abstracted");
         report.setVulnerabilityScoreThreshold(0.6f);

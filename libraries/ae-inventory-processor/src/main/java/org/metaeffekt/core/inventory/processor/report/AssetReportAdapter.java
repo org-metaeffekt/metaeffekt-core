@@ -33,14 +33,8 @@ public class AssetReportAdapter {
     }
 
     public List<AssetMetaData> listAssets() {
-
-        List<AssetMetaData> assetMetaData = new ArrayList<>(inventory.getAssetMetaData());
-        assetMetaData.sort(new Comparator<AssetMetaData>() {
-            @Override
-            public int compare(AssetMetaData o1, AssetMetaData o2) {
-                return o1.get("Name").toLowerCase().compareTo(o2.get("Name").toLowerCase());
-            }
-        });
+        final List<AssetMetaData> assetMetaData = new ArrayList<>(inventory.getAssetMetaData());
+        assetMetaData.sort(Comparator.comparing(o -> o.get("Name").toLowerCase()));
         return assetMetaData;
     }
 
