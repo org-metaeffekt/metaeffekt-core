@@ -78,7 +78,7 @@ public class SpringCommonsCollectionEclipseBundleTest extends TestBasicInvariant
                 "commons-collections-3.2.1.jar").getGroupId()).isNotNull();
 
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(2);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(3);
     }
 
 }
