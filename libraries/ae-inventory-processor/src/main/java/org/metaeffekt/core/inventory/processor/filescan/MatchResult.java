@@ -67,7 +67,7 @@ public class MatchResult {
         derivedArtifact.setGroupId(componentPatternData.get("Group Id"));
         derivedArtifact.setChecksum(componentPatternData.get("Component Checksum"));
 
-        derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, "x");
+        derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, Constants.MARKER_CROSS);
 
         return derivedArtifact;
     }

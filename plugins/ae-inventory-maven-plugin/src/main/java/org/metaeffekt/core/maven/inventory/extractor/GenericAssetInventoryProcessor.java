@@ -67,7 +67,7 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
 
         // add marker for artifacts
         for (Artifact artifact : inventory.getArtifacts()) {
-            artifact.set(assetId, Constants.MARKER_CROSS);
+            artifact.set(assetId, Constants.MARKER_CONTAINS);
         }
 
         File targetInventoryFile = getTargetInventoryFile();

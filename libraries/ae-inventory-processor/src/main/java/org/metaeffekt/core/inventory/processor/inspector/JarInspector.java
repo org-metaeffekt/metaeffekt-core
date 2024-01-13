@@ -590,7 +590,7 @@ public class JarInspector extends AbstractJarInspector {
                 }
 
                 // FIXME: this should not be required here
-                embeddedArtifact.set(assetId, "x");
+                embeddedArtifact.set(assetId, Constants.MARKER_CONTAINS);
 
                 if (StringUtils.isNotBlank(foundAssetIdChain)) {
                     embeddedArtifact.set("ASSET_ID_CHAIN", foundAssetIdChain);

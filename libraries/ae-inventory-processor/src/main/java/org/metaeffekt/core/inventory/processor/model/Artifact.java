@@ -188,6 +188,7 @@ public class Artifact extends AbstractModelBase {
 
     @Deprecated
     public boolean isVerified() {
+        // FIXME: remove this concept
         return "X".equalsIgnoreCase(get(Attribute.VERIFIED));
     }
 

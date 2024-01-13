@@ -81,6 +81,9 @@ public final class Constants {
 
     public static final String MARKER_CROSS = "x";
 
+    public static final String MARKER_CONTAINS = "c";
+
+
     protected Constants() {
     }
 

@@ -17,6 +17,7 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -35,8 +36,6 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ISSUE;
 public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ContainerAssetInventoryProcessor.class);
-
-    public static final String ASSET_MARKER = "x";
 
     private File analysisDir;
     private File containerInspectionFile;
@@ -86,7 +85,7 @@ public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
 
         // apply asset metadata to all entries in the inventory
         for (Artifact artifact : inventory.getArtifacts()) {
-            artifact.set(assetId, ASSET_MARKER);
+            artifact.set(assetId, Constants.MARKER_CONTAINS);
 
             // FIXME: we eliminate issue on artifact level; this is an asset level attribute
             //   Needs consolidation of new asset feature.
@@ -140,7 +139,7 @@ public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
                 assetMetaData.set("Author", String.valueOf(element.getAuthor()));
                 assetMetaData.set("Architecture", String.valueOf(element.getArchitecture()));
                 assetMetaData.set("Os", String.valueOf(element.getOs()));
-                assetMetaData.set("Primary", ASSET_MARKER);
+                assetMetaData.set("Primary", Constants.MARKER_CROSS);
                 assetMetaData.set("Qualifier", qualifier);
 
                 final List<String> repoDigests = element.getRepoDigests();

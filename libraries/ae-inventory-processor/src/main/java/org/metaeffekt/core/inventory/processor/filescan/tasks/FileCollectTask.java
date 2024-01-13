@@ -120,7 +120,7 @@ public class FileCollectTask extends ScanTask {
             for (String assetPath : assetIdChain) {
                 String assetId = fileSystemScanContext.getPathToAssetIdMap().get(assetPath);
                 if (assetId != null) {
-                    artifact.set(assetId, Constants.MARKER_CROSS);
+                    artifact.set(assetId, Constants.MARKER_CONTAINS);
                 }
             }
         }

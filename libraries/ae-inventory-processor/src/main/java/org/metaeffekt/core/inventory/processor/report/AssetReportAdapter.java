@@ -62,6 +62,7 @@ public class AssetReportAdapter {
     Pair<String, String>[] defaultKeyList = new Pair[] {
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
+            Pair.of("Version", "Version"),
             Pair.of("Checksum (MD5)", "Checksum (MD5)"),
             Pair.of("Hash (SHA-256)", "Hash (SHA-256)")
     };
