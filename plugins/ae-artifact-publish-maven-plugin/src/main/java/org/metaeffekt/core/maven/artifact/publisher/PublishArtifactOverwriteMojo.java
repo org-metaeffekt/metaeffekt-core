@@ -57,8 +57,10 @@ public class PublishArtifactOverwriteMojo extends AbstractArtifactMojo {
     private boolean attachArtifact = false;
 
     /**
-     * @throws MojoExecutionException
-     * @throws MojoFailureException
+     * Executes the mojo.
+     *
+     * @throws MojoExecutionException Thrown in case an exception is detected during execution.
+     * @throws MojoFailureException Thrown in case the execution fails.
      */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

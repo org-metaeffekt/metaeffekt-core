@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report.model;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 
 import java.util.*;
@@ -38,7 +39,7 @@ public class AssetData {
 
     private boolean includesOpenCoDESimilarLicense = false;
 
-    public static AssetData fromArtifacts(Inventory filteredInventory) {
+    public static AssetData fromInventory(Inventory filteredInventory) {
         AssetData assetData = new AssetData();
         assetData.insertData(filteredInventory);
         assetData.inventory = filteredInventory;
@@ -46,57 +47,96 @@ public class AssetData {
     }
 
     private void insertData(Inventory filteredInventory) {
-        for (AssetMetaData assetMetaData : filteredInventory.getAssetMetaData()) {
+        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap =
+                buildAssetToArtifactMap(filteredInventory);
 
+        for (Map.Entry<AssetMetaData, Set<Artifact>> entry : assetMetaDataToArtifactsMap.entrySet()) {
+
+            final AssetMetaData assetMetaData = entry.getKey();
             final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
 
-            if (!StringUtils.isNotBlank(assetId)) continue;
+            final HashSet<String> assetAssociatedLicenses = new HashSet<>();
 
-            // set to collect all licenses associated with asset
-            final Set<String> assetAssociatedLicenses = new HashSet<>();
+            for (Artifact artifact : entry.getValue()) {
 
-            // derive licenses from artifacts
-            for (Artifact artifact : filteredInventory.getArtifacts()) {
-                // skip all artifacts that do not belong to an asset
-                if (!StringUtils.isNotBlank(artifact.get(assetId))) continue;
-
+                // iterate associated licenses
                 final List<String> associatedLicenses = artifact.getLicenses();
-
                 for (final String associatedLicense : associatedLicenses) {
-                    if (!StringUtils.isNotBlank(associatedLicense)) continue;
+                    if (StringUtils.isBlank(associatedLicense)) continue;
 
+                    // contribute to overall license set
                     this.associatedLicenses.add(associatedLicense);
 
+                    // add representedAs licenses (complete map of license to representedAs/license)
                     final LicenseData licenseData = filteredInventory.findMatchingLicenseData(associatedLicense);
+                    String representedAsLicense = evaluateRepresetedAs(associatedLicense, licenseData);
+                    representedAssociatedLicenses.add(representedAsLicense);
 
-                    String representedAs = licenseData != null ? licenseData.get(LicenseData.Attribute.REPRESENTED_AS) : null;
+                    // contribute to representedLiceses maps
+                    representedLicenseLicensesMap.computeIfAbsent(representedAsLicense, c -> new HashSet<>()).add(associatedLicense);
+                    representedLicenseAssetIdMap.computeIfAbsent(representedAsLicense, c -> new HashSet<>()).add(assetId);
 
-                    // the license represents itself
-                    if (representedAs == null) {
-                        representedAs = associatedLicense;
-                    }
-
-                    representedAssociatedLicenses.add(representedAs);
-
-                    representedLicenseLicensesMap.computeIfAbsent(representedAs, c -> new HashSet<>()).add(associatedLicense);
-                    representedLicenseAssetIdMap.computeIfAbsent(representedAs, c -> new HashSet<>()).add(assetId);
+                    // contribute assetId to associatedLicense
                     individualLicenseAssetIdMap.computeIfAbsent(associatedLicense, c -> new HashSet<>()).add(assetId);
 
+                    // contribute license to asset
                     assetIdAssociatedLicenseMap.computeIfAbsent(assetId, c -> new HashSet<>()).add(associatedLicense);
 
+                    // contribute associated license to local set
                     assetAssociatedLicenses.add(associatedLicense);
 
+                    // check whether includesOpenCoDESimilarLicense must be updated
                     if (licenseData != null) {
                         final String openCodeStatus = licenseData.get("Open CoDE Status");
                         if ("(approved)".equalsIgnoreCase(openCodeStatus)) {
                             includesOpenCoDESimilarLicense = true;
                         }
                     }
-
                 }
-                assetIdAssetLicenseDataMap.put(assetId, createAssetLicenseData(assetMetaData, assetAssociatedLicenses));
+            }
+
+            // once iterated over all artifacts associated with assetId we contribute to assetIdAssetLicenseDataMap
+            assetIdAssetLicenseDataMap.put(assetId, createAssetLicenseData(assetMetaData, assetAssociatedLicenses));
+        }
+    }
+
+    private String evaluateRepresetedAs(String associatedLicense, LicenseData licenseData) {
+        String representedAs = licenseData != null ? licenseData.get(LicenseData.Attribute.REPRESENTED_AS) : null;
+        // the license represents itself
+        if (representedAs == null) {
+            representedAs = associatedLicense;
+        }
+        return representedAs;
+    }
+
+    private Map<AssetMetaData, Set<Artifact>> buildAssetToArtifactMap(Inventory filteredInventory) {
+        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = new HashMap<>();
+
+        // the report only operates on the specified assets (these may be filtered for the use case)
+        final Set<String> assetIds = InventoryUtils.collectAssetIdsFromAssetMetaData(filteredInventory);
+
+        for (AssetMetaData assetMetaData : filteredInventory.getAssetMetaData()) {
+
+            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+
+            if (!StringUtils.isNotBlank(assetId)) continue;
+
+            // derive licenses from artifacts
+            for (Artifact artifact : filteredInventory.getArtifacts()) {
+                // skip all artifacts that do not belong to an asset
+                final boolean containedInAsset = StringUtils.isNotBlank(artifact.get(assetId));
+                boolean representsAsset = false;
+                if (!containedInAsset) {
+                    // check via asset id
+                    final String artifactAssetId = InventoryUtils.deriveAssetIdFromArtifact(artifact);
+                    representsAsset = assetId.equals(artifactAssetId);
+                }
+                if (containedInAsset || representsAsset) {
+                    assetMetaDataToArtifactsMap.computeIfAbsent(assetMetaData, c -> new HashSet<>()).add(artifact);
+                }
             }
         }
+        return assetMetaDataToArtifactsMap;
     }
 
     private AssetLicenseData createAssetLicenseData(AssetMetaData assetMetaData, Set<String> assetAssociatedLicenses) {

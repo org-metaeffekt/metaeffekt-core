@@ -229,4 +229,57 @@ public abstract class InventoryUtils {
         return s;
     }
 
+    public static Set<String> collectAssetIdsFromArtifact(Artifact artifact) {
+        final Set<String> artifactAssetIds = new HashSet<>();
+        for (String key : artifact.getAttributes()) {
+            if (key.startsWith("AID:") ||
+                    key.startsWith("EID:") ||
+                    key.startsWith("CID:") ||
+                    key.startsWith("IID:") ||
+
+                    key.startsWith("AID-") ||
+                    key.startsWith("EID-") ||
+                    key.startsWith("CID-") ||
+                    key.startsWith("IID-")) {
+                artifactAssetIds.add(key);
+            }
+        }
+        return artifactAssetIds;
+    }
+
+
+    public static Set<String> collectAssetIdsFromArtifacts(Inventory projectInventory) {
+        final Set<String> assetIds = new HashSet<>();
+
+        // collect asset ids (using columns)
+        for (Artifact artifact : projectInventory.getArtifacts()) {
+            final Set<String> artifactAssetIds = collectAssetIdsFromArtifact(artifact);
+            assetIds.addAll(artifactAssetIds);
+        }
+
+        return assetIds;
+    }
+
+    public static Set<String> collectAssetIdsFromAssetMetaData(Inventory projectInventory) {
+        // collect assets using asset metadata
+        final Set<String> assetIds = new HashSet<>();
+        projectInventory.getAssetMetaData().stream().map(a -> a.get(AssetMetaData.Attribute.ASSET_ID)).forEach(assetIds::add);
+        return assetIds;
+    }
+
+    public static String deriveAssetIdFromArtifact(Artifact artifact) {
+        if (artifact != null) {
+            final String id = artifact.getId();
+            final String checksum = artifact.getChecksum();
+            if (StringUtils.isNotBlank(checksum)) {
+                return "AID-" + id + "-" + checksum;
+            }
+            final String altChecksum = artifact.get("Checksum (MD5)");
+            if (StringUtils.isNotBlank(altChecksum)) {
+                return "AID-" + id + "-" + altChecksum;
+            }
+        }
+        return null;
+    }
+
 }

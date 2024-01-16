@@ -91,15 +91,15 @@ public class JiraReportMojo extends AbstractJiraRestMojo {
         try {
             // velocity can only process files under the configured TEMPLATE_ROOT folder
             // so using the Maven project basedir as template root allows to access all subfolders
-            TemplateProcessor processor = new TemplateProcessor(source.getAbsolutePath());
+            final TemplateProcessor processor = new TemplateProcessor(source.getAbsolutePath());
 
             // scan for velocity templates
-            DirectoryScanner scanner = new DirectoryScanner();
+            final DirectoryScanner scanner = new DirectoryScanner();
             scanner.setBasedir(source);
             scanner.setIncludes(new String[]{"**/*.vt"});
             scanner.scan();
 
-            File dumpFolder = new File(getOutputDirectory(), DUMP_FOLDER_NAME);
+            final File dumpFolder = new File(getOutputDirectory(), DUMP_FOLDER_NAME);
 
             for (String f : scanner.getIncludedFiles()) {
                 // substract extension

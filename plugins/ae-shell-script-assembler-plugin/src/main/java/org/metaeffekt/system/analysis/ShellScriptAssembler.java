@@ -76,10 +76,14 @@ public class ShellScriptAssembler {
     /**
      * Replaces or returns the current line, depending on if it matches.<br>
      * Will automatically read library content from {@link #libraryDirectory}.
+     *
      * @param line the line to inspect.
      * @param num the line number for more helpful errors.
+     *
      * @return either the line or (commented) library file content.
+     *
      * @throws IOException throws on error reading library files.
+     * @throws MalformedIncludeException thrown when replacement cannot be performed as expected.
      */
     public String getReplacement(String line, long num) throws IOException, MalformedIncludeException {
         if (!incompleteReplacementRequest.matcher(line).find()) {

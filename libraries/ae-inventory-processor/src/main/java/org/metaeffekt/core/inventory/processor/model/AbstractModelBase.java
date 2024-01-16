@@ -18,6 +18,8 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -32,6 +34,9 @@ import java.util.Set;
 public abstract class AbstractModelBase implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractModelBase.class);
+
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
 
     public interface Attribute {
         String getKey();

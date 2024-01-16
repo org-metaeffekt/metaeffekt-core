@@ -21,6 +21,9 @@ import java.util.ArrayList;
 
 public class ReportData extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     public ReportData(ReportData reportData) {
         super(reportData);
     }

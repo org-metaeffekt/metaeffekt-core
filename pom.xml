@@ -219,7 +219,7 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <javadocVersion>1.8</javadocVersion>
+                            <javadocVersion>1.8.0</javadocVersion>
                             <bottom>
                                 Licensed under the ${license.identifier} - Copyright &#169; {inceptionYear} &#x2013;
                                 {currentYear} the original author or authors.

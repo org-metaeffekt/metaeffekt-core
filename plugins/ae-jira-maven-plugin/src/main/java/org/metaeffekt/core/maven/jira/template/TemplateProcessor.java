@@ -69,7 +69,7 @@ public class TemplateProcessor {
     public void processFile(String source, File target, Map<String, Object> data)
             throws IOException {
         Template template = ve.getTemplate(source);
-        VelocityContext context = arrangeContext(data);
+        VelocityContext context = createVelocityContext(data);
         FileWriter writer = new FileWriter(target);
         template.merge(context, writer);
         writer.flush();
@@ -77,13 +77,13 @@ public class TemplateProcessor {
     }
 
     public String processString(String input, Map<String, Object> data) {
-        VelocityContext context = arrangeContext(data);
+        VelocityContext context = createVelocityContext(data);
         StringWriter evaluated = new StringWriter();
         Velocity.evaluate(context, evaluated, LOG_TAG, input);
         return evaluated.toString();
     }
 
-    private VelocityContext arrangeContext(Map<String, Object> data) {
+    private VelocityContext createVelocityContext(Map<String, Object> data) {
         VelocityContext context = new VelocityContext();
 
         context.put("esc", new EscapeTool());
@@ -101,6 +101,7 @@ public class TemplateProcessor {
         for (Object key : data.keySet()) {
             context.put(key.toString(), data.get(key));
         }
+
         return context;
     }
 

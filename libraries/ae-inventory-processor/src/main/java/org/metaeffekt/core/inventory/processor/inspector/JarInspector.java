@@ -62,7 +62,8 @@ public class JarInspector extends AbstractJarInspector {
 
     protected boolean hasFilename(String normalizedPath, String fileName) {
         // zips must always use / as a path separator so this check should be correct to only use slash.
-        return normalizedPath.equals(fileName) || normalizedPath.endsWith("/" + fileName);
+        return normalizedPath.equals(fileName) ||
+                normalizedPath.endsWith("/" + fileName);
     }
 
     protected boolean isPomProperties(String path) {
@@ -204,11 +205,7 @@ public class JarInspector extends AbstractJarInspector {
                 dummyArtifact.setVersion(model.getParent().getVersion());
             }
 
-            if (model.getPackaging() != null) {
-                dummyArtifact.set("Packaging", model.getPackaging());
-            } else {
-                dummyArtifact.set("Packaging", "jar");
-            }
+            dummyArtifact.set("Packaging", packagingToSuffix(model));
 
             // NOTE: the information may not be part of the pom, but provided in the parent pom. However, if the
             // information is available, it is included in the artifact
@@ -228,6 +225,16 @@ public class JarInspector extends AbstractJarInspector {
         }
 
         return dummyArtifact;
+    }
+
+    private String packagingToSuffix(Model model) {
+        if (model.getPackaging() == null) return "jar";
+        switch (model.getPackaging()) {
+            case "pom":
+                return "pom";
+            default:
+                return "jar";
+        }
     }
 
     private void deriveQualifiers(Artifact dummyArtifact) {
@@ -494,6 +501,7 @@ public class JarInspector extends AbstractJarInspector {
                 }
             }
         }
+
         // otherwise: no pom found; ignore
 
         return notAccepted;
@@ -582,7 +590,7 @@ public class JarInspector extends AbstractJarInspector {
                 }
 
                 // FIXME: this should not be required here
-                embeddedArtifact.set(assetId, "x");
+                embeddedArtifact.set(assetId, Constants.MARKER_CONTAINS);
 
                 if (StringUtils.isNotBlank(foundAssetIdChain)) {
                     embeddedArtifact.set("ASSET_ID_CHAIN", foundAssetIdChain);

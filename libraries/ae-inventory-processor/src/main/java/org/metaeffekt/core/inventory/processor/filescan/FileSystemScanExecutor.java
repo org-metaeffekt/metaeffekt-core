@@ -38,8 +38,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
-import static org.metaeffekt.core.inventory.processor.model.Constants.MARKER_CROSS;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
@@ -143,7 +142,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     if (StringUtils.isBlank(assetId)) {
                         LOG.warn("Cannot resolve asset id for path " + assetPath);
                     } else {
-                        artifact.set(assetId, MARKER_CROSS);
+                        artifact.set(assetId, MARKER_CONTAINS);
                     }
                 }
             }

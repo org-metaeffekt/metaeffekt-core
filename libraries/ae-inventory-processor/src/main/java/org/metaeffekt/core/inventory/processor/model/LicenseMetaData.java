@@ -29,6 +29,9 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
  */
 public class LicenseMetaData extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     /**
      * @deprecated Use retained instead
      */

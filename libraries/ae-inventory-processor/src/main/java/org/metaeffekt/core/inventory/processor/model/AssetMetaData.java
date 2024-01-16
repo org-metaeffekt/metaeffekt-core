@@ -24,6 +24,9 @@ import java.util.ArrayList;
  */
 public class AssetMetaData extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     public AssetMetaData(AssetMetaData ld) {
         super(ld);
     }
@@ -38,8 +41,7 @@ public class AssetMetaData extends AbstractModelBase {
         ASSET_ID("Asset Id"),
         NAME("Name"),
         VERSION("Version"),
-        ASSESSMENT("Assessment"),
-        ;
+        ASSESSMENT("Assessment");
 
         private String key;
 
@@ -111,4 +113,8 @@ public class AssetMetaData extends AbstractModelBase {
         return Boolean.TRUE.equals(get(attribute.getKey(), "false"));
     }
 
+    @Override
+    public String toString() {
+        return "Asset Id: " + get(Attribute.ASSET_ID);
+    }
 }

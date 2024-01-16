@@ -1426,7 +1426,7 @@ public class InventoryReport {
     }
 
     public AssetData getAssetData(Inventory inventory) {
-        return AssetData.fromArtifacts(inventory);
+        return AssetData.fromInventory(inventory);
     }
 
     public CharSequence joinStrings(Collection<CharSequence> strings, CharSequence delimiter) {

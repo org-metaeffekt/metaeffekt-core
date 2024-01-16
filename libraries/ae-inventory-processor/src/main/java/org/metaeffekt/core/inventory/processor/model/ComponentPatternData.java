@@ -25,6 +25,9 @@ import java.util.function.Supplier;
  */
 public class ComponentPatternData extends AbstractModelBase {
 
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     private transient Supplier<Inventory> expansionInventorySupplier;
 
     public ComponentPatternData(ComponentPatternData cpd) {

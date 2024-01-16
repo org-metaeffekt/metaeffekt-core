@@ -8,7 +8,7 @@
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
         <version>HEAD-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>ae-core-dependency-management-pom</artifactId>
@@ -41,6 +41,8 @@
         <httpcore.version>4.4.15</httpcore.version>
         <httpmime.version>4.5.3</httpmime.version>
         <log4j2.version>2.20.0</log4j2.version>
+        <log4j-to-slf4j.version>2.8.2</log4j-to-slf4j.version>
+        <assertj-core.version>3.24.2</assertj-core.version>
         <jaxen.version>1.1.6</jaxen.version>
         <jdom.version>2.0.2</jdom.version>
         <jsch.version>0.1.54</jsch.version>
@@ -609,6 +611,13 @@
                 <artifactId>xz</artifactId>
                 <version>${tukaani.xz.version}</version>
                 <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-to-slf4j</artifactId>
+                <version>${log4j-to-slf4j.version}</version>
+                <scope>test</scope>
             </dependency>
 
         </dependencies>

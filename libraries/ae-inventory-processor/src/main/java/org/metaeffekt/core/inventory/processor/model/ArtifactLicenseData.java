@@ -25,6 +25,10 @@ import java.util.List;
  * @author Karsten Klein
  */
 public class ArtifactLicenseData {
+
+    // Maximize compatibility with serialized inventories
+    private static final long serialVersionUID = 1L;
+
     private final List<Artifact> artifacts;
     private final LicenseMetaData licenseMetaData;
     private final String componentName;

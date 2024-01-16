@@ -7,7 +7,7 @@
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-modules</artifactId>
         <version>HEAD-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>ae-commons-annotation</artifactId>
