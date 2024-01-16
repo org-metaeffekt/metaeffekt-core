@@ -330,7 +330,8 @@ public class Cvss4P0 extends CvssVector {
         return true;
     }
 
-    protected Cvss4P0Attribute getVectorArgument(String identifier) {
+    @Override
+    public Cvss4P0Attribute getVectorArgument(String identifier) {
         switch (identifier) {
             // Base Metrics: Exploitability Metrics
             case "AV":
@@ -995,6 +996,54 @@ public class Cvss4P0 extends CvssVector {
         return new BakedCvssVectorScores(this);
     }
 
+    @Override
+    public Map<String, CvssVectorAttribute[]> getAttributes() {
+        final Map<String, CvssVectorAttribute[]> attributes = new LinkedHashMap<>();
+
+        attributes.put("AV", AttackVector.values());
+        attributes.put("AC", AttackComplexity.values());
+        attributes.put("AT", AttackRequirements.values());
+        attributes.put("PR", PrivilegesRequired.values());
+        attributes.put("UI", UserInteraction.values());
+
+        attributes.put("VC", VulnerabilityCia.values());
+        attributes.put("VI", VulnerabilityCia.values());
+        attributes.put("VA", VulnerabilityCia.values());
+
+        attributes.put("SC", SubsequentCia.values());
+        attributes.put("SI", SubsequentCia.values());
+        attributes.put("SA", SubsequentCia.values());
+
+        attributes.put("S", Safety.values());
+        attributes.put("AU", Automatable.values());
+        attributes.put("R", Recovery.values());
+        attributes.put("V", ValueDensity.values());
+        attributes.put("RE", VulnerabilityResponseEffort.values());
+        attributes.put("U", ProviderUrgency.values());
+
+        attributes.put("CR", RequirementsCia.values());
+        attributes.put("IR", RequirementsCia.values());
+        attributes.put("AR", RequirementsCia.values());
+
+        attributes.put("MAV", ModifiedAttackVector.values());
+        attributes.put("MAC", ModifiedAttackComplexity.values());
+        attributes.put("MAT", ModifiedAttackRequirements.values());
+        attributes.put("MPR", ModifiedPrivilegesRequired.values());
+        attributes.put("MUI", ModifiedUserInteraction.values());
+
+        attributes.put("MVC", ModifiedVulnerabilityCia.values());
+        attributes.put("MVI", ModifiedVulnerabilityCia.values());
+        attributes.put("MVA", ModifiedVulnerabilityCia.values());
+
+        attributes.put("MSC", ModifiedSubsequentConfidentiality.values());
+        attributes.put("MSI", ModifiedSubsequentIntegrityAvailability.values());
+        attributes.put("MSA", ModifiedSubsequentIntegrityAvailability.values());
+
+        attributes.put("E", ExploitMaturity.values());
+
+        return attributes;
+    }
+
     // CVSS 4.0 attributes definitions
 
     public enum AttackVector implements Cvss4P0Attribute { // AV
@@ -1023,6 +1072,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1058,6 +1112,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public AttackComplexity getWorseCase() {
             return LOW;
         }
@@ -1087,6 +1146,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1123,6 +1187,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public PrivilegesRequired getWorseCase() {
             return NONE;
         }
@@ -1156,6 +1225,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public UserInteraction getWorseCase() {
             return NONE;
         }
@@ -1186,6 +1260,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1228,6 +1307,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public SubsequentCia getWorseCase() {
             return HIGH;
         }
@@ -1255,6 +1339,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public Safety getWorseCase() {
             return PRESENT;
         }
@@ -1279,6 +1368,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1310,6 +1404,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public Recovery getWorseCase() {
             return IRRECOVERABLE;
         }
@@ -1334,6 +1433,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1362,6 +1466,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1394,6 +1503,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public ProviderUrgency getWorseCase() {
             return RED;
         }
@@ -1420,6 +1534,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1450,6 +1569,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public ModifiedAttackComplexity getWorseCase() {
             return LOW;
         }
@@ -1474,6 +1598,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1505,6 +1634,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public ModifiedPrivilegesRequired getWorseCase() {
             return NONE;
         }
@@ -1530,6 +1664,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1561,6 +1700,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public ModifiedVulnerabilityCia getWorseCase() {
             return HIGH;
         }
@@ -1586,6 +1730,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1618,6 +1767,11 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public ModifiedSubsequentIntegrityAvailability getWorseCase() {
             return SAFETY;
         }
@@ -1643,6 +1797,11 @@ public class Cvss4P0 extends CvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         @Override
@@ -1674,14 +1833,17 @@ public class Cvss4P0 extends CvssVector {
         }
 
         @Override
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        @Override
         public ExploitMaturity getWorseCase() {
             return ATTACKED;
         }
     }
 
-    public interface Cvss4P0Attribute {
-        String getShortIdentifier();
-
+    public interface Cvss4P0Attribute extends CvssVectorAttribute {
         Cvss4P0Attribute getWorseCase();
 
         static <T extends Cvss4P0Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {

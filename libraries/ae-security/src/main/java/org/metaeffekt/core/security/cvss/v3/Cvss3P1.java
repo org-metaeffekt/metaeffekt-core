@@ -22,9 +22,7 @@ import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Class for modeling a CVSS:3.1 Vector, allowing for manipulating the vector components and calculating scores.
@@ -172,6 +170,59 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     }
 
     @Override
+    public Cvss3Attribute getVectorArgument(String identifier) {
+        switch (identifier) {
+            case "AV": // base
+                return attackVector;
+            case "AC":
+                return attackComplexity;
+            case "PR":
+                return privilegesRequired;
+            case "UI":
+                return userInteraction;
+            case "S":
+                return scope;
+            case "C":
+                return confidentialityImpact;
+            case "I":
+                return integrityImpact;
+            case "A":
+                return availabilityImpact;
+            case "E": // temporal
+                return exploitCodeMaturity;
+            case "RL":
+                return remediationLevel;
+            case "RC":
+                return reportConfidence;
+            case "MAV": // environmental
+                return modifiedAttackVector;
+            case "MAC":
+                return modifiedAttackComplexity;
+            case "MPR":
+                return modifiedPrivilegesRequired;
+            case "MUI":
+                return modifiedUserInteraction;
+            case "MS":
+                return modifiedScope;
+            case "MC":
+                return modifiedConfidentialityImpact;
+            case "MI":
+                return modifiedIntegrityImpact;
+            case "MA":
+                return modifiedAvailabilityImpact;
+            case "CR":
+                return confidentialityRequirement;
+            case "IR":
+                return integrityRequirement;
+            case "AR":
+                return availabilityRequirement;
+
+            default:
+                return null;
+        }
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Cvss3P1)) return false;
@@ -235,7 +286,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     @Override
     public double getImpactScore() {
         if (!isBaseFullyDefined()) return Double.NaN;
-        return round(calculateImpactScore(), 1);
+        final double impactScore = calculateImpactScore();
+        if (impactScore <= 0) {
+            return 0.0;
+        }
+        return round(impactScore, 1);
     }
 
     /**
@@ -481,6 +536,36 @@ public class Cvss3P1 extends MultiScoreCvssVector {
     @Override
     public BakedCvssVectorScores bakeScores() {
         return new BakedCvssVectorScores(this);
+    }
+
+    @Override
+    public Map<String, CvssVectorAttribute[]> getAttributes() {
+        final Map<String, CvssVectorAttribute[]> attributes = new LinkedHashMap<>();
+
+        attributes.put("AV", Cvss3P1.AttackVector.values());
+        attributes.put("AC", Cvss3P1.AttackComplexity.values());
+        attributes.put("PR", Cvss3P1.PrivilegesRequired.values());
+        attributes.put("UI", Cvss3P1.UserInteraction.values());
+        attributes.put("S", Cvss3P1.Scope.values());
+        attributes.put("C", Cvss3P1.CIAImpact.values());
+        attributes.put("I", Cvss3P1.CIAImpact.values());
+        attributes.put("A", Cvss3P1.CIAImpact.values());
+        attributes.put("E", Cvss3P1.ExploitCodeMaturity.values());
+        attributes.put("RL", Cvss3P1.RemediationLevel.values());
+        attributes.put("RC", Cvss3P1.ReportConfidence.values());
+        attributes.put("MAV", Cvss3P1.AttackVector.values());
+        attributes.put("MAC", Cvss3P1.AttackComplexity.values());
+        attributes.put("MPR", Cvss3P1.PrivilegesRequired.values());
+        attributes.put("MUI", Cvss3P1.UserInteraction.values());
+        attributes.put("MS", Cvss3P1.Scope.values());
+        attributes.put("MC", Cvss3P1.CIAImpact.values());
+        attributes.put("MI", Cvss3P1.CIAImpact.values());
+        attributes.put("MA", Cvss3P1.CIAImpact.values());
+        attributes.put("CR", Cvss3P1.CIARequirement.values());
+        attributes.put("IR", Cvss3P1.CIARequirement.values());
+        attributes.put("AR", Cvss3P1.CIARequirement.values());
+
+        return attributes;
     }
 
     public String getAttackComplexity() {
@@ -812,6 +897,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum AttackComplexity implements Cvss3Attribute {
@@ -836,6 +926,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
     }
 
@@ -864,6 +959,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum UserInteraction implements Cvss3Attribute {
@@ -889,6 +989,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum Scope implements Cvss3Attribute {
@@ -913,6 +1018,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
 
         public final static double SCOPE_CHANGED_FACTOR = 7.52;
@@ -943,6 +1053,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum ExploitCodeMaturity implements Cvss3Attribute {
@@ -969,6 +1084,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
     }
 
@@ -997,6 +1117,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum ReportConfidence implements Cvss3Attribute {
@@ -1023,6 +1148,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum CIARequirement implements Cvss3Attribute {
@@ -1048,6 +1178,11 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
     }
 
@@ -1122,7 +1257,6 @@ public class Cvss3P1 extends MultiScoreCvssVector {
         return Optional.of(new Cvss3P1(vector));
     }
 
-    public interface Cvss3Attribute {
-        String getShortIdentifier();
+    public interface Cvss3Attribute extends CvssVectorAttribute {
     }
 }

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.security.cvss.v3;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.slf4j.Logger;
@@ -87,6 +88,10 @@ public class Cvss3P1Test {
                 6.1, 2.7, 2.8, 5.9, 9.6, 6.1, 9.6);
         calculateCvss3("CVSS:3.1/AV:L/AC:L/PR:H/UI:N/S:C/C:L/I:H/A:L/E:H/MAC:H/MPR:N/MUI:N/MC:N/MI:N/MA:N/IR:M",
                 7.3, 5.3, 1.5, 7.3, 0.0, 0.0, 0.0);
+
+        // negative impact score
+        checkCvssScores(new Cvss3P1("CVSS:3.1/AV:P/AC:H/PR:H/UI:N/S:C/C:N/I:N/A:N"),
+                0.0, 0.0, 0.3, Double.NaN, Double.NaN, Double.NaN, 0.0);
     }
 
     @Test
@@ -134,6 +139,13 @@ public class Cvss3P1Test {
             Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P/RL:T/RC:R/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:L/MI:N/MA:X/CR:X/IR:M/AR:X", vector.toString(false));
             Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:P/RL:T/RC:R/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:L/MI:N/IR:M", vector.toString());
         }
+    }
+
+    @Test
+    @Ignore
+    public void customTest() {
+        // checkCvssScores(new Cvss3P1("CVSS:3.1/AV:P/AC:H/PR:H/UI:N/S:C/C:N/I:N/A:N"),
+        //         6.1, 2.7, 3.4, Double.NaN, Double.NaN, Double.NaN, 6.1);
     }
 
     @Test

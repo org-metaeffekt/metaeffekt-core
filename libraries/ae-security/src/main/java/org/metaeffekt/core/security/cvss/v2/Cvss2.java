@@ -23,9 +23,7 @@ import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Class for modeling a CVSS:2.0 Vector, allowing for manipulating the vector components and calculating scores.
@@ -138,6 +136,43 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         return true;
+    }
+
+    @Override
+    public Cvss2Attribute getVectorArgument(String identifier) {
+        switch (identifier) {
+            case "AV": // base
+                return accessVector;
+            case "AC":
+                return accessComplexity;
+            case "Au":
+                return authentication;
+            case "C":
+                return confidentialityImpact;
+            case "I":
+                return integrityImpact;
+            case "A":
+                return availabilityImpact;
+            case "E": // temporal
+                return exploitability;
+            case "RL":
+                return remediationLevel;
+            case "RC":
+                return reportConfidence;
+            case "CDP": // environmental
+                return collateralDamagePotential;
+            case "TD":
+                return targetDistribution;
+            case "CR":
+                return confidentialityRequirement;
+            case "IR":
+                return integrityRequirement;
+            case "AR":
+                return availabilityRequirement;
+
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -513,6 +548,30 @@ public class Cvss2 extends MultiScoreCvssVector {
         return new BakedCvssVectorScores(this);
     }
 
+    @Override
+    public Map<String, CvssVectorAttribute[]> getAttributes() {
+        final Map<String, CvssVectorAttribute[]> attributes = new LinkedHashMap<>();
+
+        attributes.put("AV", AccessVector.values());
+        attributes.put("AC", AccessComplexity.values());
+        attributes.put("Au", Authentication.values());
+        attributes.put("C", CIAImpact.values());
+        attributes.put("I", CIAImpact.values());
+        attributes.put("A", CIAImpact.values());
+
+        attributes.put("E", Exploitability.values());
+        attributes.put("RL", RemediationLevel.values());
+        attributes.put("RC", ReportConfidence.values());
+
+        attributes.put("CDP", CollateralDamagePotential.values());
+        attributes.put("TD", TargetDistribution.values());
+        attributes.put("CR", CIARequirement.values());
+        attributes.put("IR", CIARequirement.values());
+        attributes.put("AR", CIARequirement.values());
+
+        return attributes;
+    }
+
     private static double round(double value, int precision) {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
@@ -607,6 +666,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum AccessComplexity implements Cvss2Attribute {
@@ -631,6 +695,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
     }
 
@@ -657,6 +726,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum CIAImpact implements Cvss2Attribute {
@@ -681,6 +755,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
     }
 
@@ -709,6 +788,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum RemediationLevel implements Cvss2Attribute {
@@ -736,6 +820,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum ReportConfidence implements Cvss2Attribute {
@@ -761,6 +850,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
     }
 
@@ -790,6 +884,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum TargetDistribution implements Cvss2Attribute {
@@ -817,6 +916,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         public String getShortIdentifier() {
             return shortIdentifier;
         }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
+        }
     }
 
     public enum CIARequirement implements Cvss2Attribute {
@@ -842,6 +946,11 @@ public class Cvss2 extends MultiScoreCvssVector {
         @Override
         public String getShortIdentifier() {
             return shortIdentifier;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return identifier;
         }
     }
 
@@ -904,7 +1013,6 @@ public class Cvss2 extends MultiScoreCvssVector {
         return Optional.of(new Cvss2(vector));
     }
 
-    public interface Cvss2Attribute {
-        String getShortIdentifier();
+    public interface Cvss2Attribute extends CvssVectorAttribute {
     }
 }

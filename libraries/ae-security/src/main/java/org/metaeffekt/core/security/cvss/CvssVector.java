@@ -97,10 +97,14 @@ public abstract class CvssVector {
 
     protected abstract boolean applyVectorArgument(String identifier, String value);
 
+    public abstract CvssVectorAttribute getVectorArgument(String identifier);
+
     @Override
     public abstract CvssVector clone();
 
     protected abstract BakedCvssVectorScores bakeScores();
+
+    public abstract Map<String, CvssVectorAttribute[]> getAttributes();
 
     public BakedCvssVectorScores getBakedScores() {
         if (bakedScores == null) {
@@ -431,5 +435,11 @@ public abstract class CvssVector {
             vectorsList.add(CvssVector.fromJson(json.getJSONObject(i)));
         }
         return vectorsList;
+    }
+
+    public interface CvssVectorAttribute {
+        String getIdentifier();
+
+        String getShortIdentifier();
     }
 }
