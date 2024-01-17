@@ -595,7 +595,7 @@ public class Cvss2 extends MultiScoreCvssVector {
      * </ul>
      */
     @Override
-    public String getWebEditorLink() {
+    public String getNistFirstWebEditorLink() {
         return String.format("https://nvd.nist.gov/vuln-metrics/cvss/v2-calculator?vector=(%s)&version=2.0", this);
     }
 

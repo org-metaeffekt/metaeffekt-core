@@ -851,7 +851,7 @@ public class Cvss4P0 extends CvssVector {
      * </ul>
      */
     @Override
-    public String getWebEditorLink() {
+    public String getNistFirstWebEditorLink() {
         return String.format("https://www.first.org/cvss/calculator/4.0#%s", this);
     }
 

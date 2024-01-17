@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
+import org.metaeffekt.core.security.cvss.processor.UniversalCvssCalculatorLinkGenerator;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
@@ -78,7 +79,18 @@ public abstract class CvssVector {
 
     public abstract String getName();
 
-    public abstract String getWebEditorLink();
+    public String getWebEditorLink() {
+        return getAeUniversalWebEditorLink().generateOptimizedLink();
+    }
+
+    public abstract String getNistFirstWebEditorLink();
+
+    public UniversalCvssCalculatorLinkGenerator getAeUniversalWebEditorLink() {
+        final UniversalCvssCalculatorLinkGenerator generator = new UniversalCvssCalculatorLinkGenerator();
+        generator.addVectorNullThrowing(this);
+        generator.setSelectedVectorNullThrowing(this);
+        return generator;
+    }
 
     public abstract int size();
 
@@ -182,6 +194,10 @@ public abstract class CvssVector {
 
     public String getCombinedCvssSource(boolean includeVersion) {
         return CvssSource.toCombinedColumnHeaderString(sources, includeVersion);
+    }
+
+    public boolean containsSource(CvssSource source) {
+        return sources.contains(source);
     }
 
     /* APPLYING VECTORS */

@@ -163,6 +163,30 @@ public class CvssSelectionResult {
         return null;
     }
 
+    public CvssVector findWithSourceInInitial(CvssVector vector) {
+        if (vector == null) return null;
+        if (this.initialCvss2 != null && this.initialCvss2.containsSource(vector.getCvssSource())) return this.initialCvss2;
+        if (this.initialCvss3 != null && this.initialCvss3.containsSource(vector.getCvssSource())) return this.initialCvss3;
+        if (this.initialCvss4 != null && this.initialCvss4.containsSource(vector.getCvssSource())) return this.initialCvss4;
+        return null;
+    }
+
+    public CvssVector findWithSourceInContext(CvssVector vector) {
+        if (vector == null) return null;
+        if (this.contextCvss2 != null && this.contextCvss2.containsSource(vector.getCvssSource())) return this.contextCvss2;
+        if (this.contextCvss3 != null && this.contextCvss3.containsSource(vector.getCvssSource())) return this.contextCvss3;
+        if (this.contextCvss4 != null && this.contextCvss4.containsSource(vector.getCvssSource())) return this.contextCvss4;
+        return null;
+    }
+
+    public boolean isInitial(CvssVector vector) {
+        return vector == this.initialCvss2 || vector == this.initialCvss3 || vector == this.initialCvss4;
+    }
+
+    public boolean isContext(CvssVector vector) {
+        return vector == this.contextCvss2 || vector == this.contextCvss3 || vector == this.contextCvss4;
+    }
+
     public CvssVectorSet getAllVectors() {
         return allVectors;
     }

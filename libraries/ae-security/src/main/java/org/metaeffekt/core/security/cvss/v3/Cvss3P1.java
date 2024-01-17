@@ -786,7 +786,7 @@ public class Cvss3P1 extends MultiScoreCvssVector {
      * </ul>
      */
     @Override
-    public String getWebEditorLink() {
+    public String getNistFirstWebEditorLink() {
         final String vectorString = this.toString(!isAnyEnvironmentalDefined());
         if (this.isAnyEnvironmentalDefined() || this.isAnyTemporalDefined()) {
             return String.format("https://www.first.org/cvss/calculator/3.1#%s", vectorString);

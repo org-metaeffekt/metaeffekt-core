@@ -17,12 +17,17 @@ package org.metaeffekt.core.security.cvss.processor;
 
 import org.json.JSONArray;
 import org.metaeffekt.core.security.cvss.CvssVector;
+import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Accepts optionally named {@link org.metaeffekt.core.security.cvss.CvssVector} instances to generate a link to the
@@ -42,7 +47,7 @@ public class UniversalCvssCalculatorLinkGenerator {
     public UniversalCvssCalculatorLinkGenerator() {
     }
 
-    public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector, String name, boolean visible) {
+    public UniversalCvssCalculatorEntry addVectorNullThrowing(CvssVector cvssVector, String name, boolean visible) {
         if (cvssVector == null) {
             throw new IllegalArgumentException("CVSS vector to be added must not be null.");
         }
@@ -51,53 +56,80 @@ public class UniversalCvssCalculatorLinkGenerator {
         return entry;
     }
 
-    public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector, String name) {
-        return addVector(cvssVector, name, true);
+    public UniversalCvssCalculatorEntry addVectorNullThrowing(CvssVector cvssVector) {
+        return addVectorNullThrowing(cvssVector, cvssVector == null ? "unknown" : cvssVector.getCombinedCvssSource(true).replace("CVSS:", ""), true);
     }
 
-    public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector, boolean visible) {
-        return addVector(cvssVector, cvssVector.getName(), visible);
+    public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector, String name, boolean visible) {
+        if (cvssVector == null) {
+            return new UniversalCvssCalculatorEntry(new Cvss2(), name, visible);
+        }
+        final UniversalCvssCalculatorEntry entry = new UniversalCvssCalculatorEntry(cvssVector, name, visible);
+        entries.add(entry);
+        return entry;
     }
 
     public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector) {
-        return addVector(cvssVector, cvssVector.getName(), true);
+        return addVector(cvssVector, cvssVector == null ? "unknown" : cvssVector.getCombinedCvssSource(true).replace("CVSS:", ""), true);
     }
 
-    public void addOpenSection(String section) {
+    public UniversalCvssCalculatorLinkGenerator addOpenSection(String section) {
         openSections.add(section);
+        return this;
     }
 
-    public void addOpenSections(String... section) {
+    public UniversalCvssCalculatorLinkGenerator addOpenSections(String... section) {
         for (String s : section) {
             addOpenSection(s);
         }
+        return this;
     }
 
-    public void addOpenSections(Collection<String> sections) {
+    public UniversalCvssCalculatorLinkGenerator addOpenSections(Collection<String> sections) {
         openSections.addAll(sections);
+        return this;
     }
 
-    public void setSelectedVector(CvssVector selectedVector) {
+    public UniversalCvssCalculatorLinkGenerator setSelectedVectorNullThrowing(CvssVector selectedVector) {
         if (findVectorEntryByVector(selectedVector) == null) {
             throw new IllegalArgumentException("Selected vector must be added to the link generator first.");
         }
         this.selectedVector = selectedVector;
+        return this;
     }
 
-    public void setSelectedVector(String selectedVector) {
+    public UniversalCvssCalculatorLinkGenerator setSelectedVectorNullThrowing(String selectedVector) {
         final UniversalCvssCalculatorEntry foundVector = findVectorEntryByName(selectedVector);
         if (foundVector == null) {
             throw new IllegalArgumentException("Selected vector must be added to the link generator first.");
         }
         this.selectedVector = foundVector.getCvssVector();
+        return this;
     }
 
-    public void setBaseUrl(String baseUrl) {
+    public UniversalCvssCalculatorLinkGenerator setSelectedVector(CvssVector selectedVector) {
+        if (findVectorEntryByVector(selectedVector) != null) {
+            this.selectedVector = selectedVector;
+        }
+        return this;
+    }
+
+    public UniversalCvssCalculatorLinkGenerator setSelectedVector(String selectedVector) {
+        final UniversalCvssCalculatorEntry foundVector = findVectorEntryByName(selectedVector);
+        if (foundVector != null) {
+            this.selectedVector = foundVector.getCvssVector();
+        }
+        return this;
+    }
+
+    public UniversalCvssCalculatorLinkGenerator setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
+        return this;
     }
 
-    public void addCve(String cve) {
+    public UniversalCvssCalculatorLinkGenerator addCve(String cve) {
         cves.add(cve);
+        return this;
     }
 
     public boolean isEmpty() {
@@ -128,10 +160,73 @@ public class UniversalCvssCalculatorLinkGenerator {
         return null;
     }
 
+    public String generateOptimizedLink() {
+        final List<String> candidates = Arrays.asList(
+                generateBas64EncodedGzipCompressedLink(),
+                generateLink()
+        );
+        final Optional<String> optimizedLink = candidates.stream()
+                .filter(Objects::nonNull)
+                .filter(link -> link.length() < 2000)
+                .min(Comparator.comparingInt(String::length));
+        return optimizedLink.orElse(generateLink());
+    }
+
     public String generateLink() {
         final StringBuilder linkBuilder = new StringBuilder();
         linkBuilder.append(baseUrl);
 
+        final Map<String, String> parameters = generateUrlParameters(true);
+
+        if (!parameters.isEmpty()) {
+            linkBuilder.append("?");
+            final List<String> parameterStrings = new ArrayList<>();
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                parameterStrings.add(entry.getKey() + "=" + entry.getValue());
+            }
+            linkBuilder.append(String.join("&", parameterStrings));
+        }
+
+        return linkBuilder.toString();
+    }
+
+    public String generateBas64EncodedGzipCompressedLink() {
+        final StringBuilder linkBuilder = new StringBuilder();
+        linkBuilder.append(baseUrl);
+
+        final Map<String, String> parameters = generateUrlParameters(false);
+
+        if (!parameters.isEmpty()) {
+            linkBuilder.append("?b64gzip=");
+            final List<String> parameterStrings = new ArrayList<>();
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                parameterStrings.add(entry.getKey() + "=" + entry.getValue());
+            }
+            final String dataToBeGZipped = String.join("&", parameterStrings);
+
+            final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            try (final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+                gzipOutputStream.write(dataToBeGZipped.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                LOG.error("Failed to compress data: {}", dataToBeGZipped, e);
+                return generateLink();
+            }
+
+            final String base64Encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(byteArrayOutputStream.toByteArray());
+            String urlEncoded;
+            try {
+                urlEncoded = URLEncoder.encode(base64Encoded, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                LOG.error("Failed encode parameter value, resuming with default platform encoding: {}", base64Encoded, e);
+                urlEncoded = URLEncoder.encode(base64Encoded);
+            }
+            linkBuilder.append(urlEncoded);
+        }
+
+        return linkBuilder.toString();
+    }
+
+    private Map<String, String> generateUrlParameters(boolean urlEncode) {
         final Map<String, String> parameters = new LinkedHashMap<>();
 
         if (!entries.isEmpty()) {
@@ -156,30 +251,27 @@ public class UniversalCvssCalculatorLinkGenerator {
 
         if (selectedVector != null) {
             final UniversalCvssCalculatorEntry selectedVectorEntry = findVectorEntryByVector(selectedVector);
-            parameters.put("selected", selectedVectorEntry.getName());
+            if (selectedVectorEntry != null) {
+                parameters.put("selected", selectedVectorEntry.getName());
+            }
         }
 
         if (!cves.isEmpty()) {
             parameters.put("cve", String.join(",", cves));
         }
 
-        if (!parameters.isEmpty()) {
-            linkBuilder.append("?");
-            final List<String> parameterStrings = new ArrayList<>();
+        if (urlEncode) {
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 try {
-                    final String urlEncoded = URLEncoder.encode(entry.getValue(), "UTF-8");
-                    parameterStrings.add(entry.getKey() + "=" + urlEncoded);
+                    entry.setValue(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 } catch (UnsupportedEncodingException e) {
                     LOG.error("Failed encode parameter value, resuming with default platform encoding: {}", entry.getValue(), e);
-                    final String urlEncoded = URLEncoder.encode(entry.getValue());
-                    parameterStrings.add(entry.getKey() + "=" + urlEncoded);
+                    entry.setValue(URLEncoder.encode(entry.getValue()));
                 }
             }
-            linkBuilder.append(String.join("&", parameterStrings));
         }
 
-        return linkBuilder.toString();
+        return parameters;
     }
 
     @Override
