@@ -37,7 +37,7 @@ public class UniversalCvssCalculatorLinkGenerator {
 
     private final static Logger LOG = LoggerFactory.getLogger(UniversalCvssCalculatorLinkGenerator.class);
 
-    private String baseUrl = "https://www.metaeffekt.com/security/cvss/calculator";
+    private String baseUrl = "https://metaeffekt.com/security/cvss/calculator";
 
     private final List<UniversalCvssCalculatorEntry> entries = new ArrayList<>();
     private final Set<String> openSections = new LinkedHashSet<>();
