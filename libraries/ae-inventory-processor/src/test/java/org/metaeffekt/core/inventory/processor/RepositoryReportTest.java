@@ -259,7 +259,7 @@ public class RepositoryReportTest {
 
         report.addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers.CERT_FR, AeaaContentIdentifiers.CERT_SEI, AeaaContentIdentifiers.MSRC, AeaaContentIdentifiers.GHSA);
         report.getSecurityPolicy()
-                .setInsignificantThreshold(0.6f)
+                .setInsignificantThreshold(7.0f)
                 .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
                 .setIncludeAdvisoryTypes(Arrays.asList("alert", "news", "notice"))
                 .setIncludeAdvisoryProviders(Arrays.asList("CERT_FR", "CERT-SEI", "MSRC", "GHSA"))

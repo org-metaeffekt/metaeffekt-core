@@ -31,7 +31,7 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * Accepts optionally named {@link org.metaeffekt.core.security.cvss.CvssVector} instances to generate a link to the
- * <a href="https://www.metaeffekt.com/security/cvss/calculator">Universal CVSS Calculator</a>.
+ * <a href="https://metaeffekt.com/security/cvss/calculator">Universal CVSS Calculator</a>.
  */
 public class UniversalCvssCalculatorLinkGenerator {
 
