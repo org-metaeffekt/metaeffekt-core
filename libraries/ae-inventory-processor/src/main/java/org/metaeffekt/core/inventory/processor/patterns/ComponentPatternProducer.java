@@ -128,7 +128,6 @@ public class ComponentPatternProducer {
     }
 
     public void extractComponentPatterns(FileSystemScanContext fileSystemScanContext, Inventory targetInventory) {
-
         final File baseDir = fileSystemScanContext.getBaseDir().getFile();
         final Map<String, Artifact> pathToArtifactMap = new HashMap<>();
 
@@ -146,71 +145,55 @@ public class ComponentPatternProducer {
         filesByPathLength.sort(Comparator.comparingInt(String::length));
 
         // configure contributors; please note that currently the contributors consume anchors (no anchor can be used twice)
-        final List<ComponentPatternContributor> componentPatternContributors = new ArrayList<>();
-        componentPatternContributors.add(new DpkgPackageContributor());
-        componentPatternContributors.add(new GemSpecContributor());
-        componentPatternContributors.add(new ContainerComponentPatternContributor());
-        componentPatternContributors.add(new WebModuleComponentPatternContributor());
-        componentPatternContributors.add(new UnwrappedEclipseBundleContributor());
-        componentPatternContributors.add(new PythonModuleComponentPatternContributor());
-        componentPatternContributors.add(new JarModuleComponentPatternContributor());
-        componentPatternContributors.add(new NextcloudAppInfoContributor());
-        componentPatternContributors.add(new ComposerLockContributor());
-        componentPatternContributors.add(new XWikiExtensionComponentPatternContributor());
-        componentPatternContributors.add(new NodeRuntimeComponentPatternContributor());
-        componentPatternContributors.add(new NordeckAppComponentPatternContributor());
-        componentPatternContributors.add(new JavaRuntimeComponentPatternContributor());
-        componentPatternContributors.add(new JettyComponentPatternContributor());
-        componentPatternContributors.add(new WebApplicationComponentPatternContributor());
+        final ComponentPatternContributorRunner.ComponentPatternContributorRunnerBuilder contributorRunnerBuilder =
+                ComponentPatternContributorRunner.builder();
+        contributorRunnerBuilder.add(new DpkgPackageContributor());
+        contributorRunnerBuilder.add(new GemSpecContributor());
+        contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
+        contributorRunnerBuilder.add(new WebModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());
+        contributorRunnerBuilder.add(new PythonModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new JarModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new NextcloudAppInfoContributor());
+        contributorRunnerBuilder.add(new ComposerLockContributor());
+        contributorRunnerBuilder.add(new XWikiExtensionComponentPatternContributor());
+        contributorRunnerBuilder.add(new NodeRuntimeComponentPatternContributor());
+        contributorRunnerBuilder.add(new NordeckAppComponentPatternContributor());
+        contributorRunnerBuilder.add(new JavaRuntimeComponentPatternContributor());
+        contributorRunnerBuilder.add(new JettyComponentPatternContributor());
+        contributorRunnerBuilder.add(new WebApplicationComponentPatternContributor());
+
+        final ComponentPatternContributorRunner runner = contributorRunnerBuilder.build();
 
         // record component pattern qualifiers for deduplication purposes
         final Set<String> deduplicationQualifierSet = new HashSet<>();
 
-        // collect possible file suffixes before scanning
-        Collection<String> relevantSuffixes = getRelevantSuffixes(componentPatternContributors);
-
         // for each include pattern (by priority) try to identify a component pattern
         for (String pathInContext : filesByPathLength) {
-            {
-                // early abort if file suffix is not registered
-                String pathInContextLowerCase = pathInContext.toLowerCase(localeConstants.PATH_LOCALE);
-                if (relevantSuffixes.stream().noneMatch(pathInContextLowerCase::endsWith)) {
-                    // skip this file as it doesn't match registered suffixes
-                    continue;
-                }
-            }
-
             final Artifact artifact = pathToArtifactMap.get(pathInContext);
             final String checksum = artifact.getChecksum();
 
             // try to apply contributors
-            for (ComponentPatternContributor cpc : componentPatternContributors) {
-                if (cpc.applies(pathInContext)) {
-                    final List<ComponentPatternData> componentPatternDataList =
-                            cpc.contribute(baseDir, pathInContext, checksum);
+            final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir, pathInContext, checksum);
 
-                    if (!componentPatternDataList.isEmpty()) {
-                        for (ComponentPatternData cpd : componentPatternDataList) {
-                            LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
+            if (!componentPatternDataList.isEmpty()) {
+                for (ComponentPatternData cpd : componentPatternDataList) {
+                    LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
 
-                            // FIXME: defer to 2nd pass
-                            final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
-                            if ("unspecific".equalsIgnoreCase(version)) {
-                                continue;
-                            }
-
-                            final String qualifier = cpd.deriveQualifier();
-                            if (!deduplicationQualifierSet.contains(qualifier)) {
-                                targetInventory.getComponentPatternData().add(cpd);
-                                deduplicationQualifierSet.add(qualifier);
-                            }
-
-                            cpd.validate(cpc.getClass().getName());
-                        }
+                    // FIXME: defer to 2nd pass
+                    final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
+                    if ("unspecific".equalsIgnoreCase(version)) {
+                        continue;
                     }
 
-                    // the first contributor wins
-                    break;
+                    final String qualifier = cpd.deriveQualifier();
+                    if (!deduplicationQualifierSet.contains(qualifier)) {
+                        targetInventory.getComponentPatternData().add(cpd);
+                        deduplicationQualifierSet.add(qualifier);
+                    }
+
+                    // FIXME: add context by storing context info in cpd
+                    cpd.validate("UNKNOWN");
                 }
             }
         }
@@ -315,11 +298,13 @@ public class ComponentPatternProducer {
                         artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
                         artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
-                        if (LOG.isDebugEnabled()) {
-                            LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace(
+                                    "Component anchor [{}] (checksum: [{}]): removed artifact covered by pattern: [{}] ",
                                 cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
                                 cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
-                                relativePathFromBaseDir);
+                                relativePathFromBaseDir
+                            );
                         }
 
                         // continue adding
@@ -348,11 +333,13 @@ public class ComponentPatternProducer {
                                 artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
                                 artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
 
-                                if (LOG.isDebugEnabled()) {
-                                    LOG.debug("Component anchor {} (checksum: {}): removed artifact covered by pattern: {} ",
+                                if (LOG.isTraceEnabled()) {
+                                    LOG.trace(
+                                            "Component anchor [{}] (checksum: {}): removed artifact covered by pattern: [{}]",
                                         cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
                                         cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
-                                        relativePathFromBaseDir);
+                                        relativePathFromBaseDir
+                                    );
                                 }
 
                                 matched = true;
@@ -375,7 +362,7 @@ public class ComponentPatternProducer {
         String relativePathFromBaseDir = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH);
         if (StringUtils.isEmpty(relativePathFromBaseDir)) {
             // FIXME: fallback to old style
-            if (artifact.getProjects().size() > 0) {
+            if (!artifact.getProjects().isEmpty()) {
                 relativePathFromBaseDir = artifact.getProjects().iterator().next();
             }
         }
