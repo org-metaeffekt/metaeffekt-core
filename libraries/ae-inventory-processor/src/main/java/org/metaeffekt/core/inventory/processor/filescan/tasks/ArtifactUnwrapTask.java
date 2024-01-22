@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
@@ -55,8 +56,8 @@ public class ArtifactUnwrapTask extends ScanTask {
         final String path = artifact.get(ATTRIBUTE_KEY_ARTIFACT_PATH);
         final FileRef fileRef = new FileRef(fileSystemScanContext.getBaseDir().getPath() + "/" + path);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing " + getClass().getName() + " on: " + fileRef);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Executing [{}] on: [{}]", getClass().getName(), fileRef.getFile().getAbsolutePath());
         }
 
         // unknown or requires expansion
@@ -134,7 +135,7 @@ public class ArtifactUnwrapTask extends ScanTask {
             }
 
             // trigger collection of content
-            LOG.info("Collecting subtree on {}.", fileRef.getPath());
+            LOG.info("Collecting subtree on [{}].", fileRef.getPath());
             final FileRef dirRef = new FileRef(targetFolder);
             fileSystemScanContext.push(new DirectoryScanTask(dirRef,
                     rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext)));
@@ -148,6 +149,20 @@ public class ArtifactUnwrapTask extends ScanTask {
             }
 
             // the asset id chain remains as is
+        }
+
+        // record issues in the artifact that is being processed
+        StringJoiner issueJoiner = new StringJoiner(", ");
+        if (artifact.get("Errors") != null) {
+            issueJoiner.add(artifact.get("Errors"));
+        }
+        for (String issue : issues) {
+            issueJoiner.add(issue);
+        }
+
+        String joinedErrors = issueJoiner.toString();
+        if (StringUtils.isNotBlank(joinedErrors)) {
+            artifact.set("Errors", joinedErrors);
         }
     }
 

@@ -192,8 +192,7 @@ public class ComponentPatternProducer {
                         deduplicationQualifierSet.add(qualifier);
                     }
 
-                    // FIXME: add context by storing context info in cpd
-                    cpd.validate("UNKNOWN");
+                    cpd.validate();
                 }
             }
         }

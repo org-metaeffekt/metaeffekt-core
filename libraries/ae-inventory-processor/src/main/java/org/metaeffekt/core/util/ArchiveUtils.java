@@ -29,12 +29,17 @@ import org.apache.tools.ant.taskdefs.Untar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -43,10 +48,13 @@ public class ArchiveUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArchiveUtils.class);
 
+    private static final long UNTAR_TIMEOUT_NUMBER = 1;
+    private static final TimeUnit UNTAR_TIMEOUT_UNIT = TimeUnit.HOURS;
+
     private static final Set<String> zipExtensions = new HashSet<>();
     private static final Set<String> gzipExtensions = new HashSet<>();
     private static final Set<String> tarExtensions = new HashSet<>();
-    
+
     private static final Set<String> jmodExtensions = new HashSet<>();
     private static final Set<String> jimageExtensions = new HashSet<>();
 
@@ -226,21 +234,65 @@ public class ArchiveUtils {
             expandTask.setSrc(file);
             expandTask.setAllowFilesToEscapeDest(false);
             expandTask.execute();
-        } catch (Exception exception) {
+        } catch (Exception antUntarException) {
+            LOG.debug("Could not untar file [{}] due to [{}].", file.getAbsolutePath(), antUntarException.getMessage());
             try {
                 // fallback to commons-compress (local code with support for specific cases (i.e., .deb)
                 final InputStream fin = Files.newInputStream(file.toPath());
                 final BufferedInputStream in = new BufferedInputStream(fin);
                 final ArArchiveInputStream xzIn = new ArArchiveInputStream(in);
                 unpackAndClose(xzIn, targetFile);
-            } catch (Exception ex) {
+            } catch (Exception commonsCompressException) {
                 // report commons compress exception only and indicate fallback
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Cannot untar file [{}]. {}. Attempting native untar.", file, ex.getMessage());
-                }
+                LOG.debug(
+                        "Cannot untar file [{}] due to [{}]. Attempting untar via command line.",
+                        file.getAbsolutePath(),
+                        commonsCompressException.getMessage()
+                );
+
+                // FIXME: this fallback doesn't adjust file permissions, leading to "Permission denied" while scanning.
+                //  this also means that prepareScanDirectory may fail on rescan.
+                //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
+                //  this last-ditch efford to give good support.
                 // fallback to native support on command line
-                Process exec = Runtime.getRuntime().exec("tar -xf " + file.getAbsolutePath() + " -C " + targetFile.getAbsolutePath());
-                FileUtils.waitForProcess(exec);
+
+                Process tarExtract = new ProcessBuilder().command(
+                                "tar",
+                                "-x",
+                                "-f", file.getAbsolutePath(),
+                                "--no-same-permissions",
+                                "-C", targetFile.getAbsolutePath())
+                        .redirectErrorStream(true)
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                        .start();
+
+                // wait for untar. if our untar takes more than one hour, we can be pretty sure that something is broken
+                try {
+                    if (!tarExtract.waitFor(UNTAR_TIMEOUT_NUMBER, UNTAR_TIMEOUT_UNIT)) {
+                        // timeout
+                        LOG.error("Failed to untar [{}].", file.getAbsolutePath());
+
+                        LOG.error("Killing untar process...");
+                        tarExtract.destroyForcibly();
+                        if (!tarExtract.waitFor(1, TimeUnit.MINUTES)) {
+                            // once we are in Java 9 or newer, we should output PID in this case
+                            LOG.error("Failed to kill untar! This will leave a tar process with unknown state!");
+                        }
+
+                        throw new IOException("Untar failed: timed out.");
+                    }
+                } catch (InterruptedException e) {
+                    throw new IOException("Untar thread was interrupted.", e);
+                }
+
+                if (tarExtract.exitValue() != 0) {
+                    LOG.error(
+                            "Untar of [{}] failed with exit value [{}].",
+                            file.getAbsolutePath(),
+                            tarExtract.exitValue()
+                    );
+                    throw new IOException("Failed to untar requested file.");
+                }
 
                 // NOTE: further exceptions are handled upstream
             }
@@ -328,6 +380,7 @@ public class ArchiveUtils {
                 return true;
             }
         } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
             issues.add("Cannot untar: " + archiveFile.getAbsolutePath());
             return false;

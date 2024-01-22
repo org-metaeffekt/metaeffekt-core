@@ -35,17 +35,30 @@ public class DirectoryScanTask extends ScanTask {
 
     public DirectoryScanTask(FileRef dirRef, List<String> assetIdChain) {
         super(assetIdChain);
+
+        if (!dirRef.getFile().isDirectory()) {
+            LOG.error(
+                    "Passed dirRef does not contain a directory: [{}].",
+                    dirRef.getFile().getAbsolutePath()
+            );
+            throw new IllegalArgumentException("The passed dirRef is not a directory.");
+        }
+
         this.dirRef = dirRef;
     }
 
     @Override
     public void process(FileSystemScanContext scanContext) {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing " + getClass().getName() + " on: " + dirRef);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Executing [{}] on: [{}]", getClass().getName(), dirRef.getFile().getAbsolutePath());
         }
 
         final File[] files = dirRef.getFile().listFiles();
         final FileSystemScanParam scanParam = scanContext.getScanParam();
+
+        if (files == null) {
+            LOG.error("Should not happen: listFiles of (supposed) directory came back null.");
+        }
 
         for (File file : files) {
             final FileRef fileRef = new FileRef(file);
@@ -55,7 +68,7 @@ public class DirectoryScanTask extends ScanTask {
                 // dispatch depending on type (file or folder)
                 if (file.isFile()) {
                     scanContext.push(new FileCollectTask(fileRef, getAssetIdChain()));
-                } else {
+                } else if (file.isDirectory()) {
                     final String folderName = file.getName();
                     final boolean implicitFolder = folderName.startsWith("[") && folderName.endsWith("]");
                     if (!implicitFolder) {
@@ -71,7 +84,7 @@ public class DirectoryScanTask extends ScanTask {
                         }
                     }
                 }
-
+                // discard "other types", probably a symlink
             } else {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Ignored {} due to collect include/exclude patterns.", file.getAbsolutePath());
