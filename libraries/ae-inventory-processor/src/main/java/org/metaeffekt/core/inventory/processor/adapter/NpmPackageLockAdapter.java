@@ -21,6 +21,8 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,8 @@ import java.io.IOException;
  * Extracts an inventory for production npm modules based on a package-lock.json file.
  */
 public class NpmPackageLockAdapter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NpmPackageLockAdapter.class);
 
     /**
      *
@@ -50,12 +54,12 @@ public class NpmPackageLockAdapter {
     private void populateInventory(File packageLockJsonFile, Inventory inventory, String path) throws IOException {
         final String json = FileUtils.readFileToString(packageLockJsonFile, FileUtils.ENCODING_UTF_8);
         final JSONObject obj = new JSONObject(json);
-        addDependencies(obj, inventory, path, "dependencies");
-        addDependencies(obj, inventory, path, "peerDependencies");
-        addDependencies(obj, inventory, path, "packages");
+        addDependencies(packageLockJsonFile, obj, inventory, path, "dependencies");
+        addDependencies(packageLockJsonFile, obj, inventory, path, "peerDependencies");
+        addDependencies(packageLockJsonFile, obj, inventory, path, "packages");
     }
 
-    private void addDependencies(JSONObject obj, Inventory inventory, String path, String dependencyTag) {
+    private void addDependencies(File file, JSONObject obj, Inventory inventory, String path, String dependencyTag) {
         final String prefix = "node_modules/";
 
         if (obj.has(dependencyTag)) {
@@ -65,8 +69,8 @@ public class NpmPackageLockAdapter {
 
                 final JSONObject dep = dependencies.getJSONObject(key);
 
-                String version = dep.getString("version");
-                String url = dep.has("resolved") ? dep.getString("resolved") : null;
+                String version = dep.optString("version");
+                String url = dep.optString("resolved");
 
                 Artifact artifact = new Artifact();
 
@@ -76,21 +80,25 @@ public class NpmPackageLockAdapter {
                     module = module.substring(index + prefix.length());
                 }
 
-                artifact.setId(module + "-" + version);
-                artifact.setComponent(module);
-                artifact.setVersion(version);
-                artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
-                artifact.setUrl(url);
-                artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
+                if (version != null) {
+                    artifact.setId(module + "-" + version);
+                    artifact.setComponent(module);
+                    artifact.setVersion(version);
+                    artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+                    artifact.setUrl(url);
+                    artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
 
-                boolean production = !dep.has("dev") || !dep.getBoolean("dev");
+                    boolean production = !dep.has("dev") || !dep.getBoolean("dev");
 
-                // only consider production artifacts
-                if (production) {
-                    inventory.getArtifacts().add(artifact);
+                    // only consider production artifacts
+                    if (production) {
+                        inventory.getArtifacts().add(artifact);
 
-                    // validate whether this is still required
-                    addDependencies(dep, inventory, path, dependencyTag);
+                        // validate whether this is still required
+                        addDependencies(file, dep, inventory, path, dependencyTag);
+                    }
+                } else {
+                    LOG.warn("Missing version information in [{}] parse package-lock.json file as expected: {}", key, file.getAbsolutePath());
                 }
             }
         }

@@ -114,7 +114,6 @@ public class ComponentPatternProducer {
             }
         }
 
-
         final List<String> filesByPathLength = new ArrayList<>(pathToArtifactMap.keySet());
         filesByPathLength.sort(String.CASE_INSENSITIVE_ORDER);
         filesByPathLength.sort(Comparator.comparingInt(String::length));
@@ -143,9 +142,11 @@ public class ComponentPatternProducer {
         // for each include pattern (by priority) try to identify a component pattern
         for (String fileSuffix : FILE_SUFFIX_LIST) {
 
+            String fileSuffixLowerCase = fileSuffix.toLowerCase(Locale.US);
+
             for (String pathInContext : filesByPathLength) {
                 // FIXME: toLowerCase for paths is error-prone and (lack of specified Locale) platform-dependent
-                if (!pathInContext.toLowerCase().endsWith(fileSuffix)) continue;
+                if (!pathInContext.toLowerCase(Locale.US).endsWith(fileSuffixLowerCase)) continue;
 
                 final Artifact artifact = pathToArtifactMap.get(pathInContext);
                 final String checksum = artifact.getChecksum();

@@ -224,12 +224,16 @@ public class ArchiveUtils {
                     LOG.debug("Cannot untar file [{}]. {}. Attempting native untar.", file, ex.getMessage());
                 }
                 // fallback to native support on command line
-                Process exec = Runtime.getRuntime().exec("tar -xf " + file.getAbsolutePath() + " -C " + targetFile.getAbsolutePath());
-                FileUtils.waitForProcess(exec);
+                untarNative(file, targetFile);
 
                 // NOTE: further exceptions are handled upstream
             }
         }
+    }
+
+    public static void untarNative(File file, File targetFile) throws IOException {
+        Process exec = Runtime.getRuntime().exec("tar -xf " + file.getAbsolutePath() + " -C " + targetFile.getAbsolutePath());
+        FileUtils.waitForProcess(exec);
     }
 
     private static void unpackAndClose(InputStream in, OutputStream out) throws IOException {

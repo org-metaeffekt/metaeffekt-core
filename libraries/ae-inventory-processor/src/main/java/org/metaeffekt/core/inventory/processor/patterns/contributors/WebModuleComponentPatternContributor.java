@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.adapter.LicenseSummaryAdapter;
 import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;

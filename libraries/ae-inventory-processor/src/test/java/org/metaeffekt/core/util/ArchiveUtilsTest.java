@@ -73,19 +73,9 @@ public class ArchiveUtilsTest {
     }
 
     @Test
-    public void buildInventoryFromVersionFiles_KmsClient() throws IOException {
+    public void buildInventoryFromVersionFiles_WindowsCab() throws IOException {
         final File inputBaseDir = new File("<path-to-scan-folder>");
-        final File targetFile = new File("target/kms-client.xls");
-
-        final Inventory inventory = deriveInventory(inputBaseDir);
-
-        new InventoryWriter().writeInventory(inventory, targetFile);
-    }
-
-    @Test
-    public void buildInventoryFromVersionFiles_Hht() throws IOException {
-        final File inputBaseDir = new File("<path-to-scan-folder>");
-        final File targetFile = new File("target/hht.xls");
+        final File targetFile = new File("target/scan-versions.xls");
 
         final Inventory inventory = deriveInventory(inputBaseDir);
 
