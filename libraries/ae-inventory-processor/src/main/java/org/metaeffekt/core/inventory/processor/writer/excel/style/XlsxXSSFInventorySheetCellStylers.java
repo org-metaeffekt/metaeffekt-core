@@ -21,7 +21,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
 import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.metaeffekt.core.inventory.processor.model.CertMetaData;
+import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.InventorySerializationContext;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.util.ParsingUtils;
@@ -132,8 +132,13 @@ public class XlsxXSSFInventorySheetCellStylers {
 
         this.contentStyleCvssScoresDoubleValue = InventorySheetCellStyler.createStyler(
                 context -> {
-                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.MAX_SCORE,
-                            VulnerabilityMetaData.Attribute.V3_SCORE, VulnerabilityMetaData.Attribute.V2_SCORE);
+                    final boolean isCorrectHeader = context.isHeaderEither(
+                            VulnerabilityMetaData.Attribute.SCORE_CONTEXT_OVERALL,
+                            VulnerabilityMetaData.Attribute.SCORE_INITIAL_OVERALL,
+                            VulnerabilityMetaData.Attribute.SCORE_BASE,
+                            VulnerabilityMetaData.Attribute.SCORE_EXPLOITABILITY,
+                            VulnerabilityMetaData.Attribute.SCORE_IMPACT
+                    );
                     if (!isCorrectHeader) {
                         return false;
                     }
@@ -148,7 +153,7 @@ public class XlsxXSSFInventorySheetCellStylers {
 
         this.contentStyleUrlValue = InventorySheetCellStyler.createStyler(
                 context -> {
-                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.URL, CertMetaData.Attribute.URL);
+                    final boolean isCorrectHeader = context.isHeaderEither(VulnerabilityMetaData.Attribute.URL, AdvisoryMetaData.Attribute.URL);
                     if (!isCorrectHeader) {
                         return false;
                     }

@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -86,7 +87,7 @@ public class Inventory implements Serializable {
 
     private Map<String, List<VulnerabilityMetaData>> vulnerabilityMetaData = new LinkedHashMap<>(1);
 
-    private List<CertMetaData> certMetaData = new ArrayList<>();
+    private List<AdvisoryMetaData> advisoryMetaData = new ArrayList<>();
 
     private List<InventoryInfo> inventoryInfo = new ArrayList<>();
 
@@ -130,7 +131,7 @@ public class Inventory implements Serializable {
         this.licenseMetaData = deepCopyList(other.licenseMetaData, LicenseMetaData::new);
         this.componentPatternData = deepCopyList(other.componentPatternData, ComponentPatternData::new);
         this.licenseData = deepCopyList(other.licenseData, LicenseData::new);
-        this.certMetaData = deepCopyList(other.certMetaData, CertMetaData::new);
+        this.advisoryMetaData = deepCopyList(other.advisoryMetaData, AdvisoryMetaData::new);
         this.inventoryInfo = deepCopyList(other.inventoryInfo, InventoryInfo::new);
         this.reportData = deepCopyList(other.reportData, ReportData::new);
         this.assetMetaData = deepCopyList(other.assetMetaData, AssetMetaData::new);
@@ -179,7 +180,7 @@ public class Inventory implements Serializable {
         if (!licenseMetaData.isEmpty()) return true;
         if (!componentPatternData.isEmpty()) return true;
         if (!licenseData.isEmpty()) return true;
-        if (!certMetaData.isEmpty()) return true;
+        if (!advisoryMetaData.isEmpty()) return true;
         if (!inventoryInfo.isEmpty()) return true;
         if (!reportData.isEmpty()) return true;
         if (!assetMetaData.isEmpty()) return true;
@@ -1281,7 +1282,7 @@ public class Inventory implements Serializable {
             filteredInventory.setVulnerabilityMetaData(getVulnerabilityMetaData());
         }
 
-        filteredInventory.setCertMetaData(getCertMetaData());
+        filteredInventory.setAdvisoryMetaData(getAdvisoryMetaData());
         filteredInventory.setAssetMetaData(getAssetMetaData());
         filteredInventory.setInventoryInfo(getInventoryInfo());
         filteredInventory.setReportData(getReportData());
@@ -1484,17 +1485,17 @@ public class Inventory implements Serializable {
     }
 
     public void inheritCertMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
-        final Map<String, CertMetaData> localCerts = new HashMap<>();
-        for (CertMetaData cert : getCertMetaData()) {
+        final Map<String, AdvisoryMetaData> localCerts = new HashMap<>();
+        for (AdvisoryMetaData cert : getAdvisoryMetaData()) {
             String artifactQualifier = cert.deriveQualifier();
             localCerts.put(artifactQualifier, cert);
         }
-        for (CertMetaData cert : inputInventory.getCertMetaData()) {
+        for (AdvisoryMetaData cert : inputInventory.getAdvisoryMetaData()) {
             String qualifier = cert.deriveQualifier();
             if (localCerts.containsKey(qualifier)) {
                 // overwrite; the localCerts inventory contains the artifact.
                 if (infoOnOverwrite) {
-                    CertMetaData localCert = localCerts.get(qualifier);
+                    AdvisoryMetaData localCert = localCerts.get(qualifier);
                     if (cert.createCompareStringRepresentation().equals(
                             localCert.createCompareStringRepresentation())) {
                         LOG.info("Cert metadata {} overwritten. Relevant content nevertheless matches. " +
@@ -1507,7 +1508,7 @@ public class Inventory implements Serializable {
                 }
             } else {
                 // add the cert
-                getCertMetaData().add(cert);
+                getAdvisoryMetaData().add(cert);
             }
         }
     }
@@ -1647,33 +1648,12 @@ public class Inventory implements Serializable {
         return new ArrayList<>(vulnerabilityMetaData.keySet());
     }
 
-    @Deprecated // is still used be the german translation; preserve until translation is completely revised
-    public List<VulnerabilityMetaData> getApplicableVulnerabilityMetaData(float threshold) {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
+    public List<AdvisoryMetaData> getAdvisoryMetaData() {
+        return advisoryMetaData;
     }
 
-    @Deprecated // is still used be the german translation; preserve until translation is completely revised
-    public List<VulnerabilityMetaData> getNotApplicableVulnerabilityMetaData(float threshold) {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterNotApplicableVulnerabilities(getVulnerabilityMetaData(), threshold);
-        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
-    }
-
-    @Deprecated // is still used be the german translation; preserve until translation is completely revised
-    public List<VulnerabilityMetaData> getInsignificantVulnerabilities(float threshold) {
-        List<VulnerabilityMetaData> vmd = VulnerabilityMetaData.filterInsignificantVulnerabilities(getVulnerabilityMetaData(), threshold);
-        vmd.sort(VulnerabilityMetaData.VULNERABILITY_COMPARATOR_OVERALL_SCORE);
-        return vmd;
-    }
-
-    public List<CertMetaData> getCertMetaData() {
-        return certMetaData;
-    }
-
-    public void setCertMetaData(List<CertMetaData> certMetaData) {
-        this.certMetaData = certMetaData;
+    public void setAdvisoryMetaData(List<AdvisoryMetaData> advisoryMetaData) {
+        this.advisoryMetaData = advisoryMetaData;
     }
 
     public List<InventoryInfo> getInventoryInfo() {
@@ -1815,6 +1795,175 @@ public class Inventory implements Serializable {
             }
         }
         return false;
+    }
+
+    /**
+     * See {@link #logModelAttributesVertical(List, boolean)} with the {@code asTable} parameter set to {@code true}.
+     *
+     * @param models the list of {@link AbstractModelBase} instances whose attributes are to be logged.
+     */
+    public static void logModelAttributesVerticalTable(List<? extends AbstractModelBase> models) {
+        logModelAttributesVertical(models, true);
+    }
+
+    /**
+     * See {@link #logModelAttributesVertical(List, boolean)} with the {@code asTable} parameter set to {@code false}.
+     *
+     * @param models the list of {@link AbstractModelBase} instances whose attributes are to be logged.
+     */
+    public static void logModelAttributesVerticalSimple(List<? extends AbstractModelBase> models) {
+        logModelAttributesVertical(models, false);
+    }
+
+    /**
+     * Logs the attributes of the given models in a vertical format to the info log.
+     * <p>
+     * This method can log the attributes either as a simple list or in a table format, depending on the {@code asTable} parameter.
+     * When {@code asTable} is true, the output is formatted as a markdown table with two columns: one for attribute names and
+     * another for their values.
+     * When {@code asTable} is false, the output is a simple list of attribute-value pairs without additional formatting.
+     * <p>
+     * Note: The method calculates the maximum length of both attribute names and values to ensure proper alignment in the table format.
+     * <h3>Example Output:</h3>
+     * <pre>
+     * // asTable = true
+     * | Attribute    | Value        |
+     * |--------------|--------------|
+     * | name         | Model1       |
+     * | type         | Type1        |
+     * | value        | Value1       |
+     * |              |              |
+     * | name         | Model2       |
+     * | type         | Type2        |
+     * | value        | Value2       |
+     *
+     * // asTable = false
+     * | name         | Model1
+     * | type         | Type1
+     * | value        | Value1
+     *
+     * | name         | Model2
+     * | type         | Type2
+     * | value        | Value2
+     * </pre>
+     *
+     * @param models  the list of {@link AbstractModelBase} instances whose attributes are to be logged.
+     * @param asTable if true, logs the attributes in a table format; logs as a simple list otherwise.
+     * @see #logModelAttributesHorizontalTable(List)
+     */
+    protected static void logModelAttributesVertical(List<? extends AbstractModelBase> models, boolean asTable) {
+        if (models.isEmpty()) {
+            LOG.info("No models to display.");
+        }
+
+        final int maxKeyLength = models.stream()
+                .mapToInt(m -> m.getAttributes().stream().mapToInt(String::length).max().orElse(0))
+                .max().orElse(0);
+
+        final String separatorBetweenModels;
+        final int maxValLength;
+
+        if (asTable) {
+            maxValLength = models.stream()
+                    .mapToInt(m -> m.getAttributes().stream()
+                            .map(attribute -> (String) m.get(attribute)) // removing the cast will fail the GitHub action build
+                            .mapToInt(value -> ((String) value).length())
+                            .max().orElse(0))
+                    .max().orElse(0);
+
+            final String separatorLineDashes = String.format("|%s|%s|", StringUtils.repeat("-", maxKeyLength + 2), StringUtils.repeat("-", maxValLength + 2));
+            separatorBetweenModels = String.format("|%s|%s|", StringUtils.repeat(" ", maxKeyLength + 2), StringUtils.repeat(" ", maxValLength + 2));
+
+            LOG.info("| {} | {} |", StringUtils.rightPad("Attribute", maxKeyLength), StringUtils.rightPad("Value", maxValLength));
+            LOG.info(separatorLineDashes);
+        } else {
+            maxValLength = -1;
+            separatorBetweenModels = "";
+        }
+
+        for (Iterator<? extends AbstractModelBase> iterator = models.iterator(); iterator.hasNext(); ) {
+            iterator.next().logModelAttributesVertical(maxKeyLength, maxValLength);
+            if (iterator.hasNext()) {
+                LOG.info(separatorBetweenModels);
+            }
+        }
+    }
+
+    /**
+     * Logs the attributes of the given models in a horizontal table format to the info log.
+     * <p>
+     * This method logs the attributes of each model in a markdown table format, where each row represents a single model
+     * and each column represents an attribute. The table headers are the attribute names. The method dynamically adjusts
+     * column widths to accommodate the longest string (either an attribute name or its value) in each column.
+     * </p>
+     * <p>
+     * Note: The method first calculates the maximum length of each attribute across all models for proper alignment. It
+     * also calls {@code logModelRearrangeAttributes} to potentially rearrange the output attributes.
+     * </p>
+     * <h3>Example Output:</h3>
+     * <pre>
+     * | Name   | Type   | Other   |
+     * |--------|--------|---------|
+     * | Model1 | Type1  | Value1  |
+     * | Model2 | Type2  | Value2  |
+     * </pre>
+     * <p>
+     * Each attribute name is listed in the header, and each subsequent row contains the values of these attributes for a single model.
+     * </p>
+     *
+     * @param models the list of {@link AbstractModelBase} instances whose attributes are to be logged in a horizontal table format.
+     * @see #logModelRearrangeAttributes(Map)
+     * @see #logModelAttributesVertical(List, boolean)
+     */
+    public static void logModelAttributesHorizontalTable(List<? extends AbstractModelBase> models) {
+        if (models == null || models.isEmpty()) {
+            LOG.info("No models to display.");
+            return;
+        }
+
+        // collecting all unique attribute names and determining max width for each column
+        final Map<String, Integer> attributeWidths = new LinkedHashMap<>();
+        for (AbstractModelBase model : models) {
+            for (String attribute : model.getAttributes()) {
+                final int maxAttributeLength = Math.max(attribute.length(),
+                        model.get(attribute) != null ? model.get(attribute).replace("\n", "<br>").length() : 0);
+                attributeWidths.put(attribute, Math.max(attributeWidths.getOrDefault(attribute, 0), maxAttributeLength));
+            }
+        }
+
+        final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
+
+        // header and separator
+        final String header = rearrangedAttributeWidths.entrySet().stream()
+                .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(" | ", "| ", " |"));
+        final String separator = rearrangedAttributeWidths.values().stream()
+                .map(integer -> StringUtils.repeat("-", integer + 2))
+                .collect(Collectors.joining("|", "|", "|"));
+        LOG.info(header);
+        LOG.info(separator);
+
+        // logging each model's attributes
+        for (AbstractModelBase model : models) {
+            String row = rearrangedAttributeWidths.keySet().stream()
+                    .map(key -> StringUtils.rightPad(model.get(key) != null ? model.get(key).replace("\n", "<br>") : "", rearrangedAttributeWidths.get(key)))
+                    .collect(Collectors.joining(" | ", "| ", " |"));
+            LOG.info(row);
+        }
+    }
+
+    protected static Map<String, Integer> logModelRearrangeAttributes(Map<String, Integer> attributeWidths) {
+        final List<String> desiredOrder = Stream.of(
+                Artifact.Attribute.ID, VulnerabilityMetaData.Attribute.NAME, Artifact.Attribute.COMPONENT,
+                Artifact.Attribute.VERSION, Artifact.Attribute.GROUPID, Artifact.Attribute.TYPE, Artifact.Attribute.URL,
+                VulnerabilityMetaData.Attribute.URL, VulnerabilityMetaData.Attribute.PRODUCT_URIS
+        ).map(AbstractModelBase.Attribute::getKey).collect(Collectors.toList());
+        return attributeWidths.entrySet().stream()
+                .sorted(Comparator.comparing(entry -> {
+                    final int index = desiredOrder.indexOf(entry.getKey());
+                    return index == -1 ? Integer.MAX_VALUE : index;
+                }))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
     /**

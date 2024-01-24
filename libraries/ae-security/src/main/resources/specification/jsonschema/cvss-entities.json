@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://www.metaeffekt.com/schema/core-security/latest/cvss-entities.json",
+  "type": "object",
+  "description": "A JSON file containing information about CVSS Entities",
+  "patternProperties": {
+    ".*": {
+      "type": "object",
+      "properties": {
+        "organizationTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The types of the organization",
+          "example": [
+            "Vendor"
+          ]
+        },
+        "country": {
+          "type": "string",
+          "description": "The country of the organization",
+          "example": "USA"
+        },
+        "topLevelRoot": {
+          "type": "string",
+          "description": "The top-level root of the organization",
+          "example": "CVE_CNA_CISA"
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the organization",
+          "example": "CNA"
+        },
+        "root": {
+          "type": "string",
+          "description": "The root of the organization",
+          "example": "CVE_CNA_ICSCERT"
+        },
+        "reportSteps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/reportStep"
+          },
+          "description": "The steps to report an issue"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the organization",
+          "example": "Example Organization Inc."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the organization",
+          "example": "All products by Example Organization."
+        },
+        "cveOrgDetailsLink": {
+          "type": "string",
+          "description": "The URL to the organization's CVE details",
+          "example": "https://www.cve.org/PartnerInfo/example"
+        },
+        "email": {
+          "type": "string",
+          "description": "The contact email of the organization",
+          "example": "contact@example.com"
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL to the organization's website",
+          "example": "https://www.example.com"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "reportStep": {
+      "type": "object",
+      "properties": {
+        "stepIndex": {
+          "type": "integer",
+          "description": "The index number of the report step",
+          "example": 1
+        },
+        "link": {
+          "type": "string",
+          "description": "The URL or email to perform the step",
+          "example": "https://example.com/contact"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the report step",
+          "example": "Contact"
+        }
+      },
+      "required": [
+        "stepIndex",
+        "link",
+        "title"
+      ]
+    }
+  }
+}

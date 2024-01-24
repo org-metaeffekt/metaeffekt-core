@@ -66,14 +66,15 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         writeArtifacts(inventory, workbook, stylers);
         writeAssetMetaData(inventory, workbook, stylers);
         writeNotices(inventory, workbook, stylers);
-        writeInventoryInfo(inventory, workbook, stylers);
 
         writeComponentPatterns(inventory, workbook, stylers);
-        writeAdvisoryMetaData(inventory, workbook, stylers);
         writeLicenseData(inventory, workbook, stylers);
         writeReportData(inventory, workbook, stylers);
 
         writeVulnerabilities(inventory, workbook, stylers);
+        writeAdvisoryMetaData(inventory, workbook, stylers);
+
+        writeInventoryInfo(inventory, workbook, stylers);
 
         final FileOutputStream out = new FileOutputStream(file);
         try {
@@ -262,24 +263,24 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     }
 
     private void writeAdvisoryMetaData(Inventory inventory, SXSSFWorkbook workbook, XlsxXSSFInventorySheetCellStylers stylers) {
-        if (isEmpty(inventory.getCertMetaData())) return;
+        if (isEmpty(inventory.getAdvisoryMetaData())) return;
 
-        final SXSSFSheet sheet = createAMDSheet(workbook, "Cert");
+        final SXSSFSheet sheet = createAMDSheet(workbook, AbstractInventoryReader.WORKSHEET_NAME_ADVISORY_DATA);
 
         final SXSSFRow headerRow = sheet.createRow(0);
 
         // create columns for key / value map content
         final Set<String> attributes = new HashSet<>();
-        for (CertMetaData cm : inventory.getCertMetaData()) {
+        for (AdvisoryMetaData cm : inventory.getAdvisoryMetaData()) {
             attributes.addAll(cm.getAttributes());
         }
 
-        CertMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
+        AdvisoryMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
 
         final List<String> ordered = new ArrayList<>(attributes);
         Collections.sort(ordered);
 
-        final List<String> finalOrder = new ArrayList<>(CertMetaData.CORE_ATTRIBUTES);
+        final List<String> finalOrder = new ArrayList<>(AdvisoryMetaData.CORE_ATTRIBUTES);
         finalOrder.addAll(ordered);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
@@ -291,7 +292,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getCertMetaData(), finalOrder,
+                inventory.getAdvisoryMetaData(), finalOrder,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -27,6 +28,13 @@ import static org.metaeffekt.core.maven.inventory.extractor.windows.WindowsExtra
 public class WindowsPartExtractorVideoController extends WindowsPartExtractorBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(WindowsPartExtractorVideoController.class);
+
+    public void parse(Inventory inventory, JSONArray videoControllerJson) {
+        for (int i = 0; i < videoControllerJson.length(); i++) {
+            final JSONObject videoController = videoControllerJson.getJSONObject(i);
+            parse(inventory, videoController);
+        }
+    }
 
     public void parse(Inventory inventory, JSONObject videoControllerJson) {
         final String pnpDeviceID = getJsonFieldValue(videoControllerJson, "PNPDeviceID");

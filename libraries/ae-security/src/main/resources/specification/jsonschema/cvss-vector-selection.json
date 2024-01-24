@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "https://www.metaeffekt.com/schema/core-security/latest/cvss-vector-selection.json",
+  "type": "object",
+  "properties": {
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/cvssRule"
+      }
+    },
+    "stats": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/statsEvaluator"
+      }
+    },
+    "vectorEval": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/vectorEvaluator"
+      }
+    }
+  },
+  "required": [
+    "rules"
+  ],
+  "definitions": {
+    "vectorEvaluator": {
+      "type": "object",
+      "description": "Defines a rule for evaluating a vector either at the end or in between rules.",
+      "properties": {
+        "and": {
+          "description": "Defines a list of operations to use for comparison. Can be inverted by prefixing the operator with a \"not:\". See #/definitions/vectorEvaluatorOperation for more detail.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/vectorEvaluatorOperation"
+          }
+        },
+        "action": {
+          "$ref": "#/definitions/statsEvaluatorAction",
+          "description": "Defines the action to take if all conditions returns true. See #/definitions/statsEvaluatorAction for more detail."
+        }
+      },
+      "required": [
+        "and",
+        "action"
+      ]
+    },
+    "statsEvaluator": {
+      "type": "object",
+      "description": "Defines a rule for evaluating the collected statistics at the end of evaluation.",
+      "properties": {
+        "comparator": {
+          "$ref": "#/definitions/statsEvaluatorOperation",
+          "description": "Defines the operation to use for comparison. See #/definitions/statsEvaluatorOperation for more detail."
+        },
+        "action": {
+          "$ref": "#/definitions/statsEvaluatorAction",
+          "description": "Defines the action to take if the comparison returns true. See #/definitions/statsEvaluatorAction for more detail."
+        },
+        "value": {
+          "type": "number",
+          "description": "The comparison value to use for comparison."
+        },
+        "attribute": {
+          "type": "string",
+          "description": "The stats attribute to use for comparison."
+        }
+      },
+      "required": [
+        "comparator",
+        "action",
+        "value",
+        "attribute"
+      ]
+    },
+    "cvssRule": {
+      "type": "object",
+      "description": "Defines a rule for selecting and merging CVSS vectors. Each rule consists of a selector to pick vectors and a method to merge them.",
+      "properties": {
+        "selector": {
+          "type": "array",
+          "description": "An array of source selector entries. Each entry defines criteria to select a CVSS vector. The entries are evaluated in order, and the first match is selected.",
+          "items": {
+            "$ref": "#/definitions/sourceSelectorEntry"
+          }
+        },
+        "method": {
+          "$ref": "#/definitions/mergingMethod",
+          "description": "Defines the method used to merge CVSS vectors. See #/definitions/mergingMethod for more detail."
+        },
+        "stats": {
+          "type": "array",
+          "description": "An array of stats collector entries. All will be evaluated.",
+          "items": {
+            "$ref": "#/definitions/statsCollectorEntry"
+          }
+        },
+        "vectorEval": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/vectorEvaluator"
+          }
+        }
+      },
+      "required": [
+        "selector",
+        "method"
+      ]
+    },
+    "statsCollectorEntry": {
+      "type": "object",
+      "description": "Defines a rule for collecting statistics during evaluation.",
+      "properties": {
+        "provider": {
+          "$ref": "#/definitions/statsCollectorProvider",
+          "description": "Defines the provider to use for collecting statistics. See #/definitions/statsCollectorProvider for more detail."
+        },
+        "attribute": {
+          "type": "string",
+          "description": "The stats attribute to use for collecting statistics."
+        },
+        "setType": {
+          "$ref": "#/definitions/statsCollectorSetType",
+          "description": "Defines the operation to use when merging with an existing stats value. See #/definitions/statsCollectorSetType for more detail."
+        }
+      },
+      "required": [
+        "provider",
+        "attribute",
+        "setType"
+      ]
+    },
+    "sourceSelectorEntry": {
+      "type": "object",
+      "description": "Specifies criteria for selecting a CVSS vector based on its source. The criteria include host, issuer role, and issuer. All specified criteria must match (AND operation).",
+      "properties": {
+        "host": {
+          "type": "array",
+          "description": "List of host entities. Strings can be '*' for any host or be prefixed with 'not:' to indicate inversion. All listed host entries must match.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issuerRole": {
+          "type": "array",
+          "description": "List of issuer roles. Strings can be '*' for any role or be prefixed with 'not:' to indicate inversion. All listed role entries must match.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issuer": {
+          "type": "array",
+          "description": "List of issuers. Strings can be '*' for any issuer or be prefixed with 'not:' to indicate inversion. All listed issuer entries must match.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "host",
+        "issuerRole",
+        "issuer"
+      ]
+    },
+    "mergingMethod": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "LOWER",
+        "HIGHER",
+        "OVERWRITE"
+      ],
+      "description": "Specifies the method for merging CVSS vectors. ALL appends all vector parts specified. LOWER only applies parts that result in a lower/equal overall score, HIGHER does the opposite. OVERWRITE replaces the existing vector with the selected one."
+    },
+    "statsCollectorProvider": {
+      "type": "string",
+      "enum": [
+        "PRESENCE",
+        "ABSENCE",
+        "APPLIED_PARTS_COUNT"
+      ],
+      "description": "PRESENCE equals to 1 if the rule found a matching vector, ABSENCE equals to 1 if the rule did not find a matching vector, and APPLIED_PARTS_COUNT equals to the number of vector parts that were applied to the resulting vector."
+    },
+    "statsCollectorSetType": {
+      "type": "string",
+      "enum": [
+        "ADD",
+        "SUBTRACT",
+        "SET",
+        "MAX",
+        "MIN"
+      ],
+      "description": "Specifies what operation to use when merging with an existing stats value. ADD adds the value to the current value, SUBTRACT subtracts the value from the current value, SET sets the value to the current value, MAX sets the value to the maximum of the current and the new value, and MIN sets the value to the minimum of the current and the new value."
+    },
+    "statsEvaluatorOperation": {
+      "type": "string",
+      "enum": [
+        "EQUAL",
+        "SMALLER",
+        "SMALLER_OR_EQUAL",
+        "GREATER",
+        "GREATER_OR_EQUAL"
+      ],
+      "description": "EQUAL returns true if the value equals the threshold, SMALLER returns true if the value is smaller than the threshold, SMALLER_OR_EQUAL returns true if the value is smaller or equal to the threshold, GREATER returns true if the value is greater than the threshold, and GREATER_OR_EQUAL returns true if the value is greater or equal to the threshold."
+    },
+    "vectorEvaluatorOperation": {
+      "type": "string",
+      "enum": [
+        "IS_NULL",
+        "IS_BASE_FULLY_DEFINED",
+        "IS_BASE_PARTIALLY_DEFINED",
+        "IS_ENVIRONMENTAL_PARTIALLY_DEFINED",
+        "IS_TEMPORAL_PARTIALLY_DEFINED",
+        "IS_THREAT_PARTIALLY_DEFINED",
+        "not:IS_NULL",
+        "not:IS_BASE_FULLY_DEFINED",
+        "not:IS_BASE_PARTIALLY_DEFINED",
+        "not:IS_ENVIRONMENTAL_PARTIALLY_DEFINED",
+        "not:IS_TEMPORAL_PARTIALLY_DEFINED",
+        "not:IS_THREAT_PARTIALLY_DEFINED"
+      ],
+      "description": "Can be inverted by prefixing a \"not:\" before the operation."
+    },
+    "statsEvaluatorAction": {
+      "type": "string",
+      "enum": [
+        "FAIL",
+        "RETURN_NULL",
+        "SKIP",
+        "RETURN_PREVIOUS"
+      ],
+      "description": "Specifies the behavior if a condition (vector/stats) is met. SKIP skips the rule, FAIL fails the operation, RETURN_NULL returns a null vector, and RETURN_PREVIOUS returns the previous vector."
+    }
+  }
+}

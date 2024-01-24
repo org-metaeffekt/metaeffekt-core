@@ -99,9 +99,15 @@ public class WindowsInventoryExtractor implements InventoryExtractor {
         new WindowsPartExtractorOptionalFeature().parse(inventory,
                 Class_Win32_OptionalFeature.readJsonArrayOrEmpty(analysisDir)
         );
-        new WindowsPartExtractorVideoController().parse(inventory,
-                Class_Win32_VideoController.readJsonObject(analysisDir)
-        );
+        try {
+            new WindowsPartExtractorVideoController().parse(inventory,
+                    Class_Win32_VideoController.readJsonObjectOrEmpty(analysisDir)
+            );
+        } catch (IOException e) {
+            new WindowsPartExtractorVideoController().parse(inventory,
+                    Class_Win32_VideoController.readJsonArrayOrEmpty(analysisDir)
+            );
+        }
         new WindowsPartExtractorNetworkAdapter().parse(inventory,
                 Class_Win32_NetworkAdapter.readJsonArrayOrEmpty(analysisDir)
         );

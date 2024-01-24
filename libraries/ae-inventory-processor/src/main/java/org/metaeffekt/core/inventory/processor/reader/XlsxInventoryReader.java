@@ -131,17 +131,18 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
         XSSFSheet sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_DATA);
 
         // for backward compatibility
-        if (sheet == null) sheet = workbook.getSheet("Cert");
+        if (sheet == null) sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_ALTERNATIVE_1_DATA);
+        if (sheet == null) sheet = workbook.getSheet(WORKSHEET_NAME_ADVISORY_ALTERNATIVE_2_DATA);
 
         if (sheet == null) return;
 
-        final List<CertMetaData> certMetadata = new ArrayList<>();
-        inventory.setCertMetaData(certMetadata);
+        final List<AdvisoryMetaData> advisoryMetadata = new ArrayList<>();
+        inventory.setAdvisoryMetaData(advisoryMetadata);
 
         final BiConsumer<XSSFRow, ParsingContext> rowConsumer = (row, pc) -> {
-            final CertMetaData cmd = super.readRow(row, new CertMetaData(), pc);
-            if (cmd.isValid()) {
-                certMetadata.add(cmd);
+            final AdvisoryMetaData amd = super.readRow(row, new AdvisoryMetaData(), pc);
+            if (amd.isValid()) {
+                advisoryMetadata.add(amd);
             }
         };
 

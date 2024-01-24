@@ -21,6 +21,7 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,9 @@ public abstract class AbstractInventoryReader {
     public static final String WORKSHEET_NAME_VULNERABILITY_DATA = "Vulnerabilities";
     public static final String WORKSHEET_NAME_LICENSE_NOTICES_DATA = "License Notices";
     public static final String WORKSHEET_NAME_LICENSE_DATA = "Licenses";
-    public static final String WORKSHEET_NAME_ADVISORY_DATA = "Advisories";
+    public static final String WORKSHEET_NAME_ADVISORY_DATA = "Security Advisories";
+    public static final String WORKSHEET_NAME_ADVISORY_ALTERNATIVE_1_DATA = "Advisories";
+    public static final String WORKSHEET_NAME_ADVISORY_ALTERNATIVE_2_DATA = "Cert";
 
     private final DataFormatter baseCellDataFormatter = new DataFormatter();
     private final DecimalFormat numericCellDataFormatter = new DecimalFormat();
@@ -93,13 +96,12 @@ public abstract class AbstractInventoryReader {
 
     protected void update(VulnerabilityMetaData vulnerabilityMetaData) {
         // compensate rename of attributes
-        mapContent(vulnerabilityMetaData, "CVSS Score (v2)", VulnerabilityMetaData.Attribute.V2_SCORE);
-        mapContent(vulnerabilityMetaData, "CVSS Base Score (v3)", VulnerabilityMetaData.Attribute.V3_SCORE);
-        mapContent(vulnerabilityMetaData, "Maximum Score", VulnerabilityMetaData.Attribute.MAX_SCORE);
+        mapContent(vulnerabilityMetaData, "Referenced Content IDs", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
+        mapContent(vulnerabilityMetaData, "Referenced Content Ids", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
     }
 
     private void mapContent(final VulnerabilityMetaData vulnerabilityMetaData,
-                            final String originalKey, final VulnerabilityMetaData.Attribute updatedAttribute) {
+                            final String originalKey, final AbstractModelBase.Attribute updatedAttribute) {
 
         // read the original content
         final String originalKeyContent = vulnerabilityMetaData.get(originalKey);

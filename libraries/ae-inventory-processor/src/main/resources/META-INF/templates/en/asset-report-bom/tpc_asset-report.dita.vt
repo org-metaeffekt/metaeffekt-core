@@ -8,6 +8,7 @@
         <p>
             No individual assets have been identified.
         </p>
+    </body>
 #else
         <p>
             The following table lists all assets that have been identified in the context of ${product.name}. The

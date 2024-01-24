@@ -672,5 +672,4 @@ public class Artifact extends AbstractModelBase {
         }
         return false;
     }
-
 }

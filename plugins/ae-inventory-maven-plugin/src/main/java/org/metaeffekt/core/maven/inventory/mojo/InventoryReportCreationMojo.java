@@ -43,6 +43,7 @@ public class InventoryReportCreationMojo extends AbstractInventoryReportCreation
         configureInventoryReport(report);
 
         try {
+            getLog().info("Starting inventory report creation for " + inventory.getAbsolutePath());
             report.setInventory(new InventoryReader().readInventory(inventory));
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot create inventory report.", e);
