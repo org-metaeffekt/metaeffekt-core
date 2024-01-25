@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.*;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.exception.ContributorFailureException;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,27 +174,33 @@ public class ComponentPatternProducer {
             final Artifact artifact = pathToArtifactMap.get(pathInContext);
             final String checksum = artifact.getChecksum();
 
-            // try to apply contributors
-            final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir, pathInContext, checksum);
+            try {
+                // try to apply contributors
+                final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir, pathInContext, checksum);
 
-            if (!componentPatternDataList.isEmpty()) {
-                for (ComponentPatternData cpd : componentPatternDataList) {
-                    LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
+                if (!componentPatternDataList.isEmpty()) {
+                    for (ComponentPatternData cpd : componentPatternDataList) {
+                        LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
 
-                    // FIXME: defer to 2nd pass
-                    final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
-                    if ("unspecific".equalsIgnoreCase(version)) {
-                        continue;
+                        // FIXME: defer to 2nd pass
+                        final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
+                        if ("unspecific".equalsIgnoreCase(version)) {
+                            continue;
+                        }
+
+                        final String qualifier = cpd.deriveQualifier();
+                        if (!deduplicationQualifierSet.contains(qualifier)) {
+                            // add the contributor to the inventory
+                            targetInventory.getComponentPatternData().add(cpd);
+                            deduplicationQualifierSet.add(qualifier);
+                        }
+
+                        cpd.validate();
                     }
-
-                    final String qualifier = cpd.deriveQualifier();
-                    if (!deduplicationQualifierSet.contains(qualifier)) {
-                        targetInventory.getComponentPatternData().add(cpd);
-                        deduplicationQualifierSet.add(qualifier);
-                    }
-
-                    cpd.validate();
                 }
+            } catch (ContributorFailureException e) {
+                LOG.warn(e.getMessage(), e);
+                // continue anyway: this won't ruin the scan but only fail to summarize some component.
             }
         }
     }
@@ -425,7 +432,9 @@ public class ComponentPatternProducer {
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
 
         for (final ComponentPatternData cpd : componentPatternSourceInventory.getComponentPatternData()) {
-            LOG.debug("Checking component pattern: {}", cpd.createCompareStringRepresentation());
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Checking component pattern: {}", cpd.createCompareStringRepresentation());
+            }
 
             // evaluate component pattern mode and skip if mode doesn't match
             final String mode = cpd.get("Mode", "immediate").trim();
