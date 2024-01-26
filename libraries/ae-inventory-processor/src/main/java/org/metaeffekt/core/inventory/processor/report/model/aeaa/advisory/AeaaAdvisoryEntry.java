@@ -356,6 +356,10 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         return AeaaTimeUtils.formatNormalizedDate(createDate);
     }
 
+    public String getCreateDateFormattedDateLevel() {
+        return AeaaTimeUtils.formatNormalizedDateOnlyDate(createDate);
+    }
+
     public Date getUpdateDate() {
         return updateDate;
     }

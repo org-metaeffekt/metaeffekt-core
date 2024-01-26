@@ -196,6 +196,11 @@ public abstract class AeaaTimeUtils {
                 .replaceAll(":00$", "");
     }
 
+    public static String formatNormalizedDateOnlyDate(Date date) {
+        return new SimpleDateFormat("yyyy-MM-dd")
+                .format(date);
+    }
+
     public static String formatTimeDiff(long diff) {
         if (diff < 1000) {
             return diff + "ms";
