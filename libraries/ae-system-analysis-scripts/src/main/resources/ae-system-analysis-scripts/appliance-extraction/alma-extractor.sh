@@ -71,7 +71,7 @@ cp --no-preserve=mode -rf /usr/share/licenses/* "${outDir}"/usr-share-licenses/ 
 dumpDockerIfPresent "${outDir}"
 
 # if podman is installed, dump the image list (might return the same as docker with present docker -> podman symlinks)
-dumpDockerIfPresent "${outDir}"
+dumpPodmanIfPresent "${outDir}"
 
 # adapt ownership of extracted files to match folder creator user and group
 adaptOutdirOwnership "${outDir}"
