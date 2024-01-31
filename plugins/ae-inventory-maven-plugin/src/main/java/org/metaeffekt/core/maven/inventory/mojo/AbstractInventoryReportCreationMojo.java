@@ -257,6 +257,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean filterVulnerabilitiesNotCoveredByArtifacts;
 
     /**
+     * @parameter default-value="false"
+     */
+    private boolean filterAdvisorySummary;
+
+    /**
      * Comma seperated list of advisory providers. For every provider, an additional overview table will be generated
      * only evaluating the vulnerabilities containing the respecting provider.
      * If left empty, no additional table will be created.
@@ -347,6 +352,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         report.setSecurityPolicy(securityPolicy);
         report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
+        report.setFilterAdvisorySummary(filterAdvisorySummary);
         report.addGenerateOverviewTablesForAdvisoriesByString(generateOverviewTablesForAdvisories);
 
         // diff settings

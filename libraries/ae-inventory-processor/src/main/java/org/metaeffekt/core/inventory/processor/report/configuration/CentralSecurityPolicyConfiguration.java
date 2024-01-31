@@ -27,6 +27,7 @@ import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAd
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
+import org.metaeffekt.core.security.cvss.processor.CvssSelectionResult;
 import org.metaeffekt.core.security.cvss.processor.CvssSelectionResult.CvssScoreVersionSelectionPolicy;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
@@ -224,7 +225,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (insignificantThreshold == -1.0) return true;
         final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial();
         final double score = vector == null ? 0.0 : vector.getOverallScore();
-        return score <= insignificantThreshold;
+        return score < insignificantThreshold;
     }
 
     public double getIncludeScoreThreshold() {
@@ -233,9 +234,9 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public boolean isVulnerabilityAboveIncludeScoreThreshold(AeaaVulnerability vulnerability) {
         if (includeScoreThreshold == -1.0 || includeScoreThreshold == Double.MIN_VALUE) return true;
-        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial();
+        final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedByCustomMetric(CvssVector::getOverallScore, CvssSelectionResult.CUSTOM_VECTOR_SCORE_SELECTOR_MAX);
         final double score = vector == null ? 0.0 : vector.getOverallScore();
-        return score >= includeScoreThreshold;
+        return isVulnerabilityAboveIncludeScoreThreshold(score);
     }
 
     public boolean isVulnerabilityAboveIncludeScoreThreshold(double score) {
