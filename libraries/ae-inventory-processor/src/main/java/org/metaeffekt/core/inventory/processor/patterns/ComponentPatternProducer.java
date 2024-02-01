@@ -180,7 +180,7 @@ public class ComponentPatternProducer {
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {
-                        LOG.info("Identified component pattern: " + cpd.createCompareStringRepresentation());
+                        LOG.info("Identified component pattern: [{}]", cpd.createCompareStringRepresentation());
 
                         // FIXME: defer to 2nd pass
                         final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
@@ -425,8 +425,10 @@ public class ComponentPatternProducer {
      *
      * @return List of matched / potential component patterns.
      */
-    public List<MatchResult> matchComponentPatterns(final Inventory inputInventory, final Inventory componentPatternSourceInventory,
-                                        FileSystemScanContext fileSystemScanContext, boolean applyDeferred) {
+    public List<MatchResult> matchComponentPatterns(final Inventory inputInventory,
+                                                    final Inventory componentPatternSourceInventory,
+                                                    final FileSystemScanContext fileSystemScanContext,
+                                                    final boolean applyDeferred) {
 
         // match component patterns using version anchor; results in matchedComponentPatterns
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
