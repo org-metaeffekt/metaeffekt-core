@@ -340,4 +340,29 @@ public class CvssSelectorTest {
         CvssVector expectedNvdLowerAllPartsMacVector = nvdVector.clone().applyVectorAndReturn(assessmentLowerPartsMacVector).applyVectorAndReturn(assessmentAllPartsVector);
         assertEquals(expectedNvdLowerAllPartsMacVector.toString(), cvssSelectorEffectiveAbsence.selectVector(Arrays.asList(nvdVector, assessmentLowerPartsMacVector, assessmentAllPartsVector)).toString());
     }
+
+    @Test
+    public void applyLowerChangesOnlyIfPartAppliedTest() {
+        final CvssSelector selector = new CvssSelector(Arrays.asList(
+                new CvssRule(MergingMethod.ALL,
+                        // NIST NVD
+                        new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD)
+                ),
+                // assessment
+                new CvssRule(MergingMethod.LOWER,
+                        Collections.singletonList(new SelectorStatsCollector("assessment", StatsCollectorProvider.APPLIED_PARTS_COUNT, StatsCollectorSetType.ADD)),
+                        Collections.emptyList(),
+                        new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_LOWER))
+        ), Collections.singletonList(
+                new SelectorStatsEvaluator("assessment", StatsEvaluatorOperation.EQUAL, EvaluatorAction.RETURN_NULL, 0)
+        ), Collections.singletonList(
+                new SelectorVectorEvaluator(VectorEvaluatorOperation.IS_BASE_FULLY_DEFINED, true, EvaluatorAction.RETURN_NULL)
+        ));
+
+        final Cvss3P1 nvdVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
+        final Cvss3P1 assessmentLowerPartsMavVector = new Cvss3P1("CVSS:3.1/MAV:A", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
+
+        // the resulting vector is not lower, so the later check will return null
+        assertNull(selector.selectVector(Arrays.asList(nvdVector, assessmentLowerPartsMavVector)));
+    }
 }

@@ -15,9 +15,12 @@
  */
 package org.metaeffekt.core.security.cvss.processor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
-import org.metaeffekt.core.security.cvss.v2.Cvss2;
+import org.metaeffekt.core.security.cvss.KnownCvssEntities;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +65,7 @@ public class UniversalCvssCalculatorLinkGenerator {
 
     public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector, String name, boolean visible) {
         if (cvssVector == null) {
-            return new UniversalCvssCalculatorEntry(new Cvss2(), name, visible);
+            return new UniversalCvssCalculatorEntry(new Cvss3P1(), name, visible);
         }
         final UniversalCvssCalculatorEntry entry = new UniversalCvssCalculatorEntry(cvssVector, name, visible);
         entries.add(entry);
@@ -71,6 +74,47 @@ public class UniversalCvssCalculatorLinkGenerator {
 
     public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector) {
         return addVector(cvssVector, cvssVector == null ? "unknown" : cvssVector.getCombinedCvssSource(true).replace("CVSS:", ""), true);
+    }
+
+    public UniversalCvssCalculatorEntry addVectorForVulnerability(CvssVector cvssVector, String vulnerabilityName) {
+        if (StringUtils.isEmpty(vulnerabilityName)) {
+            return addVector(cvssVector);
+        }
+
+        // 3.1 2020-1234 (nist.gov)
+        final StringBuilder nameBuilder = new StringBuilder();
+
+        if (cvssVector == null) {
+            nameBuilder.append("unknown ");
+        } else {
+            nameBuilder.append(cvssVector.getName().replace("CVSS:", "")).append(" ");
+        }
+
+        if (vulnerabilityName.startsWith("CVE-")) {
+            nameBuilder.append(vulnerabilityName.replace("CVE-", "")).append(" ");
+        } else {
+            nameBuilder.append(vulnerabilityName).append(" ");
+        }
+
+        // get all sources, add them in brackets split by comma. use the email source if available and only use the part after the @
+        if (cvssVector != null) {
+            final List<CvssSource> sources = cvssVector.getCvssSources();
+            if (!sources.isEmpty()) {
+                final StringJoiner sourceJoiner = new StringJoiner(", ", "(", ")");
+                for (CvssSource source : sources) {
+                    if (source.getIssuingEntity() != null && KnownCvssEntities.ASSESSMENT != source.getHostingEntity()) {
+                        final String[] parts = StringUtils.firstNonEmpty(source.getIssuingEntity().getEmail(), source.getIssuingEntity().getName()).split("@");
+                        sourceJoiner.add(parts[parts.length - 1]);
+                    } else if (source.getHostingEntity() != null) {
+                        final String[] parts = StringUtils.firstNonEmpty(source.getHostingEntity().getEmail(), source.getHostingEntity().getName()).split("@");
+                        sourceJoiner.add(parts[parts.length - 1]);
+                    }
+                }
+                nameBuilder.append(sourceJoiner);
+            }
+        }
+
+        return addVector(cvssVector, nameBuilder.toString().trim(), true);
     }
 
     public UniversalCvssCalculatorLinkGenerator addOpenSection(String section) {
