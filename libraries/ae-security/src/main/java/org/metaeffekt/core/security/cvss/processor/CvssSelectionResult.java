@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Contains the <strong>initial</strong> (aka provided, unmodified) and <strong>context</strong> (aka effective,
@@ -72,6 +73,27 @@ public class CvssSelectionResult {
         this.selectedContextCvss = this.selectVersionedCvss(versionSelectionPolicy, this.contextCvss2, this.contextCvss3, this.contextCvss4);
     }
 
+    protected CvssSelectionResult(CvssVectorSet allVectors,
+                               Cvss2 initialCvss2, Cvss2 contextCvss2,
+                               Cvss3P1 initialCvss3, Cvss3P1 contextCvss3,
+                               Cvss4P0 initialCvss4, Cvss4P0 contextCvss4,
+                               CvssVector selectedInitialCvss, CvssVector selectedContextCvss
+    ) {
+        this.allVectors = allVectors;
+
+        this.initialCvss2 = initialCvss2;
+        this.contextCvss2 = contextCvss2;
+
+        this.initialCvss3 = initialCvss3;
+        this.contextCvss3 = contextCvss3;
+
+        this.initialCvss4 = initialCvss4;
+        this.contextCvss4 = contextCvss4;
+
+        this.selectedInitialCvss = selectedInitialCvss;
+        this.selectedContextCvss = selectedContextCvss;
+    }
+
     public boolean hasInitialCvss() {
         return this.initialCvss2 != null || this.initialCvss3 != null || this.initialCvss4 != null;
     }
@@ -87,6 +109,18 @@ public class CvssSelectionResult {
     public CvssVector getSelectedContextIfAvailableOtherwiseInitial() {
         if (this.selectedContextCvss != null) return this.selectedContextCvss;
         else return this.selectedInitialCvss;
+    }
+
+    public CvssVector getSelectedByCustomMetric(Function<CvssVector, Double> scoreMapper, CustomVectorScoreSelector customVectorScoreSelector) {
+        if (this.selectedContextCvss != null && this.selectedInitialCvss != null) {
+            return customVectorScoreSelector.select(this.selectedContextCvss, scoreMapper.apply(this.selectedContextCvss), this.selectedInitialCvss, scoreMapper.apply(this.selectedInitialCvss));
+        } else if (this.selectedContextCvss != null) {
+            return this.selectedContextCvss;
+        } else if (this.selectedInitialCvss != null) {
+            return this.selectedInitialCvss;
+        } else {
+            return null;
+        }
     }
 
     private CvssVector selectVersionedCvss(List<CvssScoreVersionSelectionPolicy> versionSelectionPolicy, CvssVector... vectorScores) {
@@ -165,17 +199,23 @@ public class CvssSelectionResult {
 
     public CvssVector findWithSourceInInitial(CvssVector vector) {
         if (vector == null) return null;
-        if (this.initialCvss2 != null && this.initialCvss2.containsSource(vector.getCvssSource())) return this.initialCvss2;
-        if (this.initialCvss3 != null && this.initialCvss3.containsSource(vector.getCvssSource())) return this.initialCvss3;
-        if (this.initialCvss4 != null && this.initialCvss4.containsSource(vector.getCvssSource())) return this.initialCvss4;
+        if (this.initialCvss2 != null && this.initialCvss2.containsSource(vector.getCvssSource()))
+            return this.initialCvss2;
+        if (this.initialCvss3 != null && this.initialCvss3.containsSource(vector.getCvssSource()))
+            return this.initialCvss3;
+        if (this.initialCvss4 != null && this.initialCvss4.containsSource(vector.getCvssSource()))
+            return this.initialCvss4;
         return null;
     }
 
     public CvssVector findWithSourceInContext(CvssVector vector) {
         if (vector == null) return null;
-        if (this.contextCvss2 != null && this.contextCvss2.containsSource(vector.getCvssSource())) return this.contextCvss2;
-        if (this.contextCvss3 != null && this.contextCvss3.containsSource(vector.getCvssSource())) return this.contextCvss3;
-        if (this.contextCvss4 != null && this.contextCvss4.containsSource(vector.getCvssSource())) return this.contextCvss4;
+        if (this.contextCvss2 != null && this.contextCvss2.containsSource(vector.getCvssSource()))
+            return this.contextCvss2;
+        if (this.contextCvss3 != null && this.contextCvss3.containsSource(vector.getCvssSource()))
+            return this.contextCvss3;
+        if (this.contextCvss4 != null && this.contextCvss4.containsSource(vector.getCvssSource()))
+            return this.contextCvss4;
         return null;
     }
 
@@ -238,6 +278,22 @@ public class CvssSelectionResult {
                 '}';
     }
 
+    public CvssSelectionResult deriveInitialOnlySelectionResult() {
+        return new CvssSelectionResult(this.allVectors,
+                this.initialCvss2, null,
+                this.initialCvss3, null,
+                this.initialCvss4, null,
+                this.selectedInitialCvss, null);
+    }
+
+    public CvssSelectionResult deriveContextOnlySelectionResult() {
+        return new CvssSelectionResult(this.allVectors,
+                null, this.contextCvss2,
+                null, this.contextCvss3,
+                null, this.contextCvss4,
+                null, this.selectedContextCvss);
+    }
+
     public enum CvssScoreVersionSelectionPolicy {
         HIGHEST,
         LOWEST,
@@ -247,4 +303,13 @@ public class CvssSelectionResult {
         V3,
         V4,
     }
+
+    public interface CustomVectorScoreSelector {
+        CvssVector select(CvssVector v1, double s1, CvssVector v2, double s2);
+    }
+
+    public final static CustomVectorScoreSelector CUSTOM_VECTOR_SCORE_SELECTOR_MAX = (v1, s1, v2, s2) -> {
+        if (s1 > s2) return v1;
+        else return v2;
+    };
 }

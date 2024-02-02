@@ -170,6 +170,12 @@ public class InventoryReport {
      * detail the artifacts-level information and only provide assets and asset-level assessment information.
      */
     private boolean filterVulnerabilitiesNotCoveredByArtifacts = false;
+    /**
+     * Whether to hide the periodic status "unclassified" in the vulnerability report. If set to <code>true</code>, the
+     * section will simply not be generated.<br>
+     * Defaults to <code>false</code>.
+     */
+    private boolean filterAdvisorySummary = false;
 
     private boolean inventoryBomReportEnabled = false;
     private boolean inventoryDiffReportEnabled = false;
@@ -1441,6 +1447,14 @@ public class InventoryReport {
 
     public void setFilterVulnerabilitiesNotCoveredByArtifacts(boolean filterVulnerabilitiesNotCoveredByArtifacts) {
         this.filterVulnerabilitiesNotCoveredByArtifacts = filterVulnerabilitiesNotCoveredByArtifacts;
+    }
+
+    public void setFilterAdvisorySummary(boolean filterAdvisorySummary) {
+        this.filterAdvisorySummary = filterAdvisorySummary;
+    }
+
+    public boolean isFilterAdvisorySummary() {
+        return filterAdvisorySummary;
     }
 
     public void setIncludeInofficialOsiStatus(boolean includeInofficialOsiStatus) {
