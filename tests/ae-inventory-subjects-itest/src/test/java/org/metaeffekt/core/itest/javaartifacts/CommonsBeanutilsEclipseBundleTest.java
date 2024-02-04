@@ -56,7 +56,7 @@ public class CommonsBeanutilsEclipseBundleTest extends TestBasicInvariants {
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory= preparer.getInventory();
+        final Inventory inventory = preparer.getInventory();
 
         inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
 
