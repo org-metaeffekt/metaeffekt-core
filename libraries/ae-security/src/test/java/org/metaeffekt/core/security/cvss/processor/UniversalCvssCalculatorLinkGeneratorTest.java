@@ -45,11 +45,10 @@ public class UniversalCvssCalculatorLinkGeneratorTest {
                 generator.generateLink()
         );
 
-        /* does not work with Java 17; compressed link is different
+        // NOTE: this does not work with Java 17; compressed link is different
         Assert.assertEquals(
                 "https://metaeffekt.com/security/cvss/calculator/index.html?b64gzip=H4sIAAAAAAAAAGWQTQvCMAyG_0sPnrql6-YHgR1KnTiYY6xbL-JBtJ4EwU1_vwmKMry8JSV9nqTPcBpv93y_F13hush65yKlEiEvx-sQpDAeKzAWt2Ae6MCihRIbMFhDgT20FQff2nWD1Q66Ne7AttRfchgKIQVjUcdKHORUpIUc74_w6UjjBEhYs7CCpqXoSyod8xnJs9BZ4OZrbsXv8R8-neCzWDG-eeNNR2Ry1G-HZ4FngzcUjktXcpjfChmvcJgN4UrfFs75ZJXZ6Rly64tIK62iRKeZ_FbzxXL1AllZov9rAQAA",
                 generator.generateBas64EncodedGzipCompressedLink()
         );
-        */
     }
 }
