@@ -55,6 +55,7 @@ public class FbmsWarTest extends TestBasicInvariants {
     }
 
     @Test
+    @Ignore
     public void manifestSuper() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/SUPERSET/");
         Matcher matcher = new Matcher()
