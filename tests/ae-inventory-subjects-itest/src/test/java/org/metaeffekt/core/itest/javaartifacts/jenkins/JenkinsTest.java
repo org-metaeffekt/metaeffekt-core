@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.javaartifacts;
+package org.metaeffekt.core.itest.javaartifacts.jenkins;
 
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.attributes.Exists;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.Not;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates;
+import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,5 +111,13 @@ public class JenkinsTest extends TestBasicInvariants {
                 .assertEmpty();
 
     }
+
+    @Ignore
+    @Test
+    public void checkInvariants() {
+        getAnalysisAfterInvariants();
+
+    }
+
 
 }

@@ -40,6 +40,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -111,6 +112,8 @@ public class WebAccess {
                 }
 
                 final HttpResponse response = httpClient.execute(httpGet);
+
+                if(response.getStatusLine().getStatusCode() != 200) throw new IllegalArgumentException();
                 final HttpEntity entity = response.getEntity();
 
                 return IOUtils.toBufferedInputStream(entity.getContent());

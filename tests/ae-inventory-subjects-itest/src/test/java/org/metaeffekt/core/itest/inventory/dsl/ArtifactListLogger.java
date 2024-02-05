@@ -40,6 +40,7 @@ public interface ArtifactListLogger extends ArtifactListDescriptor {
     }
 
     default ArtifactList logArtifactListWithAllAtributes(){
+        LOG.info("LIST "+getDescription());
         getArtifactList().forEach(artifact -> {
                     String[] attributes = artifact.getAttributes().toArray(new String[0]);
                     LOG.info(artifactWithAttributes(artifact, attributes));

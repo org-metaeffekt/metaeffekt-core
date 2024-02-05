@@ -20,6 +20,7 @@ import org.metaeffekt.core.itest.inventory.dsl.ArtifactListLogger;
 import org.metaeffekt.core.itest.inventory.dsl.ArtifactListSize;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ArtifactList implements
@@ -34,6 +35,11 @@ public class ArtifactList implements
     public ArtifactList(List<Artifact> artifacts, String description) {
         this.artifactlist = artifacts;
         this.description = description;
+    }
+
+    public ArtifactList (){
+        this.artifactlist = new ArrayList<>();
+        this.description = "unnamed list";
     }
 
     @Override
