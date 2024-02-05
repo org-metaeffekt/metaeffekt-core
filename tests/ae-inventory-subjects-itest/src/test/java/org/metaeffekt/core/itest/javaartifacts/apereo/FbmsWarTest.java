@@ -75,5 +75,4 @@ public class FbmsWarTest extends TestBasicInvariants {
         matcher.getListOfMissing().logArtifactListWithAllAtributes();
     }
 
-
 }
