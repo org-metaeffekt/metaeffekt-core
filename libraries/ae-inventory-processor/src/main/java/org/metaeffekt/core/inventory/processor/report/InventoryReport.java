@@ -262,6 +262,8 @@ public class InventoryReport {
             diffInventory = new InventoryReader().readInventory(diffInventoryFile);
         }
 
+        LOG.debug("Constructing project inventory from local inventory {} and global inventory {}", globalInventory.getInventorySizePrintString(), localInventory.getInventorySizePrintString());
+
         final Inventory projectInventory = new Inventory();
         this.lastProjectInventory = projectInventory;
 
@@ -531,9 +533,12 @@ public class InventoryReport {
         // transfer available asset information
         projectInventory.inheritAssetMetaData(globalInventory, false);
 
+        LOG.debug("Project inventory constructed: {}", projectInventory.getInventorySizePrintString());
+
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         if (filterVulnerabilitiesNotCoveredByArtifacts) {
             projectInventory.filterVulnerabilityMetaData();
+            LOG.debug("Project inventory after filtering using [filterVulnerabilitiesNotCoveredByArtifacts]: {}", projectInventory.getInventorySizePrintString());
         }
 
         // write reports
