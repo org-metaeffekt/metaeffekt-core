@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl.predicates.attributes;
+package org.metaeffekt.core.itest.inventory.dsl.predicates;
 
-import org.metaeffekt.core.itest.inventory.dsl.predicates.NamedArtifactPredicate;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;

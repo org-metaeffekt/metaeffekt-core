@@ -15,19 +15,17 @@
  */
 package org.metaeffekt.core.itest.javaartifacts.spring;
 
-import org.apache.tools.ant.taskdefs.optional.windows.Attrib;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.attributes.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
 
 public class SpringCore6_1_1Test extends TestBasicInvariants {
 

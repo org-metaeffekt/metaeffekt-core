@@ -1,7 +1,6 @@
-package org.metaeffekt.core.itest.inventory.dsl.predicates.attributes;
+package org.metaeffekt.core.itest.inventory.dsl.predicates;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.NamedArtifactPredicate;
 
 import java.util.function.Predicate;
 
