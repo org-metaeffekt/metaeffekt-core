@@ -13,43 +13,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl.predicates.attributes;
+package org.metaeffekt.core.itest.inventory.dsl.predicates;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.NamedArtifactPredicate;
 
 import java.util.function.Predicate;
 
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
 
-public class AttributeValue implements NamedArtifactPredicate {
+
+public class Exists implements NamedArtifactPredicate {
 
     private final String attribute;
 
-    private final String value;
-
-    public AttributeValue(String attribute, String value) {
+    public Exists(String attribute) {
         this.attribute = attribute;
-        this.value = value;
     }
 
     /**
      * Only include Artifacts in the collection where attribute is not null.
      */
-    public static NamedArtifactPredicate attributeValue(Artifact.Attribute attribute, String value) {
-        return new AttributeValue(attribute.getKey(), value);
+    public static NamedArtifactPredicate withAttribute(Artifact.Attribute attribute){
+        return new Exists(attribute.getKey());
     }
 
-    public static NamedArtifactPredicate attributeValue(String attribute, String value) {
-        return new AttributeValue(attribute, value);
+
+    /**
+     * Only include Artifacts in the collection where attribute is null.
+     */
+    public static NamedArtifactPredicate withoutAttribute(Artifact.Attribute attribute){
+        return not(new Exists(attribute.getKey()));
     }
 
+
+    public static NamedArtifactPredicate withAttribute(String attribute){
+        return new Exists(attribute);
+    }
     @Override
     public Predicate<Artifact> getArtifactPredicate() {
-        return artifact -> value.equals(artifact.get(attribute));
+        return artifact -> artifact.get(attribute) != null;
     }
 
     @Override
     public String getDescription() {
-        return "'" + attribute + "' is '"+ value+"'";
+        return "'"+attribute+"' exists";
     }
 }

@@ -24,11 +24,11 @@ import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.idMismatchingVersion;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnAllElements;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnNoElements;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.attributes.Exists.withAttribute;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 
 public class JenkinsTest extends TestBasicInvariants {
@@ -81,7 +81,7 @@ public class JenkinsTest extends TestBasicInvariants {
                 .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
                 .logArtifactList()
-                .assertEmpty(idMismatchingVersion);
+                .assertEmpty(ID_MISMATCHING_VERSION);
     }
 
     @Ignore

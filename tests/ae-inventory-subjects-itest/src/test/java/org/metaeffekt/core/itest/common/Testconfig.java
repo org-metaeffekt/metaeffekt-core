@@ -17,19 +17,18 @@ package org.metaeffekt.core.itest.common;
 
 public class Testconfig {
 
-    private static final String downloadFolder = ".test/downloads/";
-    private static final String scanFolder = "target/.test/scan/";
-    private static final String inventoryFolder = "target/.test/inventory/";
+    private static final String DOWNLOAD_FOLDER = ".test/downloads/";
+    private static final String SCAN_FOLDER = "target/.test/scan/";
+    private static final String INVENTORY_FOLDER = "target/.test/inventory/";
 
     public static String getDownloadFolder() {
-        return downloadFolder;
-    }
+        return DOWNLOAD_FOLDER;}
 
     public static String getScanFolder() {
-        return scanFolder;
+        return SCAN_FOLDER;
     }
 
     public static String getInventoryFolder() {
-        return inventoryFolder;
+        return INVENTORY_FOLDER;
     }
 }

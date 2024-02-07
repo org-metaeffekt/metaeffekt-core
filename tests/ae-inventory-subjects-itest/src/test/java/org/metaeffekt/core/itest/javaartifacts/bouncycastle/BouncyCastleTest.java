@@ -24,7 +24,7 @@ import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.idMismatchingVersion;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
 
 public class BouncyCastleTest extends TestBasicInvariants {
 
@@ -55,7 +55,7 @@ public class BouncyCastleTest extends TestBasicInvariants {
     @Test
     public void versionMismatch() {
         getAnalysisAfterInvariants()
-                .selectArtifacts(idMismatchingVersion)
+                .selectArtifacts(ID_MISMATCHING_VERSION)
                 .logArtifactList("Type")
                 .assertEmpty();
     }

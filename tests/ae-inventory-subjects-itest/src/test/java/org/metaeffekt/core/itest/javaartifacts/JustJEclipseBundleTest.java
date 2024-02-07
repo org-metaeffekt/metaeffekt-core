@@ -19,12 +19,17 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.inventory.Analysis;
+import org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue;
+import org.metaeffekt.core.itest.inventory.dsl.predicates.NamedArtifactPredicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
 
 public class JustJEclipseBundleTest extends TestBasicInvariants {
 
@@ -57,18 +62,24 @@ public class JustJEclipseBundleTest extends TestBasicInvariants {
     @Test
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory = preparer.getInventory();
+        Analysis analysis = new Analysis(inventory);
 
-        inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
+        analysis.selectArtifacts().logArtifactList();
 
-        assertThat(inventory.findArtifact(
-            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).isNotNull();
-        assertThat(inventory.findArtifact(
-            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).isNotNull();
-        assertThat(inventory.findArtifact(
-            "temurin-jdk-17.0.2")).isNotNull();
+        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(3);
+        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue("Version", "17.0.2.v20220201-1208")).hasSizeOf(1);
 
+        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue("Group Id", "org.eclipse.justj")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue("Version", "17.0.2-SNAPSHOT")).hasSizeOf(1);
+
+        analysis.selectArtifacts(attributeValue("Id", "temurin-jdk-17.0.2")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue("Version", "17.0.2")).hasSizeOf(1);
+
+
+        analysis.selectArtifacts().hasSizeOf(3);
     }
 
 }

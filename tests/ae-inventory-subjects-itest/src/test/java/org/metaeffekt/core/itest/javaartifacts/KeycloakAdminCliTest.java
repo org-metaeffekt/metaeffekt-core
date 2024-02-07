@@ -19,12 +19,18 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.inventory.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdStartsWith.idStartsWith;
 
 public class KeycloakAdminCliTest extends TestBasicInvariants {
 
@@ -39,31 +45,42 @@ public class KeycloakAdminCliTest extends TestBasicInvariants {
 
     @Ignore
     @Test
-    public void clear() throws Exception{
+    public void clear() throws Exception {
         Assert.assertTrue(preparer.clear());
     }
 
     @Ignore
     @Test
-    public void inventorize() throws Exception{
+    public void inventorize() throws Exception {
         Assert.assertTrue(preparer.rebuildInventory());
     }
 
     @Test
-    public void first() throws Exception{
-        LOG.info(preparer.getInventory().toString());
+    public void first() throws Exception {
+        LOG.info("Inventory of size {}.", preparer.getInventory().getArtifacts().size());
     }
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory= preparer.getInventory();
+        final Inventory inventory = preparer.getInventory();
 
         inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
 
-        // expect that the substructure is visible
-        assertThat(inventory.getArtifacts().size() > 1).isTrue();
+        Analysis analysis = new Analysis(inventory);
 
-        // TODO: detail assertions for
+        // expect that the substructure is visible
+        analysis.selectArtifacts().hasSizeGreaterThan(1);
+        analysis.selectArtifacts(idStartsWith("jansi")).hasSizeOf(9);
+        analysis.selectArtifacts(idStartsWith("commons")).hasSizeOf(2);
+        analysis.selectArtifacts(idStartsWith("http")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue("Id", "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
     }
 
 }
+
+
+
+
+
+
+

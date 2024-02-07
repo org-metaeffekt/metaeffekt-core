@@ -19,12 +19,16 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.inventory.Analysis;
+import org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
 
 public class CoreRuntimeEclipseBundleTest extends TestBasicInvariants {
 
@@ -58,12 +62,17 @@ public class CoreRuntimeEclipseBundleTest extends TestBasicInvariants {
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory= preparer.getInventory();
 
-        inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
+        Analysis analysis = new Analysis(inventory);
 
-        assertThat(inventory.findArtifact(
-                "org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")).isNotNull();
+        analysis.selectArtifacts().logArtifactList();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(1);
+        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
+
+        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue("Version", "3.24.0.v20210910-0750")).hasSizeOf(1);
+
+        analysis.selectArtifacts().hasSizeOf(1);
+
     }
 
 }

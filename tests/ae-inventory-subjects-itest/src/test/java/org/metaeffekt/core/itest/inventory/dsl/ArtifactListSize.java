@@ -27,6 +27,13 @@ public interface ArtifactListSize extends ArtifactListFilter {
         return (ArtifactList) this;
     }
 
+    default ArtifactList hasSizeOf(int boundary) {
+        assertThat(getArtifactList())
+                .as("Size of List where [" + getDescription() + "] should be equal to " + boundary)
+                .hasSize(boundary);
+        return (ArtifactList) this;
+    }
+
     default void assertEmpty() {
         assertThat(getArtifactList()).as("List where [" + getDescription() + "] must be Emtpy").isEmpty();
     }

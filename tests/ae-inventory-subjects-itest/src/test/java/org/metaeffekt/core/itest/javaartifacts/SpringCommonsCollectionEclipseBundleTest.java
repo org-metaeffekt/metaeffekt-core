@@ -22,12 +22,17 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.inventory.Analysis;
+import org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue;
+import org.metaeffekt.core.itest.inventory.dsl.predicates.Exists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
 
 public class SpringCommonsCollectionEclipseBundleTest extends TestBasicInvariants {
 
@@ -61,24 +66,16 @@ public class SpringCommonsCollectionEclipseBundleTest extends TestBasicInvariant
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory= preparer.getInventory();
 
-        inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
+        Analysis analysis = new Analysis(inventory);
 
-        assertThat(inventory.findArtifact(
-                "com.springsource.org.apache.commons.collections-3.2.1.jar")).isNotNull();
+        analysis.selectArtifacts().logArtifactList();
+
+        analysis.selectArtifacts(attributeValue("Id", "com.springsource.org.apache.commons.collections-3.2.1.jar")).hasSizeOf(1);
 
         // the embedded artifact is listed separately as we cannot connect it to the containing one;
-        assertThat(inventory.findArtifact(
-                "commons-collections-3.2.1.jar")).isNotNull();
-
-        // also no attributes should be shared
-        assertThat(inventory.findArtifact(
-                "com.springsource.org.apache.commons.collections-3.2.1.jar").getGroupId()).isNull();
-
-        assertThat(inventory.findArtifact(
-                "commons-collections-3.2.1.jar").getGroupId()).isNotNull();
-
-
-        assertThat(inventory.getArtifacts().size()).isEqualTo(3);
+        analysis.selectArtifacts(attributeValue("Id", "commons-collections-3.2.1.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue("Id", "commons-collections-3.2.1.jar")).assertAll(withAttribute("Group Id"));
+        analysis.selectArtifacts().hasSizeOf(3);
     }
 
 }

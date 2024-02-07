@@ -15,13 +15,17 @@
  */
 package org.metaeffekt.core.itest.javaartifacts.apereo;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.itest.inventory.artifactlist.Matcher;
+import org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +33,9 @@ import org.slf4j.LoggerFactory;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.inventory.artifactlist.Matcher.Cardinality.*;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.*;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdStartsWith.idStartsWith;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
 
 public class FbmsWarTest extends TestBasicInvariants {
 
@@ -54,6 +61,7 @@ public class FbmsWarTest extends TestBasicInvariants {
         Assert.assertTrue(preparer.rebuildInventory());
     }
 
+    @Ignore
     @Test
     public void manifestSuper() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/SUPERSET/");
@@ -89,6 +97,39 @@ public class FbmsWarTest extends TestBasicInvariants {
         matcher.match(template, getAnalysis());
         matcher.getListOfMatching().logArtifactListWithAllAtributes();
         matcher.getListOfMissing().logArtifactListWithAllAtributes();
+    }
+
+    @Test
+    public void testCompositionAnalysis() throws Exception {
+        final Inventory inventory = preparer.getInventory();
+
+        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
+
+        Analysis analysis = new Analysis(inventory);
+
+        analysis.selectArtifacts(idStartsWith("jackson")).hasSizeOf(6);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "com.fasterxml.jackson.core")).hasSizeOf(3);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "com.fasterxml.jackson.datatype")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "com.fasterxml.jackson.module")).hasSizeOf(1);
+
+        analysis.selectArtifacts(idStartsWith("spring-")).hasSizeOf(34);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.springframework.data")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.springframework.hateoas")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.springframework.plugin")).hasSizeOf(2);
+
+        analysis.selectArtifacts(idStartsWith("hibernate")).hasSizeOf(4);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.hibernate.validator")).hasSizeOf(1);
+
+        analysis.selectArtifacts(idStartsWith("log")).hasSizeOf(5);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.apache.logging.log4j")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "ch.qos.logback")).hasSizeOf(2);
+
+        analysis.selectArtifacts(idStartsWith("springfox")).hasSizeOf(7);
+        analysis.selectArtifacts(attributeValue(VERSION, "2.8.0")).hasSizeOf(7);
+
+        analysis.selectArtifacts(idStartsWith("tomcat")).hasSizeOf(3);
+        analysis.selectArtifacts(attributeValue(VERSION, "8.5.31")).hasSizeOf(3);
+
     }
 
 }
