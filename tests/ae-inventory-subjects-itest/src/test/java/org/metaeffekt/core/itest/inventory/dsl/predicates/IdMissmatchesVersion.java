@@ -26,22 +26,22 @@ import java.util.regex.Pattern;
 
 public class IdMissmatchesVersion implements NamedArtifactPredicate {
 
-    public static final NamedArtifactPredicate idMismatchingVersion = new IdMissmatchesVersion();
-
     private static final Logger LOG = LoggerFactory.getLogger(IdMissmatchesVersion.class);
 
-    private static final Pattern p = Pattern.compile("(?!\\.)(\\d+(\\.\\d+)+)(?:[-.][A-Z]+)?(?![\\d.])");
+    public static final NamedArtifactPredicate ID_MISMATCHING_VERSION = new IdMissmatchesVersion();
+
+    private static final Pattern PATTERN = Pattern.compile("(?!\\.)(\\d+(\\.\\d+)+)(?:[-.][A-Z]+)?(?![\\d.])");
 
     public static boolean evaluate(Artifact artifact) {
-        final String VERSION = artifact.get(Artifact.Attribute.VERSION);
-        final String ID = artifact.get(Artifact.Attribute.ID);
-        if (!ID.toLowerCase().endsWith(".jar")) return false;
-        LOG.info("matching ID: " + ID + " with VERSION: " + VERSION);
-        String basename = ID.substring(0, ID.length() - 4);
-        Matcher m = p.matcher(basename);
+        final String version = artifact.get(Artifact.Attribute.VERSION);
+        final String id = artifact.get(Artifact.Attribute.ID);
+        if (!id.toLowerCase().endsWith(".jar")) return false;
+        LOG.info("matching id: " + id + " with version: " + version);
+        String basename = id.substring(0, id.length() - 4);
+        Matcher m = PATTERN.matcher(basename);
         if(m.find()){
             String[] partsOfId = m.group(0).split("\\.");
-            String[] partsOfVersion = VERSION.split("\\.");
+            String[] partsOfVersion = version.split("\\.");
             return compare(partsOfId, partsOfVersion);
         }
         return false;
