@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.itest.javaartifacts.apereo;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -25,7 +24,6 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.itest.inventory.artifactlist.Matcher;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +31,8 @@ import org.slf4j.LoggerFactory;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.inventory.artifactlist.Matcher.Cardinality.*;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.*;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdStartsWith.idStartsWith;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdStartsWith.idStartsWith;
 
 public class FbmsWarTest extends TestBasicInvariants {
 
@@ -61,7 +58,6 @@ public class FbmsWarTest extends TestBasicInvariants {
         Assert.assertTrue(preparer.rebuildInventory());
     }
 
-    @Ignore
     @Test
     public void manifestSuper() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/SUPERSET/");
