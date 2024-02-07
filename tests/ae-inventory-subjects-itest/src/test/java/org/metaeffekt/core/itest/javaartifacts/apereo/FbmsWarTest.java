@@ -68,7 +68,7 @@ public class FbmsWarTest extends TestBasicInvariants {
     }
 
     @Test
-    @Ignore
+    @Ignore // currently deviated by one; test lifecycle issue
     public void manifestEqual() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/EQUAL/");
         Matcher matcher = new Matcher()
@@ -81,7 +81,6 @@ public class FbmsWarTest extends TestBasicInvariants {
     }
 
     @Test
-    @Ignore
     public void manifestSubset() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/SUBSET/");
         Matcher matcher = new Matcher()

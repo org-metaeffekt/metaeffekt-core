@@ -26,10 +26,10 @@ import java.net.URL;
 public interface AnalysisTemplate {
 
     default Analysis getTemplate(String templatepath) throws IOException {
-        URL templateurl = this.getClass().getResource(templatepath);
-        File file = new File(templateurl.getFile());
-        Inventory template = InventoryUtils.readInventory(file, "*.xls");
-        Analysis analysis = new Analysis(template, templatepath);
+        final URL templateurl = this.getClass().getResource(templatepath);
+        final File file = new File(templateurl.getFile());
+        final Inventory template = InventoryUtils.readInventory(file, "*.xls");
+        final Analysis analysis = new Analysis(template, templatepath);
         return analysis;
     }
 }
