@@ -69,40 +69,12 @@ public class KeycloakAdminCliTest extends TestBasicInvariants {
         Analysis analysis = new Analysis(inventory);
 
         // expect that the substructure is visible
-        assertThat(inventory.getArtifacts().size() > 1).isTrue();
-        analysis.selectArtifacts
-                (idStartsWith("jansi"))
-                .hasSizeOf(9);
-        analysis.selectArtifacts
-                (idStartsWith("commons"))
-                .hasSizeOf(2);
-        analysis.selectArtifacts
-                (idStartsWith("http"))
-                .hasSizeOf(2);
-        analysis.selectArtifacts
-                (attributeValue("Id", "keycloak-admin-cli-23.0.1.jar"))
-                .hasSizeOf(1);
-
-        // TODO: detail assertions for
+        analysis.selectArtifacts().hasSizeGreaterThan(1);
+        analysis.selectArtifacts(idStartsWith("jansi")).hasSizeOf(9);
+        analysis.selectArtifacts(idStartsWith("commons")).hasSizeOf(2);
+        analysis.selectArtifacts(idStartsWith("http")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue("Id", "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
     }
-
-    @Test
-    public void countJansi() throws Exception {
-        Inventory inventory = preparer.getInventory();
-        List<Artifact> artifactList = inventory.getArtifacts();
-        int countJansi = 0;
-        for (int i = 0; i < artifactList.size(); i++) {
-            Artifact artifact = artifactList.get(i);
-            String id = artifact.getId();
-            if (id.startsWith("jansi")) countJansi++;
-        }
-        LOG.info("Anzahl Jansi = {}", countJansi);
-    }
-
-
-
-
-
 
 }
 

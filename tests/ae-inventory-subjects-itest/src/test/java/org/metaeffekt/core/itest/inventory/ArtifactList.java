@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.itest.inventory;
 
+import org.metaeffekt.core.itest.inventory.dsl.ArtifactListAsserts;
 import org.metaeffekt.core.itest.inventory.dsl.ArtifactListFilter;
 import org.metaeffekt.core.itest.inventory.dsl.ArtifactListLogger;
 import org.metaeffekt.core.itest.inventory.dsl.ArtifactListSize;
@@ -26,7 +27,8 @@ import java.util.List;
 public class ArtifactList implements
         ArtifactListFilter,
         ArtifactListSize,
-        ArtifactListLogger {
+        ArtifactListLogger,
+        ArtifactListAsserts {
 
     private final List<Artifact> artifactlist;
 
@@ -37,7 +39,7 @@ public class ArtifactList implements
         this.description = description;
     }
 
-    public ArtifactList (){
+    public ArtifactList(){
         this.artifactlist = new ArrayList<>();
         this.description = "unnamed list";
     }
