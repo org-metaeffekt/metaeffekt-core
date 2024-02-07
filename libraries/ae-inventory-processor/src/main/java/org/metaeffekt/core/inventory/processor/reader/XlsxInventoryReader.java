@@ -20,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,7 +100,8 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
 
     protected void readVulnerabilityMetaData(XSSFWorkbook workbook, Inventory inventory) {
         workbook.sheetIterator().forEachRemaining(sheet -> {
-            if (sheet.getSheetName().startsWith(WORKSHEET_NAME_VULNERABILITY_DATA)) {
+            if (sheet.getSheetName().startsWith(WORKSHEET_NAME_VULNERABILITY_DATA) ||
+                    sheet.getSheetName().startsWith(InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX)) {
                 readVulnerabilityMetaData(workbook, inventory, sheet.getSheetName());
             }
         });
