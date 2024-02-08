@@ -5,7 +5,7 @@
 ### Parent Class
 The test should extend
 ```java 
-org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants
+org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest
 ```
 Common behavior regarding the Inventory and Analysis is implemented in that base class.
 
