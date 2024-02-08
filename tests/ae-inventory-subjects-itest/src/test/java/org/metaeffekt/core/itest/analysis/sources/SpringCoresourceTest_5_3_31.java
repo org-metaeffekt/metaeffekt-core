@@ -13,39 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.javaartifacts;
+package org.metaeffekt.core.itest.analysis.sources;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-
-public class CoreRuntimeEclipseBundleTest extends AbstractBasicInvariantsTest {
+public class SpringCoresourceTest_5_3_31 extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
-    public static void prepare() {
+    public static void prepare(){
         testSetup = new UrlBasedTestSetup()
-                .setSource("https://download.eclipse.org/rt/rap/3.20/M1-20220112-0916/plugins/org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")
-                .setName(CoreRuntimeEclipseBundleTest.class.getName());
+                .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/5.3.31/spring-core-5.3.31-sources.jar")
+                .setName(SpringCoresourceTest_5_3_31.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception{
         Assert.assertTrue(testSetup.clear());
-    }
 
+    }
     @Ignore
     @Test
     public void inventorize() throws Exception{
@@ -56,22 +51,4 @@ public class CoreRuntimeEclipseBundleTest extends AbstractBasicInvariantsTest {
     public void first() throws Exception{
         LOG.info(testSetup.getInventory().toString());
     }
-
-    @Test
-    public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory= testSetup.getInventory();
-
-        Analysis analysis = new Analysis(inventory);
-
-        analysis.selectArtifacts().logArtifactList();
-
-        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
-
-        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "3.24.0.v20210910-0750")).hasSizeOf(1);
-
-        analysis.selectArtifacts().hasSizeOf(1);
-
-    }
-
 }

@@ -13,32 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.javaartifacts;
+package org.metaeffekt.core.itest.analysis.libraries;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.IdStartsWith.idStartsWith;
 
-public class KeycloakAdminCliTest extends AbstractBasicInvariantsTest {
+public class SpringCoreTest_6_1_1 extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
-                .setSource("https://repo1.maven.org/maven2/org/keycloak/keycloak-admin-cli/23.0.1/keycloak-admin-cli-23.0.1.jar")
-                .setName(KeycloakAdminCliTest.class.getName());
+                .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/6.1.1/spring-core-6.1.1.jar")
+                .setName(SpringCoreTest_6_1_1.class.getName());
     }
+
 
     @Ignore
     @Test
@@ -54,30 +53,16 @@ public class KeycloakAdminCliTest extends AbstractBasicInvariantsTest {
 
     @Test
     public void first() throws Exception {
-        LOG.info("Inventory of size {}.", testSetup.getInventory().getArtifacts().size());
+        getAnalysisAfterInvariantCheck()
+                .selectArtifacts()
+                .logArtifactListWithAllAtributes()
+                .with(attributeValue(ID, "spring-core-6.1.1.jar"),
+                        attributeValue(CHECKSUM, "7a787700b8de9fc9034ffdc070517f51"),
+                        attributeValue(VERSION, "6.1.1"),
+                        attributeValue("Hash (SHA-256)", "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
+                        attributeValue(PROJECTS,"spring-core-6.1.1.jar"),
+                        attributeValue("Path in Asset", "spring-core-6.1.1.jar")
+                )
+                .assertNotEmpty();
     }
-
-    @Test
-    public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory = testSetup.getInventory();
-
-        inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
-
-        Analysis analysis = new Analysis(inventory);
-
-        // expect that the substructure is visible
-        analysis.selectArtifacts().hasSizeGreaterThan(1);
-        analysis.selectArtifacts(idStartsWith("jansi")).hasSizeOf(9);
-        analysis.selectArtifacts(idStartsWith("commons")).hasSizeOf(2);
-        analysis.selectArtifacts(idStartsWith("http")).hasSizeOf(2);
-        analysis.selectArtifacts(attributeValue("Id", "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
-    }
-
 }
-
-
-
-
-
-
-

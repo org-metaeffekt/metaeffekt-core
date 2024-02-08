@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.javaartifacts;
+package org.metaeffekt.core.itest.analysis.bundles;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;

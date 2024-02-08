@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.javaartifacts.jenkins;
+package org.metaeffekt.core.itest.analysis.webarchives;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -35,7 +35,7 @@ import static org.metaeffekt.core.itest.common.predicates.Not.not;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
 
-public class JenkinsTest extends AbstractBasicInvariantsTest {
+public class JenkinsWarTest extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -43,7 +43,7 @@ public class JenkinsTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
-                .setName(JenkinsTest.class.getName());
+                .setName(JenkinsWarTest.class.getName());
     }
 
     @Ignore
