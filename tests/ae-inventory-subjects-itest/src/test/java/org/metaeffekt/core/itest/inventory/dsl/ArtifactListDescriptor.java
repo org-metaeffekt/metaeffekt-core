@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.itest.inventory.dsl;
 
-import org.metaeffekt.core.itest.inventory.ArtifactList;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.itest.inventory.ArtifactList;
 
 import java.util.List;
 

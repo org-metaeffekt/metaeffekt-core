@@ -26,57 +26,56 @@ import org.metaeffekt.core.itest.inventory.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.GROUPID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdStartsWith.idStartsWith;
 
-public class JustJEclipseBundleTest extends TestBasicInvariants {
+public class PdfboxWarTest extends TestBasicInvariants {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
         preparer = new UrlPreparer()
-                .setSource("https://download.eclipse.org/justj/jres/17/updates/release/17.0.2/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")
-                .setName(JustJEclipseBundleTest.class.getName());
+                .setSource("https://repo1.maven.org/maven2/org/apache/pdfbox/pdfbox-war/1.8.17/pdfbox-war-1.8.17.war")
+                .setName(PdfboxWarTest.class.getName());
     }
+
 
     @Ignore
     @Test
-    public void clear() throws Exception{
+    public void clear() throws Exception {
         Assert.assertTrue(preparer.clear());
     }
 
     @Ignore
     @Test
-    public void inventorize() throws Exception{
+    public void inventorize() throws Exception {
         Assert.assertTrue(preparer.rebuildInventory());
-    }
-
-    @Test
-    public void first() throws Exception{
-        LOG.info(preparer.getInventory().toString());
     }
 
     @Test
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory = preparer.getInventory();
-        Analysis analysis = new Analysis(inventory);
-
-        analysis.selectArtifacts().logArtifactList();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "17.0.2.v20220201-1208")).hasSizeOf(1);
+        Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Group Id", "org.eclipse.justj")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "17.0.2-SNAPSHOT")).hasSizeOf(1);
-
-        analysis.selectArtifacts(attributeValue("Id", "temurin-jdk-17.0.2")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "17.0.2")).hasSizeOf(1);
+        analysis.selectArtifacts(idStartsWith("pdfbox")).hasSizeOf(3);
+        analysis.selectArtifacts(idStartsWith("fontbox")).hasSizeOf(1);
+        analysis.selectArtifacts(idStartsWith("commons")).hasSizeOf(1);
+        analysis.selectArtifacts(idStartsWith("jempbox")).hasSizeOf(1);
 
 
-        analysis.selectArtifacts().hasSizeOf(3);
-    }
+
+
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.pdfbox")).hasSizeOf(5);
+        analysis.selectArtifacts(attributeValue(GROUPID, "commons-logging")).hasSizeOf(1);
+
+        analysis.selectArtifacts(attributeValue(VERSION, "1.8.17")).hasSizeOf(5);
+        analysis.selectArtifacts(attributeValue(VERSION, "1.1.1")).hasSizeOf(1);
+        }
 
 }

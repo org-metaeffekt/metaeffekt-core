@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.javaartifacts;
 
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Preparer;
 import org.metaeffekt.core.itest.genericTests.CheckInvariants;
 import org.metaeffekt.core.itest.inventory.Analysis;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 public abstract class TestBasicInvariants implements AnalysisTemplate {
 

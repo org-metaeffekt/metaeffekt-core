@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.itest.common.download;
 
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
