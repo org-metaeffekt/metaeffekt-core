@@ -395,6 +395,21 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 }
 
                 fileJoiner.add(toAdd);
+
+                // FIXME: remove this hack when archives are being handled properly and will match without "[blah]"
+                if (toAdd.endsWith(".gz")
+                        || toAdd.endsWith(".tar")
+                        || toAdd.endsWith(".zip")) {
+                    int lastSlash = toAdd.lastIndexOf("/");
+
+                    String toAddBeforeSlash = toAdd.substring(0, lastSlash);
+                    String supposedArchiveName = toAdd.substring(lastSlash + 1);
+
+                    // only works for one level but that might already help with a LOT of issues
+                    String uglyIncludeArchiveContentHack = toAddBeforeSlash + "/[" + supposedArchiveName + "]/**";
+
+                    fileJoiner.add(uglyIncludeArchiveContentHack);
+                }
             });
         } catch (IOException e) {
             LOG.info("Could not read file list for entry with name [{}].", entry.packageName);
@@ -405,6 +420,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
         fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
         fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
+
+        fileJoiner.add("usr/share/doc/" + entry.packageName + "/**");
 
         return fileJoiner;
     }
