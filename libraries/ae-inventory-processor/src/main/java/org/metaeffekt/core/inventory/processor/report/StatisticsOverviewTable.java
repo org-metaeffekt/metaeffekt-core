@@ -101,7 +101,7 @@ public class StatisticsOverviewTable {
 
         final Collection<AeaaVulnerability> effectiveVulnerabilities;
         if (filterAdvisory != null) {
-            effectiveVulnerabilities = CentralSecurityPolicyConfiguration.filterVulnerabilitiesForAdvisories(inputVulnerabilities, Collections.singleton(filterAdvisory));
+            effectiveVulnerabilities = CentralSecurityPolicyConfiguration.filterVulnerabilitiesForAdvisoryProviders(inputVulnerabilities, Collections.singleton(filterAdvisory));
         } else {
             effectiveVulnerabilities = inputVulnerabilities;
         }

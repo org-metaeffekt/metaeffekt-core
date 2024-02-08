@@ -17,9 +17,7 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 
 public class AdvisoryMetaData extends AbstractModelBase {
 
@@ -31,6 +29,14 @@ public class AdvisoryMetaData extends AbstractModelBase {
     public static final String STATUS_VALUE_NEW = "new";
     public static final String STATUS_VALUE_IN_REVIEW = "in review";
     public static final String STATUS_VALUE_REVIEWED = "reviewed";
+
+    public static final List<String> ADVISORY_REVIEW_STATUS_VALUES = Arrays.asList(
+            STATUS_VALUE_UNAFFECTED,
+            STATUS_VALUE_UNCLASSIFIED,
+            STATUS_VALUE_NEW,
+            STATUS_VALUE_IN_REVIEW,
+            STATUS_VALUE_REVIEWED
+    );
 
     public static Comparator<AdvisoryMetaData> CERT_COMPARATOR_NAME_DESC = Comparator.comparing(cm -> cm.get(Attribute.NAME));
     public static final Comparator<AdvisoryMetaData> CERT_COMPARATOR_LAST_UPDATED_DESC = Comparator.comparing((AdvisoryMetaData cm) -> cm.get(Attribute.UPDATE_DATE)).reversed();
