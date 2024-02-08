@@ -21,7 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ public class JolokiaWarTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/jolokia/jolokia-war/1.7.2/jolokia-war-1.7.2.war")
                 .setName(JolokiaWarTest.class.getName());
     }
@@ -46,18 +46,18 @@ public class JolokiaWarTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory = preparer.getInventory();
+        final Inventory inventory = testSetup.getInventory();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 

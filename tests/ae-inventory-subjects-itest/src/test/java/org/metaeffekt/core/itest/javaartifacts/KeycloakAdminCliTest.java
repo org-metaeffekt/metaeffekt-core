@@ -20,7 +20,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class KeycloakAdminCliTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/keycloak/keycloak-admin-cli/23.0.1/keycloak-admin-cli-23.0.1.jar")
                 .setName(KeycloakAdminCliTest.class.getName());
     }
@@ -42,23 +42,23 @@ public class KeycloakAdminCliTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test
     public void first() throws Exception {
-        LOG.info("Inventory of size {}.", preparer.getInventory().getArtifacts().size());
+        LOG.info("Inventory of size {}.", testSetup.getInventory().getArtifacts().size());
     }
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory = preparer.getInventory();
+        final Inventory inventory = testSetup.getInventory();
 
         inventory.getArtifacts().stream().map(a -> a.deriveQualifier()).forEach(LOG::info);
 

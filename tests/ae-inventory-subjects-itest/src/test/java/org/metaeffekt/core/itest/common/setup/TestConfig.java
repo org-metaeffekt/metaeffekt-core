@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.common;
+package org.metaeffekt.core.itest.common.setup;
 
-public class Testconfig {
+public class TestConfig {
 
     private static final String DOWNLOAD_FOLDER = ".test/downloads/";
     private static final String SCAN_FOLDER = "target/.test/scan/";

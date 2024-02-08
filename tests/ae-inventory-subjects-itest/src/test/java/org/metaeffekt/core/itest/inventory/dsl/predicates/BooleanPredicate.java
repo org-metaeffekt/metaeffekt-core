@@ -19,43 +19,34 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
-
-
-public class Exists implements NamedArtifactPredicate {
-
-    private final String attribute;
-
-    public Exists(String attribute) {
-        this.attribute = attribute;
-    }
+/**
+ * These trivial predicates are used during test development. You can implement the test asserts and filters
+ * with these first and replace them when the Code under test becomes ready.
+ */
+public class BooleanPredicate implements NamedArtifactPredicate{
+    /**
+     * Will return the whole collection when filtered.
+     */
+    public static NamedArtifactPredicate alwaysTrue = new BooleanPredicate(true);
 
     /**
-     * Only include Artifacts in the collection where attribute is not null.
+    * Will return an empty collection when filtered.
      */
-    public static NamedArtifactPredicate withAttribute(Artifact.Attribute attribute){
-        return new Exists(attribute.getKey());
+    public static NamedArtifactPredicate alwaysFalse = new BooleanPredicate(false);
+    
+    private boolean returnAll;
+
+    public BooleanPredicate(boolean returnAll) {
+        this.returnAll = returnAll;
     }
 
-
-    /**
-     * Only include Artifacts in the collection where attribute is null.
-     */
-    public static NamedArtifactPredicate withoutAttribute(Artifact.Attribute attribute){
-        return not(new Exists(attribute.getKey()));
-    }
-
-
-    public static NamedArtifactPredicate withAttribute(String attribute){
-        return new Exists(attribute);
-    }
     @Override
     public Predicate<Artifact> getArtifactPredicate() {
-        return artifact -> artifact.get(attribute) != null;
+        return artifact -> returnAll;
     }
 
     @Override
     public String getDescription() {
-        return "'"+attribute+"' exists";
+        return returnAll ? "All Elements":"No Elements";
     }
 }

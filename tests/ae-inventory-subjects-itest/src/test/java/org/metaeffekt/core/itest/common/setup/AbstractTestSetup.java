@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.common;
+package org.metaeffekt.core.itest.common.setup;
 
 import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.net.URL;
 
-public abstract class AbstractPreparer implements Preparer {
+public abstract class AbstractTestSetup implements TestSetup {
 
-    private final Logger LOG = LoggerFactory.getLogger(AbstractPreparer.class);
+    private final Logger LOG = LoggerFactory.getLogger(AbstractTestSetup.class);
 
     protected String url;
     String name;
@@ -37,25 +37,25 @@ public abstract class AbstractPreparer implements Preparer {
     private String referenceInventory = "";
 
     public String getDownloadFolder() {
-        return Testconfig.getDownloadFolder() + myDir;
+        return TestConfig.getDownloadFolder() + myDir;
     }
 
     public String getScanFolder() {
-        return Testconfig.getScanFolder() + myDir;
+        return TestConfig.getScanFolder() + myDir;
     }
 
     public String getInventoryFolder() {
-        return Testconfig.getInventoryFolder() + myDir;
+        return TestConfig.getInventoryFolder() + myDir;
     }
 
-    public Preparer setSource(String url) {
+    public TestSetup setSource(String url) {
         this.url = url;
         return this;
     }
 
     @Override
-    public Preparer setName(String testname) {
-        this.name = testname.replace("org.metaeffekt.core.itest.","");
+    public TestSetup setName(String testName) {
+        this.name = testName.replace("org.metaeffekt.core.itest.","");
         this.myDir = name.replace(".", "/") + "/";
         return this;
     }
@@ -107,7 +107,7 @@ public abstract class AbstractPreparer implements Preparer {
     }
 
     @Override
-    public Preparer setReferenceInventory(String referenceinventory) {
+    public TestSetup setReferenceInventory(String referenceinventory) {
         this.referenceInventory = referenceinventory;
         return this;
     }

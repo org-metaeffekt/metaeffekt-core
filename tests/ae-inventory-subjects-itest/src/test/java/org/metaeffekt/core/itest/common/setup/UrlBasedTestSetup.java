@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.common.download;
+package org.metaeffekt.core.itest.common.setup;
 
 import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.itest.common.AbstractPreparer;
+import org.metaeffekt.core.itest.common.download.WebAccess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +28,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class UrlPreparer extends AbstractPreparer {
+public class UrlBasedTestSetup extends AbstractTestSetup {
 
-    private final Logger LOG = LoggerFactory.getLogger(UrlPreparer.class);
+    private final Logger LOG = LoggerFactory.getLogger(UrlBasedTestSetup.class);
 
 
     public boolean inventorize(boolean overwrite) throws Exception {

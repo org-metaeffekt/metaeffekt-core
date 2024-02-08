@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class BouncyCastleTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar")
                 .setName(BouncyCastleTest.class.getName());
     }
@@ -40,14 +40,14 @@ public class BouncyCastleTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
 
     }
 
     @Ignore
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     //TODO

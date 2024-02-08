@@ -1,7 +1,7 @@
 # Change global Settings for ALL "integration" Tests
 
 Change Settings e.g. Foldernames in 
-[org.metaeffekt.core.itest.common.Testconfig](/org/metaeffekt/core/itest/common/Testconfig.java)
+[org.metaeffekt.core.itest.common.setup.TestConfig](/org/metaeffekt/core/itest/common/Testconfig.java)
 
 # Test Types
 

@@ -78,4 +78,9 @@ public class IdMissmatchesVersion implements NamedArtifactPredicate {
     public String getDescription() {
         return "Artifact Version mismatch";
     }
+
+    public static NamedArtifactPredicate idMismatchesVersion() {
+        return ID_MISMATCHING_VERSION;
+    }
+
 }

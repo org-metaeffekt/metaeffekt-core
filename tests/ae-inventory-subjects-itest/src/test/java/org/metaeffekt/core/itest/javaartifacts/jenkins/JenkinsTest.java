@@ -21,7 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
@@ -29,11 +29,11 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeExists.withAttribute;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.idMismatchesVersion;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnAllElements;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnNoElements;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.BooleanPredicate.alwaysTrue;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.BooleanPredicate.alwaysFalse;
 
 public class JenkinsTest extends TestBasicInvariants {
 
@@ -41,7 +41,7 @@ public class JenkinsTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
                 .setName(JenkinsTest.class.getName());
     }
@@ -49,13 +49,13 @@ public class JenkinsTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
 
@@ -80,21 +80,21 @@ public class JenkinsTest extends TestBasicInvariants {
     //TODO
     @Ignore
     @Test
-    public void versionMissmatch() {
+    public void versionMismatch() {
         getAnalysis()
                 .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
                 .logArtifactList()
-                .assertEmpty(ID_MISMATCHING_VERSION);
+                .assertEmpty(idMismatchesVersion());
     }
 
     @Ignore
     @Test
-    public void trivialPredicates() {
+    public void testPredicatePrimitives() {
         getAnalysis()
                 .selectArtifacts()
-                .assertEmpty(trivialReturnNoElements)
-                .assertNotEmpty(trivialReturnAllElements)
+                .assertEmpty(alwaysFalse)
+                .assertNotEmpty(alwaysTrue)
                 .logArtifactListWithAllAtributes()
                 .logInfo()
                 .logInfo("Typed List:")
@@ -125,7 +125,7 @@ public class JenkinsTest extends TestBasicInvariants {
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory = preparer.getInventory();
+        final Inventory inventory = testSetup.getInventory();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 

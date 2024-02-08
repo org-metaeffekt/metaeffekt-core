@@ -21,7 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class JustJEclipseBundleTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://download.eclipse.org/justj/jres/17/updates/release/17.0.2/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")
                 .setName(JustJEclipseBundleTest.class.getName());
     }
@@ -42,23 +42,23 @@ public class JustJEclipseBundleTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test
     public void first() throws Exception{
-        LOG.info(preparer.getInventory().toString());
+        LOG.info(testSetup.getInventory().toString());
     }
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory = preparer.getInventory();
+        final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 
         analysis.selectArtifacts().logArtifactList();

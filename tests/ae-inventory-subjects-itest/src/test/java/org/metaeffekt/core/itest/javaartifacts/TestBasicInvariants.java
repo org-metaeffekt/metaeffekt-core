@@ -16,13 +16,13 @@
 package org.metaeffekt.core.itest.javaartifacts;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.Preparer;
+import org.metaeffekt.core.itest.common.setup.TestSetup;
 import org.metaeffekt.core.itest.genericTests.CheckInvariants;
 import org.metaeffekt.core.itest.inventory.Analysis;
 
 public abstract class TestBasicInvariants implements AnalysisTemplate {
 
-    static protected Preparer preparer;
+    static protected TestSetup testSetup;
 
     private Inventory inventory;
 
@@ -30,7 +30,7 @@ public abstract class TestBasicInvariants implements AnalysisTemplate {
 
     public Inventory getInventory() throws Exception {
         if (inventory == null) {
-            this.inventory = preparer.getInventory();
+            this.inventory = testSetup.getInventory();
         }
         return inventory;
     }

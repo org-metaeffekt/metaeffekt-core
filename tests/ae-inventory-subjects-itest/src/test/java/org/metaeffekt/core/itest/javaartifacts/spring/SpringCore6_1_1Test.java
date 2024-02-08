@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class SpringCore6_1_1Test extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/6.1.1/spring-core-6.1.1.jar")
                 .setName(SpringCore6_1_1Test.class.getName());
     }
@@ -42,13 +42,13 @@ public class SpringCore6_1_1Test extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.common;
+package org.metaeffekt.core.itest.common.setup;
 
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 
-public interface Preparer {
+public interface TestSetup {
 
-    Preparer setName(String testname);
+    TestSetup setName(String testName);
 
-    Preparer setSource(String source);
+    TestSetup setSource(String source);
 
     boolean clear() throws Exception;
 
@@ -38,5 +38,5 @@ public interface Preparer {
 
     Inventory readReferenceInventory() throws Exception;
 
-    Preparer setReferenceInventory(String referenceinventory);
+    TestSetup setReferenceInventory(String referenceinventory);
 }

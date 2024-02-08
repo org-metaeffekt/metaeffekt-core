@@ -21,7 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class CoreRuntimeEclipseBundleTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://download.eclipse.org/rt/rap/3.20/M1-20220112-0916/plugins/org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")
                 .setName(CoreRuntimeEclipseBundleTest.class.getName());
     }
@@ -42,23 +42,23 @@ public class CoreRuntimeEclipseBundleTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test
     public void first() throws Exception{
-        LOG.info(preparer.getInventory().toString());
+        LOG.info(testSetup.getInventory().toString());
     }
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory= preparer.getInventory();
+        final Inventory inventory= testSetup.getInventory();
 
         Analysis analysis = new Analysis(inventory);
 

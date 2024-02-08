@@ -21,7 +21,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.itest.inventory.artifactlist.Matcher;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
@@ -40,7 +40,7 @@ public class FbmsWarTest extends TestBasicInvariants {
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/jasig/portal/fbms/fbms-webapp/1.3.1/fbms-webapp-1.3.1.war")
                 .setName(FbmsWarTest.class.getName());
     }
@@ -49,13 +49,13 @@ public class FbmsWarTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class FbmsWarTest extends TestBasicInvariants {
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory = preparer.getInventory();
+        final Inventory inventory = testSetup.getInventory();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 

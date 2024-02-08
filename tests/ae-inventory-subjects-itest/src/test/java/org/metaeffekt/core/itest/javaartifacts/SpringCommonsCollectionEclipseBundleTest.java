@@ -20,13 +20,13 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeExists.withAttribute;
 
 public class SpringCommonsCollectionEclipseBundleTest extends TestBasicInvariants {
 
@@ -34,7 +34,7 @@ public class SpringCommonsCollectionEclipseBundleTest extends TestBasicInvariant
 
     @BeforeClass
     public static void prepare() {
-        preparer = new UrlPreparer()
+        testSetup = new UrlBasedTestSetup()
                 .setSource("http://www.java2s.com/Code/JarDownload/com.springsource.org.apache/com.springsource.org.apache.commons.collections-3.2.1.jar.zip")
                 .setName(SpringCommonsCollectionEclipseBundleTest.class.getName());
     }
@@ -42,23 +42,23 @@ public class SpringCommonsCollectionEclipseBundleTest extends TestBasicInvariant
     @Ignore
     @Test
     public void clear() throws Exception{
-        Assert.assertTrue(preparer.clear());
+        Assert.assertTrue(testSetup.clear());
     }
 
     @Ignore
     @Test
     public void inventorize() throws Exception{
-        Assert.assertTrue(preparer.rebuildInventory());
+        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test
     public void first() throws Exception{
-        LOG.info(preparer.getInventory().toString());
+        LOG.info(testSetup.getInventory().toString());
     }
 
     @Test
     public void testCompositionAnalysis() throws Exception {
-        final Inventory inventory= preparer.getInventory();
+        final Inventory inventory= testSetup.getInventory();
 
         Analysis analysis = new Analysis(inventory);
 
