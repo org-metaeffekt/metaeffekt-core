@@ -15,11 +15,14 @@
  */
 package org.metaeffekt.core.itest.javaartifacts.jenkins;
 
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,6 +119,17 @@ public class JenkinsTest extends TestBasicInvariants {
     @Test
     public void checkInvariants() {
         getAnalysisAfterInvariants();
+
+    }
+
+    @Test
+    public void testCompositionAnalysis() throws Exception {
+        final Inventory inventory = preparer.getInventory();
+
+        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
+
+        Analysis analysis = new Analysis(inventory);
+
 
     }
 
