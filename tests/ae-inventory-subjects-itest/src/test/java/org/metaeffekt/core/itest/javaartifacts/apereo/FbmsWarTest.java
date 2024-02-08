@@ -58,7 +58,6 @@ public class FbmsWarTest extends TestBasicInvariants {
         Assert.assertTrue(preparer.rebuildInventory());
     }
 
-    @Ignore
     @Test
     public void manifestSuper() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/SUPERSET/");

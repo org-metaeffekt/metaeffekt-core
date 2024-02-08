@@ -85,6 +85,7 @@ public class AeaaDataSourceIndicator {
         }
         return new JSONArray(
                 indicators.stream()
+                        .filter(Objects::nonNull)
                         .map(AeaaDataSourceIndicator::toJson)
                         .collect(Collectors.toList())
         );
@@ -123,32 +124,6 @@ public class AeaaDataSourceIndicator {
         }
     }
 
-    public static class ArtifactGhsaReason extends ArtifactReason {
-        public final static String TYPE = "artifact-ghsa";
-
-        private final String coordinates;
-
-        public ArtifactGhsaReason(Artifact artifact, String coordinates) {
-            super(TYPE, artifact);
-            this.coordinates = coordinates;
-        }
-
-        protected ArtifactGhsaReason(JSONObject artifactData, String coordinates) {
-            super(TYPE, artifactData);
-            this.coordinates = coordinates;
-        }
-
-        public String getCoordinates() {
-            return coordinates;
-        }
-
-        @Override
-        public JSONObject toJson() {
-            return super.toJson()
-                    .put("coordinates", coordinates);
-        }
-    }
-
     public static class VulnerabilityReason extends Reason {
         public final static String TYPE = "vulnerability";
 
@@ -172,6 +147,32 @@ public class AeaaDataSourceIndicator {
         public JSONObject toJson() {
             return super.toJson()
                     .put("id", id);
+        }
+    }
+
+    public static class ArtifactGhsaReason extends ArtifactReason {
+        public final static String TYPE = "artifact-ghsa";
+
+        private final String coordinates;
+
+        public ArtifactGhsaReason(Artifact artifact, String coordinates) {
+            super(TYPE, artifact);
+            this.coordinates = coordinates;
+        }
+
+        protected ArtifactGhsaReason(JSONObject artifactData, String coordinates) {
+            super(TYPE, artifactData);
+            this.coordinates = coordinates;
+        }
+
+        public String getCoordinates() {
+            return coordinates;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            return super.toJson()
+                    .put("coordinates", coordinates);
         }
     }
 
@@ -276,6 +277,37 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    public static class AnyArtifactOverwriteSourceReason extends ArtifactReason {
+        public final static String TYPE = "any-artifact-overwrite-source";
+
+        private final String source;
+
+        public AnyArtifactOverwriteSourceReason(Artifact artifact, String source) {
+            super(TYPE, artifact);
+            this.source = source;
+        }
+
+        protected AnyArtifactOverwriteSourceReason(JSONObject artifactData) {
+            super(TYPE, artifactData);
+            this.source = artifactData.optString("source", null);
+        }
+
+        @Override
+        public String overwriteSource() {
+            return source;
+        }
+
+        public String getSource() {
+            return source;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            return super.toJson()
+                    .put("source", source);
+        }
+    }
+
     public static class AnyArtifactReason extends ArtifactReason {
         public final static String TYPE = "any-artifact";
 
@@ -302,6 +334,10 @@ public class AeaaDataSourceIndicator {
 
         protected ArtifactReason(String type, Artifact artifact) {
             super(type);
+            if (artifact == null) {
+                LOG.warn("Artifact is null in [{}#ArtifactReason(String, Artifact)], using empty artifact", AeaaDataSourceIndicator.class);
+                artifact = new Artifact();
+            }
             this.artifact = artifact;
             this.artifactId = artifact.getId();
             this.artifactComponent = artifact.getComponent();
@@ -349,11 +385,21 @@ public class AeaaDataSourceIndicator {
                 return artifact;
             }
             return artifacts.stream()
-                    .filter(a -> Objects.equals(a.getId(), artifactId))
-                    .filter(a -> Objects.equals(a.getComponent(), artifactComponent))
-                    .filter(a -> Objects.equals(a.getVersion(), artifactVersion))
+                    .filter(this::isArtifact)
                     .findFirst()
                     .orElse(null);
+        }
+
+        public boolean isArtifact(Artifact artifact) {
+            if (artifact == null) {
+                return false;
+            }
+            if (this.artifact != null) {
+                return this.artifact.equals(artifact);
+            }
+            return Objects.equals(artifactId, artifact.getId()) &&
+                    Objects.equals(artifactComponent, artifact.getComponent()) &&
+                    Objects.equals(artifactVersion, artifact.getVersion());
         }
     }
 
@@ -370,6 +416,10 @@ public class AeaaDataSourceIndicator {
 
         public JSONObject toJson() {
             return new JSONObject().put("type", type);
+        }
+
+        public String overwriteSource() {
+            return null;
         }
 
         @Override
@@ -406,6 +456,8 @@ public class AeaaDataSourceIndicator {
                     return new AnyArtifactReason(json);
                 case AssessmentStatusReason.TYPE:
                     return new AssessmentStatusReason(json.optString("originFile", null));
+                case AnyArtifactOverwriteSourceReason.TYPE:
+                    return new AnyArtifactOverwriteSourceReason(json);
                 default:
                     throw new IllegalArgumentException("Unknown reason type: " + type + "\nIn reason JSON:" + json);
             }

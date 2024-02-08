@@ -1966,6 +1966,29 @@ public class Inventory implements Serializable {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
+    public String getInventorySizePrintString() {
+        final StringJoiner inventoryPrintString = new StringJoiner(", ", "[", "]");
+
+        inventoryPrintString.add(String.format("art: %d", artifacts.size()));
+        inventoryPrintString.add(String.format("lmd: %d", licenseMetaData.size()));
+        inventoryPrintString.add(String.format("cpd: %d", componentPatternData.size()));
+        inventoryPrintString.add(String.format("ld: %d", licenseData.size()));
+
+        final StringJoiner vulnerabilityMetaDataPrintString = new StringJoiner(", ", "vmd: [", "]");
+        vulnerabilityMetaDataPrintString.setEmptyValue("vmd: 0  ");
+        for (String context : vulnerabilityMetaData.keySet()) {
+            vulnerabilityMetaDataPrintString.add(String.format("%s: %d", context, vulnerabilityMetaData.get(context).size()));
+        }
+        inventoryPrintString.add(vulnerabilityMetaDataPrintString.toString());
+
+        inventoryPrintString.add(String.format("admd: %d", advisoryMetaData.size()));
+        inventoryPrintString.add(String.format("ii: %d", inventoryInfo.size()));
+        inventoryPrintString.add(String.format("rd: %d", reportData.size()));
+        inventoryPrintString.add(String.format("asmd: %d", assetMetaData.size()));
+
+        return inventoryPrintString.toString();
+    }
+
     /**
      * Component data. Please note that the component per-se does not have a version, but a license.
      * Artifacts (with various versions) can be added to the component. When evaluating the
