@@ -15,24 +15,25 @@
  */
 package org.metaeffekt.core.itest.javaartifacts.jenkins;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnAllElements;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.TrivialPredicates.trivialReturnNoElements;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 
 public class JenkinsTest extends TestBasicInvariants {
 

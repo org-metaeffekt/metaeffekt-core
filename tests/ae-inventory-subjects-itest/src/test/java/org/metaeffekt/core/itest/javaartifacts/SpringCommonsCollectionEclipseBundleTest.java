@@ -19,18 +19,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.download.UrlPreparer;
 import org.metaeffekt.core.itest.inventory.Analysis;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.Exists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
 

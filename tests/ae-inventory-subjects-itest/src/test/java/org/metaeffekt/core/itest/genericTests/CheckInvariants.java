@@ -18,9 +18,9 @@ package org.metaeffekt.core.itest.genericTests;
 import org.metaeffekt.core.itest.inventory.Analysis;
 import org.metaeffekt.core.itest.inventory.dsl.predicates.Exists;
 
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.Exists.withAttribute;
+import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
 
 public class CheckInvariants {
 
