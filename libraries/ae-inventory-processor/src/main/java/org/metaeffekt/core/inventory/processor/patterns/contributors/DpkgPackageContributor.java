@@ -199,15 +199,17 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
     }
 
+    // TODO: find out how to use (pseudo-)absolute paths for include patterns. there is some magic in deciding
+    //  where our current scan root is but once we find out what it is we can use it to resolve stuff for us
+    //  instead of messing about with more imprecise scanning methods
+
     @Override
     public boolean applies(String pathInContext) {
         // The default location under root is var/lib/dpkg.
         // if this part matches, make the bet that this is a debian file system and run package file inclusions.
 
         // could also match files from ./info/ as anchors?
-        return pathInContext.equals("var/lib/dpkg/status")
-                || pathInContext.endsWith("]/var/lib/dpkg/status")
-                || pathInContext.contains("]/var/lib/dpkg/status.d");
+        return pathInContext.endsWith("var/lib/dpkg/status") || pathInContext.contains("var/lib/dpkg/status.d");
     }
 
     protected List<DpkgStatusFileEntry> readCompleteStatusFile(final File statusFile) throws IOException {
@@ -335,8 +337,6 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // try to fill "component part" in a plausible way
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART,
                 entry.packageName + "-" + entry.version);
-
-
 
         // set whatever this is in whatever way i think might be correct from looking at other contributors
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
