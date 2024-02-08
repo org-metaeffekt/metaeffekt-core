@@ -37,6 +37,7 @@ public class CoreRuntimeEclipseBundleTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://download.eclipse.org/rt/rap/3.20/M1-20220112-0916/plugins/org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")
+                .setSha256Hash("d8e8901318ea9c14a232f7458d17ce9546d86c38df8167f68c4e3d281cc6eba2")
                 .setName(CoreRuntimeEclipseBundleTest.class.getName());
     }
 

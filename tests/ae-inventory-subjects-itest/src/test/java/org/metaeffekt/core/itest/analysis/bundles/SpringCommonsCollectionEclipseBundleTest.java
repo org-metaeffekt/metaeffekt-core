@@ -37,6 +37,7 @@ public class SpringCommonsCollectionEclipseBundleTest extends AbstractBasicInvar
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("http://www.java2s.com/Code/JarDownload/com.springsource.org.apache/com.springsource.org.apache.commons.collections-3.2.1.jar.zip")
+                .setSha256Hash("6fec79a57993aa10afe183d81aded02c10b5631547daf725739f1fb9b58b2d5b")
                 .setName(SpringCommonsCollectionEclipseBundleTest.class.getName());
     }
 

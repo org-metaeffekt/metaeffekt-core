@@ -37,6 +37,7 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractBasicInvariantsTe
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://download.eclipse.org/virgo/release/updatesite/3.6.2.RELEASE/plugins/org.apache.commons.collections_3.2.0.v201005080500.jar")
+                .setSha256Hash("6fec79a57993aa10afe183d81aded02c10b5631547daf725739f1fb9b58b2d5b")
                 .setName(CommonsBeanutilsEclipseBundleTest.class.getName());
     }
 

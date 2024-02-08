@@ -34,6 +34,7 @@ public class BouncyCastleTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar")
+                .setSha256Hash("6fec79a57993aa10afe183d81aded02c10b5631547daf725739f1fb9b58b2d5b")
                 .setName(BouncyCastleTest.class.getName());
     }
 

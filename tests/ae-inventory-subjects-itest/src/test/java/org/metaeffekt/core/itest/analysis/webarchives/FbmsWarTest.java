@@ -42,6 +42,7 @@ public class FbmsWarTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/jasig/portal/fbms/fbms-webapp/1.3.1/fbms-webapp-1.3.1.war")
+                .setSha256Hash("ffa47b63d97fc354805de6d8320c3b5929f37c15a1ed90d0d88e906f958ff72f")
                 .setName(FbmsWarTest.class.getName());
     }
 

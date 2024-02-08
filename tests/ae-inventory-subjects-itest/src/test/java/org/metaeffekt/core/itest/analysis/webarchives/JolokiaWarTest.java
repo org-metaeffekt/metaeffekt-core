@@ -40,6 +40,7 @@ public class JolokiaWarTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/jolokia/jolokia-war/1.7.2/jolokia-war-1.7.2.war")
+                .setSha256Hash("2d5c7fbd9791b012edb5e83f3d161b5c273f0f88f72ff0a1ec63eeae3f78b419")
                 .setName(JolokiaWarTest.class.getName());
     }
 

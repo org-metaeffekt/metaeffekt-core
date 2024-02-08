@@ -37,6 +37,7 @@ public class JustJEclipseBundleTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://download.eclipse.org/justj/jres/17/updates/release/17.0.2/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")
+                .setSha256Hash("1743a6794b0c99859424ec993abf6a0b25649cd71aa5e291fd375dfc473f0801")
                 .setName(JustJEclipseBundleTest.class.getName());
     }
 

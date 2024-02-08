@@ -40,6 +40,7 @@ public class PdfboxWarTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/apache/pdfbox/pdfbox-war/1.8.17/pdfbox-war-1.8.17.war")
+                .setSha256Hash("598dc00130fb7bef4566dd73f26763ed1eb79daa63803fbae4f2ec5bb8b0a94b")
                 .setName(PdfboxWarTest.class.getName());
     }
 

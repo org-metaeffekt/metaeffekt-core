@@ -35,6 +35,7 @@ public class SpringCoreTest_6_1_1 extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/6.1.1/spring-core-6.1.1.jar")
+                .setSha256Hash("a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f")
                 .setName(SpringCoreTest_6_1_1.class.getName());
     }
 

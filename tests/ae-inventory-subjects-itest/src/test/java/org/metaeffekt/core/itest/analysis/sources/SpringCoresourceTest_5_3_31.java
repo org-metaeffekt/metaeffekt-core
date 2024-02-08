@@ -32,6 +32,7 @@ public class SpringCoresourceTest_5_3_31 extends AbstractBasicInvariantsTest {
     public static void prepare(){
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/springframework/spring-core/5.3.31/spring-core-5.3.31-sources.jar")
+                .setSha256Hash("232263ab0477178ca15bb476f7158dbe61cd6fb2f53b58060f81c2dd0720ba46")
                 .setName(SpringCoresourceTest_5_3_31.class.getName());
     }
 

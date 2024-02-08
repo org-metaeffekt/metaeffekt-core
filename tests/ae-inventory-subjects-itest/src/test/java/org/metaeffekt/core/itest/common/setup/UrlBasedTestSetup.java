@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.zip.Checksum;
 
 public class UrlBasedTestSetup extends AbstractTestSetup {
 
@@ -80,27 +81,34 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
     }
 
     private void httpDownload(String artifactfile) throws MalformedURLException {
-        new WebAccess().fetchResponseBodyFromUrlToFile(new URL(url), new File(artifactfile));
+        File file = new File(artifactfile);
+        new WebAccess().fetchResponseBodyFromUrlToFile(new URL(url), file);
+        String hash = org.metaeffekt.core.util.FileUtils.computeSHA256Hash(file);
+        LOG.info(hash);
+
+        if (!hash.equals(getSha256Hash())) {
+            throw new IllegalStateException("Expected hash does not match acutal hash. Expecting " + getSha256Hash() + "; calculated: " + hash + ".");
+        }
     }
 
-    private void filecopy(String artifactfile) throws IOException {
+    private void fileCopy(String artifactfile) throws IOException {
         File source = new File(new URL(url).getFile());
         File target = new File(artifactfile);
         FileUtils.copyFile(source,target);
     }
 
     public boolean load(boolean overwrite) throws IOException {
-        String[] filenameparts = url.split("/");
-        String filename = filenameparts[filenameparts.length - 1];
-        String artifactfile = getDownloadFolder()+ filename;
-        if (overwrite || !new File(artifactfile).exists()) {
+        String[] filenameParts = url.split("/");
+        String filename = filenameParts[filenameParts.length - 1];
+        String artifactFile = getDownloadFolder() + filename;
+        if (overwrite || !new File(artifactFile).exists()) {
             new File(getDownloadFolder()).mkdirs();
             if(url.startsWith("http"))
-                httpDownload(artifactfile);
+                httpDownload(artifactFile);
             if(url.startsWith("file"))
-                filecopy(artifactfile);
+                fileCopy(artifactFile);
         }
-        return new File(artifactfile).exists();
+        return new File(artifactFile).exists();
     }
 
 }

@@ -30,6 +30,9 @@ public abstract class AbstractTestSetup implements TestSetup {
     private final Logger LOG = LoggerFactory.getLogger(AbstractTestSetup.class);
 
     protected String url;
+
+    protected String sha256Hash;
+
     String name;
     private Inventory inventory;
     private String myDir = "";
@@ -111,4 +114,15 @@ public abstract class AbstractTestSetup implements TestSetup {
         this.referenceInventory = referenceinventory;
         return this;
     }
+
+    @Override
+    public TestSetup setSha256Hash(String sha256Hash) {
+        this.sha256Hash = sha256Hash;
+        return this;
+    }
+
+    public String getSha256Hash() {
+        return sha256Hash;
+    }
+
 }

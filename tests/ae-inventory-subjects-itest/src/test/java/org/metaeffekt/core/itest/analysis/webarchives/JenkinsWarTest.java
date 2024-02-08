@@ -43,6 +43,7 @@ public class JenkinsWarTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
+                .setSha256Hash("8d84f3cdd6430c098d1f4f38740957e3f2d0ac261b2f9c68cbf9c306363fd1c8")
                 .setName(JenkinsWarTest.class.getName());
     }
 
