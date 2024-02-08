@@ -20,9 +20,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.common.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class KeycloakAdminCliTest extends AbstractBasicInvariantsTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/keycloak/keycloak-admin-cli/23.0.1/keycloak-admin-cli-23.0.1.jar")
-                .setSha256Hash("ee96ab6cd398f6a2e7b34765764dd170bf2a11b412b0d5dfddf5cc4fe482d3c")
+                .setSha256Hash("ee96ab6cd398f6a2e7b34765764dd170bf2a11b412b0d5dfddf5cc4fe482d3ce")
                 .setName(KeycloakAdminCliTest.class.getName());
     }
 
@@ -73,12 +73,4 @@ public class KeycloakAdminCliTest extends AbstractBasicInvariantsTest {
         analysis.selectArtifacts(idStartsWith("http")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue("Id", "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
     }
-
 }
-
-
-
-
-
-
-
