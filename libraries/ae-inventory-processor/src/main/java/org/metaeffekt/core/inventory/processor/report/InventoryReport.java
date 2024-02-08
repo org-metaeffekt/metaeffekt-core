@@ -1186,10 +1186,6 @@ public class InventoryReport {
         this.failOnMissingNotice = failOnMissingNotice;
     }
 
-    public String xmlEscapeString(String string) {
-        return xmlEscapeName(string, true);
-    }
-
     public String xmlEscapeContentString(String string) {
         if (string == null) return "";
 
@@ -1254,23 +1250,31 @@ public class InventoryReport {
         }
     }
 
+    public String xmlEscapeString(String string) {
+        return xmlEscapeNameOptionallyInsertNbsp(string, true);
+    }
+
+    public String xmlEscapeDate(String string) {
+        return xmlEscapeNameOptionallyInsertNbsp(string, false);
+    }
+
     public String xmlEscapeLicense(String license) {
-        return xmlEscapeName(license, false);
+        return xmlEscapeNameOptionallyInsertNbsp(license, false);
     }
 
     public String xmlEscapeArtifactId(String artifactFileId) {
-        return xmlEscapeName(artifactFileId, true);
+        return xmlEscapeNameOptionallyInsertNbsp(artifactFileId, true);
     }
 
     public String xmlEscapeComponentName(String componentName) {
-        return xmlEscapeName(componentName, true);
+        return xmlEscapeNameOptionallyInsertNbsp(componentName, true);
     }
 
     public String xmlEscapeGAV(String gavElement) {
-        return xmlEscapeName(gavElement, true);
+        return xmlEscapeNameOptionallyInsertNbsp(gavElement, true);
     }
 
-    private String xmlEscapeName(String artifactFileId, boolean insertBreakingSpaces) {
+    private String xmlEscapeNameOptionallyInsertNbsp(String artifactFileId, boolean insertBreakingSpaces) {
         if (artifactFileId == null) return "&nbsp;";
 
         // escape the remainder

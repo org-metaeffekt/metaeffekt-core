@@ -144,10 +144,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      *         <code>all</code> - apply no filter, include all vulnerabilities.
      *     </li>
      *     <li>
-     *         <code>unaffected</code> - the security advisories are included in the query period, but are not relevant in this context.
+     *         <code>unclassified</code> - the security advisories are not present in the query period, but have been matched by the affected components.
      *     </li>
      *     <li>
-     *         <code>unclassified</code> - the security advisories are not present in the query period, but have been matched by the affected components.
+     *         <code>unaffected</code> - the security advisories are included in the query period, but are not relevant in this context.
      *     </li>
      *     <li>
      *         <code>new</code> - the security advisories are new in the given context and have not yet been considered during vulnerability assessments.

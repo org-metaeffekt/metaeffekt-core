@@ -363,4 +363,10 @@ public class RepositoryReportTest {
                 findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
     }
 
+    @Test
+    public void xmlEscapeDateStringTest() {
+        final InventoryReport report = new InventoryReport();
+        Assert.assertEquals("2020-20-20", report.xmlEscapeDate("2020-20-20"));
+    }
+
 }
