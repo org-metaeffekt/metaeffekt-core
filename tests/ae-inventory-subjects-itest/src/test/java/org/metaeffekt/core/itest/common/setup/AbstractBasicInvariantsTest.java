@@ -13,20 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.javaartifacts;
+package org.metaeffekt.core.itest.common.setup;
 
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.setup.TestSetup;
-import org.metaeffekt.core.itest.genericTests.CheckInvariants;
-import org.metaeffekt.core.itest.inventory.Analysis;
+import org.metaeffekt.core.itest.common.asserts.AnalysisAsserts;
+import org.metaeffekt.core.itest.common.Analysis;
 
-public abstract class TestBasicInvariants implements AnalysisTemplate {
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
+public abstract class AbstractBasicInvariantsTest implements AnalysisAsserts {
 
     static protected TestSetup testSetup;
 
     private Inventory inventory;
 
     private Analysis analysis;
+
+    protected Analysis getTemplate(String templatepath) throws IOException {
+        final URL templateurl = this.getClass().getResource(templatepath);
+        final File file = new File(templateurl.getFile());
+        final Inventory template = InventoryUtils.readInventory(file, "*.xls");
+        final Analysis analysis = new Analysis(template, templatepath);
+        return analysis;
+    }
 
     public Inventory getInventory() throws Exception {
         if (inventory == null) {
@@ -46,8 +59,8 @@ public abstract class TestBasicInvariants implements AnalysisTemplate {
         return analysis;
     }
 
-    public Analysis getAnalysisAfterInvariants() {
-        CheckInvariants.assertInvariants(getAnalysis());
+    public Analysis getAnalysisAfterInvariantCheck() {
+        assertInvariants();
         return analysis;
     }
 }

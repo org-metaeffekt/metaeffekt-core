@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl;
+package org.metaeffekt.core.itest.common.fluent;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.inventory.ArtifactList;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.NamedArtifactPredicate;
+import org.metaeffekt.core.itest.common.predicates.NamedArtifactPredicate;
 
 import java.util.ArrayList;
 import java.util.List;

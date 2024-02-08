@@ -13,13 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory;
+package org.metaeffekt.core.itest.common.fluent;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.inventory.dsl.ArtifactListAsserts;
-import org.metaeffekt.core.itest.inventory.dsl.ArtifactListFilter;
-import org.metaeffekt.core.itest.inventory.dsl.ArtifactListLogger;
-import org.metaeffekt.core.itest.inventory.dsl.ArtifactListSize;
 
 import java.util.ArrayList;
 import java.util.List;

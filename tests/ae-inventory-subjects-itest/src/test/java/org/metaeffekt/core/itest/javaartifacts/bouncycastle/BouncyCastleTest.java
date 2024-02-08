@@ -20,13 +20,13 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
+import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
+import static org.metaeffekt.core.itest.common.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
 
-public class BouncyCastleTest extends TestBasicInvariants {
+public class BouncyCastleTest extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -54,7 +54,7 @@ public class BouncyCastleTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void versionMismatch() {
-        getAnalysisAfterInvariants()
+        getAnalysisAfterInvariantCheck()
                 .selectArtifacts(ID_MISMATCHING_VERSION)
                 .logArtifactList("Type")
                 .assertEmpty();

@@ -13,37 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.genericTests;
+package org.metaeffekt.core.itest.common.asserts;
 
-import org.metaeffekt.core.itest.inventory.Analysis;
-import org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeExists;
+import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.predicates.AttributeExists;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeExists.withAttribute;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
+import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
+import static org.metaeffekt.core.itest.common.predicates.Not.not;
 
-public class CheckInvariants {
+public interface AnalysisAsserts {
 
-    public static void assertInvariants(Analysis analysis){
-        assertAtLeastOneArtifact(analysis);
+    Analysis getAnalysis();
+
+    default void assertInvariants() {
+        assertAtLeastOneArtifact();
         // TODO Type detection not stable / available for all artifatcs
         //assertNoMissingTypes(analysis);
-        assertNoErrors(analysis);
+        assertNoErrors();
     }
 
-    public static void assertNoErrors(Analysis analysis) {
-        analysis.selectArtifacts(withAttribute("Errors"))
+    default void assertNoErrors() {
+        getAnalysis().selectArtifacts(withAttribute("Errors"))
                 .logArtifactList("Errors")
                 .assertEmpty();
     }
 
-    public static void assertAtLeastOneArtifact(Analysis analysis) {
-        analysis.selectArtifacts()
+    default void assertAtLeastOneArtifact() {
+        getAnalysis().selectArtifacts()
                 .hasSizeGreaterThan(0);
     }
 
-    public static void assertNoMissingTypes(Analysis analysis) {
-        analysis.selectArtifacts(not(AttributeExists.withAttribute(TYPE)))
+    default void assertNoMissingTypes() {
+        getAnalysis().selectArtifacts(not(AttributeExists.withAttribute(TYPE)))
                 .assertEmpty();
     }
 }

@@ -20,14 +20,14 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
+import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
-public class SpringCore6_1_1Test extends TestBasicInvariants {
+public class SpringCore6_1_1Test extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -53,7 +53,7 @@ public class SpringCore6_1_1Test extends TestBasicInvariants {
 
     @Test
     public void first() throws Exception {
-        getAnalysisAfterInvariants()
+        getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logArtifactListWithAllAtributes()
                 .with(attributeValue(ID, "spring-core-6.1.1.jar"),

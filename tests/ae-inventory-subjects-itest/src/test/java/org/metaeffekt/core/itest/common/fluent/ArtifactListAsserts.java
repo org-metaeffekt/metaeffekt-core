@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl;
+package org.metaeffekt.core.itest.common.fluent;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.inventory.ArtifactList;
+import org.metaeffekt.core.itest.common.predicates.NamedArtifactPredicate;
 
 import java.util.List;
 
-public interface ArtifactListDescriptor {
+import static org.assertj.core.api.Assertions.assertThat;
+
+public interface ArtifactListAsserts {
 
     List<Artifact> getArtifactList();
 
-    String getDescription();
-
-    ArtifactList setDescription(String description);
-
-    default ArtifactList as(String description) {
-        return this.setDescription(description);
+    default void assertAll(NamedArtifactPredicate predicate) {
+        assertThat(getArtifactList().stream().allMatch(predicate.getArtifactPredicate()))
+                .as("Predicate [" + predicate.getDescription() + "] not evaluated as expected.").isTrue();
     }
-
 }

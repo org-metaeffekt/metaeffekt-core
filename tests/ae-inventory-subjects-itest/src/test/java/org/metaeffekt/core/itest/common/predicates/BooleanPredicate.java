@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl.predicates;
+package org.metaeffekt.core.itest.common.predicates;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 

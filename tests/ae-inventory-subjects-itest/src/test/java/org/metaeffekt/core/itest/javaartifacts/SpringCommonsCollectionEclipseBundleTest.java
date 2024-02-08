@@ -20,15 +20,16 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.inventory.Analysis;
+import org.metaeffekt.core.itest.common.Analysis;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeExists.withAttribute;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
 
-public class SpringCommonsCollectionEclipseBundleTest extends TestBasicInvariants {
+public class SpringCommonsCollectionEclipseBundleTest extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 

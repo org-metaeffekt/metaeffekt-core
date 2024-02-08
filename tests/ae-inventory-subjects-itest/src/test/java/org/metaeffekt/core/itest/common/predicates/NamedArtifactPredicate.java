@@ -13,34 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl.predicates;
+package org.metaeffekt.core.itest.common.predicates;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
-public class Not implements NamedArtifactPredicate {
+public interface NamedArtifactPredicate {
 
-    private final NamedArtifactPredicate input;
+    Predicate<Artifact> getArtifactPredicate();
 
-    private Not(NamedArtifactPredicate input) {
-        this.input = input;
-    }
+    String getDescription();
 
-    /**
-     * Return the inverted meaning for a filterpredicate.
-     */
-    public static NamedArtifactPredicate not(NamedArtifactPredicate input){
-        return new Not(input);
-    }
-
-    @Override
-    public Predicate<Artifact> getArtifactPredicate() {
-        return input.getArtifactPredicate().negate();
-    }
-
-    @Override
-    public String getDescription() {
-        return " NOT( "+input.getDescription()+" ) ";
-    }
 }

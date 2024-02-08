@@ -22,19 +22,19 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.inventory.Analysis;
-import org.metaeffekt.core.itest.inventory.artifactlist.Matcher;
-import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
+import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.matchers.ArtifactListMatcher;
+import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
-import static org.metaeffekt.core.itest.inventory.artifactlist.Matcher.Cardinality.*;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdStartsWith.idStartsWith;
+import static org.metaeffekt.core.itest.common.matchers.ArtifactListMatcher.Cardinality.*;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.IdStartsWith.idStartsWith;
 
-public class FbmsWarTest extends TestBasicInvariants {
+public class FbmsWarTest extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -61,38 +61,38 @@ public class FbmsWarTest extends TestBasicInvariants {
     @Test
     public void manifestSuper() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/SUPERSET/");
-        Matcher matcher = new Matcher()
+        ArtifactListMatcher artifactListMatcher = new ArtifactListMatcher()
                 .setPrimaryAttribute(ID)
                 .setCardinality(SUPERSET)
                 .setAttributes("CHECKSUM", VERSION.getKey());
-        matcher.match(template, getAnalysis());
-        matcher.getListOfMatching().logArtifactListWithAllAtributes();
-        matcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.match(template, getAnalysis());
+        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
     }
 
     @Test
     @Ignore // currently deviated by one; test lifecycle issue
     public void manifestEqual() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/EQUAL/");
-        Matcher matcher = new Matcher()
+        ArtifactListMatcher artifactListMatcher = new ArtifactListMatcher()
                 .setPrimaryAttribute(ID)
                 .setCardinality(EQUAL)
                 .setAttributes("CHECKSUM", VERSION.getKey());
-        matcher.match(template, getAnalysis());
-        matcher.getListOfMatching().logArtifactListWithAllAtributes();
-        matcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.match(template, getAnalysis());
+        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
     }
 
     @Test
     public void manifestSubset() throws Exception {
         Analysis template = getTemplate("/apereo/FbmsWarTest/SUBSET/");
-        Matcher matcher = new Matcher()
+        ArtifactListMatcher artifactListMatcher = new ArtifactListMatcher()
                 .setPrimaryAttribute(ID)
                 .setCardinality(SUBSET)
                 .setAttributes("CHECKSUM", VERSION.getKey());
-        matcher.match(template, getAnalysis());
-        matcher.getListOfMatching().logArtifactListWithAllAtributes();
-        matcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.match(template, getAnalysis());
+        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
     }
 
     @Test

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.artifactlist;
+package org.metaeffekt.core.itest.common.matchers;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.inventory.Analysis;
-import org.metaeffekt.core.itest.inventory.ArtifactList;
+import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,11 +28,12 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class Matcher {
+public class ArtifactListMatcher {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     private Cardinality cardinality;
+
     private List<String> attributeList;
 
     private ArtifactList listOfMatching = new ArtifactList();
@@ -41,12 +42,12 @@ public class Matcher {
 
     private String primaryAttribute;
 
-    public Matcher setCardinality(Cardinality cardinality) {
+    public ArtifactListMatcher setCardinality(Cardinality cardinality) {
         this.cardinality = cardinality;
         return this;
     }
 
-    public Matcher setAttributes(String... attributeList) {
+    public ArtifactListMatcher setAttributes(String... attributeList) {
         this.attributeList = Arrays.asList(attributeList);
         return this;
     }
@@ -59,12 +60,12 @@ public class Matcher {
         return listOfMissing;
     }
 
-    public Matcher setPrimaryAttribute(String primaryAttribute) {
+    public ArtifactListMatcher setPrimaryAttribute(String primaryAttribute) {
         this.primaryAttribute = primaryAttribute;
         return this;
     }
 
-    public Matcher setPrimaryAttribute(Artifact.Attribute attribute) {
+    public ArtifactListMatcher setPrimaryAttribute(Artifact.Attribute attribute) {
         return this.setPrimaryAttribute(attribute.getKey());
     }
 

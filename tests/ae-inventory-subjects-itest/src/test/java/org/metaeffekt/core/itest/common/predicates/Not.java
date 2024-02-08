@@ -13,41 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl.predicates;
+package org.metaeffekt.core.itest.common.predicates;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
-public class AttributeValue implements NamedArtifactPredicate {
+public class Not implements NamedArtifactPredicate {
 
-    private final String attribute;
+    private final NamedArtifactPredicate input;
 
-    private final String value;
-
-    public AttributeValue(String attribute, String value) {
-        this.attribute = attribute;
-        this.value = value;
+    private Not(NamedArtifactPredicate input) {
+        this.input = input;
     }
 
     /**
-     * Only include Artifacts in the collection where attribute is not null.
+     * Return the inverted meaning for a filterpredicate.
      */
-    public static NamedArtifactPredicate attributeValue(Artifact.Attribute attribute, String value) {
-        return new AttributeValue(attribute.getKey(), value);
-    }
-
-    public static NamedArtifactPredicate attributeValue(String attribute, String value) {
-        return new AttributeValue(attribute, value);
+    public static NamedArtifactPredicate not(NamedArtifactPredicate input){
+        return new Not(input);
     }
 
     @Override
     public Predicate<Artifact> getArtifactPredicate() {
-        return artifact -> value.equals(artifact.get(attribute));
+        return input.getArtifactPredicate().negate();
     }
 
     @Override
     public String getDescription() {
-        return "'" + attribute + "' is '"+ value+"'";
+        return " NOT( "+input.getDescription()+" ) ";
     }
 }

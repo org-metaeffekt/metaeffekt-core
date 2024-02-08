@@ -13,37 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.inventory.dsl.predicates;
+package org.metaeffekt.core.itest.common.predicates;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
-public class IdStartsWith implements NamedArtifactPredicate {
+public class AttributeValue implements NamedArtifactPredicate {
 
-    private String prefix;
+    private final String attribute;
 
-    public IdStartsWith(String prefix) {
-        this.prefix = prefix;
+    private final String value;
+
+    public AttributeValue(String attribute, String value) {
+        this.attribute = attribute;
+        this.value = value;
+    }
+
+    /**
+     * Only include Artifacts in the collection where attribute is not null.
+     */
+    public static NamedArtifactPredicate attributeValue(Artifact.Attribute attribute, String value) {
+        return new AttributeValue(attribute.getKey(), value);
+    }
+
+    public static NamedArtifactPredicate attributeValue(String attribute, String value) {
+        return new AttributeValue(attribute, value);
     }
 
     @Override
     public Predicate<Artifact> getArtifactPredicate() {
-        return new Predicate<Artifact>() {
-            @Override
-            public boolean test(Artifact artifact) {
-                String id = artifact.getId();
-                return id.startsWith(prefix);
-            }
-        };
+        return artifact -> value.equals(artifact.get(attribute));
     }
 
     @Override
     public String getDescription() {
-        return "Artifact id starts with " + prefix;
-    }
-
-    public static IdStartsWith idStartsWith(String prefix) {
-        return new IdStartsWith(prefix);
+        return "'" + attribute + "' is '"+ value+"'";
     }
 }

@@ -22,20 +22,20 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.inventory.Analysis;
-import org.metaeffekt.core.itest.javaartifacts.TestBasicInvariants;
+import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.AttributeExists.withAttribute;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.IdMissmatchesVersion.idMismatchesVersion;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.Not.not;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.BooleanPredicate.alwaysTrue;
-import static org.metaeffekt.core.itest.inventory.dsl.predicates.BooleanPredicate.alwaysFalse;
+import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
+import static org.metaeffekt.core.itest.common.predicates.IdMissmatchesVersion.idMismatchesVersion;
+import static org.metaeffekt.core.itest.common.predicates.Not.not;
+import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
+import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
 
-public class JenkinsTest extends TestBasicInvariants {
+public class JenkinsTest extends AbstractBasicInvariantsTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -72,7 +72,7 @@ public class JenkinsTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void noErrorsExist() {
-        getAnalysisAfterInvariants()
+        getAnalysisAfterInvariantCheck()
                 .selectArtifacts(withAttribute("Errors"))
                 .assertEmpty();
     }
@@ -119,7 +119,7 @@ public class JenkinsTest extends TestBasicInvariants {
     @Ignore
     @Test
     public void checkInvariants() {
-        getAnalysisAfterInvariants();
+        getAnalysisAfterInvariantCheck();
 
     }
 
