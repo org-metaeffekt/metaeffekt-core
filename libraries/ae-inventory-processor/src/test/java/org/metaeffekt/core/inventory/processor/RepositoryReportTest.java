@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -239,6 +240,9 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
+        // FIXME: where to manage this
+        ZipSecureFile.setMinInflateRatio(0);
+
         final File inventoryDir = new File("<path-to-inventory-dir>");
         final File reportDir = new File("target/test-inventory-04");
 
