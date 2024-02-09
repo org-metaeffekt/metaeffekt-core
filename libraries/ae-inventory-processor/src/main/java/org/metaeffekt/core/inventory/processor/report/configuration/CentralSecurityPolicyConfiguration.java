@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessConfiguration;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessMisconfiguration;
+import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
@@ -132,6 +133,35 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private double insignificantThreshold = 7.0;
     private double includeScoreThreshold = -1.0;
 
+    /**
+     * Only vulnerabilities that reference a security advisory that has one of the provided states will be included in
+     * the report/VAD. The states are defined by the security advisories themselves.<br>
+     * This data in {@link AdvisoryMetaData.Attribute#REVIEW_STATUS} is set by the
+     * <code>AdvisorPeriodicEnrichment</code>.
+     * Can be set to:
+     * <ul>
+     *     <li>
+     *         <code>all</code> - apply no filter, include all vulnerabilities.
+     *     </li>
+     *     <li>
+     *         <code>unclassified</code> - the security advisories are not present in the query period, but have been matched by the affected components.
+     *     </li>
+     *     <li>
+     *         <code>unaffected</code> - the security advisories are included in the query period, but are not relevant in this context.
+     *     </li>
+     *     <li>
+     *         <code>new</code> - the security advisories are new in the given context and have not yet been considered during vulnerability assessments.
+     *     </li>
+     *     <li>
+     *         <code>in review</code> - the security advisories are new in the query period. The review of security advisories and verification of related vulnerability assessments are in progress.
+     *     </li>
+     *     <li>
+     *         <code>reviewed</code> - the security advisories have already been considered in the assessment of the related vulnerabilities.
+     *     </li>
+     * </ul>
+     * Default is <code>all</code>.
+     */
+    private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
     private final List<String> includeVulnerabilitiesWithAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
     private final List<String> includeAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
     private final List<String> includeAdvisoryTypes = new ArrayList<>(Collections.singletonList("all"));
@@ -270,7 +300,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
     }
 
-    public static List<AeaaVulnerability> filterVulnerabilitiesForAdvisories(Collection<AeaaVulnerability> vulnerabilities, Collection<AeaaContentIdentifiers> filter) {
+    public static List<AeaaVulnerability> filterVulnerabilitiesForAdvisoryProviders(Collection<AeaaVulnerability> vulnerabilities, Collection<AeaaContentIdentifiers> filter) {
         return vulnerabilities.stream()
                 .filter(v -> isVulnerabilityIncludedRegardingAdvisoryProviders(v, filter))
                 .collect(Collectors.toList());
@@ -278,6 +308,26 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public static boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability, Collection<AeaaContentIdentifiers> filter) {
         return vulnerability.getSecurityAdvisories().stream().anyMatch(a -> filter.contains(a.getEntrySource()));
+    }
+
+    public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryReviewStatus(List<String> includeVulnerabilitiesWithAdvisoryReviewStatus) {
+        this.includeVulnerabilitiesWithAdvisoryReviewStatus.clear();
+        this.includeVulnerabilitiesWithAdvisoryReviewStatus.addAll(includeVulnerabilitiesWithAdvisoryReviewStatus);
+        return this;
+    }
+
+    public List<String> getIncludeVulnerabilitiesWithAdvisoryReviewStatus() {
+        return includeVulnerabilitiesWithAdvisoryReviewStatus;
+    }
+
+    public boolean isVulnerabilityIncludedRegardingAdvisoryReviewStatus(AeaaVulnerability vulnerability) {
+        if (containsAny(includeVulnerabilitiesWithAdvisoryReviewStatus)) {
+            return true;
+        }
+        return vulnerability.getSecurityAdvisories().stream()
+                .map(a -> a.getAdditionalAttribute(AdvisoryMetaData.Attribute.REVIEW_STATUS))
+                .filter(Objects::nonNull)
+                .anyMatch(includeVulnerabilitiesWithAdvisoryReviewStatus::contains);
     }
 
     public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(List<String> includeAdvisoryProviders) {
@@ -360,6 +410,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("insignificantThreshold", insignificantThreshold);
         configuration.put("includeScoreThreshold", includeScoreThreshold);
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
+        configuration.put("includeVulnerabilitiesWithAdvisoryReviewStatus", includeVulnerabilitiesWithAdvisoryReviewStatus);
         configuration.put("includeAdvisoryProviders", includeAdvisoryProviders);
         configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
         configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
@@ -380,6 +431,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
+        super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryReviewStatus", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryReviewStatus);
         super.loadListProperty(properties, "includeAdvisoryProviders", String::valueOf, this::setIncludeAdvisoryProviders);
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
         super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
@@ -458,6 +510,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null"));
             } else if (!CentralSecurityPolicyConfiguration.isAny(provider) && AeaaContentIdentifiers.fromName(provider) == AeaaContentIdentifiers.UNKNOWN) {
                 misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + Arrays.toString(AeaaContentIdentifiers.values())));
+            }
+        }
+
+        for (String status : includeVulnerabilitiesWithAdvisoryReviewStatus) {
+            // must be valid status or any
+            if (status == null) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryReviewStatus", "Advisory review status must not be null"));
+            } else if (!CentralSecurityPolicyConfiguration.isAny(status) && !AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES.contains(status)) {
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryReviewStatus", "Unknown advisory review status: " + status + ", must be a valid status from " + AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES + " or \"all\""));
             }
         }
     }

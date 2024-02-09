@@ -353,11 +353,25 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     }
 
     public String getCreateDateFormatted() {
-        return AeaaTimeUtils.formatNormalizedDate(createDate);
+        if (createDate == null) {
+            return "unknown";
+        }
+        try {
+            return AeaaTimeUtils.formatNormalizedDate(createDate);
+        } catch (Exception e) {
+            return "unknown";
+        }
     }
 
     public String getCreateDateFormattedDateLevel() {
-        return AeaaTimeUtils.formatNormalizedDateOnlyDate(createDate);
+        if (createDate == null) {
+            return "unknown";
+        }
+        try {
+            return AeaaTimeUtils.formatNormalizedDateOnlyDate(createDate);
+        } catch (Exception e) {
+            return "unknown";
+        }
     }
 
     public Date getUpdateDate() {
@@ -365,7 +379,25 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     }
 
     public String getUpdateDateFormatted() {
-        return AeaaTimeUtils.formatNormalizedDate(updateDate);
+        if (updateDate == null) {
+            return "unknown";
+        }
+        try {
+            return AeaaTimeUtils.formatNormalizedDate(updateDate);
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
+
+    public String getUpdateFormattedDateLevel() {
+        if (updateDate == null) {
+            return "unknown";
+        }
+        try {
+            return AeaaTimeUtils.formatNormalizedDateOnlyDate(updateDate);
+        } catch (Exception e) {
+            return "unknown";
+        }
     }
 
     public boolean hasBeenUpdatedSince(long timestamp) {
