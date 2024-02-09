@@ -52,7 +52,7 @@
         <poi.version>5.2.4</poi.version>
         <!-- FIXME: changing to latest version required reconfiguration of binders vs providers -->
         <slf4j.version>1.7.36</slf4j.version> <!--2.0.6-->
-        <spring.framework.version>5.3.25</spring.framework.version>
+        <spring.framework.version>5.3.27</spring.framework.version>
         <!-- update to version 2 and test -->
         <velocity.version>1.7</velocity.version>
         <xalan.version>2.7.2</xalan.version>
