@@ -400,13 +400,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 if (toAdd.endsWith(".gz")
                         || toAdd.endsWith(".tar")
                         || toAdd.endsWith(".zip")) {
-                    int lastSlash = toAdd.lastIndexOf("/");
-
-                    String toAddBeforeSlash = toAdd.substring(0, lastSlash);
-                    String supposedArchiveName = toAdd.substring(lastSlash + 1);
-
-                    // only works for one level but that might already help with a LOT of issues
-                    String uglyIncludeArchiveContentHack = toAddBeforeSlash + "/[" + supposedArchiveName + "]/**";
+                    String uglyIncludeArchiveContentHack =
+                            ContributorUtils.slapSquareBracketsAroundLastPathElement(toAdd) + "/**";
 
                     fileJoiner.add(uglyIncludeArchiveContentHack);
                 }

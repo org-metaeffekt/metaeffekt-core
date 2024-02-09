@@ -65,7 +65,8 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         includePattern += "," + anchorFile.getParentFile().getName() + "/**/*";
 
         Artifact artifact = new Artifact();
-        // TODO: only output "module name - version" in id
+
+        // unclean id first, better than nothing
         artifact.setId(relativeAnchorPath.replace(".dist-info/"+ anchorFile.getName(), ""));
 
         if (anchorFile.getName().equals("METADATA") && anchorFile.exists()) {
@@ -77,6 +78,9 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
                 String summary = ParsingUtils.getValue(fileContentLines, "Summary:");
                 String homepage = ParsingUtils.getValue(fileContentLines, "Home-page:");
                 String licenseExpression = ParsingUtils.getValue(fileContentLines, "License:");
+
+                // update id with better data
+                artifact.setId(name + "-" + version);
 
                 artifact.setVersion(version);
                 artifact.setComponent(name);
@@ -130,8 +134,14 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
-        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, anchorParentDir.getName() + "/**/node_modules/**/*" + "," + anchorParentDir.getName() + "/**/bower_components/**/*");
+        componentPatternData.set(
+                ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                anchorParentDir.getName() + "/**/node_modules/**/*,"
+                        + anchorParentDir.getName() + "/**/bower_components/**/*"
+        );
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
+
+        componentPatternData.set(Constants.KEY_TYPE, "python-site-package");
 
         return Collections.singletonList(componentPatternData);
     }
