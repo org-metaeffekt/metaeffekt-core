@@ -17,15 +17,14 @@ package org.metaeffekt.core.itest.common.setup;
 
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.setup.TestSetup;
-import org.metaeffekt.core.itest.common.asserts.AnalysisAsserts;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.asserts.AnalysisAsserts;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-public abstract class AbstractBasicInvariantsTest implements AnalysisAsserts {
+public abstract class AbstractCompositionAnalysisTest implements AnalysisAsserts {
 
     static protected TestSetup testSetup;
 

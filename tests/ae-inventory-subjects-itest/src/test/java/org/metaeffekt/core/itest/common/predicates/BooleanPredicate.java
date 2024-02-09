@@ -23,17 +23,17 @@ import java.util.function.Predicate;
  * These trivial predicates are used during test development. You can implement the test asserts and filters
  * with these first and replace them when the Code under test becomes ready.
  */
-public class BooleanPredicate implements NamedArtifactPredicate{
+public class BooleanPredicate implements NamedArtifactPredicate {
     /**
      * Will return the whole collection when filtered.
      */
     public static NamedArtifactPredicate alwaysTrue = new BooleanPredicate(true);
 
     /**
-    * Will return an empty collection when filtered.
+     * Will return an empty collection when filtered.
      */
     public static NamedArtifactPredicate alwaysFalse = new BooleanPredicate(false);
-    
+
     private boolean returnAll;
 
     public BooleanPredicate(boolean returnAll) {
@@ -47,6 +47,6 @@ public class BooleanPredicate implements NamedArtifactPredicate{
 
     @Override
     public String getDescription() {
-        return returnAll ? "All Elements":"No Elements";
+        return returnAll ? "All Elements" : "No Elements";
     }
 }

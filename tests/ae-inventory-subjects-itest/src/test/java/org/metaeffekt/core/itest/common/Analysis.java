@@ -23,7 +23,9 @@ import org.metaeffekt.core.itest.common.predicates.NamedArtifactPredicate;
 import java.util.List;
 
 public class Analysis {
+
     private final Inventory inventory;
+
     private String description;
 
     public Analysis(Inventory inventory) {

@@ -21,21 +21,21 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
+import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
+import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
+import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
 import static org.metaeffekt.core.itest.common.predicates.IdMissmatchesVersion.idMismatchesVersion;
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
-import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
-import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
 
-public class JenkinsWarTest extends AbstractBasicInvariantsTest {
+public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 

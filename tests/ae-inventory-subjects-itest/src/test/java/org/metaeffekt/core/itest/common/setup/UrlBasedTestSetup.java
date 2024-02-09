@@ -15,11 +15,11 @@
  */
 package org.metaeffekt.core.itest.common.setup;
 
-import org.apache.commons.io.FileUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.itest.common.download.WebAccess;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,15 +27,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.zip.Checksum;
 
 public class UrlBasedTestSetup extends AbstractTestSetup {
 
     private final Logger LOG = LoggerFactory.getLogger(UrlBasedTestSetup.class);
 
-
     public boolean inventorize(boolean overwrite) throws Exception {
-        String inventoryfile = getInventoryFolder()+"scan-inventory.ser";
+        String inventoryfile = getInventoryFolder() + "scan-inventory.ser";
         if (new File(inventoryfile).exists() && !overwrite) return true;
 
         FileUtils.deleteDirectory(new File(getInventoryFolder()));
@@ -72,9 +70,8 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
 
         final Inventory inventory = scan.createScanInventory();
 
-
         new File(getInventoryFolder()).mkdirs();
-        new InventoryWriter().writeInventory(inventory, new File(getInventoryFolder()+"scan-inventory.xls"));
+        new InventoryWriter().writeInventory(inventory, new File(getInventoryFolder() + "scan-inventory.xls"));
         new InventoryWriter().writeInventory(inventory, new File(inventoryfile));
 
         return true;
@@ -83,18 +80,20 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
     private void httpDownload(String artifactfile) throws MalformedURLException {
         File file = new File(artifactfile);
         new WebAccess().fetchResponseBodyFromUrlToFile(new URL(url), file);
-        String hash = org.metaeffekt.core.util.FileUtils.computeSHA256Hash(file);
+        String hash = FileUtils.computeSHA256Hash(file);
         LOG.info(hash);
 
         if (!hash.equals(getSha256Hash())) {
-            throw new IllegalStateException("Expected hash does not match acutal hash. Expecting " + getSha256Hash() + "; calculated: " + hash + ".");
+            org.metaeffekt.core.util.FileUtils.deleteQuietly(file);
+            throw new IllegalStateException("Expected hash does not match actual hash. " +
+                    "Expecting " + getSha256Hash() + "; calculated hash: " + hash + ".");
         }
     }
 
     private void fileCopy(String artifactfile) throws IOException {
         File source = new File(new URL(url).getFile());
         File target = new File(artifactfile);
-        FileUtils.copyFile(source,target);
+        FileUtils.copyFile(source, target);
     }
 
     public boolean load(boolean overwrite) throws IOException {
@@ -103,10 +102,12 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         String artifactFile = getDownloadFolder() + filename;
         if (overwrite || !new File(artifactFile).exists()) {
             new File(getDownloadFolder()).mkdirs();
-            if(url.startsWith("http"))
+            if (url.startsWith("http")) {
                 httpDownload(artifactFile);
-            if(url.startsWith("file"))
+            }
+            if (url.startsWith("file")) {
                 fileCopy(artifactFile);
+            }
         }
         return new File(artifactFile).exists();
     }

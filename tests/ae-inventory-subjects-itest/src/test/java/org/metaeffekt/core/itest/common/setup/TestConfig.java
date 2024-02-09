@@ -22,7 +22,8 @@ public class TestConfig {
     private static final String INVENTORY_FOLDER = "target/.test/inventory/";
 
     public static String getDownloadFolder() {
-        return DOWNLOAD_FOLDER;}
+        return DOWNLOAD_FOLDER;
+    }
 
     public static String getScanFolder() {
         return SCAN_FOLDER;

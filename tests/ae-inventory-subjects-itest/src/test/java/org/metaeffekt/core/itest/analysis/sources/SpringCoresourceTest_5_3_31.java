@@ -19,12 +19,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.itest.common.setup.AbstractBasicInvariantsTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SpringCoresourceTest_5_3_31 extends AbstractBasicInvariantsTest {
+public class SpringCoresourceTest_5_3_31 extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 

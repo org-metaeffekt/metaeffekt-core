@@ -48,6 +48,6 @@ public class AttributeValue implements NamedArtifactPredicate {
 
     @Override
     public String getDescription() {
-        return "'" + attribute + "' is '"+ value+"'";
+        return "'" + attribute + "' is '" + value + "'";
     }
 }

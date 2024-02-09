@@ -58,7 +58,7 @@ public abstract class AbstractTestSetup implements TestSetup {
 
     @Override
     public TestSetup setName(String testName) {
-        this.name = testName.replace("org.metaeffekt.core.itest.","");
+        this.name = testName.replace("org.metaeffekt.core.itest.", "");
         this.myDir = name.replace(".", "/") + "/";
         return this;
     }

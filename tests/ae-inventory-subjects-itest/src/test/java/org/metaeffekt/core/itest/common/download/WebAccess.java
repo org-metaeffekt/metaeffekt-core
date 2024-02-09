@@ -35,9 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,9 +52,9 @@ public class WebAccess {
      * Set up a proxy in between the host to access (host, port, scheme, username, password).<br>
      * Username and password are optional, only used if authentication is requested by the proxy.
      *
-     * @param scheme   The proxy scheme (ex. http).
-     * @param host     The proxy host.
-     * @param port     The proxy port.
+     * @param scheme The proxy scheme (ex. http).
+     * @param host The proxy host.
+     * @param port The proxy port.
      * @param username Proxy user (if authentication is required).
      * @param password Proxy password (if authentication is required).
      */
@@ -112,7 +110,7 @@ public class WebAccess {
 
                 final HttpResponse response = httpClient.execute(httpGet);
 
-                if(response.getStatusLine().getStatusCode() != 200) throw new IllegalArgumentException();
+                if (response.getStatusLine().getStatusCode() != 200) throw new IllegalArgumentException();
                 final HttpEntity entity = response.getEntity();
 
                 return IOUtils.toBufferedInputStream(entity.getContent());
@@ -173,75 +171,5 @@ public class WebAccess {
         fetchResponseBodyFromUrlToFile(url, file, null);
     }
 
-    public long fetchFileSizeFromUrl(URL url) {
-        return fetchFileSizeFromUrl(url, true);
-    }
-
-    public long fetchFileSizeFromUrl(URL url, boolean downloadFallback) {
-        return new Retry<>(() -> {
-            try (CloseableHttpClient httpClient = createHttpClient()) {
-                final HttpGet httpGet = new HttpGet(url.toURI());
-
-                httpGet.setConfig(createProxyRequestConfig());
-
-                final HttpResponse response = httpClient.execute(httpGet);
-                final HttpEntity entity = response.getEntity();
-
-                if (entity.getContentLength() != -1) {
-                    return entity.getContentLength();
-                }
-
-                if (!downloadFallback) {
-                    return -1;
-                }
-
-                LOG.debug("Response did not contain Content-Length header, falling back to fetching the whole file for URL {}", url);
-
-                long size = 0;
-                byte[] buffer = new byte[1024];
-                int bytesRead;
-                while ((bytesRead = entity.getContent().read(buffer)) != -1) {
-                    size += bytesRead;
-                }
-                return size;
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to fetch file size from URL " + url.toString(), e);
-            }
-        })
-                .retryCount(3)
-                .withDelay(1000)
-                .run()
-                .longValue();
-    }
-
-    public String buildGetRequest(String baseUrl, Map<String, String> arguments) throws UnsupportedEncodingException {
-        final StringBuilder url = new StringBuilder();
-        url.append(baseUrl);
-
-        if (arguments != null) {
-            boolean first = true;
-            for (Map.Entry<String, String> entry : arguments.entrySet()) {
-                if (first) {
-                    url.append("?");
-                    first = false;
-                } else {
-                    url.append("&");
-                }
-                url.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-                url.append("=");
-                url.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-            }
-        }
-
-        return url.toString();
-    }
-
-    public HttpHost getProxy() {
-        return proxy;
-    }
-
-    public CredentialsProvider getCredentialsProvider() {
-        return credentialsProvider;
-    }
 }
 

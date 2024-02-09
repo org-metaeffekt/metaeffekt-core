@@ -35,7 +35,7 @@ public class ArtifactList implements
         this.description = description;
     }
 
-    public ArtifactList(){
+    public ArtifactList() {
         this.artifactlist = new ArrayList<>();
         this.description = "unnamed list";
     }

@@ -24,10 +24,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public interface ArtifactListFilter extends ArtifactListDescriptor{
+public interface ArtifactListFilter extends ArtifactListDescriptor {
 
-
-    default ArtifactList filter(Predicate<Artifact> predicate){
+    default ArtifactList filter(Predicate<Artifact> predicate) {
         return new ArtifactList(
                 getArtifactList().
                         stream().
@@ -36,7 +35,7 @@ public interface ArtifactListFilter extends ArtifactListDescriptor{
                 getDescription());
     }
 
-    default ArtifactList filter(NamedArtifactPredicate namedPredicate){
+    default ArtifactList filter(NamedArtifactPredicate namedPredicate) {
         return new ArtifactList(
                 getArtifactList().
                         stream().
@@ -45,18 +44,16 @@ public interface ArtifactListFilter extends ArtifactListDescriptor{
                 namedPredicate.getDescription());
     }
 
-    default ArtifactList with(NamedArtifactPredicate ... namedPredicates){
+    default ArtifactList with(NamedArtifactPredicate... namedPredicates) {
         Stream<Artifact> stream = getArtifactList().stream();
         List<String> descriptions = new ArrayList<>();
-        for(NamedArtifactPredicate namedPredicate:namedPredicates){
+        for (NamedArtifactPredicate namedPredicate : namedPredicates) {
             stream = stream.filter(namedPredicate.getArtifactPredicate());
             descriptions.add(namedPredicate.getDescription());
         }
         return new ArtifactList(
-                        stream.collect(Collectors.toList()),
+                stream.collect(Collectors.toList()),
                 descriptions.toString());
     }
-
-
 
 }

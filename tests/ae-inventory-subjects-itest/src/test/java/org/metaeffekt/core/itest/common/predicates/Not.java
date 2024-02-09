@@ -30,7 +30,7 @@ public class Not implements NamedArtifactPredicate {
     /**
      * Return the inverted meaning for a filterpredicate.
      */
-    public static NamedArtifactPredicate not(NamedArtifactPredicate input){
+    public static NamedArtifactPredicate not(NamedArtifactPredicate input) {
         return new Not(input);
     }
 
@@ -41,6 +41,6 @@ public class Not implements NamedArtifactPredicate {
 
     @Override
     public String getDescription() {
-        return " NOT( "+input.getDescription()+" ) ";
+        return " NOT( " + input.getDescription() + " ) ";
     }
 }

@@ -39,7 +39,7 @@ public class IdMissmatchesVersion implements NamedArtifactPredicate {
         LOG.info("matching id: " + id + " with version: " + version);
         String basename = id.substring(0, id.length() - 4);
         Matcher m = PATTERN.matcher(basename);
-        if(m.find()){
+        if (m.find()) {
             String[] partsOfId = m.group(0).split("\\.");
             String[] partsOfVersion = version.split("\\.");
             return compare(partsOfId, partsOfVersion);
@@ -52,15 +52,15 @@ public class IdMissmatchesVersion implements NamedArtifactPredicate {
             LOG.error("Length of version / id parts not equal");
             return true;
         }
-        for(int i = 0; i < partsOfId.length; i++){
-            if(compare(partsOfId[i], partsOfVersion[i])) return true;
+        for (int i = 0; i < partsOfId.length; i++) {
+            if (compare(partsOfId[i], partsOfVersion[i])) return true;
         }
         return false;
     }
 
     private static boolean compare(String idString, String versionString) {
         // TODO: This is a verbose version of idString==versionString. But it should show the concept for complex comparison (e.g. v1 at least v2)
-        if(StringUtils.isNumeric(idString) && StringUtils.isNumeric(versionString)){
+        if (StringUtils.isNumeric(idString) && StringUtils.isNumeric(versionString)) {
             int id = Integer.parseInt(idString);
             int version = Integer.parseInt(versionString);
             return !(id == version);
