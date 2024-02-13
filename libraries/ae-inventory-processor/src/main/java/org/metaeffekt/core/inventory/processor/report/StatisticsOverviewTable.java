@@ -186,6 +186,10 @@ public class StatisticsOverviewTable {
         return row.getCount(status);
     }
 
+    public int getStatusCount(String status) {
+        return rows.stream().mapToInt(row -> row.getCount(status)).sum();
+    }
+
     public List<String> getTableRowValues(String severity) {
         final SeverityToStatusRow row = findRowBySeverity(severity);
         if (row == null) return Collections.emptyList();
