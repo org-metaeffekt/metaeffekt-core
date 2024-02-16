@@ -237,6 +237,9 @@ public class ArchiveUtils {
         } catch (Exception antUntarException) {
             LOG.debug("Could not untar file [{}] due to [{}].", file.getAbsolutePath(), antUntarException.getMessage());
             try {
+                // TODO: document or fix: why are we trying to extract a tar as an "ar" archive?
+                //  interpreting it as an ar archive might not support symlinks with the current api.
+
                 // fallback to commons-compress (local code with support for specific cases (i.e., .deb)
                 final InputStream fin = Files.newInputStream(file.toPath());
                 final BufferedInputStream in = new BufferedInputStream(fin);
