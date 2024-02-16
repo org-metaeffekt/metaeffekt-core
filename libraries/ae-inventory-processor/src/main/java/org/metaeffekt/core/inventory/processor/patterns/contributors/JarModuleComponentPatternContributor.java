@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -108,6 +109,8 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
 
         // contribute groupid (consider also other attributes)
         componentPatternData.set("Group Id", artifact.getGroupId());
+
+        componentPatternData.set(Constants.KEY_TYPE, "jar-component");
 
         return Collections.singletonList(componentPatternData);
     }
