@@ -524,6 +524,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public static CentralSecurityPolicyConfiguration fromFile(File jsonFile) throws IOException {
+        if (jsonFile == null) {
+            throw new IllegalArgumentException("Security policy configuration file must not be null");
+        } else if (!jsonFile.exists()) {
+            throw new IOException("Security policy configuration file does not exist: " + jsonFile.getAbsolutePath());
+        } else if (!jsonFile.isFile()) {
+            throw new IOException("Security policy configuration file is not a file: " + jsonFile.getAbsolutePath());
+        }
+
         LOG.info("Loading security policy configuration from: {}", jsonFile.getAbsolutePath());
 
         final String json;
@@ -837,6 +845,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED,
             VULNERABILITY_STATUS_DISPLAY_MAPPER_REVIEW_STATE
     );
+
+    public static List<VulnerabilityStatusMapper> getRegisteredVulnerabilityStatusDisplayMappers() {
+        return Collections.unmodifiableList(REGISTERED_VULNERABILITY_STATUS_DISPLAY_MAPPERS);
+    }
 
     public static VulnerabilityStatusMapper getStatusMapperByName(String name) {
         return REGISTERED_VULNERABILITY_STATUS_DISPLAY_MAPPERS.stream()

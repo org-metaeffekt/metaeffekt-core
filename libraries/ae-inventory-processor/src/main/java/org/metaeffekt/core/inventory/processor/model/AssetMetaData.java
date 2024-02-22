@@ -16,13 +16,22 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Model class that supports to aggregate data around assets.
  */
 public class AssetMetaData extends AbstractModelBase {
+
+    private static final Logger LOG = LoggerFactory.getLogger(AssetMetaData.class);
 
     // Maximize compatibility with serialized inventories
     private static final long serialVersionUID = 1L;
@@ -41,6 +50,7 @@ public class AssetMetaData extends AbstractModelBase {
         ASSET_ID("Asset Id"),
         NAME("Name"),
         VERSION("Version"),
+        ASSESSMENT_ID("Assessment Id"),
         ASSESSMENT("Assessment");
 
         private String key;
@@ -59,6 +69,102 @@ public class AssetMetaData extends AbstractModelBase {
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.ASSET_ID.getKey());
+    }
+
+    public String deriveAssessmentId(Inventory inventory) {
+        final Set<String> knownIds = inventory.getAssetMetaData().stream()
+                .map(asset -> asset.get(Attribute.ASSESSMENT_ID))
+                .collect(Collectors.toSet());
+        return deriveAssessmentId(inventory, knownIds);
+    }
+
+    public String deriveAssessmentId(Inventory inventory, Set<String> knownIds) {
+        if (StringUtils.isEmpty(get(Attribute.ASSESSMENT_ID))) {
+            String baseAssessmentId;
+            if (StringUtils.isNotBlank(get(Attribute.ASSET_ID))) {
+                baseAssessmentId = get(Attribute.ASSET_ID);
+            } else if (StringUtils.isNotBlank(get(Attribute.NAME))) {
+                baseAssessmentId = get(Attribute.NAME);
+            } else {
+                baseAssessmentId = null;
+            }
+
+            final String assessmentId = baseAssessmentId != null ? baseAssessmentId + "-" + generateUniqueAssessmentSuffix(inventory) : generateUniqueAssessmentSuffix(inventory);
+            if (knownIds.contains(assessmentId)) {
+                set(Attribute.ASSESSMENT_ID, baseAssessmentId + "-" + seededRandomUniqueAssessmentSuffix(UUID.randomUUID().toString()));
+            } else {
+                set(Attribute.ASSESSMENT_ID, assessmentId);
+            }
+        }
+
+        return get(Attribute.ASSESSMENT_ID);
+    }
+
+    private String generateUniqueAssessmentSuffix(Inventory inventory) {
+        final InventoryInfo inventoryEnrichmentInfo = inventory.findInventoryInfo("inventory-enrichment");
+
+        if (inventoryEnrichmentInfo != null) {
+            final String inventoryEnrichmentStepsString = inventoryEnrichmentInfo.get("Steps");
+            if (StringUtils.isNotEmpty(inventoryEnrichmentStepsString) && inventoryEnrichmentStepsString.startsWith("[") && inventoryEnrichmentStepsString.endsWith("]")) {
+
+                try {
+                    final JSONArray inventoryEnrichmentSteps = new JSONArray(inventoryEnrichmentStepsString);
+                    final StringBuilder assessmentFilesSeed = new StringBuilder();
+
+                    for (int i = 0; i < inventoryEnrichmentSteps.length(); i++) {
+                        // locate steps "Vulnerability Status" and "Vulnerability Keywords" and combine the file paths
+                        final String stepName = inventoryEnrichmentSteps.getJSONObject(i).getString("name");
+                        if ("Vulnerability Status".equals(stepName) || "Vulnerability Keywords".equals(stepName)) {
+                            final JSONObject configuration = inventoryEnrichmentSteps.getJSONObject(i).getJSONObject("configuration");
+                            final JSONArray yamlFiles = configuration.optJSONArray("yamlFiles");
+                            if (yamlFiles != null) {
+                                for (int j = 0; j < yamlFiles.length(); j++) {
+                                    assessmentFilesSeed.append(yamlFiles.getString(j));
+                                }
+                            }
+                        }
+                    }
+
+                    return seededRandomUniqueAssessmentSuffix(assessmentFilesSeed.toString());
+                } catch (Exception e) {
+                    LOG.warn("Failed to parse inventory enrichment steps from inventory info [inventory-enrichment] --> [Steps]: " + inventoryEnrichmentStepsString, e);
+                }
+            }
+        }
+
+        final InventoryInfo vulnerabilityStatusInfo = inventory.findInventoryInfo("vulnerability-status");
+        if (vulnerabilityStatusInfo != null) {
+            final String statusFilesString = vulnerabilityStatusInfo.get("Vulnerability Inventory Status");
+            if (StringUtils.isNotEmpty(statusFilesString) && statusFilesString.startsWith("[") && statusFilesString.endsWith("]")) {
+                try {
+                    final JSONArray statusFiles = new JSONArray(statusFilesString);
+                    final StringBuilder assessmentEntrySeed = new StringBuilder();
+
+                    for (int i = 0; i < statusFiles.length(); i++) {
+                        final JSONObject statusFile = statusFiles.getJSONObject(i);
+                        if (statusFile.has("cvss2")) {
+                            assessmentEntrySeed.append(statusFile.getString("cvss2"));
+                        }
+                        if (statusFile.has("cvss3")) {
+                            assessmentEntrySeed.append(statusFile.getString("cvss3"));
+                        }
+                        if (statusFile.has("cvss4")) {
+                            assessmentEntrySeed.append(statusFile.getString("cvss4"));
+                        }
+                    }
+
+                    return seededRandomUniqueAssessmentSuffix(assessmentEntrySeed.toString());
+                } catch (Exception e) {
+                    LOG.warn("Failed to parse status files from inventory info [vulnerability-status] --> [statusFiles]: " + statusFilesString, e);
+                }
+            }
+        }
+
+        return UUID.randomUUID().toString();
+    }
+
+    private String seededRandomUniqueAssessmentSuffix(String seed) {
+        return UUID.nameUUIDFromBytes(seed.getBytes()).toString().substring(0, 8);
     }
 
     /**
