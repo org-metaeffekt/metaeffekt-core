@@ -64,7 +64,7 @@ public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositio
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logArtifactList();
+        analysis.selectArtifacts().logList();
 
         analysis.selectArtifacts(attributeValue("Id", "com.springsource.org.apache.commons.collections-3.2.1.jar")).hasSizeOf(1);
 

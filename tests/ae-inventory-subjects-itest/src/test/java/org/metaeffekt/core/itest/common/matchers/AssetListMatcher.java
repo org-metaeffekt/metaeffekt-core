@@ -15,9 +15,9 @@
  */
 package org.metaeffekt.core.itest.common.matchers;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ArtifactList;
+import org.metaeffekt.core.itest.common.fluent.AssetList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ArtifactListMatcher {
+public class AssetListMatcher {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -36,55 +36,55 @@ public class ArtifactListMatcher {
 
     private List<String> attributeList;
 
-    private ArtifactList listOfMatching = new ArtifactList();
+    private AssetList listOfMatching = new AssetList();
 
-    private ArtifactList listOfMissing = new ArtifactList();
+    private AssetList listOfMissing = new AssetList();
 
     private String primaryAttribute;
 
-    public ArtifactListMatcher setCardinality(Cardinality cardinality) {
+    public AssetListMatcher setCardinality(Cardinality cardinality) {
         this.cardinality = cardinality;
         return this;
     }
 
-    public ArtifactListMatcher setAttributes(String... attributeList) {
+    public AssetListMatcher setAttributes(String... attributeList) {
         this.attributeList = Arrays.asList(attributeList);
         return this;
     }
 
-    public ArtifactList getListOfMatching() {
+    public AssetList getListOfMatching() {
         return listOfMatching;
     }
 
-    public ArtifactList getListOfMissing() {
+    public AssetList getListOfMissing() {
         return listOfMissing;
     }
 
-    public ArtifactListMatcher setPrimaryAttribute(String primaryAttribute) {
+    public AssetListMatcher setPrimaryAttribute(String primaryAttribute) {
         this.primaryAttribute = primaryAttribute;
         return this;
     }
 
-    public ArtifactListMatcher setPrimaryAttribute(Artifact.Attribute attribute) {
+    public AssetListMatcher setPrimaryAttribute(AssetMetaData.Attribute attribute) {
         return this.setPrimaryAttribute(attribute.getKey());
     }
 
-    public void match(ArtifactList template, ArtifactList testobject) {
-        Map<String, Artifact> testobjectmap = populateMap(testobject);
-        matchArtifacts(template, testobjectmap);
+    public void match(AssetList template, AssetList testobject) {
+        Map<String, AssetMetaData> testobjectmap = populateMap(testobject);
+        matchAssets(template, testobjectmap);
     }
 
     public void match(Analysis template, Analysis testobject) {
-        match(template.selectArtifacts(), testobject.selectArtifacts());
+        match(template.selectAssets(), testobject.selectAssets());
     }
 
-    private void matchArtifacts(ArtifactList templatelist, Map<String, Artifact> testobjectmap) {
-        listOfMatching = new ArtifactList().as("matching "+ templatelist.getDescription());
-        listOfMissing = new ArtifactList().as("missing "+ templatelist.getDescription());
-        for (Artifact template : templatelist.getItemList()) {
-            Artifact toBeMatched = testobjectmap.get(template.get(primaryAttribute));
+    private void matchAssets(AssetList templatelist, Map<String, AssetMetaData> testobjectmap) {
+        listOfMatching = new AssetList().as("matching "+ templatelist.getDescription());
+        listOfMissing = new AssetList().as("missing "+ templatelist.getDescription());
+        for (AssetMetaData template : templatelist.getItemList()) {
+            AssetMetaData toBeMatched = testobjectmap.get(template.get(primaryAttribute));
             if (!cardinality.equals(Cardinality.SUPERSET)) {
-                assertThat(toBeMatched).as("Artifact not found during matching: " + template).isNotNull();
+                assertThat(toBeMatched).as("Asset not found during matching: " + template).isNotNull();
             }
             if (toBeMatched != null && matchAttributes(template, toBeMatched)) {
                 listOfMatching.getItemList().add(template);
@@ -99,7 +99,7 @@ public class ArtifactListMatcher {
         }
     }
 
-    private boolean matchAttributes(Artifact template, Artifact toBeMatched) {
+    private boolean matchAttributes(AssetMetaData template, AssetMetaData toBeMatched) {
         for(String attribute : attributeList){
             assertThat(toBeMatched.get(attribute))
                     .as(attribute + " missmatch in "+toBeMatched)
@@ -108,14 +108,14 @@ public class ArtifactListMatcher {
         return true;
     }
 
-    private Map<String, Artifact> populateMap(ArtifactList first) {
-        Map<String, Artifact> artifactmap = new HashMap<>();
-        for (Artifact artifact : first.getItemList()) {
-            assertThat(artifact.get(primaryAttribute)).as(primaryAttribute + " of is null for " + artifact).isNotNull();
-            Artifact val = artifactmap.put(artifact.get(primaryAttribute), artifact);
-            assertThat(val).as("Collision during matching: " + val + " has the same " + primaryAttribute + " as " + artifact).isNull();
+    private Map<String, AssetMetaData> populateMap(AssetList first) {
+        Map<String, AssetMetaData> assetmap = new HashMap<>();
+        for (AssetMetaData asset : first.getItemList()) {
+            assertThat(asset.get(primaryAttribute)).as(primaryAttribute + " of is null for " + asset).isNotNull();
+            AssetMetaData val = assetmap.put(asset.get(primaryAttribute), asset);
+            assertThat(val).as("Collision during matching: " + val + " has the same " + primaryAttribute + " as " + asset).isNull();
         }
-        return artifactmap;
+        return assetmap;
     }
 
     public enum Cardinality {

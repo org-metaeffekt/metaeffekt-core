@@ -13,22 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.common.fluent;
+package org.metaeffekt.core.itest.common.predicates;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import java.util.function.Predicate;
 
-import java.util.List;
-
-public interface ArtifactListDescriptor {
-
-    List<Artifact> getArtifactList();
+public interface NamedBasePredicate<T> {
+    Predicate<T> getPredicate();
 
     String getDescription();
-
-    ArtifactList setDescription(String description);
-
-    default ArtifactList as(String description) {
-        return this.setDescription(description);
-    }
-
 }

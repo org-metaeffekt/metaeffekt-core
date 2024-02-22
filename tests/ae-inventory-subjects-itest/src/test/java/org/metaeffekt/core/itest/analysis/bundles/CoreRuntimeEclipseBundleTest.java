@@ -64,7 +64,7 @@ public class CoreRuntimeEclipseBundleTest extends AbstractCompositionAnalysisTes
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logArtifactList();
+        analysis.selectArtifacts().logList();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 

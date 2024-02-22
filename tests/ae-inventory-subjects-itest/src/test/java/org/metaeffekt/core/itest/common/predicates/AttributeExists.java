@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
 
 
-public class AttributeExists implements NamedArtifactPredicate {
+public class AttributeExists implements NamedBasePredicate<Artifact> {
 
     private final String attribute;
 
@@ -33,7 +33,7 @@ public class AttributeExists implements NamedArtifactPredicate {
     /**
      * Only include Artifacts in the collection where attribute is not null.
      */
-    public static NamedArtifactPredicate withAttribute(Artifact.Attribute attribute) {
+    public static NamedBasePredicate<Artifact> withAttribute(Artifact.Attribute attribute) {
         return new AttributeExists(attribute.getKey());
     }
 
@@ -41,17 +41,17 @@ public class AttributeExists implements NamedArtifactPredicate {
     /**
      * Only include Artifacts in the collection where attribute is null.
      */
-    public static NamedArtifactPredicate withoutAttribute(Artifact.Attribute attribute) {
+    public static NamedBasePredicate<Artifact> withoutAttribute(Artifact.Attribute attribute) {
         return not(new AttributeExists(attribute.getKey()));
     }
 
 
-    public static NamedArtifactPredicate withAttribute(String attribute) {
+    public static NamedBasePredicate<Artifact> withAttribute(String attribute) {
         return new AttributeExists(attribute);
     }
 
     @Override
-    public Predicate<Artifact> getArtifactPredicate() {
+    public Predicate<Artifact> getPredicate() {
         return artifact -> artifact.get(attribute) != null;
     }
 

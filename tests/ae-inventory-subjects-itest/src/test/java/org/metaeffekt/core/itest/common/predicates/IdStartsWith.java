@@ -19,22 +19,19 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
-public class IdStartsWith implements NamedArtifactPredicate {
+public class IdStartsWith implements NamedBasePredicate<Artifact> {
 
-    private String prefix;
+    private final String prefix;
 
     public IdStartsWith(String prefix) {
         this.prefix = prefix;
     }
 
     @Override
-    public Predicate<Artifact> getArtifactPredicate() {
-        return new Predicate<Artifact>() {
-            @Override
-            public boolean test(Artifact artifact) {
-                String id = artifact.getId();
-                return id.startsWith(prefix);
-            }
+    public Predicate<Artifact> getPredicate() {
+        return artifact -> {
+            String id = artifact.getId();
+            return id.startsWith(prefix);
         };
     }
 

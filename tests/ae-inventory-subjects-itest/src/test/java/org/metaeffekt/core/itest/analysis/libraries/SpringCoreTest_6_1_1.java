@@ -56,7 +56,7 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
     public void first() throws Exception {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
-                .logArtifactListWithAllAtributes()
+                .logListWithAllAttributes()
                 .with(attributeValue(ID, "spring-core-6.1.1.jar"),
                         attributeValue(CHECKSUM, "7a787700b8de9fc9034ffdc070517f51"),
                         attributeValue(VERSION, "6.1.1"),

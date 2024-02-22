@@ -13,31 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.metaeffekt.core.itest.common.fluent;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.itest.common.fluent.base.*;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ArtifactList extends BaseList<Artifact>
-        implements BaseListAsserts<Artifact>, BaseListLogger<Artifact, ArtifactList>,
-        BaseListFilter<Artifact, ArtifactList>,
-        BaseListSize<Artifact, ArtifactList> {
+public class AssetList extends BaseList<AssetMetaData>
+        implements BaseListAsserts<AssetMetaData>, BaseListLogger<AssetMetaData, AssetList>,
+        BaseListFilter<AssetMetaData, AssetList>,
+        BaseListSize<AssetMetaData, AssetList> {
 
-    public ArtifactList(List<Artifact> artifacts, String description) {
-        super(artifacts, description);
+    public AssetList(List<AssetMetaData> assetList, String description) {
+        super(assetList, description);
     }
 
-    public ArtifactList() {
+    public AssetList() {
         super();
     }
 
     @Override
-    public ArtifactList filter(NamedBasePredicate<Artifact> namedPredicate) {
-        List<Artifact> filteredItems = this.getItemList().stream()
+    public AssetList filter(NamedBasePredicate<AssetMetaData> namedPredicate) {
+        List<AssetMetaData> filteredItems = this.getItemList().stream()
                 .filter(namedPredicate.getPredicate())
                 .collect(Collectors.toList());
 
@@ -48,29 +49,30 @@ public class ArtifactList extends BaseList<Artifact>
 
 
     @Override
-    public ArtifactList createNewInstance(List<Artifact> filteredList) {
-        return new ArtifactList(filteredList, this.description);
+    public AssetList createNewInstance(List<AssetMetaData> filteredList) {
+        return new AssetList(filteredList, this.description);
     }
 
     @Override
-    public ArtifactList logListWithAllAttributes() {
+    public AssetList logListWithAllAttributes() {
         LOG.info("LIST " + getDescription());
-        getItemList().forEach(artifact -> {
-                    String[] attributes = artifact.getAttributes().toArray(new String[0]);
-                    LOG.info(withAttributes(artifact, attributes));
+        getItemList().forEach(asset -> {
+                    String[] attributes = asset.getAttributes().toArray(new String[0]);
+                    LOG.info(withAttributes(asset, attributes));
                 }
         );
         return this;
     }
 
-    static String withAttributes(Artifact artifact, String[] additionalAttributes) {
-        StringBuilder sb = new StringBuilder(artifact.toString());
+    static String withAttributes(AssetMetaData asset, String[] additionalAttributes) {
+        StringBuilder sb = new StringBuilder(asset.toString());
         for (String additionalAttribute : additionalAttributes) {
             sb.append(", ")
                     .append(additionalAttribute)
                     .append(": ")
-                    .append(artifact.get(additionalAttribute));
+                    .append(asset.get(additionalAttribute));
         }
         return sb.toString();
     }
 }
+
