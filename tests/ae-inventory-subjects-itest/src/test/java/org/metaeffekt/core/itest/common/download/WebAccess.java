@@ -46,6 +46,7 @@ public class WebAccess {
     private final static Logger LOG = LoggerFactory.getLogger(WebAccess.class);
 
     private HttpHost proxy;
+
     private CredentialsProvider credentialsProvider;
 
     /**

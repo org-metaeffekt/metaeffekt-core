@@ -36,6 +36,24 @@ public class ArchiveUtilsTest {
 
     @Ignore
     @Test
+    public void testUnpackIfPossible() {
+        final File inputBaseDir = new File("<path-to-scan-folder>");
+
+        final String[] files = FileUtils.scanDirectoryForFiles(inputBaseDir, "**/*");
+
+        for (String file : files) {
+            final File inputFile = new File(inputBaseDir, file);
+
+            if (inputFile.isDirectory()) continue;
+
+            final File targetFolder = new File(inputFile.getParentFile(), "[" + inputFile.getName() + "]");
+
+            ArchiveUtils.unpackIfPossible(inputFile, targetFolder, new ArrayList<>());
+        }
+    }
+
+    @Ignore
+    @Test
     public void testMsiUnpack() throws IOException, InterruptedException {
         final File inputBaseDir = new File("<path-to-scan-folder>");
 

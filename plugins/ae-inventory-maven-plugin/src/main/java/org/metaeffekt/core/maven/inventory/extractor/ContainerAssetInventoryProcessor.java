@@ -137,7 +137,7 @@ public class ContainerAssetInventoryProcessor extends BaseInventoryProcessor {
                 assetMetaData.set("Size", String.valueOf(element.getSize()));
                 assetMetaData.set("Image Id", String.valueOf(element.getId()));
                 assetMetaData.set("Author", String.valueOf(element.getAuthor()));
-                assetMetaData.set("Architecture", String.valueOf(element.getArchitecture()));
+                assetMetaData.set(Constants.KEY_ARCHITECTURE, String.valueOf(element.getArchitecture()));
                 assetMetaData.set("Os", String.valueOf(element.getOs()));
                 assetMetaData.set("Primary", Constants.MARKER_CROSS);
                 assetMetaData.set("Qualifier", qualifier);

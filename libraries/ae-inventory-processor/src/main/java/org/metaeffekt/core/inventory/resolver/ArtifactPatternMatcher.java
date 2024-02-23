@@ -29,8 +29,6 @@ public class ArtifactPatternMatcher {
     public ArtifactPatternMatcher() {
     }
 
-    ;
-
     public void register(ArtifactPattern artifactGroup) {
         artifactPatterns.add(artifactGroup);
     }

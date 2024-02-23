@@ -42,8 +42,7 @@ public class RemoteUriResolver extends AbstractRemoteAccess implements UriResolv
     }
 
     private void download(String uri, File destinationFile) {
-        try {
-            CloseableHttpClient client = createHttpClient();
+        try (CloseableHttpClient client = createHttpClient()) {
             final HttpGet get = new HttpGet(uri);
             try (final CloseableHttpResponse response = client.execute(get)) {
                 if (response.getStatusLine().getStatusCode() == 200) {
