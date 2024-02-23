@@ -13,46 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.common.fluent;
+package org.metaeffekt.core.itest.common.fluent.base;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArtifactList implements
-        ArtifactListFilter,
-        ArtifactListSize,
-        ArtifactListLogger,
-        ArtifactListAsserts {
+public abstract class BaseList<T extends AbstractModelBase> {
+    protected final List<T> itemList;
+    protected String description;
 
-    private final List<Artifact> artifactlist;
-
-    private String description;
-
-    public ArtifactList(List<Artifact> artifacts, String description) {
-        this.artifactlist = artifacts;
+    public BaseList(List<T> itemList, String description) {
+        this.itemList = itemList;
         this.description = description;
     }
 
-    public ArtifactList() {
-        this.artifactlist = new ArrayList<>();
+    public BaseList() {
+        this.itemList = new ArrayList<>();
         this.description = "unnamed list";
     }
 
-    @Override
+    public List<T> getItemList() {
+        return itemList;
+    }
+
     public String getDescription() {
         return description;
     }
 
-    @Override
-    public List<Artifact> getArtifactList() {
-        return artifactlist;
-    }
-
-    @Override
-    public ArtifactList setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description;
-        return this;
     }
 }

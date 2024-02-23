@@ -63,7 +63,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logArtifactList();
+        analysis.selectArtifacts().logList();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 

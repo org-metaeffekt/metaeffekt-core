@@ -24,11 +24,11 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class IdMissmatchesVersion implements NamedArtifactPredicate {
+public class IdMismatchesVersion implements NamedBasePredicate<Artifact> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IdMissmatchesVersion.class);
+    private static final Logger LOG = LoggerFactory.getLogger(IdMismatchesVersion.class);
 
-    public static final NamedArtifactPredicate ID_MISMATCHING_VERSION = new IdMissmatchesVersion();
+    public static final NamedBasePredicate<Artifact> ID_MISMATCHING_VERSION = new IdMismatchesVersion();
 
     private static final Pattern PATTERN = Pattern.compile("(?!\\.)(\\d+(\\.\\d+)+)(?:[-.][A-Z]+)?(?![\\d.])");
 
@@ -70,8 +70,8 @@ public class IdMissmatchesVersion implements NamedArtifactPredicate {
     }
 
     @Override
-    public Predicate<Artifact> getArtifactPredicate() {
-        return IdMissmatchesVersion::evaluate;
+    public Predicate<Artifact> getPredicate() {
+        return IdMismatchesVersion::evaluate;
     }
 
     @Override
@@ -79,7 +79,7 @@ public class IdMissmatchesVersion implements NamedArtifactPredicate {
         return "Artifact Version mismatch";
     }
 
-    public static NamedArtifactPredicate idMismatchesVersion() {
+    public static NamedBasePredicate<Artifact> idMismatchesVersion() {
         return ID_MISMATCHING_VERSION;
     }
 

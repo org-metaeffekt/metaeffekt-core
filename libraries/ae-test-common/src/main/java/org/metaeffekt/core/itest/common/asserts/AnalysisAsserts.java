@@ -35,7 +35,7 @@ public interface AnalysisAsserts {
 
     default void assertNoErrors() {
         getAnalysis().selectArtifacts(withAttribute("Errors"))
-                .logArtifactList("Errors")
+                .logList("Errors")
                 .assertEmpty();
     }
 

@@ -5,7 +5,7 @@
 ### Parent Class
 The test should extend
 ```java 
-org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest
+org.metaeffekt.core.itest.setup.org.metaeffekt.core.test.common.AbstractCompositionAnalysisTest
 ```
 Common behavior regarding the Inventory and Analysis is implemented in that base class.
 

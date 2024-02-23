@@ -21,6 +21,7 @@
         <module>ae-maven-kernel</module>
         <module>ae-system-analysis-scripts</module>
         <module>ae-security</module>
+        <module>ae-test-common</module>
     </modules>
 
     <build>

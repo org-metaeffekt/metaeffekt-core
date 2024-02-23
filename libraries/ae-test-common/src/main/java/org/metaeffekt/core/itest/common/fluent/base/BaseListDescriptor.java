@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.common.fluent;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+package org.metaeffekt.core.itest.common.fluent.base;
 
 import java.util.List;
 
-public interface ArtifactListDescriptor {
-
-    List<Artifact> getArtifactList();
+public interface BaseListDescriptor<T, SELF extends BaseListDescriptor<T, SELF>> {
+    List<T> getItemList();
 
     String getDescription();
 
-    ArtifactList setDescription(String description);
+    SELF createNewInstance(List<T> itemList);
 
-    default ArtifactList as(String description) {
-        return this.setDescription(description);
+    void setDescription(String description);
+
+    default SELF as(String description) {
+        setDescription(description);
+        return createNewInstance(getItemList());
     }
-
 }

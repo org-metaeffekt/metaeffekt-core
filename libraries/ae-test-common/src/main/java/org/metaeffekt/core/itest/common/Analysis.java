@@ -16,9 +16,13 @@
 package org.metaeffekt.core.itest.common;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
-import org.metaeffekt.core.itest.common.predicates.NamedArtifactPredicate;
+import org.metaeffekt.core.itest.common.fluent.AssetList;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
+import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 
 import java.util.List;
 
@@ -26,7 +30,7 @@ public class Analysis {
 
     private final Inventory inventory;
 
-    private String description;
+    private final String description;
 
     public Analysis(Inventory inventory) {
         this(inventory, "All artifacts");
@@ -45,9 +49,29 @@ public class Analysis {
         return new ArtifactList(inventory.getArtifacts(), description);
     }
 
-    public ArtifactList selectArtifacts(NamedArtifactPredicate artifactPredicate) {
+    public ArtifactList selectArtifacts(NamedBasePredicate<Artifact> artifactPredicate) {
         return selectArtifacts()
-                .filter(artifactPredicate.getArtifactPredicate())
+                .filter(artifactPredicate.getPredicate())
                 .as(artifactPredicate.getDescription());
+    }
+
+    public AssetList selectAssets() {
+        return new AssetList(inventory.getAssetMetaData(), description);
+    }
+
+    public AssetList selectAssets(NamedBasePredicate<AssetMetaData> assetPredicate) {
+        return selectAssets()
+                .filter(assetPredicate.getPredicate())
+                .as(assetPredicate.getDescription());
+    }
+
+    public ComponentPatternList selectComponentPatterns() {
+        return new ComponentPatternList(inventory.getComponentPatternData(), description);
+    }
+
+    public ComponentPatternList selectComponentPatterns(NamedBasePredicate<ComponentPatternData> componentPatternPredicate) {
+        return selectComponentPatterns()
+                .filter(componentPatternPredicate.getPredicate())
+                .as(componentPatternPredicate.getDescription());
     }
 }

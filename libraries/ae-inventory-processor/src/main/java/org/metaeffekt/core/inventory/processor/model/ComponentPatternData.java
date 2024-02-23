@@ -158,4 +158,9 @@ public class ComponentPatternData extends AbstractModelBase {
     public Supplier<Inventory> getExpansionInventorySupplier() {
         return expansionInventorySupplier;
     }
+
+    @Override
+    public String toString() {
+        return "ComponentPatternData: " + createCompareStringRepresentation();
+    }
 }

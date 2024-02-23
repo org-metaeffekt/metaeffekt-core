@@ -19,34 +19,28 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
-/**
- * These trivial predicates are used during test development. You can implement the test asserts and filters
- * with these first and replace them when the Code under test becomes ready.
- */
-public class BooleanPredicate implements NamedArtifactPredicate {
-    /**
-     * Will return the whole collection when filtered.
-     */
-    public static NamedArtifactPredicate alwaysTrue = new BooleanPredicate(true);
+public class Not implements NamedBasePredicate<Artifact> {
+
+    private final NamedBasePredicate<Artifact> input;
+
+    private Not(NamedBasePredicate<Artifact> input) {
+        this.input = input;
+    }
 
     /**
-     * Will return an empty collection when filtered.
+     * Return the inverted meaning for a filterpredicate.
      */
-    public static NamedArtifactPredicate alwaysFalse = new BooleanPredicate(false);
-
-    private boolean returnAll;
-
-    public BooleanPredicate(boolean returnAll) {
-        this.returnAll = returnAll;
+    public static NamedBasePredicate<Artifact> not(NamedBasePredicate<Artifact> input) {
+        return new Not(input);
     }
 
     @Override
-    public Predicate<Artifact> getArtifactPredicate() {
-        return artifact -> returnAll;
+    public Predicate<Artifact> getPredicate() {
+        return input.getPredicate().negate();
     }
 
     @Override
     public String getDescription() {
-        return returnAll ? "All Elements" : "No Elements";
+        return " NOT( " + input.getDescription() + " ) ";
     }
 }

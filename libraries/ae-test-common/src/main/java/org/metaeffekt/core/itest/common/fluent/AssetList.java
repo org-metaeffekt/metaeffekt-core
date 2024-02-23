@@ -13,21 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.metaeffekt.core.itest.common.fluent;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.common.predicates.NamedArtifactPredicate;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.itest.common.fluent.base.*;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+public class AssetList extends BaseList<AssetMetaData>
+        implements BaseListAsserts<AssetMetaData>, BaseListLogger<AssetMetaData, AssetList>,
+        BaseListFilter<AssetMetaData, AssetList>,
+        BaseListSize<AssetMetaData, AssetList> {
 
-public interface ArtifactListAsserts {
+    public AssetList(List<AssetMetaData> assetList, String description) {
+        super(assetList, description);
+    }
 
-    List<Artifact> getArtifactList();
+    public AssetList() {
+        super();
+    }
 
-    default void assertAll(NamedArtifactPredicate predicate) {
-        assertThat(getArtifactList().stream().allMatch(predicate.getArtifactPredicate()))
-                .as("Predicate [" + predicate.getDescription() + "] not evaluated as expected.").isTrue();
+    @Override
+    public AssetList createNewInstance(List<AssetMetaData> filteredList) {
+        return new AssetList(filteredList, this.description);
     }
 }
+

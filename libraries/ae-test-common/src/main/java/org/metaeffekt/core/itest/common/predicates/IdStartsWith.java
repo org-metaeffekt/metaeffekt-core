@@ -19,28 +19,28 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.function.Predicate;
 
-public class Not implements NamedArtifactPredicate {
+public class IdStartsWith implements NamedBasePredicate<Artifact> {
 
-    private final NamedArtifactPredicate input;
+    private final String prefix;
 
-    private Not(NamedArtifactPredicate input) {
-        this.input = input;
-    }
-
-    /**
-     * Return the inverted meaning for a filterpredicate.
-     */
-    public static NamedArtifactPredicate not(NamedArtifactPredicate input) {
-        return new Not(input);
+    public IdStartsWith(String prefix) {
+        this.prefix = prefix;
     }
 
     @Override
-    public Predicate<Artifact> getArtifactPredicate() {
-        return input.getArtifactPredicate().negate();
+    public Predicate<Artifact> getPredicate() {
+        return artifact -> {
+            String id = artifact.getId();
+            return id.startsWith(prefix);
+        };
     }
 
     @Override
     public String getDescription() {
-        return " NOT( " + input.getDescription() + " ) ";
+        return "Artifact id starts with " + prefix;
+    }
+
+    public static IdStartsWith idStartsWith(String prefix) {
+        return new IdStartsWith(prefix);
     }
 }

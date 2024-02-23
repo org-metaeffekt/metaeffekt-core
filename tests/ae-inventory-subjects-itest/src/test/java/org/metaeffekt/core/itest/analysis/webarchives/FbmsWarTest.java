@@ -67,8 +67,8 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
                 .setCardinality(SUPERSET)
                 .setAttributes("CHECKSUM", VERSION.getKey());
         artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
-        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
+        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
     }
 
     @Test
@@ -80,8 +80,8 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
                 .setCardinality(EQUAL)
                 .setAttributes("CHECKSUM", VERSION.getKey());
         artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
-        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
+        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
     }
 
     @Test
@@ -92,8 +92,8 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
                 .setCardinality(SUBSET)
                 .setAttributes("CHECKSUM", VERSION.getKey());
         artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
-        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
+        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
     }
 
     @Test

@@ -81,21 +81,21 @@ public class ArtifactListMatcher {
     private void matchArtifacts(ArtifactList templatelist, Map<String, Artifact> testobjectmap) {
         listOfMatching = new ArtifactList().as("matching "+ templatelist.getDescription());
         listOfMissing = new ArtifactList().as("missing "+ templatelist.getDescription());
-        for (Artifact template : templatelist.getArtifactList()) {
+        for (Artifact template : templatelist.getItemList()) {
             Artifact toBeMatched = testobjectmap.get(template.get(primaryAttribute));
             if (!cardinality.equals(Cardinality.SUPERSET)) {
                 assertThat(toBeMatched).as("Artifact not found during matching: " + template).isNotNull();
             }
             if (toBeMatched != null && matchAttributes(template, toBeMatched)) {
-                listOfMatching.getArtifactList().add(template);
+                listOfMatching.getItemList().add(template);
             } else {
-                listOfMissing.getArtifactList().add(template);
+                listOfMissing.getItemList().add(template);
             }
         }
         if(cardinality.equals(Cardinality.EQUAL)){
                 assertThat(testobjectmap.size())
                         .as("Templatelist should be equal to Testlist")
-                        .isEqualTo(templatelist.getArtifactList().size());
+                        .isEqualTo(templatelist.getItemList().size());
         }
     }
 
@@ -110,7 +110,7 @@ public class ArtifactListMatcher {
 
     private Map<String, Artifact> populateMap(ArtifactList first) {
         Map<String, Artifact> artifactmap = new HashMap<>();
-        for (Artifact artifact : first.getArtifactList()) {
+        for (Artifact artifact : first.getItemList()) {
             assertThat(artifact.get(primaryAttribute)).as(primaryAttribute + " of is null for " + artifact).isNotNull();
             Artifact val = artifactmap.put(artifact.get(primaryAttribute), artifact);
             assertThat(val).as("Collision during matching: " + val + " has the same " + primaryAttribute + " as " + artifact).isNull();
