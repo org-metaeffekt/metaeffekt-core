@@ -16,27 +16,25 @@
 
 package org.metaeffekt.core.itest.common.fluent;
 
-import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.itest.common.fluent.base.*;
 
 import java.util.List;
 
-public class AssetList extends BaseList<AssetMetaData>
-        implements BaseListAsserts<AssetMetaData>, BaseListLogger<AssetMetaData, AssetList>,
-        BaseListFilter<AssetMetaData, AssetList>,
-        BaseListSize<AssetMetaData, AssetList> {
-
-    public AssetList(List<AssetMetaData> assetList, String description) {
-        super(assetList, description);
+public class ComponentPatternList extends BaseList<ComponentPatternData>
+        implements BaseListAsserts<ComponentPatternData>, BaseListLogger<ComponentPatternData, ComponentPatternList>,
+        BaseListFilter<ComponentPatternData, ComponentPatternList>,
+        BaseListSize<ComponentPatternData, ComponentPatternList> {
+    public ComponentPatternList(List<ComponentPatternData> componentPatternDataList, String description) {
+        super(componentPatternDataList, description);
     }
 
-    public AssetList() {
+    public ComponentPatternList() {
         super();
     }
 
     @Override
-    public AssetList createNewInstance(List<AssetMetaData> filteredList) {
-        return new AssetList(filteredList, this.description);
+    public ComponentPatternList createNewInstance(List<ComponentPatternData> filteredList) {
+        return new ComponentPatternList(filteredList, this.description);
     }
 }
-

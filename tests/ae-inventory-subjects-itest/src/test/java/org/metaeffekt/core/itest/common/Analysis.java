@@ -17,9 +17,11 @@ package org.metaeffekt.core.itest.common;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.fluent.AssetList;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 
 import java.util.List;
@@ -61,5 +63,15 @@ public class Analysis {
         return selectAssets()
                 .filter(assetPredicate.getPredicate())
                 .as(assetPredicate.getDescription());
+    }
+
+    public ComponentPatternList selectComponentPatterns() {
+        return new ComponentPatternList(inventory.getComponentPatternData(), description);
+    }
+
+    public ComponentPatternList selectComponentPatterns(NamedBasePredicate<ComponentPatternData> componentPatternPredicate) {
+        return selectComponentPatterns()
+                .filter(componentPatternPredicate.getPredicate())
+                .as(componentPatternPredicate.getDescription());
     }
 }

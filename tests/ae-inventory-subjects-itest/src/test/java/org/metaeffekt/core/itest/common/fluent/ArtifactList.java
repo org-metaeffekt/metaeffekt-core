@@ -17,10 +17,8 @@ package org.metaeffekt.core.itest.common.fluent;
 
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.base.*;
-import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ArtifactList extends BaseList<Artifact>
         implements BaseListAsserts<Artifact>, BaseListLogger<Artifact, ArtifactList>,
@@ -36,41 +34,7 @@ public class ArtifactList extends BaseList<Artifact>
     }
 
     @Override
-    public ArtifactList filter(NamedBasePredicate<Artifact> namedPredicate) {
-        List<Artifact> filteredItems = this.getItemList().stream()
-                .filter(namedPredicate.getPredicate())
-                .collect(Collectors.toList());
-
-        this.description = this.getDescription() + ", filtered by: " + namedPredicate.getDescription();
-
-        return this.createNewInstance(filteredItems);
-    }
-
-
-    @Override
     public ArtifactList createNewInstance(List<Artifact> filteredList) {
         return new ArtifactList(filteredList, this.description);
-    }
-
-    @Override
-    public ArtifactList logListWithAllAttributes() {
-        LOG.info("LIST " + getDescription());
-        getItemList().forEach(artifact -> {
-                    String[] attributes = artifact.getAttributes().toArray(new String[0]);
-                    LOG.info(withAttributes(artifact, attributes));
-                }
-        );
-        return this;
-    }
-
-    static String withAttributes(Artifact artifact, String[] additionalAttributes) {
-        StringBuilder sb = new StringBuilder(artifact.toString());
-        for (String additionalAttribute : additionalAttributes) {
-            sb.append(", ")
-                    .append(additionalAttribute)
-                    .append(": ")
-                    .append(artifact.get(additionalAttribute));
-        }
-        return sb.toString();
     }
 }

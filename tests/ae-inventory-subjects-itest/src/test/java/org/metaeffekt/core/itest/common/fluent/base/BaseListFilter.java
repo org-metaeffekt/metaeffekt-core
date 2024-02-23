@@ -33,9 +33,11 @@ public interface BaseListFilter<T, SELF extends BaseListFilter<T, SELF>> extends
     }
 
     default SELF filter(NamedBasePredicate<T> namedPredicate) {
+        this.setDescription(this.getDescription() + ", filtered by: " + namedPredicate.getDescription());
         return filter(namedPredicate.getPredicate());
     }
 
+    @SuppressWarnings("unchecked")
     default SELF with(NamedBasePredicate<T>... namedPredicates) {
         List<T> filteredList = getItemList();
         for (NamedBasePredicate<T> namedPredicate : namedPredicates) {

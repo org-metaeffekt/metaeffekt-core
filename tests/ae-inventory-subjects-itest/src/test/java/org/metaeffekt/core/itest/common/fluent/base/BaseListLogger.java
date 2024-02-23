@@ -16,21 +16,19 @@
 
 package org.metaeffekt.core.itest.common.fluent.base;
 
+import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-public interface BaseListLogger<T, SELF extends BaseListLogger<T, SELF>> {
+public interface BaseListLogger<T extends AbstractModelBase, SELF extends BaseListLogger<T, SELF>> {
     Logger LOG = LoggerFactory.getLogger(BaseListLogger.class);
 
     List<T> getItemList();
 
     String getDescription();
-
-    SELF logListWithAllAttributes();
-
-    SELF createNewInstance(List<T> itemList);
 
     default SELF logList() {
         getItemList().forEach(item -> LOG.info(item.toString()));
@@ -52,7 +50,15 @@ public interface BaseListLogger<T, SELF extends BaseListLogger<T, SELF>> {
         return returnSelf();
     }
 
+    @SuppressWarnings("unchecked")
     default SELF returnSelf() {
+        return (SELF) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    default SELF logListWithAllAttributes() {
+        LOG.info("LIST " + getDescription());
+        Inventory.logModelAttributesHorizontalTable(getItemList());
         return (SELF) this;
     }
 }

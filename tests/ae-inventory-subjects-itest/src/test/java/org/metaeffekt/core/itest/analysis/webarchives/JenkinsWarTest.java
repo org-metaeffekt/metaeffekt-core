@@ -20,9 +20,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -133,8 +133,9 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory = testSetup.getInventory();
+        Analysis analysis = new Analysis(inventory);
 
-        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
+        analysis.selectArtifacts().logListWithAllAttributes();
         List<String> prefixes = new ArrayList<>();
         for (Artifact artifact : inventory.getArtifacts()) {
             prefixes.add(getTokenAtPosition(artifact.get(ID), 0));
@@ -142,7 +143,6 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         prefixes = prefixes.stream().distinct().collect(Collectors.toList());
         LOG.info("Prefixes: {}", prefixes);
 
-        Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts().hasSizeGreaterThan(1);
         analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(6);
         analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
@@ -153,10 +153,18 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void testCompositionAsset() throws Exception {
         final Inventory inventory = testSetup.getInventory();
-
-        inventory.getAssetMetaData().stream().map(AssetMetaData::deriveQualifier).forEach(LOG::info);
-
         Analysis analysis = new Analysis(inventory);
         analysis.selectAssets().hasSizeGreaterThan(1);
+        analysis.selectAssets().logListWithAllAttributes();
+    }
+
+    @Test
+    public void testCompositionComponentPattern() throws Exception {
+        final Inventory inventory = testSetup.getInventory();
+
+        Analysis analysis = new Analysis(inventory);
+        analysis.selectComponentPatterns().hasSizeGreaterThan(1);
+        ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
+        componentPatternList.logListWithAllAttributes();
     }
 }
