@@ -27,6 +27,8 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
 public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalysisTest {
@@ -68,8 +70,8 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue("Id", "org.apache.commons.collections_3.2.0.v201005080500.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "3.2.0.v201005080500")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "org.apache.commons.collections_3.2.0.v201005080500.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "3.2.0.v201005080500")).hasSizeOf(1);
 
         analysis.selectArtifacts().hasSizeOf(1);
     }

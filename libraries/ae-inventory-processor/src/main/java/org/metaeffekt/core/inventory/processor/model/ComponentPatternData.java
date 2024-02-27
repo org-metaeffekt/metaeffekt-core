@@ -65,7 +65,8 @@ public class ComponentPatternData extends AbstractModelBase {
 
         // version anchors must not be null; these are primarily for matching
         VERSION_ANCHOR("Version Anchor"),
-        VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum");
+        VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum"),
+        TYPE("Type");
 
         private String key;
 

@@ -27,10 +27,9 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.GROUPID;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.IdStartsWith.idStartsWith;
+import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
 
@@ -65,15 +64,15 @@ public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(idStartsWith("jolokia")).hasSizeOf(4);
-        analysis.selectArtifacts(idStartsWith("json")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(Artifact::get, ID, "jolokia")).hasSizeOf(4);
+        analysis.selectArtifacts(startsWith(Artifact::get, ID, "json")).hasSizeOf(2);
 
-        analysis.selectArtifacts(attributeValue(GROUPID, "org.jolokia")).hasSizeOf(4);
-        analysis.selectArtifacts(attributeValue(GROUPID, "com.googlecode.json-simple")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.jolokia")).hasSizeOf(4);
+        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "com.googlecode.json-simple")).hasSizeOf(1);
 
-        analysis.selectArtifacts(attributeValue(VERSION, "1.7.2")).hasSizeOf(4);
-        analysis.selectArtifacts(attributeValue(VERSION, "1.1.1")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(VERSION, "$JSON_JMX_AGENT_VERSION")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "1.7.2")).hasSizeOf(4);
+        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "1.1.1")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "$JSON_JMX_AGENT_VERSION")).hasSizeOf(1);
     }
 
 }

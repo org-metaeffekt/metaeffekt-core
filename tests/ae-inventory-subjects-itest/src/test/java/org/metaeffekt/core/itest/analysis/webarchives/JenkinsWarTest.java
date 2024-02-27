@@ -71,7 +71,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void typesMustBeSetPredicate() {
         getAnalysis()
-                .selectArtifacts(not(withAttribute(TYPE)))
+                .selectArtifacts(not(withAttribute(Artifact::get, TYPE)))
                 .assertEmpty();
     }
 
@@ -80,7 +80,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void noErrorsExist() {
         getAnalysisAfterInvariantCheck()
-                .selectArtifacts(withAttribute("Errors"))
+                .selectArtifacts(withAttribute(Artifact::get, ERRORS))
                 .assertEmpty();
     }
 
@@ -89,7 +89,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void versionMismatch() {
         getAnalysis()
-                .selectArtifacts(withAttribute(VERSION))
+                .selectArtifacts(withAttribute(Artifact::get, VERSION))
                 .assertNotEmpty()
                 .logList()
                 .assertEmpty(idMismatchesVersion());
@@ -100,12 +100,12 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     public void testPredicatePrimitives() {
         getAnalysis()
                 .selectArtifacts()
-                .assertEmpty(alwaysFalse)
-                .assertNotEmpty(alwaysTrue)
+                .assertEmpty(alwaysFalse())
+                .assertNotEmpty(alwaysTrue())
                 .logListWithAllAttributes()
                 .logInfo()
                 .logInfo("Typed List:")
-                .filter(withAttribute(TYPE))
+                .filter(withAttribute(Artifact::get, TYPE))
                 .as("Artifact has Type")
                 .assertNotEmpty()
                 .logListWithAllAttributes();
@@ -118,7 +118,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         getAnalysis()
                 .selectArtifacts()
                 .logInfo("List with a Name:")
-                .filter(withAttribute(TYPE)).as("Artifact has Type")
+                .filter(withAttribute(Artifact::get, TYPE)).as("Artifact has Type")
                 .assertEmpty();
 
     }
@@ -144,10 +144,10 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         LOG.info("Prefixes: {}", prefixes);
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(6);
-        analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
-        analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
-        analysis.selectArtifacts(tokenStartsWith(ID, "javax")).hasSizeOf(2);
+        analysis.selectArtifacts(tokenStartsWith(Artifact::get, ID, "jenkins", ",")).hasSizeOf(6);
+        analysis.selectArtifacts(tokenStartsWith(Artifact::get, ID, "spring")).hasSizeOf(9);
+        analysis.selectArtifacts(tokenStartsWith(Artifact::get, ID, "jakarta")).hasSizeOf(5);
+        analysis.selectArtifacts(tokenStartsWith(Artifact::get, ID, "javax")).hasSizeOf(2);
     }
 
     @Test

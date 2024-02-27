@@ -15,27 +15,25 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-
 import java.util.function.Predicate;
 
-public class Not implements NamedBasePredicate<Artifact> {
+public class Not<T> implements NamedBasePredicate<T> {
 
-    private final NamedBasePredicate<Artifact> input;
+    private final NamedBasePredicate<T> input;
 
-    private Not(NamedBasePredicate<Artifact> input) {
+    private Not(NamedBasePredicate<T> input) {
         this.input = input;
     }
 
     /**
      * Return the inverted meaning for a filterpredicate.
      */
-    public static NamedBasePredicate<Artifact> not(NamedBasePredicate<Artifact> input) {
-        return new Not(input);
+    public static <T> NamedBasePredicate<T> not(NamedBasePredicate<T> input) {
+        return new Not<>(input);
     }
 
     @Override
-    public Predicate<Artifact> getPredicate() {
+    public Predicate<T> getPredicate() {
         return input.getPredicate().negate();
     }
 

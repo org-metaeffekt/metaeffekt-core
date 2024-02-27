@@ -15,35 +15,40 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-
 import java.util.function.Predicate;
 
-public class StartsWith implements NamedArtifactPredicate {
+public class StartsWith<T, E extends Enum<E>> implements NamedBasePredicate<T> {
+
+    @FunctionalInterface
+    public interface AttributeGetter<T, E extends Enum<E>> {
+        String getAttribute(T instance, E attributeKey);
+    }
 
     private final String prefix;
 
-    private final Artifact.Attribute attribute;
+    private final AttributeGetter<T, E> attributeGetter;
+    private final E attributeKey;
 
-    public StartsWith(Artifact.Attribute attribute, String prefix) {
-        this.attribute = attribute;
+    public StartsWith(AttributeGetter<T, E> attributeGetter, E attributeKey, String prefix) {
+        this.attributeGetter = attributeGetter;
+        this.attributeKey = attributeKey;
         this.prefix = prefix;
     }
 
     @Override
-    public Predicate<Artifact> getArtifactPredicate() {
-      return artifact -> {
-            String value = artifact.get(attribute);
+    public Predicate<T> getPredicate() {
+      return instance -> {
+            String value = attributeGetter.getAttribute(instance, attributeKey);
             return value != null && value.startsWith(prefix);
         };
     }
 
     @Override
     public String getDescription() {
-        return "Artifact " + attribute.getKey() + " starts with " + prefix;
+        return "Artifact " + attributeKey.name() + " starts with " + prefix;
     }
 
-    public static StartsWith predicateStartsWith(Artifact.Attribute attribute, String prefix) {
-        return new StartsWith(attribute, prefix);
+    public static <T, E extends Enum<E>> NamedBasePredicate<T> startsWith(AttributeGetter<T, E> attributeGetter, E attributeKey, String prefix) {
+        return new StartsWith<>(attributeGetter, attributeKey, prefix);
     }
 }

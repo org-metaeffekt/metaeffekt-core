@@ -27,6 +27,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
 public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
@@ -67,15 +68,15 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "17.0.2.v20220201-1208")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "17.0.2.v20220201-1208")).hasSizeOf(1);
 
-        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Group Id", "org.eclipse.justj")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "17.0.2-SNAPSHOT")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.eclipse.justj")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "17.0.2-SNAPSHOT")).hasSizeOf(1);
 
-        analysis.selectArtifacts(attributeValue("Id", "temurin-jdk-17.0.2")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "17.0.2")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "temurin-jdk-17.0.2")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "17.0.2")).hasSizeOf(1);
 
 
         analysis.selectArtifacts().hasSizeOf(3);

@@ -15,24 +15,26 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-
 import java.util.function.Predicate;
 
 /**
  * These trivial predicates are used during test development. You can implement the test asserts and filters
  * with these first and replace them when the Code under test becomes ready.
  */
-public class BooleanPredicate implements NamedBasePredicate<Artifact> {
+public class BooleanPredicate<T> implements NamedBasePredicate<T> {
     /**
      * Will return the whole collection when filtered.
      */
-    public static NamedBasePredicate<Artifact> alwaysTrue = new BooleanPredicate(true);
+    public static <T> NamedBasePredicate<T> alwaysTrue() {
+        return new BooleanPredicate<>(true);
+    }
 
     /**
      * Will return an empty collection when filtered.
      */
-    public static NamedBasePredicate<Artifact> alwaysFalse = new BooleanPredicate(false);
+    public static <T> NamedBasePredicate<T> alwaysFalse() {
+        return new BooleanPredicate<>(false);
+    }
 
     private boolean returnAll;
 
@@ -41,8 +43,8 @@ public class BooleanPredicate implements NamedBasePredicate<Artifact> {
     }
 
     @Override
-    public Predicate<Artifact> getPredicate() {
-        return artifact -> returnAll;
+    public Predicate<T> getPredicate() {
+        return instance -> returnAll;
     }
 
     @Override

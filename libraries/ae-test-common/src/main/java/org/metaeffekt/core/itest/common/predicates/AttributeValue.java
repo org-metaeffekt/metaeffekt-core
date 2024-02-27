@@ -15,39 +15,39 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-
 import java.util.function.Predicate;
 
-public class AttributeValue implements NamedBasePredicate<Artifact> {
+public class AttributeValue<T, E> implements NamedBasePredicate<T> {
 
-    private final String attribute;
+    @FunctionalInterface
+    public interface AttributeGetter<T, E> {
+        String getAttribute(T instance, E attributeKey);
+    }
 
+    private final AttributeGetter<T, E> attributeGetter;
+    private final E attributeKey;
     private final String value;
 
-    public AttributeValue(String attribute, String value) {
-        this.attribute = attribute;
+    public AttributeValue(AttributeGetter<T, E> attributeGetter, E attributeKey, String value) {
+        this.attributeGetter = attributeGetter;
+        this.attributeKey = attributeKey;
         this.value = value;
     }
 
     /**
      * Only include Artifacts in the collection where attribute is not null.
      */
-    public static NamedBasePredicate<Artifact> attributeValue(Artifact.Attribute attribute, String value) {
-        return new AttributeValue(attribute.getKey(), value);
-    }
-
-    public static NamedBasePredicate<Artifact> attributeValue(String attribute, String value) {
-        return new AttributeValue(attribute, value);
+    public static <T, E extends Enum<E>> NamedBasePredicate<T> attributeValue(AttributeGetter<T, E> attributeGetter, E attributeKey, String value) {
+        return new AttributeValue<>(attributeGetter, attributeKey, value);
     }
 
     @Override
-    public Predicate<Artifact> getPredicate() {
-        return artifact -> value.equals(artifact.get(attribute));
+    public Predicate<T> getPredicate() {
+        return instance -> value.equals(attributeGetter.getAttribute(instance, attributeKey));
     }
 
     @Override
     public String getDescription() {
-        return "'" + attribute + "' is '" + value + "'";
+        return "'" + attributeKey + "' is '" + value + "'";
     }
 }

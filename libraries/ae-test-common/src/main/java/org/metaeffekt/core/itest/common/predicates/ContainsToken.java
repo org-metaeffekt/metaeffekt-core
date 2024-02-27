@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.metaeffekt.core.itest.common.predicates;
 
 import java.util.function.Predicate;
 
-import static org.metaeffekt.core.itest.common.predicates.Not.not;
-
-
-public class AttributeExists<T, E extends Enum<E>> implements NamedBasePredicate<T> {
+public class ContainsToken<T, E extends Enum<E>> implements NamedBasePredicate<T> {
 
     @FunctionalInterface
     public interface AttributeGetter<T, E extends Enum<E>> {
@@ -29,34 +27,25 @@ public class AttributeExists<T, E extends Enum<E>> implements NamedBasePredicate
 
     private final AttributeGetter<T, E> attributeGetter;
     private final E attributeKey;
+    private final String token;
 
-    public AttributeExists(AttributeGetter<T, E> attributeGetter, E attributeKey) {
+    public ContainsToken(AttributeGetter<T, E> attributeGetter, E attributeKey, String token) {
         this.attributeGetter = attributeGetter;
         this.attributeKey = attributeKey;
-    }
-
-    /**
-     * Only include Artifacts in the collection where attribute is not null.
-     */
-    public static <T, E extends Enum<E>>  NamedBasePredicate<T> withAttribute(AttributeGetter<T, E> attributeGetter, E attributeKey) {
-        return new AttributeExists<>(attributeGetter, attributeKey);
-    }
-
-
-    /**
-     * Only include Artifacts in the collection where attribute is null.
-     */
-    public static <T, E extends Enum<E>>  NamedBasePredicate<T> withoutAttribute(AttributeGetter<T, E> attributeGetter, E attributeKey) {
-        return not(new AttributeExists<>(attributeGetter, attributeKey));
+        this.token = token;
     }
 
     @Override
     public Predicate<T> getPredicate() {
-        return instance -> attributeGetter.getAttribute(instance, attributeKey) != null;
+        return instance -> attributeGetter.getAttribute(instance, attributeKey).contains(token);
     }
 
     @Override
     public String getDescription() {
-        return "'" + attributeKey.name() + "' exists";
+        return String.format("Object's '%s' attribute contains token with '%s'", attributeKey.name(), token);
+    }
+
+    public static <T, E extends Enum<E>> NamedBasePredicate<T> containsToken(AttributeGetter<T, E> attributeGetter, E attributeKey, String token) {
+        return new ContainsToken<>(attributeGetter, attributeKey, token);
     }
 }
