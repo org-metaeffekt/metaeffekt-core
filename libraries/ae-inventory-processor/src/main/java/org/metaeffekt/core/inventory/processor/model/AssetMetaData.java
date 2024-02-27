@@ -51,6 +51,7 @@ public class AssetMetaData extends AbstractModelBase {
         NAME("Name"),
         VERSION("Version"),
         ASSESSMENT_ID("Assessment Id"),
+        ROLE("Role"),
         ASSESSMENT("Assessment");
 
         private String key;
