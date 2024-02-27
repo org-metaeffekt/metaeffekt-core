@@ -1931,7 +1931,6 @@ public class Inventory implements Serializable {
         }
 
         final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
-        // final Map<String, Integer> rearrangedAttributeWidths = attributeWidths;
         // header and separator
         final String header = rearrangedAttributeWidths.entrySet().stream()
                 .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
