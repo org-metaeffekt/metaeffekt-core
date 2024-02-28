@@ -202,4 +202,25 @@ public class DirectoryInventoryScanTest {
         new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
     }
 
+    @Ignore
+    @Test
+    public void testScanContainersAndStuff() throws IOException {
+        final File inputDir = new File("INPUT FILE GOES HERE");
+        final File scanDir = new File("target/SCANDIR_HERE");
+        final File outputInventory = new File("target/" + "TEST_INVENTORY_" + inputDir.getName() + ".xlsx");
+
+        final String[] scanIncludes = new String[]{"**/*"};
+        final String[] scanExcludes = new String[]{"--none--"};
+
+        final Inventory inventory = new Inventory();
+        final DirectoryInventoryScan scan =
+                new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
+        scan.setEnableImplicitUnpack(true);
+        scan.setEnableDetectComponentPatterns(true);
+
+        final Inventory resultInventory = scan.createScanInventory();
+
+        new InventoryWriter().writeInventory(resultInventory, outputInventory);
+    }
+
 }

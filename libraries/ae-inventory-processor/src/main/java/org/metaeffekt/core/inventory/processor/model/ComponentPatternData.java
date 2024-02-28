@@ -30,13 +30,18 @@ public class ComponentPatternData extends AbstractModelBase {
 
     private transient Supplier<Inventory> expansionInventorySupplier;
 
+    /**
+     * Notate which component pattern contributor was used to generate this component pattern. Useful for debugging.
+     */
+    private transient String context = "UNKNOWN";
+
     public ComponentPatternData(ComponentPatternData cpd) {
         super(cpd);
         this.expansionInventorySupplier = cpd.expansionInventorySupplier;
+        this.context = cpd.context;
     }
 
-    public ComponentPatternData() {
-    }
+    public ComponentPatternData() {}
 
     public void validate(String context) {
         // validate minimal attributes
@@ -45,6 +50,10 @@ public class ComponentPatternData extends AbstractModelBase {
         validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR.getKey(), get(Attribute.VERSION_ANCHOR));
         validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR_CHECKSUM.getKey(), get(Attribute.VERSION_ANCHOR_CHECKSUM));
         validateNotEmptyOrNull(context, Attribute.COMPONENT_PART.getKey(), get(Attribute.COMPONENT_PART));
+    }
+
+    public void validate() {
+        validate(context);
     }
 
     private void validateNotEmptyOrNull(String context, String key, String s) {
@@ -163,5 +172,13 @@ public class ComponentPatternData extends AbstractModelBase {
     @Override
     public String toString() {
         return "ComponentPatternData: " + createCompareStringRepresentation();
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 }

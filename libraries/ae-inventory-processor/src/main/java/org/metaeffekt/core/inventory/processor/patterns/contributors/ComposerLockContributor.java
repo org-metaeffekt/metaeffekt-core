@@ -26,11 +26,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class ComposerLockContributor extends ComponentPatternContributor{
+public class ComposerLockContributor extends ComponentPatternContributor {
 
     public static final String TYPE_VALUE_PHP_COMPOSER = "php-composer";
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
+            add("composer.lock");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
@@ -91,4 +96,8 @@ public class ComposerLockContributor extends ComponentPatternContributor{
 
     }
 
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
+    }
 }

@@ -26,10 +26,15 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class NextcloudAppInfoContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/appinfo/info.xml");
+    }});
 
     public static final String TYPE_VALUE_NEXTCLOUD_APP = "nextcloud-app";
 
@@ -73,6 +78,11 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private static String optStringValue(Element documentElement, String key) {

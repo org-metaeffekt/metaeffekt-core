@@ -23,17 +23,23 @@ import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.*;
 
-    @Override
+public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/web-inf/web.xml");
+    }});
+
+        @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.toLowerCase().endsWith("/web-inf/web.xml");
+        return pathInContext.toLowerCase(PATH_LOCALE).endsWith("/web-inf/web.xml");
     }
 
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
@@ -52,7 +58,7 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
                         FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-                String derivedPart = webXmlData.displayName.toLowerCase();
+                String derivedPart = webXmlData.displayName.toLowerCase(PATH_LOCALE);
                 if (StringUtils.isNotEmpty(version)) {
                     derivedPart = derivedPart + "-" + version;
                 }
@@ -83,6 +89,11 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
             throw new RuntimeException(e);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private String parseNameFromVersionPropertyFile(File file) {

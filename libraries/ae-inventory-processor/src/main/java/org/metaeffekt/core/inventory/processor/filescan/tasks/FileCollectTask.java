@@ -52,8 +52,8 @@ public class FileCollectTask extends ScanTask {
 
     @Override
     public void process(FileSystemScanContext fileSystemScanContext) throws IOException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing " + getClass().getName() + " on: " + fileRef);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Executing [{}] on [{}].", getClass().getName(), fileRef.getFile().getAbsolutePath());
         }
 
         final File file = fileRef.getFile();
