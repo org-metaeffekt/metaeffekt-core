@@ -47,6 +47,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         add(".bower.json");
         add("/bower.json");
         add("/package-lock.json");
+        add("/.package-lock.json");
         add("/package.json");
         add("/composer.json");
     }});

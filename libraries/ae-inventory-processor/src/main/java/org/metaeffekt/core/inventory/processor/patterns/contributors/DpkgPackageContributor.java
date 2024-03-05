@@ -416,6 +416,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
         fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
 
+        // we have to include the files in the status.d directory as well
+        fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
+        fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
+
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**");
 
         return fileJoiner;
