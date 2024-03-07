@@ -15,44 +15,46 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
+import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
 
 
 public class AttributeExists<T, E extends Enum<E>> implements NamedBasePredicate<T> {
-
-    @FunctionalInterface
-    public interface AttributeGetter<T, E extends Enum<E>> {
-        String getAttribute(T instance, E attributeKey);
-    }
-
-    private final AttributeGetter<T, E> attributeGetter;
     private final E attributeKey;
 
-    public AttributeExists(AttributeGetter<T, E> attributeGetter, E attributeKey) {
-        this.attributeGetter = attributeGetter;
+    public AttributeExists(E attributeKey) {
         this.attributeKey = attributeKey;
     }
 
     /**
      * Only include Artifacts in the collection where attribute is not null.
      */
-    public static <T, E extends Enum<E>>  NamedBasePredicate<T> withAttribute(AttributeGetter<T, E> attributeGetter, E attributeKey) {
-        return new AttributeExists<>(attributeGetter, attributeKey);
+    public static <T, E extends Enum<E>>  NamedBasePredicate<T> withAttribute(E attributeKey) {
+        return new AttributeExists<>(attributeKey);
     }
 
 
     /**
      * Only include Artifacts in the collection where attribute is null.
      */
-    public static <T, E extends Enum<E>>  NamedBasePredicate<T> withoutAttribute(AttributeGetter<T, E> attributeGetter, E attributeKey) {
-        return not(new AttributeExists<>(attributeGetter, attributeKey));
+    public static <T, E extends Enum<E>>  NamedBasePredicate<T> withoutAttribute(E attributeKey) {
+        return not(new AttributeExists<>(attributeKey));
     }
 
     @Override
     public Predicate<T> getPredicate() {
-        return instance -> attributeGetter.getAttribute(instance, attributeKey) != null;
+        return instance -> {
+            try {
+                Method getMethod = instance.getClass().getMethod("get", attributeKey.getDeclaringClass());
+                String attributeValue = (String) getMethod.invoke(instance, attributeKey);
+                return attributeValue != null;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        };
     }
 
     @Override

@@ -113,7 +113,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
-        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, anchorParentDir.getName() + "/**/node_modules/**/*" + "," + anchorParentDir.getName() + "/**/bower_components/**/*");
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, anchorParentDir.getName() + "/.yarn-integrity" + "," + anchorParentDir.getName() + "/**/bower_components/**/*");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDir.getName() + "/**/*");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);

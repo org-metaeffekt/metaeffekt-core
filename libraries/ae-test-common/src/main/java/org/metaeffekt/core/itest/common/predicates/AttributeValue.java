@@ -15,21 +15,14 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
+import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
-public class AttributeValue<T, E> implements NamedBasePredicate<T> {
-
-    @FunctionalInterface
-    public interface AttributeGetter<T, E> {
-        String getAttribute(T instance, E attributeKey);
-    }
-
-    private final AttributeGetter<T, E> attributeGetter;
+public class AttributeValue<T, E extends Enum<E>> implements NamedBasePredicate<T> {
     private final E attributeKey;
     private final String value;
 
-    public AttributeValue(AttributeGetter<T, E> attributeGetter, E attributeKey, String value) {
-        this.attributeGetter = attributeGetter;
+    public AttributeValue(E attributeKey, String value) {
         this.attributeKey = attributeKey;
         this.value = value;
     }
@@ -37,13 +30,22 @@ public class AttributeValue<T, E> implements NamedBasePredicate<T> {
     /**
      * Only include Artifacts in the collection where attribute is not null.
      */
-    public static <T, E extends Enum<E>> NamedBasePredicate<T> attributeValue(AttributeGetter<T, E> attributeGetter, E attributeKey, String value) {
-        return new AttributeValue<>(attributeGetter, attributeKey, value);
+    public static <T, E extends Enum<E>> NamedBasePredicate<T> attributeValue(E attributeKey, String value) {
+        return new AttributeValue<>(attributeKey, value);
     }
 
     @Override
     public Predicate<T> getPredicate() {
-        return instance -> value.equals(attributeGetter.getAttribute(instance, attributeKey));
+        return instance -> {
+            try {
+                Method getMethod = instance.getClass().getMethod("get", attributeKey.getDeclaringClass());
+                String attributeValue = (String) getMethod.invoke(instance, attributeKey);
+                return value.equals(attributeValue);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        };
     }
 
     @Override

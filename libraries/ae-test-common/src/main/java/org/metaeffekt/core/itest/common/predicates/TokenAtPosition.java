@@ -18,11 +18,11 @@ package org.metaeffekt.core.itest.common.predicates;
 
 public class TokenAtPosition<T, E extends Enum<E>> extends TokenStartsWith<T, E> {
 
-    public TokenAtPosition(AttributeGetter<T, E> attributeGetter, E attributeKey, String prefix, String[] separators, int position) {
-        super(attributeGetter, attributeKey, prefix, separators, position);
+    public TokenAtPosition(E attributeKey, String prefix, String[] separators, int position) {
+        super(attributeKey, prefix, separators, position);
     }
 
-    public static <T, E extends Enum<E>> NamedBasePredicate<T> tokenAtPosition(AttributeGetter<T, E> attributeGetter, E attributeKey, String prefix, String[] separators, int position) {
-        return new TokenAtPosition<>(attributeGetter, attributeKey, prefix, separators, position);
+    public static <T, E extends Enum<E>> NamedBasePredicate<T> tokenAtPosition(E attributeKey, String prefix, String[] separators, int position) {
+        return new TokenAtPosition<>(attributeKey, prefix, separators, position);
     }
 }

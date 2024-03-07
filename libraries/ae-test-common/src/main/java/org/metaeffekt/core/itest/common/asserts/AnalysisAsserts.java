@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.itest.common.asserts;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.predicates.AttributeExists;
 
@@ -36,7 +35,7 @@ public interface AnalysisAsserts {
     }
 
     default void assertNoErrors() {
-        getAnalysis().selectArtifacts(withAttribute(Artifact::get, ERRORS))
+        getAnalysis().selectArtifacts(withAttribute(ERRORS))
                 .logList("Errors")
                 .assertEmpty();
     }
@@ -47,7 +46,7 @@ public interface AnalysisAsserts {
     }
 
     default void assertNoMissingTypes() {
-        getAnalysis().selectArtifacts(not(AttributeExists.withAttribute(Artifact::get, TYPE)))
+        getAnalysis().selectArtifacts(not(AttributeExists.withAttribute(TYPE)))
                 .assertEmpty();
     }
 }

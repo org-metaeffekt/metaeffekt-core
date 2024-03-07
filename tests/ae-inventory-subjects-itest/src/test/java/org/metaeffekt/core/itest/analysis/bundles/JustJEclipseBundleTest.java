@@ -68,15 +68,13 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "17.0.2.v20220201-1208")).hasSizeOf(1);
-
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.eclipse.justj")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "17.0.2-SNAPSHOT")).hasSizeOf(1);
-
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "temurin-jdk-17.0.2")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "17.0.2")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "17.0.2.v20220201-1208")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.eclipse.justj")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "17.0.2-SNAPSHOT")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "temurin-jdk-17.0.2")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "17.0.2")).hasSizeOf(1);
 
 
         analysis.selectArtifacts().hasSizeOf(3);

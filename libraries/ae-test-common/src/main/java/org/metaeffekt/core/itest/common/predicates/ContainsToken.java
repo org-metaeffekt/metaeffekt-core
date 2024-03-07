@@ -16,28 +16,30 @@
 
 package org.metaeffekt.core.itest.common.predicates;
 
+import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 public class ContainsToken<T, E extends Enum<E>> implements NamedBasePredicate<T> {
-
-    @FunctionalInterface
-    public interface AttributeGetter<T, E extends Enum<E>> {
-        String getAttribute(T instance, E attributeKey);
-    }
-
-    private final AttributeGetter<T, E> attributeGetter;
     private final E attributeKey;
     private final String token;
 
-    public ContainsToken(AttributeGetter<T, E> attributeGetter, E attributeKey, String token) {
-        this.attributeGetter = attributeGetter;
+    public ContainsToken(E attributeKey, String token) {
         this.attributeKey = attributeKey;
         this.token = token;
     }
 
     @Override
     public Predicate<T> getPredicate() {
-        return instance -> attributeGetter.getAttribute(instance, attributeKey).contains(token);
+        return instance -> {
+            try {
+                Method getMethod = instance.getClass().getMethod("get", attributeKey.getDeclaringClass());
+                String attributeValue = (String) getMethod.invoke(instance, attributeKey);
+                return attributeValue != null && attributeValue.contains(token);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        };
     }
 
     @Override
@@ -45,7 +47,7 @@ public class ContainsToken<T, E extends Enum<E>> implements NamedBasePredicate<T
         return String.format("Object's '%s' attribute contains token with '%s'", attributeKey.name(), token);
     }
 
-    public static <T, E extends Enum<E>> NamedBasePredicate<T> containsToken(AttributeGetter<T, E> attributeGetter, E attributeKey, String token) {
-        return new ContainsToken<>(attributeGetter, attributeKey, token);
+    public static <T, E extends Enum<E>> NamedBasePredicate<T> containsToken(E attributeKey, String token) {
+        return new ContainsToken<>(attributeKey, token);
     }
 }

@@ -70,8 +70,8 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "org.apache.commons.collections_3.2.0.v201005080500.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "3.2.0.v201005080500")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "org.apache.commons.collections_3.2.0.v201005080500.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "3.2.0.v201005080500")).hasSizeOf(1);
 
         analysis.selectArtifacts().hasSizeOf(1);
     }

@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -58,12 +57,12 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logListWithAllAttributes()
-                .with(attributeValue(Artifact::get, ID, "spring-core-6.1.1.jar"),
-                        attributeValue(Artifact::get, CHECKSUM, "7a787700b8de9fc9034ffdc070517f51"),
-                        attributeValue(Artifact::get, VERSION, "6.1.1"),
-                        attributeValue(Artifact::get, HASH_SHA256, "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
-                        attributeValue(Artifact::get, PROJECTS, "spring-core-6.1.1.jar"),
-                        attributeValue(Artifact::get, PATH_IN_ASSET, "spring-core-6.1.1.jar")
+                .with(attributeValue(ID, "spring-core-6.1.1.jar"),
+                        attributeValue(CHECKSUM, "7a787700b8de9fc9034ffdc070517f51"),
+                        attributeValue(VERSION, "6.1.1"),
+                        attributeValue(HASH_SHA256, "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
+                        attributeValue(PROJECTS, "spring-core-6.1.1.jar"),
+                        attributeValue(PATH_IN_ASSET, "spring-core-6.1.1.jar")
                 )
                 .assertNotEmpty();
     }

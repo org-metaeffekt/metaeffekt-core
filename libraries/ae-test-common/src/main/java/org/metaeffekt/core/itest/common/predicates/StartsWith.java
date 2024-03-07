@@ -15,22 +15,16 @@
  */
 package org.metaeffekt.core.itest.common.predicates;
 
+import java.lang.reflect.Method;
 import java.util.function.Predicate;
 
 public class StartsWith<T, E extends Enum<E>> implements NamedBasePredicate<T> {
 
-    @FunctionalInterface
-    public interface AttributeGetter<T, E extends Enum<E>> {
-        String getAttribute(T instance, E attributeKey);
-    }
-
     private final String prefix;
 
-    private final AttributeGetter<T, E> attributeGetter;
     private final E attributeKey;
 
-    public StartsWith(AttributeGetter<T, E> attributeGetter, E attributeKey, String prefix) {
-        this.attributeGetter = attributeGetter;
+    public StartsWith(E attributeKey, String prefix) {
         this.attributeKey = attributeKey;
         this.prefix = prefix;
     }
@@ -38,8 +32,14 @@ public class StartsWith<T, E extends Enum<E>> implements NamedBasePredicate<T> {
     @Override
     public Predicate<T> getPredicate() {
       return instance -> {
-            String value = attributeGetter.getAttribute(instance, attributeKey);
-            return value != null && value.startsWith(prefix);
+          try {
+              Method getMethod = instance.getClass().getMethod("get", attributeKey.getDeclaringClass());
+              String attributeValue = (String) getMethod.invoke(instance, attributeKey);
+              return attributeValue != null && attributeValue.startsWith(prefix);
+          } catch (Exception e) {
+              e.printStackTrace();
+              return false;
+          }
         };
     }
 
@@ -48,7 +48,7 @@ public class StartsWith<T, E extends Enum<E>> implements NamedBasePredicate<T> {
         return "Artifact " + attributeKey.name() + " starts with " + prefix;
     }
 
-    public static <T, E extends Enum<E>> NamedBasePredicate<T> startsWith(AttributeGetter<T, E> attributeGetter, E attributeKey, String prefix) {
-        return new StartsWith<>(attributeGetter, attributeKey, prefix);
+    public static <T, E extends Enum<E>> NamedBasePredicate<T> startsWith(E attributeKey, String prefix) {
+        return new StartsWith<>(attributeKey, prefix);
     }
 }

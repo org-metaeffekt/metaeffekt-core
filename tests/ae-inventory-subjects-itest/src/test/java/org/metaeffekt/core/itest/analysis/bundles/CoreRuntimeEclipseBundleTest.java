@@ -70,8 +70,8 @@ public class CoreRuntimeEclipseBundleTest extends AbstractCompositionAnalysisTes
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "3.24.0.v20210910-0750")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "3.24.0.v20210910-0750")).hasSizeOf(1);
 
         analysis.selectArtifacts().hasSizeOf(1);
 

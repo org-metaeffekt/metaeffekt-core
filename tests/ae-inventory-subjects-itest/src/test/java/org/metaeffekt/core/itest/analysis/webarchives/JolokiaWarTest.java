@@ -64,15 +64,14 @@ public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "jolokia")).hasSizeOf(4);
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "json")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(ID, "jolokia")).hasSizeOf(4);
+        analysis.selectArtifacts(startsWith(ID, "json")).hasSizeOf(2);
 
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.jolokia")).hasSizeOf(4);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "com.googlecode.json-simple")).hasSizeOf(1);
-
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "1.7.2")).hasSizeOf(4);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "1.1.1")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "$JSON_JMX_AGENT_VERSION")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.jolokia")).hasSizeOf(4);
+        analysis.selectArtifacts(attributeValue(GROUPID, "com.googlecode.json-simple")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "1.7.2")).hasSizeOf(4);
+        analysis.selectArtifacts(attributeValue(VERSION, "1.1.1")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "$JSON_JMX_AGENT_VERSION")).hasSizeOf(1);
     }
 
 }

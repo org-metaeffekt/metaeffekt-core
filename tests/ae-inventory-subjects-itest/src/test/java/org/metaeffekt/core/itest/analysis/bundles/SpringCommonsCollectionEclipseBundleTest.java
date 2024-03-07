@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
@@ -27,7 +26,8 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.GROUPID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
 import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
@@ -68,11 +68,10 @@ public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositio
 
         analysis.selectArtifacts().logList();
 
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "com.springsource.org.apache.commons.collections-3.2.1.jar")).hasSizeOf(1);
-
-        // the embedded artifact is listed separately as we cannot connect it to the containing one;
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "commons-collections-3.2.1.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, ID, "commons-collections-3.2.1.jar")).assertAll(withAttribute(Artifact::get, GROUPID));
+        analysis.selectArtifacts(attributeValue(ID, "com.springsource.org.apache.commons.collections-3.2.1.jar")).hasSizeOf(1);
+        // the embedded artifact is listed not connect it to the containing one;
+        analysis.selectArtifacts(attributeValue(ID, "commons-collections-3.2.1.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "commons-collections-3.2.1.jar")).assertAll(withAttribute(GROUPID));
         analysis.selectArtifacts().hasSizeOf(3);
     }
 

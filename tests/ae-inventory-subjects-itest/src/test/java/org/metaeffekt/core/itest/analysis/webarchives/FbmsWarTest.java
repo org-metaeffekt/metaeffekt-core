@@ -103,28 +103,28 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "jackson")).hasSizeOf(6);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "com.fasterxml.jackson.core")).hasSizeOf(3);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "com.fasterxml.jackson.datatype")).hasSizeOf(2);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "com.fasterxml.jackson.module")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(ID, "jackson")).hasSizeOf(6);
+        analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.core")).hasSizeOf(3);
+        analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.datatype")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.module")).hasSizeOf(1);
 
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "spring-")).hasSizeOf(34);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.springframework.data")).hasSizeOf(2);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.springframework.hateoas")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.springframework.plugin")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(ID, "spring-")).hasSizeOf(34);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.data")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.hateoas")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.plugin")).hasSizeOf(2);
 
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "hibernate")).hasSizeOf(4);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.hibernate.validator")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(ID, "hibernate")).hasSizeOf(4);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.hibernate.validator")).hasSizeOf(1);
 
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "log")).hasSizeOf(5);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "org.apache.logging.log4j")).hasSizeOf(2);
-        analysis.selectArtifacts(attributeValue(Artifact::get, GROUPID, "ch.qos.logback")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(ID, "log")).hasSizeOf(5);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.logging.log4j")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(GROUPID, "ch.qos.logback")).hasSizeOf(2);
 
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "springfox")).hasSizeOf(7);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "2.8.0")).hasSizeOf(7);
+        analysis.selectArtifacts(startsWith(ID, "springfox")).hasSizeOf(7);
+        analysis.selectArtifacts(attributeValue(VERSION, "2.8.0")).hasSizeOf(7);
 
-        analysis.selectArtifacts(startsWith(Artifact::get, ID, "tomcat")).hasSizeOf(3);
-        analysis.selectArtifacts(attributeValue(Artifact::get, VERSION, "8.5.31")).hasSizeOf(3);
+        analysis.selectArtifacts(startsWith(ID, "tomcat")).hasSizeOf(3);
+        analysis.selectArtifacts(attributeValue(VERSION, "8.5.31")).hasSizeOf(3);
 
     }
 

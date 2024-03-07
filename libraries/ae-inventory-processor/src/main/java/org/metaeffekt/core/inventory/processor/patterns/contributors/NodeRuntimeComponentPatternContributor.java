@@ -48,7 +48,7 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
 
                 // construct component pattern
                 final ComponentPatternData componentPatternData = new ComponentPatternData();
-                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorFile.getName());
+                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorFile.getPath().substring(anchorFile.getPath().indexOf("include")));
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, "node");
