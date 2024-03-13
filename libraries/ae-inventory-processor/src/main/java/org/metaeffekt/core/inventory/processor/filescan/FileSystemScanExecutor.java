@@ -63,7 +63,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         final ArrayList<String> assetIdChain = new ArrayList<>();
 
         // trigger an initial scan from basedir
-        fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), assetIdChain));
+        fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), fileSystemScanContext.getVirtualContext(), assetIdChain));
 
         awaitTasks();
 

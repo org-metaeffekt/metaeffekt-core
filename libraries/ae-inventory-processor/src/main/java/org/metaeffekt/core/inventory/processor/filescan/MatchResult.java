@@ -24,6 +24,7 @@ import java.io.File;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
@@ -33,25 +34,29 @@ public class MatchResult {
     public ComponentPatternData componentPatternData;
 
     public File anchorFile;
-    public File baseDir;
+    public File scanRootDir;
+    public File virtualRootDir;
+    public File versionAnchorRootDir;
 
     public String assetIdChain;
 
-    public MatchResult(ComponentPatternData componentPatternData, File anchorFile, File baseDir, String assetIdChain) {
+    public MatchResult(ComponentPatternData componentPatternData, File anchorFile, File scanRootDir, File virtualRootDir, File versionAnchorRootDir, String assetIdChain) {
         this.componentPatternData = componentPatternData;
         this.anchorFile = anchorFile;
-        this.baseDir = baseDir;
+        this.scanRootDir = scanRootDir;
+        this.virtualRootDir = virtualRootDir;
+        this.versionAnchorRootDir = versionAnchorRootDir;
         this.assetIdChain = assetIdChain;
     }
 
-    public Artifact deriveArtifact(FileRef scanBaseDir) {
+    public Artifact deriveArtifact() {
         final Artifact derivedArtifact = new Artifact();
 
         derivedArtifact.setId(componentPatternData.get(COMPONENT_PART));
         derivedArtifact.setComponent(componentPatternData.get(COMPONENT_NAME));
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
 
-        final String relativePath = asRelativePath(scanBaseDir.getPath(), FileUtils.normalizePathToLinux(baseDir));
+        final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_PATH, relativePath);
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
 
@@ -68,6 +73,7 @@ public class MatchResult {
         derivedArtifact.setChecksum(componentPatternData.get("Component Checksum"));
 
         derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, Constants.MARKER_CROSS);
+        derivedArtifact.set(VIRTUAL_ROOT_PATH, asRelativePath(scanRootDir.getPath(), virtualRootDir.getPath()));
 
         return derivedArtifact;
     }

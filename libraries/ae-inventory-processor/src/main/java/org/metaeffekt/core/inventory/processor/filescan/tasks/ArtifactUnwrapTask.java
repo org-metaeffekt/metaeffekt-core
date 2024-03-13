@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
+import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -137,7 +138,8 @@ public class ArtifactUnwrapTask extends ScanTask {
             // trigger collection of content
             LOG.info("Collecting subtree on [{}].", fileRef.getPath());
             final FileRef dirRef = new FileRef(targetFolder);
-            fileSystemScanContext.push(new DirectoryScanTask(dirRef,
+            VirtualContext virtualContext = new VirtualContext(dirRef);
+            fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
                     rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext)));
         } else {
             // compute md5 to support component patterns (candidates for unwrap did not receive a checksum before)

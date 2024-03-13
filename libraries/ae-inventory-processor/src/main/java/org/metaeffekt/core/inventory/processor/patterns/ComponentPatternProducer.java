@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.util.FileUtils.*;
 
 public class ComponentPatternProducer {
@@ -255,7 +256,7 @@ public class ComponentPatternProducer {
 
     private void deriveAddonArtifactsFromMatchResult(List<MatchResult> componentPatterns, FileSystemScanContext fileSystemScanContext) {
         for (MatchResult matchResult : componentPatterns) {
-            final Artifact derivedArtifact = matchResult.deriveArtifact(fileSystemScanContext.getBaseDir());
+            final Artifact derivedArtifact = matchResult.deriveArtifact();
             fileSystemScanContext.contribute(derivedArtifact);
 
             final Supplier<Inventory> expansionInventorySupplier = matchResult.componentPatternData.getExpansionInventorySupplier();
@@ -276,7 +277,7 @@ public class ComponentPatternProducer {
         for (MatchResult matchResult : matchedComponentDataOnAnchor) {
             final ComponentPatternData cpd = matchResult.componentPatternData;
 
-            final String baseDir = normalizePathToLinux(matchResult.baseDir.getAbsolutePath());
+            final String baseDir = normalizePathToLinux(matchResult.versionAnchorRootDir.getAbsolutePath());
             final String relativePathToComponentBaseDir = asRelativePath(fileSystemScanContext.getBaseDir().getPath(), baseDir);
 
             // build pattern sets to match (using scanBaseDir relative paths)
@@ -478,7 +479,7 @@ public class ComponentPatternProducer {
                 // FIXME: why do we clone and adjust the anchor checksum here? May be instantiated multiple times?
                 final ComponentPatternData copyCpd = new ComponentPatternData(cpd);
                 copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, Constants.ASTERISK);
-                matchedComponentPatterns.add(new MatchResult(copyCpd, rootDir, rootDir, null));
+                matchedComponentPatterns.add(new MatchResult(copyCpd, rootDir, rootDir, rootDir, fileSystemScanContext.getVirtualContext().getVirtualBaseDirRef().getFile(), null));
 
                 // continue with next component pattern (otherwise this would produce a hugh amount of matched patterns)
                 continue;
@@ -516,8 +517,9 @@ public class ComponentPatternProducer {
 
                             final File file = new File(normalizedPath);
                             final String assetIdChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
-                            matchedComponentPatterns.add(new MatchResult(copyCpd, file,
-                                    computeComponentBaseDir(rootDir, file, normalizedVersionAnchor), assetIdChain));
+                            final File virtualRootDir = new File(rootDir.getPath(), artifact.get(VIRTUAL_ROOT_PATH));
+                            matchedComponentPatterns.add(new MatchResult(copyCpd, file, rootDir, virtualRootDir,
+                                    computeComponentBaseDir(virtualRootDir, file, normalizedVersionAnchor), assetIdChain));
                         }
                     }
                 }

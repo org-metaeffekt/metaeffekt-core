@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
+import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
@@ -30,7 +31,9 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
+import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 /**
  * Contributes to the inventory managed by {@link FileSystemScanContext}.
@@ -45,8 +48,11 @@ public class FileCollectTask extends ScanTask {
 
     private FileRef fileRef;
 
-    public FileCollectTask(FileRef fileRef, List<String> assetIdChain) {
+    private final VirtualContext virtualContext;
+
+    public FileCollectTask(FileRef fileRef, VirtualContext virtualContext, List<String> assetIdChain) {
         super(assetIdChain);
+        this.virtualContext = virtualContext;
         this.fileRef = fileRef;
     }
 
@@ -68,7 +74,7 @@ public class FileCollectTask extends ScanTask {
 
         final Artifact artifact = new Artifact();
         artifact.setId(fileName);
-        final String relativePath = FileUtils.asRelativePath(fileSystemScanContext.getBaseDir().getPath(), filePath);
+        final String relativePath = asRelativePath(fileSystemScanContext.getBaseDir().getPath(), filePath);
         artifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
         artifact.set(KEY_PATH_IN_ASSET, relativePath);
 
@@ -101,6 +107,8 @@ public class FileCollectTask extends ScanTask {
 
         attachEmbeddedPath(artifact, relativePath);
 
+        artifact.set(VIRTUAL_ROOT_PATH, asRelativePath(fileSystemScanContext.getBaseDir().getPath(), virtualContext.getVirtualBaseDirRef().getPath()));
+
         fileSystemScanContext.contribute(artifact);
     }
 
@@ -125,5 +133,4 @@ public class FileCollectTask extends ScanTask {
             }
         }
     }
-
 }
