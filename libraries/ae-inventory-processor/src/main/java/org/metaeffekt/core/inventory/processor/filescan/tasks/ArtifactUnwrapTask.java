@@ -111,7 +111,7 @@ public class ArtifactUnwrapTask extends ScanTask {
         if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap) && unpackIfPossible(file, targetFolder, issues)) {
             // unpack successful...
 
-            final boolean implicitExclude = !explicitInclude && !explicitUnrwap && !explicitNoUnrwap;
+            final boolean implicitExclude = !explicitInclude && !explicitUnrwap;
 
             boolean markForDelete = false;
 

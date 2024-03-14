@@ -18,6 +18,7 @@
         <module>ae-merge-inventory-test</module>
         <module>ae-attach-asset-metadata-test</module>
         <module>ae-inventory-subjects-itest</module>
+        <module>ae-inventory-container-itest</module>
     </modules>
 
     <build>
