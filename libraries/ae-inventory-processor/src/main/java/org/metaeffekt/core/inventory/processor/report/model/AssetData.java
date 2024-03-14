@@ -31,6 +31,7 @@ public class AssetData {
     private Map<String, Set<String>> individualLicenseAssetIdMap = new HashMap<>();
 
     private Set<String> associatedLicenses = new HashSet<>();
+
     private Set<String> representedAssociatedLicenses = new HashSet<>();
 
     private Map<String, AssetLicenseData> assetIdAssetLicenseDataMap = new HashMap<>();
@@ -47,8 +48,7 @@ public class AssetData {
     }
 
     private void insertData(Inventory filteredInventory) {
-        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap =
-                buildAssetToArtifactMap(filteredInventory);
+        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = buildAssetToArtifactMap(filteredInventory);
 
         for (Map.Entry<AssetMetaData, Set<Artifact>> entry : assetMetaDataToArtifactsMap.entrySet()) {
 
@@ -72,12 +72,13 @@ public class AssetData {
                     String representedAsLicense = evaluateRepresetedAs(associatedLicense, licenseData);
                     representedAssociatedLicenses.add(representedAsLicense);
 
-                    // contribute to representedLiceses maps
+                    // contribute to representedLicenses maps
                     representedLicenseLicensesMap.computeIfAbsent(representedAsLicense, c -> new HashSet<>()).add(associatedLicense);
                     representedLicenseAssetIdMap.computeIfAbsent(representedAsLicense, c -> new HashSet<>()).add(assetId);
 
                     // contribute assetId to associatedLicense
                     individualLicenseAssetIdMap.computeIfAbsent(associatedLicense, c -> new HashSet<>()).add(assetId);
+                    individualLicenseAssetIdMap.computeIfAbsent(representedAsLicense, c -> new HashSet<>()).add(assetId);
 
                     // contribute license to asset
                     assetIdAssociatedLicenseMap.computeIfAbsent(assetId, c -> new HashSet<>()).add(associatedLicense);
@@ -113,8 +114,6 @@ public class AssetData {
         final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = new HashMap<>();
 
         // the report only operates on the specified assets (these may be filtered for the use case)
-        final Set<String> assetIds = InventoryUtils.collectAssetIdsFromAssetMetaData(filteredInventory);
-
         for (AssetMetaData assetMetaData : filteredInventory.getAssetMetaData()) {
 
             final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
@@ -212,8 +211,8 @@ public class AssetData {
     }
 
     public List<AssetLicenseData> evaluateAssets(String individualLicense) {
-        List<AssetLicenseData> assetLicenseDataList = new ArrayList<>();
-        Set<String> assetIds = individualLicenseAssetIdMap.get(individualLicense);
+        final List<AssetLicenseData> assetLicenseDataList = new ArrayList<>();
+        final Set<String> assetIds = individualLicenseAssetIdMap.get(individualLicense);
         if (assetIds != null) {
             for (String assetId : assetIds) {
                 final AssetLicenseData assetLicenseData = assetIdAssetLicenseDataMap.get(assetId);

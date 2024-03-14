@@ -100,6 +100,7 @@ public class DirectoryInventoryScan {
         LOG.info("Scanning directory [{}]...", directoryToScan.getAbsolutePath());
 
         final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
+
         final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
 
         fileSystemScanExecutor.execute();
