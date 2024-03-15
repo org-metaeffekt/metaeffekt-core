@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -305,8 +306,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return entries;
     }
 
-    public boolean hasFileChanged(File baseDir, String relativeFilePath, String md5Checksum) {
-        File toCheck = new File(baseDir, relativeFilePath);
+    public boolean hasFileChanged(String virtualRootPath, String relativeFilePath, String md5Checksum) {
+        File toCheck = new File(virtualRootPath, relativeFilePath);
 
         return hasFileChangedMd5(toCheck, md5Checksum);
     }
@@ -347,13 +348,13 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
     /**
      * Reads list of files that were in this package and tries to create an include pattern.
-     * @param virtualRoot the virtual "root" that pseudo-absolute paths will be based on
+     * @param virtualRootPath the virtual "root" that pseudo-absolute paths will be based on
      * @param checksum the checksum of the anchor
      * @param entry the entry in the corresponding status file
      * @param correspondingMd5sumsFile the corresponding md5sums file
      * @return a joiner with resulting include patterns or null on failure
      */
-    public StringJoiner createIncludePatternsFromHashFile(File virtualRoot,
+    public StringJoiner createIncludePatternsFromHashFile(String virtualRootPath,
                                                           String checksum,
                                                           DpkgStatusFileEntry entry,
                                                           File correspondingMd5sumsFile) {
@@ -385,7 +386,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 }
 
                 // use the checksum to detect and handle changed files
-                if (hasFileChanged(virtualRoot, toAdd, checksum)) {
+                if (hasFileChanged(virtualRootPath, toAdd, checksum)) {
                     // changed files might contain modifications and not truly be part of this package any more.
 
                     // handle this by skipping this line
@@ -426,6 +427,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     }
 
     public List<ComponentPatternData> contributeStatusFileBased(File baseDir,
+                                                                String virtualRootPath,
                                                                 String relativeAnchorFilePath,
                                                                 String checksum) {
         final File anchorFile = new File(baseDir, relativeAnchorFilePath);
@@ -478,21 +480,16 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 correspondingMd5sumsFile = fileWithArch;
 
                 if (!fileWithoutArch.exists()) {
-                    LOG.error("Can't create ComponentPattern: No m5sums file found for package [{}].",
+                    LOG.error("Can't create ComponentPattern: No md5sums file found for package [{}].",
                             entry.packageName);
                 }
             }
 
-            // compute pseudoroot
-            File virtualRoot = anchorFile.getParentFile().getParentFile().getParentFile().getParentFile();
+            // get path of virtual root
+            Path virtualRoot = new File(virtualRootPath).toPath();
+            Path relativeAnchorFile = new File(relativeAnchorFilePath).toPath();
             // create patterns
-            if (!virtualRoot.exists()) {
-                LOG.warn("Should never happen: computed virtual root [{}] does not exist",
-                        virtualRoot.getAbsolutePath());
-                throw new ContributorFailureException("Should never happen: computed virtual root did not exist.");
-            }
-
-            StringJoiner includePatternsJoiner = createIncludePatternsFromHashFile(virtualRoot,
+            StringJoiner includePatternsJoiner = createIncludePatternsFromHashFile(baseDir + "/" + virtualRootPath,
                     checksum, entry, correspondingMd5sumsFile);
 
             if (includePatternsJoiner == null) {
@@ -501,7 +498,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             }
 
             ComponentPatternData cpd = createComponentPattern(
-                    virtualRoot.toPath().relativize(anchorFile.toPath()).toString(),
+                    virtualRoot.relativize(relativeAnchorFile).toString(),
                     entry,
                     checksum,
                     includePatternsJoiner.toString()
@@ -518,12 +515,13 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     /**
      * Tries to get metadata from dpkg status.d. Useful for "distroless" images.<br>
      * Hacked together to support a system that didn't have a status file but only a status.d.
-     * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String)}
-     * @return same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @return same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      */
     public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
+                                                                     String virtualRootPath,
                                                                      String relativeAnchorFilePath,
                                                                      String checksum) {
         final File md5sumsFile = new File(baseDir, relativeAnchorFilePath);
@@ -581,11 +579,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             throw new ContributorFailureException("Should never happen: computed virtual root did not exist.");
         }
 
-        StringJoiner includesJoiner = createIncludePatternsFromHashFile(virtualRoot,
+        StringJoiner includesJoiner = createIncludePatternsFromHashFile(virtualRootPath,
                 checksum, entry, md5sumsFile);
 
         ComponentPatternData cpd = createComponentPattern(
-                virtualRoot.toPath().relativize(md5sumsFile.toPath()).toString(),
+                baseDir.toPath().relativize(md5sumsFile.toPath()).toString(),
                 entry,
                 checksum,
                 includesJoiner.toString()
@@ -599,11 +597,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return createdComponentPatterns;
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
         if (relativeAnchorFilePath.endsWith("status")) {
-            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
+            return contributeStatusFileBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
-            return contributeStatusDirectoryBased(baseDir, relativeAnchorFilePath, checksum);
+            return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else {
             throw new ContributorFailureException("Should never happen: identified anchor wasn't of expected type.");
         }

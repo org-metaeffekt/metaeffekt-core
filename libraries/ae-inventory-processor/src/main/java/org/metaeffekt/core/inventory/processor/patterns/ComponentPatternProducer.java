@@ -176,7 +176,7 @@ public class ComponentPatternProducer {
 
             try {
                 // try to apply contributors
-                final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir, pathInContext, checksum);
+                final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir, artifact.get(VIRTUAL_ROOT_PATH), pathInContext, checksum);
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {

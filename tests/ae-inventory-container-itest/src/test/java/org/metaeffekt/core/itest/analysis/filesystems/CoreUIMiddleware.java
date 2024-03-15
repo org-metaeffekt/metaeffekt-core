@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.container.filesystems;
+package org.metaeffekt.core.itest.analysis.filesystems;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
@@ -35,16 +34,16 @@ import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.id
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 
-public class Cryptpad extends AbstractCompositionAnalysisTest {
+public class CoreUIMiddleware extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-cryptpad@f4d20d5c38c87b11ed1a1b46ef6a3633d32c6758ebdff8556458f040318fa5e2-export.tar")
-                .setSha256Hash("f37a5037210a4afa1cc5badea2c8121f9cd48a192d3e415cc691fe51883d4036")
-                .setName(Cryptpad.class.getName());
+                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-core-ui-middleware@8082edf30498a3ac1715f2d9b3e406f240ea586e2616b97f40c207ef55dff11f-export.tar")
+                .setSha256Hash("c0e44a39a8dfd6d839a1f82c8665cd249c4c557794fce1f33fe2d45b8a0621e0")
+                .setName(CoreUIMiddleware.class.getName());
     }
 
     @Ignore
@@ -65,7 +64,7 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
     @Test
     public void typesMustBeSetPredicate() {
         getAnalysis()
-                .selectArtifacts(Not.not(AttributeExists.withAttribute(Attribute.TYPE)))
+                .selectArtifacts(not(withAttribute(TYPE)))
                 .assertEmpty();
     }
 
@@ -74,7 +73,7 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
     @Test
     public void noErrorsExist() {
         getAnalysisAfterInvariantCheck()
-                .selectArtifacts(AttributeExists.withAttribute(Attribute.ERRORS))
+                .selectArtifacts(withAttribute(ERRORS))
                 .assertEmpty();
     }
 
@@ -83,10 +82,10 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
     @Test
     public void versionMismatch() {
         getAnalysis()
-                .selectArtifacts(AttributeExists.withAttribute(Attribute.VERSION))
+                .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
                 .logList()
-                .assertEmpty(IdMismatchesVersion.idMismatchesVersion());
+                .assertEmpty(idMismatchesVersion());
     }
 
     @Ignore
@@ -94,12 +93,12 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
     public void testPredicatePrimitives() {
         getAnalysis()
                 .selectArtifacts()
-                .assertEmpty(BooleanPredicate.alwaysFalse())
-                .assertNotEmpty(BooleanPredicate.alwaysTrue())
+                .assertEmpty(alwaysFalse())
+                .assertNotEmpty(alwaysTrue())
                 .logListWithAllAttributes()
                 .logInfo()
                 .logInfo("Typed List:")
-                .filter(AttributeExists.withAttribute(Attribute.TYPE))
+                .filter(withAttribute(TYPE))
                 .as("Artifact has Type")
                 .assertNotEmpty()
                 .logListWithAllAttributes();
@@ -112,7 +111,7 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
         getAnalysis()
                 .selectArtifacts()
                 .logInfo("List with a Name:")
-                .filter(AttributeExists.withAttribute(Attribute.TYPE)).as("Artifact has Type")
+                .filter(withAttribute(TYPE)).as("Artifact has Type")
                 .assertEmpty();
 
     }
@@ -133,9 +132,9 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts().logListWithAllAttributes();
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
-        analysis.selectArtifacts(TokenStartsWith.tokenStartsWith(Attribute.ID, "jenkins", ",")).hasSizeOf(6);
-        analysis.selectArtifacts(TokenStartsWith.tokenStartsWith(Attribute.ID, "spring")).hasSizeOf(9);
-        analysis.selectArtifacts(TokenStartsWith.tokenStartsWith(Attribute.ID, "jakarta")).hasSizeOf(5);
-        analysis.selectArtifacts(TokenStartsWith.tokenStartsWith(Attribute.ID, "javax")).hasSizeOf(2);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(6);
+        analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
+        analysis.selectArtifacts(tokenStartsWith(ID, "javax")).hasSizeOf(2);
     }
 }

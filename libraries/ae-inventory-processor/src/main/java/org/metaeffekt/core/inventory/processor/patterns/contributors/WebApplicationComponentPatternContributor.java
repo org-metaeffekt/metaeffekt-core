@@ -42,7 +42,7 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
         return pathInContext.toLowerCase(PATH_LOCALE).endsWith("/web-inf/web.xml");
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);
             final File contextBaseDir = anchorFile.getParentFile().getParentFile();

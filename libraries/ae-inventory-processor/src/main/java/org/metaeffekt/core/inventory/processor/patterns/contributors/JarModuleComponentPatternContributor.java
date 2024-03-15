@@ -44,7 +44,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         JarInspector jarInspector = new JarInspector();
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);

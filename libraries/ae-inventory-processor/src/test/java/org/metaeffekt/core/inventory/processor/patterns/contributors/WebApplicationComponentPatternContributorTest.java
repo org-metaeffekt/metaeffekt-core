@@ -33,7 +33,7 @@ public class WebApplicationComponentPatternContributorTest {
     public void testVariant001() {
         final File file = new File("src/test/resources/component-pattern-contributor/web-app-001/web.xml");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "web.xml", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParentFile().getPath(), "web.xml", FileUtils.computeMD5Checksum(file));
         assertThat(cpdList.size()).isEqualTo(1);
 
         final ComponentPatternData cpd = cpdList.get(0);
@@ -47,7 +47,7 @@ public class WebApplicationComponentPatternContributorTest {
     public void testVariant002() {
         File file = new File("src/test/resources/component-pattern-contributor/web-app-002/web.xml");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "web.xml", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "web.xml", FileUtils.computeMD5Checksum(file));
         assertThat(cpdList.size()).isEqualTo(1);
 
         final ComponentPatternData cpd = cpdList.get(0);

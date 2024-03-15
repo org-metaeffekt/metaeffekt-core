@@ -109,7 +109,7 @@ public class ComponentPatternContributorRunner {
      * @param checksum as in {@link ComponentPatternContributor}
      * @return returns a list of generated component patterns
      */
-    public List<ComponentPatternData> run(File baseDir, String relativeAnchorFilePath, String checksum) {
+    public List<ComponentPatternData> run(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
         Objects.requireNonNull(relativeAnchorFilePath);
 
         String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(
@@ -123,7 +123,7 @@ public class ComponentPatternContributorRunner {
                     // this needs the second layer of applies checks
                     if (contributor.applies(relativeAnchorFilePath)) {
                         List<ComponentPatternData> componentPatterns =
-                                contributor.contribute(baseDir, relativeAnchorFilePath, checksum);
+                                contributor.contribute(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
 
                         for (ComponentPatternData componentPattern : componentPatterns) {
                             componentPattern.setContext(contributor.getClass().getName());

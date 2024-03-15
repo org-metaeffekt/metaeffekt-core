@@ -37,7 +37,7 @@ public class NordeckAppComponentPatternContributor extends ComponentPatternContr
         return pathInContext.endsWith("app/lib/licenses.json");
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);
             final File contextBaseDir = anchorFile.getParentFile().getParentFile();
