@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.analysis.filesystems;
+package org.metaeffekt.core.itest.container;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -40,6 +40,7 @@ public class CoreUIMiddleware extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() {
+        // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-core-ui-middleware@8082edf30498a3ac1715f2d9b3e406f240ea586e2616b97f40c207ef55dff11f-export.tar")
                 .setSha256Hash("c0e44a39a8dfd6d839a1f82c8665cd249c4c557794fce1f33fe2d45b8a0621e0")

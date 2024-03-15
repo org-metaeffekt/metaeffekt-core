@@ -18,7 +18,6 @@
         <module>ae-merge-inventory-test</module>
         <module>ae-attach-asset-metadata-test</module>
         <module>ae-inventory-subjects-itest</module>
-        <module>ae-inventory-container-itest</module>
     </modules>
 
     <build>
@@ -46,6 +45,13 @@
             <id>container-tests</id>
             <modules>
                 <module>extractor-tests</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>run-container-tests</id>
+            <modules>
+                <module>ae-inventory-container-itest</module>
             </modules>
         </profile>
     </profiles>

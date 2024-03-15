@@ -46,7 +46,7 @@ public class DpkgPackageContributorTest {
         if (isWindows()) return;
 
         List<ComponentPatternData> list =
-                cpc.contribute(cpcTestBaseDir, "/", "6f72a28d5456b9a7f1af6f25f029afe9", "var/lib/dpkg/status");
+                cpc.contribute(cpcTestBaseDir, cpcTestBaseDir.getParent(), "var/lib/dpkg/status", "6f72a28d5456b9a7f1af6f25f029afe9");
 
         boolean foundArchlessPackage = false;
         boolean foundArchPackage = false;
