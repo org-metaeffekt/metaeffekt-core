@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Properties;

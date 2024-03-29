@@ -30,7 +30,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.*;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
 
 public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{

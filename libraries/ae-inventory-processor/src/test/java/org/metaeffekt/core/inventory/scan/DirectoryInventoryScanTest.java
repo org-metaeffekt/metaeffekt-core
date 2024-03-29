@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;

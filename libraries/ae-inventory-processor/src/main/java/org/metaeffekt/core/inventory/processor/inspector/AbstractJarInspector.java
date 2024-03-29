@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.inspector;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
-import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;

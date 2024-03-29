@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.io.File;
 

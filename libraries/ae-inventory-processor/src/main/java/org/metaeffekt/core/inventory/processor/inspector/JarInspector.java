@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CHECKSUM;
 
 /**

@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.inspector;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
-import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -28,7 +27,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.HINT_SCAN;

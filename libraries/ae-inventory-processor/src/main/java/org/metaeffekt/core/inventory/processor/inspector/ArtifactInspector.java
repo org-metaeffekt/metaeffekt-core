@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.inspector;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.Properties;

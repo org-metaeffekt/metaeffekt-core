@@ -19,12 +19,7 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.ComponentPatternContributor;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class ComponentPatternContributorRunner {
     /**

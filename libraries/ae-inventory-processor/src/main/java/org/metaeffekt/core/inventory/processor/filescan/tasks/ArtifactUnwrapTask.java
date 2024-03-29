@@ -27,11 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;

@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpException;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -29,7 +30,6 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.URI;

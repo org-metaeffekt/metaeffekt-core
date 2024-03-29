@@ -22,11 +22,9 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 public class MatchResult {

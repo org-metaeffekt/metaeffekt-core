@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -27,7 +28,6 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.URI;

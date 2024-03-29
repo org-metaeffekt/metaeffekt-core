@@ -16,9 +16,7 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Data container for assets and {@link LicenseMetaData}. Helps to collect license information around a given

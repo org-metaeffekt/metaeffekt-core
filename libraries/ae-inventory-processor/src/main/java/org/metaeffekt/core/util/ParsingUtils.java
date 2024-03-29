@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.util;
 
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 
 import java.util.List;
 

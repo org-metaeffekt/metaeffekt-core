@@ -26,11 +26,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class XWikiExtensionComponentPatternContributor extends ComponentPatternContributor {
 
