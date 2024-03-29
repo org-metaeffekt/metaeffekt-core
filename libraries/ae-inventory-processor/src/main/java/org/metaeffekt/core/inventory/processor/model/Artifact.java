@@ -73,7 +73,11 @@ public class Artifact extends AbstractModelBase {
         // project locations
         PROJECTS("Projects"),
 
-        VERIFIED("Verified");
+        VERIFIED("Verified"),
+        ERRORS("Errors"),
+        HASH_SHA256("Hash (SHA-256)"),
+        PATH_IN_ASSET("Path in Asset"),
+        VIRTUAL_ROOT_PATH("Virtual Root Path");
 
         private String key;
 

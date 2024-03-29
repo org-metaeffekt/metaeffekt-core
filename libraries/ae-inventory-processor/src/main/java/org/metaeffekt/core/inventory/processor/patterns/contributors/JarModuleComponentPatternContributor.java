@@ -18,25 +18,33 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
+
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/pom.xml");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
-        pathInContext = pathInContext.toLowerCase();
+        pathInContext = pathInContext.toLowerCase(PATH_LOCALE);
         return (pathInContext.contains("/meta-inf/maven/") && pathInContext.endsWith("/pom.xml"));
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         JarInspector jarInspector = new JarInspector();
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
@@ -102,7 +110,14 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         // contribute groupid (consider also other attributes)
         componentPatternData.set("Group Id", artifact.getGroupId());
 
+        componentPatternData.set(Constants.KEY_TYPE, "jar-component");
+
         return Collections.singletonList(componentPatternData);
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private void mergeArtifact(Artifact artifact, Artifact fromXml) {

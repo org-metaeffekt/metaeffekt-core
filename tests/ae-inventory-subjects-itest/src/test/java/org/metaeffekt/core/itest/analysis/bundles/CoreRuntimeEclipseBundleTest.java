@@ -27,6 +27,8 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
 public class CoreRuntimeEclipseBundleTest extends AbstractCompositionAnalysisTest {
@@ -64,12 +66,12 @@ public class CoreRuntimeEclipseBundleTest extends AbstractCompositionAnalysisTes
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logArtifactList();
+        analysis.selectArtifacts().logList();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue("Id", "org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "3.24.0.v20210910-0750")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "org.eclipse.core.runtime_3.24.0.v20210910-0750.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "3.24.0.v20210910-0750")).hasSizeOf(1);
 
         analysis.selectArtifacts().hasSizeOf(1);
 

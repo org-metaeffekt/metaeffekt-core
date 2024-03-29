@@ -15,8 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.metaeffekt.core.util.FileUtils;
-
 public final class Constants {
 
     public static final String ASTERISK = "*";
@@ -24,6 +22,9 @@ public final class Constants {
     public static final String VERSION_PLACHOLDER_SUFFIX = "}";
     public static final String DOT = ".";
     public static final String SLASH = "/";
+    public static final String SPACE = " ";
+    public static final String UNDERSCORE = "_";
+    public static final String HYPHEN = "-";
     public static final String DOT_SLASH = DOT + SLASH;
 
     public static final String STRING_EMPTY = "";

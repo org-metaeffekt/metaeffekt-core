@@ -15,22 +15,22 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class ContainerComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String> (){{
+        add("/json");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
@@ -38,7 +38,7 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File contextBaseDir = anchorFile.getParentFile();
@@ -74,6 +74,11 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
 
         return Collections.emptyList();
 
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     boolean isContainerMetadata(String artifactPath) {

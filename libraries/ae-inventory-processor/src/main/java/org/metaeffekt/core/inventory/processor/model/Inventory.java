@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -1932,7 +1931,6 @@ public class Inventory implements Serializable {
         }
 
         final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
-
         // header and separator
         final String header = rearrangedAttributeWidths.entrySet().stream()
                 .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
@@ -1953,11 +1951,9 @@ public class Inventory implements Serializable {
     }
 
     protected static Map<String, Integer> logModelRearrangeAttributes(Map<String, Integer> attributeWidths) {
-        final List<String> desiredOrder = Stream.of(
-                Artifact.Attribute.ID, VulnerabilityMetaData.Attribute.NAME, Artifact.Attribute.COMPONENT,
-                Artifact.Attribute.VERSION, Artifact.Attribute.GROUPID, Artifact.Attribute.TYPE, Artifact.Attribute.URL,
-                VulnerabilityMetaData.Attribute.URL, VulnerabilityMetaData.Attribute.PRODUCT_URIS
-        ).map(AbstractModelBase.Attribute::getKey).collect(Collectors.toList());
+        final List<String> desiredOrder = Arrays.asList(
+                "Id", "Name", "Component", "Version", "Group Id", "Type", "URL", "Url", "Vulnerability", "Product URIs", "CPE URIs"
+        );
         return attributeWidths.entrySet().stream()
                 .sorted(Comparator.comparing(entry -> {
                     final int index = desiredOrder.indexOf(entry.getKey());

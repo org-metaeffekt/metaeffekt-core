@@ -22,18 +22,24 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
-import static org.metaeffekt.core.itest.common.predicates.IdMissmatchesVersion.idMismatchesVersion;
+import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.idMismatchesVersion;
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
+import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.getTokenAtPosition;
+import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 
 public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
@@ -74,7 +80,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void noErrorsExist() {
         getAnalysisAfterInvariantCheck()
-                .selectArtifacts(withAttribute("Errors"))
+                .selectArtifacts(withAttribute(ERRORS))
                 .assertEmpty();
     }
 
@@ -85,7 +91,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         getAnalysis()
                 .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
-                .logArtifactList()
+                .logList()
                 .assertEmpty(idMismatchesVersion());
     }
 
@@ -94,15 +100,15 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     public void testPredicatePrimitives() {
         getAnalysis()
                 .selectArtifacts()
-                .assertEmpty(alwaysFalse)
-                .assertNotEmpty(alwaysTrue)
-                .logArtifactListWithAllAtributes()
+                .assertEmpty(alwaysFalse())
+                .assertNotEmpty(alwaysTrue())
+                .logListWithAllAttributes()
                 .logInfo()
                 .logInfo("Typed List:")
                 .filter(withAttribute(TYPE))
                 .as("Artifact has Type")
                 .assertNotEmpty()
-                .logArtifactListWithAllAtributes();
+                .logListWithAllAttributes();
 
     }
 
@@ -127,13 +133,38 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory = testSetup.getInventory();
-
-        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
-
         Analysis analysis = new Analysis(inventory);
 
+        analysis.selectArtifacts().logListWithAllAttributes();
+        List<String> prefixes = new ArrayList<>();
+        for (Artifact artifact : inventory.getArtifacts()) {
+            prefixes.add(getTokenAtPosition(artifact.get(ID), 0));
+        }
+        prefixes = prefixes.stream().distinct().collect(Collectors.toList());
+        LOG.info("Prefixes: {}", prefixes);
 
+        analysis.selectArtifacts().hasSizeGreaterThan(1);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(6);
+        analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
+        analysis.selectArtifacts(tokenStartsWith(ID, "javax")).hasSizeOf(2);
     }
 
+    @Test
+    public void testCompositionAsset() throws Exception {
+        final Inventory inventory = testSetup.getInventory();
+        Analysis analysis = new Analysis(inventory);
+        analysis.selectAssets().hasSizeGreaterThan(1);
+        analysis.selectAssets().logListWithAllAttributes();
+    }
 
+    @Test
+    public void testCompositionComponentPattern() throws Exception {
+        final Inventory inventory = testSetup.getInventory();
+
+        Analysis analysis = new Analysis(inventory);
+        analysis.selectComponentPatterns().hasSizeGreaterThan(1);
+        ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
+        componentPatternList.logListWithAllAttributes();
+    }
 }

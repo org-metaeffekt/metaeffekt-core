@@ -47,6 +47,13 @@
                 <module>extractor-tests</module>
             </modules>
         </profile>
+
+        <profile>
+            <id>run-container-tests</id>
+            <modules>
+                <module>ae-inventory-container-itest</module>
+            </modules>
+        </profile>
     </profiles>
 
 </project>

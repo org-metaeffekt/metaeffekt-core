@@ -24,7 +24,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.common.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
+import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.ID_MISMATCHING_VERSION;
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
 
@@ -57,7 +57,7 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
     public void versionMismatch() {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts(ID_MISMATCHING_VERSION)
-                .logArtifactList("Type")
+                .logList("Type")
                 .assertEmpty();
     }
 

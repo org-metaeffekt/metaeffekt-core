@@ -22,17 +22,22 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class NordeckAppComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+            add("app/lib/licenses.json");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
         return pathInContext.endsWith("app/lib/licenses.json");
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);
             final File contextBaseDir = anchorFile.getParentFile().getParentFile();
@@ -63,6 +68,11 @@ public class NordeckAppComponentPatternContributor extends ComponentPatternContr
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
 }

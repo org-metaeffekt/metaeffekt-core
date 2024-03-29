@@ -33,7 +33,7 @@ public class JettyComponentPatternContributorTest {
     public void testVariant001() {
         File file = new File("src/test/resources/component-pattern-contributor/jetty-001/VERSION.txt");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(),
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(),
                 "VERSION.txt", FileUtils.computeMD5Checksum(file));
 
         assertThat(cpdList.size()).isEqualTo(1);

@@ -28,11 +28,10 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.matchers.ArtifactListMatcher.Cardinality.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.IdStartsWith.idStartsWith;
+import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class FbmsWarTest extends AbstractCompositionAnalysisTest {
 
@@ -67,8 +66,8 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
                 .setCardinality(SUPERSET)
                 .setAttributes("CHECKSUM", VERSION.getKey());
         artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
-        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
+        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
     }
 
     @Test
@@ -80,8 +79,8 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
                 .setCardinality(EQUAL)
                 .setAttributes("CHECKSUM", VERSION.getKey());
         artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
-        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
+        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
     }
 
     @Test
@@ -92,8 +91,8 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
                 .setCardinality(SUBSET)
                 .setAttributes("CHECKSUM", VERSION.getKey());
         artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logArtifactListWithAllAtributes();
-        artifactListMatcher.getListOfMissing().logArtifactListWithAllAtributes();
+        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
+        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
     }
 
     @Test
@@ -104,27 +103,27 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(idStartsWith("jackson")).hasSizeOf(6);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "com.fasterxml.jackson.core")).hasSizeOf(3);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "com.fasterxml.jackson.datatype")).hasSizeOf(2);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "com.fasterxml.jackson.module")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(ID, "jackson")).hasSizeOf(6);
+        analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.core")).hasSizeOf(3);
+        analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.datatype")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.module")).hasSizeOf(1);
 
-        analysis.selectArtifacts(idStartsWith("spring-")).hasSizeOf(34);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.springframework.data")).hasSizeOf(2);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.springframework.hateoas")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.springframework.plugin")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(ID, "spring-")).hasSizeOf(34);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.data")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.hateoas")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.plugin")).hasSizeOf(2);
 
-        analysis.selectArtifacts(idStartsWith("hibernate")).hasSizeOf(4);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.hibernate.validator")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(ID, "hibernate")).hasSizeOf(4);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.hibernate.validator")).hasSizeOf(1);
 
-        analysis.selectArtifacts(idStartsWith("log")).hasSizeOf(5);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "org.apache.logging.log4j")).hasSizeOf(2);
-        analysis.selectArtifacts(attributeValue(Artifact.Attribute.GROUPID, "ch.qos.logback")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(ID, "log")).hasSizeOf(5);
+        analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.logging.log4j")).hasSizeOf(2);
+        analysis.selectArtifacts(attributeValue(GROUPID, "ch.qos.logback")).hasSizeOf(2);
 
-        analysis.selectArtifacts(idStartsWith("springfox")).hasSizeOf(7);
+        analysis.selectArtifacts(startsWith(ID, "springfox")).hasSizeOf(7);
         analysis.selectArtifacts(attributeValue(VERSION, "2.8.0")).hasSizeOf(7);
 
-        analysis.selectArtifacts(idStartsWith("tomcat")).hasSizeOf(3);
+        analysis.selectArtifacts(startsWith(ID, "tomcat")).hasSizeOf(3);
         analysis.selectArtifacts(attributeValue(VERSION, "8.5.31")).hasSizeOf(3);
 
     }

@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
+import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
@@ -55,8 +57,8 @@ public class ArtifactUnwrapTask extends ScanTask {
         final String path = artifact.get(ATTRIBUTE_KEY_ARTIFACT_PATH);
         final FileRef fileRef = new FileRef(fileSystemScanContext.getBaseDir().getPath() + "/" + path);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing " + getClass().getName() + " on: " + fileRef);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Executing [{}] on: [{}]", getClass().getName(), fileRef.getFile().getAbsolutePath());
         }
 
         // unknown or requires expansion
@@ -109,7 +111,7 @@ public class ArtifactUnwrapTask extends ScanTask {
         if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap) && unpackIfPossible(file, targetFolder, issues)) {
             // unpack successful...
 
-            final boolean implicitExclude = !explicitInclude && !explicitUnrwap && !explicitNoUnrwap;
+            final boolean implicitExclude = !explicitInclude && !explicitUnrwap;
 
             boolean markForDelete = false;
 
@@ -134,9 +136,10 @@ public class ArtifactUnwrapTask extends ScanTask {
             }
 
             // trigger collection of content
-            LOG.info("Collecting subtree on {}.", fileRef.getPath());
+            LOG.info("Collecting subtree on [{}].", fileRef.getPath());
             final FileRef dirRef = new FileRef(targetFolder);
-            fileSystemScanContext.push(new DirectoryScanTask(dirRef,
+            VirtualContext virtualContext = new VirtualContext(dirRef);
+            fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
                     rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext)));
         } else {
             // compute md5 to support component patterns (candidates for unwrap did not receive a checksum before)
@@ -148,6 +151,20 @@ public class ArtifactUnwrapTask extends ScanTask {
             }
 
             // the asset id chain remains as is
+        }
+
+        // record issues in the artifact that is being processed
+        StringJoiner issueJoiner = new StringJoiner(", ");
+        if (artifact.get("Errors") != null) {
+            issueJoiner.add(artifact.get("Errors"));
+        }
+        for (String issue : issues) {
+            issueJoiner.add(issue);
+        }
+
+        String joinedErrors = issueJoiner.toString();
+        if (StringUtils.isNotBlank(joinedErrors)) {
+            artifact.set("Errors", joinedErrors);
         }
     }
 
