@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+@SuppressWarnings("unused")
 public class KubernetesContainerCommandProcess extends Process implements AutoCloseable {
     private boolean closed = false;
 
@@ -36,6 +37,11 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
     private final ByteArrayOutputStream standardErrRedirected;
 
     private final Buffering bufferType;
+
+    /**
+     * Store the command that is being executed for later reference.
+     */
+    private final String[] command;
 
     public enum Buffering {
         /**
@@ -54,6 +60,7 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
         this.standardOutRedirected = new ByteArrayOutputStream();
         this.standardErrRedirected = new ByteArrayOutputStream();
 
+        this.command = command;
         this.watch = runnerPod
                 .redirectingInput()
                 .writingOutput(standardOutRedirected)
@@ -98,7 +105,8 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
     @Override
     public void destroy() {
         try {
-            // the api doesn't seem to provide a way to exit forcibly, so we close
+            // the api doesn't seem to provide a way to exit forcibly, so we close gracefully.
+            // should the process absolutely need to end, we need to delete and reinstantiate the pod
             watch.close();
             close();
         } catch (Exception e) {
@@ -150,5 +158,13 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
     public byte[] getAllStdErr() {
         ensureBuffering();
         return this.standardErrRedirected.toByteArray();
+    }
+
+    /**
+     * Gets the command that is being executed.
+     * @return the command that was executed
+     */
+    public String[] getCommand() {
+        return command;
     }
 }

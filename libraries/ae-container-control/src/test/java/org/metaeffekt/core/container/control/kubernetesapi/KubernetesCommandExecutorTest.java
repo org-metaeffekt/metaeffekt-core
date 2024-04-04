@@ -31,7 +31,10 @@ public class KubernetesCommandExecutorTest {
 
     @Test
     public void testContainerCreationHelloWorld() throws Exception {
-        try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor("docker.io/debian:latest")) {
+        try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor(
+                "ae-container-control",
+                "docker.io/debian:latest")
+        ) {
             try (KubernetesContainerCommandProcess commandProcess =
                          exec.executeCommand("echo", "hello devil of cursed commands!")) {
 
@@ -50,7 +53,7 @@ public class KubernetesCommandExecutorTest {
 
     @Test
     public void testContainerCreationCursedCommands() throws Exception {
-        try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor("debian:latest")) {
+        try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor("ae-container-control", "debian:latest")) {
             try (KubernetesContainerCommandProcess commandProcess = exec.executeCommand("cat", "/dev/urandom")) {
                 assertFalse("Timeout wasn't reached against expectation.",
                         commandProcess.waitFor(2, TimeUnit.SECONDS)
@@ -61,7 +64,7 @@ public class KubernetesCommandExecutorTest {
 
     @Test
     public void testContainerCreationWithLargeBufferedOutput() throws Exception {
-        try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor("debian:latest")) {
+        try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor("ae-container-control", "debian:latest")) {
             try (KubernetesContainerCommandProcess commandProcess =
                          exec.executeCommand("head", "-c", "536870912", "/dev/urandom")) {
                 // should finish on any reasonably fast machine

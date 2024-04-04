@@ -16,6 +16,10 @@
 package org.metaeffekt.core.container.control.exception;
 
 public class CommandExecutionFailed extends Exception {
+    public CommandExecutionFailed(String message, Exception e) {
+        super(message, e);
+    }
+
     public CommandExecutionFailed(String message) {
         super(message);
     }

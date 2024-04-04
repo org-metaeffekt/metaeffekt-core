@@ -19,6 +19,8 @@ import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.PodResource;
@@ -26,6 +28,13 @@ import io.fabric8.kubernetes.client.dsl.PodResource;
 import java.nio.file.Path;
 import java.util.UUID;
 
+/**
+ * Abstracts an "environment for running commands in".
+ * <br>
+ * Must guarantee that the environment doesn't change erratically between commands unless modified by the commands
+ * themselves.
+ */
+@SuppressWarnings("unused")
 public class KubernetesCommandExecutor implements AutoCloseable {
     private boolean closed = false;
 
@@ -33,22 +42,36 @@ public class KubernetesCommandExecutor implements AutoCloseable {
     private final Pod reservedPod;
 
     /**
-     * Note that changing this will create another namespace on clients, old namespace may require manual deletion.
+     * A default namespace for use with this tool. This may (should) not be the "default" namespace of kubernetes.
      */
-    public static final String namespaceName = "ae-container-control";
+    @SuppressWarnings("unused")
+    public static final String defaultNamespace = "ae-container-control";
 
     /**
      * Creates a new object.
+     *
+     * @param namespace       namespace to use for creation of resources
      * @param imageIdentifier identifier of the container image to use in creation
      */
-    public KubernetesCommandExecutor(String imageIdentifier) {
+    public KubernetesCommandExecutor(String namespace, String imageIdentifier) {
+        this(new ConfigBuilder().build(), namespace, imageIdentifier);
+    }
+
+    /**
+     * Creates a new object.
+     *
+     * @param kubeconfig      kubeconfig for client creation, null for default config
+     * @param namespaceName   namespace to use for creation of resources
+     * @param imageIdentifier identifier of the container image to use in creation
+     */
+    public KubernetesCommandExecutor(Config kubeconfig, String namespaceName, String imageIdentifier) {
         KubernetesClient client = null;
         try {
             // TODO: constructor overloads that allow configuration of the client (such as endpoint addredd, port)
-            client = new KubernetesClientBuilder().build();
+            client = new KubernetesClientBuilder().withConfig(kubeconfig).build();
 
             this.client = client;
-            this.reservedPod = getPod(client, imageIdentifier);
+            this.reservedPod = getPod(client, namespaceName, imageIdentifier);
         } catch (Exception e) {
             // manual closure only on exception
             if (client != null) {
@@ -58,19 +81,31 @@ public class KubernetesCommandExecutor implements AutoCloseable {
         }
     }
 
-    protected static Pod getPod(KubernetesClient client, String imageIdentifier) {
-        return getPod(client, imageIdentifier, UUID.randomUUID());
+    /**
+     * Helper for a helper ensuring correct pod creation.
+     *
+     * @param client          the client to create the pod with
+     * @param namespaceName   name of the namespace to use for resource creation
+     * @param imageIdentifier the image identifier to use for this pod
+     * @return returns the created pod object as returned by the api's {@link PodResource#create()}
+     */
+    protected static Pod getPod(KubernetesClient client, String namespaceName, String imageIdentifier) {
+        return getPod(client, namespaceName, imageIdentifier, UUID.randomUUID());
     }
 
+    // TODO: support proxying pods for internet access
     /**
      * Helper method for ensuring correct pod creation.
-     * @param client the client to create the pod with
+     *
+     * @param client          the client to create the pod with
+     * @param namespaceName   name of the namespace to use for resource creation
      * @param imageIdentifier the image identifier to use for this pod
-     * @param runnerId a runner id, a UUID unique to this pod
+     * @param runnerId        a runner id, a UUID unique to this pod
      * @return returns the created pod object as returned by the api's {@link PodResource#create()}
      */
     protected static Pod getPod(
             KubernetesClient client,
+            String namespaceName,
             String imageIdentifier,
             UUID runnerId) {
 
@@ -97,6 +132,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 .withNamespace(namespaceName)
                 .endMetadata()
                 .withNewSpec()
+                // death of a container destroys our environment's state. thus the entire pod must fail
                 .withRestartPolicy("Never")
                 // crude way of ensuring pods get stopped at some point if the jvm terminated unexpectedly
                 .withActiveDeadlineSeconds(60L * 60 * 4)
@@ -107,6 +143,9 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 .endContainer()
                 .endSpec()
                 .build();
+
+        // shitty index that only matches name-version pairs:
+        // cat /aports/apkbuilds.txt | sed 's/APKBUILD$//g' | while read i ; do cd "/aports/$i" ; printf "%s " "$PWD" ; abuild -F listpkg | tr '\n' ' ' ; printf '\n' ; done
 
         // not sure whether this is the same object from earlier so i'll just capture this for handling
         return client.pods().resource(podPrototype).create();
@@ -129,8 +168,11 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * Library has bad documentation of the copy call but appears it should return true on success.
      * Probably best look at how the kubectl copy command works to draw conclusions. It appears to throw exceptions on
      * failure.
+     * <br>
+     * Note that while the fabric8 api seems to infer a filename if a given destination is a directory but input is a
+     * file, it might be cleaner to specify a file as destination to avoid fringe bugs with odd input filenames.
      * @param pathInContainer the path for the file in the container
-     * @param destination the destination on the host machine
+     * @param destination the destination file on the host machine
      * @return true if the copy was successful
      */
     public boolean downloadFile(String pathInContainer, Path destination) {
