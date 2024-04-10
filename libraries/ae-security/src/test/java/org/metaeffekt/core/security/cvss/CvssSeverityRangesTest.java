@@ -28,6 +28,8 @@ public class CvssSeverityRangesTest {
         new CvssSeverityRanges("Undefined:strong-gray:-100.0:100.0");
         new CvssSeverityRanges("Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red:7.0:10.0");
         new CvssSeverityRanges("Low:strong-yellow:0.0:2.9,Average:strong-light-orange:3.0:6.9,Strong:strong-dark-orange:7.0:8.9,Maximum:strong-red:9.0:10.0");
+        new CvssSeverityRanges("Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red::10.0");
+        new CvssSeverityRanges("Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red:7.0:");
         parseMustFail("Color should not have existed", "Undefined:dummy-color:-100.0:100.0");
         parseMustFail("Range should not have been valid", "Undefined:strong-gray:3.5:2.1");
         parseMustFail("Too few parts", "Undefined:strong-gray:-100.0");
@@ -38,8 +40,7 @@ public class CvssSeverityRangesTest {
         parseMustFail("Wrong delimiter ';'", "Low:strong-red;0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red:7.0:10.0");
         parseMustFail("Empty part", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,:strong-red:7.0:10.0");
         parseMustFail("Empty part", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High::7.0:10.0");
-        parseMustFail("Empty part", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red::10.0");
-        parseMustFail("Empty part", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red:7.0:");
+        parseMustFail("Range delimiters both empty", "Low:strong-red:0.0:3.9,Medium:strong-red:4.0:6.9,High:strong-red::");
     }
 
     private void parseMustFail(String message, String rangeString) {
@@ -75,8 +76,8 @@ public class CvssSeverityRangesTest {
 
     @Test
     public void scoreTest() {
-        Assert.assertEquals("Undefined", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-10.0).getName());
-        Assert.assertEquals("Undefined", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-0.1).getName());
+        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-10.0).getName());
+        Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(-0.1).getName());
         Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(0.0).getName());
         Assert.assertEquals("Low", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(3.9).getName());
         Assert.assertEquals("Medium", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(4.0).getName());
@@ -85,9 +86,10 @@ public class CvssSeverityRangesTest {
         Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(7.0).getName());
         Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(8.2).getName());
         Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(10.0).getName());
+        Assert.assertEquals("High", CvssSeverityRanges.CVSS_2_SEVERITY_RANGES.getRange(12020.0).getName());
 
-        Assert.assertEquals("Undefined", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-10.0).getName());
-        Assert.assertEquals("Undefined", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-0.1).getName());
+        Assert.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-10.0).getName());
+        Assert.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(-0.1).getName());
         Assert.assertEquals("None", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(0.0).getName());
         Assert.assertEquals("Low", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(0.1).getName());
         Assert.assertEquals("Low", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(3.9).getName());
@@ -100,5 +102,6 @@ public class CvssSeverityRangesTest {
         Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(9.0).getName());
         Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(9.5).getName());
         Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(10.0).getName());
+        Assert.assertEquals("Critical", CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.getRange(12020.0).getName());
     }
 }

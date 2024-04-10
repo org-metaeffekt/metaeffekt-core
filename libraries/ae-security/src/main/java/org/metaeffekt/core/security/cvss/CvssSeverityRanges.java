@@ -91,13 +91,21 @@ public class CvssSeverityRanges {
             if (!matcher.matches()) {
                 throw new IllegalArgumentException("Range pattern does not match format [NAME:COLOR:FLOOR:CEIL] in " + input);
             }
+
             this.name = matcher.group(1).trim();
             this.color = ColorScheme.getColor(matcher.group(2));
             if (this.color == null) {
                 throw new IllegalArgumentException("Range color unknown in [" + input + "]. available colors are [" + getAvailableColors() + "]");
             }
-            this.floor = Double.parseDouble(matcher.group(3).trim());
-            this.ceil = Double.parseDouble(matcher.group(4).trim());
+
+            final String floorStr = matcher.group(3).trim();
+            final String ceilStr = matcher.group(4).trim();
+            this.floor = StringUtils.isEmpty(floorStr) ? -Double.MAX_VALUE : Double.parseDouble(floorStr);
+            this.ceil = StringUtils.isEmpty(ceilStr) ? Double.MAX_VALUE : Double.parseDouble(ceilStr);
+
+            if (floorStr.isEmpty() && ceilStr.isEmpty()) {
+                throw new IllegalArgumentException("Both floor and ceil cannot be empty in [" + input + "]");
+            }
             if (this.floor > this.ceil) {
                 throw new IllegalArgumentException("Range floor [" + this.floor + "] must be smaller than range ceil [" + this.ceil + "] in [" + input + "]");
             }
@@ -129,7 +137,7 @@ public class CvssSeverityRanges {
             return index;
         }
 
-        private final static Pattern RANGE_PATTERN = Pattern.compile("([^:]+):([^:]+):([^:]+):([^:]+)");
+        private final static Pattern RANGE_PATTERN = Pattern.compile("([^:]+):([^:]+):([^:]*):([^:]*)");
 
         @Override
         public int compareTo(SeverityRange o) {
@@ -149,8 +157,9 @@ public class CvssSeverityRanges {
 
     public final static SeverityRange UNDEFINED_SEVERITY_RANGE = new SeverityRange("Undefined:strong-gray:-100.0:100.0", -1);
 
-    public static final CvssSeverityRanges CVSS_2_SEVERITY_RANGES = new CvssSeverityRanges("Low:strong-yellow:0.0:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-red:7.0:10.0");
-    public static final CvssSeverityRanges CVSS_3_SEVERITY_RANGES = new CvssSeverityRanges("None:pastel-gray:0.0:0.0,Low:strong-yellow:0.1:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-dark-orange:7.0:8.9,Critical:strong-red:9.0:10.0");
+    public static final CvssSeverityRanges CVSS_2_SEVERITY_RANGES = new CvssSeverityRanges("Low:strong-yellow::3.9,Medium:strong-light-orange:4.0:6.9,High:strong-red:7.0:");
+    public static final CvssSeverityRanges CVSS_3_SEVERITY_RANGES = new CvssSeverityRanges("None:pastel-gray::0.0,Low:strong-yellow:0.1:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-dark-orange:7.0:8.9,Critical:strong-red:9.0:");
+
 
     private static String getAvailableColors() {
         StringJoiner colors = new StringJoiner(", ");
