@@ -46,10 +46,9 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{
                 "**/.DS_Store", "**/._*",
-                "**/.git/**/*", "**/.git*", "**/.git*",
-                "**/.svn/**/*", "**/.svn*", "**/.svn*",
-                "**/logs/**/*", "**/logs*", "**/logs*",
-                "**/log/**/*", "**/log*", "**/log*",
+                "**/.git/**/*", "**/.git*",
+                "**/.svn/**/*", "**/.svn*",
+                "**/log/**/*",
                 "**/__pycache__/**/*", "**/__pycache__*",
                 "**/usr/lib/systemd/**/*",
                 "**/usr/lib/systemd*",
