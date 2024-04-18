@@ -163,6 +163,8 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new JavaRuntimeComponentPatternContributor());
         contributorRunnerBuilder.add(new JettyComponentPatternContributor());
         contributorRunnerBuilder.add(new WebApplicationComponentPatternContributor());
+        // TODO: think about phases and how to handle the following contributor after the collection of the DpkgPackageContributor
+        contributorRunnerBuilder.add(new SystemBinariesComponentPatternContributor());
 
         final ComponentPatternContributorRunner runner = contributorRunnerBuilder.build();
 

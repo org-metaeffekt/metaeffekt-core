@@ -44,7 +44,6 @@ public class ComposerLockContributor extends ComponentPatternContributor {
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File contextBaseDir = anchorFile.getParentFile();
 
@@ -59,7 +58,12 @@ public class ComposerLockContributor extends ComponentPatternContributor {
             for (int j = 0; j < packages.length(); j++) {
                 final JSONObject jsonObject = packages.getJSONObject(j);
                 final String name = jsonObject.optString("name");
-                final String version = jsonObject.optString("version");
+                String version = jsonObject.optString("version");
+
+                if (version.startsWith("v")) {
+                    version = version.substring(1);
+                }
+                final String purl = buildPurl(name, version);
                 String url = null;
 
                 // FIXME: define different URLs for source and dist
@@ -86,6 +90,7 @@ public class ComposerLockContributor extends ComponentPatternContributor {
 
                 componentPatternData.set(Constants.KEY_TYPE, TYPE_VALUE_PHP_COMPOSER);
                 componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
+                componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
 
                 list.add(componentPatternData);
             }
@@ -99,5 +104,15 @@ public class ComposerLockContributor extends ComponentPatternContributor {
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    public static String buildPurl(String name, String version) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+        if (version == null || version.isEmpty()) {
+            return String.format("pkg:composer/%s", name);
+        }
+        return String.format("pkg:composer/%s@%s", name, version);
     }
 }

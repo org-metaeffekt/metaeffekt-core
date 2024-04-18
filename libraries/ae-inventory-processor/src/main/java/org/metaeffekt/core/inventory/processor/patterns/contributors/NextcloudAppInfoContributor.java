@@ -67,7 +67,7 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
 
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, id);
+            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, id + "-" + version);
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
 

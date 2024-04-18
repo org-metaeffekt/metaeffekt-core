@@ -22,34 +22,33 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PURL;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
+import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class Python extends AbstractCompositionAnalysisTest {
+public class OpenDeskKeycloak extends AbstractCompositionAnalysisTest {
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
-    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, Python.class.getSimpleName().toLowerCase(), null);
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
+    public static void prepare() {
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/univention/images-mirror/keycloak-keycloak", "22.0.3-ucs2@sha256:1e8e45a2e01050c1473595c3b143446363016ea292b0c599ccd9f1bd37112206");
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
-                .setSha256Hash(sha256Hash)
-                .setName(Python.class.getName());
+                .setSha256Hash("1e8e45a2e01050c1473595c3b143446363016ea292b0c599ccd9f1bd37112206")
+                .setName(OpenDeskKeycloak.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore
@@ -62,7 +61,9 @@ public class Python extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
-        componentPatterns.logListWithAllAttributes();
+        analysis.selectArtifacts(containsToken(TYPE, "dpkg-package")).hasSizeOf(119);
+        analysis.selectArtifacts(tokenStartsWith(TYPE, "package")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "jar-manifest-component")).hasSizeOf(367);
+        analysis.selectArtifacts(containsToken(PURL, "pkg:maven/org.jboss.resteasy/resteasy-client@6.2.5.Final?type=jar")).assertNotEmpty();
     }
 }

@@ -105,11 +105,18 @@ public class JarInspector extends AbstractJarInspector {
         }
 
         final Artifact dummyArtifact = new Artifact();
-        dummyArtifact.setGroupId(pomProperties.getProperty("groupId", null));
-        dummyArtifact.setVersion(pomProperties.getProperty("version", null));
+        String groupId = pomProperties.getProperty("groupId", artifact.getGroupId());
+        String version = pomProperties.getProperty("version", artifact.getVersion());
+        String artifactId = pomProperties.getProperty("artifactId", artifact.getId());
+        String packaging = pomProperties.getProperty("packaging", "jar");
+        dummyArtifact.setGroupId(groupId);
+        dummyArtifact.setVersion(version);
 
-        dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, pomProperties.getProperty("artifactId", null));
+        dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
         dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
+
+        String purl = buildPurl(groupId, artifactId, version, packaging);
+        dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
 
         deriveQualifiers(dummyArtifact);
 
@@ -152,16 +159,30 @@ public class JarInspector extends AbstractJarInspector {
             dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
             String artifactId = artifact.getId();
+            String suffix = null;
             // cut off suffix
             final int suffixIndex = artifactId.lastIndexOf(".");
             if (suffixIndex > 0) {
+                suffix = artifactId.substring(suffixIndex + 1);
                 artifactId = artifactId.substring(0, suffixIndex);
             }
             final int versionIndex = artifactId.lastIndexOf("-" + dummyArtifact.getVersion());
             if (versionIndex > 0) {
                 artifactId = artifactId.substring(0, versionIndex);
             }
+            final int groupIdIndex = artifactId.lastIndexOf(".");
+            final int groupsLength = artifactId.split("\\.").length;
+            String groupId = null;
+            String name = dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID);
+            if (groupIdIndex > 0 && groupsLength > 2) {
+                groupId = artifactId.substring(0, groupIdIndex);
+                dummyArtifact.setGroupId(groupId);
+                name = artifactId.substring(groupIdIndex + 1);
+            }
             dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
+
+            String purl = buildPurl(groupId, name, version, suffix);
+            dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
 
             deriveQualifiers(dummyArtifact);
 
@@ -214,6 +235,11 @@ public class JarInspector extends AbstractJarInspector {
             }
 
             dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
+
+            String purl = buildPurl(model.getGroupId(), model.getArtifactId(), dummyArtifact.getVersion(), model.getPackaging());
+            dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
+            // is this a package? we need actually a type for this though
+            dummyArtifact.set(Artifact.Attribute.TYPE, "jar-manifest-component");
 
             // NOTE: the current mode is identification. POM specified licenses are not subject to identification
             // Furthermore, the leaf-pom may not include license information.
@@ -614,6 +640,13 @@ public class JarInspector extends AbstractJarInspector {
             foundAssetIdChain += parentArtifactPath;
         }
         return foundAssetIdChain;
+    }
+
+    private String buildPurl(String namespace, String name, String version, String type) {
+        if (namespace == null || name == null || version == null || type == null) {
+            return null;
+        }
+        return String.format("pkg:maven/%s/%s@%s?type=%s", namespace, name, version, type);
     }
 
 }

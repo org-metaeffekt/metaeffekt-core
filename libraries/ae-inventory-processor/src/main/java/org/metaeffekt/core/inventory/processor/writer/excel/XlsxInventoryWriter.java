@@ -55,6 +55,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             Artifact.Attribute.VULNERABILITY,
             Artifact.Attribute.COMMENT,
             Artifact.Attribute.URL,
+            Artifact.Attribute.PURL,
             Artifact.Attribute.PROJECTS,
             Artifact.Attribute.VERIFIED
     };

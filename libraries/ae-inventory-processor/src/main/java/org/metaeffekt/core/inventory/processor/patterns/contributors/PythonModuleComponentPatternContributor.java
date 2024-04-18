@@ -143,11 +143,21 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
 
         componentPatternData.set(Constants.KEY_TYPE, "python-site-package");
 
+        String purl = buildPurl(artifact.getComponent(), artifact.getVersion());
+        componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
+
         return Collections.singletonList(componentPatternData);
     }
 
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    private String buildPurl(String name, String version) {
+        // first we have to handle that the name should not be case sensitive and underscore should be replaced by dash
+        // see: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#pypi
+        name = name.toLowerCase().replace("_", "-");
+        return "pkg:pypi/" + name + "@" + version;
     }
 }

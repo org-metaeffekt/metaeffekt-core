@@ -46,7 +46,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         add("/composer.json");
     }});
 
-        @Override
+    @Override
     public boolean applies(String pathInContext) {
         return isWebModule(pathInContext);
     }
@@ -265,6 +265,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     protected void parseModuleDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
         switch(artifact.getId()) {
             case "package-lock.json":
+            case ".package-lock.json":
             case "composer.json":
             case "package.json":
             case ".bower.json":
@@ -281,6 +282,9 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             return true;
         }
         if (artifactPath.endsWith("package-lock.json")) {
+            return true;
+        }
+        if (artifactPath.endsWith(".package-lock.json")) {
             return true;
         }
         if (artifactPath.endsWith("composer.json")) {

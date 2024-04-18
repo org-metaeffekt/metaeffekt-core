@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.exception.ContributorFailureException;
@@ -31,6 +32,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -337,6 +339,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // set whatever this is in whatever way i think might be correct from looking at other contributors
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+        try {
+            componentPatternData.set(Artifact.Attribute.PURL.getKey(),
+                    buildPurl(readDistro(), entry.packageName, entry.version, entry.architecture));
+        } catch (Exception e) {
+            LOG.error("Could not create PURL for package [{}].", entry.packageName);
+        }
 
         return componentPatternData;
     }
@@ -605,5 +613,46 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    private String readDistro() throws IOException {
+        List<Path> paths = new ArrayList<>(Arrays.asList(
+                Paths.get("/etc/os-release"),
+                Paths.get("/etc/lsb-release"),
+                Paths.get("/etc/debian_version"),
+                Paths.get("/etc/redhat-release"),
+                Paths.get("/etc/centos-release"),
+                Paths.get("/etc/system-release") // Generic catch-all for some other distributions
+        ));
+
+        for (Path path : paths) {
+            if (Files.exists(path) && Files.size(path) > 0) {
+                List<String> lines = Files.readAllLines(path);
+                for (String line : lines) {
+                    if (path.endsWith("os-release") || path.endsWith("lsb-release")) {
+                        // Parse key-value pair files
+                        if (line.contains("=")) {
+                            String[] parts = line.split("=", 2);
+                            String key = parts[0];
+                            String value = parts[1].replace("\"", "").trim();
+                            if ("ID".equals(key) || "DISTRIB_ID".equals(key)) {
+                                return value;
+                            }
+                        }
+                    } else if (path.endsWith("debian_version")) {
+                        // Directly return "debian" if the file exists, assuming the file content isn't needed
+                        return "debian";
+                    } else if (path.endsWith("redhat-release") || path.endsWith("centos-release") || path.endsWith("system-release")) {
+                        // Assume the file directly contains a meaningful identifier
+                        return line.trim().split(" ")[0].toLowerCase(); // Simplistic parsing for distro name
+                    }
+                }
+            }
+        }
+        return "unknown";  // Return "unknown" only if no relevant info was found in any file
+    }
+
+    private String buildPurl(String distro, String packageName, String version, String arch) {
+        return String.format("pkg:deb/%s/%s@%s?arch=%s", distro, packageName, version, arch);
     }
 }
