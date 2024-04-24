@@ -182,6 +182,11 @@ dumpDockerWithDroppedPrivs()
       echo "No user given for docker dump with dropped privileges."
       exit 1
     fi
+    if [ ! "$(command -v runuser)" ]
+    then
+      printf "Executable runuser not installed. Can't dump docker with dropped privileges for user [%s].\n" "${2}"
+      return 1
+    fi
 
   runuser -u "${2}" -- docker image list --no-trunc --digests > "${1}"/docker-images-user.txt || true
   runuser -u "${2}" -- docker ps --no-trunc --all > "${1}"/docker-ps-user.txt || true
@@ -253,6 +258,11 @@ dumpPodmanWithDroppedPrivs()
   then
     echo "No user given for podman dump with dropped privileges."
     exit 1
+  fi
+  if [ ! "$(command -v runuser)" ]
+  then
+    printf "Executable runuser missing: can't dump podman with dropped privileges for user [%s].\n" "${2}"
+    return 1
   fi
 
   runuser -u "${2}" -- podman image list --no-trunc --digests > "${1}"/podman-images-user.txt || true
