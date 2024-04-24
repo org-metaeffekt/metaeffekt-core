@@ -22,10 +22,11 @@ escapeString()
 processArguments() {
   # check the input flags
   OPTIND=1
-  OPTSPEC="t:e:"
+  OPTSPEC="t:e:u:"
 
   machineTag=""
   findExcludes=""
+  myNonrootUsers=""
 
   # posix way to disable pathname expansion
   set -f
@@ -44,11 +45,13 @@ processArguments() {
         # make sure that relative paths start with "./" .
 
         escapeString "${OPTARG}"
-        printf 'output something pls optarg:%s\n' "a asdf $OPTARG"
 
         # prepare string that will later be used with eval
         findExcludes="${findExcludes} -path \"${escapeStringResult}\" -o"
-        printf "output: %s\n" "${findExcludes}"
+        printf "findExcludes: %s\n" "${findExcludes}"
+        ;;
+      u )
+        myNonrootUsers="${myNonrootUsers} ${OPTARG}"
         ;;
       ? )
         exit 1
@@ -117,16 +120,143 @@ dumpDockerIfPresent()
 {
   checkFirstArgDefined "${1}"
   # if docker is installed dump the image list
-  command -v docker > /dev/null && docker image list > "${1}"/docker-images.txt || true
-  command -v docker > /dev/null && docker image list -a > "${1}"/docker-images-all.txt || true
+  command -v docker > /dev/null && docker image list --no-trunc --digests > "${1}"/docker-images.txt || true
+  command -v docker > /dev/null && docker ps --no-trunc --all > "${1}"/docker-ps.txt || true
+
+  # TODO: list created containers?
+
+  # call runuser variant
+  dumpDockerWithDroppedPrivsIfPresent "${1}"
+}
+
+dumpDockerWithDroppedPrivsIfPresent()
+{
+  checkFirstArgDefined "${1}"
+  dockerDumpsDir="${1}/docker-images-users"
+  # delete the dump dir so that old or failed dumps do not persist
+  rm -rf "${1}/docker-images-users"
+
+  if [ "$(command -v docker)" ] && [ ! -z "$myNonrootUsers" ]
+  then
+    # check if this user really exists, otherwise return an error value
+    for myNonrootUser in ${myNonrootUsers}
+    do
+      userId="id -u ${myNonrootUser}"
+      retVal="$?"
+
+      # if we were able to find the user id, execute commands as this user
+      if [ ! 0 -eq "${retVal}" ]
+      then
+        printf "The given non-root user [%s] does not exist. Can't run image/container listing.\n" "${myNonrootUser}"
+        continue
+      fi
+
+      # check that the user doesn't have an insane name
+      if [ "${myNonrootUser#*".."}" != "$myNonrootUser" ] ||
+        [ "${myNonrootUser#*"$"}" != "$myNonrootUser" ] ||
+        [ "${myNonrootUser#*"/"}" != "$myNonrootUser" ]
+      then
+        printf "Username [%s] contains potentially dangerous characters. Skipping user in image/container listing.\n" "$myNonrootUser"
+        continue
+      fi
+
+      dockerUserDumpDir="${dockerDumpsDir}/${myNonrootUser}"
+
+      mkdir -p "${dockerUserDumpDir}"
+      retVal="$?"
+      if [ ! "${retVal}" -eq 0 ]
+      then
+        printf "Could not create dump directory [%s] for given non-root user [%s]\n" "${dockerUserDumpDir}"
+      fi
+
+      dumpDockerWithDroppedPrivs "${dockerUserDumpDir}" "${myNonrootUser}"
+    done
+  fi
+}
+
+dumpDockerWithDroppedPrivs()
+{
+  checkFirstArgDefined "${1}"
+    if [ -z "${2}" ]
+    then
+      echo "No user given for docker dump with dropped privileges."
+      exit 1
+    fi
+
+  runuser -u "${2}" -- docker image list --no-trunc --digests > "${1}"/docker-images-user.txt || true
+  runuser -u "${2}" -- docker ps --no-trunc --all > "${1}"/docker-ps-user.txt || true
 }
 
 dumpPodmanIfPresent()
 {
   checkFirstArgDefined "${1}"
   # if podman is installed, dump the image list (might return the same as docker with present docker -> podman symlinks)
-  command -v podman > /dev/null && podman image list > "${1}"/podman-images.txt || true
-  command -v podman > /dev/null && podman image list -a > "${1}"/podman-images-all.txt || true
+  command -v podman > /dev/null && podman image list --no-trunc --digests > "${1}"/podman-images.txt || true
+  command -v podman > /dev/null && podman ps --no-trunc --all > "${1}"/podman-ps.txt || true
+
+  # TODO: list created containers?
+
+  # call runuser variant
+  dumpPodmanWithDroppedPrivsIfPresent "${1}"
+}
+
+dumpPodmanWithDroppedPrivsIfPresent()
+{
+  checkFirstArgDefined "${1}"
+
+  podmanDumpsDir="${1}/podman-images-users"
+  # delete the dump dir so that old or failed dumps do not persist
+  rm -rf "${1}/podman-images-users"
+
+  if [ "$(command -v podman)" ] && [ ! -z "$myNonrootUsers" ]
+  then
+    # check if this user really exists, otherwise return an error value
+    for myNonrootUser in ${myNonrootUsers}
+    do
+      userId="id -u ${myNonrootUser}"
+      retVal="$?"
+
+      # if we were able to find the user id, execute commands as this user
+      if [ ! 0 -eq "${retVal}" ]
+      then
+        printf "The given non-root user [%s] does not exist. Can't run image/container listing.\n" "${myNonrootUser}"
+        continue
+      fi
+
+      # check that the user doesn't have an insane name
+      if [ "${myNonrootUser#*".."}" != "$myNonrootUser" ] ||
+        [ "${myNonrootUser#*"$"}" != "$myNonrootUser" ] ||
+        [ "${myNonrootUser#*"/"}" != "$myNonrootUser" ]
+      then
+        printf "Username [%s] contains potentially dangerous characters. Skipping user in image/container listing.\n" "$myNonrootUser"
+        continue
+      fi
+
+      podmanUserDumpDir="${podmanDumpsDir}/${myNonrootUser}"
+
+      mkdir -p "${podmanUserDumpDir}"
+      retVal="$?"
+      if [ ! 0 -eq "${retVal}" ]
+      then
+        printf "Could not create dump directory [%s] for given non-root user [%s]\n" "${podmanUserDumpDir}"
+      fi
+
+      dumpPodmanWithDroppedPrivs "${podmanUserDumpDir}" "${myNonrootUser}"
+    done
+  fi
+}
+
+dumpPodmanWithDroppedPrivs()
+{
+  checkFirstArgDefined "${1}"
+  if [ -z "${2}" ]
+  then
+    echo "No user given for podman dump with dropped privileges."
+    exit 1
+  fi
+
+  runuser -u "${2}" -- podman image list --no-trunc --digests > "${1}"/podman-images-user.txt || true
+  runuser -u "${2}" -- podman ps --no-trunc --all > "${1}"/podman-ps-user.txt || true
 }
 
 adaptOutdirOwnership()
