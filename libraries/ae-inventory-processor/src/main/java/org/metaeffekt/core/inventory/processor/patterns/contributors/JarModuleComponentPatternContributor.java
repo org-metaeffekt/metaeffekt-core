@@ -83,7 +83,9 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
 
         final String[] pomFiles = FileUtils.scanForFiles(contextBaseDir, "META-INF/maven/**/pom.xml,WEB-INF/maven/**/pom.xml", null);
 
-        String includePattern = (pomFiles.length == 1) ?
+        // NOTE:  in case of a single pom the whole content is used; in case of multiple poms the include covers only
+        // the groupid-covered content
+        final String includePattern = (pomFiles.length == 1) ?
                 "**/*" :
                 "**/" + artifact.getGroupId() + "/**/*,**/" + artifactId + "/**/*";
 
@@ -110,6 +112,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         // contribute groupid (consider also other attributes)
         componentPatternData.set("Group Id", artifact.getGroupId());
 
+        // FIXME: check what type represents (a characterisitic of the artifact or its embedding)
         componentPatternData.set(Constants.KEY_TYPE, "jar-component");
 
         return Collections.singletonList(componentPatternData);

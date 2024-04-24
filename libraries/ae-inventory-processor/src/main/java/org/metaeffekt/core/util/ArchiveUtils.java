@@ -413,7 +413,9 @@ public class ArchiveUtils {
             return false;
         }
 
+        // in case the targetDir was actively created, it is actively removed.
         if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
+
         return false;
     }
 

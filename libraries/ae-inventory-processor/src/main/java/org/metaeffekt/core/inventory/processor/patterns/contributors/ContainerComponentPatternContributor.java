@@ -85,6 +85,4 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
         return new File(artifactPath).getName().equalsIgnoreCase("json");
     }
 
-
-
 }

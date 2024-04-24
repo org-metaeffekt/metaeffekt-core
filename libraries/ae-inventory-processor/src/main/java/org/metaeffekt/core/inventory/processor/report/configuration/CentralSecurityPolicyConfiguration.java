@@ -342,7 +342,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 .collect(Collectors.toList());
 
         if (filter.contains(AeaaContentIdentifiers.UNKNOWN)) {
-            LOG.warn("Unknown advisory provider in includeVulnerabilitiesWithAdvisoryProviders [{}], must be one of {}", includeVulnerabilitiesWithAdvisoryProviders, AeaaContentIdentifiers.values());
+            LOG.warn("Unknown advisory provider in includeVulnerabilitiesWithAdvisoryProviders [{}], must be one of {}",
+                    includeVulnerabilitiesWithAdvisoryProviders, AeaaContentIdentifiers.values());
         }
 
         return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);

@@ -80,6 +80,11 @@ public class ComposerLockContributor extends ComponentPatternContributor {
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, name + "/**/*");
 
+                // exclude embedded web modules; these require to be identified by themselves
+                componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                        name + "/**/node_modules/**/*," +
+                        name + "/**/bower_components/**/*");
+
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);

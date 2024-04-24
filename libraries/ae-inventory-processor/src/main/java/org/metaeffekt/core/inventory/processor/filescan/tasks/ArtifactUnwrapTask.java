@@ -118,6 +118,8 @@ public class ArtifactUnwrapTask extends ScanTask {
                     if (!parentPath.getPath().equals(fileSystemScanContext.getBaseDir().getPath())) {
                         LOG.info("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
                         markForDelete = true;
+                    } else {
+                        LOG.info("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
                     }
                 } else {
                     LOG.info("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
@@ -127,6 +129,10 @@ public class ArtifactUnwrapTask extends ScanTask {
 
             if (markForDelete) {
                 artifact.set(ATTRIBUTE_KEY_SCAN_DIRECTIVE, SCAN_DIRECTIVE_DELETE);
+
+                // the original archive file is deleted if the inventory entry is bound to be removed
+                // NOTE: otherwise the collection process will collect both the packed as well as the unpacked files.
+                FileUtils.deleteQuietly(file);
             } else {
                 addChecksumsAndHashes(fileRef);
             }
