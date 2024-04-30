@@ -37,7 +37,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     private static final Logger LOG = LoggerFactory.getLogger(WebModuleComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
-        // TODO: perhaps canonicalize these ad the specs in "applies" and the suffixes are not the same
+        // TODO: perhaps canonicalize these as the specs in "applies" and the suffixes are not the same
         add(".bower.json");
         add("/bower.json");
         add("/package-lock.json");
@@ -107,8 +107,26 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
-        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, anchorParentDir.getName() + "/.yarn-integrity," + anchorParentDir.getName() + "/**/bower_components/**/*");
-        componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDir.getName() + "/**/*");
+        final String anchorParentDirName = anchorParentDir.getName();
+
+        // set includes
+        componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDirName + "/**/*");
+
+        // set excludes
+        if ("node_modules".equalsIgnoreCase(anchorParentDirName)) {
+            // we are already in the node_modules directory; in this case omit the parent dir;
+            // this may happen when we have identified a .package-lock.json file in the node_modules folder;
+            // we have to make sure we do not include the complete node_modules folder with all modules
+            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                ".yarn-integrity," +
+                "**/node_modules/**/*," +
+                "**/bower_components/**/*");
+        } else {
+            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                anchorParentDirName + "/.yarn-integrity," +
+                anchorParentDirName + "/**/node_modules/**/*," +
+                anchorParentDirName + "/**/bower_components/**/*");
+        }
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
 
@@ -311,6 +329,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             final String json = FileUtils.readFileToString(packageJsonFile, "UTF-8");
             try {
                 final JSONObject obj = new JSONObject(json);
+
                 if (StringUtils.isEmpty(webModule.version)) {
                     webModule.version = getString(obj, "version", webModule.version);
                     webModule.anchor = packageJsonFile;

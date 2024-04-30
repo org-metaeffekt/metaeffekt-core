@@ -28,7 +28,8 @@ import java.util.function.Consumer;
  * Mirrors structure of <code>com.metaeffekt.mirror.contents.base.AmbDataClass</code> 
  * until separation of inventory report generation from ae core inventory processor.
  */
-public abstract class AeaaAmbDataClass<AMB extends AbstractModelBase, DC extends AeaaAmbDataClass<AMB, DC>> implements Comparable<AeaaAmbDataClass<AMB, DC>> {
+public abstract class AeaaAmbDataClass<AMB extends AbstractModelBase, DC extends AeaaAmbDataClass<AMB, DC>>
+        implements Comparable<AeaaAmbDataClass<AMB, DC>> {
 
     protected final static Set<String> CONVERSION_KEYS_AMB = new HashSet<>(Arrays.asList(
             Artifact.Attribute.ID.getKey(),
@@ -36,9 +37,7 @@ public abstract class AeaaAmbDataClass<AMB extends AbstractModelBase, DC extends
             AdvisoryMetaData.Attribute.NAME.getKey()
     ));
 
-    protected final static Set<String> CONVERSION_KEYS_MAP = new HashSet<>(Arrays.asList(
-            "id"
-    ));
+    protected final static Set<String> CONVERSION_KEYS_MAP = new HashSet<>(Arrays.asList("id"));
 
     protected String id;
     protected Map<String, String> additionalAttributes = new LinkedHashMap<>();

@@ -76,6 +76,7 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_PACKAGE = "package";
     public static final String ARTIFACT_TYPE_FILE = "file";
     public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
+
     public static final String KEY_PATH_IN_ASSET = "Path in Asset";
 
     public static final String KEY_CHECKSUM = "Checksum";
@@ -83,7 +84,6 @@ public final class Constants {
     public static final String MARKER_CROSS = "x";
 
     public static final String MARKER_CONTAINS = "c";
-
 
     protected Constants() {
     }

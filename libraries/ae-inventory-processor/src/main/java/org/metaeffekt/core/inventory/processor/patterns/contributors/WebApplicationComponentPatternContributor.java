@@ -79,7 +79,10 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
 
-                componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*,**/*.jar");
+                componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                        "**/node_modules/**/*," +
+                        "**/bower_components/**/*," +
+                        "**/*.jar");
 
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
 

@@ -152,6 +152,7 @@ public class DirectoryInventoryScanTest {
 
         scan.setEnableImplicitUnpack(true);
         scan.setIncludeEmbedded(true);
+        scan.setEnableDetectComponentPatterns(true);
 
         final Inventory resultInventory = scan.createScanInventory();
 
