@@ -145,28 +145,7 @@ public class ComponentPatternProducer {
         filesByPathLength.sort(String.CASE_INSENSITIVE_ORDER);
         filesByPathLength.sort(Comparator.comparingInt(String::length));
 
-        // configure contributors; please note that currently the contributors consume anchors (no anchor can be used twice)
-        final ComponentPatternContributorRunner.ComponentPatternContributorRunnerBuilder contributorRunnerBuilder =
-                ComponentPatternContributorRunner.builder();
-        contributorRunnerBuilder.add(new DpkgPackageContributor());
-        contributorRunnerBuilder.add(new GemSpecContributor());
-        contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
-        contributorRunnerBuilder.add(new WebModuleComponentPatternContributor());
-        contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());
-        contributorRunnerBuilder.add(new PythonModuleComponentPatternContributor());
-        contributorRunnerBuilder.add(new JarModuleComponentPatternContributor());
-        contributorRunnerBuilder.add(new NextcloudAppInfoContributor());
-        contributorRunnerBuilder.add(new ComposerLockContributor());
-        contributorRunnerBuilder.add(new XWikiExtensionComponentPatternContributor());
-        contributorRunnerBuilder.add(new NodeRuntimeComponentPatternContributor());
-        contributorRunnerBuilder.add(new NordeckAppComponentPatternContributor());
-        contributorRunnerBuilder.add(new JavaRuntimeComponentPatternContributor());
-        contributorRunnerBuilder.add(new JettyComponentPatternContributor());
-        contributorRunnerBuilder.add(new WebApplicationComponentPatternContributor());
-        // TODO: think about phases and how to handle the following contributor after the collection of the DpkgPackageContributor
-        contributorRunnerBuilder.add(new SystemBinariesComponentPatternContributor());
-
-        final ComponentPatternContributorRunner runner = contributorRunnerBuilder.build();
+        final ComponentPatternContributorRunner runner = getAllContributors();
 
         // record component pattern qualifiers for deduplication purposes
         final Set<String> deduplicationQualifierSet = new HashSet<>();
@@ -555,5 +534,28 @@ public class ComponentPatternProducer {
         return baseDir;
     }
 
+    private ComponentPatternContributorRunner getAllContributors() {
+        // configure contributors; please note that currently the contributors consume anchors (no anchor can be used twice)
+        final ComponentPatternContributorRunner.ComponentPatternContributorRunnerBuilder contributorRunnerBuilder =
+                ComponentPatternContributorRunner.builder();
+        contributorRunnerBuilder.add(new DpkgPackageContributor());
+        contributorRunnerBuilder.add(new GemSpecContributor());
+        contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
+        contributorRunnerBuilder.add(new WebModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());
+        contributorRunnerBuilder.add(new PythonModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new JarModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new NextcloudAppInfoContributor());
+        contributorRunnerBuilder.add(new ComposerLockContributor());
+        contributorRunnerBuilder.add(new XWikiExtensionComponentPatternContributor());
+        contributorRunnerBuilder.add(new NodeRuntimeComponentPatternContributor());
+        contributorRunnerBuilder.add(new NordeckAppComponentPatternContributor());
+        contributorRunnerBuilder.add(new JavaRuntimeComponentPatternContributor());
+        contributorRunnerBuilder.add(new JettyComponentPatternContributor());
+        contributorRunnerBuilder.add(new WebApplicationComponentPatternContributor());
+        contributorRunnerBuilder.add(new SystemBinaryComponentPatternContributor());
+        contributorRunnerBuilder.add(new ProgressiveWebAppComponentPatternContributor());
 
+        return contributorRunnerBuilder.build();
+    }
 }

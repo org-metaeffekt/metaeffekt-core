@@ -506,7 +506,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                     checksum,
                     includePatternsJoiner.toString()
             );
-            cpd.set(Constants.KEY_TYPE, "dpkg-package");
+            cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+            cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "dpkg");
 
             // add created patterns
             componentPatterns.add(cpd);
@@ -592,7 +593,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 includesJoiner.toString()
         );
 
-        cpd.set(Constants.KEY_TYPE, "dpkg-distroless-package");
+        cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "dpkg-distroless");
 
         // add the created pattern
         createdComponentPatterns.add(cpd);
@@ -615,6 +617,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return suffixes;
     }
 
+    @Override
+    public int getExecutionPhase() {
+        return 1;
+    }
+
     private String readDistro() throws IOException {
         List<Path> paths = new ArrayList<>(Arrays.asList(
                 Paths.get("/etc/os-release"),
@@ -629,8 +636,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             if (Files.exists(path) && Files.size(path) > 0) {
                 List<String> lines = Files.readAllLines(path);
                 for (String line : lines) {
-                    if (path.endsWith("os-release") || path.endsWith("lsb-release")) {
-                        // Parse key-value pair files
+                    if (path.endsWith(Constants.OS_RELEASE) || path.endsWith(Constants.LSB_RELEASE)) {
+                        // parse key-value pair files
                         if (line.contains("=")) {
                             String[] parts = line.split("=", 2);
                             String key = parts[0];
@@ -639,10 +646,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                                 return value;
                             }
                         }
-                    } else if (path.endsWith("debian_version")) {
+                    } else if (path.endsWith(Constants.DEBIAN_VERSION)) {
                         // Directly return "debian" if the file exists, assuming the file content isn't needed
                         return "debian";
-                    } else if (path.endsWith("redhat-release") || path.endsWith("centos-release") || path.endsWith("system-release")) {
+                    } else if (path.endsWith(Constants.REDHAT_RELEASE) || path.endsWith(Constants.CENTOS_RELEASE) || path.endsWith(Constants.SYSTEM_RELEASE)) {
                         // Assume the file directly contains a meaningful identifier
                         return line.trim().split(" ")[0].toLowerCase(); // Simplistic parsing for distro name
                     }

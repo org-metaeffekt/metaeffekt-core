@@ -54,7 +54,7 @@ public class LicenseSummaryAdapter {
             final JSONArray row = body.getJSONArray(i);
 
             final Artifact artifact = new Artifact();
-            artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+            artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
 
             for (int j = 0; j < row.length(); j++) {
                 final String value = row.getString(j);

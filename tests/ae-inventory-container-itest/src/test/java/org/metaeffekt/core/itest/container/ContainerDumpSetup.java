@@ -30,7 +30,7 @@ public class ContainerDumpSetup {
     private static final Logger LOG = LoggerFactory.getLogger(ContainerDumpSetup.class);
 
 
-    public static String exportContainerFromRegistryByRepositoryAndTag(String registryUrl, String repository, String tag) {
+    public static String exportContainerFromRegistryByRepositoryAndTag(String registryUrl, String repository, String tag, String scanSubFolder) {
 
         if (tag == null || tag.isEmpty()) {
             tag = "latest";
@@ -43,7 +43,13 @@ public class ContainerDumpSetup {
 
         // Create a filename from the image name based on the last slash in the repository name
         String filename = repository.substring(repository.lastIndexOf("/") + 1) + "-" + tag + ".tar";
-        String outputFilePath = getScanFolder() + filename;
+        String myDir = scanSubFolder.replace("org.metaeffekt.core.itest.", "");
+        String folder = myDir.replace(".", "/") + "/";
+        String scanFolder = getScanFolder() + folder;
+        if (new File(scanFolder).mkdirs()) {
+            LOG.info("Created scan folder {}", getScanFolder() + scanSubFolder);
+        }
+        String outputFilePath = scanFolder + filename;
         File outputFile = new File(outputFilePath);
 
         // Check if the file already exists

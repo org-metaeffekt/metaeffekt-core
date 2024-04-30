@@ -179,7 +179,8 @@ public class GemSpecContributor extends ComponentPatternContributor {
             sb.append("**/" + anchorFileName);
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, sb.toString());
-            componentPatternData.set(Constants.KEY_TYPE, TYPE_VALUE_RUBY_GEM);
+            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_RUBY_GEM);
             componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
 
             // TODO: find out how to extract platform-attribute .gemspec file
@@ -196,6 +197,11 @@ public class GemSpecContributor extends ComponentPatternContributor {
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     private static String optStringValue(Element documentElement, String key) {

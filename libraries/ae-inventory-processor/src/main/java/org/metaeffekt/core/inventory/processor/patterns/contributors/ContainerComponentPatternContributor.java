@@ -81,6 +81,11 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
         return suffixes;
     }
 
+    @Override
+    public int getExecutionPhase() {
+        return 1;
+    }
+
     boolean isContainerMetadata(String artifactPath) {
         return new File(artifactPath).getName().equalsIgnoreCase("json");
     }

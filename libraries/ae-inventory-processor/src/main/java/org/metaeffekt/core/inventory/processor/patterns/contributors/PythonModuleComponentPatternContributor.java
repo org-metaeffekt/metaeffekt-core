@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class PythonModuleComponentPatternContributor extends ComponentPatternContributor {
@@ -141,7 +142,8 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         );
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
 
-        componentPatternData.set(Constants.KEY_TYPE, "python-site-package");
+        componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+        componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "python-library");
 
         String purl = buildPurl(artifact.getComponent(), artifact.getVersion());
         componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
@@ -154,10 +156,15 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         return suffixes;
     }
 
+    @Override
+    public int getExecutionPhase() {
+        return 1;
+    }
+
     private String buildPurl(String name, String version) {
         // first we have to handle that the name should not be case sensitive and underscore should be replaced by dash
         // see: https://github.com/package-url/purl-spec/blob/master/PURL-TYPES.rst#pypi
-        name = name.toLowerCase().replace("_", "-");
+        name = name.toLowerCase(Locale.ENGLISH).replace("_", "-");
         return "pkg:pypi/" + name + "@" + version;
     }
 }

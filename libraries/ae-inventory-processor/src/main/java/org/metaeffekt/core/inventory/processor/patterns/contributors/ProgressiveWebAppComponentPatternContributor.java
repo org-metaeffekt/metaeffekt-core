@@ -15,32 +15,34 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class NextcloudAppInfoContributor extends ComponentPatternContributor {
+public class ProgressiveWebAppComponentPatternContributor extends ComponentPatternContributor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ProgressiveWebAppComponentPatternContributor.class);
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
-        add("/appinfo/info.xml");
+        add("manifest.json");
+        add("service-worker.js");
     }});
 
-    public static final String TYPE_VALUE_NEXTCLOUD_APP = "nextcloud-app";
+    public static final String TYPE_VALUE_PWA = "pwa-module";
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/appinfo/info.xml");
+        return pathInContext.endsWith("manifest.json") || pathInContext.endsWith("service-worker.js");
     }
 
     @Override
@@ -50,35 +52,26 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
         final File contextBaseDir = anchorFile.getParentFile().getParentFile();
 
         try {
-            final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            final Document doc = builder.parse(anchorFile);
-            final Element documentElement = doc.getDocumentElement();
-
-            final String id = optStringValue(documentElement, "id");
-            final String version = optStringValue(documentElement, "version");
-            final String name = optStringValue(documentElement, "name");
-            final String url = optStringValue(documentElement, "repository");
-
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
             final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
+            String manifestContent = new String(Files.readAllBytes(Paths.get(anchorFile.getPath())), StandardCharsets.UTF_8);
+
+            // Parse content using JSONObject
+            JSONObject jsonObject = new JSONObject(manifestContent);
+            String name = jsonObject.optString("name", "N/A");  // TODO: provide a default name if not found
+            String version = jsonObject.optString("version", "N/A");  // TODO: provide a default version if not found
+
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFile.getName());
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, id);
+            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
 
-            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                    "**/node_modules/**/*" + "," +
-                    "**/bower_components/**/*" + "," +
-                    "**/*.jar");
-
-            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
-            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_NEXTCLOUD_APP);
-            componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
+            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_PWA);
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
@@ -94,13 +87,5 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
     @Override
     public int getExecutionPhase() {
         return 1;
-    }
-
-    private static String optStringValue(Element documentElement, String key) {
-        final NodeList optNodeList = documentElement.getElementsByTagName(key);
-        if (optNodeList.getLength() > 0) {
-            return optNodeList.item(0).getTextContent();
-        }
-        return null;
     }
 }

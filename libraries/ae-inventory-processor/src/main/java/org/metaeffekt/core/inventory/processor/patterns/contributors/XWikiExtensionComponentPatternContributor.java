@@ -106,7 +106,8 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
             }
 
             // NOTE: potentially a mapping is required
-            componentPatternData.set(Constants.KEY_TYPE, "xwiki-extension");
+            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "xwiki-extension");
 
             componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
 
@@ -119,6 +120,11 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     private static String optStringValue(Element documentElement, String key) {

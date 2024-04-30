@@ -20,35 +20,21 @@ import org.metaeffekt.core.inventory.processor.patterns.contributors.ComponentPa
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ComponentPatternContributorRunner {
     /**
-     * Central map used for resolving which runner to use.<br>
-     * It must represent the order that the contributors were inserted in:
-     * <ul>
-     *     <li>insertion must work in series</li>
-     *     <li>for each contributor, generate an entry for each registered suffix</li>
-     *     <li>(this means that for each suffix, the earliest added contributor takes priority)</li>
-     *     <li>the order in which suffixes were added is now important (in contrast to the previous impl)</li>
-     * </ul>
-     * By doing this, it should yield the same behaviour as the previous implementation.
+     * This map is used to store the contributors in the order of their phase.
      * <br>
-     * Do not modify it after construction! Ideally, the implementation should be unmodifiable.
-     */
-    private final Map<String, List<ComponentPatternContributor>> contributorResolver;
-
-    /**
-     * This list is carried along to record added contributors in correct order.
+     * The key is the phase number, the value is a list of contributors that are registered for that phase.
      * <br>
-     * This may become useful for debugging purposes or be used to reconstruct a runner from an existing list.
-     * Since the order is important, this will be much simpler than trying to reconstruct the order from
-     * the {@link #contributorResolver}.
+     * This is used to run the contributors in the correct order.
      */
-    private final List<ComponentPatternContributor> registeredContributors;
+    private TreeMap<Integer, Map<String, List<ComponentPatternContributor>>> phaseContributors;
 
     public static class ComponentPatternContributorRunnerBuilder {
-        private final Map<String, List<ComponentPatternContributor>> contributorResolver = new LinkedHashMap<>();
-        private final List<ComponentPatternContributor> registeredContributors = new ArrayList<>();
+        private final TreeMap<Integer, Map<String, List<ComponentPatternContributor>>> phaseContributors = new TreeMap<>();
 
         /**
          * Use {@link ComponentPatternContributorRunner#builder()}.
@@ -58,11 +44,14 @@ public class ComponentPatternContributorRunner {
         /**
          * Adds a contributor to the resolver, used for later running.
          * @param contributor the contributor to be added
+         * @return the builder
          */
         public synchronized ComponentPatternContributorRunnerBuilder add(ComponentPatternContributor contributor) {
-            registeredContributors.add(contributor);
+            int phase = contributor.getExecutionPhase();
+            phaseContributors.computeIfAbsent(phase, k -> new HashMap<>());
+
             for (String suffix : contributor.getSuffixes()) {
-                contributorResolver.computeIfAbsent(suffix, (k) -> new ArrayList<>()).add(contributor);
+                phaseContributors.get(phase).computeIfAbsent(suffix, k -> new ArrayList<>()).add(contributor);
             }
             return this;
         }
@@ -72,21 +61,12 @@ public class ComponentPatternContributorRunner {
          * @return the built object
          */
         public synchronized ComponentPatternContributorRunner build() {
-            return new ComponentPatternContributorRunner(contributorResolver, registeredContributors);
+            return new ComponentPatternContributorRunner(phaseContributors);
         }
     }
 
-    private ComponentPatternContributorRunner(
-            Map<String, List<ComponentPatternContributor>> contributorResolver,
-            List<ComponentPatternContributor> registeredContributors) {
-        LinkedHashMap<String, List<ComponentPatternContributor>> intermediate = new LinkedHashMap<>();
-        for (Map.Entry<String, List<ComponentPatternContributor>> entry : contributorResolver.entrySet()) {
-            intermediate.put(entry.getKey(), Collections.unmodifiableList(new ArrayList<>(entry.getValue())));
-        }
-
-        // make these unmodifiable to prevent accidents
-        this.contributorResolver = Collections.unmodifiableMap(intermediate);
-        this.registeredContributors = Collections.unmodifiableList(registeredContributors);
+    private ComponentPatternContributorRunner(TreeMap<Integer, Map<String, List<ComponentPatternContributor>>> phaseContributors) {
+        this.phaseContributors = phaseContributors;
     }
 
     /**
@@ -105,37 +85,45 @@ public class ComponentPatternContributorRunner {
      * @return returns a list of generated component patterns
      */
     public List<ComponentPatternData> run(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
-        Objects.requireNonNull(relativeAnchorFilePath);
-
-        String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(
-                ComponentPatternProducer.localeConstants.PATH_LOCALE
-        );
-
-        for (Map.Entry<String, List<ComponentPatternContributor>> entry : contributorResolver.entrySet()) {
-            if (lowercasedPathInContext.endsWith(entry.getKey())) {
-                // this is a hit. value contributors declare interest in this file (by suffix check)
-                for (ComponentPatternContributor contributor : entry.getValue()) {
-                    // this needs the second layer of applies checks
-                    if (contributor.applies(relativeAnchorFilePath)) {
-                        List<ComponentPatternData> componentPatterns =
-                                contributor.contribute(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
-
-                        for (ComponentPatternData componentPattern : componentPatterns) {
-                            componentPattern.setContext(contributor.getClass().getName());
+        List<ComponentPatternData> results = new ArrayList<>();
+        for (Map.Entry<Integer, Map<String, List<ComponentPatternContributor>>> phaseEntry : phaseContributors.entrySet()) {
+            for (Map.Entry<String, List<ComponentPatternContributor>> suffixEntry : phaseEntry.getValue().entrySet()) {
+                String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.localeConstants.PATH_LOCALE);
+                Pattern pattern = convertWildcardPatternToRegex(suffixEntry.getKey());
+                Matcher matcher = pattern.matcher(lowercasedPathInContext);
+                if (matcher.find()) {
+                    for (ComponentPatternContributor contributor : suffixEntry.getValue()) {
+                        if (contributor.applies(relativeAnchorFilePath)) {
+                            List<ComponentPatternData> componentPatterns =
+                                    contributor.contribute(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+                            results.addAll(componentPatterns);
                         }
-
-                        // first applicable contributor wins.
-                        return componentPatterns;
                     }
                 }
-                // no applicable contributors for this suffix
             }
         }
-        // no applicable suffix, so no contributors present that declare support for this file. no derived patterns.
-        return Collections.emptyList();
+        return results;
     }
 
-    public List<ComponentPatternContributor> getRegisteredContributors() {
-        return registeredContributors;
+    /**
+     * Converts a wildcard pattern to a regex pattern.
+     * @param wildcardPattern the pattern to convert
+     * @return the converted pattern
+     */
+    private Pattern convertWildcardPatternToRegex(String wildcardPattern) {
+        // Escape special regex characters except "*" (which we'll handle separately)
+        String escapedPattern = wildcardPattern
+                .replace(".", "\\.")
+                .replace("?", "\\?")
+                .replace("**", ".*") // Convert "**" to ".*" in regex, which means "any characters"
+                .replace("/", "\\/"); // Escape forward slashes
+
+        // Ensure the pattern matches the end of the string if it does not contain wildcards
+        if (!wildcardPattern.contains("*")) {
+            escapedPattern = ".*" + escapedPattern + "$";
+        }
+
+        return Pattern.compile(escapedPattern);
     }
+
 }

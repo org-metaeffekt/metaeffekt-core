@@ -78,7 +78,8 @@ public class Artifact extends AbstractModelBase {
         HASH_SHA256("Hash (SHA-256)"),
         PATH_IN_ASSET("Path in Asset"),
         VIRTUAL_ROOT_PATH("Virtual Root Path"),
-        PURL("PURL");
+        PURL("PURL"),
+        COMPONENT_SOURCE_TYPE("Component Source Type");
 
         private String key;
 

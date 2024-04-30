@@ -80,12 +80,12 @@ public class NpmPackageLockAdapter {
                     module = module.substring(index + prefix.length());
                 }
 
-                // TODO: find out why sometimes version is null, even though it gets filled later on
                 if (version != null) {
                     artifact.setId(module + "-" + version);
                     artifact.setComponent(module);
                     artifact.setVersion(version);
-                    artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+                    artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+                    artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
                     artifact.setUrl(url);
                     artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
                     artifact.set(Artifact.Attribute.VIRTUAL_ROOT_PATH, path);

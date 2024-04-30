@@ -65,6 +65,7 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
                 componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*");
 
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+                componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "node-runtime");
 
                 return Collections.singletonList(componentPatternData);
             }
@@ -77,6 +78,11 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     private static String parseVersionFromAnchorFile(File anchorFile) throws IOException {

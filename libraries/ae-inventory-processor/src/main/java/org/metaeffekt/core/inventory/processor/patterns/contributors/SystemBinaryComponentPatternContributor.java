@@ -25,12 +25,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SystemBinariesComponentPatternContributor extends ComponentPatternContributor {
+public class SystemBinaryComponentPatternContributor extends ComponentPatternContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SystemBinariesComponentPatternContributor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SystemBinaryComponentPatternContributor.class);
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/usr/bin/**");
     }});
@@ -55,9 +56,9 @@ public class SystemBinariesComponentPatternContributor extends ComponentPatternC
             }
             executeCommand(new String[]{"chmod", "+x", anchorFile.getAbsolutePath()});
             String version = executeCommand(new String[]{anchorFile.getAbsolutePath(), "--version"});
-            if (version.equals("N/A")) {
+            if (version == null || version.equals("N/A")) {
                 version = executeCommand(new String[]{anchorFile.getAbsolutePath(), "-V"});
-                if (version.equals("N/A")) {
+                if (version == null || version.equals("N/A")) {
                     version = executeCommand(new String[]{anchorFile.getAbsolutePath(), "-W", "version"});
                 }
             }
@@ -85,20 +86,24 @@ public class SystemBinariesComponentPatternContributor extends ComponentPatternC
         return suffixes;
     }
 
-    private static String executeCommand(String[] commands) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder(commands);
-        processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
+    @Override
+    public int getExecutionPhase() {
+        return 2;
+    }
 
-        StringBuilder output = new StringBuilder();
-        String versionString = null; // This will hold the first matched version string
+    public static String executeCommand(String[] commands) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<String> future = executor.submit(() -> {
+            ProcessBuilder processBuilder = new ProcessBuilder(commands);
+            processBuilder.redirectErrorStream(true);
+            StringBuilder output = new StringBuilder();
+            Process process = processBuilder.start();
+            String versionString = null; // This will hold the first matched version string
 
-        // Pattern to match version numbers in the format x.x or x.x.x
-        Pattern versionPattern = Pattern.compile("\\d+\\.\\d+(\\.\\d+)?(\\.\\d+)?");
+            // Pattern to match version numbers in the format x.x or x.x.x
+            Pattern versionPattern = Pattern.compile("\\d+\\.\\d+(\\.\\d+)?(\\.\\d+)?");
 
-        try (InputStream is = process.getInputStream();
-             InputStreamReader isr = new InputStreamReader(is);
-             BufferedReader reader = new BufferedReader(isr)) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
@@ -110,17 +115,30 @@ public class SystemBinariesComponentPatternContributor extends ComponentPatternC
                     }
                 }
             }
+            int exitVal = process.waitFor();
+            if (exitVal != 0) {
+                LOG.warn("Command execution failed with exit code {} and output: {}", exitVal, output);
+                return "N/A";
+            }
+            if (versionString != null) {
+                return versionString; // Return the found version string
+            } else {
+                return "N/A"; // Return a default message if no version string is found
+            }
+        });
 
-        int exitVal = process.waitFor(); // Wait for the process to complete.
-        if (exitVal != 0) {
-            // Handle the case where the process did not complete successfully.
-            LOG.error("Command execution for command {} failed with exit code {} and output: {}", commands, exitVal, output);
-        }
-
-        if (versionString != null) {
-            return versionString; // Return the found version string
-        } else {
-            return "N/A"; // Return a default message if no version string is found
+        try {
+            // Wait for the command to complete within 500 milliseconds
+            return future.get(500, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            LOG.error("Command execution timed out", e);
+            future.cancel(true);  // Attempt to cancel the ongoing command
+            return "N/A";
+        } catch (ExecutionException | InterruptedException e) {
+            LOG.error("Failed to execute command", e);
+            return "N/A";
+        } finally {
+            executor.shutdownNow();  // Ensure the executor is properly shut down
         }
     }
 
@@ -130,7 +148,6 @@ public class SystemBinariesComponentPatternContributor extends ComponentPatternC
         Process process = processBuilder.start();
 
         StringBuilder output = new StringBuilder();
-        boolean isExecutable = false;
 
         try (InputStream is = process.getInputStream();
              InputStreamReader isr = new InputStreamReader(is);
@@ -139,8 +156,7 @@ public class SystemBinariesComponentPatternContributor extends ComponentPatternC
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
                 if (line.contains("executable") && !line.contains("ASCII text") && !line.contains("script")) {
-                    isExecutable = true;
-                    break; // Exit the loop early if the file is found to be an executable
+                    return true;
                 }
             }
         }
@@ -151,6 +167,6 @@ public class SystemBinariesComponentPatternContributor extends ComponentPatternC
             LOG.error("isFileExecutable command execution failed with exit code {} and output: {}", exitVal, output);
         }
 
-        return isExecutable;
+        return false;
     }
 }

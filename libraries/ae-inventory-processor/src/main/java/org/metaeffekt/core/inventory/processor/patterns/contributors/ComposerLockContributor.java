@@ -60,7 +60,7 @@ public class ComposerLockContributor extends ComponentPatternContributor {
                 final String name = jsonObject.optString("name");
                 String version = jsonObject.optString("version");
 
-                if (version.startsWith("v")) {
+                if (version != null && version.startsWith("v")) {
                     version = version.substring(1);
                 }
                 final String purl = buildPurl(name, version);
@@ -83,6 +83,7 @@ public class ComposerLockContributor extends ComponentPatternContributor {
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, name + "/**/*");
+                componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*");
 
                 // exclude embedded web modules; these require to be identified by themselves
                 componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
@@ -93,7 +94,8 @@ public class ComposerLockContributor extends ComponentPatternContributor {
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
 
-                componentPatternData.set(Constants.KEY_TYPE, TYPE_VALUE_PHP_COMPOSER);
+                componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+                componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_PHP_COMPOSER);
                 componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
                 componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
 
@@ -109,6 +111,11 @@ public class ComposerLockContributor extends ComponentPatternContributor {
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     public static String buildPurl(String name, String version) {

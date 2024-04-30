@@ -107,7 +107,7 @@ public class JarInspector extends AbstractJarInspector {
         final Artifact dummyArtifact = new Artifact();
         String groupId = pomProperties.getProperty("groupId", artifact.getGroupId());
         String version = pomProperties.getProperty("version", artifact.getVersion());
-        String artifactId = pomProperties.getProperty("artifactId", artifact.getId());
+        String artifactId = pomProperties.getProperty("artifactId", artifact.getArtifactId());
         String packaging = pomProperties.getProperty("packaging", "jar");
         dummyArtifact.setGroupId(groupId);
         dummyArtifact.setVersion(version);
@@ -238,8 +238,8 @@ public class JarInspector extends AbstractJarInspector {
 
             String purl = buildPurl(model.getGroupId(), model.getArtifactId(), dummyArtifact.getVersion(), model.getPackaging());
             dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
-            // is this a package? we need actually a type for this though
-            dummyArtifact.set(Artifact.Attribute.TYPE, "jar-manifest-component");
+            dummyArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+            dummyArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
 
             // NOTE: the current mode is identification. POM specified licenses are not subject to identification
             // Furthermore, the leaf-pom may not include license information.
@@ -311,7 +311,7 @@ public class JarInspector extends AbstractJarInspector {
         // manifest derived information is only used as fallback
         final List<Artifact> manifestArtifacts = new ArrayList<>();
 
-        try (ZipFile zipFile = new ZipFile(jarFile)) {
+        try (ZipFile zipFile = ZipFile.builder().setFile(jarFile).get()) {
             final Enumeration<ZipArchiveEntry> entries = zipFile.getEntries();
 
             while (entries.hasMoreElements()) {

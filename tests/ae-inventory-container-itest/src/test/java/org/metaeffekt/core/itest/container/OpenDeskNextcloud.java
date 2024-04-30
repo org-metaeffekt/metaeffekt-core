@@ -41,7 +41,7 @@ public class OpenDeskNextcloud extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/platform-development/images/opendesk-nextcloud-php", "1.8.4@sha256:d51ca3e22a493d6dd625cf9bfa40f96481ba36894a9d3eed1e082eadaef72c5c");
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/platform-development/images/opendesk-nextcloud-php", "1.8.4@sha256:d51ca3e22a493d6dd625cf9bfa40f96481ba36894a9d3eed1e082eadaef72c5c", OpenDeskNextcloud.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)

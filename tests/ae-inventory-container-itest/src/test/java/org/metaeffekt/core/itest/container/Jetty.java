@@ -37,7 +37,7 @@ public class Jetty extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, Jetty.class.getSimpleName().toLowerCase(), null);
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, Jetty.class.getSimpleName().toLowerCase(), null, Jetty.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
