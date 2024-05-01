@@ -207,11 +207,19 @@ public class AeaaContentIdentifiers {
             }
         }
 
-        // well formed name will replace underscores/dashes with spaces and capitalize the first letter of each word
-        final String wellFormedName = WordUtils.capitalize(name.toLowerCase().replaceAll("[-_]", " "));
+        final String wellFormedName = createWellFormedNameFromBaseName(name);
         final AeaaContentIdentifiers createdIdentifier = new AeaaContentIdentifiers(name, wellFormedName, Pattern.compile("UNDEFINED"), AeaaGeneralAdvisorEntry.class, AeaaGeneralAdvisorEntry::new);
         AeaaContentIdentifiers.registerContentIdentifier(createdIdentifier);
         return createdIdentifier;
+    }
+
+    private static String createWellFormedNameFromBaseName(String name) {
+        name = name.toLowerCase().replaceAll("[-_]", " ");
+        if (name.startsWith("cert ")) {
+            return name.replaceFirst("cert ", "CERT-").toUpperCase();
+        } else {
+            return WordUtils.capitalize(name);
+        }
     }
 
     public static void registerContentIdentifier(AeaaContentIdentifiers contentIdentifier) {
