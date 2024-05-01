@@ -21,6 +21,7 @@ import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -85,29 +86,27 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     }
 
     public AeaaContentIdentifiers getEntrySource() {
-        for (AeaaContentIdentifiers sourceIdentifier : AeaaContentIdentifiers.values()) {
-            if (sourceIdentifier.isAdvisoryProvider() && sourceIdentifier.getAdvisoryEntryClass() == this.getClass()) {
-                return sourceIdentifier;
-            }
-        }
-
-        final AeaaContentIdentifiers idSource = AeaaContentIdentifiers.fromEntryIdentifier(id);
-
-        if (idSource == AeaaContentIdentifiers.CVE && !dataSources.isEmpty()) {
-            final AeaaContentIdentifiers firstDataSource = dataSources.iterator().next();
-            if (firstDataSource != AeaaContentIdentifiers.CVE) {
-                return firstDataSource;
-            }
-        }
-
-        if (idSource != AeaaContentIdentifiers.UNKNOWN) {
-            return idSource;
-        } else if (!dataSources.isEmpty()) {
-            LOG.warn("Could not infer advisor source from id: {}", id);
-            return dataSources.iterator().next();
+        if (this instanceof AeaaAdvisoryEntry) {
+            return AeaaContentIdentifiers.extractSourceFromAdvisor((AeaaAdvisoryEntry) this);
         } else {
-            LOG.warn("Could not infer advisor source from id [{}] and no data sources are set, setting to [{}]", id, AeaaContentIdentifiers.UNKNOWN.name());
-            return AeaaContentIdentifiers.UNKNOWN;
+            final AeaaContentIdentifiers idSource = AeaaContentIdentifiers.fromEntryIdentifier(id);
+
+            if (idSource == AeaaContentIdentifiers.CVE && !dataSources.isEmpty()) {
+                final AeaaContentIdentifiers firstDataSource = dataSources.iterator().next();
+                if (firstDataSource != AeaaContentIdentifiers.CVE) {
+                    return firstDataSource;
+                }
+            }
+
+            if (idSource != AeaaContentIdentifiers.UNKNOWN) {
+                return idSource;
+            } else if (!dataSources.isEmpty()) {
+                LOG.warn("Could not infer advisor source from id: {}", id);
+                return dataSources.iterator().next();
+            } else {
+                LOG.warn("Could not infer advisor source from id [{}] and no data sources are set, setting to [{}]", id, AeaaContentIdentifiers.UNKNOWN.name());
+                return AeaaContentIdentifiers.UNKNOWN;
+            }
         }
     }
 
@@ -184,21 +183,27 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     /* DATA TYPE CONVERSION METHODS */
 
     @Override
-    public void appendFromBaseModel(AMB vmd) {
-        super.appendFromBaseModel(vmd);
+    public void appendFromBaseModel(AMB amb) {
+        super.appendFromBaseModel(amb);
 
-        final String matchingSource = vmd.get(AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey());
+        final String matchingSource = amb.get(AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey());
         if (matchingSource != null) {
             AeaaDataSourceIndicator.fromJson(new JSONArray(matchingSource))
                     .forEach(this::addMatchingSource);
         }
 
-        final String dataFillingSources = vmd.get(AdvisoryMetaData.Attribute.DATA_SOURCE.getKey());
+        final String dataFillingSources = amb.get(AdvisoryMetaData.Attribute.DATA_SOURCE.getKey());
         if (dataFillingSources != null) {
             Arrays.stream(dataFillingSources.split(", ?"))
                     .filter(StringUtils::hasText)
                     .distinct()
-                    .map(AeaaContentIdentifiers::fromName)
+                    .map(source -> {
+                        if (this instanceof AeaaAdvisoryEntry) {
+                            return AeaaContentIdentifiers.findOrCreateGenericNamedAdvisory(source);
+                        } else {
+                            return AeaaContentIdentifiers.fromName(source);
+                        }
+                    })
                     .forEach(this::addDataSource);
         }
     }

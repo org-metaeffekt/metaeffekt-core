@@ -59,7 +59,7 @@ public class AeaaDataSourceIndicator {
 
     public static AeaaDataSourceIndicator fromJson(JSONObject json) {
         return new AeaaDataSourceIndicator(
-                AeaaContentIdentifiers.valueOf(json.getString("source")),
+                AeaaContentIdentifiers.fromName(json.getString("source")),
                 Reason.fromJson(json.getJSONObject("matches"))
         );
     }
