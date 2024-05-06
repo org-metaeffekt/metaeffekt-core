@@ -57,7 +57,6 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
             String manifestContent = new String(Files.readAllBytes(Paths.get(anchorFile.getPath())), StandardCharsets.UTF_8);
 
-            // Parse content using JSONObject
             JSONObject jsonObject = new JSONObject(manifestContent);
             String name = jsonObject.optString("name", "N/A");  // TODO: provide a default name if not found
             String version = jsonObject.optString("version", "N/A");  // TODO: provide a default version if not found

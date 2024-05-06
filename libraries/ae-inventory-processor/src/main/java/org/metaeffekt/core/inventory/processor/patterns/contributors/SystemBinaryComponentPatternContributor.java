@@ -34,13 +34,14 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
     private static final Logger LOG = LoggerFactory.getLogger(SystemBinaryComponentPatternContributor.class);
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/usr/bin/**");
+        add("/usr/sbin/**");
     }});
 
     public static final String TYPE_VALUE_SYSTEM_BINARY = "system-binary";
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.contains("/usr/bin/");
+        return pathInContext.contains("/usr/bin/") || pathInContext.contains("/usr/sbin/");
     }
 
     @Override
@@ -55,13 +56,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
                 return Collections.emptyList();
             }
             executeCommand(new String[]{"chmod", "+x", anchorFile.getAbsolutePath()});
-            String version = executeCommand(new String[]{anchorFile.getAbsolutePath(), "--version"});
-            if (version == null || version.equals("N/A")) {
-                version = executeCommand(new String[]{anchorFile.getAbsolutePath(), "-V"});
-                if (version == null || version.equals("N/A")) {
-                    version = executeCommand(new String[]{anchorFile.getAbsolutePath(), "-W", "version"});
-                }
-            }
+            String version = getVersion(anchorFile);
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
             final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
@@ -97,17 +92,23 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
             processBuilder.redirectErrorStream(true);
             StringBuilder output = new StringBuilder();
-            Process process = processBuilder.start();
+            Process process;
+            try {
+                process = processBuilder.start();
+            } catch (IOException e) {
+                LOG.warn("Cannot run program", e);
+                return "N/A";
+            }
             String versionString = null; // This will hold the first matched version string
 
-            // Pattern to match version numbers in the format x.x or x.x.x
+            // pattern to match version numbers in the format x.x or x.x.x
             Pattern versionPattern = Pattern.compile("\\d+\\.\\d+(\\.\\d+)?(\\.\\d+)?");
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.append(line).append("\n");
-                    // Only search for version string if not already found
+                    // only search for version string if not already found
                     Matcher matcher = versionPattern.matcher(line);
                     if (matcher.find()) {
                         versionString = matcher.group();
@@ -121,24 +122,24 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
                 return "N/A";
             }
             if (versionString != null) {
-                return versionString; // Return the found version string
+                return versionString; // return the found version string
             } else {
-                return "N/A"; // Return a default message if no version string is found
+                return "N/A"; // return a default version if no version string is found
             }
         });
 
         try {
-            // Wait for the command to complete within 500 milliseconds
+            // wait for the command to complete within 500 milliseconds
             return future.get(500, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
             LOG.error("Command execution timed out", e);
-            future.cancel(true);  // Attempt to cancel the ongoing command
+            future.cancel(true);  // attempt to cancel the ongoing command
             return "N/A";
         } catch (ExecutionException | InterruptedException e) {
             LOG.error("Failed to execute command", e);
             return "N/A";
         } finally {
-            executor.shutdownNow();  // Ensure the executor is properly shut down
+            executor.shutdownNow();  // ensure the executor is properly shut down
         }
     }
 
@@ -161,12 +162,30 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             }
         }
 
-        int exitVal = process.waitFor(); // Wait for the process to complete.
+        int exitVal = process.waitFor(); // wait for the process to complete.
         if (exitVal != 0) {
-            // Handle the case where the process did not complete successfully.
+            // handle the case where the process did not complete successfully.
             LOG.error("isFileExecutable command execution failed with exit code {} and output: {}", exitVal, output);
         }
 
         return false;
+    }
+
+    private static String getVersion(File anchorFile) {
+        // array of command arguments to try in sequence
+        String[][] commands = {
+                {anchorFile.getAbsolutePath(), "--version"},
+                {anchorFile.getAbsolutePath(), "-V"},
+                {anchorFile.getAbsolutePath(), "-W", "version"}
+        };
+
+        String version = "N/A";  // TODO: default value if no valid version is found
+        for (String[] command : commands) {
+            version = executeCommand(command);
+            if (version != null && !version.equals("N/A")) {
+                break;  // break out of the loop if a valid version is found
+            }
+        }
+        return version;
     }
 }
