@@ -544,7 +544,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             if (provider == null) {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null"));
             } else if (!CentralSecurityPolicyConfiguration.isAny(provider) && AeaaContentIdentifiers.fromName(provider) == AeaaContentIdentifiers.UNKNOWN) {
-                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + Arrays.toString(AeaaContentIdentifiers.values())));
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + AeaaContentIdentifiers.values().stream().map(AeaaContentIdentifiers::name).collect(Collectors.joining(", "))));
             }
         }
 
@@ -560,7 +560,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             if (provider == null) {
                 misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null"));
             } else if (!CentralSecurityPolicyConfiguration.isAny(provider) && AeaaContentIdentifiers.fromName(provider) == AeaaContentIdentifiers.UNKNOWN) {
-                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + Arrays.toString(AeaaContentIdentifiers.values())));
+                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + AeaaContentIdentifiers.values().stream().map(AeaaContentIdentifiers::name).collect(Collectors.joining(", "))));
             }
         }
 

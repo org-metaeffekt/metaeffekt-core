@@ -79,6 +79,8 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         return CONVERSION_KEYS_MAP;
     }
 
+    protected String source;
+
     protected String summary;
     protected final List<AeaaDescriptionParagraph> description = new ArrayList<>();
 
@@ -103,9 +105,13 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
 
     public AeaaAdvisoryEntry(AeaaContentIdentifiers source) {
         if (source == null || source == AeaaContentIdentifiers.UNKNOWN) {
-            LOG.warn("{} source is null or unknown: {}", AeaaAdvisoryEntry.class.getSimpleName(), source);
+            this.source = AeaaContentIdentifiers.UNKNOWN_ADVISORY.name();
+            LOG.warn("[{}] source is null or unknown [{}], using [{}]", this.getClass().getSimpleName(), source, this.source);
+        } else if (source == AeaaContentIdentifiers.UNKNOWN_ADVISORY) {
+            this.source = AeaaContentIdentifiers.UNKNOWN_ADVISORY.name();
         } else {
-            this.addDataSource(source);
+            this.source = source.name();
+            super.addDataSource(source);
         }
     }
 
@@ -116,6 +122,16 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
 
     public AeaaAdvisoryEntry(AeaaContentIdentifiers source, String id) {
         this(source);
+        this.id = id;
+    }
+
+    public AeaaAdvisoryEntry(String source, String id) {
+        if (source == null) {
+            LOG.warn("AdvisoryEntry source is null: {}", source);
+            this.source = AeaaContentIdentifiers.UNKNOWN_ADVISORY.name();
+        } else {
+            this.source = source;
+        }
         this.id = id;
     }
 
@@ -413,6 +429,28 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         throw new UnsupportedOperationException("getType() not implemented for " + this.getClass().getSimpleName());
     }
 
+    @Override
+    public AeaaContentIdentifiers getEntrySource() {
+        final AeaaContentIdentifiers determinedEntrySource = super.getEntrySource();
+        if ((determinedEntrySource == AeaaContentIdentifiers.UNKNOWN || determinedEntrySource == AeaaContentIdentifiers.UNKNOWN_ADVISORY) && this.source != null) {
+            return AeaaContentIdentifiers.findOrCreateGenericNamedAdvisory(this.source);
+        } else {
+            return determinedEntrySource;
+        }
+    }
+
+    public void setSource(String source) {
+        final AeaaContentIdentifiers inferredSource = AeaaContentIdentifiers.extractAdvisorySourceFromSourceOrName(this.getId(), source);
+        this.setSource(inferredSource);
+    }
+
+    public void setSource(AeaaContentIdentifiers source) {
+        if (LOG.isDebugEnabled() && !source.name().equals(this.source)) {
+            LOG.warn("Explicitly assigned source differs from originally assigned [{}] --> [{}]", this.source, source.name());
+        }
+        this.source = source.name();
+    }
+
     /* CVSS */
 
     public CvssVectorSet getCvssVectors() {
@@ -510,7 +548,15 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         super.appendToBaseModel(amd);
 
         amd.set(AdvisoryMetaData.Attribute.NAME, id);
-        amd.set(AdvisoryMetaData.Attribute.SOURCE, getEntrySource().name());
+
+        final String determinedSource = getEntrySource().name();
+        if (this.source != null && !this.source.equals(determinedSource)) {
+            LOG.warn("Provided advisory source is different from logically determined source: {} != {}, using {}", this.source, determinedSource, this.source);
+            amd.set(AdvisoryMetaData.Attribute.SOURCE, this.source);
+        } else {
+            amd.set(AdvisoryMetaData.Attribute.SOURCE, determinedSource);
+        }
+
         amd.set(AdvisoryMetaData.Attribute.URL, getUrl());
         amd.set(AdvisoryMetaData.Attribute.TYPE, getType());
 

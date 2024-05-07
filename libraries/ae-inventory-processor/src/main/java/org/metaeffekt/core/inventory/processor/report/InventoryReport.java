@@ -1345,7 +1345,7 @@ public class InventoryReport {
 
     public void addGenerateOverviewTablesForAdvisories(Collection<AeaaContentIdentifiers> providers) {
         if (providers.contains(AeaaContentIdentifiers.UNKNOWN)) {
-            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", providers, Arrays.toString(AeaaContentIdentifiers.values()));
+            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", providers, AeaaContentIdentifiers.values());
         }
 
         providers.stream()
