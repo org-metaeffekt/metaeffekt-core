@@ -144,9 +144,6 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 .endSpec()
                 .build();
 
-        // shitty index that only matches name-version pairs:
-        // cat /aports/apkbuilds.txt | sed 's/APKBUILD$//g' | while read i ; do cd "/aports/$i" ; printf "%s " "$PWD" ; abuild -F listpkg | tr '\n' ' ' ; printf '\n' ; done
-
         // not sure whether this is the same object from earlier so i'll just capture this for handling
         return client.pods().resource(podPrototype).create();
     }
