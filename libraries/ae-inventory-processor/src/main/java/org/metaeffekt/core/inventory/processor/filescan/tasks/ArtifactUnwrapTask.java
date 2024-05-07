@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
+import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -26,10 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
@@ -55,8 +53,8 @@ public class ArtifactUnwrapTask extends ScanTask {
         final String path = artifact.get(ATTRIBUTE_KEY_ARTIFACT_PATH);
         final FileRef fileRef = new FileRef(fileSystemScanContext.getBaseDir().getPath() + "/" + path);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Executing " + getClass().getName() + " on: " + fileRef);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Executing [{}] on: [{}]", getClass().getName(), fileRef.getFile().getAbsolutePath());
         }
 
         // unknown or requires expansion
@@ -109,7 +107,7 @@ public class ArtifactUnwrapTask extends ScanTask {
         if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap) && unpackIfPossible(file, targetFolder, issues)) {
             // unpack successful...
 
-            final boolean implicitExclude = !explicitInclude && !explicitUnrwap && !explicitNoUnrwap;
+            final boolean implicitExclude = !explicitInclude && !explicitUnrwap;
 
             boolean markForDelete = false;
 
@@ -120,6 +118,8 @@ public class ArtifactUnwrapTask extends ScanTask {
                     if (!parentPath.getPath().equals(fileSystemScanContext.getBaseDir().getPath())) {
                         LOG.info("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
                         markForDelete = true;
+                    } else {
+                        LOG.info("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
                     }
                 } else {
                     LOG.info("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
@@ -129,14 +129,19 @@ public class ArtifactUnwrapTask extends ScanTask {
 
             if (markForDelete) {
                 artifact.set(ATTRIBUTE_KEY_SCAN_DIRECTIVE, SCAN_DIRECTIVE_DELETE);
+
+                // the original archive file is deleted if the inventory entry is bound to be removed
+                // NOTE: otherwise the collection process will collect both the packed as well as the unpacked files.
+                FileUtils.deleteQuietly(file);
             } else {
                 addChecksumsAndHashes(fileRef);
             }
 
             // trigger collection of content
-            LOG.info("Collecting subtree on {}.", fileRef.getPath());
+            LOG.info("Collecting subtree on [{}].", fileRef.getPath());
             final FileRef dirRef = new FileRef(targetFolder);
-            fileSystemScanContext.push(new DirectoryScanTask(dirRef,
+            VirtualContext virtualContext = new VirtualContext(dirRef);
+            fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
                     rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext)));
         } else {
             // compute md5 to support component patterns (candidates for unwrap did not receive a checksum before)
@@ -148,6 +153,20 @@ public class ArtifactUnwrapTask extends ScanTask {
             }
 
             // the asset id chain remains as is
+        }
+
+        // record issues in the artifact that is being processed
+        StringJoiner issueJoiner = new StringJoiner(", ");
+        if (artifact.get("Errors") != null) {
+            issueJoiner.add(artifact.get("Errors"));
+        }
+        for (String issue : issues) {
+            issueJoiner.add(issue);
+        }
+
+        String joinedErrors = issueJoiner.toString();
+        if (StringUtils.isNotBlank(joinedErrors)) {
+            artifact.set("Errors", joinedErrors);
         }
     }
 

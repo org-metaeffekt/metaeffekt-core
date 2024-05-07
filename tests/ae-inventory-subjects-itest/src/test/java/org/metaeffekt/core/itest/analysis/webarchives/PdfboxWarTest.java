@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,9 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.GROUPID;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.IdStartsWith.idStartsWith;
+import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
 
@@ -65,12 +64,10 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(idStartsWith("pdfbox")).hasSizeOf(3);
-        analysis.selectArtifacts(idStartsWith("fontbox")).hasSizeOf(1);
-        analysis.selectArtifacts(idStartsWith("commons")).hasSizeOf(1);
-        analysis.selectArtifacts(idStartsWith("jempbox")).hasSizeOf(1);
-
-
+        analysis.selectArtifacts(startsWith(ID, "pdfbox")).hasSizeOf(3);
+        analysis.selectArtifacts(startsWith(ID, "fontbox")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(ID, "commons")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(ID, "jempbox")).hasSizeOf(1);
 
 
         analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.pdfbox")).hasSizeOf(5);
@@ -78,6 +75,6 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts(attributeValue(VERSION, "1.8.17")).hasSizeOf(5);
         analysis.selectArtifacts(attributeValue(VERSION, "1.1.1")).hasSizeOf(1);
-        }
+    }
 
 }

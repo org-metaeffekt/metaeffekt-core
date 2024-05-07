@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
@@ -63,7 +66,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         final ArrayList<String> assetIdChain = new ArrayList<>();
 
         // trigger an initial scan from basedir
-        fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), assetIdChain));
+        fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), fileSystemScanContext.getVirtualContext(), assetIdChain));
 
         awaitTasks();
 

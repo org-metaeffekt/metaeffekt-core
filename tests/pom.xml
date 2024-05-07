@@ -14,9 +14,14 @@
 
     <modules>
         <module>ae-example-module</module>
-        <module>ae-container-validation</module>
+
         <module>ae-merge-inventory-test</module>
         <module>ae-attach-asset-metadata-test</module>
+
+        <!-- FIXME: consider removing -->
+        <module>ae-container-validation</module>
+
+        <!-- integration tests -->
         <module>ae-inventory-subjects-itest</module>
     </modules>
 
@@ -42,9 +47,16 @@
 
     <profiles>
         <profile>
-            <id>container-tests</id>
+            <id>extractor-tests</id>
             <modules>
                 <module>extractor-tests</module>
+            </modules>
+        </profile>
+
+        <profile>
+            <id>run-container-tests</id>
+            <modules>
+                <module>ae-inventory-container-itest</module>
             </modules>
         </profile>
     </profiles>

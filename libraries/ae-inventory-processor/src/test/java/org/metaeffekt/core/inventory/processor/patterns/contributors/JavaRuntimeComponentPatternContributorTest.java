@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class JavaRuntimeComponentPatternContributorTest {
     public void testVariant001() {
         File file = new File("src/test/resources/component-pattern-contributor/java-runtime-001/release");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "release", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "release", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -49,7 +49,7 @@ public class JavaRuntimeComponentPatternContributorTest {
         final File file = new File("src/test/resources/component-pattern-contributor/java-runtime-002/release");
 
         final JavaRuntimeComponentPatternContributor contributor = new JavaRuntimeComponentPatternContributor();
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "release", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "release", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -64,7 +64,7 @@ public class JavaRuntimeComponentPatternContributorTest {
     public void testVariant003() {
         final File file = new File("src/test/resources/component-pattern-contributor/java-runtime-003/openjdk-17/release");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "release", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "release", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -80,7 +80,7 @@ public class JavaRuntimeComponentPatternContributorTest {
     public void testVariant004() {
         final File file = new File("src/test/resources/component-pattern-contributor/java-runtime-004/release");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "release", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "release", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -95,7 +95,7 @@ public class JavaRuntimeComponentPatternContributorTest {
     public void testVariant005() {
         File file = new File("src/test/resources/component-pattern-contributor/java-runtime-005/release");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "release", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "release", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -116,7 +116,7 @@ public class JavaRuntimeComponentPatternContributorTest {
     public void testVariant006() {
         File file = new File("src/test/resources/component-pattern-contributor/java-runtime-006/release");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), "release", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "release", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,13 +30,18 @@ public class ComponentPatternData extends AbstractModelBase {
 
     private transient Supplier<Inventory> expansionInventorySupplier;
 
+    /**
+     * Notate which component pattern contributor was used to generate this component pattern. Useful for debugging.
+     */
+    private transient String context = "UNKNOWN";
+
     public ComponentPatternData(ComponentPatternData cpd) {
         super(cpd);
         this.expansionInventorySupplier = cpd.expansionInventorySupplier;
+        this.context = cpd.context;
     }
 
-    public ComponentPatternData() {
-    }
+    public ComponentPatternData() {}
 
     public void validate(String context) {
         // validate minimal attributes
@@ -45,6 +50,10 @@ public class ComponentPatternData extends AbstractModelBase {
         validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR.getKey(), get(Attribute.VERSION_ANCHOR));
         validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR_CHECKSUM.getKey(), get(Attribute.VERSION_ANCHOR_CHECKSUM));
         validateNotEmptyOrNull(context, Attribute.COMPONENT_PART.getKey(), get(Attribute.COMPONENT_PART));
+    }
+
+    public void validate() {
+        validate(context);
     }
 
     private void validateNotEmptyOrNull(String context, String key, String s) {
@@ -65,7 +74,8 @@ public class ComponentPatternData extends AbstractModelBase {
 
         // version anchors must not be null; these are primarily for matching
         VERSION_ANCHOR("Version Anchor"),
-        VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum");
+        VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum"),
+        TYPE("Type");
 
         private String key;
 
@@ -157,5 +167,18 @@ public class ComponentPatternData extends AbstractModelBase {
 
     public Supplier<Inventory> getExpansionInventorySupplier() {
         return expansionInventorySupplier;
+    }
+
+    @Override
+    public String toString() {
+        return "ComponentPatternData: " + createCompareStringRepresentation();
+    }
+
+    public String getContext() {
+        return context;
+    }
+
+    public void setContext(String context) {
+        this.context = context;
     }
 }

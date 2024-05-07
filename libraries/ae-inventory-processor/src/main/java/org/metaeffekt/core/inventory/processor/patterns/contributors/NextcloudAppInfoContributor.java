@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,15 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class NextcloudAppInfoContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/appinfo/info.xml");
+    }});
 
     public static final String TYPE_VALUE_NEXTCLOUD_APP = "nextcloud-app";
 
@@ -39,7 +44,7 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File contextBaseDir = anchorFile.getParentFile().getParentFile();
@@ -66,6 +71,11 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
 
+            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                    "**/node_modules/**/*" + "," +
+                    "**/bower_components/**/*" + "," +
+                    "**/*.jar");
+
             componentPatternData.set(Constants.KEY_TYPE, TYPE_VALUE_NEXTCLOUD_APP);
             componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
 
@@ -73,6 +83,11 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private static String optStringValue(Element documentElement, String key) {

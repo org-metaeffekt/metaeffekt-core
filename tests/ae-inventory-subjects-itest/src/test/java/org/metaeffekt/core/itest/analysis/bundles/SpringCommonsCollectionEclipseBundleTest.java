@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.GROUPID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
 import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
@@ -64,13 +66,12 @@ public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositio
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logArtifactList();
+        analysis.selectArtifacts().logList();
 
-        analysis.selectArtifacts(attributeValue("Id", "com.springsource.org.apache.commons.collections-3.2.1.jar")).hasSizeOf(1);
-
-        // the embedded artifact is listed separately as we cannot connect it to the containing one;
-        analysis.selectArtifacts(attributeValue("Id", "commons-collections-3.2.1.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Id", "commons-collections-3.2.1.jar")).assertAll(withAttribute("Group Id"));
+        analysis.selectArtifacts(attributeValue(ID, "com.springsource.org.apache.commons.collections-3.2.1.jar")).hasSizeOf(1);
+        // the embedded artifact is listed not connect it to the containing one;
+        analysis.selectArtifacts(attributeValue(ID, "commons-collections-3.2.1.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "commons-collections-3.2.1.jar")).assertAll(withAttribute(GROUPID));
         analysis.selectArtifacts().hasSizeOf(3);
     }
 

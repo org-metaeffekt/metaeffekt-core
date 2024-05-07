@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,88 +50,94 @@ import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole
  * Encapsulates parameters defining the way how data is handled, modified, filtered and displayed throughout the
  * inventory enrichment and finally the Vulnerability Assessment Dashboard and Inventory Report.<br>
  * Any filtering properties only apply at the last steps of the pipelines.
- * <p>
- * An overview of the available parameters in the following table.
- * <table>
- *     <caption>Available parameters</caption>
- *     <tr>
- *         <th>Name / Effective name</th>
- *         <th>Type</th>
- *         <th>Description</th>
- *         <th>Default value</th>
- *     </tr>
- *     <tr>
- *         <td>cvssSeverityRanges<br>cachedCvssSeverityRanges</td>
- *         <td><code>String &rarr; CvssSeverityRanges</code></td>
- *         <td>Used to convert a CVSS score into a severity category for displaying in the report/VAD.</td>
- *         <td><code>None:pastel-gray:0.0:0.0,Low:strong-yellow:0.1:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-dark-orange:7.0:8.9,Critical:strong-red:9.0:10.0</code></td>
- *     </tr>
- *     <tr>
- *         <td>initialCvssSelector<br>cachedInitialCvssSelector</td>
- *         <td><code>String &rarr; JSONObject &rarr; CvssSelector</code></td>
- *         <td>Specifies rules that are applied step by step to overlay several selected vectors from different sources to calculate a resulting vector. This rule will be applied per CVSS version, meaning there will be multiple selected vectors. See the <code>cvssVersionSelectionPolicy</code> parameter to change what vector version is selected for displaying and calculations (severity, status &hellip;).<br>The default selector as seen on the right will only select provided vectors from several data sources, starting with the NVD and working its way through several other providers.<br>This selector will provide the &ldquo;provided&rdquo; or &ldquo;base&rdquo; vectors.</td>
- *         <td>JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_INITIAL}</td>
- *     </tr>
- *     <tr>
- *         <td>contextCvssSelector<br>cachedContextCvssSelector</td>
- *         <td><code>String &rarr; JSONObject &rarr; CvssSelector</code></td>
- *         <td>See <code>initialCvssSelector</code> for more information.<br>This selector will provide the &ldquo;effective&rdquo; (with assessment) vectors.</td>
- *         <td>JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_CONTEXT}</td>
- *     </tr>
- *     <tr>
- *         <td>insignificantThreshold</td>
- *         <td><code>double</code></td>
- *         <td>All vulnerabilities without a manually set status with a score equal/lower to the configured value will be considered &ldquo;insignificant&rdquo;. The vulnerability will obtain this status automatically when displayed in the report/VAD.</td>
- *         <td><code>7.0</code></td>
- *     </tr>
- *     <tr>
- *         <td>includeScoreThreshold</td>
- *         <td><code>double</code></td>
- *         <td>All vulnerabilities with a score lower than the configured value will be excluded from the report/VAD. <code>-1.0</code> can be used to disable this check.</td>
- *         <td><code>-1.0</code></td>
- *     </tr>
- *     <tr>
- *         <td>includeVulnerabilitiesWithAdvisoryProviders</td>
- *         <td><code>List&lt;String&gt;</code></td>
- *         <td>A list of <code>ContentIdentifiers.name()</code> or <code>ContentIdentifiers.getWellFormedName()</code> that will be evaluated for each vulnerability. If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the report. <code>all</code> can be used to ignore this check.<br>Example: <code>[CERT_FR, CERT_SEI, MSRC, GHSA]</code></td>
- *         <td><code>[all]</code></td>
- *     </tr>
- *     <tr>
- *         <td>includeAdvisoryTypes</td>
- *         <td><code>List&lt;String&gt;</code></td>
- *         <td>A list of ContentIdentifiers that will be evaluated for each advisory. If the advisory provider does not appear in the list of identifiers, it will not be included in the report/VAD. <code>all</code> can be used to include all advisories.<br>Example: <code>[alert, notice, news]</code></td>
- *         <td><code>[all]</code></td>
- *     </tr>
- *     <tr>
- *         <td>vulnerabilityStatusDisplayMapperName<br>vulnerabilityStatusDisplayMapper</td>
- *         <td><code>String &rarr; VulnerabilityStatusMapper</code></td>
- *         <td>The mapping method to use when displaying vulnerability statuses. The specified mapping method will only be used in selected fields, in the other occasions the unmodified mapper is used, which will only mark unreviewed (no status) vulnerabilities as in review.<br>Available mappers are: default, unmodified, abstracted, review state<br>Where default is the same as unmodified.<br>review state only differs from unmodified such that it groups applicable and not applicable into a reviewed category.</td>
- *         <td><code>default</code></td>
- *     </tr>
- *     <tr>
- *         <td>cvssVersionSelectionPolicy</td>
- *         <td><code>List&lt;CvssScoreVersionSelectionPolicy&gt;</code></td>
- *         <td>A list of <code>CvssScoreVersionSelectionPolicy</code> (enum) entries, where you can pick from:<br>HIGHEST, LOWEST, LATEST, OLDEST, V2, V3, V4,<br>The first selector finding a result in the baseCvssSelector / effectiveCvssSelector will be used to be displayed for the vulnerability and for further calculations.<br>The only selectors that can return no result even if there are multiple available are the version-specific selectors (V2, V3, V4), so it is wise to end your selector in one of the others if you consider using the version-specific ones as your main selector.</td>
- *         <td><code>[LATEST]</code></td>
- *     </tr>
- * </table>
  */
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
 
+    /**
+     * cvssSeverityRanges &rarr; cachedCvssSeverityRanges<br>
+     * <code>String &rarr; CvssSeverityRanges</code><p>
+     * Used to convert a CVSS score into a severity category for displaying in the report/VAD.<p>
+     * Default: JSON object value of {@link CvssSeverityRanges#CVSS_3_SEVERITY_RANGES}
+     */
     private String cvssSeverityRanges = CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString();
+    /**
+     * See {@link CentralSecurityPolicyConfiguration#cvssSeverityRanges}.
+     */
     private CvssSeverityRanges cachedCvssSeverityRanges;
 
+    /**
+     * initialCvssSelector &rarr; cachedInitialCvssSelector<br>
+     * <code>String &rarr; JSONObject &rarr; CvssSelector</code><p>
+     * Specifies rules that are applied step by step to overlay several selected vectors from different sources to calculate a resulting vector. This rule will be applied per CVSS version, meaning there will be multiple selected vectors.
+     * See the {@link CentralSecurityPolicyConfiguration#cvssVersionSelectionPolicy} parameter to change what vector version is selected for displaying and calculations (severity, status &hellip;).<br>
+     * The default selector as seen on the right will only select provided vectors from several data sources, starting with the NVD and working its way through several other providers.<br>This selector will provide the &ldquo;provided&rdquo; or &ldquo;base&rdquo; vectors.<p>
+     * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_INITIAL}
+     */
     private String initialCvssSelector = CVSS_SELECTOR_INITIAL.toJson().toString();
+    /**
+     * contextCvssSelector &rarr; cachedContextCvssSelector<br>
+     * <code>String &rarr; JSONObject &rarr; CvssSelector</code><p>
+     * See {@link CentralSecurityPolicyConfiguration#initialCvssSelector} for more information.<br>This selector will provide the &ldquo;effective&rdquo; (with assessment) vectors.<p>
+     * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_CONTEXT}
+     */
     private String contextCvssSelector = CVSS_SELECTOR_CONTEXT.toJson().toString();
+    /**
+     * See {@link CentralSecurityPolicyConfiguration#initialCvssSelector}.
+     */
     private CvssSelector cachedInitialCvssSelector;
+    /**
+     * See {@link CentralSecurityPolicyConfiguration#contextCvssSelector}.
+     */
     private CvssSelector cachedContextCvssSelector;
 
+    /**
+     * cvssVersionSelectionPolicy<br>
+     * <code>List&lt;CvssScoreVersionSelectionPolicy&gt;</code><p>
+     * A list of <code>CvssScoreVersionSelectionPolicy</code> (enum) entries, where you can pick from:<br>HIGHEST, LOWEST, LATEST, OLDEST, V2, V3, V4,<br>The first selector finding a result in the baseCvssSelector / effectiveCvssSelector will be used to be displayed for the vulnerability and for further calculations.<br>The only selectors that can return no result even if there are multiple available are the version-specific selectors (V2, V3, V4), so it is wise to end your selector in one of the others if you consider using the version-specific ones as your main selector.<p>
+     * Default: <code>[LATEST]</code>
+     */
     private List<CvssScoreVersionSelectionPolicy> cvssVersionSelectionPolicy = new ArrayList<>(Collections.singletonList(CvssScoreVersionSelectionPolicy.LATEST));
 
+    /**
+     * insignificantThreshold<br>
+     * <code>double</code><p>
+     * All vulnerabilities without a manually set status with a score equal/lower to the configured value will be considered &ldquo;insignificant&rdquo;. The vulnerability will obtain this status automatically when displayed in the report/VAD.<p>
+     * Default: <code>7.0</code>
+     */
     private double insignificantThreshold = 7.0;
+    /**
+     * includeScoreThreshold<br>
+     * <code>double</code><p>
+     * All vulnerabilities with a score lower than the configured value will be excluded from the report/VAD. <code>-1.0</code> can be used to disable this check.<p>
+     * Default: <code>-1.0</code>
+     */
     private double includeScoreThreshold = -1.0;
+
+    /**
+     * strictJsonSchemaValidation<br>
+     * {@link JsonSchemaValidationErrorsHandling}<p>
+     * If set to {@link JsonSchemaValidationErrorsHandling#LENIENT}, this will cause certain validation errors in JSON Schema validation processes to be ignored.
+     * If such a JSON Schema validation error is encountered, the error will only be logged and the process will continue.
+     * More possible values may be added in the future.<p>
+     * This currently includes the following validation errors:
+     * <ul>
+     *     <li><code>ValidatorTypeCode.ADDITIONAL_PROPERTIES</code> - <code>additionalProperties</code> - <code>1001</code></li>
+     * </ul>
+     * Reasons for setting this to {@link JsonSchemaValidationErrorsHandling#LENIENT} could be:
+     * <ul>
+     *     <li>the JSON files are used by multiple versions of the processes, where older versions either did not know certain properties or new versions removed/moved properties.</li>
+     * </ul>
+     * Default: {@link JsonSchemaValidationErrorsHandling#STRICT} from {@link CentralSecurityPolicyConfiguration#JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT}
+     */
+    private JsonSchemaValidationErrorsHandling jsonSchemaValidationErrorsHandling = JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT;
+
+    public final static JsonSchemaValidationErrorsHandling JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT = JsonSchemaValidationErrorsHandling.STRICT;
+
+    public enum JsonSchemaValidationErrorsHandling {
+        STRICT, LENIENT
+    }
 
     /**
      * Only vulnerabilities that reference a security advisory that has one of the provided states will be included in
@@ -162,11 +168,44 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default is <code>all</code>.
      */
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
+    /**
+     * includeVulnerabilitiesWithAdvisoryProviders<br>
+     * <code>List&lt;String&gt;</code><p>
+     * A list of <code>ContentIdentifiers.name()</code> or <code>ContentIdentifiers.getWellFormedName()</code> that will be evaluated for each vulnerability.
+     * If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the report. <code>all</code> can be used to ignore this check.<p>
+     * Example: <code>[CERT_FR, CERT_SEI, MSRC, GHSA]</code><br>
+     * Default: <code>[all]</code>
+     */
     private final List<String> includeVulnerabilitiesWithAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
+    /**
+     * includeAdvisoryProviders<br>
+     * <code>List&lt;String&gt;</code><p>
+     * A list of <code>ContentIdentifiers.name()</code> or <code>ContentIdentifiers.getWellFormedName()</code> that will be evaluated for each advisory.
+     * If an advisory is not of one of the specified sources, it will be excluded. <code>all</code> can be used to ignore this check.<p>
+     * Example: <code>[CERT_FR, CERT_SEI, MSRC, GHSA]</code><br>
+     * Default: <code>[all]</code>
+     */
     private final List<String> includeAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
+    /**
+     * includeAdvisoryTypes<br>
+     * <code>List&lt;String&gt;</code><p>
+     * A list of advisory types that will be evaluated for each advisory. If the advisory type does not appear in the list of identifiers, it will not be included. <code>all</code> can be used to include all advisories.<p>
+     * Example: <code>[alert, notice, news]</code><br>
+     * Default: <code>[all]</code>
+     */
     private final List<String> includeAdvisoryTypes = new ArrayList<>(Collections.singletonList("all"));
 
+    /**
+     * vulnerabilityStatusDisplayMapperName &rarr; vulnerabilityStatusDisplayMapper<br>
+     * <code>String &rarr; VulnerabilityStatusMapper</code><p>
+     * The mapping method to use when displaying vulnerability statuses. The specified mapping method will only be used in selected fields, in the other occasions the unmodified mapper is used, which will only mark unreviewed (no status) vulnerabilities as in review.<br>Available mappers are: default, unmodified, abstracted, review state<br>Where default is the same as unmodified.<br>review state only differs from unmodified such that it groups applicable and not applicable into a reviewed category.<p>
+     * Default: <code>default</code> (see {@link CentralSecurityPolicyConfiguration#VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT} and {@link CentralSecurityPolicyConfiguration#VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED})<br>
+     * Other examples: {@link CentralSecurityPolicyConfiguration#VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED}, {@link CentralSecurityPolicyConfiguration#VULNERABILITY_STATUS_DISPLAY_MAPPER_REVIEW_STATE}
+     */
     private String vulnerabilityStatusDisplayMapperName = "default";
+    /**
+     * See {@link CentralSecurityPolicyConfiguration#vulnerabilityStatusDisplayMapperName}.
+     */
     private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT;
 
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
@@ -274,6 +313,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return score >= includeScoreThreshold;
     }
 
+    public CentralSecurityPolicyConfiguration setJsonSchemaValidationErrorsHandling(JsonSchemaValidationErrorsHandling jsonSchemaValidationErrorsHandling) {
+        this.jsonSchemaValidationErrorsHandling = jsonSchemaValidationErrorsHandling;
+        return this;
+    }
+
+    public JsonSchemaValidationErrorsHandling getJsonSchemaValidationErrorsHandling() {
+        return jsonSchemaValidationErrorsHandling;
+    }
+
     public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(List<String> includeVulnerabilitiesWithAdvisoryProviders) {
         this.includeVulnerabilitiesWithAdvisoryProviders.clear();
         this.includeVulnerabilitiesWithAdvisoryProviders.addAll(includeVulnerabilitiesWithAdvisoryProviders);
@@ -294,7 +342,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 .collect(Collectors.toList());
 
         if (filter.contains(AeaaContentIdentifiers.UNKNOWN)) {
-            LOG.warn("Unknown advisory provider in includeVulnerabilitiesWithAdvisoryProviders [{}], must be one of {}", includeVulnerabilitiesWithAdvisoryProviders, AeaaContentIdentifiers.values());
+            LOG.warn("Unknown advisory provider in includeVulnerabilitiesWithAdvisoryProviders [{}], must be one of {}",
+                    includeVulnerabilitiesWithAdvisoryProviders, AeaaContentIdentifiers.values());
         }
 
         return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
@@ -409,6 +458,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("contextCvssSelector", contextCvssSelector);
         configuration.put("insignificantThreshold", insignificantThreshold);
         configuration.put("includeScoreThreshold", includeScoreThreshold);
+        configuration.put("jsonSchemaValidationErrorsHandling", jsonSchemaValidationErrorsHandling);
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
         configuration.put("includeVulnerabilitiesWithAdvisoryReviewStatus", includeVulnerabilitiesWithAdvisoryReviewStatus);
         configuration.put("includeAdvisoryProviders", includeAdvisoryProviders);
@@ -428,6 +478,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadProperty(properties, "effectiveCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector))); // deprecated
         super.loadProperty(properties, "contextCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector)));
 
+        super.loadProperty(properties, "jsonSchemaValidationErrorsHandling", value -> JsonSchemaValidationErrorsHandling.valueOf(String.valueOf(value)), this::setJsonSchemaValidationErrorsHandling);
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
@@ -520,6 +571,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             } else if (!CentralSecurityPolicyConfiguration.isAny(status) && !AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES.contains(status)) {
                 misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryReviewStatus", "Unknown advisory review status: " + status + ", must be a valid status from " + AdvisoryMetaData.ADVISORY_REVIEW_STATUS_VALUES + " or \"all\""));
             }
+        }
+
+        if (jsonSchemaValidationErrorsHandling == null) {
+            misconfigurations.add(new ProcessMisconfiguration("strictJsonSchemaValidation", "JSON schema validation must not be null"));
         }
     }
 

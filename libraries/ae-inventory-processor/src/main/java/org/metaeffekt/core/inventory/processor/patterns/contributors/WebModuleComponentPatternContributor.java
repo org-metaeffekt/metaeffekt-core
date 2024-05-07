@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,16 +34,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class WebModuleComponentPatternContributor extends ComponentPatternContributor {
-
     private static final Logger LOG = LoggerFactory.getLogger(WebModuleComponentPatternContributor.class);
 
-    @Override
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        // TODO: perhaps canonicalize these as the specs in "applies" and the suffixes are not the same
+        add(".bower.json");
+        add("/bower.json");
+        add("/package-lock.json");
+        add("/.package-lock.json");
+        add("/package.json");
+        add("/composer.json");
+    }});
+
+        @Override
     public boolean applies(String pathInContext) {
         return isWebModule(pathInContext);
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();
         final File parentDir = anchorParentDir.getParentFile();
@@ -98,8 +107,26 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
-        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, anchorParentDir.getName() + "/**/node_modules/**/*" + "," + anchorParentDir.getName() + "/**/bower_components/**/*");
-        componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDir.getName() + "/**/*");
+        final String anchorParentDirName = anchorParentDir.getName();
+
+        // set includes
+        componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDirName + "/**/*");
+
+        // set excludes
+        if ("node_modules".equalsIgnoreCase(anchorParentDirName)) {
+            // we are already in the node_modules directory; in this case omit the parent dir;
+            // this may happen when we have identified a .package-lock.json file in the node_modules folder;
+            // we have to make sure we do not include the complete node_modules folder with all modules
+            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                ".yarn-integrity," +
+                "**/node_modules/**/*," +
+                "**/bower_components/**/*");
+        } else {
+            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                anchorParentDirName + "/.yarn-integrity," +
+                anchorParentDirName + "/**/node_modules/**/*," +
+                anchorParentDirName + "/**/bower_components/**/*");
+        }
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
 
@@ -109,6 +136,11 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         }
 
         return Collections.singletonList(componentPatternData);
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private Artifact parseWebModule(File baseDir, String file, final Map<String, WebModule> pathModuleMap) throws IOException {
@@ -251,6 +283,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     protected void parseModuleDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
         switch(artifact.getId()) {
             case "package-lock.json":
+            case ".package-lock.json":
             case "composer.json":
             case "package.json":
             case ".bower.json":
@@ -293,6 +326,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             final String json = FileUtils.readFileToString(packageJsonFile, "UTF-8");
             try {
                 final JSONObject obj = new JSONObject(json);
+
                 if (StringUtils.isEmpty(webModule.version)) {
                     webModule.version = getString(obj, "version", webModule.version);
                     webModule.anchor = packageJsonFile;

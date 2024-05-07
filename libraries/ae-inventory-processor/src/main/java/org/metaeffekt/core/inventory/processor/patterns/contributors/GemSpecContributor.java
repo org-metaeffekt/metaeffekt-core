@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.exception.ContributorFailureException;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -36,20 +39,24 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
     public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem";
 
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
+        add(".gemspec");
+    }});
+
     @Override
     public boolean applies(String pathInContext) {
         return pathInContext.endsWith(".gemspec");
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File contextBaseDir = anchorFile.getParentFile().getParentFile();
 
         try {
             // parse gemspec
-            String content = FileUtils.readFileToString(anchorFile, FileUtils.ENCODING_UTF_8);
+            String content = FileUtils.readFileToString(anchorFile, StandardCharsets.UTF_8);
 
             final String anchorFileName = anchorFile.getName();
             final String id = anchorFileName.replace(".gemspec", "");
@@ -58,33 +65,64 @@ public class GemSpecContributor extends ComponentPatternContributor {
             final String parentDirName = anchorFile.getParentFile().getName();
 
             // anchor must match at least a qualified versioning string <major>.<minor> to be able to extract a version
-            final Pattern versionPattern = Pattern.compile("-[0-9]+\\.[0-9]+");
-            final Matcher matcher = versionPattern.matcher(anchorFileNameNoSuffix);
+            // FIXME: why is there a minus ("-") at the beginning of the pattern? ask karsten what this is.
+            final Pattern versionFromFilenamePattern = Pattern.compile("-[0-9]+\\.[0-9]+");
+            final Matcher matcher = versionFromFilenamePattern.matcher(anchorFileNameNoSuffix);
             int anchorNameSeparatorIndex = matcher.find() ? matcher.start() : -1;
             final String nameDerivedFromFile;
-            final String versionDerivedFromFile;
+            final String versionDerivedFromFileName;
             if (anchorNameSeparatorIndex != -1) {
                 nameDerivedFromFile = anchorFileNameNoSuffix.substring(0, anchorNameSeparatorIndex);
-                versionDerivedFromFile = anchorFileNameNoSuffix.substring(anchorNameSeparatorIndex + 1);
+                versionDerivedFromFileName = anchorFileNameNoSuffix.substring(anchorNameSeparatorIndex + 1);
             } else {
                 nameDerivedFromFile = anchorFileName;
-                versionDerivedFromFile = null;
+                versionDerivedFromFileName = null;
             }
 
             final int anchorFolderSeparatorIndex = parentDirName.lastIndexOf("-");
-            final String nameDerivedFromFolder;
-            final String versionDerivedFromFolder;
+            final String nameDerivedFromFolderName;
+            final String versionDerivedFromFolderName;
             if (anchorFolderSeparatorIndex != -1) {
-                nameDerivedFromFolder = parentDirName.substring(0, anchorFolderSeparatorIndex);
-                versionDerivedFromFolder = parentDirName.substring(anchorFolderSeparatorIndex + 1);
+                nameDerivedFromFolderName = parentDirName.substring(0, anchorFolderSeparatorIndex);
+                versionDerivedFromFolderName = parentDirName.substring(anchorFolderSeparatorIndex + 1);
             } else {
-                nameDerivedFromFolder = parentDirName;
-                versionDerivedFromFolder = null;
+                nameDerivedFromFolderName = parentDirName;
+                versionDerivedFromFolderName = null;
+            }
+
+            String versionDerivedFromGemspecContent = null;
+            try {
+                final Pattern versionLinePattern = Pattern.compile(
+                        "^[a-zA-Z0-9 ]{1,128}\\.version *=.*", Pattern.MULTILINE);
+                final Matcher versionLineMatcher = versionLinePattern.matcher(content);
+                if (!versionLineMatcher.find()) {
+                    throw new IllegalStateException("Regex could not find a valid version line in file.");
+                }
+                final String matchingVersionLine = versionLineMatcher.group();
+                final String cutAfterFirstEquals = matchingVersionLine
+                        .split("=", 2)[1]
+                        .trim();
+                System.out.println(cutAfterFirstEquals);
+                final Pattern firstQuoteFinder = Pattern.compile("[\"']");
+                Matcher firstQuoteMatcher = firstQuoteFinder.matcher(cutAfterFirstEquals);
+                if (!firstQuoteMatcher.find()) {
+                    throw new IllegalStateException("Regex could not find a valid quote in the line.");
+                }
+                String firstQuote = firstQuoteMatcher.group();
+                // find corresponding next quote. does not respect escapes.
+                int lastQuoteIndex = cutAfterFirstEquals.indexOf(firstQuote, firstQuoteMatcher.end());
+                versionDerivedFromGemspecContent = cutAfterFirstEquals
+                        .substring(firstQuoteMatcher.end(), lastQuoteIndex);
+            } catch (Exception e) {
+                // ignore, try to get version from other sources, otherwise crash later.
+                // gemspecs are actually CODE, so we may find all sorts of non-literal shenanigans.
             }
 
             // FIXME: parse version, url, license, potentially secondary name
-            String version = versionDerivedFromFile;
-            if (version == null) version = versionDerivedFromFolder;
+            String version = versionDerivedFromFileName;
+            if (version == null) version = versionDerivedFromFolderName;
+            if (version == null) version = versionDerivedFromGemspecContent;
+
             String url = null;
 
             String concludedName = nameDerivedFromFile;
@@ -110,26 +148,30 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             final StringBuilder sb = new StringBuilder();
 
-            if (versionDerivedFromFile == null && versionDerivedFromFolder == null) {
-                LOG.warn("No version extracted from Gemspec: " + relativeAnchorPath);
-                throw new IllegalStateException();
+            if (versionDerivedFromFileName == null && versionDerivedFromFolderName == null) {
+                // FIXME: why do we care? it seems it's not standard to quality version in filanems.
+                LOG.trace("No version denoted in file's or folder's name.");
+            }
+            if (version == null) {
+                LOG.error("No version extracted from Gemspec: " + relativeAnchorPath);
+                throw new IllegalStateException("No version could be extracted from the logged gemspec.");
             }
 
-            if (versionDerivedFromFile != null) {
+            if (versionDerivedFromFileName != null) {
                 // covers folders with name as folder name and anything deeper nested
-                sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFile + "/**/*").append(",");
+                sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + "/**/*").append(",");
 
                 // cover cache files
-                sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + versionDerivedFromFile + "*").append(",");
+                sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + "*").append(",");
             } else {
-                if (versionDerivedFromFolder != null) {
+                if (versionDerivedFromFolderName != null) {
                     // covers folders with name as folder name and anything deeper nested
-                    sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFolder + "/**/*").append(",");
-                    sb.append("**/" + nameDerivedFromFolder + "-" + versionDerivedFromFolder + "/**/*").append(",");
+                    sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFolderName + "/**/*").append(",");
+                    sb.append("**/" + nameDerivedFromFolderName + "-" + versionDerivedFromFolderName + "/**/*").append(",");
 
                     // cover cache folders (version may vary in cache; potential to catch more than required)
                     sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + "*" + "/**/*").append(",");
-                    sb.append("/**/cache/**/" + nameDerivedFromFolder + "-" + "*" + "/**/*").append(",");
+                    sb.append("/**/cache/**/" + nameDerivedFromFolderName + "-" + "*" + "/**/*").append(",");
                 }
             }
 
@@ -142,8 +184,14 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.error("Error [{}] while processing anchor [{}].", e.getMessage(), anchorFile.getAbsolutePath());
+            throw new ContributorFailureException(e);
         }
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private static String optStringValue(Element documentElement, String key) {

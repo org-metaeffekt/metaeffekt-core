@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -153,6 +152,7 @@ public class DirectoryInventoryScanTest {
 
         scan.setEnableImplicitUnpack(true);
         scan.setIncludeEmbedded(true);
+        scan.setEnableDetectComponentPatterns(true);
 
         final Inventory resultInventory = scan.createScanInventory();
 
@@ -200,6 +200,27 @@ public class DirectoryInventoryScanTest {
         final Inventory inventory = scan.createScanInventory();
 
         new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
+    }
+
+    @Ignore
+    @Test
+    public void testScanContainersAndStuff() throws IOException {
+        final File inputDir = new File("INPUT FILE GOES HERE");
+        final File scanDir = new File("target/SCANDIR_HERE");
+        final File outputInventory = new File("target/" + "TEST_INVENTORY_" + inputDir.getName() + ".xlsx");
+
+        final String[] scanIncludes = new String[]{"**/*"};
+        final String[] scanExcludes = new String[]{"--none--"};
+
+        final Inventory inventory = new Inventory();
+        final DirectoryInventoryScan scan =
+                new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
+        scan.setEnableImplicitUnpack(true);
+        scan.setEnableDetectComponentPatterns(true);
+
+        final Inventory resultInventory = scan.createScanInventory();
+
+        new InventoryWriter().writeInventory(resultInventory, outputInventory);
     }
 
 }

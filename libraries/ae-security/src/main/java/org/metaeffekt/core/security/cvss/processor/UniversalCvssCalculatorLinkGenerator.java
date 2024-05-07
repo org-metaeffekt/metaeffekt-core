@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.json.JSONArray;
 import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
-import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +41,7 @@ public class UniversalCvssCalculatorLinkGenerator {
 
     private String baseUrl = "https://metaeffekt.com/security/cvss/calculator";
 
-    private final List<UniversalCvssCalculatorEntry> entries = new ArrayList<>();
+    private final List<UniversalCvssCalculatorEntry<?>> entries = new ArrayList<>();
     private final Set<String> openSections = new LinkedHashSet<>();
     private final Set<String> cves = new LinkedHashSet<>();
     private CvssVector selectedVector;
@@ -50,33 +49,33 @@ public class UniversalCvssCalculatorLinkGenerator {
     public UniversalCvssCalculatorLinkGenerator() {
     }
 
-    public UniversalCvssCalculatorEntry addVectorNullThrowing(CvssVector cvssVector, String name, boolean visible) {
+    public <V extends CvssVector> UniversalCvssCalculatorEntry<V>  addVectorNullThrowing(V cvssVector, String name, boolean visible) {
         if (cvssVector == null) {
             throw new IllegalArgumentException("CVSS vector to be added must not be null.");
         }
-        final UniversalCvssCalculatorEntry entry = new UniversalCvssCalculatorEntry(cvssVector, name, visible);
+        final UniversalCvssCalculatorEntry<V> entry = new UniversalCvssCalculatorEntry<>(cvssVector, name, visible);
         entries.add(entry);
         return entry;
     }
 
-    public UniversalCvssCalculatorEntry addVectorNullThrowing(CvssVector cvssVector) {
+    public <V extends CvssVector> UniversalCvssCalculatorEntry<V>  addVectorNullThrowing(V cvssVector) {
         return addVectorNullThrowing(cvssVector, cvssVector == null ? "unknown" : cvssVector.getCombinedCvssSource(true).replace("CVSS:", ""), true);
     }
 
-    public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector, String name, boolean visible) {
+    public <V extends CvssVector> UniversalCvssCalculatorEntry<V>  addVector(V cvssVector, String name, boolean visible) {
         if (cvssVector == null) {
-            return new UniversalCvssCalculatorEntry(new Cvss3P1(), name, visible);
+            return new UniversalCvssCalculatorEntry<>(null, name, visible);
         }
-        final UniversalCvssCalculatorEntry entry = new UniversalCvssCalculatorEntry(cvssVector, name, visible);
+        final UniversalCvssCalculatorEntry<V> entry = new UniversalCvssCalculatorEntry<>(cvssVector, name, visible);
         entries.add(entry);
         return entry;
     }
 
-    public UniversalCvssCalculatorEntry addVector(CvssVector cvssVector) {
+    public <V extends CvssVector> UniversalCvssCalculatorEntry<V>  addVector(V cvssVector) {
         return addVector(cvssVector, cvssVector == null ? "unknown" : cvssVector.getCombinedCvssSource(true).replace("CVSS:", ""), true);
     }
 
-    public UniversalCvssCalculatorEntry addVectorForVulnerability(CvssVector cvssVector, String vulnerabilityName) {
+    public <V extends CvssVector> UniversalCvssCalculatorEntry<V> addVectorForVulnerability(V cvssVector, String vulnerabilityName) {
         if (StringUtils.isEmpty(vulnerabilityName)) {
             return addVector(cvssVector);
         }
@@ -143,7 +142,7 @@ public class UniversalCvssCalculatorLinkGenerator {
     }
 
     public UniversalCvssCalculatorLinkGenerator setSelectedVectorNullThrowing(String selectedVector) {
-        final UniversalCvssCalculatorEntry foundVector = findVectorEntryByName(selectedVector);
+        final UniversalCvssCalculatorEntry<?> foundVector = findVectorEntryByName(selectedVector);
         if (foundVector == null) {
             throw new IllegalArgumentException("Selected vector must be added to the link generator first.");
         }
@@ -159,7 +158,7 @@ public class UniversalCvssCalculatorLinkGenerator {
     }
 
     public UniversalCvssCalculatorLinkGenerator setSelectedVector(String selectedVector) {
-        final UniversalCvssCalculatorEntry foundVector = findVectorEntryByName(selectedVector);
+        final UniversalCvssCalculatorEntry<?> foundVector = findVectorEntryByName(selectedVector);
         if (foundVector != null) {
             this.selectedVector = foundVector.getCvssVector();
         }
@@ -180,23 +179,23 @@ public class UniversalCvssCalculatorLinkGenerator {
         return entries.isEmpty() && cves.isEmpty();
     }
 
-    protected UniversalCvssCalculatorEntry findVectorEntryByVector(CvssVector searchVector) {
+    protected <V extends CvssVector> UniversalCvssCalculatorEntry<V> findVectorEntryByVector(V searchVector) {
         if (searchVector == null) {
             return null;
         }
-        for (UniversalCvssCalculatorEntry entry : entries) {
+        for (UniversalCvssCalculatorEntry<?> entry : entries) {
             if (entry.getCvssVector().equals(searchVector)) {
-                return entry;
+                return (UniversalCvssCalculatorEntry<V>) entry;
             }
         }
         return null;
     }
 
-    protected UniversalCvssCalculatorEntry findVectorEntryByName(String searchVectorName) {
+    protected UniversalCvssCalculatorEntry<?> findVectorEntryByName(String searchVectorName) {
         if (searchVectorName == null) {
             return null;
         }
-        for (UniversalCvssCalculatorEntry entry : entries) {
+        for (UniversalCvssCalculatorEntry<?> entry : entries) {
             if (entry.getName().equals(searchVectorName)) {
                 return entry;
             }
@@ -275,17 +274,7 @@ public class UniversalCvssCalculatorLinkGenerator {
 
         if (!entries.isEmpty()) {
             final JSONArray vectorArray = new JSONArray();
-            for (UniversalCvssCalculatorEntry entry : entries) {
-                final CvssVector cvssVector = entry.getCvssVector();
-
-                final JSONArray vectorEntry = new JSONArray();
-                vectorEntry.put(entry.getName());
-                vectorEntry.put(entry.isVisible());
-                vectorEntry.put(cvssVector.toString());
-                vectorEntry.put(cvssVector.getName());
-
-                vectorArray.put(vectorEntry);
-            }
+            entries.stream().map(UniversalCvssCalculatorEntry::generateCvssVectorArrayEntry).forEach(vectorArray::put);
             parameters.put("vector", vectorArray.toString());
         }
 
@@ -294,7 +283,7 @@ public class UniversalCvssCalculatorLinkGenerator {
         }
 
         if (selectedVector != null) {
-            final UniversalCvssCalculatorEntry selectedVectorEntry = findVectorEntryByVector(selectedVector);
+            final UniversalCvssCalculatorEntry<?> selectedVectorEntry = findVectorEntryByVector(selectedVector);
             if (selectedVectorEntry != null) {
                 parameters.put("selected", selectedVectorEntry.getName());
             }
@@ -323,12 +312,13 @@ public class UniversalCvssCalculatorLinkGenerator {
         return generateLink();
     }
 
-    public static class UniversalCvssCalculatorEntry {
-        private final CvssVector cvssVector;
+    public static class UniversalCvssCalculatorEntry<V extends CvssVector> {
+        private final V cvssVector;
+        private V initialCvssVector;
         private String name;
         private boolean visible;
 
-        public UniversalCvssCalculatorEntry(CvssVector cvssVector, String name, boolean visible) {
+        public UniversalCvssCalculatorEntry(V cvssVector, String name, boolean visible) {
             this.cvssVector = cvssVector;
             this.name = name;
             this.visible = visible;
@@ -338,22 +328,50 @@ public class UniversalCvssCalculatorLinkGenerator {
             return name;
         }
 
-        public UniversalCvssCalculatorEntry setName(String name) {
+        public UniversalCvssCalculatorEntry<V> setName(String name) {
             this.name = name;
             return this;
         }
 
-        public CvssVector getCvssVector() {
+        public UniversalCvssCalculatorEntry<V> setInitialCvssVector(V initialCvssVector) {
+            this.initialCvssVector = initialCvssVector;
+            return this;
+        }
+
+        public UniversalCvssCalculatorEntry<V> setInitialCvssVectorUnchecked(CvssVector initialCvssVectorUnchecked) {
+            this.initialCvssVector = (V) initialCvssVectorUnchecked;
+            return this;
+        }
+
+        public V getCvssVector() {
             return cvssVector;
+        }
+
+        public V getInitialCvssVector() {
+            return initialCvssVector;
         }
 
         public boolean isVisible() {
             return visible;
         }
 
-        public UniversalCvssCalculatorEntry setVisible(boolean visible) {
+        public UniversalCvssCalculatorEntry<V> setVisible(boolean visible) {
             this.visible = visible;
             return this;
+        }
+
+        public JSONArray generateCvssVectorArrayEntry() {
+            final JSONArray vectorEntry = new JSONArray();
+
+            vectorEntry.put(this.name);
+            vectorEntry.put(this.isVisible());
+            vectorEntry.put(this.cvssVector == null ? "" : this.cvssVector.toString());
+            vectorEntry.put(this.cvssVector == null ? "CVSS:2.0" : this.cvssVector.getName());
+
+            if (this.initialCvssVector != null) vectorEntry.put(this.initialCvssVector.toString());
+            else vectorEntry.put((String) null);
+
+            return vectorEntry;
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,13 +56,13 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
     public void first() throws Exception {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
-                .logArtifactListWithAllAtributes()
+                .logListWithAllAttributes()
                 .with(attributeValue(ID, "spring-core-6.1.1.jar"),
                         attributeValue(CHECKSUM, "7a787700b8de9fc9034ffdc070517f51"),
                         attributeValue(VERSION, "6.1.1"),
-                        attributeValue("Hash (SHA-256)", "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
-                        attributeValue(PROJECTS,"spring-core-6.1.1.jar"),
-                        attributeValue("Path in Asset", "spring-core-6.1.1.jar")
+                        attributeValue(HASH_SHA256, "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
+                        attributeValue(PROJECTS, "spring-core-6.1.1.jar"),
+                        attributeValue(PATH_IN_ASSET, "spring-core-6.1.1.jar")
                 )
                 .assertNotEmpty();
     }

@@ -51,29 +51,27 @@
                 </thead>
                 <tbody>
                     #foreach($license in $licenseExpressions)
-                        #if ($license.contains(" + "))
-                            #set($licenseData=$inventory.findMatchingLicenseData($license))
-                            <row>
-                                #if ($assetData.isLicenseSubstructureRequired($license))
-                                    <entry>
-                                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
-                                        </xref>
-                                    </entry>
-                                #else
-                                    <entry>
-                                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                                            $report.xmlEscapeLicense($license)
-                                        </xref>
-                                    </entry>
-                                #end
+                        #set($licenseData=$inventory.findMatchingLicenseData($license))
+                        <row>
+                            #if ($assetData.isLicenseSubstructureRequired($license))
                                 <entry>
                                     <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                                        <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
+                                        $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
                                     </xref>
                                 </entry>
-                            </row>
-                        #end
+                            #else
+                                <entry>
+                                    <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                        $report.xmlEscapeLicense($license)
+                                    </xref>
+                                </entry>
+                            #end
+                            <entry>
+                                <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                    <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
+                                </xref>
+                            </entry>
+                        </row>
                     #end
                 </tbody>
             </tgroup>

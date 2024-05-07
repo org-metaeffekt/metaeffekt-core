@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,19 +50,18 @@ public class FileSystemScanContext {
      */
     private FileSystemScanTaskListener scanTaskListener;
 
+    /**
+     * Virtual contexts are used to get the virtual root path of a file.
+     */
+    private final VirtualContext virtualContext;
+
     private Map<String, String> pathToAssetIdMap = new ConcurrentHashMap<>();
 
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
         this.baseDir = baseDir;
         this.scanParam = scanParam;
-
+        this.virtualContext = new VirtualContext(baseDir);
         this.inventory = new Inventory();
-    }
-
-    public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam, Inventory inventory) {
-        this.baseDir = baseDir;
-        this.scanParam = scanParam;
-        this.inventory = inventory;
     }
 
     public synchronized void push(ScanTask scanTask) {
@@ -127,5 +126,9 @@ public class FileSystemScanContext {
         synchronized (inventory) {
             inventory.getComponentPatternData().add(componentPatternData);
         }
+    }
+
+    public VirtualContext getVirtualContext() {
+        return virtualContext;
     }
 }

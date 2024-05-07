@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.model;
 
-import org.metaeffekt.core.util.FileUtils;
-
 public final class Constants {
 
     public static final String ASTERISK = "*";
@@ -24,6 +22,9 @@ public final class Constants {
     public static final String VERSION_PLACHOLDER_SUFFIX = "}";
     public static final String DOT = ".";
     public static final String SLASH = "/";
+    public static final String SPACE = " ";
+    public static final String UNDERSCORE = "_";
+    public static final String HYPHEN = "-";
     public static final String DOT_SLASH = DOT + SLASH;
 
     public static final String STRING_EMPTY = "";
@@ -75,6 +76,7 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_PACKAGE = "package";
     public static final String ARTIFACT_TYPE_FILE = "file";
     public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
+
     public static final String KEY_PATH_IN_ASSET = "Path in Asset";
 
     public static final String KEY_CHECKSUM = "Checksum";
@@ -82,7 +84,6 @@ public final class Constants {
     public static final String MARKER_CROSS = "x";
 
     public static final String MARKER_CONTAINS = "c";
-
 
     protected Constants() {
     }

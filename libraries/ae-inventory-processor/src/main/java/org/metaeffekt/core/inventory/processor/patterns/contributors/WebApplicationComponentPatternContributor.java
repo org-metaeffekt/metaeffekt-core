@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,26 @@ import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
 
-    @Override
+public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/web-inf/web.xml");
+    }});
+
+        @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.toLowerCase().endsWith("/web-inf/web.xml");
+        return pathInContext.toLowerCase(PATH_LOCALE).endsWith("/web-inf/web.xml");
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);
             final File contextBaseDir = anchorFile.getParentFile().getParentFile();
@@ -52,7 +58,7 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
                         FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-                String derivedPart = webXmlData.displayName.toLowerCase();
+                String derivedPart = webXmlData.displayName.toLowerCase(PATH_LOCALE);
                 if (StringUtils.isNotEmpty(version)) {
                     derivedPart = derivedPart + "-" + version;
                 }
@@ -73,7 +79,10 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
 
-                componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*,**/*.jar");
+                componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                        "**/node_modules/**/*," +
+                        "**/bower_components/**/*," +
+                        "**/*.jar");
 
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
 
@@ -83,6 +92,11 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
             throw new RuntimeException(e);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private String parseNameFromVersionPropertyFile(File file) {

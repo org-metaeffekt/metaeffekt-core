@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -43,10 +44,13 @@ public class ArchiveUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArchiveUtils.class);
 
+    private static final long UNTAR_TIMEOUT_NUMBER = 1;
+    private static final TimeUnit UNTAR_TIMEOUT_UNIT = TimeUnit.HOURS;
+
     private static final Set<String> zipExtensions = new HashSet<>();
     private static final Set<String> gzipExtensions = new HashSet<>();
     private static final Set<String> tarExtensions = new HashSet<>();
-    
+
     private static final Set<String> jmodExtensions = new HashSet<>();
     private static final Set<String> jimageExtensions = new HashSet<>();
 
@@ -54,25 +58,40 @@ public class ArchiveUtils {
 
     static {
         zipExtensions.add("war");
+        // zip: regular zip archives
         zipExtensions.add("zip");
         zipExtensions.add("nar");
+        // jar: java archives
         zipExtensions.add("jar");
         zipExtensions.add("xar");
         zipExtensions.add("webjar");
         zipExtensions.add("ear");
         zipExtensions.add("aar");
         zipExtensions.add("sar");
+        // nupkg: nuget package (special zip)
         zipExtensions.add("nupkg");
+        // whl: python / pip wheel files (used for distribution binary dependencies like libraries)
+        zipExtensions.add("whl");
 
+        // gzip: gzip compressed file, less commonly used extention than ".gz"
         gzipExtensions.add("gzip");
+        // gz: gzip compressed file
         gzipExtensions.add("gz");
 
+        // tar: various archive formats derived from an old "tape archive" utility
         tarExtensions.add("tar");
-        tarExtensions.add("rpm"); // RPMs contain further metadata; how to handle them to not get lost? Generate summary file?
+        // TODO: RPMs contain further metadata; how to handle them to not get lost? Generate summary file?
+        // rpm: RPM (/ redhat) package manager packages
+        tarExtensions.add("rpm");
+        // bz2: bzip2 format compressed files
         tarExtensions.add("bz2");
+        // xz: compression format xz(see also "lzma")
         tarExtensions.add("xz");
+        // tgz: sometimes used as a shorthand for ".tar.gz"
         tarExtensions.add("tgz");
+        // deb: debian package archive
         tarExtensions.add("deb");
+        // apk: android package (for apps, special zip), alpine linux package (special tar file)
         tarExtensions.add("apk");
 
         jmodExtensions.add("jmod");
@@ -211,29 +230,72 @@ public class ArchiveUtils {
             expandTask.setSrc(file);
             expandTask.setAllowFilesToEscapeDest(false);
             expandTask.execute();
-        } catch (Exception exception) {
+        } catch (Exception antUntarException) {
+            LOG.debug("Could not untar file [{}] due to [{}].", file.getAbsolutePath(), antUntarException.getMessage());
             try {
+                // TODO: document or fix: why are we trying to extract a tar as an "ar" archive?
+                //  interpreting it as an ar archive might not support symlinks with the current api.
+
                 // fallback to commons-compress (local code with support for specific cases (i.e., .deb)
                 final InputStream fin = Files.newInputStream(file.toPath());
                 final BufferedInputStream in = new BufferedInputStream(fin);
                 final ArArchiveInputStream xzIn = new ArArchiveInputStream(in);
                 unpackAndClose(xzIn, targetFile);
-            } catch (Exception ex) {
+            } catch (Exception commonsCompressException) {
                 // report commons compress exception only and indicate fallback
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Cannot untar file [{}]. {}. Attempting native untar.", file, ex.getMessage());
-                }
+                LOG.debug(
+                        "Cannot untar file [{}] due to [{}]. Attempting untar via command line.",
+                        file.getAbsolutePath(),
+                        commonsCompressException.getMessage()
+                );
+
+                // FIXME: this fallback doesn't adjust file permissions, leading to "Permission denied" while scanning.
+                //  this also means that prepareScanDirectory may fail on rescan.
+                //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
+                //  this last-ditch efford to give good support.
                 // fallback to native support on command line
-                untarNative(file, targetFile);
+
+                Process tarExtract = new ProcessBuilder().command(
+                                "tar",
+                                "-x",
+                                "-f", file.getAbsolutePath(),
+                                "--no-same-permissions",
+                                "-C", targetFile.getAbsolutePath())
+                        .redirectErrorStream(true)
+                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                        .start();
+
+                // wait for untar. if our untar takes more than one hour, we can be pretty sure that something is broken
+                try {
+                    if (!tarExtract.waitFor(UNTAR_TIMEOUT_NUMBER, UNTAR_TIMEOUT_UNIT)) {
+                        // timeout
+                        LOG.error("Failed to untar [{}].", file.getAbsolutePath());
+
+                        LOG.error("Killing untar process...");
+                        tarExtract.destroyForcibly();
+                        if (!tarExtract.waitFor(1, TimeUnit.MINUTES)) {
+                            // once we are in Java 9 or newer, we should output PID in this case
+                            LOG.error("Failed to kill untar! This will leave a tar process with unknown state!");
+                        }
+
+                        throw new IOException("Untar failed: timed out.");
+                    }
+                } catch (InterruptedException e) {
+                    throw new IOException("Untar thread was interrupted.", e);
+                }
+
+                if (tarExtract.exitValue() != 0) {
+                    LOG.error(
+                            "Untar of [{}] failed with exit value [{}].",
+                            file.getAbsolutePath(),
+                            tarExtract.exitValue()
+                    );
+                    throw new IOException("Failed to untar requested file.");
+                }
 
                 // NOTE: further exceptions are handled upstream
             }
         }
-    }
-
-    public static void untarNative(File file, File targetFile) throws IOException {
-        Process exec = Runtime.getRuntime().exec("tar -xf " + file.getAbsolutePath() + " -C " + targetFile.getAbsolutePath());
-        FileUtils.waitForProcess(exec);
     }
 
     private static void unpackAndClose(InputStream in, OutputStream out) throws IOException {
@@ -317,6 +379,7 @@ public class ArchiveUtils {
                 return true;
             }
         } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
             issues.add("Cannot untar: " + archiveFile.getAbsolutePath());
             return false;
@@ -350,7 +413,9 @@ public class ArchiveUtils {
             return false;
         }
 
+        // in case the targetDir was actively created, it is actively removed.
         if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
+
         return false;
     }
 

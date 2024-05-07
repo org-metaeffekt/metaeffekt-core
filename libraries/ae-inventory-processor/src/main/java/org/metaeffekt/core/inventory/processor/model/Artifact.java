@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,11 @@ public class Artifact extends AbstractModelBase {
         // project locations
         PROJECTS("Projects"),
 
-        VERIFIED("Verified");
+        VERIFIED("Verified"),
+        ERRORS("Errors"),
+        HASH_SHA256("Hash (SHA-256)"),
+        PATH_IN_ASSET("Path in Asset"),
+        VIRTUAL_ROOT_PATH("Virtual Root Path");
 
         private String key;
 

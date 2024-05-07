@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.common.predicates.IdMissmatchesVersion.ID_MISMATCHING_VERSION;
+import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.ID_MISMATCHING_VERSION;
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
 
@@ -57,7 +57,7 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
     public void versionMismatch() {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts(ID_MISMATCHING_VERSION)
-                .logArtifactList("Type")
+                .logList("Type")
                 .assertEmpty();
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,15 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class NodeRuntimeComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/node/node_version.h");
+    }});
 
     @Override
     public boolean applies(String pathInContext) {
@@ -33,7 +38,7 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);
 
@@ -43,7 +48,7 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
 
                 // construct component pattern
                 final ComponentPatternData componentPatternData = new ComponentPatternData();
-                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorFile.getName());
+                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorFile.getPath().substring(anchorFile.getPath().indexOf("include")));
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, "node");
@@ -67,6 +72,11 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
             throw new RuntimeException(e);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 
     private static String parseVersionFromAnchorFile(File anchorFile) throws IOException {

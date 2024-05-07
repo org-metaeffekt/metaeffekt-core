@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,9 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.GROUPID;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.IdStartsWith.idStartsWith;
+import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
 
@@ -65,12 +64,11 @@ public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(idStartsWith("jolokia")).hasSizeOf(4);
-        analysis.selectArtifacts(idStartsWith("json")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(ID, "jolokia")).hasSizeOf(4);
+        analysis.selectArtifacts(startsWith(ID, "json")).hasSizeOf(2);
 
         analysis.selectArtifacts(attributeValue(GROUPID, "org.jolokia")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(GROUPID, "com.googlecode.json-simple")).hasSizeOf(1);
-
         analysis.selectArtifacts(attributeValue(VERSION, "1.7.2")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(VERSION, "1.1.1")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "$JSON_JMX_AGENT_VERSION")).hasSizeOf(1);

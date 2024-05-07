@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class DpkgPackageContributorTest {
         if (isWindows()) return;
 
         List<ComponentPatternData> list =
-                cpc.contribute(cpcTestBaseDir, "var/lib/dpkg/status", "6f72a28d5456b9a7f1af6f25f029afe9");
+                cpc.contribute(cpcTestBaseDir, cpcTestBaseDir.getParent(), "var/lib/dpkg/status", "6f72a28d5456b9a7f1af6f25f029afe9");
 
         boolean foundArchlessPackage = false;
         boolean foundArchPackage = false;
@@ -75,7 +75,7 @@ public class DpkgPackageContributorTest {
     @Ignore("Requires special resources and inspection.")
     public void contributeTestOnFileSystemDump() {
         List<ComponentPatternData> list = cpc.contribute(
-                new File("/tmp/youthful_williamson"),
+                new File("/tmp/youthful_williamson"), "/",
                 "var/lib/dpkg/status", "dummy"
         );
 

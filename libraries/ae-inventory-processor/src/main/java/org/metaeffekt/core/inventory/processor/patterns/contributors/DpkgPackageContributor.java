@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.exception.ContributorFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -37,6 +40,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(DpkgPackageContributor.class);
 
     protected static final Pattern hexStringPattern = Pattern.compile("^[a-fA-F0-9]+$");
+
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+        add("/status");
+        add(".md5sums");
+    }});
 
     @SuppressWarnings("unused")
     public static class DpkgStatusFileEntry {
@@ -187,13 +195,17 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
     }
 
+    // TODO: find out how to use (pseudo-)absolute paths for include patterns. there is some magic in deciding
+    //  where our current scan root is but once we find out what it is we can use it to resolve stuff for us
+    //  instead of messing about with more imprecise scanning methods
+
     @Override
     public boolean applies(String pathInContext) {
         // The default location under root is var/lib/dpkg.
         // if this part matches, make the bet that this is a debian file system and run package file inclusions.
 
         // could also match files from ./info/ as anchors?
-        return pathInContext.equals("var/lib/dpkg/status");
+        return pathInContext.endsWith("var/lib/dpkg/status") || pathInContext.contains("var/lib/dpkg/status.d");
     }
 
     protected List<DpkgStatusFileEntry> readCompleteStatusFile(final File statusFile) throws IOException {
@@ -289,8 +301,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return entries;
     }
 
-    public boolean hasFileChanged(File baseDir, String relativeFilePath, String md5Checksum) {
-        File toCheck = new File(baseDir, relativeFilePath);
+    public boolean hasFileChanged(String virtualRootPath, String relativeFilePath, String md5Checksum) {
+        File toCheck = new File(virtualRootPath, relativeFilePath);
 
         return hasFileChangedMd5(toCheck, md5Checksum);
     }
@@ -307,15 +319,120 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return knownChecksum.equals(calculatedDigest);
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
-        File anchorFile = new File(baseDir, relativeAnchorFilePath);
+    public ComponentPatternData createComponentPattern(String versionAnchor,
+                                                       DpkgStatusFileEntry entry,
+                                                       String checksum,
+                                                       String includePatterns) {
+        ComponentPatternData componentPatternData = new ComponentPatternData();
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
+        // add list of comma-separated paths
+        componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
+        // get version from the entry
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
+
+        // try to fill "component part" in a plausible way
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART,
+                entry.packageName + "-" + entry.version);
+
+        // set whatever this is in whatever way i think might be correct from looking at other contributors
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+
+        return componentPatternData;
+    }
+
+    /**
+     * Reads list of files that were in this package and tries to create an include pattern.
+     * @param virtualRootPath the virtual "root" that pseudo-absolute paths will be based on
+     * @param checksum the checksum of the anchor
+     * @param entry the entry in the corresponding status file
+     * @param correspondingMd5sumsFile the corresponding md5sums file
+     * @return a joiner with resulting include patterns or null on failure
+     */
+    public StringJoiner createIncludePatternsFromHashFile(String virtualRootPath,
+                                                          String checksum,
+                                                          DpkgStatusFileEntry entry,
+                                                          File correspondingMd5sumsFile) {
+        // prepare file list
+        StringJoiner fileJoiner = new StringJoiner(",");
+        try(Stream<String> lineStream = Files.lines(correspondingMd5sumsFile.toPath(), StandardCharsets.UTF_8)) {
+            // stream lines so we don't need to preload to memory
+            lineStream.forEachOrdered(line -> {
+                // definitely cut off the hash before adding...
+                int spaceSeparatorPosision = line.indexOf("  ");
+                if (spaceSeparatorPosision == -1) {
+                    // skip invalid lines immediately.
+                    return;
+                }
+                String hash = line.substring(0, spaceSeparatorPosision);
+                String toAdd = line.substring(spaceSeparatorPosision + 2);
+
+                // skip empty lines or invalid formatting
+                if (StringUtils.isBlank(toAdd)) {
+                    return;
+                }
+
+                // err out if the md5sum isn't an md5sum
+                if (!hexStringPattern.matcher(hash).matches()) {
+                    // this was not a real hash. should never happen. means splitting failed miserably.
+                    LOG.error("Splitting failed miserably while reading line of dpkg md5sums at [{}].",
+                            correspondingMd5sumsFile.getAbsolutePath());
+                    return;
+                }
+
+                // use the checksum to detect and handle changed files
+                if (hasFileChanged(virtualRootPath, toAdd, checksum)) {
+                    // changed files might contain modifications and not truly be part of this package any more.
+
+                    // handle this by skipping this line
+                    LOG.debug("Component pattern from [{}] won't contain diverged entry [{}].",
+                            correspondingMd5sumsFile, toAdd);
+                    return;
+                }
+
+                fileJoiner.add(toAdd);
+
+                // FIXME: remove this hack when archives are being handled properly and will match without "[blah]"
+                if (toAdd.endsWith(".gz")
+                        || toAdd.endsWith(".tar")
+                        || toAdd.endsWith(".zip")) {
+                    String uglyIncludeArchiveContentHack =
+                            ContributorUtils.slapSquareBracketsAroundLastPathElement(toAdd) + "/**";
+
+                    fileJoiner.add(uglyIncludeArchiveContentHack);
+                }
+            });
+        } catch (IOException e) {
+            LOG.info("Could not read file list for entry with name [{}].", entry.packageName);
+            return null;
+        }
+
+        // FIXME: review with JKR; these files have not been covered
+        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
+        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
+        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
+
+        // we have to include the files in the status.d directory as well
+        fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
+        fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
+
+        fileJoiner.add("usr/share/doc/" + entry.packageName + "/**");
+
+        return fileJoiner;
+    }
+
+    public List<ComponentPatternData> contributeStatusFileBased(File baseDir,
+                                                                String virtualRootPath,
+                                                                String relativeAnchorFilePath,
+                                                                String checksum) {
+        final File anchorFile = new File(baseDir, relativeAnchorFilePath);
 
         List<DpkgStatusFileEntry> entries;
         try {
             entries = readCompleteStatusFile(anchorFile);
         } catch (IOException e) {
-            // crash if we can't read this file for some reason
-            throw new RuntimeException(e);
+            // fail for this anchor if we can't read this file for some reason
+            throw new ContributorFailureException(e);
         }
 
         // contribute component patterns for each registered package
@@ -358,79 +475,135 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 correspondingMd5sumsFile = fileWithArch;
 
                 if (!fileWithoutArch.exists()) {
-                    LOG.error("Can't create ComponentPattern: No m5sums file found for package [{}].",
+                    LOG.error("Can't create ComponentPattern: No md5sums file found for package [{}].",
                             entry.packageName);
                 }
             }
 
-            // prepare file list
-            StringJoiner fileJoiner = new StringJoiner(",");
-            try(Stream<String> lineStream = Files.lines(correspondingMd5sumsFile.toPath(), StandardCharsets.UTF_8)) {
-                // stream lines so we don't need to preload to memory
-                lineStream.forEachOrdered(line -> {
-                    // definitely cut off the hash before adding...
-                    int spaceSeparatorPosision = line.indexOf("  ");
-                    if (spaceSeparatorPosision == -1) {
-                        // skip invalid lines immediately.
-                        return;
-                    }
-                    String hash = line.substring(0, spaceSeparatorPosision);
-                    String toAdd = line.substring(spaceSeparatorPosision + 2);
+            // get path of virtual root
+            Path virtualRoot = new File(virtualRootPath).toPath();
+            Path relativeAnchorFile = new File(relativeAnchorFilePath).toPath();
+            // create patterns
+            StringJoiner includePatternsJoiner = createIncludePatternsFromHashFile(baseDir + "/" + virtualRootPath,
+                    checksum, entry, correspondingMd5sumsFile);
 
-                    // skip empty lines or invalid formatting
-                    if (StringUtils.isBlank(toAdd)) {
-                        return;
-                    }
-
-                    // err out if the md5sum isn't an md5sum
-                    if (!hexStringPattern.matcher(hash).matches()) {
-                        // this was not a real hash. should never happen. means splitting failed miserably.
-                        LOG.error("Splitting failed miserably while reading line of dpkg md5sums at [{}].",
-                                correspondingMd5sumsFile.getAbsolutePath());
-                        return;
-                    }
-
-                    // use the checksum to detect and handle changed files
-                    if (hasFileChanged(baseDir, toAdd, checksum)) {
-                        // changed files might contain modifications and not truly be part of this package any more.
-
-                        // handle this by skipping this line
-                        LOG.debug("Component pattern from [{}] won't contain diverged entry [{}].",
-                                correspondingMd5sumsFile, toAdd);
-                        return;
-                    }
-
-                    fileJoiner.add(toAdd);
-                });
-            } catch (IOException e) {
-                LOG.info("Could not read file list for entry with name [{}].", entry.packageName);
+            if (includePatternsJoiner == null) {
+                // something went wrong. skip without adding.
                 continue;
             }
 
-            // FIXME: review with JKR; these files have not been covered
-            fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
-            fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
-            fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
+            ComponentPatternData cpd = createComponentPattern(
+                    virtualRoot.relativize(relativeAnchorFile).toString(),
+                    entry,
+                    checksum,
+                    includePatternsJoiner.toString()
+            );
+            cpd.set(Constants.KEY_TYPE, "dpkg-package");
 
-            // create, fill and add the pattern
-            ComponentPatternData componentPatternData = new ComponentPatternData();
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
-            // add list of comma-separated paths
-            componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, fileJoiner.toString());
-            // get version from the entry
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
-
-            // try to fill "component part" in a plausible way
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART,
-                    entry.packageName + "-" + entry.version);
-
-            // set whatever this is in whatever way i think might be correct from looking at other contributors
-            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorFilePath);
-            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
-
-            componentPatterns.add(componentPatternData);
+            // add created patterns
+            componentPatterns.add(cpd);
         }
 
         return componentPatterns;
+    }
+
+    /**
+     * Tries to get metadata from dpkg status.d. Useful for "distroless" images.<br>
+     * Hacked together to support a system that didn't have a status file but only a status.d.
+     * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @return same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     */
+    public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
+                                                                     String virtualRootPath,
+                                                                     String relativeAnchorFilePath,
+                                                                     String checksum) {
+        final File md5sumsFile = new File(baseDir, relativeAnchorFilePath);
+
+        // maybe this check should be moved to applies but it also requires a constructed File so...
+        String parentPath = md5sumsFile.getParentFile().getAbsolutePath();
+        if (!parentPath.endsWith("var/lib/dpkg/status.d")) {
+            // this md5sums is not in the expected location. probably not a dpkg status.d anchor. skip it.
+            return Collections.emptyList();
+        }
+
+        if (!md5sumsFile.isFile()) {
+            // this is supposed to be a file. let's fail silently cause it would not be egregious otherwise, i guess.
+            return Collections.emptyList();
+        }
+
+        List<ComponentPatternData> createdComponentPatterns = new ArrayList<>();
+
+        File fileWithoutMd5sums = new File(
+                md5sumsFile.getParentFile(),
+                md5sumsFile.getName().replaceAll("\\.md5sums$", "")
+        );
+
+        if (!fileWithoutMd5sums.exists()) {
+            // no metadata is not that useful. i'll just expect them to have valid metadata for now.
+            return Collections.emptyList();
+        }
+
+        List<DpkgStatusFileEntry> entries;
+        try {
+            entries = readCompleteStatusFile(fileWithoutMd5sums);
+        } catch (IOException e) {
+            // skip if we can't read metadata
+            return Collections.emptyList();
+        }
+
+        if (entries.size() != 1) {
+            LOG.warn(
+                    "Skipping potential status.d anchor with multiple entries: expected 1 but got [{}] from [{}].",
+                    entries.size(),
+                    fileWithoutMd5sums.getAbsoluteFile()
+            );
+        }
+
+        DpkgStatusFileEntry entry = entries.get(0);
+
+        // this may be less complicated since this type of format seems to have simpler filenames
+
+        // compute pseudoroot
+        File virtualRoot = md5sumsFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+        // create patterns
+        if (!virtualRoot.exists()) {
+            LOG.warn("Should never happen: computed virtual root [{}] does not exist",
+                    virtualRoot.getAbsolutePath());
+            throw new ContributorFailureException("Should never happen: computed virtual root did not exist.");
+        }
+
+        StringJoiner includesJoiner = createIncludePatternsFromHashFile(virtualRootPath,
+                checksum, entry, md5sumsFile);
+
+        ComponentPatternData cpd = createComponentPattern(
+                baseDir.toPath().relativize(md5sumsFile.toPath()).toString(),
+                entry,
+                checksum,
+                includesJoiner.toString()
+        );
+
+        cpd.set(Constants.KEY_TYPE, "dpkg-distroless-package");
+
+        // add the created pattern
+        createdComponentPatterns.add(cpd);
+
+        return createdComponentPatterns;
+    }
+
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
+        if (relativeAnchorFilePath.endsWith("status")) {
+            return contributeStatusFileBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+        } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
+            return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+        } else {
+            throw new ContributorFailureException("Should never happen: identified anchor wasn't of expected type.");
+        }
+    }
+
+    @Override
+    public List<String> getSuffixes() {
+        return suffixes;
     }
 }

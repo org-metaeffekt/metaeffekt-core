@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2022 the original author or authors.
+ * Copyright 2009-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
 public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalysisTest {
@@ -64,12 +66,12 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logArtifactList();
+        analysis.selectArtifacts().logList();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        analysis.selectArtifacts(attributeValue("Id", "org.apache.commons.collections_3.2.0.v201005080500.jar")).hasSizeOf(1);
-        analysis.selectArtifacts(attributeValue("Version", "3.2.0.v201005080500")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(ID, "org.apache.commons.collections_3.2.0.v201005080500.jar")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(VERSION, "3.2.0.v201005080500")).hasSizeOf(1);
 
         analysis.selectArtifacts().hasSizeOf(1);
     }
