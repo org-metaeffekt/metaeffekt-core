@@ -71,3 +71,6 @@ dumpDockerIfPresent "${outDir}"
 
 # if podman is installed, dump the image list (might return the same as docker with present docker -> podman symlinks)
 dumpPodmanIfPresent "${outDir}"
+
+# adapt ownership of extracted files to match folder creator user and group
+adaptOutdirOwnership "${outDir}"
