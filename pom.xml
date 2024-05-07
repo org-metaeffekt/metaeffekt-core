@@ -25,6 +25,9 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <modules>
+        <module>libraries/ae-container-control</module>
+    </modules>
 
     <scm>
         <connection>scm:git:git://github.com/org-metaeffekt/metaeffekt-core.git</connection>

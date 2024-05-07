@@ -58,25 +58,14 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
 
             artifact.set(KEY_TYPE, ARTIFACT_TYPE_PACKAGE);
         }
-
-        for (Artifact artifact : inventory.getArtifacts()) {
-            File shareFolder = new File(analysisDir, FOLDER_USR_SHARE_DOC);
-            File packageFolder = new File(shareFolder, artifact.getId());
-
-            if (packageFolder.exists()) {
-                PackageInfo packageReference = new PackageInfo();
-                Artifact analysis = packageReference.createArtifact(analysisDir);
-            }
-
-        }
     }
 
     public void initializeInventory(List<String> packages, Inventory inventory) {
         // initialize the inventory with just the package names
-        for (String packageDescriptor : packages) {
+        for (String packageName : packages) {
             Artifact artifact = new Artifact();
-            artifact.setId(packageDescriptor);
-            artifact.setComponent(packageDescriptor);
+            artifact.setId(packageName);
+            artifact.setComponent(packageName);
 
             inventory.getArtifacts().add(artifact);
         }
@@ -149,6 +138,7 @@ public class AlpineInventoryExtractor extends AbstractInventoryExtractor {
     }
 
     public void extractVersion(String id, Artifact artifact, List<String> lines) {
+        // FIXME: fix code duplication and ugly matching code. maybe use regex?
         {
             int vIndex = getIndex(lines, "Version     :");
             if (vIndex != -1) {
