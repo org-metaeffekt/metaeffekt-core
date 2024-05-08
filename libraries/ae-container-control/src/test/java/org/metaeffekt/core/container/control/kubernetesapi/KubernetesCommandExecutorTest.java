@@ -33,8 +33,7 @@ public class KubernetesCommandExecutorTest {
     public void testContainerCreationHelloWorld() throws Exception {
         try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor(
                 "ae-container-control",
-                "docker.io/debian:latest")
-        ) {
+                "docker.io/debian:latest")) {
             try (KubernetesContainerCommandProcess commandProcess =
                          exec.executeCommand("echo", "hello devil of cursed commands!")) {
 

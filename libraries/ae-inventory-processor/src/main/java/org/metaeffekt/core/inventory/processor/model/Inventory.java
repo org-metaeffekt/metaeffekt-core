@@ -1310,7 +1310,7 @@ public class Inventory implements Serializable {
      * @param infoOnOverwrite Methods provides information on overwrites when true.
      */
     public void inheritLicenseMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
-        // Iterate through all license meta data. Generate qualifier based on component name, version and license.
+        // Iterate through all license metadata. Generate qualifier based on component name, version and license.
         // Test whether the qualifier is present in current. If yes skip; otherwise add.
         final Map<String, LicenseMetaData> currentLicenseMetaDataMap = new HashMap<>();
         for (LicenseMetaData licenseMetaData : getLicenseMetaData()) {

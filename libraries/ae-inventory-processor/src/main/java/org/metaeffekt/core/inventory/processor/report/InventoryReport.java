@@ -170,6 +170,7 @@ public class InventoryReport {
      * detail the artifacts-level information and only provide assets and asset-level assessment information.
      */
     private boolean filterVulnerabilitiesNotCoveredByArtifacts = false;
+
     /**
      * Whether to hide the periodic status "unclassified" in the vulnerability report. If set to <code>true</code>, the
      * section will simply not be generated.<br>

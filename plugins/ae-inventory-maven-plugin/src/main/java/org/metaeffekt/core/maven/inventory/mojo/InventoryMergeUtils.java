@@ -24,18 +24,15 @@ public class InventoryMergeUtils {
 
     protected Set<String> artifactMergeAttributes = new HashSet<>();
 
-    // NOTE:
-    // - we merge artifacts
-    // - we merge assets (currently only by adding; not merging; not cleaning duplicates)
-    // - we merge license data (resolving duplicates; merging on attribute level; input inventors should be
-    //   consistent and up-to-date)
+    // NOTE: we merge
+    // - artifacts
+    // - assets (currently only by adding; not merging; not cleaning duplicates)
+    // - license data (resolving duplicates; merge on attribute level; input inventory should be consistent/up-to-date)
+    // - license data (applying consecutive inherits)
 
     // TODO: revise the following once assets have been fully established
-    // - we do not merge component patterns; the target component patterns are preserved (future: tbc)
-    // - we do not merge license notices; merges are considered to use reference inventory as targets (future: merge and remove duplicates)
-    // - we do not merge vulnerabilities; vulnerabilities are in the reference inventory (target) or
-    //   processed later on (future: organize vulnerability data per asset, merge details on artifact level)
-
+    // - we do not merge component patterns; the target component patterns are preserved (future: tbc; currently not required)
+    // - we do not merge vulnerabilities; for inventories with vulnerabilities dedicated procedures exist.
     public void merge(List<File> sourceInventories, Inventory targetInventory) throws IOException {
         // parse and merge the collected inventories
         for (File sourceInventoryFile : sourceInventories) {
@@ -49,6 +46,15 @@ public class InventoryMergeUtils {
 
             // merge license data
             mergeLicenseData(sourceInventory, targetInventory);
+
+            // also merge license notices
+            mergeLicenseMetaData(sourceInventory, targetInventory);
+        }
+    }
+
+    private void mergeLicenseMetaData(Inventory sourceInventory, Inventory targetInventory) {
+        if (sourceInventory.getLicenseMetaData() != null && !sourceInventory.getLicenseMetaData().isEmpty()) {
+            targetInventory.inheritLicenseMetaData(sourceInventory, false);
         }
     }
 

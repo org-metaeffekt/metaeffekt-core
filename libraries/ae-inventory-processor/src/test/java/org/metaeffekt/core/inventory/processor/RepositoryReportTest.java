@@ -190,7 +190,9 @@ public class RepositoryReportTest {
     public void testCreateTestReport() throws Exception {
         final File inventoryDir = new File("src/test/resources/test-inventory-02");
         final File reportDir = new File("target/test-inventory-02");
-        createReport(inventoryDir, "*.xls", reportDir);
+        configureAndCreateReport(inventoryDir, "*.xls",
+                inventoryDir, "*.xls",
+                reportDir, new InventoryReport());
 
         // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
@@ -231,7 +233,9 @@ public class RepositoryReportTest {
 
         report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
-        createReport(inventoryDir, "*.xls", reportDir, report);
+        configureAndCreateReport(inventoryDir, "*.xls",
+                inventoryDir, "*.xls",
+                reportDir, report);
 
         // put asserts here
 
@@ -240,21 +244,25 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
+        final File inventoryDir = new File("<path-to-inventory-dir>");
+        final File referenceInventoryDir = new File("<path-to-reference-inventory-dir>");
+
+        final File reportDir = new File("target/test-inventory-04");
+
         // FIXME: where to manage this
         ZipSecureFile.setMinInflateRatio(0);
 
-        final File inventoryDir = new File("<path-to-inventory-dir>");
-        final File reportDir = new File("target/test-inventory-04");
-
         InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "*.xls,*.xlsx", reportDir, report);
+        prepareReport(inventoryDir, "*.xls,*.xlsx",
+                referenceInventoryDir, "*.xls,*.xlsx",
+                reportDir, report);
 
         report.setTemplateLanguageSelector("en");
 
         report.setAssetBomReportEnabled(true);
         report.setIncludeInofficialOsiStatus(true);
 
-        report.setInventoryBomReportEnabled(false);
+        report.setInventoryBomReportEnabled(true);
         report.setAssessmentReportEnabled(true);
 
         report.setInventoryVulnerabilityReportEnabled(false);
@@ -282,26 +290,28 @@ public class RepositoryReportTest {
 
         final InventoryReport report = new InventoryReport();
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-        createReport(inventoryDir, "*.xls", reportDir);
+
+        configureAndCreateReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir, new InventoryReport());
 
         // put asserts here
 
 
     }
 
+    private boolean configureAndCreateReport(File inventoryDir, String inventoryIncludes,
+                                             File referenceInventoryDir, String referenceInventoryIncludes,
+                                             File reportTarget, InventoryReport report) throws Exception {
 
-    private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget) throws Exception {
-        return createReport(inventoryDir, inventoryIncludes, reportTarget, new InventoryReport());
-    }
-
-    private boolean createReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws Exception {
-
-        prepareReport(inventoryDir, inventoryIncludes, reportTarget, report);
+        prepareReport(inventoryDir, inventoryIncludes,
+                referenceInventoryDir, referenceInventoryIncludes,
+                reportTarget, report);
 
         return report.createReport();
     }
 
-    private void prepareReport(File inventoryDir, String inventoryIncludes, File reportTarget, InventoryReport report) throws IOException {
+    private void prepareReport(File inventoryDir, String inventoryIncludes,
+                               File referenceInventoryDir, String referenceInventoryIncludes,
+                               File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
         report.setInventoryBomReportEnabled(true);
@@ -312,8 +322,10 @@ public class RepositoryReportTest {
 
         report.setFailOnUnknown(false);
         report.setFailOnUnknownVersion(false);
-        report.setReferenceInventoryDir(inventoryDir);
-        report.setReferenceInventoryIncludes(inventoryIncludes);
+
+        report.setReferenceInventoryDir(referenceInventoryDir);
+        report.setReferenceInventoryIncludes(referenceInventoryIncludes);
+
         report.setReferenceLicensePath(new File(inventoryDir, "licenses").getAbsolutePath());
         report.setReferenceComponentPath(new File(inventoryDir, "components").getAbsolutePath());
 
@@ -344,7 +356,10 @@ public class RepositoryReportTest {
     public void testCreateTestReport_External() throws Exception {
         final File inventoryDir = new File("<path-to-inventory>");
         final File reportDir = new File("target/test-inventory-external");
-        createReport(inventoryDir, "*.xls", reportDir);
+
+        configureAndCreateReport(inventoryDir, "*.xls",
+                inventoryDir, "*.xls",
+                reportDir, new InventoryReport());
 
         // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");

@@ -38,7 +38,7 @@
         <easymock.version>3.4</easymock.version>
         <findbugs.version>3.0.1</findbugs.version>
         <geronimo.servlet.spec.version>1.0</geronimo.servlet.spec.version>
-        <httpclient.version>4.5.13</httpclient.version>
+        <httpclient.version>4.5.14</httpclient.version>
         <httpcore.version>4.4.15</httpcore.version>
         <httpmime.version>4.5.3</httpmime.version>
         <kubernetes.java.client.version>20.0.0</kubernetes.java.client.version>
