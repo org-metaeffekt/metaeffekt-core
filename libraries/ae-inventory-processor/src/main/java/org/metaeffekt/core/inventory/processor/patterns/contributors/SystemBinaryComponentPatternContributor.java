@@ -21,7 +21,10 @@ import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -144,31 +147,26 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
     }
 
     private static boolean isFileExecutable(String filePath) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder("file", filePath);
-        processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
-
-        StringBuilder output = new StringBuilder();
-
-        try (InputStream is = process.getInputStream();
-             InputStreamReader isr = new InputStreamReader(is);
-             BufferedReader reader = new BufferedReader(isr)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
-                if (line.contains("executable") && !line.contains("ASCII text") && !line.contains("script")) {
-                    return true;
-                }
-            }
+        // check if the file is executable and get detailed info
+        String fileInfo = getFileDetails(filePath);
+        if (!fileInfo.contains("executable") || fileInfo.contains("ASCII text") || fileInfo.contains("script")) {
+            LOG.info("File {} is not an executable. Skipping.", filePath);
+            return false;
         }
 
-        int exitVal = process.waitFor(); // wait for the process to complete.
-        if (exitVal != 0) {
-            // handle the case where the process did not complete successfully.
-            LOG.error("isFileExecutable command execution failed with exit code {} and output: {}", exitVal, output);
+        // check for compatibility with the current architecture
+        if (!isArchitectureCompatible(fileInfo)) {
+            LOG.info("File {} is not compatible with the current architecture. Skipping.", filePath);
+            return false;
         }
 
-        return false;
+        // extract and verify the interpreter (dynamic linker)
+        String interpreter = extractInterpreter(fileInfo);
+        if (interpreter != null && !new File(interpreter).exists()) {
+            LOG.info("Interpreter not found: {}.", interpreter);
+            return false;
+        }
+        return true;
     }
 
     private static String getVersion(File anchorFile) {
@@ -187,5 +185,42 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             }
         }
         return version;
+    }
+
+    private static String getFileDetails(String filePath) throws IOException, InterruptedException {
+        ProcessBuilder processBuilder = new ProcessBuilder("file", filePath);
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
+
+        StringBuilder output = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
+            }
+        }
+
+        int exitVal = process.waitFor();
+        if (exitVal != 0) {
+            LOG.error("File command failed for: {}", filePath);
+            return "";
+        }
+        return output.toString();
+    }
+
+    private static boolean isArchitectureCompatible(String fileInfo) {
+        // TODO: adjust regex to match different architectures as necessary
+        Pattern archPattern = Pattern.compile("x86-64|amd64|x86_64|arm64|aarch64|ppc64|ppc64le|s390x");
+        Matcher matcher = archPattern.matcher(fileInfo);
+        return matcher.find();
+    }
+
+    private static String extractInterpreter(String fileInfo) {
+        Pattern pattern = Pattern.compile("interpreter (.*?),");
+        Matcher matcher = pattern.matcher(fileInfo);
+        if (matcher.find()) {
+            return matcher.group(1);  // return the interpreter path
+        }
+        return null;
     }
 }
