@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-container-extractor-container-tests</artifactId>
-        <version>0.112.0</version>
+        <version>HEAD-SNAPSHOT</version>
     </parent>
 
     <artifactId>ae-suse-container-test</artifactId>
