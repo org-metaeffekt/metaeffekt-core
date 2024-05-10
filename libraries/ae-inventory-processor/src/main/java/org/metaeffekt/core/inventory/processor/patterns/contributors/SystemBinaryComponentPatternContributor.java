@@ -99,7 +99,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             try {
                 process = processBuilder.start();
             } catch (IOException e) {
-                LOG.warn("Cannot run program", e);
+                LOG.warn("Cannot run program: {}", e.getMessage());
                 return "N/A";
             }
             String versionString = null; // This will hold the first matched version string
@@ -135,11 +135,11 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
             // wait for the command to complete within 500 milliseconds
             return future.get(500, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
-            LOG.error("Command execution timed out", e);
+            LOG.warn("Command execution timed out: {}", e.getMessage());
             future.cancel(true);  // attempt to cancel the ongoing command
             return "N/A";
         } catch (ExecutionException | InterruptedException e) {
-            LOG.error("Failed to execute command", e);
+            LOG.warn("Failed to execute command: {}", e.getMessage());
             return "N/A";
         } finally {
             executor.shutdownNow();  // ensure the executor is properly shut down

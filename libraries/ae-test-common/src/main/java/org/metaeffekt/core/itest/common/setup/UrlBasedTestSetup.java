@@ -113,7 +113,7 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         String artifactFile = getDownloadFolder() + filename;
         if (overwrite || !new File(artifactFile).exists()) {
             if (url.startsWith("http")) {
-                new File(getDownloadFolder()).mkdirs();
+                FileUtils.forceMkdir(new File(getDownloadFolder()));
                 httpDownload(artifactFile);
             }
             if (url.startsWith("file")) {

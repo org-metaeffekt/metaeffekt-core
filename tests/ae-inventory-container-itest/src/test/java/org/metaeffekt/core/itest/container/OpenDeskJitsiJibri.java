@@ -64,6 +64,6 @@ public class OpenDeskJitsiJibri extends AbstractCompositionAnalysisTest {
         ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
         componentPatterns.logListWithAllAttributes();
         analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(171);
-        analysis.selectArtifacts(containsToken(TYPE, "nodejs-module")).hasSizeOf(173);
+        analysis.selectArtifacts(containsToken(TYPE, "web-module")).hasSizeOf(173);
     }
 }

@@ -77,6 +77,10 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_PACKAGE = "package";
     public static final String ARTIFACT_TYPE_MODULE = "module";
     public static final String ARTIFACT_TYPE_FILE = "file";
+
+    @Deprecated
+    public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
+
     public static final String ARTIFACT_TYPE_WEB_MODULE = "web-module";
 
     public static final String KEY_PATH_IN_ASSET = "Path in Asset";
