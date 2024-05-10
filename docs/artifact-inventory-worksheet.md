@@ -87,7 +87,8 @@ managed differently in documentation. Currently, the implementation supports:
 * **file**: Identifies that the artifact is a file. While this is more explicit the
   treatment of files is the same as for general artifacts.
 * **package**: Identifies the artifact as a operating system level package (consisting of multiple files)
-* **nodejs-module**: Identifies the artifact as nodejs-module (or as web-module in general)
+* **web-module**: Identifies the artifact as nodejs-module (or as web-module in general); used to be *nodejs-module* but 
+  this too specific classification was deprecated. 
 
 ### Column `Security Relevance`
 The column indicates that an artifact has relevance in security context. Artifacts marked as security relevant can
