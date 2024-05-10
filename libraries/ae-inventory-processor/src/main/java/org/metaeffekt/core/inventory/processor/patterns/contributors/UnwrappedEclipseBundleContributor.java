@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -61,11 +62,19 @@ public class UnwrappedEclipseBundleContributor extends ComponentPatternContribut
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/" + id + "/**/*");
 
+        componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+        componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "eclipse-bundle");
+
         return Collections.singletonList(componentPatternData);
     }
 
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 }

@@ -851,10 +851,9 @@ public class Inventory implements Serializable {
         String type = a.get(KEY_TYPE);
         if (StringUtils.isEmpty(type)) return true;
         if (ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(type)) return false;
-        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return false;
-
+        if (ARTIFACT_TYPE_WEB_MODULE.equalsIgnoreCase(type)) return false;
         // backward compatibility; constant about to be changes/consolidated
-        if ("nodejs-module".equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return false;
 
         return true;
     }
@@ -862,10 +861,10 @@ public class Inventory implements Serializable {
     private boolean isWebModuleType(Artifact a) {
         String type = a.get(KEY_TYPE);
         if (StringUtils.isEmpty(type)) return false;
-        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return true;
-
+        
+        if (ARTIFACT_TYPE_WEB_MODULE.equalsIgnoreCase(type)) return true;
         // backward compatibility; constant about to be changes/consolidated
-        if ("nodejs-module".equalsIgnoreCase(type)) return true;
+        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return true;
 
         return false;
     }

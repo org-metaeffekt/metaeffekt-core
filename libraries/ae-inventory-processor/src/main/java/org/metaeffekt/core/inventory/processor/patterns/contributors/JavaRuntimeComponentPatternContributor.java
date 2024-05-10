@@ -64,6 +64,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
 
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+                componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "java-runtime");
 
                 return Collections.singletonList(componentPatternData);
             }
@@ -76,6 +77,11 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     public static class ReleasedPackageData {

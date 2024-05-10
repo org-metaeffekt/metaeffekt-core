@@ -179,8 +179,13 @@ public class GemSpecContributor extends ComponentPatternContributor {
             sb.append("**/" + anchorFileName);
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, sb.toString());
-            componentPatternData.set(Constants.KEY_TYPE, TYPE_VALUE_RUBY_GEM);
+            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_RUBY_GEM);
             componentPatternData.set(Artifact.Attribute.URL.getKey(), url);
+
+            // TODO: find out how to extract platform-attribute .gemspec file
+            String purl = buildPurl(concludedName, version, "ruby");
+            componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
@@ -194,11 +199,23 @@ public class GemSpecContributor extends ComponentPatternContributor {
         return suffixes;
     }
 
+    @Override
+    public int getExecutionPhase() {
+        return 1;
+    }
+
     private static String optStringValue(Element documentElement, String key) {
         final NodeList optNodeList = documentElement.getElementsByTagName(key);
         if (optNodeList.getLength() > 0) {
             return optNodeList.item(0).getTextContent();
         }
         return null;
+    }
+
+    private String buildPurl(String name, String version, String platform) {
+        if (platform.equals("ruby")) {
+            return String.format("pkg:gem/%s@%s", name, version);
+        }
+        return String.format("pkg:gem/%s@%s?platform=%s", name, version, platform);
     }
 }

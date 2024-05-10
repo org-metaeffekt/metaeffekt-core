@@ -60,7 +60,8 @@ public class NordeckAppComponentPatternContributor extends ComponentPatternContr
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
             componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*");
 
-            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "nordeck-app");
 
             componentPatternData.setExpansionInventorySupplier(() -> inventoryFromLicenseSummary);
 
@@ -73,6 +74,11 @@ public class NordeckAppComponentPatternContributor extends ComponentPatternContr
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
 }

@@ -216,7 +216,9 @@ public class InventorySerializationContext {
             Artifact.Attribute.COMMENT,
             Artifact.Attribute.URL,
             Artifact.Attribute.PROJECTS,
-            Artifact.Attribute.VERIFIED
+            Artifact.Attribute.VERIFIED,
+            Artifact.Attribute.TYPE,
+            Artifact.Attribute.COMPONENT_SOURCE_TYPE
     };
 
     public static void initializeSerializationContext(Inventory inventory) {
