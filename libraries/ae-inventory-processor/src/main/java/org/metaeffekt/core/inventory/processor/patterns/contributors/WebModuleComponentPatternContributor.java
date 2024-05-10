@@ -41,12 +41,13 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         add(".bower.json");
         add("/bower.json");
         add("/package-lock.json");
-        add("/.package-lock.json");
+        add(".package-lock.json");
         add("/package.json");
         add("/composer.json");
+        add(".composer.json");
     }});
 
-        @Override
+    @Override
     public boolean applies(String pathInContext) {
         return isWebModule(pathInContext);
     }
@@ -90,6 +91,8 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
             if (webModule.packageLockJsonFile != null) {
                 inventoryFromPackageLock = new NpmPackageLockAdapter().createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath);
+            } else {
+                artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
             }
 
         } catch (IOException e) {
@@ -128,7 +131,13 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                 anchorParentDirName + "/**/bower_components/**/*");
         }
 
-        componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+        componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+        if (anchorFile.getName().endsWith(Constants.BOWER_JSON) || anchorFile.getName().endsWith(Constants.DOT_BOWER_JSON)) {
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "bower-module");
+        } else {
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
+        }
+        componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
 
         if (inventoryFromPackageLock != null) {
             final Inventory expansionInventory = inventoryFromPackageLock;
@@ -141,6 +150,11 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     private Artifact parseWebModule(File baseDir, String file, final Map<String, WebModule> pathModuleMap) throws IOException {
@@ -241,7 +255,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             queryArtifact.setVersion(version);
             queryArtifact.setComponent(component);
             // FIXME-Core: use type as attribute constant; rename nodejs to webmodule (as there are different types)
-            queryArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+            queryArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
             Artifact artifact = webComponentInventory.findArtifact(queryArtifact);
             if (artifact == null) {
                 artifact = queryArtifact;
@@ -285,6 +299,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             case "package-lock.json":
             case ".package-lock.json":
             case "composer.json":
+            case ".composer.json":
             case "package.json":
             case ".bower.json":
             case "bower.json":
@@ -293,19 +308,22 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     }
 
     boolean isWebModule(String artifactPath) {
-        if (artifactPath.endsWith("package.json")) {
+        if (artifactPath.endsWith(Constants.PACKAGE_JSON)) {
             return true;
         }
-        if (artifactPath.endsWith("bower.json")) {
+        if (artifactPath.endsWith(Constants.BOWER_JSON)) {
             return true;
         }
-        if (artifactPath.endsWith("package-lock.json")) {
+        if (artifactPath.endsWith(Constants.PACKAGE_LOCK_JSON)) {
             return true;
         }
-        if (artifactPath.endsWith("composer.json")) {
+        if (artifactPath.endsWith(Constants.DOT_PACKAGE_LOCK_JSON)) {
             return true;
         }
-        if (artifactPath.endsWith(".bower.json")) {
+        if (artifactPath.endsWith(Constants.COMPOSER_JSON)) {
+            return true;
+        }
+        if (artifactPath.endsWith(Constants.DOT_BOWER_JSON)) {
             return true;
         }
         return false;
@@ -399,4 +417,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         return obj.has(key) ? obj.getString(key) : defaultValue;
     }
 
+    public static String buildPurl(String name, String version) {
+        return String.format("pkg:npm/%s@%s", name.toLowerCase(), version);
+    }
 }

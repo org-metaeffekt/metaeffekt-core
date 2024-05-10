@@ -131,7 +131,7 @@ public class ArtifactUnwrapTask extends ScanTask {
                 artifact.set(ATTRIBUTE_KEY_SCAN_DIRECTIVE, SCAN_DIRECTIVE_DELETE);
 
                 // the original archive file is deleted if the inventory entry is bound to be removed
-                // NOTE: otherwise the collection process will collect both the packed as well as the unpacked files.
+                // NOTE: otherwise the collection process will collect both the packed and the unpacked files.
                 FileUtils.deleteQuietly(file);
             } else {
                 addChecksumsAndHashes(fileRef);

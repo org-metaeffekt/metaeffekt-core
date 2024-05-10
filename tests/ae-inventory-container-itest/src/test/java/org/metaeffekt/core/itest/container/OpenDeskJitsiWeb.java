@@ -20,29 +20,27 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class Jetty extends AbstractCompositionAnalysisTest {
+public class OpenDeskJitsiWeb extends AbstractCompositionAnalysisTest {
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
-    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, Jetty.class.getSimpleName().toLowerCase(), null, Jetty.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
+    public static void prepare() {
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/web", "stable-8922@sha256:24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46", OpenDeskJitsiWeb.class.getName());
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
-                .setSha256Hash(sha256Hash)
-                .setName(Jetty.class.getName());
+                .setSha256Hash("24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46")
+                .setName(OpenDeskJitsiWeb.class.getName());
     }
 
     @Ignore
@@ -62,7 +60,8 @@ public class Jetty extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
-        componentPatterns.logListWithAllAttributes();
+        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "system-binary")).hasSizeOf(193);
+        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "dpkg-package")).hasSizeOf(198);
+        analysis.selectArtifacts(containsToken(Artifact.Attribute.PURL, "pkg:deb/ubuntu/ca-certificates@20210119?arch=all")).assertNotEmpty();
     }
 }

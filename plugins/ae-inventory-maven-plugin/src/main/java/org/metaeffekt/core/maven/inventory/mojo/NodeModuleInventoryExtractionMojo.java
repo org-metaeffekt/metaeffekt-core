@@ -219,7 +219,7 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
         artifact.setVersion(version);
         artifact.setComponent(name);
         artifact.setUrl(sourceUrl);
-        artifact.set(KEY_TYPE, ARTIFACT_TYPE_NODEJS_MODULE);
+        artifact.set(KEY_TYPE, ARTIFACT_TYPE_WEB_MODULE);
         artifact.set(KEY_SOURCE_PROJECT, sourceId);
         artifact.setClassification(classification);
         return artifact;

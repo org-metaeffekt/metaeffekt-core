@@ -84,7 +84,8 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
                         "**/bower_components/**/*," +
                         "**/*.jar");
 
-                componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+                componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+                componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "web-app");
 
                 return Collections.singletonList(componentPatternData);
             }
@@ -97,6 +98,11 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     private String parseNameFromVersionPropertyFile(File file) {

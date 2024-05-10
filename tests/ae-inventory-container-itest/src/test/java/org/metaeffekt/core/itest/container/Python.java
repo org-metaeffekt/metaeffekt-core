@@ -31,13 +31,13 @@ import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainer;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
 public class Python extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainer(Python.class.getSimpleName().toLowerCase());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, Python.class.getSimpleName().toLowerCase(), null, Python.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)

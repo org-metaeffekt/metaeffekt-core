@@ -84,9 +84,13 @@ public class NpmPackageLockAdapter {
                     artifact.setId(module + "-" + version);
                     artifact.setComponent(module);
                     artifact.setVersion(version);
-                    artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_NODEJS_MODULE);
+                    artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+                    artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
                     artifact.setUrl(url);
                     artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
+                    artifact.set(Artifact.Attribute.VIRTUAL_ROOT_PATH, path);
+                    String purl = buildPurl(module, version);
+                    artifact.set(Artifact.Attribute.PURL, purl);
 
                     boolean production = !dep.has("dev") || !dep.getBoolean("dev");
 
@@ -102,6 +106,10 @@ public class NpmPackageLockAdapter {
                 }
             }
         }
+    }
+
+    public static String buildPurl(String name, String version) {
+        return String.format("pkg:npm/%s@%s", name.toLowerCase(), version);
     }
 
 }

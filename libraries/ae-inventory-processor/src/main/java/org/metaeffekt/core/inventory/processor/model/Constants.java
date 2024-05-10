@@ -68,14 +68,20 @@ public final class Constants {
     public static final String KEY_DESCRIPTION = "Description";
     public static final String KEY_ARCHITECTURE = "Architecture";
     public static final String KEY_TYPE = "Type";
+    public static final String KEY_COMPONENT_SOURCE_TYPE = "Component Source Type";
     public static final String KEY_SOURCE_PROJECT = "Source Project";
 
     public static final String KEY_CONTAINER = "Container";
     public static final String KEY_ISSUE = "Issue";
 
     public static final String ARTIFACT_TYPE_PACKAGE = "package";
+    public static final String ARTIFACT_TYPE_MODULE = "module";
     public static final String ARTIFACT_TYPE_FILE = "file";
+
+    @Deprecated
     public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
+
+    public static final String ARTIFACT_TYPE_WEB_MODULE = "web-module";
 
     public static final String KEY_PATH_IN_ASSET = "Path in Asset";
 
@@ -84,6 +90,30 @@ public final class Constants {
     public static final String MARKER_CROSS = "x";
 
     public static final String MARKER_CONTAINS = "c";
+
+    public static final String OS_RELEASE = "os-release";
+
+    public static final String LSB_RELEASE = "lsb-release";
+
+    public static final String DEBIAN_VERSION = "debian-version";
+
+    public static final String REDHAT_RELEASE = "redhat-release";
+
+    public static final String CENTOS_RELEASE = "centos-release";
+
+    public static final String SYSTEM_RELEASE = "system-release";
+
+    public static final String PACKAGE_JSON = "package.json";
+
+    public static final String PACKAGE_LOCK_JSON = "package-lock.json";
+
+    public static final String COMPOSER_JSON = "composer.json";
+
+    public static final String BOWER_JSON = "bower.json";
+
+    public static final String DOT_BOWER_JSON = DOT + BOWER_JSON;
+
+    public static final String DOT_PACKAGE_LOCK_JSON = DOT + PACKAGE_LOCK_JSON;
 
     protected Constants() {
     }

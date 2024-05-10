@@ -49,4 +49,10 @@ public abstract class ComponentPatternContributor {
      * @return a list of supported file suffixes
      */
     public abstract List<String> getSuffixes();
+
+    /**
+     * Get the execution phase of this contributor. The lower the number, the earlier it will be executed.
+     * @return the execution phase
+     */
+    public abstract int getExecutionPhase();
 }

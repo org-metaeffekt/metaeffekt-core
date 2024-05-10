@@ -23,6 +23,7 @@
 
         <!-- integration tests -->
         <module>ae-inventory-subjects-itest</module>
+        <module>ae-inventory-container-itest</module>
     </modules>
 
     <build>

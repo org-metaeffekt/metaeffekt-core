@@ -46,7 +46,18 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{
                 "**/.DS_Store", "**/._*",
-                "**/.git/**/*", "**/.git*", "**/.git*"
+                "**/.git/**/*", "**/.git*",
+                "**/.svn/**/*", "**/.svn*",
+                "**/log/**/*",
+                "**/__pycache__/**/*", "**/__pycache__*",
+                "**/usr/lib/systemd/**/*",
+                "**/usr/lib/systemd*",
+                "**/usr/lib/udev/**/*",
+                "**/usr/lib/terminfo/**/*",
+                "**/var/cache/**/*",
+                "**/var/lib/systemd/**/*",
+                "**/var/lib/ucf/**/*",
+                "**/etc/**/*"
         };
 
         String[] unwrapIncludes = new String[]{"**/*"};
@@ -101,8 +112,8 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         String filename = filenameParts[filenameParts.length - 1];
         String artifactFile = getDownloadFolder() + filename;
         if (overwrite || !new File(artifactFile).exists()) {
-            new File(getDownloadFolder()).mkdirs();
             if (url.startsWith("http")) {
+                FileUtils.forceMkdir(new File(getDownloadFolder()));
                 httpDownload(artifactFile);
             }
             if (url.startsWith("file")) {

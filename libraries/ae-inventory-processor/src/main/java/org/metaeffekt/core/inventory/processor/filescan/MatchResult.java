@@ -64,7 +64,9 @@ public class MatchResult {
 
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
+        derivedArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, componentPatternData.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
         derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Artifact.Attribute.URL.getKey()));
+        derivedArtifact.set(Artifact.Attribute.PURL, componentPatternData.get(Artifact.Attribute.PURL.getKey()));
 
         // also the group id
         derivedArtifact.setGroupId(componentPatternData.get("Group Id"));

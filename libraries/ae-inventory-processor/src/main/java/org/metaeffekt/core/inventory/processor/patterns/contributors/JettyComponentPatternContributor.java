@@ -62,6 +62,7 @@ public class JettyComponentPatternContributor extends ComponentPatternContributo
                 componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*,**/*.jar");
 
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+                componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jetty-runtime");
 
                 return Collections.singletonList(componentPatternData);
             }
@@ -74,6 +75,11 @@ public class JettyComponentPatternContributor extends ComponentPatternContributo
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     private static String parseVersionFromVersionFile(File anchorFile) throws IOException {

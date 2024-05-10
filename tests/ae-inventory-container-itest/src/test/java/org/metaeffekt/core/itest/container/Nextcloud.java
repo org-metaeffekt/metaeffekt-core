@@ -31,13 +31,13 @@ import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainer;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
 public class Nextcloud extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainer(Nextcloud.class.getSimpleName().toLowerCase());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, Nextcloud.class.getSimpleName().toLowerCase(), null, Nextcloud.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)

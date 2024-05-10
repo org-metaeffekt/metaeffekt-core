@@ -112,8 +112,8 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         // contribute groupid (consider also other attributes)
         componentPatternData.set("Group Id", artifact.getGroupId());
 
-        // FIXME: check what type represents (a characterisitic of the artifact or its embedding)
-        componentPatternData.set(Constants.KEY_TYPE, "jar-component");
+        componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+        componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
 
         return Collections.singletonList(componentPatternData);
     }
@@ -121,6 +121,11 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
     @Override
     public List<String> getSuffixes() {
         return suffixes;
+    }
+
+    @Override
+    public int getExecutionPhase() {
+        return 1;
     }
 
     private void mergeArtifact(Artifact artifact, Artifact fromXml) {
