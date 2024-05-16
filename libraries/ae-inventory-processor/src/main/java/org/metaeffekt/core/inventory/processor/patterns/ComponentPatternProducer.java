@@ -556,6 +556,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new SystemBinaryComponentPatternContributor());
         contributorRunnerBuilder.add(new ProgressiveWebAppComponentPatternContributor());
         contributorRunnerBuilder.add(new ApkPackageContributor());
+        contributorRunnerBuilder.add(new AlpmPackageContributor());
 
         return contributorRunnerBuilder.build();
     }
