@@ -39,7 +39,7 @@ public class ClamavIcap extends AbstractCompositionAnalysisTest {
     public static void prepare() {
         // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-clamav-icap@891f267a6b2a304616854ad2f013dc5d23f6f6c84d535c8b46e76d124fe39b6a-export.tar")
+                .setSource("http://ae-scanner/images/CID-clamav-icap%40891f267a6b2a304616854ad2f013dc5d23f6f6c84d535c8b46e76d124fe39b6a-export.tar")
                 .setSha256Hash("51e4d79caa561f31834b8cdd3d19f1ed85e239986f69e33b9e46b9c384eddbee")
                 .setName(ClamavIcap.class.getName());
     }

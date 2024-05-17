@@ -42,7 +42,7 @@ public class CoreUIMiddleware extends AbstractCompositionAnalysisTest {
     public static void prepare() {
         // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-core-ui-middleware@8082edf30498a3ac1715f2d9b3e406f240ea586e2616b97f40c207ef55dff11f-export.tar")
+                .setSource("http://ae-scanner/images/CID-core-ui-middleware%408082edf30498a3ac1715f2d9b3e406f240ea586e2616b97f40c207ef55dff11f-export.tar")
                 .setSha256Hash("c0e44a39a8dfd6d839a1f82c8665cd249c4c557794fce1f33fe2d45b8a0621e0")
                 .setName(CoreUIMiddleware.class.getName());
     }

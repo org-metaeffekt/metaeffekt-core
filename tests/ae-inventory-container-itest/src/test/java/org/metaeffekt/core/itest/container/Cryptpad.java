@@ -33,9 +33,8 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() {
-        // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-cryptpad@f4d20d5c38c87b11ed1a1b46ef6a3633d32c6758ebdff8556458f040318fa5e2-export.tar")
+                .setSource("http://ae-scanner/images/CID-cryptpad%40f4d20d5c38c87b11ed1a1b46ef6a3633d32c6758ebdff8556458f040318fa5e2-export.tar")
                 .setSha256Hash("f37a5037210a4afa1cc5badea2c8121f9cd48a192d3e415cc691fe51883d4036")
                 .setName(Cryptpad.class.getName());
     }
