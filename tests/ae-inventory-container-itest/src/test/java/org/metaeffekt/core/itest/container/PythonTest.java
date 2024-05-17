@@ -20,30 +20,29 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaeffekt.core.util.FileUtils;
 
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
+import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class OpenDeskJitsiJicofo extends AbstractCompositionAnalysisTest {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+public class PythonTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
-    public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/jicofo", "stable-8922@sha256:820fcd4b072b29f42c1c37389fbefda1065f1e9654694941485dc08123c8a93b", OpenDeskJitsiJibri.class.getName());
+    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, PythonTest.class.getSimpleName().toLowerCase(), null, PythonTest.class.getName());
+        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
-                .setSha256Hash("820fcd4b072b29f42c1c37389fbefda1065f1e9654694941485dc08123c8a93b")
-                .setName(OpenDeskJitsiJicofo.class.getName());
+                .setSha256Hash(sha256Hash)
+                .setName(PythonTest.class.getName());
     }
 
     @Ignore
@@ -65,9 +64,5 @@ public class OpenDeskJitsiJicofo extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
         componentPatterns.logListWithAllAttributes();
-        analysis.selectComponentPatterns(containsToken(ComponentPatternData.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
-        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.TYPE, "package")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "dpkg-package")).hasSizeOf(172);
     }
 }

@@ -25,23 +25,24 @@ import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaeffekt.core.util.FileUtils;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
+import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
-public class ClamavIcap extends AbstractCompositionAnalysisTest {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+
+public class NextcloudTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
-    public static void prepare() {
-        // TODO: this has to be changed with the actual source url
+    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, NextcloudTest.class.getSimpleName().toLowerCase(), null, NextcloudTest.class.getName());
+        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("http://ae-scanner/images/CID-clamav-icap%40891f267a6b2a304616854ad2f013dc5d23f6f6c84d535c8b46e76d124fe39b6a-export.tar")
-                .setSha256Hash("51e4d79caa561f31834b8cdd3d19f1ed85e239986f69e33b9e46b9c384eddbee")
-                .setName(ClamavIcap.class.getName());
+                .setSource("file://" + path)
+                .setSha256Hash(sha256Hash)
+                .setName(NextcloudTest.class.getName());
     }
 
     @Ignore
@@ -63,8 +64,5 @@ public class ClamavIcap extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
         componentPatterns.logListWithAllAttributes();
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(557);
-        analysis.selectComponentPatterns(tokenStartsWith(TYPE, "nodejs")).hasSizeGreaterThan(1);
-        analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
     }
 }

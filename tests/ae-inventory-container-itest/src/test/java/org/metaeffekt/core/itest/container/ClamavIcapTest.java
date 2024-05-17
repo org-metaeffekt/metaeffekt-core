@@ -22,34 +22,32 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.util.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 
-public class MatrixElement extends AbstractCompositionAnalysisTest {
+public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
-    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, "avhost/docker-matrix-element", null, MatrixElement.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
+    public static void prepare() {
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
-                .setSha256Hash(sha256Hash)
-                .setName(MatrixElement.class.getName());
+                .setSource("http://ae-scanner/images/CID-clamav-icap%40891f267a6b2a304616854ad2f013dc5d23f6f6c84d535c8b46e76d124fe39b6a-export.tar")
+                .setSha256Hash("51e4d79caa561f31834b8cdd3d19f1ed85e239986f69e33b9e46b9c384eddbee")
+                .setName(ClamavIcapTest.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+
     }
 
     @Ignore
@@ -62,9 +60,10 @@ public class MatrixElement extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "pwa-module")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(TYPE, "system-binary")).hasSizeGreaterThan(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(48);
+        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
+        componentPatterns.logListWithAllAttributes();
+        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(557);
+        analysis.selectComponentPatterns(tokenStartsWith(TYPE, "nodejs")).hasSizeGreaterThan(1);
         analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
     }
 }

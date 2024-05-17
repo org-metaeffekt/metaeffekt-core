@@ -33,16 +33,16 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class Python extends AbstractCompositionAnalysisTest {
+public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, Python.class.getSimpleName().toLowerCase(), null, Python.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, PhpMyAdminTest.class.getSimpleName().toLowerCase(), null, PhpMyAdminTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(Python.class.getName());
+                .setName(PhpMyAdminTest.class.getName());
     }
 
     @Ignore

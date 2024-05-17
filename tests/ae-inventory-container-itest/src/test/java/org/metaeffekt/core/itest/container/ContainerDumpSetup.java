@@ -42,6 +42,7 @@ public class ContainerDumpSetup {
         }
 
         // Create a filename from the image name based on the last slash in the repository name
+        repository = repository.replaceAll("Test$", "");
         String filename = repository.substring(repository.lastIndexOf("/") + 1) + "-" + tag + ".tar";
         String myDir = scanSubFolder.replace("org.metaeffekt.core.itest.", "");
         String folder = myDir.replace(".", "/") + "/";
