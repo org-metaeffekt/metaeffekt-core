@@ -160,10 +160,13 @@ public class ArtifactType {
     // CATEGORY_SOFTWARE_LIBRARY
     public static final ArtifactType LINUX_PACKAGE = new ArtifactType("package", "linux package");
     public static final ArtifactType PYTHON_MODULE = new ArtifactType("python-module", "python module");
-    public static final ArtifactType WEB_MODULE = new ArtifactType("web-module", "web module");
+
+    // FIXME: introduce further specific web module types
+    public static final ArtifactType NODEJS_MODULE = new ArtifactType("nodejs-module", "nodejs module");
+    public static final ArtifactType WEB_MODULE = new ArtifactType("web-module", "web module", NODEJS_MODULE);
 
     public static final ArtifactType CATEGORY_SOFTWARE_LIBRARY = new ArtifactType("software library", null,
-            LINUX_PACKAGE, PYTHON_MODULE, WEB_MODULE
+            LINUX_PACKAGE, PYTHON_MODULE, WEB_MODULE, NODEJS_MODULE
     );
 
     public static final ArtifactType OPERATING_SYSTEM = new ArtifactType("operating system", null);
