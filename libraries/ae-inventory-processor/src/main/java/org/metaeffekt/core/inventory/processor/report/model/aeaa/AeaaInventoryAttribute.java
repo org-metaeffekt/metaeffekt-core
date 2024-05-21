@@ -62,8 +62,8 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     VULNERABILITIES_FIXED_BY_KB("Vulnerability fixed by KB"),
     INAPPLICABLE_CVE("Inapplicable CVE"),
     ADDON_CVES("Addon CVEs"),
-    KEV_DATA("KEV Data")
-
+    KEV_DATA("KEV Data"),
+    EPSS_DATA("Epss Data")
     ;
 
     private final String key;
