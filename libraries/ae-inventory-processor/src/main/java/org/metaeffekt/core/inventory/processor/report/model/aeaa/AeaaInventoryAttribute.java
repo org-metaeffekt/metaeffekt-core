@@ -63,7 +63,7 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     INAPPLICABLE_CVE("Inapplicable CVE"),
     ADDON_CVES("Addon CVEs"),
     KEV_DATA("KEV Data"),
-    EPSS_DATA("Epss Data")
+    EPSS_DATA("EPSS Data")
     ;
 
     private final String key;
