@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label "meta-agent"
+    }
     stages {
         stage('Build') {
             steps {
