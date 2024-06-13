@@ -20,39 +20,37 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class OpenDeskNextcloud extends AbstractCompositionAnalysisTest {
+public class OpenDeskJitsiJicofoTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/platform-development/images/opendesk-nextcloud-php", "1.8.4@sha256:d51ca3e22a493d6dd625cf9bfa40f96481ba36894a9d3eed1e082eadaef72c5c", OpenDeskNextcloud.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/jicofo", "stable-8922@sha256:820fcd4b072b29f42c1c37389fbefda1065f1e9654694941485dc08123c8a93b", OpenDeskJitsiJicofoTest.class.getName());
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
-                .setSha256Hash(sha256Hash)
-                .setName(OpenDeskNextcloud.class.getName());
+                .setSha256Hash("820fcd4b072b29f42c1c37389fbefda1065f1e9654694941485dc08123c8a93b")
+                .setName(OpenDeskJitsiJicofoTest.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+
     }
 
     @Ignore
@@ -65,10 +63,11 @@ public class OpenDeskNextcloud extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(2231);
-        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.TYPE, "nodejs")).hasSizeOf(31);
-        analysis.selectArtifacts(containsToken(TYPE, "php-composer")).hasSizeOf(93);
-        analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
-        analysis.selectArtifacts(containsToken(TYPE, "system-binary")).hasSizeOf(281);
+        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
+        componentPatterns.logListWithAllAttributes();
+        analysis.selectComponentPatterns(containsToken(ComponentPatternData.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
+        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.TYPE, "package")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
+        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "dpkg-package")).hasSizeOf(172);
     }
 }

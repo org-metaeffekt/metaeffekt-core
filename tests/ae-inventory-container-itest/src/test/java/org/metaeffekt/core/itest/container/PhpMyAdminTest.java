@@ -22,6 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.util.FileUtils;
@@ -30,26 +31,25 @@ import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class MatrixElement extends AbstractCompositionAnalysisTest {
+public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, "avhost/docker-matrix-element", null, MatrixElement.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, PhpMyAdminTest.class.getSimpleName().toLowerCase(), null, PhpMyAdminTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(MatrixElement.class.getName());
+                .setName(PhpMyAdminTest.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+
     }
 
     @Ignore
@@ -62,9 +62,7 @@ public class MatrixElement extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "pwa-module")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(TYPE, "system-binary")).hasSizeGreaterThan(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(48);
-        analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
+        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
+        componentPatterns.logListWithAllAttributes();
     }
 }

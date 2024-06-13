@@ -22,29 +22,33 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Cryptpad extends AbstractCompositionAnalysisTest {
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PURL;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
+import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+
+public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
-        // TODO: this has to be changed with the actual source url
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/univention/images-mirror/keycloak-keycloak", "22.0.3-ucs2@sha256:1e8e45a2e01050c1473595c3b143446363016ea292b0c599ccd9f1bd37112206", OpenDeskKeycloakTest.class.getName());
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-cryptpad@f4d20d5c38c87b11ed1a1b46ef6a3633d32c6758ebdff8556458f040318fa5e2-export.tar")
-                .setSha256Hash("f37a5037210a4afa1cc5badea2c8121f9cd48a192d3e415cc691fe51883d4036")
-                .setName(Cryptpad.class.getName());
+                .setSource("file://" + path)
+                .setSha256Hash("1e8e45a2e01050c1473595c3b143446363016ea292b0c599ccd9f1bd37112206")
+                .setName(OpenDeskKeycloakTest.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore
@@ -57,7 +61,9 @@ public class Cryptpad extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
-        componentPatterns.logListWithAllAttributes();
+        analysis.selectArtifacts(containsToken(TYPE, "dpkg-package")).hasSizeOf(119);
+        analysis.selectArtifacts(tokenStartsWith(TYPE, "package")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "jar-manifest-component")).hasSizeOf(367);
+        analysis.selectArtifacts(containsToken(PURL, "pkg:maven/org.jboss.resteasy/resteasy-client@6.2.5.Final?type=jar")).assertNotEmpty();
     }
 }

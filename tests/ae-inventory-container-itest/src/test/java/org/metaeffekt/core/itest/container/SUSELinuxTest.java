@@ -35,16 +35,16 @@ import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class Fedora extends AbstractCompositionAnalysisTest {
+public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, Fedora.class.getSimpleName().toLowerCase(), null, Fedora.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.suse.com", "bci/bci-base", null, SUSELinuxTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(Fedora.class.getName());
+                .setName(SUSELinuxTest.class.getName());
     }
 
     @Ignore
@@ -64,8 +64,7 @@ public class Fedora extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(141);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(2);
-        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "rpmdb.sqlite")).hasSizeGreaterThan(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(103);
+        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages.db")).hasSizeGreaterThan(1);
     }
 }

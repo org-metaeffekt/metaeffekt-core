@@ -34,7 +34,7 @@ import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.id
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 
-public class CoreUIMiddleware extends AbstractCompositionAnalysisTest {
+public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -44,7 +44,7 @@ public class CoreUIMiddleware extends AbstractCompositionAnalysisTest {
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-core-ui-middleware@8082edf30498a3ac1715f2d9b3e406f240ea586e2616b97f40c207ef55dff11f-export.tar")
                 .setSha256Hash("c0e44a39a8dfd6d839a1f82c8665cd249c4c557794fce1f33fe2d45b8a0621e0")
-                .setName(CoreUIMiddleware.class.getName());
+                .setName(CoreUIMiddlewareTest.class.getName());
     }
 
     @Ignore

@@ -22,7 +22,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.util.FileUtils;
@@ -31,18 +30,21 @@ import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class GoLangTestApp extends AbstractCompositionAnalysisTest {
+public class FedoraTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, "avhost/go-apiproxy", null, GoLangTestApp.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, FedoraTest.class.getSimpleName().toLowerCase(), null, FedoraTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(GoLangTestApp.class.getName());
+                .setName(FedoraTest.class.getName());
     }
 
     @Ignore
@@ -62,7 +64,8 @@ public class GoLangTestApp extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
-        componentPatterns.logListWithAllAttributes();
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(141);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(2);
+        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "rpmdb.sqlite")).hasSizeGreaterThan(1);
     }
 }

@@ -28,27 +28,23 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
-
-public class OpenDeskJitsiJibri extends AbstractCompositionAnalysisTest {
+public class CryptpadTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/jibri", "stable-8922@sha256:87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936", OpenDeskJitsiJibri.class.getName());
+        // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
-                .setSha256Hash("87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936")
-                .setName(OpenDeskJitsiJibri.class.getName());
+                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-cryptpad@f4d20d5c38c87b11ed1a1b46ef6a3633d32c6758ebdff8556458f040318fa5e2-export.tar")
+                .setSha256Hash("f37a5037210a4afa1cc5badea2c8121f9cd48a192d3e415cc691fe51883d4036")
+                .setName(CryptpadTest.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+
     }
 
     @Ignore
@@ -63,7 +59,5 @@ public class OpenDeskJitsiJibri extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
         componentPatterns.logListWithAllAttributes();
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(171);
-        analysis.selectArtifacts(containsToken(TYPE, "web-module")).hasSizeOf(173);
     }
 }

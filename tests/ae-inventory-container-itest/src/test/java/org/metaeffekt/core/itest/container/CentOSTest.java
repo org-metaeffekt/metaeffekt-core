@@ -35,16 +35,16 @@ import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class SUSELinux extends AbstractCompositionAnalysisTest {
+public class CentOSTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.suse.com", "bci/bci-base", null, SUSELinux.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, CentOSTest.class.getSimpleName().toLowerCase(), null, CentOSTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(SUSELinux.class.getName());
+                .setName(CentOSTest.class.getName());
     }
 
     @Ignore
@@ -64,7 +64,8 @@ public class SUSELinux extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(103);
-        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages.db")).hasSizeGreaterThan(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(178);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(5);
+        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages")).hasSizeGreaterThan(1);
     }
 }

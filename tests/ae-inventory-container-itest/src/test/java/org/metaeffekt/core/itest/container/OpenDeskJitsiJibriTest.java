@@ -20,8 +20,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
@@ -30,27 +28,27 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class OpenDeskJitsiJvb extends AbstractCompositionAnalysisTest {
+public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/jvb", "stable-8922@sha256:75dd613807e19cbbd440d071b60609fa9e4ee50a1396b14deb0ed779d882a554", OpenDeskJitsiJvb.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/jibri", "stable-8922@sha256:87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936", OpenDeskJitsiJibriTest.class.getName());
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
-                .setSha256Hash("75dd613807e19cbbd440d071b60609fa9e4ee50a1396b14deb0ed779d882a554")
-                .setName(OpenDeskJitsiJvb.class.getName());
+                .setSha256Hash("87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936")
+                .setName(OpenDeskJitsiJibriTest.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore
@@ -65,9 +63,7 @@ public class OpenDeskJitsiJvb extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
         componentPatterns.logListWithAllAttributes();
-        analysis.selectComponentPatterns(containsToken(ComponentPatternData.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
-        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.TYPE, "package")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "dpkg-package")).hasSizeOf(172);
+        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(171);
+        analysis.selectArtifacts(containsToken(TYPE, "web-module")).hasSizeOf(173);
     }
 }

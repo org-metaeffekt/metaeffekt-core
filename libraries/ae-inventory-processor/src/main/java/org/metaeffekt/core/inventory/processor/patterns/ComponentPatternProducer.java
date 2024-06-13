@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.util.FileUtils.*;
 
@@ -339,7 +340,7 @@ public class ComponentPatternProducer {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
                     }
-                    if (!cpd.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE).equals("rpm")) {
+                    if (cpd.get(COMPONENT_SOURCE_TYPE) == null || !cpd.get(COMPONENT_SOURCE_TYPE).equals("rpm")) {
                         matchResultsWithoutFileMatches.add(matchResult);
                     }
                 }

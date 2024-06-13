@@ -33,16 +33,16 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class ArchLinux extends AbstractCompositionAnalysisTest {
+public class PythonTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, ArchLinux.class.getSimpleName().toLowerCase(), null, ArchLinux.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, PythonTest.class.getSimpleName().toLowerCase(), null, PythonTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(ArchLinux.class.getName());
+                .setName(PythonTest.class.getName());
     }
 
     @Ignore
