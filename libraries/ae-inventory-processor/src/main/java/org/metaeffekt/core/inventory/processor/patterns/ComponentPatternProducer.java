@@ -339,7 +339,9 @@ public class ComponentPatternProducer {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
                     }
-                    matchResultsWithoutFileMatches.add(matchResult);
+                    if (!cpd.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE).equals("rpm")) {
+                        matchResultsWithoutFileMatches.add(matchResult);
+                    }
                 }
             }
         }
@@ -553,10 +555,19 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new JavaRuntimeComponentPatternContributor());
         contributorRunnerBuilder.add(new JettyComponentPatternContributor());
         contributorRunnerBuilder.add(new WebApplicationComponentPatternContributor());
-        contributorRunnerBuilder.add(new SystemBinaryComponentPatternContributor());
         contributorRunnerBuilder.add(new ProgressiveWebAppComponentPatternContributor());
         contributorRunnerBuilder.add(new ApkPackageContributor());
         contributorRunnerBuilder.add(new AlpmPackageContributor());
+        contributorRunnerBuilder.add(new RpmPackageContributor());
+        contributorRunnerBuilder.add(new ConanComponentPatternContributor());
+        contributorRunnerBuilder.add(new GoLangComponentPatternContributor());
+        contributorRunnerBuilder.add(new JenkinsPluginsComponentPatternContributor());
+        contributorRunnerBuilder.add(new LinuxKernelArchiveContributor());
+        contributorRunnerBuilder.add(new LinuxKernelModulesContributor());
+        contributorRunnerBuilder.add(new NugetComponentPatternContributor());
+        contributorRunnerBuilder.add(new PubComponentPatternContributor());
+        contributorRunnerBuilder.add(new CocoapodsComponentPatternContributor());
+        contributorRunnerBuilder.add(new MixComponentPatternContributor());
 
         return contributorRunnerBuilder.build();
     }
