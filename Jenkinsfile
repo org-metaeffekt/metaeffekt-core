@@ -1,11 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'svenruppert/maven-3.1.1-zulu:1.8.232'
-            label 'meta-agent_docker'
-            args '-v /tmp:/tmp'
-        }
-    }
+    agent any
     stages {
         stage('Build') {
             steps {
