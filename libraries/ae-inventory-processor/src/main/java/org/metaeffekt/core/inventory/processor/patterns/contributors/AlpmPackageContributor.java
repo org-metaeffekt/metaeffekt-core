@@ -22,14 +22,12 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AlpmPackageContributor extends ComponentPatternContributor {
 
@@ -37,13 +35,12 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     private static final String ALPM_PACKAGE_TYPE = "alpm";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("/desc");
-        add("/files");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
         // this contributor applies if it's the ALPM package database directory
-        return pathInContext.contains("var/lib/pacman/local");
+        return pathInContext.endsWith("/desc");
     }
 
     @Override
@@ -65,18 +62,32 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             String architecture = null;
             StringJoiner includePatterns = new StringJoiner(",");
 
+            // add the parent directory of the package directory to the include patterns
+            Path relativeParentPath = virtualRoot.relativize(new File(relativeAnchorPath).getParentFile().toPath());
+            includePatterns.add(relativeParentPath + "/**/*");
+
             // read the desc file
             File descFile = new File(packageDir, "desc");
             if (descFile.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(descFile))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
+                try (Stream<String> lines = Files.lines(descFile.toPath())) {
+                    Iterator<String> iterator = lines.iterator();
+                    while (iterator.hasNext()) {
+                        String line = iterator.next();
                         if (line.startsWith("%NAME%")) {
-                            packageName = reader.readLine().trim();
+                            if (iterator.hasNext()) {
+                                String nextLine = iterator.next();
+                                packageName = nextLine.trim();
+                            }
                         } else if (line.startsWith("%VERSION%")) {
-                            version = reader.readLine().trim();
+                            if (iterator.hasNext()) {
+                                String nextLine = iterator.next();
+                                version = nextLine.trim();
+                            }
                         } else if (line.startsWith("%ARCH%")) {
-                            architecture = reader.readLine().trim();
+                            if (iterator.hasNext()) {
+                                String nextLine = iterator.next();
+                                architecture = nextLine.trim();
+                            }
                         }
                     }
                 }
@@ -85,10 +96,9 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             // read the files file
             File filesFile = new File(packageDir, "files");
             if (filesFile.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(filesFile))) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (!line.equals("%FILES%")) {
+                try (Stream<String> lines = Files.lines(filesFile.toPath())) {
+                    for (String line : lines.collect(Collectors.toList())) {
+                        if (!line.startsWith("%FILES%") && !line.startsWith("%BACKUP%")) {
                             includePatterns.add(line.trim());
                         }
                     }

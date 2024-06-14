@@ -340,7 +340,7 @@ public class ComponentPatternProducer {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
                     }
-                    if (cpd.get(COMPONENT_SOURCE_TYPE) == null || !cpd.get(COMPONENT_SOURCE_TYPE).equals("rpm")) {
+                    if (cpd.get(COMPONENT_SOURCE_TYPE) == null || !cpd.get(COMPONENT_SOURCE_TYPE).equals("rpm") || !cpd.get(COMPONENT_SOURCE_TYPE).equals("alpm")) {
                         matchResultsWithoutFileMatches.add(matchResult);
                     }
                 }

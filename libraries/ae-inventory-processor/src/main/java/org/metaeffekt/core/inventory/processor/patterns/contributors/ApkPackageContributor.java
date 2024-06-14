@@ -64,6 +64,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
             String version = null;
             String architecture = null;
             StringJoiner includePatterns = new StringJoiner(",");
+            includePatterns.add("lib/apk/db/**/*");
             String currentFolder = null;
             for (String line : lineStream.collect(Collectors.toList())) {
                 if (line.startsWith("P:")) {

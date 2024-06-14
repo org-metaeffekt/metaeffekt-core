@@ -35,16 +35,16 @@ import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
+public class AlpineTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, ArchLinuxTest.class.getSimpleName().toLowerCase(), null, ArchLinuxTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, AlpineTest.class.getSimpleName().toLowerCase(), null, AlpineTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(ArchLinuxTest.class.getName());
+                .setName(AlpineTest.class.getName());
     }
 
     @Ignore
@@ -64,7 +64,7 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "alpm")).hasSizeOf(114);
-        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/desc")).hasSizeGreaterThan(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(11);
+        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/installed")).hasSizeGreaterThan(1);
     }
 }
