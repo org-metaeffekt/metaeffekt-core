@@ -82,7 +82,7 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         final Inventory inventory = scan.createScanInventory();
 
         new File(getInventoryFolder()).mkdirs();
-        new InventoryWriter().writeInventory(inventory, new File(getInventoryFolder() + "scan-inventory.xls"));
+        new InventoryWriter().writeInventory(inventory, new File(getInventoryFolder() + "scan-inventory.xlsx"));
         new InventoryWriter().writeInventory(inventory, new File(inventoryfile));
 
         return true;

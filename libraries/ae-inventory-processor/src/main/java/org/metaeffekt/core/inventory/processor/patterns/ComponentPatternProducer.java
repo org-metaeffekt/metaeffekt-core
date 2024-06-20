@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.NO_MATCHING_FILE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.util.FileUtils.*;
 
@@ -339,7 +340,9 @@ public class ComponentPatternProducer {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
                     }
-                    matchResultsWithoutFileMatches.add(matchResult);
+                    if (cpd.get(NO_MATCHING_FILE) == null || !cpd.get(NO_MATCHING_FILE).equals(Constants.MARKER_CROSS)) {
+                        matchResultsWithoutFileMatches.add(matchResult);
+                    }
                 }
             }
         }
@@ -553,9 +556,19 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new JavaRuntimeComponentPatternContributor());
         contributorRunnerBuilder.add(new JettyComponentPatternContributor());
         contributorRunnerBuilder.add(new WebApplicationComponentPatternContributor());
-        contributorRunnerBuilder.add(new SystemBinaryComponentPatternContributor());
         contributorRunnerBuilder.add(new ProgressiveWebAppComponentPatternContributor());
         contributorRunnerBuilder.add(new ApkPackageContributor());
+        contributorRunnerBuilder.add(new AlpmPackageContributor());
+        contributorRunnerBuilder.add(new RpmPackageContributor());
+        contributorRunnerBuilder.add(new ConanComponentPatternContributor());
+        contributorRunnerBuilder.add(new GoLangComponentPatternContributor());
+        contributorRunnerBuilder.add(new JenkinsPluginsComponentPatternContributor());
+        contributorRunnerBuilder.add(new LinuxKernelArchiveContributor());
+        contributorRunnerBuilder.add(new LinuxKernelModulesContributor());
+        contributorRunnerBuilder.add(new NugetComponentPatternContributor());
+        contributorRunnerBuilder.add(new PubComponentPatternContributor());
+        contributorRunnerBuilder.add(new CocoapodsComponentPatternContributor());
+        contributorRunnerBuilder.add(new MixComponentPatternContributor());
 
         return contributorRunnerBuilder.build();
     }

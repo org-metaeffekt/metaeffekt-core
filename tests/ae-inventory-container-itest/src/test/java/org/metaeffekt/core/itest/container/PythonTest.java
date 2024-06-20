@@ -33,16 +33,16 @@ import java.security.NoSuchAlgorithmException;
 
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class Nginx extends AbstractCompositionAnalysisTest {
+public class PythonTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, "nginx", null, Nginx.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, PythonTest.class.getSimpleName().toLowerCase(), null, PythonTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(Nginx.class.getName());
+                .setName(PythonTest.class.getName());
     }
 
     @Ignore

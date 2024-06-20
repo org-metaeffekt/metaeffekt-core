@@ -25,30 +25,31 @@ import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaeffekt.core.util.FileUtils;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
+import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class OpenDeskJitsiJibri extends AbstractCompositionAnalysisTest {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+public class ElixirTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
-    public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/jibri", "stable-8922@sha256:87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936", OpenDeskJitsiJibri.class.getName());
+    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, "elixir", null, ElixirTest.class.getName());
+        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
-                .setSha256Hash("87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936")
-                .setName(OpenDeskJitsiJibri.class.getName());
+                .setSha256Hash(sha256Hash)
+                .setName(ElixirTest.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+
     }
 
     @Ignore
@@ -63,7 +64,5 @@ public class OpenDeskJitsiJibri extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
         componentPatterns.logListWithAllAttributes();
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(171);
-        analysis.selectArtifacts(containsToken(TYPE, "web-module")).hasSizeOf(173);
     }
 }

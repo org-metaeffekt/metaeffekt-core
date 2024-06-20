@@ -218,7 +218,8 @@ public class InventorySerializationContext {
             Artifact.Attribute.PROJECTS,
             Artifact.Attribute.VERIFIED,
             Artifact.Attribute.TYPE,
-            Artifact.Attribute.COMPONENT_SOURCE_TYPE
+            Artifact.Attribute.COMPONENT_SOURCE_TYPE,
+            Artifact.Attribute.NO_MATCHING_FILE
     };
 
     public static void initializeSerializationContext(Inventory inventory) {

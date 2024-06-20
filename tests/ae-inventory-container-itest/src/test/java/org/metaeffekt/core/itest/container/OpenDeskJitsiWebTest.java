@@ -31,16 +31,16 @@ import org.slf4j.LoggerFactory;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class OpenDeskJitsiWeb extends AbstractCompositionAnalysisTest {
+public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/web", "stable-8922@sha256:24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46", OpenDeskJitsiWeb.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/web", "stable-8922@sha256:24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46", OpenDeskJitsiWebTest.class.getName());
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash("24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46")
-                .setName(OpenDeskJitsiWeb.class.getName());
+                .setName(OpenDeskJitsiWebTest.class.getName());
     }
 
     @Ignore
