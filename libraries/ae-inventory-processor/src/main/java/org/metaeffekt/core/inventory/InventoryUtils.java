@@ -90,7 +90,7 @@ public abstract class InventoryUtils {
 
 
     private static final Pattern REGEXP_PATTERN_SEPARATOR_COMMA = Pattern.compile(",", 0);
-    private static final Pattern REGEXP_PATTERN_SEPARATOR_ALL = Pattern.compile("[,\\|\\+]", 0);
+    private static final Pattern REGEXP_PATTERN_SEPARATOR_ALL = Pattern.compile("((\\s*,\\s*)|(\\s+\\+\\s+)|\\s*\\|\\s*)", 0);
 
     public static List<String> tokenizeLicense(String license, boolean reorder, boolean commaSeparatorOnly) {
         if (license != null) {
