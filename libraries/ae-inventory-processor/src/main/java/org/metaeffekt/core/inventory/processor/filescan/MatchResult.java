@@ -65,6 +65,7 @@ public class MatchResult {
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
         derivedArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, componentPatternData.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
+        derivedArtifact.set(Constants.KEY_NO_MATCHING_FILE, componentPatternData.get(Constants.KEY_NO_MATCHING_FILE));
         derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Artifact.Attribute.URL.getKey()));
         derivedArtifact.set(Artifact.Attribute.PURL, componentPatternData.get(Artifact.Attribute.PURL.getKey()));
 

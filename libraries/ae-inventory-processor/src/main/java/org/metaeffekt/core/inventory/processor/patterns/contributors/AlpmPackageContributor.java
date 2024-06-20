@@ -130,6 +130,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, ALPM_PACKAGE_TYPE);
+        cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
         cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
         components.add(cpd);
     }

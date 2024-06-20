@@ -101,6 +101,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, sj.toString());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
+                    cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
                     cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getVendor(), packageInfo.getName(), packageInfo.getVersion(), packageInfo.getArch(), packageInfo.getEpoch(), packageInfo.getRelease()));
 
                     components.add(cpd);
