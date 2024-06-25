@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors.exception;
 
+// FIXME: Contributors never crash; revise overall exception handling. Propoably eliminate this specific exception.
 /**
  * Thrown when a component pattern contributor is supposed to fail without crashing the entire scan.
  */

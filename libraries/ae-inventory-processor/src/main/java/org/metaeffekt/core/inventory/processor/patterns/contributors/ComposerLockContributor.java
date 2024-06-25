@@ -103,6 +103,7 @@ public class ComposerLockContributor extends ComponentPatternContributor {
             }
             return list;
         } catch (IOException e) {
+            // FIXME: log warning; return empty list
             throw new RuntimeException(e);
         }
 

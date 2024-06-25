@@ -81,7 +81,7 @@ public class CocoapodsComponentPatternContributor extends ComponentPatternContri
                 }
             }
         } catch (Exception e) {
-            LOG.error("Error processing Podspec file", e);
+            LOG.warn("Failure processing processing Podspec file: [{}]", e.getMessage());
         }
 
         return components;

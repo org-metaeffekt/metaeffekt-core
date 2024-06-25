@@ -48,18 +48,21 @@ public class ApkPackageContributor extends ComponentPatternContributor {
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        File apkDbFile = new File(baseDir, relativeAnchorPath);
-        List<ComponentPatternData> components = new ArrayList<>();
-        // get path of virtual root
-        Path virtualRoot = new File(virtualRootPath).toPath();
-        Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
+        final File apkDbFile = new File(baseDir, relativeAnchorPath);
 
         if (!apkDbFile.exists()) {
-            LOG.warn("APK database file does not exist: {}", apkDbFile.getAbsolutePath());
-            return components;
+            LOG.warn("APK database file does not exist: [{}]", apkDbFile.getAbsolutePath());
+            return Collections.emptyList();
         }
 
         try (Stream<String> lineStream = Files.lines(apkDbFile.toPath(), StandardCharsets.UTF_8)) {
+
+            final List<ComponentPatternData> components = new ArrayList<>();
+
+            // get path of virtual root
+            final Path virtualRoot = new File(virtualRootPath).toPath();
+            final Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
+
             String packageName = null;
             String version = null;
             String architecture = null;
@@ -96,13 +99,15 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                 }
             }
         } catch (Exception e) {
-            LOG.error("Error processing APK database file", e);
+            LOG.warn("Failure processing APK database file [{}]: [{}]", apkDbFile.getAbsolutePath(), e.getMessage());
         }
 
-        return components;
+        return Collections.emptyList();
     }
 
-    private void processCollectedData(List<ComponentPatternData> components, String packageName, String version, String architecture, String includePatterns, String path, String checksum) {
+    private void processCollectedData(List<ComponentPatternData> components, String packageName, String version,
+                  String architecture, String includePatterns, String path, String checksum) {
+
         ComponentPatternData cpd = new ComponentPatternData();
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);

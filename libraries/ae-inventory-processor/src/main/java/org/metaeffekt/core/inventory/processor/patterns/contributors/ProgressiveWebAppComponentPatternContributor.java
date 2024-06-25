@@ -46,19 +46,18 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-
         final File anchorFile = new File(baseDir, relativeAnchorPath);
-        final File contextBaseDir = anchorFile.getParentFile().getParentFile();
 
         try {
+            final File contextBaseDir = anchorFile.getParentFile().getParentFile();
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
             final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
-            String manifestContent = new String(Files.readAllBytes(Paths.get(anchorFile.getPath())), StandardCharsets.UTF_8);
+            final String manifestContent = new String(Files.readAllBytes(Paths.get(anchorFile.getPath())), StandardCharsets.UTF_8);
 
-            JSONObject jsonObject = new JSONObject(manifestContent);
-            String name = jsonObject.optString("name", "N/A");  // TODO: provide a default name if not found
-            String version = jsonObject.optString("version", "N/A");  // TODO: provide a default version if not found
+            final JSONObject jsonObject = new JSONObject(manifestContent);
+            final String name = jsonObject.optString("name", "N/A");  // TODO: provide a default name if not found
+            final String version = jsonObject.optString("version", "N/A");  // TODO: provide a default version if not found
 
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFile.getName());
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
@@ -74,8 +73,10 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warn("Unable to parse progressive web application {[]}: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
         }
+
+        return Collections.emptyList();
     }
 
     @Override

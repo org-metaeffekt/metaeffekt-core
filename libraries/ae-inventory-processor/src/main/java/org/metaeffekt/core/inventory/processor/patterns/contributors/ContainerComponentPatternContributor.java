@@ -70,6 +70,7 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
             return Collections.singletonList(componentPatternData);
 
         } catch (IOException e) {
+            // FIXME: do we want to log something here?
         }
 
         return Collections.emptyList();

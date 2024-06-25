@@ -45,15 +45,16 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
-        List<ComponentPatternData> components = new ArrayList<>();
+        final File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
 
         if (!packageDir.exists() || !packageDir.isDirectory()) {
             LOG.warn("ALPM package directory does not exist: {}", packageDir.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try {
+            final List<ComponentPatternData> components = new ArrayList<>();
+
             Path virtualRoot = new File(virtualRootPath).toPath();
             Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
 
@@ -106,7 +107,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             }
 
             if (includePatterns.length() == 0) {
-                LOG.warn("No include patterns found for package: {}-{}-{}", packageName, version, architecture);
+                LOG.warn("No include patterns found for package: [{}]-[{}]-[{}]", packageName, version, architecture);
                 includePatterns.add(relativeAnchorPath);
             }
 
@@ -114,10 +115,10 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
                 processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
             }
         } catch (Exception e) {
-            LOG.error("Error processing ALPM package directory: {}", packageDir.getAbsolutePath(), e);
+            LOG.warn("Failure processing ALPM package directory [{}]: [{}]", packageDir.getAbsolutePath(), e.getMessage());
         }
 
-        return components;
+        return Collections.emptyList();
     }
 
     private void processCollectedData(List<ComponentPatternData> components, String packageName, String version, String architecture, String includePatterns, String path, String checksum) {
