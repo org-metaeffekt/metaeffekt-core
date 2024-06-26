@@ -24,26 +24,43 @@ public class AeaaEpssData {
     private float epssScore;
     private float percentile;
 
-
-    public static AeaaEpssData fromJson(JSONObject jsonObject) {
-        if (jsonObject == null) {
+    public static AeaaEpssData fromJson(JSONObject json) {
+        if (json == null) {
             return null;
         }
-        final AeaaEpssData AeaaEpssData = new AeaaEpssData();
-        AeaaEpssData.setVulnerability((String) jsonObject.get("vulnerability"));
-        AeaaEpssData.setEpssScore(Float.parseFloat((String) jsonObject.get("epssScore")));
-        AeaaEpssData.setPercentile(Float.parseFloat((String) jsonObject.get("percentile")));
-        return AeaaEpssData;
+        final AeaaEpssData epssData = new AeaaEpssData();
+        epssData.setVulnerability((String) json.get("vulnerability"));
+        epssData.setEpssScore(parseFloat(json.get("epssScore")));
+        epssData.setPercentile(parseFloat(json.get("percentile")));
+        return epssData;
     }
 
     public JSONObject toJson() {
-        final JSONObject jsonObject = new JSONObject();
-        jsonObject.put("vulnerability", vulnerability);
-        jsonObject.put("epssScore", String.format("%f", epssScore));
-        jsonObject.put("percentile", String.format("%f", percentile));
-        return jsonObject;
+        final JSONObject json = new JSONObject();
+        json.put("vulnerability", vulnerability);
+        json.put("epssScore", epssScore);
+        json.put("percentile", percentile);
+        return json;
     }
 
+    private static float parseFloat(Object value) {
+        if (value == null) {
+            return 0;
+        } else if (value instanceof Number) {
+            return ((Number) value).floatValue();
+        } else if (!(value instanceof String)) {
+            return 0;
+        }
+
+        final String stringValue = (String) value;
+
+        // check for both "," and "." as decimal separator
+        try {
+            return Float.parseFloat(stringValue);
+        } catch (NumberFormatException e) {
+            return Float.parseFloat(stringValue.replace(",", "."));
+        }
+    }
 
     public void setVulnerability(String vulnerability) {
         this.vulnerability = vulnerability;
@@ -57,11 +74,11 @@ public class AeaaEpssData {
         this.percentile = percentile;
     }
 
-    public String getVulnerability(){
+    public String getVulnerability() {
         return vulnerability;
     }
 
-    public float getEpssScore(){
+    public float getEpssScore() {
         return epssScore;
     }
 
