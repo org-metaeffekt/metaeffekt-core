@@ -147,6 +147,13 @@ public class ArtifactUnwrapTask extends ScanTask {
             // compute md5 to support component patterns (candidates for unwrap did not receive a checksum before)
             addChecksumsAndHashes(fileRef);
 
+            // it is important to correct the classification in case the artifact was not scanned; causes different
+            // downstream processing; e.g. certain attributes will not be computed.
+            // FIXME: inspection should not modify the classification, but use another attribute
+            if (explicitNoUnrwap && referenceArtifact.isPresent()) {
+                artifact.setClassification(referenceArtifact.get().getClassification());
+            }
+
             // mark artifacts matching a component pattern with anchor checksum
             if (!fileSystemScanContext.getScanParam().getComponentPatternsByChecksum(artifact.getChecksum()).isEmpty()) {
                 artifact.set(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, Constants.MARKER_CROSS);

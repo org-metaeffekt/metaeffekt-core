@@ -110,8 +110,8 @@ public abstract class AbstractTestSetup implements TestSetup {
     }
 
     @Override
-    public TestSetup setReferenceInventory(String referenceinventory) {
-        this.referenceInventory = referenceinventory;
+    public TestSetup setReferenceInventory(String referenceInventory) {
+        this.referenceInventory = referenceInventory;
         return this;
     }
 

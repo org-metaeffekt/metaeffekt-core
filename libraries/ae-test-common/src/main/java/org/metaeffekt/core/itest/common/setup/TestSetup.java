@@ -38,7 +38,7 @@ public interface TestSetup {
 
     Inventory readReferenceInventory() throws Exception;
 
-    TestSetup setReferenceInventory(String referenceinventory);
+    TestSetup setReferenceInventory(String referenceInventory);
 
     TestSetup setSha256Hash(String sha256);
 

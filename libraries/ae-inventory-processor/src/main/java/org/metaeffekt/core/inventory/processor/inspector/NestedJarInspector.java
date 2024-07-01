@@ -29,7 +29,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipFile;
 
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.HINT_SCAN;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 
 /**
  * Checks if a file (for particular file types) has other files inside of it (with particular extensions). If this
@@ -81,6 +81,10 @@ public class NestedJarInspector implements ArtifactInspector {
     @Override
     public void run(Inventory inventory, Properties properties) {
         for (Artifact artifact : inventory.getArtifacts()) {
+
+            if (artifact.hasClassification(HINT_ATOMIC)) continue;
+            if (artifact.hasClassification(HINT_IGNORE)) continue;
+
             run(artifact, properties);
         }
     }
