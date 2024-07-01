@@ -249,9 +249,6 @@ public class RepositoryReportTest {
 
         final File reportDir = new File("target/test-inventory-04");
 
-        // FIXME: where to manage this
-        ZipSecureFile.setMinInflateRatio(0);
-
         InventoryReport report = new InventoryReport();
         prepareReport(inventoryDir, "*.xls,*.xlsx",
                 referenceInventoryDir, "*.xls,*.xlsx",

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.reader;
 
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -38,8 +39,11 @@ public class XlsxInventoryReader extends AbstractInventoryReader {
 
     @Override
     public Inventory readInventory(InputStream in) throws IOException {
-        // strange workaround to allow reading large XSL files.
+        // strange workaround to allow reading large XSLX files.
         org.apache.poi.util.IOUtils.setByteArrayMaxOverride(Integer.MAX_VALUE);
+
+        // the XLSX reader check the compression ratio; we need to disable this for large XSLX files
+        ZipSecureFile.setMinInflateRatio(0);
 
         final XSSFWorkbook workbook = new XSSFWorkbook(in);
 
