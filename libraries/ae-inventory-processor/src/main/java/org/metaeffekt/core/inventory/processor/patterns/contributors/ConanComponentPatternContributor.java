@@ -53,7 +53,7 @@ public class ConanComponentPatternContributor extends ComponentPatternContributo
 
         if (!conanFile.exists()) {
             LOG.warn("Conan package file does not exist: {}", conanFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(conanFile.toPath(), StandardCharsets.UTF_8)) {
@@ -62,11 +62,11 @@ public class ConanComponentPatternContributor extends ComponentPatternContributo
             } else if (relativeAnchorPath.endsWith("conanfile.py")) {
                 processConanFilePy(lines, components, relativeAnchorPath, anchorChecksum);
             }
+            return components;
         } catch (IOException e) {
-            LOG.error("Error processing Conan package file", e);
+            LOG.warn("Error processing Conan package file", e);
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private void processConanInfo(Stream<String> lines, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {

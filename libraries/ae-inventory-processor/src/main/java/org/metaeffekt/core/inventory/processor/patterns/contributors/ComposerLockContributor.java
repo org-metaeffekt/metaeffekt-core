@@ -21,6 +21,8 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +32,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class ComposerLockContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ComposerLockContributor.class);
 
     public static final String TYPE_VALUE_PHP_COMPOSER = "php-composer";
 
@@ -103,8 +107,8 @@ public class ComposerLockContributor extends ComponentPatternContributor {
             }
             return list;
         } catch (IOException e) {
-            // FIXME: log warning; return empty list
-            throw new RuntimeException(e);
+            LOG.warn("Failure processing composer.lock file: [{}]", e.getMessage());
+            return Collections.emptyList();
         }
 
     }

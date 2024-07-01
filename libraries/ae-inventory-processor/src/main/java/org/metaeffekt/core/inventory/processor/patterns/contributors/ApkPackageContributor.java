@@ -66,6 +66,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
             String packageName = null;
             String version = null;
             String architecture = null;
+            String license = null;
             StringJoiner includePatterns = new StringJoiner(",");
             includePatterns.add("lib/apk/db/**/*");
             String currentFolder = null;
@@ -80,34 +81,38 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                     currentFolder = line.substring(2).trim();
                     includePatterns.add(currentFolder);
                 } else if (line.startsWith("R:")) {
-                    includePatterns.add(currentFolder + "/" + line.substring(2).trim());
+                    String fileName = line.substring(2).trim();
+                    includePatterns.add(currentFolder + "/" + fileName);
+                } else if (line.startsWith("L:")) {
+                    license = line.substring(2).trim();
                 } else if (line.isEmpty()) {
                     // end of package block, process collected data
                     if (packageName != null && version != null && architecture != null) {
                         if (includePatterns.length() > 0) {
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
+                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                             includePatterns = new StringJoiner(",");
                         } else {
                             LOG.warn("No include patterns found for package: {}-{}-{}", packageName, version, architecture);
-                            processCollectedData(components, packageName, version, architecture, relativeAnchorPath, virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
+                            processCollectedData(components, packageName, version, architecture, relativeAnchorPath, virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                         }
                     }
                     packageName = null;
                     version = null;
                     architecture = null;
                     currentFolder = null;
+                    license = null;
                 }
             }
+            return components;
         } catch (Exception e) {
-            LOG.warn("Failure processing APK database file [{}]: [{}]", apkDbFile.getAbsolutePath(), e.getMessage());
+            LOG.warn("Failure processing APK database file [{}]", apkDbFile.getAbsolutePath());
+            return Collections.emptyList();
         }
-
-        return Collections.emptyList();
     }
 
     private void processCollectedData(List<ComponentPatternData> components, String packageName, String version,
-                  String architecture, String includePatterns, String path, String checksum) {
-
+                                      String architecture, String includePatterns, String path, String checksum,
+                                      String license) {
         ComponentPatternData cpd = new ComponentPatternData();
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
@@ -115,8 +120,10 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, path);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
+        cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, license);
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, APK_PACKAGE_TYPE);
+        cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
         cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
         components.add(cpd);
     }

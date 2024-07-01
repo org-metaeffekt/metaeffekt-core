@@ -19,6 +19,8 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -31,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class NextcloudAppInfoContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NextcloudAppInfoContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/appinfo/info.xml");
@@ -82,7 +86,8 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warn("Failed to process nextcloud app info file: {}", relativeAnchorPath, e);
+            return Collections.emptyList();
         }
     }
 

@@ -20,6 +20,8 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class NordeckAppComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NordeckAppComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
             add("app/lib/licenses.json");
@@ -67,7 +71,8 @@ public class NordeckAppComponentPatternContributor extends ComponentPatternContr
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warn("Failed to process Nordeck licenses.json file: {}", relativeAnchorPath, e);
+            return Collections.emptyList();
         }
     }
 
