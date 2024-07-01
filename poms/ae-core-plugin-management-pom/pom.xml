@@ -10,14 +10,14 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.115.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <properties>
         <header.copyright.year>2024</header.copyright.year>
 
-        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
+        <ae.core.version>0.115.0</ae.core.version>
 
         <artifact.inventory.version>${ae.core.version}</artifact.inventory.version>
         <artifact.inventory.enabled>true</artifact.inventory.enabled>
