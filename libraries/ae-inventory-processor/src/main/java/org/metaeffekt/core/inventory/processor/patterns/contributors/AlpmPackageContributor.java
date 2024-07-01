@@ -114,11 +114,11 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             if (packageName != null && version != null && architecture != null) {
                 processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
             }
+            return components;
         } catch (Exception e) {
             LOG.warn("Failure processing ALPM package directory [{}]: [{}]", packageDir.getAbsolutePath(), e.getMessage());
+            return Collections.emptyList();
         }
-
-        return Collections.emptyList();
     }
 
     private void processCollectedData(List<ComponentPatternData> components, String packageName, String version, String architecture, String includePatterns, String path, String checksum) {

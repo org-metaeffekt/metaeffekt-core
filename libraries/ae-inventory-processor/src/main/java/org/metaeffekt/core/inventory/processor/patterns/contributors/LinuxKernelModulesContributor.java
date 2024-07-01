@@ -52,7 +52,7 @@ public class LinuxKernelModulesContributor extends ComponentPatternContributor {
 
         if (!moduleFile.exists()) {
             LOG.warn("Linux kernel module file does not exist: {}", moduleFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try {
@@ -65,11 +65,11 @@ public class LinuxKernelModulesContributor extends ComponentPatternContributor {
             } else {
                 LOG.warn("Module name or version not found in file: {}", moduleFile.getAbsolutePath());
             }
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing Linux kernel module file", e);
+            LOG.warn("Error processing Linux kernel module file", e);
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private String extractModuleName(ElfFile elfFile) {

@@ -20,6 +20,8 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +34,8 @@ import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternP
 import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
 
 public class JavaRuntimeComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JavaRuntimeComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/release");
@@ -68,10 +72,11 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
 
                 return Collections.singletonList(componentPatternData);
             }
+            return Collections.emptyList();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warn("Failed to process release file: {}", relativeAnchorPath, e);
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
     @Override

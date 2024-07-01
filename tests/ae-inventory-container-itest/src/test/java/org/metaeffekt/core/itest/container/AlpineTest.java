@@ -39,7 +39,7 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, AlpineTest.class.getSimpleName().toLowerCase(), null, AlpineTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, AlpineTest.class.getSimpleName().toLowerCase(), "3.19.1", AlpineTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)

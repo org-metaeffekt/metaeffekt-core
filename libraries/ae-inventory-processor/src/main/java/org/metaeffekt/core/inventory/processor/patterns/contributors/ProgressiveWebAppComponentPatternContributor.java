@@ -73,10 +73,9 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            LOG.warn("Unable to parse progressive web application {[]}: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
+            LOG.warn("Unable to parse progressive web application [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
+            return Collections.emptyList();
         }
-
-        return Collections.emptyList();
     }
 
     @Override

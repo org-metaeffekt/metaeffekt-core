@@ -42,12 +42,7 @@ public class PubComponentPatternContributor extends ComponentPatternContributor 
 
     @Override
     public boolean applies(String pathInContext) {
-        for (String suffix : suffixes) {
-            if (pathInContext.endsWith(suffix)) {
-                return true;
-            }
-        }
-        return false;
+        return pathInContext.endsWith("pubspec.yaml") || pathInContext.endsWith("pubspec.lock");
     }
 
     @Override
@@ -57,7 +52,7 @@ public class PubComponentPatternContributor extends ComponentPatternContributor 
 
         if (!pubspecFile.exists()) {
             LOG.warn("Dart package file does not exist: {}", pubspecFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(pubspecFile.toPath(), StandardCharsets.UTF_8)) {
@@ -66,11 +61,11 @@ public class PubComponentPatternContributor extends ComponentPatternContributor 
             } else if (relativeAnchorPath.endsWith("pubspec.lock")) {
                 processPubspecLock(lines, components, relativeAnchorPath, anchorChecksum);
             }
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing Dart package file", e);
+            LOG.warn("Error processing Dart package file", e);
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private void processPubspecYaml(Stream<String> lines, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {

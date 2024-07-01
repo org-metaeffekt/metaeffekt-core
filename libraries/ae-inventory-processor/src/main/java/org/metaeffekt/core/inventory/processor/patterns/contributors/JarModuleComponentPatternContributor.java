@@ -59,7 +59,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         if (pomXmlFile != null) {
             try (InputStream in = Files.newInputStream(pomXmlFile.toPath())) {
                 fromXml = jarInspector.getArtifactFromPomXml(artifact, in, relativeAnchorPath);
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
 
@@ -67,7 +67,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         if (pomPropertiesFile != null) {
             try (InputStream in = Files.newInputStream(pomPropertiesFile.toPath())) {
                 fromProperties = jarInspector.getArtifactFromPomProperties(artifact, in, relativeAnchorPath);
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
 

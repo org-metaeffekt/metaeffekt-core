@@ -52,7 +52,7 @@ public class CocoapodsComponentPatternContributor extends ComponentPatternContri
 
         if (!podspecFile.exists()) {
             LOG.warn("Podspec file does not exist: {}", podspecFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(podspecFile.toPath())) {
@@ -80,11 +80,12 @@ public class CocoapodsComponentPatternContributor extends ComponentPatternContri
                     version = null;
                 }
             }
+
+            return components;
         } catch (Exception e) {
             LOG.warn("Failure processing processing Podspec file: [{}]", e.getMessage());
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private void addComponent(List<ComponentPatternData> components, String packageName, String version, String relativeAnchorPath, String anchorChecksum) {
