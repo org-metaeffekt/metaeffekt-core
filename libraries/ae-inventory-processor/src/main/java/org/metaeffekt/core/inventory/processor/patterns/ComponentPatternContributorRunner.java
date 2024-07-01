@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.processor.patterns;
 
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.ComponentPatternContributor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -24,6 +26,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ComponentPatternContributorRunner {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternContributorRunner.class);
+
     /**
      * This map is used to store the contributors in the order of their phase.
      * <br>
@@ -94,9 +99,13 @@ public class ComponentPatternContributorRunner {
                 if (matcher.find()) {
                     for (ComponentPatternContributor contributor : suffixEntry.getValue()) {
                         if (contributor.applies(relativeAnchorFilePath)) {
+                            try {
                             List<ComponentPatternData> componentPatterns =
                                     contributor.contribute(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
                             results.addAll(componentPatterns);
+                            } catch(Exception e) {
+                                LOG.error("Contributor threw exception. Make contributor more robust.", e);
+                            }
                         }
                     }
                 }

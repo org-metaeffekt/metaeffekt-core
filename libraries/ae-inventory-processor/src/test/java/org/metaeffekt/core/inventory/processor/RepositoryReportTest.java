@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
