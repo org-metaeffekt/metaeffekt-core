@@ -104,7 +104,8 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
                 }
             }
         } catch (Exception e) {
-            LOG.error("Error parsing .nuspec file", e);
+            // FIXME: adjust to contributor logging and exception handling convention
+            LOG.warn("Failure parsing .nuspec file", e);
         }
     }
 
@@ -123,7 +124,8 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
                 addComponent(components, packageName, version, relativeAnchorPath, anchorChecksum);
             }
         } catch (Exception e) {
-            LOG.error("Error processing project file", e);
+            // FIXME: adjust to contributor logging and exception handling convention
+            LOG.warn("Failure processing project file", e);
         }
     }
 

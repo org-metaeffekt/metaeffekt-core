@@ -383,7 +383,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 // err out if the md5sum isn't an md5sum
                 if (!hexStringPattern.matcher(hash).matches()) {
                     // this was not a real hash. should never happen. means splitting failed miserably.
-                    LOG.error("Splitting failed miserably while reading line of dpkg md5sums at [{}].",
+                    LOG.error("Splitting failed while reading line of dpkg md5sums at [{}].",
                             correspondingMd5sumsFile.getAbsolutePath());
                     return;
                 }

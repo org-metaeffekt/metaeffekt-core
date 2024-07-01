@@ -188,7 +188,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            LOG.error("Error [{}] while processing anchor [{}].", e.getMessage(), anchorFile.getAbsolutePath());
+            LOG.warn("Failure while processing anchor [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
             return Collections.emptyList();
         }
     }
