@@ -100,9 +100,9 @@ public class ComponentPatternContributorRunner {
                     for (ComponentPatternContributor contributor : suffixEntry.getValue()) {
                         if (contributor.applies(relativeAnchorFilePath)) {
                             try {
-                            List<ComponentPatternData> componentPatterns =
-                                    contributor.contribute(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
-                            results.addAll(componentPatterns);
+                                List<ComponentPatternData> componentPatterns =
+                                        contributor.contribute(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+                                results.addAll(componentPatterns);
                             } catch(Exception e) {
                                 LOG.error("Contributor threw exception. Make contributor more robust.", e);
                             }
