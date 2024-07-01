@@ -19,6 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class NodeRuntimeComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NodeRuntimeComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/node/node_version.h");
@@ -69,10 +73,11 @@ public class NodeRuntimeComponentPatternContributor extends ComponentPatternCont
 
                 return Collections.singletonList(componentPatternData);
             }
+            return Collections.emptyList();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warn("Error parsing Node version from file: {}", relativeAnchorPath, e);
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
     @Override

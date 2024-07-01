@@ -608,7 +608,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
             return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else {
-            throw new ContributorFailureException("Should never happen: identified anchor wasn't of expected type.");
+            LOG.warn("Skipping unknown dpkg file [{}].", relativeAnchorFilePath);
+            return Collections.emptyList();
         }
     }
 

@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.exception.ContributorFailureException;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,7 +189,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
             LOG.error("Error [{}] while processing anchor [{}].", e.getMessage(), anchorFile.getAbsolutePath());
-            throw new ContributorFailureException(e);
+            return Collections.emptyList();
         }
     }
 

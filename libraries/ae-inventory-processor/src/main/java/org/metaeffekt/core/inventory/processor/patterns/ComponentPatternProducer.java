@@ -565,7 +565,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new JenkinsPluginsComponentPatternContributor());
         contributorRunnerBuilder.add(new LinuxKernelArchiveContributor());
         contributorRunnerBuilder.add(new LinuxKernelModulesContributor());
-        contributorRunnerBuilder.add(new NugetComponentPatternContributor());
+        contributorRunnerBuilder.add(new DotNetComponentPatternContributor());
         contributorRunnerBuilder.add(new PubComponentPatternContributor());
         contributorRunnerBuilder.add(new CocoapodsComponentPatternContributor());
         contributorRunnerBuilder.add(new MixComponentPatternContributor());

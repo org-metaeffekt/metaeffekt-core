@@ -51,16 +51,16 @@ public class GoLangComponentPatternContributor extends ComponentPatternContribut
 
         if (!goModFile.exists()) {
             LOG.warn("GoLang module file does not exist: {}", goModFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(goModFile.toPath(), StandardCharsets.UTF_8)) {
             processGoModFile(lines, components, relativeAnchorPath, anchorChecksum);
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing GoLang module file", e);
+            LOG.warn("Error processing GoLang module file", e);
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private void processGoModFile(Stream<String> lines, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {

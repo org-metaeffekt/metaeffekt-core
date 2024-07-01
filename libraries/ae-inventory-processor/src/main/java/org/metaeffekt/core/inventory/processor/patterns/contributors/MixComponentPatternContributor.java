@@ -53,7 +53,7 @@ public class MixComponentPatternContributor extends ComponentPatternContributor 
 
         if (!mixFile.exists()) {
             LOG.warn("Mix package file does not exist: {}", mixFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(mixFile.toPath())) {
@@ -93,11 +93,11 @@ public class MixComponentPatternContributor extends ComponentPatternContributor 
                     components.add(cpd);
                 }
             }
+            return components;
         } catch (IOException e) {
-            LOG.error("Error reading mix file: {}", mixFile.getAbsolutePath(), e);
+            LOG.warn("Error reading mix file: {}", mixFile.getAbsolutePath());
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     @Override

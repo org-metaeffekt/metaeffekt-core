@@ -55,19 +55,24 @@ public class RpmPackageContributor extends ComponentPatternContributor {
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         File packagesFile = new File(baseDir, relativeAnchorPath);
-        List<ComponentPatternData> components = new ArrayList<>();
-        Path virtualRoot = new File(virtualRootPath).toPath();
-        Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
+
+        if (!packagesFile.exists()) {
+            LOG.warn("RPM packages file does not exist: [{}]", packagesFile.getAbsolutePath());
+            return Collections.emptyList();
+        }
 
         try {
             BlockingQueue<Entry> entries = getEntries(packagesFile);
             Entry entry;
+            List<ComponentPatternData> components = new ArrayList<>();
+            Path virtualRoot = new File(virtualRootPath).toPath();
+            Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
             while (true) {
                 try {
                     entry = entries.take();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    LOG.error("Thread interrupted while waiting for entries", e);
+                    LOG.warn("Thread interrupted while waiting for entries", e);
                     break;
                 }
                 if (entry.getValue() == null && entry.getError() == null) {
@@ -75,7 +80,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     break;
                 }
                 if (entry.getError() != null) {
-                    LOG.error("Error reading entry:", entry.getError());
+                    LOG.warn("Error reading entry:", entry.getError());
                     break;
                 }
                 if (entry.getValue() != null) {
@@ -99,6 +104,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, virtualRoot.relativize(relativeAnchorFile).toString());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
                     cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, sj.toString());
+                    cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
                     cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
@@ -107,11 +113,11 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     components.add(cpd);
                 }
             }
+            return components;
         } catch (Exception e) {
-            LOG.error("Error reading RPM packages file", e);
+            LOG.warn("Error reading RPM packages file", e);
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private static BlockingQueue<Entry> getEntries(File packagesFile) {
