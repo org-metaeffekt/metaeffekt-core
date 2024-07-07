@@ -40,6 +40,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         add(".csproj");
         add(".fsproj");
         add("packages.config");
+        add(".nuspec");
     }});
 
     @Override
