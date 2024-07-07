@@ -56,6 +56,8 @@ public class ArchiveUtils {
 
     private static final Set<String> jimageFilenames = new HashSet<>();
 
+    private static final Set<String> windowsExtensions = new HashSet<>();
+
     static {
         zipExtensions.add("war");
         // zip: regular zip archives
@@ -80,9 +82,6 @@ public class ArchiveUtils {
 
         // tar: various archive formats derived from an old "tape archive" utility
         tarExtensions.add("tar");
-        // TODO: RPMs contain further metadata; how to handle them to not get lost? Generate summary file?
-        // rpm: RPM (/ redhat) package manager packages
-        tarExtensions.add("rpm");
         // bz2: bzip2 format compressed files
         tarExtensions.add("bz2");
         // xz: compression format xz(see also "lzma")
@@ -93,6 +92,13 @@ public class ArchiveUtils {
         tarExtensions.add("deb");
         // apk: android package (for apps, special zip), alpine linux package (special tar file)
         tarExtensions.add("apk");
+
+        // cab: windows cabinet file
+        windowsExtensions.add("cab");
+        // exe: windows executable (sometimes self-extracting archives)
+        windowsExtensions.add("exe");
+        // msi: windows installer package
+        windowsExtensions.add("msi");
 
         jmodExtensions.add("jmod");
 
@@ -413,6 +419,19 @@ public class ArchiveUtils {
             return false;
         }
 
+        // try windows
+        try {
+            if (windowsExtensions.contains(extension)) {
+                FileUtils.forceMkdir(targetDir);
+                extractWindowsFile(archiveFile, targetDir);
+                return true;
+            }
+        } catch (Exception e) {
+            if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
+            issues.add("Cannot extract Windows file: " + archiveFile.getAbsolutePath());
+            return false;
+        }
+
         // in case the targetDir was actively created, it is actively removed.
         if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
 
@@ -452,6 +471,16 @@ public class ArchiveUtils {
         } else {
             LOG.error("Cannot unpack jimage executable: " + jmodExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
+        }
+    }
+
+    private static void extractWindowsFile(File file, File targetFile) {
+        // this requires 7zip to perform the extraction
+        try {
+            Process exec = Runtime.getRuntime().exec("7z x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
+            FileUtils.waitForProcess(exec);
+        } catch (IOException e) {
+            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed.");
         }
     }
 

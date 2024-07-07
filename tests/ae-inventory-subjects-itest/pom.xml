@@ -30,6 +30,7 @@
             <groupId>org.metaeffekt.core</groupId>
             <artifactId>ae-inventory-processor</artifactId>
             <version>${project.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>

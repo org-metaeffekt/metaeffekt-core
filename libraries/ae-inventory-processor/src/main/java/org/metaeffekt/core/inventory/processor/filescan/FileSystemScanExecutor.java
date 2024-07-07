@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
 import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
 import org.metaeffekt.core.inventory.processor.inspector.NestedJarInspector;
+import org.metaeffekt.core.inventory.processor.inspector.RpmMetadataInspector;
 import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -115,6 +116,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         inspectArtifacts();
 
         setArtifactAssetMarker();
+
 
         final Inventory inventory = fileSystemScanContext.getInventory();
 
@@ -253,6 +255,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         // run further inspections on identified artifacts
         final InspectorRunner runner = InspectorRunner.builder()
                 .queue(JarInspector.class)
+                .queue(RpmMetadataInspector.class)
                 .build();
 
         runner.executeAll(fileSystemScanContext.getInventory(), properties);

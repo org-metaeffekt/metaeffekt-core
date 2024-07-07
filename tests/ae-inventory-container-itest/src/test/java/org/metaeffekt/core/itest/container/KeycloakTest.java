@@ -35,16 +35,16 @@ import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class CentOSTest extends AbstractCompositionAnalysisTest {
+public class KeycloakTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, CentOSTest.class.getSimpleName().toLowerCase(), "6.9", CentOSTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag("quay.io/keycloak", "keycloak", "22.0.4", KeycloakTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(CentOSTest.class.getName());
+                .setName(KeycloakTest.class.getName());
     }
 
     @Ignore

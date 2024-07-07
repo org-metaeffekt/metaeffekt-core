@@ -623,7 +623,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return 1;
     }
 
-    private String readDistro() throws IOException {
+    public static String readDistro() throws IOException {
         List<Path> paths = new ArrayList<>(Arrays.asList(
                 Paths.get("/etc/os-release"),
                 Paths.get("/etc/lsb-release"),
@@ -648,11 +648,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                             }
                         }
                     } else if (path.endsWith(Constants.DEBIAN_VERSION)) {
-                        // Directly return "debian" if the file exists, assuming the file content isn't needed
+                        // directly return "debian" if the file exists, assuming the file content isn't needed
                         return "debian";
-                    } else if (path.endsWith(Constants.REDHAT_RELEASE) || path.endsWith(Constants.CENTOS_RELEASE) || path.endsWith(Constants.SYSTEM_RELEASE)) {
-                        // Assume the file directly contains a meaningful identifier
-                        return line.trim().split(" ")[0].toLowerCase(); // Simplistic parsing for distro name
+                    } else if (path.endsWith(Constants.REDHAT_RELEASE) || path.endsWith(Constants.CENTOS_RELEASE) || path.endsWith(Constants.SYSTEM_RELEASE) || path.endsWith(Constants.FEDORA_RELEASE)) {
+                        return line.trim().split(" ")[0].toLowerCase();
                     }
                 }
             }
