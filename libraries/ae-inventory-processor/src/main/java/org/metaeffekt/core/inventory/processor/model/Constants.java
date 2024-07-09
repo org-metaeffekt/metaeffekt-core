@@ -105,6 +105,8 @@ public final class Constants {
 
     public static final String SYSTEM_RELEASE = "system-release";
 
+    public static final String FEDORA_RELEASE = "fedora-release";
+
     public static final String PACKAGE_JSON = "package.json";
 
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";

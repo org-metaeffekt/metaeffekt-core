@@ -40,12 +40,11 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         add(".csproj");
         add(".fsproj");
         add("packages.config");
-        add(".nuspec");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".csproj") || pathInContext.endsWith(".fsproj") || pathInContext.endsWith("packages.config") || pathInContext.endsWith(".nuspec");
+        return pathInContext.endsWith(".csproj") || pathInContext.endsWith(".fsproj") || pathInContext.endsWith("packages.config");
     }
 
     @Override
@@ -59,11 +58,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         }
 
         try {
-            if (projectFile.getName().endsWith(".nuspec")) {
-                processNuspecFile(components, relativeAnchorPath, anchorChecksum);
-            } else {
-                processProjectFile(components, relativeAnchorPath, anchorChecksum);
-            }
+            processProjectFile(components, relativeAnchorPath, anchorChecksum);
             return components;
         } catch (Exception e) {
             LOG.warn("Error processing DotNet project file", e);
@@ -87,6 +82,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
     }
 
     private void processNuspecFile(List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
+        // TODO: review, if nuspec files always contain the necessary information
         String packageName;
         String version;
         try {

@@ -86,7 +86,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
 
     @Override
     public int getExecutionPhase() {
-        return 1;
+        return 2;
     }
 
     public static class ReleasedPackageData {
@@ -162,6 +162,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
         evidenceForOpenJdk |= data.implementor.toLowerCase(OTHER_LOCALE).contains("openjdk");
 
         if (StringUtils.isNotBlank(data.implementorVersion)) {
+            data.implementorVersion = data.implementorVersion.replaceAll("[()]", "");
             evidenceForOpenJdk |= data.implementor.toLowerCase(OTHER_LOCALE).contains("openjdk");
         }
 
@@ -195,6 +196,9 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
         data.componentPart += "-" + data.version;
 
         data.componentName = data.implementor + " " + prefix;
+        if (data.componentName.equals("Red Hat, Inc. Red_Hat")) {
+            data.componentName = "Red Hat Java";
+        }
     }
 
     private String parseProperty(Properties p, String key, String defaultValue) {

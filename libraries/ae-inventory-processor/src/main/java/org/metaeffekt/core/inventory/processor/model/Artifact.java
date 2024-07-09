@@ -80,7 +80,13 @@ public class Artifact extends AbstractModelBase {
         VIRTUAL_ROOT_PATH("Virtual Root Path"),
         PURL("PURL"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
-        NO_MATCHING_FILE("No Matching File");
+        NO_MATCHING_FILE("No Matching File"),
+
+        // FIXME: consolidate
+        SOURCE("Source"),
+
+        // FIXME: consolidate
+        ORGANIZATION("Organization");
 
         private String key;
 
@@ -191,6 +197,14 @@ public class Artifact extends AbstractModelBase {
 
     public void setClassification(String classification) {
         set(Attribute.CLASSIFICATION, classification);
+    }
+
+    public String getPathInAsset() {
+        return get(Attribute.PATH_IN_ASSET);
+    }
+
+    public void setPathInAsset(String pathInAsset) {
+        set(Attribute.PATH_IN_ASSET, pathInAsset);
     }
 
     @Deprecated

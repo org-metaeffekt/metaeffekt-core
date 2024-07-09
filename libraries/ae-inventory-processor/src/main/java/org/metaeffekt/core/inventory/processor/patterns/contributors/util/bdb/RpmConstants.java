@@ -45,8 +45,12 @@ public class RpmConstants {
     public static final int RPMTAG_SUMMARY = 1004;
     public static final int RPMTAG_INSTALLTIME = 1008;
     public static final int RPMTAG_SIZE = 1009;
+    public static final int RPMTAG_DISTRIBUTION = 1010;
     public static final int RPMTAG_VENDOR = 1011;
     public static final int RPMTAG_LICENSE = 1014;
+    public static final int RPMTAG_GROUP = 1016;
+    public static final int RPMTAG_URL = 1020;
+    public static final int RPMTAG_OS = 1021;
     public static final int RPMTAG_ARCH = 1022;
     public static final int RPMTAG_FILESIZES = 1028;
     public static final int RPMTAG_FILEMODES = 1030;
@@ -57,7 +61,12 @@ public class RpmConstants {
     public static final int RPMTAG_SOURCERPM = 1044;
     public static final int RPMTAG_PROVIDENAME = 1047;
     public static final int RPMTAG_REQUIRENAME = 1049;
+    public static final int RPMTAG_RPMVERSION = 1064;
+    public static final int RPMTAG_DISTURL = 1123;
+    public static final int RPMTAG_PLATFORM = 1132;
+    public static final int RPMTAG_DISTTAG = 1155;
     public static final int RPMTAG_FILEDIGESTALGO = 5011;
+    public static final int RPMTAG_NEVRA = 5016;
     public static final int RPMTAG_MODULARITYLABEL = 5096;
 
 
