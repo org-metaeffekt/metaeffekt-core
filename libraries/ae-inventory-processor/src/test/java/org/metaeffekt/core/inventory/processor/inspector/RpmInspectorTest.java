@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.inspector;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -28,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 public class RpmInspectorTest {
     private final File projectDir = new File("src/test/resources/rpm-inspector");
 
+    @Ignore // please do not commit / use local binaries; move test to resolver or integration tests
     @Test
     public void example() {
         File testRpm = new File("git-2.45.2-2.fc40.x86_64.rpm");
