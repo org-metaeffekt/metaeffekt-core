@@ -19,6 +19,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,23 +34,34 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MsiComponentPatternContributor extends ComponentPatternContributor {
+public class ExeComponentPatternContributor extends ComponentPatternContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MsiComponentPatternContributor.class);
-    private static final String MSI_CST = "msi";
+    private static final Logger LOG = LoggerFactory.getLogger(ExeComponentPatternContributor.class);
+    private static final String EXE_SOURCE_TYPE = "exe";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
-        add(".rsrc/1033/version.txt");
+        add(".rsrc/**/version.txt");
+        add(".rsrc/version.txt");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".rsrc/1033/version.txt");
+        return pathInContext.endsWith("version.txt");
     }
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         File versionFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();
+
+        File parentDir = versionFile.getParentFile();
+
+        while (!parentDir.getName().equals(".rsrc")) {
+            parentDir = parentDir.getParentFile();
+        }
+
+        parentDir = parentDir.getParentFile();
+
+        String relativePath = FileUtils.asRelativePath(parentDir, versionFile);
 
         if (!versionFile.exists()) {
             LOG.warn("MSI version file does not exist: {}", versionFile.getAbsolutePath());
@@ -81,7 +93,7 @@ public class MsiComponentPatternContributor extends ComponentPatternContributor 
             }
 
             if (productName != null && productVersion != null) {
-                addComponent(components, productName, productVersion, relativeAnchorPath, anchorChecksum);
+                addComponent(components, productName, productVersion, relativePath, anchorChecksum);
             } else {
                 LOG.warn("Could not find ProductName or ProductVersion in MSI version file: {}", versionFile.getAbsolutePath());
                 return Collections.emptyList();
@@ -102,7 +114,7 @@ public class MsiComponentPatternContributor extends ComponentPatternContributor 
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MSI_CST);
+        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, EXE_SOURCE_TYPE);
         cpd.set(Artifact.Attribute.PURL, buildPurl(productName, productVersion));
 
         components.add(cpd);
@@ -119,7 +131,7 @@ public class MsiComponentPatternContributor extends ComponentPatternContributor 
     }
 
     private String buildPurl(String productName, String productVersion) {
-        return "pkg:msi/" + productName + "@" + productVersion;
+        return "pkg:generic/" + productName + "@" + productVersion;
     }
 }
 

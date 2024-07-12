@@ -20,6 +20,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
@@ -27,6 +30,8 @@ import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
@@ -61,10 +66,7 @@ public class MSITest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
-        componentPatterns.logListWithAllAttributes();
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(557);
-        analysis.selectComponentPatterns(tokenStartsWith(TYPE, "nodejs")).hasSizeGreaterThan(1);
-        analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "msi")).hasSizeOf(5);
+        analysis.selectComponentPatterns(containsToken(Artifact.Attribute.TYPE, "msi")).hasSizeGreaterThan(1);
     }
 }

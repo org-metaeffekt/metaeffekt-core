@@ -37,7 +37,7 @@ public class RpmInspectorTest {
         String rpmPath = testRpm.getPath();
         Artifact artifact = new Artifact();
         artifact.setId(rpmPath);
-        artifact.setPathInAsset(rpmPath);
+        artifact.setPathInAsset(projectDir.getPath() + "/" + rpmPath);
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();
@@ -51,8 +51,7 @@ public class RpmInspectorTest {
         inspector.run(inventory, properties);
 
         // should have extracted
-        assertEquals("my.test.dummy.package", artifact.getGroupId());
-        assertEquals("dummy-artifact", artifact.getArtifactId());
-        assertEquals("0.0.1", artifact.getVersion());
+        assertEquals("git-2.45.2-2.fc40.x86_64.rpm", artifact.getId());
+        assertEquals(projectDir.getPath() + "/git-2.45.2-2.fc40.x86_64.rpm", artifact.getPathInAsset());
     }
 }

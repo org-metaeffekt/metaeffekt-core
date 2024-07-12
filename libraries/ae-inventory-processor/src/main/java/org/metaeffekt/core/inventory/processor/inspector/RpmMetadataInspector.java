@@ -16,9 +16,6 @@
 
 package org.metaeffekt.core.inventory.processor.inspector;
 
-import com.github.luben.zstd.ZstdInputStream;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.eclipse.packagedrone.utils.rpm.RpmTag;
 import org.eclipse.packagedrone.utils.rpm.parse.RpmInputStream;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
@@ -28,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Properties;
@@ -55,42 +51,7 @@ public class RpmMetadataInspector implements ArtifactInspector {
                         artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
                     }
                 } catch (IOException e) {
-                    LOG.info("Failed to read RPM metadata directly, attempting with decompression", e);
-                    boolean success = false;
-
-                    try (FileInputStream fis = new FileInputStream(file);
-                         GzipCompressorInputStream gzipInputStream = new GzipCompressorInputStream(fis);
-                         RpmInputStream in = new RpmInputStream(gzipInputStream)) {
-                        artifact.set(Artifact.Attribute.LICENSE, (String) in.getPayloadHeader().getTag(RpmTag.LICENSE));
-                        artifact.set(Artifact.Attribute.ORGANIZATION, (String) in.getPayloadHeader().getTag(RpmTag.VENDOR));
-                        artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
-                        success = true;
-                    } catch (IOException ignored) {
-                    }
-
-                    if (!success) {
-                        try (FileInputStream fis = new FileInputStream(file);
-                             XZCompressorInputStream xzInputStream = new XZCompressorInputStream(fis);
-                             RpmInputStream in = new RpmInputStream(xzInputStream)) {
-                            artifact.set(Artifact.Attribute.LICENSE, (String) in.getPayloadHeader().getTag(RpmTag.LICENSE));
-                            artifact.set(Artifact.Attribute.ORGANIZATION, (String) in.getPayloadHeader().getTag(RpmTag.VENDOR));
-                            artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
-                            success = true;
-                        } catch (IOException ignored) {
-                        }
-                    }
-
-                    if (!success) {
-                        try (FileInputStream fis = new FileInputStream(file);
-                             ZstdInputStream zstdInputStream = new ZstdInputStream(fis);
-                             RpmInputStream in = new RpmInputStream(zstdInputStream)) {
-                            artifact.set(Artifact.Attribute.LICENSE, (String) in.getPayloadHeader().getTag(RpmTag.LICENSE));
-                            artifact.set(Artifact.Attribute.ORGANIZATION, (String) in.getPayloadHeader().getTag(RpmTag.VENDOR));
-                            artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
-                        } catch (IOException ex) {
-                            LOG.warn("Could not read RPM metadata from file: [{}]", file.getAbsolutePath(), ex);
-                        }
-                    }
+                    LOG.info("Failed to read RPM metadata", e);
                 }
             }
         }

@@ -18,17 +18,19 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ProgressiveWebAppComponentPatternContributor extends ComponentPatternContributor {
 
@@ -49,21 +51,78 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
         final File anchorFile = new File(baseDir, relativeAnchorPath);
 
         try {
-            final File contextBaseDir = anchorFile.getParentFile().getParentFile();
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
-            final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
             final String manifestContent = new String(Files.readAllBytes(Paths.get(anchorFile.getPath())), StandardCharsets.UTF_8);
 
-            final JSONObject jsonObject = new JSONObject(manifestContent);
-            final String name = jsonObject.optString("name", "N/A");  // TODO: provide a default name if not found
-            final String version = jsonObject.optString("version", "N/A");  // TODO: provide a default version if not found
+            Path parentPath = anchorFile.getParentFile().toPath();
+            File contributeFile = new File(parentPath.toFile(), "contribute.json");
 
-            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFile.getName());
+            final JSONObject jsonObject = new JSONObject(manifestContent);
+            String name = null;
+            String version = null;
+            String license = null;
+            try {
+                name = jsonObject.getString("name");
+            } catch (Exception e) {
+                LOG.info("Could not find name in manifest.json. Trying to find name in contribute.json file: [{}]", contributeFile.getAbsolutePath());
+                if (contributeFile.exists()) {
+                    final String contributeContent = new String(Files.readAllBytes(Paths.get(contributeFile.getPath())), StandardCharsets.UTF_8);
+                    final JSONObject contributeJsonObject = new JSONObject(contributeContent);
+                    try {
+                        name = contributeJsonObject.getString("name");
+                    } catch (Exception e2) {
+                        LOG.warn("Unable to parse progressive web application name [{}]: {}", anchorFile.getAbsolutePath(), e2.getMessage());
+                        return Collections.emptyList();
+                    }
+                }
+            }
+
+            try {
+                version = jsonObject.getString("version");
+            } catch (Exception e) {
+                File versionFile = new File(parentPath.toFile(), "version");
+                LOG.info("Could not find version in manifest.json. Trying to find version in version file: [{}]", versionFile.getAbsolutePath());
+                if (versionFile.exists() && versionFile.isFile()) {
+                    try (Stream<String> lines = Files.lines(versionFile.toPath())) {
+                        for (String line : lines.collect(Collectors.toList())) {
+                            if (!line.isEmpty()) {
+                                version = line;
+                                break;
+                            }
+                        }
+                    } catch (Exception e2) {
+                        LOG.warn("Unable to parse progressive web application version [{}]: {}", versionFile.getAbsolutePath(), e2.getMessage());
+                        return Collections.emptyList();
+                    }
+                } else {
+                    LOG.warn("Unable to parse progressive web application version [{}]: {}", anchorFile.getAbsolutePath(), e.getMessage());
+                    return Collections.emptyList();
+                }
+            }
+
+            try {
+                license = jsonObject.getString("license");
+            } catch (Exception e) {
+                LOG.info("Could not find license in manifest.json. Trying to find license in contribute.json file: [{}]", contributeFile.getAbsolutePath());
+                if (contributeFile.exists()) {
+                    final String contributeContent = new String(Files.readAllBytes(Paths.get(contributeFile.getPath())), StandardCharsets.UTF_8);
+                    final JSONObject contributeJsonObject = new JSONObject(contributeContent);
+                    try {
+                        license = contributeJsonObject.getJSONObject("repository").getString("license");
+                    } catch (Exception e2) {
+                        LOG.warn("Unable to parse progressive web application license [{}]: {}", anchorFile.getAbsolutePath(), e2.getMessage());
+                        return Collections.emptyList();
+                    }
+                }
+            }
+
+            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorFile.getName());
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
+            componentPatternData.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, license);
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
             componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*," + "**/node_modules/*");
@@ -73,7 +132,7 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
 
             return Collections.singletonList(componentPatternData);
         } catch (Exception e) {
-            LOG.warn("Unable to parse progressive web application [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
+            LOG.warn("Unable to parse progressive web application [{}]: {}", anchorFile.getAbsolutePath(), e.getMessage());
             return Collections.emptyList();
         }
     }

@@ -22,26 +22,29 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaeffekt.core.util.FileUtils;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class ConanTest extends AbstractCompositionAnalysisTest {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+public class BitnamiPostgreSQLTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
-    public static void prepare() {
-        // TODO: this has to be changed with the actual source url
+    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, "bitnami/postgresql", "16.1.0-debian-11-r27", BitnamiPostgreSQLTest.class.getName());
+        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/ConanImage/conan-container.tar")
-                .setSha256Hash("3252d7c49b6fc92f69e60a5b701f2e0a2e9b0ddd6d62d0bb6c95e331c5a90186")
-                .setName(ConanTest.class.getName());
+                .setSource("file://" + path)
+                .setSha256Hash(sha256Hash)
+                .setName(BitnamiPostgreSQLTest.class.getName());
     }
 
     @Ignore
@@ -61,5 +64,6 @@ public class ConanTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(20);
     }
 }

@@ -569,7 +569,10 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new PubComponentPatternContributor());
         contributorRunnerBuilder.add(new CocoapodsComponentPatternContributor());
         contributorRunnerBuilder.add(new MixComponentPatternContributor());
-        contributorRunnerBuilder.add(new MsiComponentPatternContributor());
+        contributorRunnerBuilder.add(new ExeComponentPatternContributor());
+        contributorRunnerBuilder.add(new BitnamiComponentPatternContributor());
+        contributorRunnerBuilder.add(new GenericVersionFileComponentPatternContributor());
+        contributorRunnerBuilder.add(new MavenProjectSourcesComponentPatternContributor());
 
         return contributorRunnerBuilder.build();
     }
