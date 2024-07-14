@@ -123,7 +123,7 @@ public class JarInspector extends AbstractJarInspector {
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
     }
 
-    protected Artifact getArtifactFromManifest(Artifact artifact, InputStream inputStream, String embeddedPath) {
+    public Artifact getArtifactFromManifest(Artifact artifact, InputStream inputStream, String embeddedPath) {
         Manifest manifest = null;
         try {
             manifest = new Manifest(inputStream);
@@ -156,35 +156,42 @@ public class JarInspector extends AbstractJarInspector {
                 dummyArtifact.setVersion(mainAttributes.getValue("Bundle-Version"));
             }
 
+            if (StringUtils.isBlank(dummyArtifact.getGroupId())) {
+                dummyArtifact.setGroupId(mainAttributes.getValue("Bundle-SymbolicName"));
+            }
+
             dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
             String artifactId = artifact.getId();
-            String suffix = null;
-            // cut off suffix
-            final int suffixIndex = artifactId.lastIndexOf(".");
-            if (suffixIndex > 0) {
-                suffix = artifactId.substring(suffixIndex + 1);
-                artifactId = artifactId.substring(0, suffixIndex);
-            }
-            final int versionIndex = artifactId.lastIndexOf("-" + dummyArtifact.getVersion());
-            if (versionIndex > 0) {
-                artifactId = artifactId.substring(0, versionIndex);
-            }
-            final int groupIdIndex = artifactId.lastIndexOf(".");
-            final int groupsLength = artifactId.split("\\.").length;
-            String groupId = null;
-            String name = dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID);
-            if (groupIdIndex > 0 && groupsLength > 2) {
-                groupId = artifactId.substring(0, groupIdIndex);
-                dummyArtifact.setGroupId(groupId);
-                name = artifactId.substring(groupIdIndex + 1);
-            }
-            dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
 
-            String purl = buildPurl(groupId, name, version, suffix);
-            dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
+            if (artifactId != null) {
+                String suffix = null;
+                // cut off suffix
+                final int suffixIndex = artifactId.lastIndexOf(".");
+                if (suffixIndex > 0) {
+                    suffix = artifactId.substring(suffixIndex + 1);
+                    artifactId = artifactId.substring(0, suffixIndex);
+                }
+                final int versionIndex = artifactId.lastIndexOf("-" + dummyArtifact.getVersion());
+                if (versionIndex > 0) {
+                    artifactId = artifactId.substring(0, versionIndex);
+                }
+                final int groupIdIndex = artifactId.lastIndexOf(".");
+                final int groupsLength = artifactId.split("\\.").length;
+                String groupId = null;
+                String name = dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID);
+                if (groupIdIndex > 0 && groupsLength > 2) {
+                    groupId = artifactId.substring(0, groupIdIndex);
+                    dummyArtifact.setGroupId(groupId);
+                    name = artifactId.substring(groupIdIndex + 1);
+                }
+                dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
 
-            deriveQualifiers(dummyArtifact);
+                String purl = buildPurl(groupId, name, version, suffix);
+                dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
+                deriveQualifiers(dummyArtifact);
+                deriveQualifiers(dummyArtifact);
+            }
 
             return dummyArtifact;
         }
