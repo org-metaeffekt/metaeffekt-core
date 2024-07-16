@@ -186,9 +186,10 @@ public class RepositoryReportTest {
     }
 
     @Test
-    public void testCreateTestReport() throws Exception {
+    public void testCreateTestReport002() throws Exception {
         final File inventoryDir = new File("src/test/resources/test-inventory-02");
         final File reportDir = new File("target/test-inventory-02");
+
         configureAndCreateReport(inventoryDir, "*.xls",
                 inventoryDir, "*.xls",
                 reportDir, new InventoryReport());
@@ -201,6 +202,38 @@ public class RepositoryReportTest {
         Assert.assertTrue(
                 "Expecting references to license chapter.",
                 packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
+
+        // read/write inventory
+        Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
+        new InventoryWriter().writeInventory(inventory, new File(reportDir, "output_artifact-inventory.xls"));
+
+        // read rewritten
+        Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir, "output_artifact-inventory.xls"));
+
+        // check selected data in reread inventory
+        Assert.assertEquals("GPL-2.0", rereadInventory.
+                findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
+    }
+
+    @Test
+    public void testCreateTestReport002_ILD_DE() throws Exception {
+        final File inventoryDir = new File("src/test/resources/test-inventory-02");
+        final File reportDir = new File("target/test-inventory-02_ILD_DE");
+
+        final InventoryReport report = new InventoryReport();
+
+        prepareReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir, report);
+
+        report.setAssessmentReportEnabled(false);
+        report.setInventoryBomReportEnabled(false);
+        report.setInventoryDiffReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setInventoryVulnerabilityReportSummaryEnabled(false);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
+
+        report.setTemplateLanguageSelector("de");
+
+        report.createReport();
 
         // read/write inventory
         Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
@@ -243,23 +276,23 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("<path-to-inventory-dir>");
-        final File referenceInventoryDir = new File("<path-to-reference-inventory-dir>");
+        final File inventoryDir = new File("/Volumes/H-HAM-001/H-HAM/H-HAM-001/inputs-phoenix/h-ham-001-k8s/report");
+        final File referenceInventoryDir = new File("target");
 
         final File reportDir = new File("target/test-inventory-04");
 
         InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "*.xls,*.xlsx",
-                referenceInventoryDir, "*.xls,*.xlsx",
+        prepareReport(inventoryDir, "container-result-inventory_assets_customer_report.xlsx",
+                referenceInventoryDir, "--none--",
                 reportDir, report);
 
-        report.setTemplateLanguageSelector("en");
+        report.setTemplateLanguageSelector("de");
 
         report.setAssetBomReportEnabled(true);
         report.setIncludeInofficialOsiStatus(true);
 
-        report.setInventoryBomReportEnabled(true);
-        report.setAssessmentReportEnabled(true);
+        report.setInventoryBomReportEnabled(false);
+        report.setAssessmentReportEnabled(false);
 
         report.setInventoryVulnerabilityReportEnabled(false);
         report.setInventoryVulnerabilityReportSummaryEnabled(false);

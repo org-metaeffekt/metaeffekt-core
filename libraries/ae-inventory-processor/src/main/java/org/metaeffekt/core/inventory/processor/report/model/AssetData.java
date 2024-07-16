@@ -22,6 +22,9 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.metaeffekt.core.inventory.processor.report.InventoryReport.xmlEscapeId;
+import static org.metaeffekt.core.inventory.processor.report.InventoryReport.xmlEscapeString;
+
 public class AssetData {
 
     private Map<String, Set<String>> assetIdAssociatedLicenseMap = new HashMap<>();
@@ -40,15 +43,51 @@ public class AssetData {
 
     private boolean includesOpenCoDESimilarLicense = false;
 
+    /**
+     * List to cover artifacts without license
+     */
+    private List<Artifact> artifactsWithoutLicense = new ArrayList<>();
+
+    /**
+     * Map for identifying the assets belonging to a given artifacts. Used primarily for artifacts without license.
+     */
+    private Map<Artifact, List<AssetMetaData>> artifactToAssetMetaDataMap = new HashMap<>();
+
     public static AssetData fromInventory(Inventory filteredInventory) {
         AssetData assetData = new AssetData();
-        assetData.insertData(filteredInventory);
+
+        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = assetData.buildAssetToArtifactMap(filteredInventory);
+
+        assetData.insertData(filteredInventory, assetMetaDataToArtifactsMap);
+
+        assetData.evaluateArtifactsWithoutLicense(filteredInventory, assetMetaDataToArtifactsMap);
+
         assetData.inventory = filteredInventory;
         return assetData;
     }
 
-    private void insertData(Inventory filteredInventory) {
-        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = buildAssetToArtifactMap(filteredInventory);
+    private void evaluateArtifactsWithoutLicense(Inventory filteredInventory, Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap) {
+        // collect artifacts that are components or component parts and have no license
+        for (Artifact artifact : filteredInventory.getArtifacts()) {
+            if (StringUtils.isEmpty(artifact.getLicense())) {
+                if (artifact.isComponentOrComponentPart()) {
+                    artifactsWithoutLicense.add(artifact);
+                }
+            }
+        }
+
+        // compute the artifact to assetId map
+        for (Artifact artifact : artifactsWithoutLicense) {
+            for (Map.Entry<AssetMetaData, Set<Artifact>> entry : assetMetaDataToArtifactsMap.entrySet()) {
+                if (entry.getValue().contains(artifact)) {
+                    artifactToAssetMetaDataMap.computeIfAbsent(artifact, (a) -> new ArrayList<>()).add(entry.getKey());
+                }
+            }
+        }
+
+    }
+
+    private void insertData(Inventory filteredInventory, Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap) {
 
         for (Map.Entry<AssetMetaData, Set<Artifact>> entry : assetMetaDataToArtifactsMap.entrySet()) {
 
@@ -69,7 +108,7 @@ public class AssetData {
 
                     // add representedAs licenses (complete map of license to representedAs/license)
                     final LicenseData licenseData = filteredInventory.findMatchingLicenseData(associatedLicense);
-                    String representedAsLicense = evaluateRepresetedAs(associatedLicense, licenseData);
+                    String representedAsLicense = evaluateRepresentedAs(associatedLicense, licenseData);
                     representedAssociatedLicenses.add(representedAsLicense);
 
                     // contribute to representedLicenses maps
@@ -101,7 +140,7 @@ public class AssetData {
         }
     }
 
-    private String evaluateRepresetedAs(String associatedLicense, LicenseData licenseData) {
+    private String evaluateRepresentedAs(String associatedLicense, LicenseData licenseData) {
         String representedAs = licenseData != null ? licenseData.get(LicenseData.Attribute.REPRESENTED_AS) : null;
         // the license represents itself
         if (representedAs == null) {
@@ -124,14 +163,14 @@ public class AssetData {
             for (Artifact artifact : filteredInventory.getArtifacts()) {
                 // skip all artifacts that do not belong to an asset
                 final boolean containedInAsset = StringUtils.isNotBlank(artifact.get(assetId));
-                boolean representsAsset = false;
-                if (!containedInAsset) {
-                    // check via asset id
-                    final String artifactAssetId = InventoryUtils.deriveAssetIdFromArtifact(artifact);
-                    representsAsset = assetId.equals(artifactAssetId);
-                }
-                if (containedInAsset || representsAsset) {
+                if (containedInAsset) {
                     assetMetaDataToArtifactsMap.computeIfAbsent(assetMetaData, c -> new HashSet<>()).add(artifact);
+                } else {
+                    // check via asset id; if artifact id matches asset id; add
+                    final String artifactAssetId = InventoryUtils.deriveAssetIdFromArtifact(artifact);
+                    if (assetId.equals(artifactAssetId)) {
+                        assetMetaDataToArtifactsMap.computeIfAbsent(assetMetaData, c -> new HashSet<>()).add(artifact);
+                    }
                 }
             }
         }
@@ -251,4 +290,31 @@ public class AssetData {
     public boolean isIncludesOpenCoDESimilarLicense() {
         return includesOpenCoDESimilarLicense;
     }
+
+    public List<Artifact> getArtifactsWithoutLicense() {
+        return artifactsWithoutLicense;
+    }
+
+    public List<AssetMetaData> getAssetMetaDataForArtifact(Artifact artifact) {
+        return artifactToAssetMetaDataMap.getOrDefault(artifact, Collections.emptyList());
+    }
+
+    public String toXml(List<AssetMetaData> assetMetaDataList, String topicId) {
+        return assetMetaDataList.stream().map(a -> toAssetXref(a, topicId)).collect(Collectors.joining(", "));
+    }
+
+    public String toAssetXref(AssetMetaData a, String topicId) {
+        String name = a.get(AssetMetaData.Attribute.NAME);
+        String id =  "asset-" + a.get(AssetMetaData.Attribute.ASSET_ID).toLowerCase();
+
+        return String.format("<xref href=\"%s#%s\" type=\"topic\">%s</xref>", topicId, xmlEscapeId(id), xmlEscapeString(name));
+    }
+
+    public String toAssetXref(AssetLicenseData a, String topicId) {
+        String name = a.getAssetName();
+        String id =  "asset-" + a.deriveId().toLowerCase();
+
+        return String.format("<xref href=\"%s#%s\" type=\"topic\">%s</xref>", topicId, xmlEscapeId(id), xmlEscapeString(name));
+    }
+
 }
