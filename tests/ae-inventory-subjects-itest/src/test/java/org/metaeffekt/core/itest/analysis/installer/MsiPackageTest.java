@@ -61,5 +61,4 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty();
     }
 
-
 }
