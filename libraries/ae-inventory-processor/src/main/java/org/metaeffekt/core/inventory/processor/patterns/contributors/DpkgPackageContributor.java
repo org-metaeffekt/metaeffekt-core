@@ -657,10 +657,14 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 }
             }
         }
-        return "unknown";  // Return "unknown" only if no relevant info was found in any file
+        return null;
     }
 
     private String buildPurl(String distro, String packageName, String version, String arch) {
-        return String.format("pkg:deb/%s/%s@%s?arch=%s", distro, packageName, version, arch);
+        if (distro != null) {
+            return String.format("pkg:deb/%s/%s@%s?arch=%s", distro, packageName, version, arch);
+        }
+        return null;
     }
+
 }
