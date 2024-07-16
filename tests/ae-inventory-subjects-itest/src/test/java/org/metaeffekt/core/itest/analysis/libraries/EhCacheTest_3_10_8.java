@@ -29,8 +29,6 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class EhCacheTest_3_10_8 extends AbstractCompositionAnalysisTest {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
@@ -50,9 +48,6 @@ public class EhCacheTest_3_10_8 extends AbstractCompositionAnalysisTest {
     @Test
     public void inventorize() throws Exception {
         Assert.assertTrue(testSetup.rebuildInventory());
-
-        // NOTE: currently we produce two ehcache-3.10.8-jakarta.jar entries (one from the files; one from unpacked / selected content)
-        Assert.assertFalse(testSetup.getInventory().getArtifacts().size() == 12);
     }
 
     @Test

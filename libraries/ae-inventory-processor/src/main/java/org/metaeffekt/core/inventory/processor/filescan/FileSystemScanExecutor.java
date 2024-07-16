@@ -313,21 +313,23 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             final String name = pathInAsset.getName();
             File extractedPathInAsset = new File(pathInAsset.getParentFile(), "[" + name + "]");
 
-            String qualifier = scannedArtifact.getId() + "/" + scannedArtifact.getVersion() + "/" + extractedPathInAsset.getPath();
+            String qualifier = scannedArtifact.getId() + "/" + extractedPathInAsset.getPath();
 
             Set<Artifact> toBeDeleted = new HashSet<>();
             for (Artifact artifact : inventory.getArtifacts()) {
                 final String q = deriveContainedArtifactQualifier(artifact);
                 if (qualifier.equals(q)) {
-                    // manage attributes that should not be merged
-                    artifact.set(assetId, null);
-                    artifact.setProjects(Collections.EMPTY_SET);
+                    if ("c".equalsIgnoreCase(artifact.get(assetId))) {
+                        // manage attributes that should not be merged
+                        artifact.set(assetId, null);
+                        artifact.setProjects(Collections.EMPTY_SET);
 
-                    // merge contained artifact into scanned
-                    scannedArtifact.merge(artifact);
+                        // merge contained artifact into scanned
+                        scannedArtifact.merge(artifact);
 
-                    // collect merged sub-artifact to be deleted
-                    toBeDeleted.add(artifact);
+                        // collect merged sub-artifact to be deleted
+                        toBeDeleted.add(artifact);
+                    }
                 }
             }
             inventory.getArtifacts().removeAll(toBeDeleted);
@@ -335,7 +337,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     }
 
     private String deriveContainedArtifactQualifier(Artifact a) {
-        return a.getId() + "/" + a.getVersion() + "/" + a.get(Artifact.Attribute.PATH_IN_ASSET);
+        return a.getId() + "/" + a.get(Artifact.Attribute.PATH_IN_ASSET);
     }
 
     private static void addPath(Artifact a, HashSet<String> paths) {
