@@ -70,7 +70,9 @@ public class ApkPackageContributor extends ComponentPatternContributor {
             StringJoiner includePatterns = new StringJoiner(",");
             includePatterns.add("lib/apk/db/**/*");
             String currentFolder = null;
-            for (String line : lineStream.collect(Collectors.toList())) {
+            List<String> lines = lineStream.collect(Collectors.toList());
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
                 if (line.startsWith("P:")) {
                     packageName = line.substring(2).trim();
                 } else if (line.startsWith("V:")) {
@@ -78,11 +80,48 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                 } else if (line.startsWith("A:")) {
                     architecture = line.substring(2).trim();
                 } else if (line.startsWith("F:")) {
-                    currentFolder = line.substring(2).trim();
-                    includePatterns.add(currentFolder);
+                    String folder = line.substring(2).trim();
+                    if (currentFolder != null && folder.contains(currentFolder)) {
+                        if (i + 1 < lines.size() && lines.get(i + 1).startsWith("R:")) {
+                            // handle the case where the next line starts with "R:"
+                            i++; // move to the next line which starts with "R:"
+                            while (i < lines.size() && lines.get(i).startsWith("R:")) {
+                                String fileName = lines.get(i).substring(2).trim();
+                                includePatterns.add(folder + "/" + fileName);
+                                currentFolder = folder;
+                                i++;
+                            }
+                            i--; // adjust the index back since the loop increment will move it forward
+                        } else {
+                            if (i + 1 < lines.size() && lines.get(i + 1).startsWith("F:") && lines.get(i + 1).contains(folder)) {
+                                // handle the case where the next line starts with "F:"
+                                i++; // move to the next line which starts with "F:"
+                                while (i < lines.size() && lines.get(i).startsWith("F:") && lines.get(i).contains(folder)) {
+                                    currentFolder = lines.get(i).substring(2).trim();
+                                    i++;
+                                }
+                                i--; // adjust the index back since the loop increment will move it forward
+                            } else {
+                                includePatterns.add(folder + "/**/*");
+                            }
+                        }
+                    } else {
+                        currentFolder = folder;
+                    }
+
                 } else if (line.startsWith("R:")) {
                     String fileName = line.substring(2).trim();
                     includePatterns.add(currentFolder + "/" + fileName);
+                    if (i + 1 < lines.size() && lines.get(i + 1).startsWith("R:")) {
+                        // handle the case where the next line starts with "R:"
+                        i++; // move to the next line which starts with "R:"
+                        while (i < lines.size() && lines.get(i).startsWith("R:")) {
+                            String nextFileName = lines.get(i).substring(2).trim();
+                            includePatterns.add(currentFolder + "/" + nextFileName);
+                            i++;
+                        }
+                        i--; // adjust the index back since the loop increment will move it forward
+                    }
                 } else if (line.startsWith("L:")) {
                     license = line.substring(2).trim();
                 } else if (line.isEmpty()) {
@@ -92,8 +131,8 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                             processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                             includePatterns = new StringJoiner(",");
                         } else {
-                            LOG.warn("No include patterns found for package: {}-{}-{}", packageName, version, architecture);
-                            processCollectedData(components, packageName, version, architecture, relativeAnchorPath, virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
+                            LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
+                            processCollectedData(components, packageName, version, architecture, "**/*", virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                         }
                     }
                     packageName = null;
@@ -105,7 +144,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
             }
             return components;
         } catch (Exception e) {
-            LOG.warn("Failure processing APK database file [{}]", apkDbFile.getAbsolutePath());
+            LOG.warn("Could not process APK database file [{}]", apkDbFile.getAbsolutePath());
             return Collections.emptyList();
         }
     }
@@ -123,7 +162,6 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, license);
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, APK_PACKAGE_TYPE);
-        cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
         cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
         components.add(cpd);
     }

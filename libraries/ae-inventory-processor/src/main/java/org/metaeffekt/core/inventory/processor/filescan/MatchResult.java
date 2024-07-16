@@ -67,6 +67,8 @@ public class MatchResult {
         derivedArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, componentPatternData.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
         derivedArtifact.set(Constants.KEY_NO_MATCHING_FILE, componentPatternData.get(Constants.KEY_NO_MATCHING_FILE));
         derivedArtifact.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, componentPatternData.get(Constants.KEY_SPECIFIED_PACKAGE_LICENSE));
+        derivedArtifact.set(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE, componentPatternData.get(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE));
+        derivedArtifact.set(Constants.KEY_SCOPE, componentPatternData.get(Constants.KEY_SCOPE));
         derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Artifact.Attribute.URL.getKey()));
         derivedArtifact.set(Artifact.Attribute.PURL, componentPatternData.get(Artifact.Attribute.PURL.getKey()));
 

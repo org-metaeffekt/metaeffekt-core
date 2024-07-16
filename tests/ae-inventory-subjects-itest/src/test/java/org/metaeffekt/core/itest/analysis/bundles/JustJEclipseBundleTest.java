@@ -99,7 +99,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(attributeValue(ID, "temurin-jdk-17.0.2")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2")).hasSizeOf(1);
 
-        analysis.selectArtifacts().hasSizeOf(3);
+        analysis.selectArtifacts().hasSizeOf(4);
     }
 
 }

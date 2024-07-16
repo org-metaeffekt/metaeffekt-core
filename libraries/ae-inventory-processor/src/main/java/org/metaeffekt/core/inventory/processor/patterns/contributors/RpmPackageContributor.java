@@ -100,10 +100,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                                 installedFileName = installedFileName.startsWith("/") ? installedFileName.substring(1) : installedFileName;
 
                                 File file = new File(baseDir, virtualRootPath + "/" + installedFileName);
-                                if (file.exists() && file.isDirectory()) {
-                                    // do nothing; folders and substrees are not included
-                                    // sj.add(installedFileName + "/**/*");
-                                } else if (file.exists() && file.isFile()) {
+                                if (file.exists() && file.isFile()) {
                                     sj.add(installedFileName);
                                 }
                             }
@@ -130,7 +127,6 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
-                    cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
                     cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getName(), packageInfo.getVersion() + "-" + packageInfo.getRelease(), packageInfo.getArch(), packageInfo.getEpoch(), packageInfo.getSourceRpm(), distro));
 
                     components.add(cpd);
@@ -184,7 +180,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         if (upstream != null && !upstream.isEmpty()) {
             sb.append("&upstream=").append(upstream);
         }
-        if (distro != null && !distro.isEmpty()) {
+        if (!distro.isEmpty()) {
             sb.append("&distro=").append(distro);
         }
         return sb.toString();
@@ -243,7 +239,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                 }
             }
         }
-        return null;
+        return "";
     }
 
     private String parseOsRelease(File file) {

@@ -35,16 +35,16 @@ import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class CentOSTest extends AbstractCompositionAnalysisTest {
+public class BitnamiRedisTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, CentOSTest.class.getSimpleName().toLowerCase(), "6.9", CentOSTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, "bitnami/redis", null, BitnamiRedisTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(CentOSTest.class.getName());
+                .setName(BitnamiRedisTest.class.getName());
     }
 
     @Ignore
@@ -64,8 +64,6 @@ public class CentOSTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(178);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(5);
-        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages")).hasSizeGreaterThan(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(6);
     }
 }

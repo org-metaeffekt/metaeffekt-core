@@ -20,31 +20,33 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
-import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 
-public class CentOSTest extends AbstractCompositionAnalysisTest {
+public class MSITest extends AbstractCompositionAnalysisTest {
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
-    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, CentOSTest.class.getSimpleName().toLowerCase(), "6.9", CentOSTest.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
+    public static void prepare() {
+        // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
-                .setSha256Hash(sha256Hash)
-                .setName(CentOSTest.class.getName());
+                .setSource("file:///home/aleyc0re/Dokumente/MSIImage/msi-container.tar")
+                .setSha256Hash("697c55cdf0d420ac834ac28707f1bbcb9aac798aa50813ae5ef4edba47c0c2ef")
+                .setName(MSITest.class.getName());
     }
 
     @Ignore
@@ -64,8 +66,7 @@ public class CentOSTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(178);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(5);
-        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages")).hasSizeGreaterThan(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "msi")).hasSizeOf(5);
+        analysis.selectComponentPatterns(containsToken(Artifact.Attribute.TYPE, "msi")).hasSizeGreaterThan(1);
     }
 }
