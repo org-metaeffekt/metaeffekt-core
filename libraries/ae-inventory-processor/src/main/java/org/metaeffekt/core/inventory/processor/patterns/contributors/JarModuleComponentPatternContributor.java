@@ -21,7 +21,6 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.metaeffekt.core.util.PropertiesUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
 
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
 

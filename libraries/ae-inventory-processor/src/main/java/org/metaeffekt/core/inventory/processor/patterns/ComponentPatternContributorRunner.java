@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ComponentPatternContributorRunner {
 
@@ -84,27 +85,36 @@ public class ComponentPatternContributorRunner {
 
     /**
      * Checks for and runs the first applicable contributor.
+     *
      * @param baseDir as in {@link ComponentPatternContributor}
      * @param relativeAnchorFilePath as in {@link ComponentPatternContributor}
      * @param checksum as in {@link ComponentPatternContributor}
+     *
      * @return returns a list of generated component patterns
      */
     public List<ComponentPatternData> run(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
         List<ComponentPatternData> results = new ArrayList<>();
         for (Map.Entry<Integer, Map<String, List<ComponentPatternContributor>>> phaseEntry : phaseContributors.entrySet()) {
             for (Map.Entry<String, List<ComponentPatternContributor>> suffixEntry : phaseEntry.getValue().entrySet()) {
-                String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.localeConstants.PATH_LOCALE);
-                Pattern pattern = convertWildcardPatternToRegex(suffixEntry.getKey());
-                Matcher matcher = pattern.matcher(lowercasedPathInContext);
-                if (matcher.find()) {
-                    for (ComponentPatternContributor contributor : suffixEntry.getValue()) {
-                        if (contributor.applies(relativeAnchorFilePath)) {
-                            try {
-                                List<ComponentPatternData> componentPatterns =
-                                        contributor.contribute(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
-                                results.addAll(componentPatterns);
-                            } catch(Exception e) {
-                                LOG.error("Contributor threw exception. Make contributor more robust.", e);
+                String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE);
+
+                // check whether on of the contributor applies before perform expensive regex operations
+                final List<ComponentPatternContributor> collect = suffixEntry.getValue().stream().
+                        filter(c -> c.applies(relativeAnchorFilePath)).collect(Collectors.toList());
+
+                if (!collect.isEmpty()) {
+                    final Pattern pattern = convertWildcardPatternToRegex(suffixEntry.getKey());
+                    final Matcher matcher = pattern.matcher(lowercasedPathInContext);
+                    if (matcher.find()) {
+                        for (ComponentPatternContributor contributor : suffixEntry.getValue()) {
+                            if (contributor.applies(relativeAnchorFilePath)) {
+                                try {
+                                    List<ComponentPatternData> componentPatterns = contributor.contribute(
+                                            baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+                                    results.addAll(componentPatterns);
+                                } catch (Exception e) {
+                                    LOG.error("Contributor threw exception. Make contributor more robust.", e);
+                                }
                             }
                         }
                     }
@@ -116,11 +126,13 @@ public class ComponentPatternContributorRunner {
 
     /**
      * Converts a wildcard pattern to a regex pattern.
+     *
      * @param wildcardPattern the pattern to convert
+     *
      * @return the converted pattern
      */
     private Pattern convertWildcardPatternToRegex(String wildcardPattern) {
-        // Escape special regex characters except "*" (which we'll handle separately)
+        // escape special regex characters except "*" (which we'll handle separately)
         String escapedPattern = wildcardPattern
                 .replace(".", "\\.")
                 .replace("?", "\\?")

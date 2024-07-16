@@ -30,8 +30,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.OTHER_LOCALE;
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.OTHER_LOCALE;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
 
 public class JavaRuntimeComponentPatternContributor extends ComponentPatternContributor {
 

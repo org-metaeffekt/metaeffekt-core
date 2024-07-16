@@ -65,9 +65,9 @@ public class ComponentPatternProducer {
     /**
      * Consolidate locale settings across contributors.<br>
      * These should probably both be equal or both equal english.<br>
-     * The They are mainly here to avoid using platform-specific locales in contributors.
+     * They are mainly here to avoid using platform-specific locales in contributors.
      */
-    public static final class localeConstants {
+    public static final class LocaleConstants {
         public static final Locale PATH_LOCALE = Locale.ENGLISH;
         public static final Locale OTHER_LOCALE = Locale.ENGLISH;
     }
@@ -107,7 +107,7 @@ public class ComponentPatternProducer {
 
             for (String suffix : cpc.getSuffixes()) {
                 // use path locale since we will be using suffixes to compare paths
-                String lowercasedSuffix = suffix.toLowerCase(localeConstants.PATH_LOCALE);
+                String lowercasedSuffix = suffix.toLowerCase(LocaleConstants.PATH_LOCALE);
                 if (!suffix.equals(lowercasedSuffix)) {
                     LOG.debug(
                             "Suffix [{}] of [{}] was not lowercase, then lowercased automagically.",
@@ -117,7 +117,7 @@ public class ComponentPatternProducer {
                 }
                 relevantSuffixes.add(lowercasedSuffix);
 
-                uncoveredDefaults.remove(suffix.toLowerCase(localeConstants.PATH_LOCALE));
+                uncoveredDefaults.remove(suffix.toLowerCase(LocaleConstants.PATH_LOCALE));
             }
         }
 
