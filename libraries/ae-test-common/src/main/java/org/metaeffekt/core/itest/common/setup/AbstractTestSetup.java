@@ -81,8 +81,7 @@ public abstract class AbstractTestSetup implements TestSetup {
 
     @Override
     public boolean rebuildInventory() throws Exception {
-        return load(false) &&
-                inventorize(true);
+        return load(false) && inventorize(true);
     }
 
     @Override

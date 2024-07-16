@@ -276,14 +276,14 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("/Volumes/H-HAM-001/H-HAM/H-HAM-001/inputs-phoenix/h-ham-001-k8s/report");
-        final File referenceInventoryDir = new File("target");
+        final File inventoryDir = new File("<path-to-inventory-dir>");
+        final File referenceInventoryDir = new File("<path-to-reference-inventory-dir>");
 
         final File reportDir = new File("target/test-inventory-04");
 
         InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "container-result-inventory_assets_customer_report.xlsx",
-                referenceInventoryDir, "--none--",
+        prepareReport(inventoryDir, "*.xlsx",
+                referenceInventoryDir, "*.xlsx",
                 reportDir, report);
 
         report.setTemplateLanguageSelector("de");
