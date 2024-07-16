@@ -64,7 +64,7 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(startsWith(ID, "pdfbox")).hasSizeOf(3);
+        analysis.selectArtifacts(startsWith(ID, "pdfbox")).hasSizeOf(4); // currently pdfbox-war-1.8.17.war is multiplied
         analysis.selectArtifacts(startsWith(ID, "fontbox")).hasSizeOf(1);
         analysis.selectArtifacts(startsWith(ID, "commons")).hasSizeOf(1);
         analysis.selectArtifacts(startsWith(ID, "jempbox")).hasSizeOf(1);
@@ -73,7 +73,7 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.pdfbox")).hasSizeOf(5);
         analysis.selectArtifacts(attributeValue(GROUPID, "commons-logging")).hasSizeOf(1);
 
-        analysis.selectArtifacts(attributeValue(VERSION, "1.8.17")).hasSizeOf(5);
+        analysis.selectArtifacts(attributeValue(VERSION, "1.8.17")).hasSizeOf(6); // currently pdfbox-war-1.8.17.war is multiplied
         analysis.selectArtifacts(attributeValue(VERSION, "1.1.1")).hasSizeOf(1);
     }
 

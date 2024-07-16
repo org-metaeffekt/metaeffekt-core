@@ -120,7 +120,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 }
             } else {
                 if (artifactId != null) {
-                    id = artifactId + "-" + artifact.getVersion() + "." + artifact.get("Packaging");
+                    id = artifactId + "-" + artifact.getVersion() + "." + deriveSuffix(artifact.get("Packaging"));
                 }
             }
             artifact.setId(id);
@@ -168,6 +168,15 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
 
         return Collections.singletonList(componentPatternData);
+    }
+
+    private String deriveSuffix(String packaging) {
+        if (packaging == null) return "jar";
+        if (packaging.equalsIgnoreCase("pom")) return "pom";
+        if (packaging.equalsIgnoreCase("war")) return "war";
+
+        // FIXME: support other mappings
+        return "jar";
     }
 
     private Artifact getArtifactFromBuildInfoProperties(Artifact artifact, InputStream in) throws IOException {

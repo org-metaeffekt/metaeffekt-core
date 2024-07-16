@@ -582,29 +582,64 @@ public class JarInspector extends AbstractJarInspector {
             String id = artifact.getId();
             if (StringUtils.isNotEmpty(id)) {
                 int lastDotIndex = id.lastIndexOf(".");
-                int lastSeparatorIndex = Math.max(id.lastIndexOf("-"), id.lastIndexOf("_"));
-                if (lastSeparatorIndex != -1 && lastDotIndex > lastSeparatorIndex) {
-                    String candidateVersion = id.substring(lastSeparatorIndex + 1, lastDotIndex);
 
-                    if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+")) {
-                        artifact.setVersion(candidateVersion);
-                    } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.Final")) {
-                        artifact.setVersion(candidateVersion);
-                    } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.FINAL")) {
-                        artifact.setVersion(candidateVersion);
-                    } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.RELEASE")) {
-                        artifact.setVersion(candidateVersion);
-                    } else if (candidateVersion.matches("\\d+\\.\\d+")) {
-                        artifact.setVersion(candidateVersion);
-                    } else if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+.\\d+")) {
-                        artifact.setVersion(candidateVersion);
-                    } else if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+.\\d+.\\d+")) {
-                        artifact.setVersion(candidateVersion);
+                // create a list of possible separators
+                List<Integer> indexList = new ArrayList<>();
+                for (int i = 0; i < id.length(); i++) {
+                    final char c = id.charAt(i);
+                    if (c == '_' || c =='-') {
+                        indexList.add(i);
+                    }
+                }
+
+                // iterate the separators (longest to shortest)
+                for (int index : indexList) {
+                    if (index != -1 && lastDotIndex > index) {
+                        final String candidateVersion = id.substring(index + 1, lastDotIndex);
+
+                        if (testVersion(candidateVersion)) {
+                            artifact.setVersion(candidateVersion);
+
+                            // exit as soon as we have a match
+                            return;
+                        }
                     }
                 }
             }
-
         }
+    }
+
+    private boolean testVersion(String candidateVersion) {
+        if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.Final")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.FINAL")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.RELEASE")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+_v\\d+")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.v\\d+")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.v\\d+-\\d+")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+.\\d+")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+.\\d+.\\d+")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+-SNAPSHOT")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+\\.\\d+-SNAPSHOT")) {
+            return true;
+        } else if (candidateVersion.matches("\\d+-SNAPSHOT")) {
+            return true;
+        } else if (candidateVersion.matches("HEAD-SNAPSHOT")) {
+            return true;
+        }
+        return false;
     }
 
     // TODO: special steps to take for artifacts added in this fashion? maybe write a separate Inspector for this?
