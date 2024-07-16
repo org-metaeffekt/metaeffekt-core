@@ -693,4 +693,44 @@ public class Artifact extends AbstractModelBase {
         }
         return false;
     }
+
+    // FIXME: this information should be consolidated to a central class
+    private static final Set<String> moduleSuffixes = new HashSet<>();
+    static {
+        moduleSuffixes.add("war");
+        moduleSuffixes.add("nar");
+        moduleSuffixes.add("jar");
+        moduleSuffixes.add("xar");
+        moduleSuffixes.add("webjar");
+        moduleSuffixes.add("ear");
+        moduleSuffixes.add("aar");
+        moduleSuffixes.add("sar");
+        moduleSuffixes.add("nupkg");
+        moduleSuffixes.add("whl");
+
+        moduleSuffixes.add("deb");
+        moduleSuffixes.add("rpm");
+        moduleSuffixes.add("apk");
+
+        moduleSuffixes.add("cab");
+        moduleSuffixes.add("exe");
+        moduleSuffixes.add("msi");
+    }
+
+    public boolean isComponentOrComponentPart() {
+        // an artifact with a type is considered component or component part
+        if (StringUtils.isNotEmpty(get(Constants.KEY_TYPE))) return true;
+
+        // artifact with version are considered  component or component part
+        if (StringUtils.isNotEmpty(getVersion())) return true;
+
+        // artifact with a suffix indicating a module is considered component or component part
+        final String suffix = getType();
+        if (suffix != null) {
+            return moduleSuffixes.contains(suffix.toLowerCase(Locale.US));
+        }
+
+        return false;
+    }
+
 }
