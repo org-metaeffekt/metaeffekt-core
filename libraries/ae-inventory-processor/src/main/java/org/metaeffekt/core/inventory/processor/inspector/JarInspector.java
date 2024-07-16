@@ -115,9 +115,6 @@ public class JarInspector extends AbstractJarInspector {
         dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
         dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
-        String purl = buildPurl(groupId, artifactId, version, packaging);
-        dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
-
         deriveQualifiers(dummyArtifact);
 
         return importantNonNull(dummyArtifact) ? dummyArtifact : null;
@@ -147,17 +144,31 @@ public class JarInspector extends AbstractJarInspector {
                 }
             }
 
-            dummyArtifact.setVersion(version);
+            if (StringUtils.isNotBlank(version)) {
+                if (embeddedPath.contains("-" + version + "-") || embeddedPath.contains("-" + version + ".")) {
+                    dummyArtifact.setVersion(version);
+                }
+            }
 
             dummyArtifact.set(Constants.KEY_ORGANIZATION, mainAttributes.getValue("Implementation-Vendor"));
             dummyArtifact.set("Organization Id", mainAttributes.getValue("Implementation-Vendor-Id"));
 
             if (StringUtils.isBlank(dummyArtifact.getVersion())) {
-                dummyArtifact.setVersion(mainAttributes.getValue("Bundle-Version"));
+                final String candidateVersion = mainAttributes.getValue("Bundle-Version");
+                if (StringUtils.isNotBlank(candidateVersion)) {
+                    // NOTE: we found that sometimes the bundle version differs from the factual version; therefore
+                    // we check with the embedded path; only versions strings contained in the path are used
+                    if (embeddedPath.contains("-" + candidateVersion + "-") || embeddedPath.contains("-" + candidateVersion + ".")) {
+                        dummyArtifact.setVersion(candidateVersion);
+                    } else {
+                        dummyArtifact.set("Alternate Version", candidateVersion);
+                    }
+                }
             }
 
             if (StringUtils.isBlank(dummyArtifact.getGroupId())) {
-                dummyArtifact.setGroupId(mainAttributes.getValue("Bundle-SymbolicName"));
+                // NOTE: This may not be the precise group id; setting it may result in conflicts
+                dummyArtifact.set("Alternate Group Id", mainAttributes.getValue("Bundle-SymbolicName"));
             }
 
             dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
@@ -165,31 +176,21 @@ public class JarInspector extends AbstractJarInspector {
             String artifactId = artifact.getId();
 
             if (artifactId != null) {
-                String suffix = null;
-                // cut off suffix
                 final int suffixIndex = artifactId.lastIndexOf(".");
                 if (suffixIndex > 0) {
-                    suffix = artifactId.substring(suffixIndex + 1);
                     artifactId = artifactId.substring(0, suffixIndex);
                 }
-                final int versionIndex = artifactId.lastIndexOf("-" + dummyArtifact.getVersion());
+                final int versionIndex = Math.max(
+                        artifactId.lastIndexOf("-" + dummyArtifact.getVersion()),
+                        artifactId.lastIndexOf("_" + dummyArtifact.getVersion()));
                 if (versionIndex > 0) {
                     artifactId = artifactId.substring(0, versionIndex);
                 }
-                final int groupIdIndex = artifactId.lastIndexOf(".");
-                final int groupsLength = artifactId.split("\\.").length;
-                String groupId = null;
-                String name = dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID);
-                if (groupIdIndex > 0 && groupsLength > 2) {
-                    groupId = artifactId.substring(0, groupIdIndex);
-                    dummyArtifact.setGroupId(groupId);
-                    name = artifactId.substring(groupIdIndex + 1);
-                }
+
+                // NOTE: we do not attempt to guess the groupId here; this is error-prone
+
                 dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
 
-                String purl = buildPurl(groupId, name, version, suffix);
-                dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
-                deriveQualifiers(dummyArtifact);
                 deriveQualifiers(dummyArtifact);
             }
 
@@ -232,7 +233,7 @@ public class JarInspector extends AbstractJarInspector {
                 dummyArtifact.setVersion(model.getParent().getVersion());
             }
 
-            dummyArtifact.set("Packaging", packagingToSuffix(model));
+            dummyArtifact.set("Packaging", modulePackaging(model));
 
             // NOTE: the information may not be part of the pom, but provided in the parent pom. However, if the
             // information is available, it is included in the artifact
@@ -243,8 +244,6 @@ public class JarInspector extends AbstractJarInspector {
 
             dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
-            String purl = buildPurl(model.getGroupId(), model.getArtifactId(), dummyArtifact.getVersion(), model.getPackaging());
-            dummyArtifact.set(Artifact.Attribute.PURL.getKey(), purl);
             dummyArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
             dummyArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
 
@@ -259,14 +258,9 @@ public class JarInspector extends AbstractJarInspector {
         return dummyArtifact;
     }
 
-    private String packagingToSuffix(Model model) {
+    private String modulePackaging(Model model) {
         if (model.getPackaging() == null) return "jar";
-        switch (model.getPackaging()) {
-            case "pom":
-                return "pom";
-            default:
-                return "jar";
-        }
+        return model.getPackaging();
     }
 
     private void deriveQualifiers(Artifact dummyArtifact) {
@@ -383,12 +377,11 @@ public class JarInspector extends AbstractJarInspector {
                 Artifact collectorWithVersion = qualifierArtifactMap.get(qualifier);
                 Artifact collectorNoVersion = qualifierArtifactMap.get(qualifierNoVersion);
 
-                if (collectorWithVersion != null || collectorNoVersion != null) {
-                    // already covered; do nothing
-                } else {
+                if (collectorWithVersion == null && collectorNoVersion == null) {
                     qualifierArtifactMap.put(qualifier, candidate);
                     qualifierArtifactMap.put(qualifierNoVersion, candidate);
                 }
+                // else branch already covered; do nothing
             }
         }
 
@@ -413,7 +406,7 @@ public class JarInspector extends AbstractJarInspector {
         // match against filename:
         //  strict matching. we find artifact ids and versions.
         //  we check and apply only when one of the following checks succeed:
-        //  - either the filename matches "<artifactId>-<version>-<classifier(s)>.jar
+        //  - either the filename matches "<artifactId>-<version>-<classifier(s)>.jar"
         //  - or it matches               "<artifactId>-<version>.jar"
         //  - or it matches               "<artifactId>.jar"
         //  - or it matches               "<groupId>.<artifactId>-<version>.jar"
@@ -427,9 +420,9 @@ public class JarInspector extends AbstractJarInspector {
         }
 
         final Pattern pattern1 = Pattern.compile(
-                ".*[\\.]{0,1}" +    // filter groupid or any other prefix; <artifactId>-<version> is enought evidence
+          ".*\\.?" +    // filter groupId or any other prefix; <artifactId>-<version> is enough evidence
                 Pattern.quote(dummyArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" + dummyArtifact.getVersion()) +
-                "[-\\._].*");
+                "[-._].*");
         if (pattern1.matcher(fileName).matches()) {
             return true;
         }
@@ -460,18 +453,13 @@ public class JarInspector extends AbstractJarInspector {
     }
 
     protected boolean conflictsWithEachOther(Collection<Artifact> toCheck) {
-        Set<String> foundArtifactIds = new HashSet<>();
         Set<String> foundGroupIds = new HashSet<>();
         Set<String> foundVersions = new HashSet<>();
 
         for (Artifact checking : toCheck) {
-            String currentArtifactId = checking.get(ATTRIBUTE_KEY_ARTIFACT_ID);
             String currentGroupId = checking.getGroupId();
             String currentVersion = checking.getVersion();
 
-            if (StringUtils.isNotBlank(currentArtifactId)) {
-                foundArtifactIds.add(currentArtifactId);
-            }
             if (StringUtils.isNotBlank(currentGroupId)) {
                 foundGroupIds.add(currentGroupId);
             }
@@ -495,7 +483,7 @@ public class JarInspector extends AbstractJarInspector {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        // enforce all of artifactid, version and groupid being non-null for filling to kick in
+        // enforce all of artifactId, version and groupId being non-null for filling to kick in
         final List<Artifact> accepted = new ArrayList<>();
         final List<Artifact> notAccepted = new ArrayList<>();
         for (Artifact dummyArtifact : dummyArtifacts) {
@@ -518,7 +506,7 @@ public class JarInspector extends AbstractJarInspector {
             addError(artifact, "Detected information conflicts with each other.");
         }
 
-        if (accepted.size() > 0) {
+        if (!accepted.isEmpty()) {
             // on match (accepted and no conflicts): insert info into artifact
             if (!conflictsWithOriginal && !conflictsWithEachOther) {
                 for (final Artifact newData : accepted) {
@@ -535,7 +523,6 @@ public class JarInspector extends AbstractJarInspector {
         }
 
         // otherwise: no pom found; ignore
-
         return notAccepted;
     }
 
@@ -561,14 +548,23 @@ public class JarInspector extends AbstractJarInspector {
 
                 // mainly to satisfy the tests
                 artifact.setArtifactId(null);
+
+                deriveVersionIfNotSet(artifact);
+
                 artifact.deriveArtifactId();
+
+                if (StringUtils.isEmpty(artifact.get(Artifact.Attribute.PURL.getKey()))) {
+                    final int suffixIndex = artifact.getId().lastIndexOf(".");
+                    final String suffix = (suffixIndex == -1) ? null : artifact.getId().substring(suffixIndex + 1);
+                    String purl = buildPurl(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), suffix);
+                    artifact.set(Artifact.Attribute.PURL.getKey(), purl);
+                }
+
             } catch (Exception e) {
                 // log error and carry on
                 addError(artifact, "Error while running " + this.getClass().getSimpleName());
-                LOG.error("Error while running "
-                        + this.getClass().getSimpleName()
-                        + " on artifact '" + artifact + "':"
-                        + e.getMessage());
+                LOG.error("Failure while running [{}] on artifact [{}]: {}",
+                        this.getClass().getSimpleName(), artifact.deriveQualifier(), e.getMessage());
             }
         }
 
@@ -578,6 +574,37 @@ public class JarInspector extends AbstractJarInspector {
 
         InventoryUtils.removeAssetAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
         InventoryUtils.removeAssetAttribute(ATTRIBUTE_KEY_INSPECTION_SOURCE, inventory);
+    }
+
+    private void deriveVersionIfNotSet(Artifact artifact) {
+        if (StringUtils.isEmpty(artifact.getVersion())) {
+
+            String id = artifact.getId();
+            if (StringUtils.isNotEmpty(id)) {
+                int lastDotIndex = id.lastIndexOf(".");
+                int lastSeparatorIndex = Math.max(id.lastIndexOf("-"), id.lastIndexOf("_"));
+                if (lastSeparatorIndex != -1 && lastDotIndex > lastSeparatorIndex) {
+                    String candidateVersion = id.substring(lastSeparatorIndex + 1, lastDotIndex);
+
+                    if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+")) {
+                        artifact.setVersion(candidateVersion);
+                    } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.Final")) {
+                        artifact.setVersion(candidateVersion);
+                    } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.FINAL")) {
+                        artifact.setVersion(candidateVersion);
+                    } else if (candidateVersion.matches("\\d+\\.\\d+.\\d+\\.RELEASE")) {
+                        artifact.setVersion(candidateVersion);
+                    } else if (candidateVersion.matches("\\d+\\.\\d+")) {
+                        artifact.setVersion(candidateVersion);
+                    } else if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+.\\d+")) {
+                        artifact.setVersion(candidateVersion);
+                    } else if (candidateVersion.matches("\\d+\\.\\d+\\.\\d+.\\d+.\\d+")) {
+                        artifact.setVersion(candidateVersion);
+                    }
+                }
+            }
+
+        }
     }
 
     // TODO: special steps to take for artifacts added in this fashion? maybe write a separate Inspector for this?
@@ -650,10 +677,14 @@ public class JarInspector extends AbstractJarInspector {
     }
 
     private String buildPurl(String namespace, String name, String version, String type) {
-        if (namespace == null || name == null || version == null || type == null) {
-            return null;
+        if (namespace != null && name != null && version != null) {
+            if (StringUtils.isBlank(type)) {
+                return String.format("pkg:maven/%s/%s@%s", namespace, name, version);
+            } else {
+                return String.format("pkg:maven/%s/%s@%s?type=%s", namespace, name, version, type);
+            }
         }
-        return String.format("pkg:maven/%s/%s@%s?type=%s", namespace, name, version, type);
+        return null;
     }
 
 }

@@ -94,7 +94,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         Artifact fromBuildInfoProperties = null;
         if (buildPropertiesInfoFile != null) {
             try (InputStream in = Files.newInputStream(buildPropertiesInfoFile.toPath())) {
-                fromBuildInfoProperties = getArtifactFromBuildInfoProperties(artifact, in, relativeAnchorPath);
+                fromBuildInfoProperties = getArtifactFromBuildInfoProperties(artifact, in);
             } catch (IOException ignored) {
             }
         }
@@ -103,6 +103,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         mergeArtifact(artifact, fromXml);
         mergeArtifact(artifact, fromProperties);
         mergeArtifact(artifact, fromManifest);
+
         mergeArtifact(artifact, fromBuildInfoProperties);
 
         final boolean isManifestAnchor = (virtualRootPath + "/META-INF/MANIFEST.MF").equalsIgnoreCase(relativeAnchorPath);
@@ -169,7 +170,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         return Collections.singletonList(componentPatternData);
     }
 
-    private Artifact getArtifactFromBuildInfoProperties(Artifact artifact, InputStream in, String relativeAnchorPath) throws IOException {
+    private Artifact getArtifactFromBuildInfoProperties(Artifact artifact, InputStream in) throws IOException {
         final Properties p = new Properties();
         p.load(in);
 
