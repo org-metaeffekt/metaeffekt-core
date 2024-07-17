@@ -62,7 +62,7 @@ public class NordeckAppComponentPatternContributor extends ComponentPatternContr
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, "nordeck-application-$NORDECK_APPLICATION_VERSION");
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
-            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*");
+            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 
             componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "nordeck-app");
