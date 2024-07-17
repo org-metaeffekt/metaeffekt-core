@@ -106,15 +106,13 @@ public class ComponentPatternContributorRunner {
                     final Pattern pattern = convertWildcardPatternToRegex(suffixEntry.getKey());
                     final Matcher matcher = pattern.matcher(lowercasedPathInContext);
                     if (matcher.find()) {
-                        for (ComponentPatternContributor contributor : suffixEntry.getValue()) {
-                            if (contributor.applies(relativeAnchorFilePath)) {
-                                try {
-                                    List<ComponentPatternData> componentPatterns = contributor.contribute(
-                                            baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
-                                    results.addAll(componentPatterns);
-                                } catch (Exception e) {
-                                    LOG.error("Contributor threw exception. Make contributor more robust.", e);
-                                }
+                        for (ComponentPatternContributor contributor : collect) {
+                            try {
+                                List<ComponentPatternData> componentPatterns = contributor.contribute(
+                                        baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+                                results.addAll(componentPatterns);
+                            } catch (Exception e) {
+                                LOG.error("Contributor threw exception. Make contributor more robust.", e);
                             }
                         }
                     }
