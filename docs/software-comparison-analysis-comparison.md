@@ -7,6 +7,7 @@ other tools including Syft.
 | Supported Ecosystem                               | metæffekt   | Syft   |
 |---------------------------------------------------|-------------|--------|
 | Alpine (apk)                                      | ✓           | ✓      |
+| Bitnami Components                                | ✓           | x      |
 | C (Conan)                                         | ✓           | ✓      |
 | C++ (Conan)                                       | ✓           | ✓      |
 | Dart (pubs)                                       | ✓           | ✓      |
@@ -28,8 +29,8 @@ other tools including Syft.
 | Jetty (version.txt)                               | ✓           | ✗      |
 | Linux kernel archives (vmlinz)                    | ✓           | ✓      |
 | Linux kernel modules (ko)                         | ✓           | ✓      |
-| Maven-based Source Projects (pom.xml)             | ✗ (planned) | ✗      |
-| .msi files                                        | ✗ (planned) | ✗      |
+| Maven-based Source Projects (pom.xml)             | ✗ (initial) | ✗      |
+| .msi/.cab/.exe files                              | ✓           | ✗      |
 | Nix (outputs in /nix/store)                       | ✗           | ✓      |
 | Nextcloud (appinfo/info.xml)                      | ✓           | ✗      |
 | Node Runtime (node_version.h)                     | ✓           | ✗      |
@@ -48,5 +49,5 @@ other tools including Syft.
 | Web Application (web.xml)                         | ✓           | ✗      |
 | Wordpress plugins                                 | ✗           | ✓      |
 | XWikiExtension (.xed)                             | ✓           | ✗      |
-| **Total included**                                | **30**      | **29** |
-| **Total missing**                                 | **13**      | **13** |
+| **Total included**                                | **32**      | **29** |
+| **Total missing**                                 | **12**      | **14** |
