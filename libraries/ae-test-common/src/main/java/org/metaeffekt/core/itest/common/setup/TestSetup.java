@@ -42,4 +42,6 @@ public interface TestSetup {
 
     TestSetup setSha256Hash(String sha256);
 
+    String getScanFolder();
+
 }

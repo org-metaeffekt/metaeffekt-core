@@ -131,9 +131,13 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                             processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                             includePatterns = new StringJoiner(",");
                         } else {
-                            // FIXME: collect only package-specific folders
                             LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
-                            processCollectedData(components, packageName, version, architecture, "**/*", virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
+                            // FIXME: collect only package-specific folders
+                            // FIXME: check names of folder (distribution-specific)
+                            includePatterns.add("usr/share/doc/" + packageName + "/**/*");
+                            includePatterns.add("usr/share/licenses/" + packageName + "/**/*");
+                            includePatterns.add("usr/share/man/" + packageName + "/**/*");
+                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                         }
                     }
                     packageName = null;

@@ -35,6 +35,8 @@ import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportConta
 
 public class NuGetTest extends AbstractCompositionAnalysisTest {
 
+    // TODO: convert this test to inventory test, but first we have to find a fitting file for that
+
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
         String path = exportContainerFromRegistryByRepositoryAndTag(null, "mrjamiebowman/nuget-server-windows-server-core", null, NuGetTest.class.getName());

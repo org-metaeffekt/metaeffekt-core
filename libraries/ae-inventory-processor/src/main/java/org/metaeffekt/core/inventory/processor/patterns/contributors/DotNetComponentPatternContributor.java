@@ -120,8 +120,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
                 addComponent(components, packageName, version, relativeAnchorPath, anchorChecksum);
             }
         } catch (Exception e) {
-            // FIXME: adjust to contributor logging and exception handling convention
-            LOG.warn("Failure processing project file", e);
+            LOG.warn("Could not process project file", e);
         }
     }
 

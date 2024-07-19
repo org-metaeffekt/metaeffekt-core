@@ -13,12 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.inspector;
+package org.metaeffekt.core.itest.analysis.metadata;
 
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.inspector.RpmMetadataInspector;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
+import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Collections;
@@ -26,14 +33,35 @@ import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
-public class RpmInspectorTest {
-    private final File projectDir = new File("src/test/resources/rpm-inspector");
+public class RpmMetadataInspectorTest extends AbstractCompositionAnalysisTest {
 
-    @Ignore // please do not commit / use local binaries; move test to resolver or integration tests
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+    @BeforeClass
+    public static void prepare() {
+        testSetup = new UrlBasedTestSetup()
+                .setSource("https://vault.centos.org/8.4.2105/BaseOS/x86_64/os/Packages/krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm")
+                .setSha256Hash("3872004a25e644440c65cc1501614926a185831e1415248bd0d7871fe1648476")
+                .setName(RpmMetadataInspectorTest.class.getName());
+    }
+
+    @Ignore
     @Test
-    public void example() {
-        File testRpm = new File("git-2.45.2-2.fc40.x86_64.rpm");
+    public void clear() throws Exception {
+        Assert.assertTrue(testSetup.clear());
 
+    }
+
+    @Ignore
+    @Test
+    public void analyse() throws Exception {
+        Assert.assertTrue(testSetup.rebuildInventory());
+    }
+
+    @Test
+    public void testInspector() throws Exception {
+        File projectDir = new File(testSetup.getScanFolder());
+        File testRpm = new File("krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm");
         String rpmPath = testRpm.getPath();
         Artifact artifact = new Artifact();
         artifact.setId(rpmPath);
@@ -51,7 +79,7 @@ public class RpmInspectorTest {
         inspector.run(inventory, properties);
 
         // should have extracted
-        assertEquals("git-2.45.2-2.fc40.x86_64.rpm", artifact.getId());
-        assertEquals(projectDir.getPath() + "/git-2.45.2-2.fc40.x86_64.rpm", artifact.getPathInAsset());
+        assertEquals("krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm", artifact.getId());
+        assertEquals(projectDir.getPath() + "/krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm", artifact.getPathInAsset());
     }
 }

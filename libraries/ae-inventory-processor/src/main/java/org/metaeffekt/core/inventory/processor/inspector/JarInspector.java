@@ -556,7 +556,7 @@ public class JarInspector extends AbstractJarInspector {
                 if (StringUtils.isEmpty(artifact.get(Artifact.Attribute.PURL.getKey()))) {
                     final int suffixIndex = artifact.getId().lastIndexOf(".");
                     final String suffix = (suffixIndex == -1) ? null : artifact.getId().substring(suffixIndex + 1);
-                    String purl = buildPurl(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), suffix);
+                    String purl = buildPurl(artifact.getGroupId(), extractPackageName(artifact.getArtifactId()), artifact.getVersion(), suffix);
                     artifact.set(Artifact.Attribute.PURL.getKey(), purl);
                 }
 
@@ -718,6 +718,16 @@ public class JarInspector extends AbstractJarInspector {
             } else {
                 return String.format("pkg:maven/%s/%s@%s?type=%s", namespace, name, version, type);
             }
+        }
+        return null;
+    }
+
+    private String extractPackageName(String path) {
+        String[] parts = path.split("\\.");
+        if (parts.length > 1) {
+            return parts[parts.length - 1];
+        } else if (parts.length == 1) {
+            return parts[0];
         }
         return null;
     }

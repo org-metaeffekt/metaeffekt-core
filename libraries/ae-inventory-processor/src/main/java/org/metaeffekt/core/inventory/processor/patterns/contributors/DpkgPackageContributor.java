@@ -427,7 +427,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
 
-        fileJoiner.add("usr/share/doc/" + entry.packageName + "/**");
+        fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
+        fileJoiner.add("usr/share/" + entry.packageName + "/**/*");
+        fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
+        if ("tzdata".equals(entry.packageName)) {
+            fileJoiner.add("usr/share/zoneinfo/**/*");
+        }
 
         return fileJoiner;
     }
@@ -590,7 +595,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 checksum, entry, md5sumsFile);
 
         ComponentPatternData cpd = createComponentPattern(
-                baseDir.toPath().relativize(md5sumsFile.toPath()).toString(),
+                virtualRoot.toPath().relativize(md5sumsFile.toPath()).toString(),
                 entry,
                 checksum,
                 includesJoiner.toString()
