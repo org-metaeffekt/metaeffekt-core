@@ -131,6 +131,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                             processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                             includePatterns = new StringJoiner(",");
                         } else {
+                            // FIXME: collect only package-specific folders
                             LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
                             processCollectedData(components, packageName, version, architecture, "**/*", virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                         }

@@ -109,6 +109,8 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                         LOG.warn("Could not include patterns for rpm-package: [{}]", packageInfo.getName());
 
                         // NOTE: never add **/*; only add files which may contribute to the package from known locations
+                        // FIXME: check names of folder (distribution-specific)
+                        sj.add("usr/share/doc/" + packageInfo.getName() + "/**/*");
                         sj.add("usr/share/licenses/" + packageInfo.getName() + "/**/*");
                         sj.add("usr/share/man/**/" + packageInfo.getName() + "*");
                     }
