@@ -19,12 +19,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.ID_MISMATCHING_VERSION;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class MsiPackageTest extends AbstractCompositionAnalysisTest {
 
@@ -33,8 +36,8 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
-                .setSource("https://www.exemsi.com/downloads/packages/SumatraPDF/SumatraPDF-2.1.1-install.msi")
-                .setSha256Hash("3d7c02cd3825fd481d1907aae2e3d5505f28b2f19db48efd3ed41f26354d73a6")
+                .setSource("https://swupdate.openvpn.org/community/releases/OpenVPN-2.6.11-I002-x86.msi")
+                .setSha256Hash("69b5ed2cc34df93d4388e051a75f84910551160c60b5023b66554486284a85b9")
                 .setName(MsiPackageTest.class.getName());
     }
 
@@ -51,14 +54,10 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-    //TODO
-    @Ignore
     @Test
-    public void versionMismatch() {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts(ID_MISMATCHING_VERSION)
-                .logList("Type")
-                .assertEmpty();
+    public void testCompositionComponentPattern() throws Exception {
+        final Inventory inventory = testSetup.getInventory();
+        Analysis analysis = new Analysis(inventory);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).hasSizeOf(6);
     }
-
 }

@@ -42,7 +42,7 @@ public class GenericVersionFileComponentPatternContributor extends ComponentPatt
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("version.txt") && !pathInContext.contains(".rsrc");
+        return pathInContext.endsWith("version.txt") && !pathInContext.contains(".rsrc"); // TODO: check if libs_version.txt is a valid file and if it should be included
     }
 
     @Override

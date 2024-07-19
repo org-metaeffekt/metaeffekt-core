@@ -568,7 +568,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new DotNetComponentPatternContributor());
         contributorRunnerBuilder.add(new PubComponentPatternContributor());
         contributorRunnerBuilder.add(new CocoapodsComponentPatternContributor());
-        contributorRunnerBuilder.add(new MixComponentPatternContributor());
+        contributorRunnerBuilder.add(new HexComponentPatternContributor());
         contributorRunnerBuilder.add(new ExeComponentPatternContributor());
         contributorRunnerBuilder.add(new BitnamiComponentPatternContributor());
         contributorRunnerBuilder.add(new GenericVersionFileComponentPatternContributor());

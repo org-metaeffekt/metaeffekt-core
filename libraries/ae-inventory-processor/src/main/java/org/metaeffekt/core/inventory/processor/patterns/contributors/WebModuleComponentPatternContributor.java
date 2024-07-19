@@ -94,7 +94,6 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             } else {
                 artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
             }
-
         } catch (IOException e) {
             // it was an attempts
             LOG.warn("Unable to parse web module parts: " + e.getMessage(), e);

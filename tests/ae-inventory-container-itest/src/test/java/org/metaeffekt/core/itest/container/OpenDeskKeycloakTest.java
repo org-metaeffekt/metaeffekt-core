@@ -27,10 +27,9 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PURL;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
 public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
@@ -61,9 +60,8 @@ public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(TYPE, "dpkg-package")).hasSizeOf(119);
-        analysis.selectArtifacts(tokenStartsWith(TYPE, "package")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(TYPE, "jar-manifest-component")).hasSizeOf(367);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(121);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(394);
         analysis.selectArtifacts(containsToken(PURL, "pkg:maven/org.jboss.resteasy/resteasy-client@6.2.5.Final?type=jar")).assertNotEmpty();
     }
 }

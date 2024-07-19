@@ -43,6 +43,7 @@ public abstract class AbstractTestSetup implements TestSetup {
         return TestConfig.getDownloadFolder() + myDir;
     }
 
+    @Override
     public String getScanFolder() {
         return TestConfig.getScanFolder() + myDir;
     }
