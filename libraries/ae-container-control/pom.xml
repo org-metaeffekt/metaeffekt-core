@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-libraries</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.116.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -35,8 +35,40 @@
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>knative-client</artifactId>
-            <version>6.10.0</version>
+            <version>6.13.1</version>
         </dependency>
+
+        <!-- manage jackson version -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

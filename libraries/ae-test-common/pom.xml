@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-libraries</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.116.0</version>
     </parent>
 
     <artifactId>ae-test-common</artifactId>
