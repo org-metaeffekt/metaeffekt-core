@@ -59,6 +59,6 @@ public class HexTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "mix")).hasSizeOf(22);
     }
 }
