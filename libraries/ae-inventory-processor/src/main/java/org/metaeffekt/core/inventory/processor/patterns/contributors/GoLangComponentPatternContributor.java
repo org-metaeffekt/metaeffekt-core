@@ -94,9 +94,10 @@ public class GoLangComponentPatternContributor extends ComponentPatternContribut
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, moduleName + "-" + version);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, moduleName + "/**/*");
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, GOLANG_PACKAGE_TYPE);
+        cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
         cpd.set(Artifact.Attribute.PURL, buildPurl(moduleName, version));
 
         components.add(cpd);

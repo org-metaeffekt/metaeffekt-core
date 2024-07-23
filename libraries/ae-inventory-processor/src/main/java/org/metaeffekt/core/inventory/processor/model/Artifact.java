@@ -334,6 +334,9 @@ public class Artifact extends AbstractModelBase {
                 } else if (id.endsWith(DELIMITER_UNDERSCORE)) {
                     // underscore are the delimiter e.g. when dealing with osgi bundles
                     id = id.substring(0, id.length() - 1);
+                } else if (id.endsWith(Character.toString(DELIMITER_DOT))) {
+                    // dot is the delimiter e.g. when dealing with maven artifacts
+                    id = id.substring(0, id.length() - 1);
                 }
                 if (StringUtils.isNotBlank(id)) {
                     return id;
