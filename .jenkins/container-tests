@@ -1,0 +1,16 @@
+pipeline {
+    agent any
+    tools {
+        maven 'maven-3.9.6'
+        jdk 'ZULU8'
+    }
+    stages {
+        stage('Build with container-test profile') {
+            steps {
+                withMaven(maven: 'maven-3.9.6') {
+                    sh 'mvn -B clean install -Prun-container-tests'
+                }
+            }
+        }
+    }
+}
