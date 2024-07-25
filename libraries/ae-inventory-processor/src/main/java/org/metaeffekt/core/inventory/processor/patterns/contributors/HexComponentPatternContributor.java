@@ -113,7 +113,7 @@ public class HexComponentPatternContributor extends ComponentPatternContributor 
                         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, dependency + "-" + depVersion);
                         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
                         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, dependency + "/**/*");
+                        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/hexpm/" + dependency + "/**/*");
                         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
                         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MIX_PACKAGE_TYPE);
                         cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
@@ -131,7 +131,7 @@ public class HexComponentPatternContributor extends ComponentPatternContributor 
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, packageName + "/**/*");
+                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "/**/" + packageName + "/**/*");
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MIX_PACKAGE_TYPE);
                     cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);

@@ -100,7 +100,7 @@ public class MavenCentralGroupIdProcessor extends AbstractMavenCentralProcessor 
             return;
         }
 
-        String artifactId = artifact.extractArtifactId(id, version);
+        String artifactId = artifact.extractArtifactId(id, version, null);
 
         if (!StringUtils.isNotBlank(artifactId)) {
             return;

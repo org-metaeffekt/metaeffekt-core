@@ -306,7 +306,7 @@ public class Artifact extends AbstractModelBase {
 
     public void deriveArtifactId() {
         if (artifactId == null) {
-            String artifactId = extractArtifactId(getId(), getVersion());
+            String artifactId = extractArtifactId(getId(), getVersion(), getGroupId());
             if (artifactId == null) {
                 artifactId = getId();
             }
@@ -324,18 +324,22 @@ public class Artifact extends AbstractModelBase {
      * @param version The version of the artifact.
      * @return The derived artifact id or null, in case the version is not part of the file component.
      */
-    public String extractArtifactId(String id, String version) {
+    public String extractArtifactId(String id, String version, String groupId) {
         if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(version)) {
             int index = id.lastIndexOf(version);
             if (index != -1) {
                 id = id.substring(0, index);
+                if (groupId != null) {
+                    // check if id starts with groupId followed by a "."
+                    String prefix = groupId + ".";
+                    if (id.startsWith(prefix)) {
+                        id = id.substring(prefix.length());
+                    }
+                }
                 if (id.endsWith(DELIMITER_DASH)) {
                     id = id.substring(0, id.length() - 1);
                 } else if (id.endsWith(DELIMITER_UNDERSCORE)) {
                     // underscore are the delimiter e.g. when dealing with osgi bundles
-                    id = id.substring(0, id.length() - 1);
-                } else if (id.endsWith(Character.toString(DELIMITER_DOT))) {
-                    // dot is the delimiter e.g. when dealing with maven artifacts
                     id = id.substring(0, id.length() - 1);
                 }
                 if (StringUtils.isNotBlank(id)) {
