@@ -4,7 +4,7 @@ pipeline {
     }
     tools {
         maven 'maven-3.9.6'
-        jdk 'ZULU8'
+        jdk 'ZULU8_mac_mini'
     }
     stages {
         stage('Build with container-test profile') {
