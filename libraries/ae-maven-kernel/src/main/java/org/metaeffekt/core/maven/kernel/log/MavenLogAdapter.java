@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class MavenLogAdapter {
 
-    private static List<Log> LOGS = Collections.synchronizedList(new ArrayList<Log>());
+    private static List<Log> LOGS = Collections.synchronizedList(new ArrayList<>());
 
     /**
      * Initializes the {@link LogFactory} to use the {@link MavenLogAdapter}. The
