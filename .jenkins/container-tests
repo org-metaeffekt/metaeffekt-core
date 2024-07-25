@@ -15,6 +15,12 @@ pipeline {
             }
         }
 
+        stage('check docker installation') {
+            steps {
+                sh 'docker --version'
+            }
+        }
+
         stage('run-container-tests profile') {
             steps {
                 withMaven(maven: 'maven-3.9.6') {
