@@ -7,17 +7,17 @@ pipeline {
         jdk 'ZULU8_mac_mini'
     }
     stages {
+        stage('check docker installation') {
+            steps {
+                sh 'docker --version'
+            }
+        }
+
         stage('Build') {
             steps {
                 withMaven(maven: 'maven-3.9.6') {
                     sh 'mvn -B clean install -Prun-container-tests -DskipTests'
                 }
-            }
-        }
-
-        stage('check docker installation') {
-            steps {
-                sh 'docker --version'
             }
         }
 
