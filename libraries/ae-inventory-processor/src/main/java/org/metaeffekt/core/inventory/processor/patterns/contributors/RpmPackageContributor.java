@@ -105,6 +105,9 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                                 }
                             }
                         }
+                        if (sj.length() == 0) {
+                            throw new Exception("No files found for rpm-package: " + packageInfo.getName());
+                        }
                     } catch (Exception e) { // FIXME: what kind of exceptions happen here; also observed NPE
                         LOG.warn("Could not include patterns for rpm-package: [{}]", packageInfo.getName());
 
