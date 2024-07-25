@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'metaeffekt-astronaut'
+    }
     tools {
         maven 'maven-3.9.6'
         jdk 'ZULU8'
