@@ -7,10 +7,18 @@ pipeline {
         jdk 'ZULU8_mac_mini'
     }
     stages {
-        stage('Build with container-test profile') {
+        stage('Build') {
             steps {
                 withMaven(maven: 'maven-3.9.6') {
-                    sh 'mvn -B clean install -Prun-container-tests'
+                    sh 'mvn -B clean install -DskipTests'
+                }
+            }
+        }
+
+        stage('run-container-tests profile') {
+            steps {
+                withMaven(maven: 'maven-3.9.6') {
+                    sh 'mvn test -P run-container-tests -DactivateOnly'
                 }
             }
         }
