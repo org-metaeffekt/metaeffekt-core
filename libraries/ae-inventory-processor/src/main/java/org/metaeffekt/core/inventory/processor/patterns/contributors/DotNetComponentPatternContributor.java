@@ -106,10 +106,11 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
     }
 
     private void processProjectFile(List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
+        File projectFile = new File(relativeAnchorPath);
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(new File(relativeAnchorPath));
+            Document doc = dBuilder.parse(projectFile);
             doc.getDocumentElement().normalize();
             NodeList packageNodes = doc.getElementsByTagName("PackageReference");
             for (int i = 0; i < packageNodes.getLength(); i++) {
@@ -120,7 +121,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
                 addComponent(components, packageName, version, relativeAnchorPath, anchorChecksum);
             }
         } catch (Exception e) {
-            LOG.warn("Could not process project file", e);
+            LOG.warn("Could not process project file: [{}].", projectFile.getAbsolutePath(), e);
         }
     }
 

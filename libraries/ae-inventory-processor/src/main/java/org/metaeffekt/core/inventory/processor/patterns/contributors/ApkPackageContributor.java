@@ -127,18 +127,16 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                 } else if (line.isEmpty()) {
                     // end of package block, process collected data
                     if (packageName != null && version != null && architecture != null) {
-                        if (includePatterns.length() > 0) {
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
-                            includePatterns = new StringJoiner(",");
-                        } else {
+                        if (includePatterns.length() == 0) {
                             LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
                             // FIXME: collect only package-specific folders
                             // FIXME: check names of folder (distribution-specific)
                             includePatterns.add("usr/share/doc/" + packageName + "/**/*");
                             includePatterns.add("usr/share/licenses/" + packageName + "/**/*");
                             includePatterns.add("usr/share/man/" + packageName + "/**/*");
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                         }
+                        processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
+                        includePatterns = new StringJoiner(",");
                     }
                     packageName = null;
                     version = null;
