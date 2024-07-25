@@ -10,7 +10,7 @@ pipeline {
         stage('Build') {
             steps {
                 withMaven(maven: 'maven-3.9.6') {
-                    sh 'mvn -B clean install -DskipTests'
+                    sh 'mvn -B clean install -Prun-container-tests -DskipTests'
                 }
             }
         }
