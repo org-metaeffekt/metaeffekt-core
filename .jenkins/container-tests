@@ -18,7 +18,7 @@ pipeline {
         stage('run-container-tests profile') {
             steps {
                 withMaven(maven: 'maven-3.9.6') {
-                    sh 'mvn test -P run-container-tests -DactivateOnly'
+                    sh 'mvn test -Prun-container-tests -DactivateOnly'
                 }
             }
         }
