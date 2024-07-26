@@ -25,7 +25,7 @@ pipeline {
             steps {
                 dir('tests/ae-inventory-container-itest') {
                     withMaven(maven: 'maven-3.9.6') {
-                        sh 'mvn test -Prun-container-tests -DactivateOnly'
+                        sh 'mvn test'
                     }
                 }
             }
