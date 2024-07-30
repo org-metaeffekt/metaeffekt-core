@@ -181,6 +181,7 @@ public class ArtifactUnwrapTask extends ScanTask {
         final File file = fileRef.getFile();
         artifact.setChecksum(FileUtils.computeChecksum(file));
         artifact.set(Constants.KEY_HASH_SHA256, FileUtils.computeSHA256Hash(file));
+        artifact.set(Constants.KEY_HASH_SHA1, FileUtils.computeSHA1Hash(file));
     }
 
     private static List<String> rebuildAndExtendAssetIdChain(FileRef baseDir, Artifact artifact,
