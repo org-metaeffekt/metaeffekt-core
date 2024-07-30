@@ -479,8 +479,10 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
 
         if (input.containsKey("dataSources")) {
             final String sources = input.get("dataSources").toString();
-            for (String source : sources.split(", ?")) {
-                this.addDataSourceFromSourceString(source);
+            if (StringUtils.hasText(sources)) {
+                for (String source : sources.split(", ?")) {
+                    this.addDataSourceFromSourceString(source);
+                }
             }
         }
 
