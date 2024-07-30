@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -28,18 +29,26 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
 
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/pom.xml");
+        add("/meta-inf/manifest.mf");
+        add("/meta-inf/build-info.properties");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
         pathInContext = pathInContext.toLowerCase(PATH_LOCALE);
+
+        // check for manifest
+        if (pathInContext.endsWith("/manifest.mf")) return true;
+        if (pathInContext.endsWith("/build-info.properties")) return true;
+
         return (pathInContext.contains("/meta-inf/maven/") && pathInContext.endsWith("/pom.xml"));
     }
 
@@ -52,6 +61,8 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
 
         final File pomXmlFile = FileUtils.findSingleFile(anchorParentDir, "pom.xml");
         final File pomPropertiesFile = FileUtils.findSingleFile(anchorParentDir, "pom.properties");
+        final File manifestFile = FileUtils.findSingleFile(anchorParentDir, "MANIFEST.MF");
+        final File buildPropertiesInfoFile = FileUtils.findSingleFile(anchorParentDir, "build-info.properties");
 
         final Artifact artifact = new Artifact();
 
@@ -59,7 +70,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         if (pomXmlFile != null) {
             try (InputStream in = Files.newInputStream(pomXmlFile.toPath())) {
                 fromXml = jarInspector.getArtifactFromPomXml(artifact, in, relativeAnchorPath);
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
 
@@ -67,17 +78,56 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         if (pomPropertiesFile != null) {
             try (InputStream in = Files.newInputStream(pomPropertiesFile.toPath())) {
                 fromProperties = jarInspector.getArtifactFromPomProperties(artifact, in, relativeAnchorPath);
-            } catch (IOException e) {
+            } catch (IOException ignored) {
+            }
+        }
+
+        Artifact fromManifest = null;
+        if (manifestFile != null) {
+            try (InputStream in = Files.newInputStream(manifestFile.toPath())) {
+                fromProperties = jarInspector.getArtifactFromManifest(artifact, in, relativeAnchorPath);
+            } catch (IOException ignored) {
+            }
+        }
+
+        Artifact fromBuildInfoProperties = null;
+        if (buildPropertiesInfoFile != null) {
+            try (InputStream in = Files.newInputStream(buildPropertiesInfoFile.toPath())) {
+                fromBuildInfoProperties = getArtifactFromBuildInfoProperties(artifact, in);
+            } catch (IOException ignored) {
             }
         }
 
         // cherry-pick attributes from pom / properties
         mergeArtifact(artifact, fromXml);
         mergeArtifact(artifact, fromProperties);
+        mergeArtifact(artifact, fromManifest);
+
+        mergeArtifact(artifact, fromBuildInfoProperties);
+
+        final boolean isManifestAnchor = (virtualRootPath + "/META-INF/MANIFEST.MF").equalsIgnoreCase(relativeAnchorPath);
+        final boolean isBuildInfoAnchor = (relativeAnchorPath.toLowerCase(PATH_LOCALE).endsWith("/meta-inf/build-info.properties"));
 
         final String artifactId = artifact.get(JarInspector.ATTRIBUTE_KEY_ARTIFACT_ID);
-        String id = artifactId + "-" + artifact.getVersion() + "." + artifact.get("Packaging");
-        artifact.setId(id);
+
+        if (StringUtils.isEmpty(artifact.getId())) {
+            String id = null;
+            if (artifactId == null && isManifestAnchor) {
+                id = new File(virtualRootPath).getName();
+                if (id.startsWith("[")) {
+                    id = id.substring(1, id.length() - 1);
+                }
+            } else {
+                if (artifactId != null) {
+                    id = artifactId + "-" + artifact.getVersion() + "." + deriveSuffix(artifact.get("Packaging"));
+                }
+            }
+            artifact.setId(id);
+        }
+
+        if (artifact.getId() == null) {
+            return Collections.emptyList();
+        }
 
         final File contextBaseDir = new File(baseDir, relativeAnchorPath.substring(0, relativeAnchorPath.indexOf("/META-INF/")));
 
@@ -85,7 +135,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
 
         // NOTE:  in case of a single pom the whole content is used; in case of multiple poms the include covers only
         // the groupid-covered content
-        final String includePattern = (pomFiles.length == 1) ?
+        final String includePattern = (pomFiles.length == 1) || isManifestAnchor || isBuildInfoAnchor ?
                 "**/*" :
                 "**/" + artifact.getGroupId() + "/**/*,**/" + artifactId + "/**/*";
 
@@ -106,6 +156,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 "**/*.xar" + "," +
                 "**/*.xed" + "," +
                 "**/*.so*" + "," +
+                (isManifestAnchor ? "**/maven/**/*" + "," : "") +
                 "**/*.dll");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
 
@@ -116,6 +167,41 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
 
         return Collections.singletonList(componentPatternData);
+    }
+
+    private String deriveSuffix(String packaging) {
+        if (packaging == null) return "jar";
+        if (packaging.equalsIgnoreCase("pom")) return "pom";
+        if (packaging.equalsIgnoreCase("war")) return "war";
+
+        // FIXME: support other mappings
+        return "jar";
+    }
+
+    private Artifact getArtifactFromBuildInfoProperties(Artifact artifact, InputStream in) throws IOException {
+        final Properties p = new Properties();
+        p.load(in);
+
+        final String artifactId = p.getProperty("build.artifact");
+        final String groupId = p.getProperty("build.group");
+        final String version = p.getProperty("build.version");
+
+        if (StringUtils.isEmpty(artifact.getId())) {
+            if (StringUtils.isNotEmpty(artifactId) && StringUtils.isNotEmpty(version)) {
+                artifact.setId(artifactId + "-" + version);
+            }
+        }
+        if (StringUtils.isEmpty(artifact.getComponent())) {
+            artifact.setComponent(artifactId);
+        }
+        if (StringUtils.isEmpty(artifact.getVersion())) {
+            artifact.setVersion(version);
+        }
+        if (StringUtils.isEmpty(artifact.getGroupId())) {
+            artifact.setGroupId(groupId);
+        }
+
+        return artifact;
     }
 
     @Override

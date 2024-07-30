@@ -22,13 +22,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 
@@ -37,9 +37,8 @@ public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() {
-        // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-clamav-icap@891f267a6b2a304616854ad2f013dc5d23f6f6c84d535c8b46e76d124fe39b6a-export.tar")
+                .setSource("http://ae-scanner/images/CID-clamav-icap%40891f267a6b2a304616854ad2f013dc5d23f6f6c84d535c8b46e76d124fe39b6a-export.tar")
                 .setSha256Hash("51e4d79caa561f31834b8cdd3d19f1ed85e239986f69e33b9e46b9c384eddbee")
                 .setName(ClamavIcapTest.class.getName());
     }
@@ -61,10 +60,7 @@ public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
-        componentPatterns.logListWithAllAttributes();
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(557);
-        analysis.selectComponentPatterns(tokenStartsWith(TYPE, "nodejs")).hasSizeGreaterThan(1);
-        analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
+        analysis.selectComponentPatterns(tokenStartsWith(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(33);
+        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/installed")).hasSizeGreaterThan(1);
     }
 }

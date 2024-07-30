@@ -28,7 +28,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 public class GoLangComponentPatternContributor extends ComponentPatternContributor {
@@ -51,38 +53,38 @@ public class GoLangComponentPatternContributor extends ComponentPatternContribut
 
         if (!goModFile.exists()) {
             LOG.warn("GoLang module file does not exist: {}", goModFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(goModFile.toPath(), StandardCharsets.UTF_8)) {
             processGoModFile(lines, components, relativeAnchorPath, anchorChecksum);
         } catch (Exception e) {
-            LOG.error("Error processing GoLang module file", e);
+            LOG.warn("Error processing GoLang module file", e);
         }
 
         return components;
     }
 
     private void processGoModFile(Stream<String> lines, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
-        String moduleName = null;
-        String version = null;
+        AtomicBoolean inRequireBlock = new AtomicBoolean(false);
+        Pattern pattern = Pattern.compile("^\\s*(\\S+)\\s+(\\S+).*");
 
-        for (String line : lines.collect(Collectors.toList())) {
-            if (line.startsWith("module ")) {
-                moduleName = line.substring(7).trim();
-            } else if (line.startsWith("require ")) {
-                String[] parts = line.substring(8).trim().split(" ");
-                if (parts.length == 2) {
-                    moduleName = parts[0].trim();
-                    version = parts[1].trim();
+        lines.forEach(line -> {
+            line = line.trim();
+            if (line.startsWith("require (")) {
+                inRequireBlock.set(true);
+            } else if (inRequireBlock.get() && line.startsWith(")")) {
+                inRequireBlock.set(false);
+            } else if (inRequireBlock.get()) {
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.matches()) {
+                    String fullModuleName = matcher.group(1);
+                    String version = matcher.group(2);
+                    String moduleName = extractPackageName(fullModuleName);
                     addComponent(components, moduleName, version, relativeAnchorPath, anchorChecksum);
                 }
             }
-        }
-
-        if (moduleName != null && version != null) {
-            addComponent(components, moduleName, version, relativeAnchorPath, anchorChecksum);
-        }
+        });
     }
 
     private void addComponent(List<ComponentPatternData> components, String moduleName, String version, String relativeAnchorPath, String anchorChecksum) {
@@ -110,8 +112,14 @@ public class GoLangComponentPatternContributor extends ComponentPatternContribut
         return 1;
     }
 
+    private String extractPackageName(String fullModuleName) {
+        String[] parts = fullModuleName.split("/");
+        return parts[parts.length - 1];
+    }
+
     private String buildPurl(String moduleName, String version) {
         return "pkg:golang/" + moduleName + "@" + version;
     }
 }
+
 

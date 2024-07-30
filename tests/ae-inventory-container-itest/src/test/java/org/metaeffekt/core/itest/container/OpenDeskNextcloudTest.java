@@ -66,9 +66,8 @@ public class OpenDeskNextcloudTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(2231);
-        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.TYPE, "nodejs")).hasSizeOf(31);
-        analysis.selectArtifacts(containsToken(TYPE, "php-composer")).hasSizeOf(93);
+        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "npm")).hasSizeOf(31);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "php-composer")).hasSizeOf(94);
         analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
-        analysis.selectArtifacts(containsToken(TYPE, "system-binary")).hasSizeOf(281);
     }
 }

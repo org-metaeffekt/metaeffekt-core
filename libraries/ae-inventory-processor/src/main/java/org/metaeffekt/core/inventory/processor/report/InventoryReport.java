@@ -1252,31 +1252,35 @@ public class InventoryReport {
         }
     }
 
-    public String xmlEscapeString(String string) {
+    public static String xmlEscapeString(String string) {
         return xmlEscapeNameOptionallyInsertNbsp(string, true);
     }
 
-    public String xmlEscapeDate(String string) {
+    public static String xmlEscapeDate(String string) {
         return xmlEscapeNameOptionallyInsertNbsp(string, false);
     }
 
-    public String xmlEscapeLicense(String license) {
+    public static String xmlEscapeLicense(String license) {
         return xmlEscapeNameOptionallyInsertNbsp(license, false);
     }
 
-    public String xmlEscapeArtifactId(String artifactFileId) {
+    public static String xmlEscapeArtifactId(String artifactFileId) {
         return xmlEscapeNameOptionallyInsertNbsp(artifactFileId, true);
     }
 
-    public String xmlEscapeComponentName(String componentName) {
+    public static String xmlEscapeId(String id) {
+        return StringEscapeUtils.escapeXml(id.trim());
+    }
+
+    public static String xmlEscapeComponentName(String componentName) {
         return xmlEscapeNameOptionallyInsertNbsp(componentName, true);
     }
 
-    public String xmlEscapeGAV(String gavElement) {
+    public static String xmlEscapeGAV(String gavElement) {
         return xmlEscapeNameOptionallyInsertNbsp(gavElement, true);
     }
 
-    private String xmlEscapeNameOptionallyInsertNbsp(String artifactFileId, boolean insertBreakingSpaces) {
+    private static String xmlEscapeNameOptionallyInsertNbsp(String artifactFileId, boolean insertBreakingSpaces) {
         if (artifactFileId == null) return "&nbsp;";
 
         // escape the remainder

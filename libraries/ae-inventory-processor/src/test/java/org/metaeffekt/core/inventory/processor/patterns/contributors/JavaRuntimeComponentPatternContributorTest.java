@@ -133,4 +133,25 @@ public class JavaRuntimeComponentPatternContributorTest {
         Assertions.assertThat(componentRelease).isEqualTo("8");
     }
 
+    @Test
+    public void testVariant007() {
+        File file = new File("src/test/resources/component-pattern-contributor/java-runtime-007/release");
+
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(), "release", FileUtils.computeMD5Checksum(file));
+
+        Assertions.assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+
+        final String componentPart = cpd.get(COMPONENT_PART);
+        final String componentName = cpd.get(COMPONENT_NAME);
+        final String componentVersion = cpd.get(COMPONENT_VERSION);
+        final String componentRelease = cpd.get("Release");
+
+        Assertions.assertThat(componentPart).isEqualTo("red_hat-jdk-17.0.8");
+        Assertions.assertThat(componentName).isEqualTo("Red Hat Java");
+        Assertions.assertThat(componentVersion).isEqualTo("17.0.8");
+        Assertions.assertThat(componentRelease).isEqualTo("0.7-1");
+    }
+
 }

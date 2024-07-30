@@ -39,7 +39,7 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, AlpineTest.class.getSimpleName().toLowerCase(), null, AlpineTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, AlpineTest.class.getSimpleName().toLowerCase(), "3.19.1", AlpineTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
@@ -64,7 +64,7 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(11);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(15);
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/installed")).hasSizeGreaterThan(1);
     }
 }

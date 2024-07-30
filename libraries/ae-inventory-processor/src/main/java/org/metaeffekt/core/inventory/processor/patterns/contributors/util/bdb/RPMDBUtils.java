@@ -74,7 +74,7 @@ public class RPMDBUtils {
         List<IndexEntry> dribbleIndexEntries;
 
         EntryInfo entry = ei2h(blob.getPeList().get(0));
-        int rdlen = 0;
+        int rdlen;
 
         if (entry.getTag() >= RpmConstants.RPMTAG_HEADERI18NTABLE) {
             RdlenWrapper dl = new RdlenWrapper();
@@ -631,6 +631,76 @@ public class RPMDBUtils {
                 case RpmConstants.RPMTAG_PGP:
                     pkgInfo.setPgp(parsePGPSignature(ie.getData()));
                     break;
+
+                case RpmConstants.RPMTAG_URL:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag url");
+                    }
+                    String url = new String(ie.getData()).trim();
+                    pkgInfo.setUrl("(none)".equals(url) ? "" : url);
+                    break;
+
+                case RpmConstants.RPMTAG_OS:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag os");
+                    }
+                    String os = new String(ie.getData()).trim();
+                    pkgInfo.setOs("(none)".equals(os) ? "" : os);
+                    break;
+
+                case RpmConstants.RPMTAG_GROUP:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_I18NSTRING_TYPE && ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag group");
+                    }
+                    String group = new String(ie.getData()).trim();
+                    pkgInfo.setGroup("(none)".equals(group) ? "" : group);
+                    break;
+
+                case RpmConstants.RPMTAG_DISTRIBUTION:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag distribution");
+                    }
+                    String distribution = new String(ie.getData()).trim();
+                    pkgInfo.setDistribution("(none)".equals(distribution) ? "" : distribution);
+                    break;
+
+                case RpmConstants.RPMTAG_DISTTAG:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag disttag");
+                    }
+                    String disttag = new String(ie.getData()).trim();
+                    pkgInfo.setDistTag("(none)".equals(disttag) ? "" : disttag);
+                    break;
+
+                case RpmConstants.RPMTAG_DISTURL:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag disturl");
+                    }
+                    String disturl = new String(ie.getData()).trim();
+                    pkgInfo.setDistUrl("(none)".equals(disturl) ? "" : disturl);
+                    break;
+
+                case RpmConstants.RPMTAG_PLATFORM:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag platform");
+                    }
+                    String platform = new String(ie.getData()).trim();
+                    pkgInfo.setPlatform("(none)".equals(platform) ? "" : platform);
+                    break;
+
+                case RpmConstants.RPMTAG_NEVRA:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag nevra");
+                    }
+                    pkgInfo.setNevra(new String(ie.getData()).trim());
+                    break;
+
+                case RpmConstants.RPMTAG_RPMVERSION:
+                    if (ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
+                        throw new IOException("invalid tag rpmversion");
+                    }
+                    pkgInfo.setRpmVersion(new String(ie.getData()).trim());
+                    break;
             }
         }
 
@@ -642,7 +712,7 @@ public class RPMDBUtils {
         byte[] buffer = new byte[1];
 
         r.readFully(buffer);
-        int tag = buffer[0] & 0xFF;
+        // int tag = buffer[0] & 0xFF;
         r.readFully(buffer);
         int signatureType = buffer[0] & 0xFF;
         r.readFully(buffer);

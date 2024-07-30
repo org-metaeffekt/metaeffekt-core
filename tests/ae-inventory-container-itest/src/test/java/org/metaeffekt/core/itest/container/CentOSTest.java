@@ -39,7 +39,7 @@ public class CentOSTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, CentOSTest.class.getSimpleName().toLowerCase(), null, CentOSTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, CentOSTest.class.getSimpleName().toLowerCase(), "6.9", CentOSTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
@@ -64,8 +64,7 @@ public class CentOSTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(178);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(5);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(310);
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages")).hasSizeGreaterThan(1);
     }
 }

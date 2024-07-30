@@ -94,10 +94,10 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             } else {
                 artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
             }
-
         } catch (IOException e) {
             // it was an attempts
             LOG.warn("Unable to parse web module parts: " + e.getMessage(), e);
+            return Collections.emptyList();
         }
 
         // construct component pattern
@@ -109,6 +109,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
+        componentPatternData.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, artifact.get("Module Specified License"));
 
         final String anchorParentDirName = anchorParentDir.getName();
 

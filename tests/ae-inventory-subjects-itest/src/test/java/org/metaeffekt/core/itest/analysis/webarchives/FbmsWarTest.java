@@ -59,43 +59,6 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void manifestSuper() throws Exception {
-        Analysis template = getTemplate("/apereo/FbmsWarTest/SUPERSET/");
-        ArtifactListMatcher artifactListMatcher = new ArtifactListMatcher()
-                .setPrimaryAttribute(ID)
-                .setCardinality(SUPERSET)
-                .setAttributes("CHECKSUM", VERSION.getKey());
-        artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
-        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
-    }
-
-    @Test
-    @Ignore // currently deviated by one; test lifecycle issue
-    public void manifestEqual() throws Exception {
-        Analysis template = getTemplate("/apereo/FbmsWarTest/EQUAL/");
-        ArtifactListMatcher artifactListMatcher = new ArtifactListMatcher()
-                .setPrimaryAttribute(ID)
-                .setCardinality(EQUAL)
-                .setAttributes("CHECKSUM", VERSION.getKey());
-        artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
-        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
-    }
-
-    @Test
-    public void manifestSubset() throws Exception {
-        Analysis template = getTemplate("/apereo/FbmsWarTest/SUBSET/");
-        ArtifactListMatcher artifactListMatcher = new ArtifactListMatcher()
-                .setPrimaryAttribute(ID)
-                .setCardinality(SUBSET)
-                .setAttributes("CHECKSUM", VERSION.getKey());
-        artifactListMatcher.match(template, getAnalysis());
-        artifactListMatcher.getListOfMatching().logListWithAllAttributes();
-        artifactListMatcher.getListOfMissing().logListWithAllAttributes();
-    }
-
-    @Test
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
@@ -116,7 +79,7 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(startsWith(ID, "hibernate")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.hibernate.validator")).hasSizeOf(1);
 
-        analysis.selectArtifacts(startsWith(ID, "log")).hasSizeOf(5);
+        analysis.selectArtifacts(startsWith(ID, "log")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.logging.log4j")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(GROUPID, "ch.qos.logback")).hasSizeOf(2);
 

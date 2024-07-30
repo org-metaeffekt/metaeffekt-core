@@ -31,7 +31,7 @@
         <commons.codec.version>1.15</commons.codec.version>
         <commons.collections4.version>4.4</commons.collections4.version>
         <commons.exec.version>1.3</commons.exec.version>
-        <commons.compress.version>1.26.0</commons.compress.version>
+        <commons.compress.version>1.26.1</commons.compress.version>
         <docker.java.client.version>3.3.5</docker.java.client.version>
         <!-- update to version 2.1.3 and test -->
         <dom4j.version>1.6.1</dom4j.version>
@@ -54,7 +54,7 @@
         <poi.version>5.2.4</poi.version>
         <!-- FIXME: changing to latest version required reconfiguration of binders vs providers -->
         <slf4j.version>1.7.36</slf4j.version> <!--2.0.6-->
-        <spring.framework.version>5.3.31</spring.framework.version>
+        <spring.framework.version>5.3.37</spring.framework.version>
         <!-- update to version 2 and test -->
         <velocity.version>1.7</velocity.version>
         <xalan.version>2.7.2</xalan.version>

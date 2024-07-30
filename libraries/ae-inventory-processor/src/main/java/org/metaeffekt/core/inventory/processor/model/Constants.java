@@ -71,6 +71,9 @@ public final class Constants {
     public static final String KEY_COMPONENT_SOURCE_TYPE = "Component Source Type";
     public static final String KEY_NO_MATCHING_FILE = "No Matching File";
     public static final String KEY_SOURCE_PROJECT = "Source Project";
+    public static final String KEY_SPECIFIED_PACKAGE_LICENSE = "Specified Package License";
+    public static final String KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE = "Specified Package Concluded License";
+
 
     public static final String KEY_CONTAINER = "Container";
     public static final String KEY_ISSUE = "Issue";
@@ -104,6 +107,8 @@ public final class Constants {
 
     public static final String SYSTEM_RELEASE = "system-release";
 
+    public static final String FEDORA_RELEASE = "fedora-release";
+
     public static final String PACKAGE_JSON = "package.json";
 
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
@@ -115,6 +120,8 @@ public final class Constants {
     public static final String DOT_BOWER_JSON = DOT + BOWER_JSON;
 
     public static final String DOT_PACKAGE_LOCK_JSON = DOT + PACKAGE_LOCK_JSON;
+
+    public static final String KEY_SCOPE = "Scope";
 
     protected Constants() {
     }

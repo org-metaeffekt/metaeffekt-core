@@ -51,7 +51,7 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
 
         if (!pluginFile.exists()) {
             LOG.warn("Jenkins plugin file does not exist: {}", pluginFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (JarInputStream jarInputStream = new JarInputStream(Files.newInputStream(pluginFile.toPath()))) {
@@ -67,11 +67,11 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
             } else {
                 LOG.warn("Manifest not found in plugin file: {}", pluginFile.getAbsolutePath());
             }
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing Jenkins plugin file", e);
+            LOG.warn("Error processing Jenkins plugin file", e);
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private void addComponent(List<ComponentPatternData> components, String pluginName, String pluginVersion, String relativeAnchorPath, String anchorChecksum) {

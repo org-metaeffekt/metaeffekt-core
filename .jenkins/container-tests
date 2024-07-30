@@ -1,0 +1,34 @@
+pipeline {
+    agent {
+        label 'metaeffekt-astronaut'
+    }
+    tools {
+        maven 'maven-3.9.6'
+        jdk 'ZULU8_mac_mini'
+    }
+    stages {
+        stage('check docker installation') {
+            steps {
+                sh 'docker --version'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                withMaven(maven: 'maven-3.9.6') {
+                    sh 'mvn -B clean install -Prun-container-tests -DskipTests'
+                }
+            }
+        }
+
+        stage('run-container-tests profile') {
+            steps {
+                dir('tests/ae-inventory-container-itest') {
+                    withMaven(maven: 'maven-3.9.6') {
+                        sh 'mvn test'
+                    }
+                }
+            }
+        }
+    }
+}

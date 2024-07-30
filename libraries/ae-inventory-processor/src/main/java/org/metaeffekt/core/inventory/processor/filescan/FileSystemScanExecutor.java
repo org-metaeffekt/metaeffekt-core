@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.inspector.InspectorRunner;
 import org.metaeffekt.core.inventory.processor.inspector.JarInspector;
 import org.metaeffekt.core.inventory.processor.inspector.NestedJarInspector;
+import org.metaeffekt.core.inventory.processor.inspector.RpmMetadataInspector;
 import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -33,6 +34,7 @@ import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -253,6 +255,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         // run further inspections on identified artifacts
         final InspectorRunner runner = InspectorRunner.builder()
                 .queue(JarInspector.class)
+                .queue(RpmMetadataInspector.class)
                 .build();
 
         runner.executeAll(fileSystemScanContext.getInventory(), properties);
@@ -295,6 +298,46 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         InventoryUtils.mergeDuplicateAssets(inventory);
 
+        mergeRedundantContainerArtifacts(inventory);
+    }
+
+    private void mergeRedundantContainerArtifacts(Inventory inventory) {
+        // additionally merge scanned / decomposed artifacts
+        final Set<Artifact> artifactsWithScanClassification = inventory.getArtifacts().stream()
+                .filter(a -> a.hasClassification(HINT_SCAN)).collect(Collectors.toSet());
+
+        for (Artifact scannedArtifact : artifactsWithScanClassification) {
+            final String assetId = "AID-" + scannedArtifact.getId() + "-" + scannedArtifact.getChecksum();
+
+            File pathInAsset = new File(scannedArtifact.get(Artifact.Attribute.PATH_IN_ASSET));
+            final String name = pathInAsset.getName();
+            File extractedPathInAsset = new File(pathInAsset.getParentFile(), "[" + name + "]");
+
+            String qualifier = scannedArtifact.getId() + "/" + extractedPathInAsset.getPath();
+
+            Set<Artifact> toBeDeleted = new HashSet<>();
+            for (Artifact artifact : inventory.getArtifacts()) {
+                final String q = deriveContainedArtifactQualifier(artifact);
+                if (qualifier.equals(q)) {
+                    if ("c".equalsIgnoreCase(artifact.get(assetId))) {
+                        // manage attributes that should not be merged
+                        artifact.set(assetId, null);
+                        artifact.setProjects(Collections.EMPTY_SET);
+
+                        // merge contained artifact into scanned
+                        scannedArtifact.merge(artifact);
+
+                        // collect merged sub-artifact to be deleted
+                        toBeDeleted.add(artifact);
+                    }
+                }
+            }
+            inventory.getArtifacts().removeAll(toBeDeleted);
+        }
+    }
+
+    private String deriveContainedArtifactQualifier(Artifact a) {
+        return a.getId() + "/" + a.get(Artifact.Attribute.PATH_IN_ASSET);
     }
 
     private static void addPath(Artifact a, HashSet<String> paths) {

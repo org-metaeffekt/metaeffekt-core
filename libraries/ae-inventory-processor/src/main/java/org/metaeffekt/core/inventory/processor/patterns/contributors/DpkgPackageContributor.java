@@ -329,6 +329,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
         // add list of comma-separated paths
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
+
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
+
         // get version from the entry
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
 
@@ -383,7 +386,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 // err out if the md5sum isn't an md5sum
                 if (!hexStringPattern.matcher(hash).matches()) {
                     // this was not a real hash. should never happen. means splitting failed miserably.
-                    LOG.error("Splitting failed miserably while reading line of dpkg md5sums at [{}].",
+                    LOG.error("Splitting failed while reading line of dpkg md5sums at [{}].",
                             correspondingMd5sumsFile.getAbsolutePath());
                     return;
                 }
@@ -424,7 +427,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
 
-        fileJoiner.add("usr/share/doc/" + entry.packageName + "/**");
+        fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
+        fileJoiner.add("usr/share/" + entry.packageName + "/**/*");
+        fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
+        if ("tzdata".equals(entry.packageName)) {
+            fileJoiner.add("usr/share/zoneinfo/**/*");
+        }
 
         return fileJoiner;
     }
@@ -588,7 +596,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 checksum, entry, md5sumsFile);
 
         ComponentPatternData cpd = createComponentPattern(
-                baseDir.toPath().relativize(md5sumsFile.toPath()).toString(),
+                virtualRoot.toPath().relativize(md5sumsFile.toPath()).toString(),
                 entry,
                 checksum,
                 includesJoiner.toString()
@@ -609,7 +617,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
             return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else {
-            throw new ContributorFailureException("Should never happen: identified anchor wasn't of expected type.");
+            LOG.warn("Skipping unknown dpkg file [{}].", relativeAnchorFilePath);
+            return Collections.emptyList();
         }
     }
 
@@ -623,7 +632,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return 1;
     }
 
-    private String readDistro() throws IOException {
+    // FIXME: move to separate class; consolidate with other distro parsers
+    public static String readDistro() throws IOException {
         List<Path> paths = new ArrayList<>(Arrays.asList(
                 Paths.get("/etc/os-release"),
                 Paths.get("/etc/lsb-release"),
@@ -648,19 +658,22 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                             }
                         }
                     } else if (path.endsWith(Constants.DEBIAN_VERSION)) {
-                        // Directly return "debian" if the file exists, assuming the file content isn't needed
+                        // directly return "debian" if the file exists, assuming the file content isn't needed
                         return "debian";
-                    } else if (path.endsWith(Constants.REDHAT_RELEASE) || path.endsWith(Constants.CENTOS_RELEASE) || path.endsWith(Constants.SYSTEM_RELEASE)) {
-                        // Assume the file directly contains a meaningful identifier
-                        return line.trim().split(" ")[0].toLowerCase(); // Simplistic parsing for distro name
+                    } else if (path.endsWith(Constants.REDHAT_RELEASE) || path.endsWith(Constants.CENTOS_RELEASE) || path.endsWith(Constants.SYSTEM_RELEASE) || path.endsWith(Constants.FEDORA_RELEASE)) {
+                        return line.trim().split(" ")[0].toLowerCase();
                     }
                 }
             }
         }
-        return "unknown";  // Return "unknown" only if no relevant info was found in any file
+        return null;
     }
 
     private String buildPurl(String distro, String packageName, String version, String arch) {
-        return String.format("pkg:deb/%s/%s@%s?arch=%s", distro, packageName, version, arch);
+        if (distro != null) {
+            return String.format("pkg:deb/%s/%s@%s?arch=%s", distro, packageName, version, arch);
+        }
+        return null;
     }
+
 }

@@ -159,5 +159,28 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.46.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.packagedrone</groupId>
+            <artifactId>org.eclipse.packagedrone.utils.rpm</artifactId>
+            <version>0.14.6</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.package-url</groupId>
+            <artifactId>packageurl-java</artifactId>
+            <version>1.5.0</version>
+        </dependency>
     </dependencies>
 </project>

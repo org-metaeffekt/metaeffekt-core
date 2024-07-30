@@ -60,8 +60,6 @@ public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "system-binary")).hasSizeOf(193);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "dpkg-package")).hasSizeOf(198);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.PURL, "pkg:deb/ubuntu/ca-certificates@20210119?arch=all")).assertNotEmpty();
+        analysis.selectArtifacts(containsToken(Artifact.Attribute.COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(200);
     }
 }

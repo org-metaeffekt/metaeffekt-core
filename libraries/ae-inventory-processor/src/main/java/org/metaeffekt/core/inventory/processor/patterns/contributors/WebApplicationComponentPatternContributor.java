@@ -20,6 +20,8 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +32,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
 
 public class WebApplicationComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WebApplicationComponentPatternContributor.class);
+
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/web-inf/web.xml");
     }});
@@ -89,10 +94,11 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
 
                 return Collections.singletonList(componentPatternData);
             }
+            return Collections.emptyList();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warn("Error parsing Web Application component from file: {}", relativeAnchorPath, e);
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
     @Override

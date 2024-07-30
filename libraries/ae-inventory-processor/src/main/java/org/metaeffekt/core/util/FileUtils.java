@@ -212,6 +212,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      */
     private static boolean internalMatching(String normalizedPath, String normalizedPattern) {
         if (normalizedPattern.startsWith(SEPARATOR_SLASH)) {
+            // NOTE: many patterns are in the shape **/*.<suffix> and **/<sub-path>/**/*; these could be optimized
             if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
                 return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
             } else {

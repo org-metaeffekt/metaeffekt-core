@@ -46,6 +46,15 @@ public class PackageInfo {
     private List<String> groupNames;
     private List<String> provides;
     private List<String> requires;
+    private String group;
+    private String url;
+    private String os;
+    private String distribution;
+    private String distTag;
+    private String distUrl;
+    private String platform;
+    private String nevra;
+    private String rpmVersion;
 
     // Getters and Setters
     public Integer getEpoch() {
@@ -254,6 +263,78 @@ public class PackageInfo {
 
     public void setRequires(List<String> requires) {
         this.requires = requires;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setOs(String os) {
+        this.os = os;
+    }
+
+    public String getOs() {
+        return os;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setDistribution(String distribution) {
+        this.distribution = distribution;
+    }
+
+    public String getDistribution() {
+        return distribution;
+    }
+
+    public void setDistTag(String distTag) {
+        this.distTag = distTag;
+    }
+
+    public String getDistTag() {
+        return distTag;
+    }
+
+    public void setDistUrl(String distUrl) {
+        this.distUrl = distUrl;
+    }
+
+    public String getDistUrl() {
+        return distUrl;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setNevra(String nevra) {
+        this.nevra = nevra;
+    }
+
+    public String getNevra() {
+        return nevra;
+    }
+
+    public void setRpmVersion(String rpmVersion) {
+        this.rpmVersion = rpmVersion;
+    }
+
+    public String getRpmVersion() {
+        return rpmVersion;
     }
 
     public List<String> installedFileNames() throws Exception {

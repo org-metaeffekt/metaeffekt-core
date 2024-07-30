@@ -34,7 +34,7 @@
                                         $report.xmlEscapeString($assetLicenseData.getAssetType())
                                     </entry>
                                     <entry>
-                                        <codeph>$report.xmlEscapeArtifactId($assetLicenseData.getAssetName())</codeph>
+                                        <codeph>$assetData.toAssetXref($assetLicenseData, "tpc_asset-report.dita")</codeph>
                                     </entry>
                                     <entry>
                                         <codeph>$report.xmlEscapeGAV($assetLicenseData.getAssetVersion())</codeph>

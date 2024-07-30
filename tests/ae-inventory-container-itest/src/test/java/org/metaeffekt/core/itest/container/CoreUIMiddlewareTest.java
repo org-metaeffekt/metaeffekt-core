@@ -26,13 +26,8 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
-import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
-import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
-import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.idMismatchesVersion;
-import static org.metaeffekt.core.itest.common.predicates.Not.not;
-import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
 
@@ -40,9 +35,8 @@ public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() {
-        // TODO: this has to be changed with the actual source url
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file:///home/aleyc0re/Dokumente/container-dumps/CID-core-ui-middleware@8082edf30498a3ac1715f2d9b3e406f240ea586e2616b97f40c207ef55dff11f-export.tar")
+                .setSource("http://ae-scanner/images/CID-core-ui-middleware%408082edf30498a3ac1715f2d9b3e406f240ea586e2616b97f40c207ef55dff11f-export.tar")
                 .setSha256Hash("c0e44a39a8dfd6d839a1f82c8665cd249c4c557794fce1f33fe2d45b8a0621e0")
                 .setName(CoreUIMiddlewareTest.class.getName());
     }
@@ -59,83 +53,14 @@ public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
-
-    //TODO
-    @Ignore
-    @Test
-    public void typesMustBeSetPredicate() {
-        getAnalysis()
-                .selectArtifacts(not(withAttribute(TYPE)))
-                .assertEmpty();
-    }
-
-    //TODO
-    @Ignore
-    @Test
-    public void noErrorsExist() {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts(withAttribute(ERRORS))
-                .assertEmpty();
-    }
-
-    //TODO
-    @Ignore
-    @Test
-    public void versionMismatch() {
-        getAnalysis()
-                .selectArtifacts(withAttribute(VERSION))
-                .assertNotEmpty()
-                .logList()
-                .assertEmpty(idMismatchesVersion());
-    }
-
-    @Ignore
-    @Test
-    public void testPredicatePrimitives() {
-        getAnalysis()
-                .selectArtifacts()
-                .assertEmpty(alwaysFalse())
-                .assertNotEmpty(alwaysTrue())
-                .logListWithAllAttributes()
-                .logInfo()
-                .logInfo("Typed List:")
-                .filter(withAttribute(TYPE))
-                .as("Artifact has Type")
-                .assertNotEmpty()
-                .logListWithAllAttributes();
-
-    }
-
-    @Ignore
-    @Test
-    public void namedLists() {
-        getAnalysis()
-                .selectArtifacts()
-                .logInfo("List with a Name:")
-                .filter(withAttribute(TYPE)).as("Artifact has Type")
-                .assertEmpty();
-
-    }
-
-    @Ignore
-    @Test
-    public void checkInvariants() {
-        getAnalysisAfterInvariantCheck();
-
-    }
-
-    @Ignore
     @Test
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logListWithAllAttributes();
-
         analysis.selectArtifacts().hasSizeGreaterThan(1);
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(6);
-        analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
-        analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
-        analysis.selectArtifacts(tokenStartsWith(ID, "javax")).hasSizeOf(2);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg-distroless")).hasSizeOf(9);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "node-runtime")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(163);
     }
 }

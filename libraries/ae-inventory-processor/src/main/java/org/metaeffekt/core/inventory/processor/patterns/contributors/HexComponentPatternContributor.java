@@ -33,9 +33,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MixComponentPatternContributor extends ComponentPatternContributor {
+public class HexComponentPatternContributor extends ComponentPatternContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MixComponentPatternContributor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HexComponentPatternContributor.class);
     private static final String MIX_PACKAGE_TYPE = "mix";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("mix.exs");
@@ -50,19 +50,21 @@ public class MixComponentPatternContributor extends ComponentPatternContributor 
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         File mixFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();
+        boolean inDepsBlock = false;
 
         if (!mixFile.exists()) {
             LOG.warn("Mix package file does not exist: {}", mixFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try (Stream<String> lines = Files.lines(mixFile.toPath())) {
             String packageName = null;
             String version = null;
             String repositoryUrl = null;
+            String licenses = null;
             for (String line : lines.collect(Collectors.toList())) {
-                if (line.contains("def project")) {
-                    Matcher matcher = Pattern.compile("def project\\(\\s*:\\w+,\\s*\\[\\s*name:\\s*\"([^\"]+)\"").matcher(line);
+                if (line.contains("name:")) {
+                    Matcher matcher = Pattern.compile("name:\\s*\"([^\"]+)\"").matcher(line);
                     if (matcher.find()) {
                         packageName = matcher.group(1);
                     }
@@ -70,15 +72,58 @@ public class MixComponentPatternContributor extends ComponentPatternContributor 
                     Matcher matcher = Pattern.compile("version:\\s*\"([^\"]+)\"").matcher(line);
                     if (matcher.find()) {
                         version = matcher.group(1);
+                        if ("@version".equals(version)) {
+                            version = null;
+                        }
                     }
                 } else if (line.contains("source:")) {
                     Matcher matcher = Pattern.compile("source:\\s*\\[\\s*url:\\s*\"([^\"]+)\"").matcher(line);
                     if (matcher.find()) {
                         repositoryUrl = matcher.group(1);
+                        if ("@scm_url".equals(repositoryUrl)) {
+                            repositoryUrl = null;
+                        }
                     }
+                } else if (line.contains("@version") && version == null) {
+                    Matcher matcher = Pattern.compile("@version\\s+\"([^\"]+)\"").matcher(line);
+                    if (matcher.find()) {
+                        version = matcher.group(1);
+                    }
+                } else if (line.contains("@scm_url") && repositoryUrl == null) {
+                    Matcher matcher = Pattern.compile("@scm_url\\s+\"([^\"]+)\"").matcher(line);
+                    if (matcher.find()) {
+                        repositoryUrl = matcher.group(1);
+                    }
+                } else if (line.contains("licenses:")) {
+                    Matcher matcher = Pattern.compile("licenses:\\s*\\[\\s*\"([^\"]+)\"").matcher(line);
+                    if (matcher.find()) {
+                        licenses = matcher.group(1);
+                    }
+                } else if (line.contains("defp deps do")) {
+                    inDepsBlock = true;
+                } else if (inDepsBlock && line.contains("{")) {
+                    Pattern pattern = Pattern.compile("\\{:(\\w+),\\s*\"~> ([^\"]+)\",?\\s*(.*)?}");
+                    Matcher matcher = pattern.matcher(line);
+                    if (matcher.find()) {
+                        ComponentPatternData cpd = new ComponentPatternData();
+                        String dependency = matcher.group(1);
+                        String depVersion = matcher.group(2);
+                        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, dependency);
+                        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, depVersion);
+                        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, dependency + "-" + depVersion);
+                        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+                        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+                        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+                        cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+                        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MIX_PACKAGE_TYPE);
+                        cpd.set(Artifact.Attribute.PURL, buildPurl(dependency, depVersion));
+                        components.add(cpd);
+                    }
+                } else if (inDepsBlock && line.endsWith("]")) {
+                    inDepsBlock = false;
                 }
 
-                if (packageName != null && version != null && repositoryUrl != null) {
+                if (packageName != null && version != null && repositoryUrl != null && !inDepsBlock) {
                     ComponentPatternData cpd = new ComponentPatternData();
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
@@ -88,16 +133,21 @@ public class MixComponentPatternContributor extends ComponentPatternContributor 
                     cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MIX_PACKAGE_TYPE);
+                    cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, licenses);
                     cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version));
 
                     components.add(cpd);
+                    packageName = null;
+                    version = null;
+                    repositoryUrl = null;
+                    licenses = null;
                 }
             }
+            return components;
         } catch (IOException e) {
-            LOG.error("Error reading mix file: {}", mixFile.getAbsolutePath(), e);
+            LOG.warn("Error reading mix file: {}", mixFile.getAbsolutePath());
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     @Override

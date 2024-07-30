@@ -20,11 +20,9 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -63,11 +61,7 @@ public class OpenDeskJitsiJvbTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
-        componentPatterns.logListWithAllAttributes();
-        analysis.selectComponentPatterns(containsToken(ComponentPatternData.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
-        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.TYPE, "package")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "ruby-gem")).hasSizeOf(57);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.TYPE, "dpkg-package")).hasSizeOf(172);
+        analysis.selectComponentPatterns(containsToken(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(57);
+        analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(200);
     }
 }

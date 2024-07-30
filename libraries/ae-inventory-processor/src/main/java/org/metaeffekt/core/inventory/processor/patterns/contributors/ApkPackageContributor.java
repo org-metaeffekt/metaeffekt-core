@@ -48,25 +48,31 @@ public class ApkPackageContributor extends ComponentPatternContributor {
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        File apkDbFile = new File(baseDir, relativeAnchorPath);
-        List<ComponentPatternData> components = new ArrayList<>();
-        // get path of virtual root
-        Path virtualRoot = new File(virtualRootPath).toPath();
-        Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
+        final File apkDbFile = new File(baseDir, relativeAnchorPath);
 
         if (!apkDbFile.exists()) {
-            LOG.warn("APK database file does not exist: {}", apkDbFile.getAbsolutePath());
-            return components;
+            LOG.warn("APK database file does not exist: [{}]", apkDbFile.getAbsolutePath());
+            return Collections.emptyList();
         }
 
         try (Stream<String> lineStream = Files.lines(apkDbFile.toPath(), StandardCharsets.UTF_8)) {
+
+            final List<ComponentPatternData> components = new ArrayList<>();
+
+            // get path of virtual root
+            final Path virtualRoot = new File(virtualRootPath).toPath();
+            final Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
+
             String packageName = null;
             String version = null;
             String architecture = null;
+            String license = null;
             StringJoiner includePatterns = new StringJoiner(",");
             includePatterns.add("lib/apk/db/**/*");
             String currentFolder = null;
-            for (String line : lineStream.collect(Collectors.toList())) {
+            List<String> lines = lineStream.collect(Collectors.toList());
+            for (int i = 0; i < lines.size(); i++) {
+                String line = lines.get(i);
                 if (line.startsWith("P:")) {
                     packageName = line.substring(2).trim();
                 } else if (line.startsWith("V:")) {
@@ -74,35 +80,83 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                 } else if (line.startsWith("A:")) {
                     architecture = line.substring(2).trim();
                 } else if (line.startsWith("F:")) {
-                    currentFolder = line.substring(2).trim();
-                    includePatterns.add(currentFolder);
+                    String folder = line.substring(2).trim();
+                    if (currentFolder != null && folder.contains(currentFolder)) {
+                        if (i + 1 < lines.size() && lines.get(i + 1).startsWith("R:")) {
+                            // handle the case where the next line starts with "R:"
+                            i++; // move to the next line which starts with "R:"
+                            while (i < lines.size() && lines.get(i).startsWith("R:")) {
+                                String fileName = lines.get(i).substring(2).trim();
+                                includePatterns.add(folder + "/" + fileName);
+                                currentFolder = folder;
+                                i++;
+                            }
+                            i--; // adjust the index back since the loop increment will move it forward
+                        } else {
+                            if (i + 1 < lines.size() && lines.get(i + 1).startsWith("F:") && lines.get(i + 1).contains(folder)) {
+                                // handle the case where the next line starts with "F:"
+                                i++; // move to the next line which starts with "F:"
+                                while (i < lines.size() && lines.get(i).startsWith("F:") && lines.get(i).contains(folder)) {
+                                    currentFolder = lines.get(i).substring(2).trim();
+                                    i++;
+                                }
+                                i--; // adjust the index back since the loop increment will move it forward
+                            } else {
+                                includePatterns.add(folder + "/**/*");
+                            }
+                        }
+                    } else {
+                        currentFolder = folder;
+                    }
+
                 } else if (line.startsWith("R:")) {
-                    includePatterns.add(currentFolder + "/" + line.substring(2).trim());
+                    String fileName = line.substring(2).trim();
+                    includePatterns.add(currentFolder + "/" + fileName);
+                    if (i + 1 < lines.size() && lines.get(i + 1).startsWith("R:")) {
+                        // handle the case where the next line starts with "R:"
+                        i++; // move to the next line which starts with "R:"
+                        while (i < lines.size() && lines.get(i).startsWith("R:")) {
+                            String nextFileName = lines.get(i).substring(2).trim();
+                            includePatterns.add(currentFolder + "/" + nextFileName);
+                            i++;
+                        }
+                        i--; // adjust the index back since the loop increment will move it forward
+                    }
+                } else if (line.startsWith("L:")) {
+                    license = line.substring(2).trim();
                 } else if (line.isEmpty()) {
                     // end of package block, process collected data
                     if (packageName != null && version != null && architecture != null) {
                         if (includePatterns.length() > 0) {
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
+                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                             includePatterns = new StringJoiner(",");
                         } else {
-                            LOG.warn("No include patterns found for package: {}-{}-{}", packageName, version, architecture);
-                            processCollectedData(components, packageName, version, architecture, relativeAnchorPath, virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
+                            LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
+                            // FIXME: collect only package-specific folders
+                            // FIXME: check names of folder (distribution-specific)
+                            includePatterns.add("usr/share/doc/" + packageName + "/**/*");
+                            includePatterns.add("usr/share/licenses/" + packageName + "/**/*");
+                            includePatterns.add("usr/share/man/" + packageName + "/**/*");
+                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
                         }
                     }
                     packageName = null;
                     version = null;
                     architecture = null;
                     currentFolder = null;
+                    license = null;
                 }
             }
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing APK database file", e);
+            LOG.warn("Could not process APK database file [{}]", apkDbFile.getAbsolutePath());
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
-    private void processCollectedData(List<ComponentPatternData> components, String packageName, String version, String architecture, String includePatterns, String path, String checksum) {
+    private void processCollectedData(List<ComponentPatternData> components, String packageName, String version,
+                                      String architecture, String includePatterns, String path, String checksum,
+                                      String license) {
         ComponentPatternData cpd = new ComponentPatternData();
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
@@ -110,8 +164,13 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, path);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
+        cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, license);
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, APK_PACKAGE_TYPE);
+        cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
+
+        cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
+
         cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
         components.add(cpd);
     }

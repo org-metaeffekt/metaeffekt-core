@@ -49,6 +49,9 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
                 "**/.git/**/*", "**/.git*",
                 "**/.svn/**/*", "**/.svn*",
                 "**/log/**/*",
+
+                // we should eliminate the below
+
                 "**/__pycache__/**/*", "**/__pycache__*",
                 "**/usr/lib/systemd/**/*",
                 "**/usr/lib/systemd*",

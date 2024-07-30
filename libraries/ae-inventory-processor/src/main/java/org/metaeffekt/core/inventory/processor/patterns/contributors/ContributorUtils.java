@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 public class ContributorUtils {
+
     public static String slapSquareBracketsAroundLastPathElement(String path) {
         int lastSlash = path.lastIndexOf("/");
 
@@ -29,4 +30,5 @@ public class ContributorUtils {
         // only works for one level but that might already help with a LOT of issues
         return toAddBeforeSlash + "/[" + supposedArchiveName + "]";
     }
+
 }

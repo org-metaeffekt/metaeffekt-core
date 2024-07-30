@@ -20,6 +20,8 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.PropertiesUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,10 +30,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.OTHER_LOCALE;
-import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.localeConstants.PATH_LOCALE;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.OTHER_LOCALE;
+import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
 
 public class JavaRuntimeComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JavaRuntimeComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
         add("/release");
@@ -68,10 +72,11 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
 
                 return Collections.singletonList(componentPatternData);
             }
+            return Collections.emptyList();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            LOG.warn("Failed to process release file: {}", relativeAnchorPath, e);
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
     }
 
     @Override
@@ -81,7 +86,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
 
     @Override
     public int getExecutionPhase() {
-        return 1;
+        return 2;
     }
 
     public static class ReleasedPackageData {
@@ -157,6 +162,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
         evidenceForOpenJdk |= data.implementor.toLowerCase(OTHER_LOCALE).contains("openjdk");
 
         if (StringUtils.isNotBlank(data.implementorVersion)) {
+            data.implementorVersion = data.implementorVersion.replaceAll("[()]", "");
             evidenceForOpenJdk |= data.implementor.toLowerCase(OTHER_LOCALE).contains("openjdk");
         }
 
@@ -190,6 +196,9 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
         data.componentPart += "-" + data.version;
 
         data.componentName = data.implementor + " " + prefix;
+        if (data.componentName.equals("Red Hat, Inc. Red_Hat")) {
+            data.componentName = "Red Hat Java";
+        }
     }
 
     private String parseProperty(Properties p, String key, String defaultValue) {

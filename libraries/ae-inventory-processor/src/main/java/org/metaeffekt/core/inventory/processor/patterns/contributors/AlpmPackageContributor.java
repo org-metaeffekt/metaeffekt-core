@@ -45,15 +45,16 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
-        List<ComponentPatternData> components = new ArrayList<>();
+        final File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
 
         if (!packageDir.exists() || !packageDir.isDirectory()) {
             LOG.warn("ALPM package directory does not exist: {}", packageDir.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try {
+            final List<ComponentPatternData> components = new ArrayList<>();
+
             Path virtualRoot = new File(virtualRootPath).toPath();
             Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
 
@@ -106,18 +107,18 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             }
 
             if (includePatterns.length() == 0) {
-                LOG.warn("No include patterns found for package: {}-{}-{}", packageName, version, architecture);
+                LOG.warn("No include patterns found for package: [{}]-[{}]-[{}]", packageName, version, architecture);
                 includePatterns.add(relativeAnchorPath);
             }
 
             if (packageName != null && version != null && architecture != null) {
                 processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum);
             }
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing ALPM package directory: {}", packageDir.getAbsolutePath(), e);
+            LOG.warn("Failure processing ALPM package directory [{}]: [{}]", packageDir.getAbsolutePath(), e.getMessage());
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private void processCollectedData(List<ComponentPatternData> components, String packageName, String version, String architecture, String includePatterns, String path, String checksum) {
@@ -131,6 +132,9 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, ALPM_PACKAGE_TYPE);
         cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
+
+        cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
+
         cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
         components.add(cpd);
     }

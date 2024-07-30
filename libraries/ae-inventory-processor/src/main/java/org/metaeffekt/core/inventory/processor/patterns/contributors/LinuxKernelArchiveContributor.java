@@ -52,7 +52,7 @@ public class LinuxKernelArchiveContributor extends ComponentPatternContributor {
 
         if (!kernelFile.exists()) {
             LOG.warn("Linux kernel file does not exist: {}", kernelFile.getAbsolutePath());
-            return components;
+            return Collections.emptyList();
         }
 
         try {
@@ -63,11 +63,11 @@ public class LinuxKernelArchiveContributor extends ComponentPatternContributor {
             } else {
                 LOG.warn("Kernel version not found in file: {}", kernelFile.getAbsolutePath());
             }
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing Linux kernel file", e);
+            LOG.warn("Error processing Linux kernel file", e);
+            return Collections.emptyList();
         }
-
-        return components;
     }
 
     private String extractKernelVersion(ElfFile elfFile) {

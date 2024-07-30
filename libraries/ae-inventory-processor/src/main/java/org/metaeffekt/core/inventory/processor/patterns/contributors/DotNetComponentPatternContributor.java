@@ -32,39 +32,57 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class NugetComponentPatternContributor extends ComponentPatternContributor {
+public class DotNetComponentPatternContributor extends ComponentPatternContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NugetComponentPatternContributor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DotNetComponentPatternContributor.class);
     private static final String DOTNET_PACKAGE_TYPE = "nuget";
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
-        add(".nuspec");
+        add(".csproj");
+        add(".fsproj");
+        add("packages.config");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".nuspec");
+        return pathInContext.endsWith(".csproj") || pathInContext.endsWith(".fsproj") || pathInContext.endsWith("packages.config");
     }
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        File nuspecFile = new File(baseDir, relativeAnchorPath);
+        File projectFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();
 
-        if (!nuspecFile.exists()) {
-            LOG.warn("DotNet package file does not exist: {}", nuspecFile.getAbsolutePath());
-            return components;
+        if (!projectFile.exists()) {
+            LOG.warn("Project file does not exist: {}", projectFile.getAbsolutePath());
+            return Collections.emptyList();
         }
 
         try {
-            processNuspecFile(components, relativeAnchorPath, anchorChecksum);
+            processProjectFile(components, relativeAnchorPath, anchorChecksum);
+            return components;
         } catch (Exception e) {
-            LOG.error("Error processing DotNet package file", e);
+            LOG.warn("Error processing DotNet project file", e);
+            return Collections.emptyList();
         }
+    }
 
-        return components;
+    private void addComponent(List<ComponentPatternData> components, String packageName, String version, String relativeAnchorPath, String anchorChecksum) {
+        ComponentPatternData cpd = new ComponentPatternData();
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+        cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, DOTNET_PACKAGE_TYPE);
+        cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version));
+
+        components.add(cpd);
     }
 
     private void processNuspecFile(List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
+        // TODO: review, if nuspec files always contain the necessary information
         String packageName;
         String version;
         try {
@@ -82,23 +100,28 @@ public class NugetComponentPatternContributor extends ComponentPatternContributo
                 }
             }
         } catch (Exception e) {
-            LOG.error("Error parsing .nuspec file", e);
+            // FIXME: adjust to contributor logging and exception handling convention
+            LOG.warn("Failure parsing .nuspec file", e);
         }
     }
 
-    private void addComponent(List<ComponentPatternData> components, String packageName, String version, String relativeAnchorPath, String anchorChecksum) {
-        ComponentPatternData cpd = new ComponentPatternData();
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
-        cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-        cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, DOTNET_PACKAGE_TYPE);
-        cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version));
+    private void processProjectFile(List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(new File(relativeAnchorPath));
+            doc.getDocumentElement().normalize();
+            NodeList packageNodes = doc.getElementsByTagName("PackageReference");
+            for (int i = 0; i < packageNodes.getLength(); i++) {
+                Element packageElement = (Element) packageNodes.item(i);
+                String packageName = packageElement.getAttribute("Include");
+                String version = packageElement.getAttribute("Version");
 
-        components.add(cpd);
+                addComponent(components, packageName, version, relativeAnchorPath, anchorChecksum);
+            }
+        } catch (Exception e) {
+            LOG.warn("Could not process project file", e);
+        }
     }
 
     @Override

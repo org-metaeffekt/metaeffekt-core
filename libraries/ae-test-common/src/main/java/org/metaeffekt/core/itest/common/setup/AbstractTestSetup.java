@@ -43,6 +43,7 @@ public abstract class AbstractTestSetup implements TestSetup {
         return TestConfig.getDownloadFolder() + myDir;
     }
 
+    @Override
     public String getScanFolder() {
         return TestConfig.getScanFolder() + myDir;
     }
@@ -81,8 +82,7 @@ public abstract class AbstractTestSetup implements TestSetup {
 
     @Override
     public boolean rebuildInventory() throws Exception {
-        return load(false) &&
-                inventorize(true);
+        return load(false) && inventorize(true);
     }
 
     @Override
@@ -110,8 +110,8 @@ public abstract class AbstractTestSetup implements TestSetup {
     }
 
     @Override
-    public TestSetup setReferenceInventory(String referenceinventory) {
-        this.referenceInventory = referenceinventory;
+    public TestSetup setReferenceInventory(String referenceInventory) {
+        this.referenceInventory = referenceInventory;
         return this;
     }
 

@@ -29,8 +29,6 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
