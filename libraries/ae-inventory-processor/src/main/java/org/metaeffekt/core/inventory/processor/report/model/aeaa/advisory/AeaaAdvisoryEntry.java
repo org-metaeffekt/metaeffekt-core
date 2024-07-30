@@ -19,6 +19,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.*;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
 import org.metaeffekt.core.security.cvss.processor.CvssVectorSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         addAll(Arrays.asList(
                 AdvisoryMetaData.Attribute.NAME.getKey(),
                 AdvisoryMetaData.Attribute.SOURCE.getKey(),
+                AdvisoryMetaData.Attribute.SOURCE_IMPLEMENTATION.getKey(),
                 AdvisoryMetaData.Attribute.URL.getKey(),
                 AdvisoryMetaData.Attribute.TYPE.getKey(),
                 AdvisoryMetaData.Attribute.SUMMARY.getKey(),
@@ -50,7 +54,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
                 AdvisoryMetaData.Attribute.ACKNOWLEDGEMENTS.getKey(),
                 AdvisoryMetaData.Attribute.REFERENCES.getKey(),
                 AdvisoryMetaData.Attribute.KEYWORDS.getKey(),
-                AdvisoryMetaData.Attribute.REFERENCED_IDS.getKey(),
                 AdvisoryMetaData.Attribute.CREATE_DATE.getKey(),
                 AdvisoryMetaData.Attribute.CREATE_DATE_FORMATTED.getKey(),
                 AdvisoryMetaData.Attribute.UPDATE_DATE.getKey(),
@@ -63,8 +66,8 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
 
     protected final static Set<String> CONVERSION_KEYS_MAP = new HashSet<String>(AeaaMatchableDetailsAmbDataClass.CONVERSION_KEYS_MAP) {{
         addAll(Arrays.asList(
-                "source", "id", "url", "summary", "description", "threat", "recommendations", "workarounds",
-                "references", "acknowledgements", "keywords", "referencedIds", "createDate", "updateDate",
+                "id", "url", "summary", "description", "threat", "recommendations", "workarounds",
+                "references", "acknowledgements", "keywords", "createDate", "updateDate",
                 "cvss"
         ));
     }};
@@ -78,8 +81,11 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     protected Set<String> conversionKeysMap() {
         return CONVERSION_KEYS_MAP;
     }
-
-    protected String source;
+    /**
+     * Stores what provider this advisory originates from.<br>
+     * Must be defined on all advisory instances.
+     */
+    protected AeaaAdvisoryTypeIdentifier<?> sourceIdentifier;
 
     protected String summary;
     protected final List<AeaaDescriptionParagraph> description = new ArrayList<>();
@@ -91,48 +97,42 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     protected final Set<String> acknowledgements = new LinkedHashSet<>();
     protected final Set<AeaaReference> references = new LinkedHashSet<>();
     protected final Set<String> keywords = new LinkedHashSet<>();
-    protected final Map<AeaaContentIdentifiers, Set<String>> referencedIds = new HashMap<>();
 
     protected Date createDate;
     protected Date updateDate;
 
     private final CvssVectorSet cvssVectors = new CvssVectorSet();
 
-
     public final static Comparator<AeaaAdvisoryEntry> UPDATE_CREATE_TIME_COMPARATOR = Comparator
             .comparing(AeaaAdvisoryEntry::getUpdateDate)
             .thenComparing(AeaaAdvisoryEntry::getCreateDate);
 
-    public AeaaAdvisoryEntry(AeaaContentIdentifiers source) {
-        if (source == null || source == AeaaContentIdentifiers.UNKNOWN) {
-            this.source = AeaaContentIdentifiers.UNKNOWN_ADVISORY.name();
-            LOG.warn("[{}] source is null or unknown [{}], using [{}]", this.getClass().getSimpleName(), source, this.source);
-        } else if (source == AeaaContentIdentifiers.UNKNOWN_ADVISORY) {
-            this.source = AeaaContentIdentifiers.UNKNOWN_ADVISORY.name();
+    public AeaaAdvisoryEntry(AeaaAdvisoryTypeIdentifier<?> source) {
+        if (source == null) {
+            throw new IllegalArgumentException("Advisory source must not be null");
         } else {
-            this.source = source.name();
-            super.addDataSource(source);
+            this.sourceIdentifier = source;
         }
     }
 
-    public AeaaAdvisoryEntry(String id) {
-        this(AeaaContentIdentifiers.fromEntryIdentifier(id));
-        this.id = id;
-    }
-
-    public AeaaAdvisoryEntry(AeaaContentIdentifiers source, String id) {
+    public AeaaAdvisoryEntry(AeaaAdvisoryTypeIdentifier<?> source, String id) {
         this(source);
         this.id = id;
     }
 
-    public AeaaAdvisoryEntry(String source, String id) {
+    public void setSourceIdentifier(AeaaAdvisoryTypeIdentifier<?> source) {
         if (source == null) {
-            LOG.warn("AdvisoryEntry source is null: {}", source);
-            this.source = AeaaContentIdentifiers.UNKNOWN_ADVISORY.name();
-        } else {
-            this.source = source;
+            throw new IllegalArgumentException("Advisory source must not be null");
         }
-        this.id = id;
+        if (LOG.isDebugEnabled() && source != this.sourceIdentifier) {
+            LOG.warn("Explicitly assigned source differs from originally assigned [{}] --> [{}]", this.sourceIdentifier.toExtendedString(), source.toExtendedString());
+        }
+        this.sourceIdentifier = source;
+    }
+
+    @Override
+    public AeaaAdvisoryTypeIdentifier<?> getSourceIdentifier() {
+        return sourceIdentifier;
     }
 
     public AeaaAdvisoryEntry setSummary(String summary) {
@@ -220,58 +220,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         this.keywords.remove(keyword);
     }
 
-    public void addReferencedId(String id) {
-        if (StringUtils.hasText(id)) {
-            final AeaaContentIdentifiers type = AeaaContentIdentifiers.fromEntryIdentifier(id);
-            final String normalizedId = type.normalizeEntryIdentifier(id);
-
-            this.referencedIds.computeIfAbsent(type, k -> new LinkedHashSet<>()).add(normalizedId);
-        }
-    }
-
-    public void addReferencedIds(Collection<String> ids) {
-        ids.forEach(this::addReferencedId);
-    }
-
-    public void addReferencedIds(Map<String, Object> ids) {
-        for (Object value : ids.values()) {
-            final List<String> specificIds;
-            if (value instanceof List) {
-                specificIds = ((List<?>) value).stream().map(Object::toString).collect(Collectors.toList());
-            } else if (value instanceof String) {
-                specificIds = Collections.singletonList((String) value);
-            } else if (value instanceof JSONArray) {
-                specificIds = ((JSONArray) value).toList().stream().map(Object::toString).collect(Collectors.toList());
-            } else {
-                specificIds = Collections.emptyList();
-            }
-
-            specificIds.forEach(this::addReferencedId);
-        }
-    }
-
-    public void addReferencedIdsSpecific(Map<AeaaContentIdentifiers, Set<String>> ids) {
-        ids.forEach((k, v) -> this.referencedIds.computeIfAbsent(k, k2 -> new LinkedHashSet<>()).addAll(v));
-    }
-
-    public void addReferencedIdsString(Map<String, String> ids) {
-        ids.values().forEach(this::addReferencedId);
-    }
-
-    public void removeReferencedId(String id) {
-        final AeaaContentIdentifiers type = AeaaContentIdentifiers.fromEntryIdentifier(id);
-        final String normalizedId = type.normalizeEntryIdentifier(id);
-
-        this.referencedIds.computeIfPresent(type, (k, v) -> {
-            v.remove(normalizedId);
-            return v;
-        });
-
-        if (this.referencedIds.get(type) == null || this.referencedIds.get(type).isEmpty()) {
-            this.referencedIds.remove(type);
-        }
-    }
-
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
         setCorrectUpdateCreateDateOrder();
@@ -356,14 +304,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         return keywords;
     }
 
-    public Map<AeaaContentIdentifiers, Set<String>> getReferencedIds() {
-        return referencedIds;
-    }
-
-    public Set<String> getReferencedIds(AeaaContentIdentifiers type) {
-        return referencedIds.getOrDefault(type, Collections.emptySet());
-    }
-
     public Date getCreateDate() {
         return createDate;
     }
@@ -429,28 +369,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         throw new UnsupportedOperationException("getType() not implemented for " + this.getClass().getSimpleName());
     }
 
-    @Override
-    public AeaaContentIdentifiers getEntrySource() {
-        final AeaaContentIdentifiers determinedEntrySource = super.getEntrySource();
-        if ((determinedEntrySource == AeaaContentIdentifiers.UNKNOWN || determinedEntrySource == AeaaContentIdentifiers.UNKNOWN_ADVISORY) && this.source != null) {
-            return AeaaContentIdentifiers.findOrCreateGenericNamedAdvisory(this.source);
-        } else {
-            return determinedEntrySource;
-        }
-    }
-
-    public void setSource(String source) {
-        final AeaaContentIdentifiers inferredSource = AeaaContentIdentifiers.extractAdvisorySourceFromSourceOrName(this.getId(), source);
-        this.setSource(inferredSource);
-    }
-
-    public void setSource(AeaaContentIdentifiers source) {
-        if (LOG.isDebugEnabled() && !source.name().equals(this.source)) {
-            LOG.warn("Explicitly assigned source differs from originally assigned [{}] --> [{}]", this.source, source.name());
-        }
-        this.source = source.name();
-    }
-
     /* CVSS */
 
     public CvssVectorSet getCvssVectors() {
@@ -471,10 +389,8 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     }
 
     public static AeaaAdvisoryEntry fromAdvisoryMetaData(AdvisoryMetaData amd) {
-        final AeaaContentIdentifiers source = AeaaContentIdentifiers.extractSourceFromAdvisor(amd);
-        source.assertAdvisoryEntryClass(() -> amd.get(AdvisoryMetaData.Attribute.NAME));
-
-        return fromAdvisoryMetaData(amd, source.getAdvisoryEntryFactory());
+        final AeaaAdvisoryTypeIdentifier<?> foundType = AeaaAdvisoryTypeStore.get().fromAdvisoryMetaData(amd).getIdentifier();
+        return fromAdvisoryMetaData(amd, foundType.getAdvisoryFactory());
     }
 
     public static <T extends AeaaAdvisoryEntry> T fromInputMap(Map<String, Object> map, Supplier<T> constructor) {
@@ -484,13 +400,12 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     }
 
     public static AeaaAdvisoryEntry fromJson(JSONObject json) {
-        final AeaaContentIdentifiers source = AeaaContentIdentifiers.extractSourceFromJson(json);
-        source.assertAdvisoryEntryClass(json::toString);
-
-        return fromInputMap(json.toMap(), source.getAdvisoryEntryFactory());
+        final AeaaContentIdentifierStore.AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>> foundType = AeaaAdvisoryTypeStore.get().fromJson(json);
+        return fromJson(json, foundType.getIdentifier().getAdvisoryFactory());
     }
 
     public static <T extends AeaaAdvisoryEntry> T fromJson(JSONObject json, Supplier<T> constructor) {
+        if (json == null) return null;
         return fromInputMap(json.toMap(), constructor);
     }
 
@@ -499,6 +414,18 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         super.appendFromBaseModel(advisoryMetaData);
 
         this.setId(advisoryMetaData.get(AdvisoryMetaData.Attribute.NAME));
+
+        final String source = advisoryMetaData.get(AdvisoryMetaData.Attribute.SOURCE);
+        final String sourceImplementation = advisoryMetaData.get(AdvisoryMetaData.Attribute.SOURCE_IMPLEMENTATION);
+        if (StringUtils.hasText(source) || StringUtils.hasText(sourceImplementation)) {
+            this.setSourceIdentifier(AeaaAdvisoryTypeStore.get().fromNameAndImplementation(source, sourceImplementation));
+        } else {
+            AeaaAdvisoryTypeStore.get().fromId(this.getId()).ifPresent(inferred -> {
+                LOG.info("Inferred source identifier [{}] for advisory [{}]", inferred.toExtendedString(), this.getId());
+                setSourceIdentifier(inferred);
+            });
+        }
+
         this.setSummary(advisoryMetaData.get(AdvisoryMetaData.Attribute.SUMMARY));
         if (StringUtils.hasText(advisoryMetaData.get(AdvisoryMetaData.Attribute.DESCRIPTION))) {
             this.addDescription(AeaaDescriptionParagraph.fromJson(new JSONArray(advisoryMetaData.get(AdvisoryMetaData.Attribute.DESCRIPTION))));
@@ -529,11 +456,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
             }
         }
 
-        final String referencedIdsJsonString = advisoryMetaData.get(AdvisoryMetaData.Attribute.REFERENCED_IDS);
-        if (StringUtils.hasText(referencedIdsJsonString)) {
-            this.addReferencedIds(new JSONObject(referencedIdsJsonString).toMap());
-        }
-
         this.setCreateDate(AeaaTimeUtils.tryParse(advisoryMetaData.get(AdvisoryMetaData.Attribute.CREATE_DATE)));
         this.setUpdateDate(AeaaTimeUtils.tryParse(advisoryMetaData.get(AdvisoryMetaData.Attribute.UPDATE_DATE)));
 
@@ -548,14 +470,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         super.appendToBaseModel(amd);
 
         amd.set(AdvisoryMetaData.Attribute.NAME, id);
-
-        final String determinedSource = getEntrySource().name();
-        if (this.source != null && !this.source.equals(determinedSource)) {
-            LOG.warn("Provided advisory source is different from logically determined source: {} != {}, using {}", this.source, determinedSource, this.source);
-            amd.set(AdvisoryMetaData.Attribute.SOURCE, this.source);
-        } else {
-            amd.set(AdvisoryMetaData.Attribute.SOURCE, determinedSource);
-        }
 
         amd.set(AdvisoryMetaData.Attribute.URL, getUrl());
         amd.set(AdvisoryMetaData.Attribute.TYPE, getType());
@@ -576,9 +490,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         }
         if (!keywords.isEmpty()) {
             amd.set(AdvisoryMetaData.Attribute.KEYWORDS, new JSONArray(keywords).toString());
-        }
-        if (!referencedIds.isEmpty()) {
-            amd.set(AdvisoryMetaData.Attribute.REFERENCED_IDS, new JSONObject(referencedIds).toString());
         }
 
         if (createDate != null) {
@@ -624,9 +535,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         if (!dataClass.getKeywords().isEmpty()) {
             this.addKeywords(dataClass.getKeywords());
         }
-        if (!dataClass.getReferencedIds().isEmpty()) {
-            this.addReferencedIdsSpecific(dataClass.getReferencedIds());
-        }
 
         if (dataClass.getCreateDate() != null) {
             this.setCreateDate(dataClass.getCreateDate());
@@ -644,12 +552,27 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     public void appendFromMap(Map<String, Object> input) {
         super.appendFromMap(input);
 
-        this.setId((String) input.getOrDefault("id", null));
+        if (input.containsKey("id")) {
+            this.setId(String.valueOf(input.get("id")));
+        }
+
+        final String source = (String) input.getOrDefault("source", null);
+        final String sourceImplementation = (String) input.getOrDefault("sourceImplementation", null);
+        if (source != null || sourceImplementation != null) {
+            this.setSourceIdentifier(AeaaAdvisoryTypeStore.get().fromNameAndImplementation(source, sourceImplementation));
+        }
+
         this.setSummary((String) input.getOrDefault("summary", null));
 
-        List<AeaaDescriptionParagraph> AeaaDescriptionParagraphs = (List<AeaaDescriptionParagraph>) input.getOrDefault("description", new ArrayList<>());
-        for (AeaaDescriptionParagraph AeaaDescriptionParagraph : AeaaDescriptionParagraphs) {
-            this.addDescription(AeaaDescriptionParagraph);
+        final Object inputDescriptionParagraphs = input.getOrDefault("description", new ArrayList<>());
+        if (inputDescriptionParagraphs instanceof List) {
+            final List<AeaaDescriptionParagraph> descriptionParagraphs = (List<AeaaDescriptionParagraph>) inputDescriptionParagraphs;
+            for (AeaaDescriptionParagraph descriptionParagraph : descriptionParagraphs) {
+                this.addDescription(descriptionParagraph);
+            }
+        } else if (inputDescriptionParagraphs instanceof String) {
+            final String descriptionParagraphs = (String) inputDescriptionParagraphs;
+            this.addDescription(AeaaDescriptionParagraph.fromContent(descriptionParagraphs));
         }
 
         this.setThreat((String) input.getOrDefault("threat", null));
@@ -671,9 +594,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
             this.addKeyword(keyword);
         }
 
-        Map<String, String> referencedIds = (Map<String, String>) input.getOrDefault("referencedIds", new HashMap<>());
-        this.addReferencedIdsString(referencedIds);
-
         this.setCreateDate(AeaaTimeUtils.tryParse((String) input.getOrDefault("createDate", null)));
         this.setUpdateDate(AeaaTimeUtils.tryParse((String) input.getOrDefault("updateDate", null)));
 
@@ -688,7 +608,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         super.appendToJson(json);
 
         json.put("id", id);
-        json.put("source", getEntrySource().name());
         json.put("url", getUrl());
 
         json.put("summary", summary);
@@ -701,7 +620,6 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         json.put("references", references);
         json.put("acknowledgements", acknowledgements);
         json.put("keywords", keywords);
-        json.put("referencedIds", referencedIds);
 
         if (createDate != null) json.put("createDate", createDate.getTime());
         if (updateDate != null) json.put("updateDate", updateDate.getTime());

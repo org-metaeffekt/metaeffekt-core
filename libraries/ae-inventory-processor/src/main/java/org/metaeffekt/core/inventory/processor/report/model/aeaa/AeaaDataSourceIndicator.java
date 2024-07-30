@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,10 +36,10 @@ public class AeaaDataSourceIndicator {
 
     private final static Logger LOG = LoggerFactory.getLogger(AeaaDataSourceIndicator.class);
 
-    private final AeaaContentIdentifiers dataSource;
+    private final AeaaContentIdentifierStore.AeaaContentIdentifier dataSource;
     private final Reason matchReason;
 
-    public AeaaDataSourceIndicator(AeaaContentIdentifiers dataSource, Reason matchReason) {
+    public AeaaDataSourceIndicator(AeaaContentIdentifierStore.AeaaContentIdentifier dataSource, Reason matchReason) {
         this.dataSource = dataSource;
         this.matchReason = matchReason;
     }
@@ -47,19 +48,24 @@ public class AeaaDataSourceIndicator {
         return matchReason;
     }
 
-    public AeaaContentIdentifiers getDataSource() {
+    public AeaaContentIdentifierStore.AeaaContentIdentifier getDataSource() {
         return dataSource;
     }
 
     public JSONObject toJson() {
         return new JSONObject()
                 .put("source", dataSource.name())
+                .put("implementation", dataSource.getImplementation())
                 .put("matches", matchReason.toJson());
     }
 
     public static AeaaDataSourceIndicator fromJson(JSONObject json) {
+        final String source = json.getString("source");
+        final String implementation = json.optString("implementation", null);
+        final AeaaContentIdentifierStore.AeaaContentIdentifier parsedSource = sourceFromSourceAndImplementation(source, implementation);
+
         return new AeaaDataSourceIndicator(
-                AeaaContentIdentifiers.fromName(json.getString("source")),
+                parsedSource,
                 Reason.fromJson(json.getJSONObject("matches"))
         );
     }
@@ -94,6 +100,25 @@ public class AeaaDataSourceIndicator {
     @Override
     public String toString() {
         return "DataSourceIndicator[" + dataSource + " --> " + (matchReason == null ? "unspecified" : matchReason.toJson()) + "]";
+    }
+
+    private static AeaaContentIdentifierStore.AeaaContentIdentifier sourceFromSourceAndImplementation(String source, String implementation) {
+        final AeaaAdvisoryTypeIdentifier<?> advisoryTypeIdentifier = AeaaAdvisoryTypeStore.get().fromNameAndImplementationWithoutCreation(source, implementation);
+        if (advisoryTypeIdentifier != null) {
+            return advisoryTypeIdentifier;
+        }
+
+        final AeaaVulnerabilityTypeIdentifier<?> vulnerabilityTypeIdentifier = AeaaVulnerabilityTypeStore.get().fromNameAndImplementationWithoutCreation(source, implementation);
+        if (vulnerabilityTypeIdentifier != null) {
+            return vulnerabilityTypeIdentifier;
+        }
+
+        final AeaaOtherTypeIdentifier otherTypeIdentifier = AeaaOtherTypeStore.get().fromNameAndImplementationWithoutCreation(source, implementation);
+        if (otherTypeIdentifier != null) {
+            return otherTypeIdentifier;
+        }
+
+        return AeaaAdvisoryTypeStore.get().fromNameAndImplementationWithoutCreation(source, implementation);
     }
 
     public static class AssessmentStatusReason extends Reason {

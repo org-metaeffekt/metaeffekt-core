@@ -28,7 +28,7 @@ import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
@@ -38,6 +38,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -226,7 +227,7 @@ public class RepositoryReportTest {
 
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
-        report.addGenerateOverviewTablesForAdvisories("ALL");
+        report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.ANY_ADVISORY_FILTER_WILDCARD);
         report.getSecurityPolicy()
                 // .setIncludeVulnerabilitiesWithAdvisoryProviders(Collections.singletonList("GHSA"))
                 .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
@@ -269,13 +270,20 @@ public class RepositoryReportTest {
         report.setInventoryVulnerabilityReportSummaryEnabled(false);
         report.setInventoryVulnerabilityStatisticsReportEnabled(false);
 
-        report.addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers.CERT_FR, AeaaContentIdentifiers.CERT_SEI, AeaaContentIdentifiers.MSRC, AeaaContentIdentifiers.GHSA);
+        report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC, AeaaAdvisoryTypeStore.GHSA);
         report.getSecurityPolicy()
                 .setInsignificantThreshold(7.0f)
                 .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
                 .setIncludeAdvisoryTypes(Arrays.asList("alert", "news", "notice"))
-                .setIncludeAdvisoryProviders(Arrays.asList("CERT_FR", "CERT-SEI", "MSRC", "GHSA"))
-                .setIncludeVulnerabilitiesWithAdvisoryProviders(Arrays.asList("all"));
+                .setIncludeAdvisoryProviders(new HashMap<String, String>() {{
+                    put("CERT_FR", "");
+                    put("CERT_SEI", "");
+                    put("MSRC", "");
+                    put("GHSA", "");
+                }})
+                .setIncludeVulnerabilitiesWithAdvisoryProviders(new HashMap<String, String>() {{
+                    put("all", "");
+                }});
 
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
@@ -333,7 +341,7 @@ public class RepositoryReportTest {
 
         report.setTargetReportDir(new File(reportTarget, "report"));
 
-        report.addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers.CERT_FR, AeaaContentIdentifiers.GHSA, AeaaContentIdentifiers.CERT_SEI, AeaaContentIdentifiers.MSRC);
+        report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.GHSA, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC);
         report.getSecurityPolicy()
                 .setInsignificantThreshold(7)
                 .setIncludeScoreThreshold(0)
