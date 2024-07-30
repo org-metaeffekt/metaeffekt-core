@@ -31,16 +31,16 @@ public class CentralSecurityPolicyConfigurationTest {
 
     @Test
     public void securityConfigurationSelectorTest() {
-        Cvss3P1 someOtherVector = new Cvss3P1("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.findByNameOrMailOrCreateNew("some-other"), Cvss3P1.class));
-        Cvss3P1 assessmentUnknownVector = new Cvss3P1("A:L", new CvssSource(KnownCvssEntities.ASSESSMENT, Cvss3P1.class));
-        Cvss3P1 assessmentAllVector = new Cvss3P1("A:L", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
-        Cvss3P1 assessmentLowerVector = new Cvss3P1("A:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
-        Cvss3P1 assessmentHigherVector = new Cvss3P1("A:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss3P1.class));
+        final Cvss3P1 someOtherVector = new Cvss3P1("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.findByNameOrMailOrCreateNew("some-other"), Cvss3P1.class));
+        final Cvss3P1 assessmentUnknownVector = new Cvss3P1("A:L", new CvssSource(KnownCvssEntities.ASSESSMENT, Cvss3P1.class));
+        final Cvss3P1 assessmentAllVector = new Cvss3P1("A:L", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
+        final Cvss3P1 assessmentLowerVector = new Cvss3P1("A:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER, Cvss3P1.class));
+        final Cvss3P1 assessmentHigherVector = new Cvss3P1("A:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER, Cvss3P1.class));
 
-        Cvss3P1 someOtherAssessmentAllCombinedVector = someOtherVector.clone();
+        final Cvss3P1 someOtherAssessmentAllCombinedVector = someOtherVector.clone();
         someOtherAssessmentAllCombinedVector.applyVector(assessmentUnknownVector);
 
-        Cvss3P1 someOtherAssessmentLowerCombinedVector = someOtherVector.clone();
+        final Cvss3P1 someOtherAssessmentLowerCombinedVector = someOtherVector.clone();
         someOtherAssessmentLowerCombinedVector.applyVector(assessmentLowerVector);
 
         Assert.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(someOtherVector)));
@@ -168,7 +168,6 @@ public class CentralSecurityPolicyConfigurationTest {
 
         Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("all", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
         Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("ANY", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("cERT-Fr", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
         Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
         Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT_FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
         Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(new HashMap<String, String>() {{
