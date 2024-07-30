@@ -119,7 +119,11 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 }
             } else {
                 if (artifactId != null) {
-                    id = artifactId + "-" + artifact.getVersion() + "." + deriveSuffix(artifact.get("Packaging"));
+                    if (artifact.get("Packaging") == null) {
+                        id = artifactId + "-" + artifact.getVersion();
+                    } else {
+                        id = artifactId + "-" + artifact.getVersion() + "." + deriveSuffix(artifact.get("Packaging"));
+                    }
                 }
             }
             artifact.setId(id);
