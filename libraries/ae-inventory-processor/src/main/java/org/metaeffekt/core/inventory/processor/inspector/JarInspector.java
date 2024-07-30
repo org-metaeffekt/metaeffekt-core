@@ -108,11 +108,19 @@ public class JarInspector extends AbstractJarInspector {
         String groupId = pomProperties.getProperty("groupId", artifact.getGroupId());
         String version = pomProperties.getProperty("version", artifact.getVersion());
         String artifactId = pomProperties.getProperty("artifactId", artifact.getArtifactId());
-        String packaging = pomProperties.getProperty("packaging", "jar");
+        String packaging = pomProperties.getProperty("packaging");
         dummyArtifact.setGroupId(groupId);
         dummyArtifact.setVersion(version);
 
+        dummyArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+        dummyArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+
         dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
+
+        // do not guess from property level
+        if (packaging != null) {
+            dummyArtifact.set("Packaging", modulatePackaging(packaging));
+        }
         dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
         deriveQualifiers(dummyArtifact);
@@ -214,7 +222,7 @@ public class JarInspector extends AbstractJarInspector {
 
         // parse pom
         try {
-            final Model model = new MavenXpp3Reader().read(inputStream);
+            final Model model = new MavenXpp3Reader().read(inputStream, false);
 
             // grab artifactId, groupId and version from pom. get from parent section if not filled
             if (model.getArtifactId() != null) {
@@ -233,7 +241,7 @@ public class JarInspector extends AbstractJarInspector {
                 dummyArtifact.setVersion(model.getParent().getVersion());
             }
 
-            dummyArtifact.set("Packaging", modulePackaging(model));
+            dummyArtifact.set("Packaging", modulatePackaging(model.getPackaging()));
 
             // NOTE: the information may not be part of the pom, but provided in the parent pom. However, if the
             // information is available, it is included in the artifact
@@ -252,15 +260,15 @@ public class JarInspector extends AbstractJarInspector {
 
             deriveQualifiers(dummyArtifact);
         } catch (IOException | XmlPullParserException e) {
-            addError(artifact, "Exception while parsing a 'pom.xml'.");
+            e.printStackTrace();
+            addError(artifact, "Exception while parsing 'pom.xml'.");
         }
 
         return dummyArtifact;
     }
 
-    private String modulePackaging(Model model) {
-        if (model.getPackaging() == null) return "jar";
-        return model.getPackaging();
+    private String modulatePackaging(String packaging) {
+        return packaging == null ? "jar" : packaging;
     }
 
     private void deriveQualifiers(Artifact dummyArtifact) {
@@ -553,16 +561,12 @@ public class JarInspector extends AbstractJarInspector {
 
                 artifact.deriveArtifactId();
 
-                if (StringUtils.isEmpty(artifact.get(Artifact.Attribute.PURL.getKey()))) {
-                    final int suffixIndex = artifact.getId().lastIndexOf(".");
-                    final String suffix = (suffixIndex == -1) ? null : artifact.getId().substring(suffixIndex + 1);
-                    String purl = buildPurl(artifact.getGroupId(), extractPackageName(artifact.getArtifactId()), artifact.getVersion(), suffix);
-                    artifact.set(Artifact.Attribute.PURL.getKey(), purl);
-                }
+                addPurlIfMissing(artifact);
 
             } catch (Exception e) {
                 // log error and carry on
                 addError(artifact, "Error while running " + this.getClass().getSimpleName());
+
                 LOG.error("Failure while running [{}] on artifact [{}]: {}",
                         this.getClass().getSimpleName(), artifact.deriveQualifier(), e.getMessage());
             }
@@ -574,6 +578,16 @@ public class JarInspector extends AbstractJarInspector {
 
         InventoryUtils.removeAssetAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
         InventoryUtils.removeAssetAttribute(ATTRIBUTE_KEY_INSPECTION_SOURCE, inventory);
+    }
+
+    private void addPurlIfMissing(Artifact artifact) {
+        if (StringUtils.isEmpty(artifact.get(Artifact.Attribute.PURL.getKey()))) {
+            final int suffixIndex = artifact.getId().lastIndexOf(".");
+            final String suffix = (suffixIndex == -1) ? null : artifact.getId().substring(suffixIndex + 1);
+            artifact.deriveArtifactId();
+            String purl = buildPurl(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), suffix);
+            artifact.set(Artifact.Attribute.PURL.getKey(), purl);
+        }
     }
 
     private void deriveVersionIfNotSet(Artifact artifact) {
@@ -685,10 +699,13 @@ public class JarInspector extends AbstractJarInspector {
 
                 // FIXME: this should not be required here
                 embeddedArtifact.set(assetId, Constants.MARKER_CONTAINS);
+                containingArtifact.set(assetId, Constants.MARKER_CROSS);
 
                 if (StringUtils.isNotBlank(foundAssetIdChain)) {
                     embeddedArtifact.set("ASSET_ID_CHAIN", foundAssetIdChain);
                 }
+
+                addPurlIfMissing(embeddedArtifact);
 
                 // NOTE: we add whether there is already an artifact existing. Later a merge can take
                 //  care of multiple attributes.
@@ -718,16 +735,6 @@ public class JarInspector extends AbstractJarInspector {
             } else {
                 return String.format("pkg:maven/%s/%s@%s?type=%s", namespace, name, version, type);
             }
-        }
-        return null;
-    }
-
-    private String extractPackageName(String path) {
-        String[] parts = path.split("\\.");
-        if (parts.length > 1) {
-            return parts[parts.length - 1];
-        } else if (parts.length == 1) {
-            return parts[0];
         }
         return null;
     }

@@ -79,7 +79,7 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, pluginName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, pluginVersion);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, pluginName + "-" + pluginVersion);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);

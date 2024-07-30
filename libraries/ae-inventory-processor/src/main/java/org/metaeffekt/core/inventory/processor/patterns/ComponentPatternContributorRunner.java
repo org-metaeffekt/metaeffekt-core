@@ -110,6 +110,9 @@ public class ComponentPatternContributorRunner {
                             try {
                                 List<ComponentPatternData> componentPatterns = contributor.contribute(
                                         baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+
+                                componentPatterns.forEach(cpd -> cpd.setContext(contributor.getClass().getName()));
+
                                 results.addAll(componentPatterns);
                             } catch (Exception e) {
                                 LOG.error("Contributor threw exception. Make contributor more robust.", e);
