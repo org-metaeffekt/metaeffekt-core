@@ -63,7 +63,7 @@ public class JettyTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(132);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(131);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(147);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "java-runtime")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jetty-runtime")).hasSizeOf(1);

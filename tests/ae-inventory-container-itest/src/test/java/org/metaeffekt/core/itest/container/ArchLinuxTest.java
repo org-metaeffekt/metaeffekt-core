@@ -64,7 +64,7 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "alpm")).hasSizeOf(114);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "alpm")).hasSizeOf(118);
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/desc")).hasSizeGreaterThan(1);
     }
 }

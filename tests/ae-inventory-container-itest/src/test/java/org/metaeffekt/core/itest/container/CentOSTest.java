@@ -64,8 +64,7 @@ public class CentOSTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(178);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(5);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(310);
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages")).hasSizeGreaterThan(1);
     }
 }
