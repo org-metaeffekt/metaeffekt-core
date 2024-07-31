@@ -49,7 +49,7 @@ public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception {
+    public void assertContent() throws Exception {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logListWithAllAttributes()
@@ -57,8 +57,7 @@ public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
                         attributeValue(VERSION, "6.0.3"),
                         attributeValue(VIRTUAL_ROOT_PATH, "[ffmpeg_kit_flutter-6.0.3.tar.gz]/[ffmpeg_kit_flutter-6.0.3.tar]"),
                         attributeValue(PURL, "pkg:pub/ffmpeg_kit_flutter@6.0.3"),
-                        attributeValue(COMPONENT_SOURCE_TYPE, "pub")
-                )
+                        attributeValue(COMPONENT_SOURCE_TYPE, "pub"))
                 .assertNotEmpty();
     }
 

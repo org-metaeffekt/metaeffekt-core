@@ -49,15 +49,14 @@ public class Charts_4_1_0 extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception {
+    public void assertContent() throws Exception {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logListWithAllAttributes()
                 .with(attributeValue(ID, "Charts-4.1.0"),
                         attributeValue(VERSION, "4.1.0"),
                         attributeValue(PROJECTS, "[v4.1.0.zip]/Charts-4.1.0"),
-                        attributeValue(PATH_IN_ASSET, "[v4.1.0.zip]/Charts-4.1.0")
-                )
+                        attributeValue(PATH_IN_ASSET, "[v4.1.0.zip]/Charts-4.1.0"))
                 .assertNotEmpty();
     }
 }

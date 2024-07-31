@@ -51,7 +51,7 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception {
+    public void assertContent() throws Exception {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logListWithAllAttributes()
@@ -60,8 +60,7 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
                         attributeValue(VERSION, "6.1.1"),
                         attributeValue(HASH_SHA256, "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
                         attributeValue(PROJECTS, "spring-core-6.1.1.jar"),
-                        attributeValue(PATH_IN_ASSET, "spring-core-6.1.1.jar")
-                )
+                        attributeValue(PATH_IN_ASSET, "spring-core-6.1.1.jar"))
                 .assertNotEmpty();
     }
 }

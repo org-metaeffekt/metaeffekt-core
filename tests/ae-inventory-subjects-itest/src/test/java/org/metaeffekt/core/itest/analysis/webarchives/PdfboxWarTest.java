@@ -57,7 +57,7 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void testCompositionAnalysis() throws Exception {
+    public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);

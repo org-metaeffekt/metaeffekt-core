@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
@@ -49,63 +50,39 @@ public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception {
-        getAnalysisAfterInvariantCheck()
+    public void assertContent() throws Exception {
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "RxTest-6.7.0"),
-                        attributeValue(VERSION, "6.7.0"),
-                        attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
-                        attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1")
-                )
+                .filter(a -> a.getVersion() != null);
+
+        artifactList.logListWithAllAttributes();
+
+        artifactList.with(attributeValue(ID, "RxTest-6.7.0"),
+                    attributeValue(VERSION, "6.7.0"),
+                    attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
-    }
-    @Test
-    public void second() throws Exception {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "RxCocoa-6.7.0"),
-                        attributeValue(VERSION, "6.7.0"),
-                        attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
-                        attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1")
-                )
+
+        artifactList.with(attributeValue(ID, "RxCocoa-6.7.0"),
+                    attributeValue(VERSION, "6.7.0"),
+                    attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
-    }
-    @Test
-    public void third() throws Exception {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "RxRelay-6.7.0"),
-                        attributeValue(VERSION, "6.7.0"),
-                        attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
-                        attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1")
-                )
+
+        artifactList.with(attributeValue(ID, "RxRelay-6.7.0"),
+                    attributeValue(VERSION, "6.7.0"),
+                    attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
-    }
-    @Test
-    public void fourth() throws Exception {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "RxSwift-6.7.0"),
-                        attributeValue(VERSION, "6.7.0"),
-                        attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
-                        attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1")
-                )
+        artifactList.with(attributeValue(ID, "RxSwift-6.7.0"),
+                    attributeValue(VERSION, "6.7.0"),
+                    attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
-    }
-    @Test
-    public void fifth() throws Exception {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "RxBlocking-6.7.0"),
-                        attributeValue(VERSION, "6.7.0"),
-                        attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
-                        attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1")
-                )
+        artifactList.with(attributeValue(ID, "RxBlocking-6.7.0"),
+                    attributeValue(VERSION, "6.7.0"),
+                    attributeValue(PROJECTS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
     }
 }

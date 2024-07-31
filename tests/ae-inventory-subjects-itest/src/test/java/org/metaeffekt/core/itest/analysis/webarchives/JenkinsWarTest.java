@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -75,8 +76,6 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty();
     }
 
-    //TODO
-    @Ignore
     @Test
     public void noErrorsExist() {
         getAnalysisAfterInvariantCheck()
@@ -87,8 +86,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     //TODO
     @Ignore
     @Test
-    public void versionMismatch() {
-        getAnalysis()
+    public void versionMismatch() throws Exception {
+        ArtifactList artifactList = getAnalysis()
                 .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
                 .logList()

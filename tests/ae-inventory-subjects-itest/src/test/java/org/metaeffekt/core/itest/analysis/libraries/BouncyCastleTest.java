@@ -24,6 +24,8 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.ID_MISMATCHING_VERSION;
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
@@ -51,15 +53,17 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-    //TODO
-    @Ignore
     @Test
-    public void versionMismatch() {
+    public void assertContent() throws Exception {
         getAnalysisAfterInvariantCheck()
-                .selectArtifacts(ID_MISMATCHING_VERSION)
-                .logList("Type")
-                .assertEmpty();
+                .selectArtifacts()
+                .logListWithAllAttributes()
+                .with(attributeValue(ID, "bcprov-jdk18on-1.77.jar"),
+                        attributeValue(VERSION, "1.77"),
+                        attributeValue(CHECKSUM, "ca01387064e08db12e1345b474521ff1"),
+                        attributeValue(PROJECTS, "bcprov-jdk18on-1.77.jar"),
+                        attributeValue(PATH_IN_ASSET, "bcprov-jdk18on-1.77.jar"))
+                .assertNotEmpty();
     }
-
 
 }

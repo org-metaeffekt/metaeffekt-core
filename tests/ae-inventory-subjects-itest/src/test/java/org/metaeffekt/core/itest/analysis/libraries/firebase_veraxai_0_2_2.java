@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
@@ -49,27 +50,23 @@ public class firebase_veraxai_0_2_2 extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception {
-        getAnalysisAfterInvariantCheck()
+    public void assertContent() throws Exception {
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "firebase_vertexai-0.2.2+2"),
-                        attributeValue(VERSION, "0.2.2+2"),
-                        attributeValue(PROJECTS, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]"),
-                        attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]")
-                )
+                .filter(a -> a.getVersion() != null);
+
+        artifactList.logListWithAllAttributes();
+
+        artifactList.with(attributeValue(ID, "firebase_vertexai-0.2.2+2"),
+                    attributeValue(VERSION, "0.2.2+2"),
+                    attributeValue(PROJECTS, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]"),
+                    attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]"))
                 .assertNotEmpty();
-    }
-    @Test
-    public void second() throws Exception {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "vertex_ai_example-1.0.0+1"),
-                        attributeValue(VERSION, "1.0.0+1"),
-                        attributeValue(PROJECTS, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"),
-                        attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example")
-                )
+
+        artifactList.with(attributeValue(ID, "vertex_ai_example-1.0.0+1"),
+                    attributeValue(VERSION, "1.0.0+1"),
+                    attributeValue(PROJECTS, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"),
+                    attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"))
                 .assertNotEmpty();
     }
 }
