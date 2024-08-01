@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
 
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
@@ -39,6 +40,10 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
                 .setSource("https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar")
                 .setSha256Hash("6fec79a57993aa10afe183d81aded02c10b5631547daf725739f1fb9b58b2d5b")
                 .setName(BouncyCastleTest.class.getName());
+    }
+
+    public Logger getLOG() {
+        return LOG;
     }
 
     @Ignore
@@ -70,7 +75,5 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
                 .assertNotEmpty();
     }
 
-    public Logger getLOG() {
-        return LOG;
-    }
+
 }
