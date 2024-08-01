@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.ID_MISMATCHING_VERSION;
+
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
 
@@ -55,10 +56,13 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
 
     @Test
     public void assertContent() throws Exception {
-        getAnalysisAfterInvariantCheck()
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
-                .logListWithAllAttributes()
-                .with(attributeValue(ID, "bcprov-jdk18on-1.77.jar"),
+                .filter(a -> a.getVersion() != null);
+
+        artifactList.logListWithAllAttributes();
+
+        artifactList.with(attributeValue(ID, "bcprov-jdk18on-1.77.jar"),
                         attributeValue(VERSION, "1.77"),
                         attributeValue(CHECKSUM, "ca01387064e08db12e1345b474521ff1"),
                         attributeValue(PROJECTS, "bcprov-jdk18on-1.77.jar"),
@@ -66,4 +70,7 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
                 .assertNotEmpty();
     }
 
+    public Logger getLOG() {
+        return LOG;
+    }
 }
