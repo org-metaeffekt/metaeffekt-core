@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.analysis.libraries;
+package org.metaeffekt.core.itest.analysis.wheels;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -26,14 +26,14 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
-public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
+public class Filelock_3_15_4 extends AbstractCompositionAnalysisTest{
 
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
-                .setSource("https://files.pythonhosted.org/packages/ca/25/7b53082e4c373127c1fb190f70c5aca7bf7a03ac11f67ba15473bc6d9a0e/cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl")
-                .setSha256Hash("aae4d918f6b180a8ab8bf6511a419473d107df4dbb4225c7b48c5c9602c38c7f")
-                .setName(Cryptography_43_0_0.class.getName());
+                .setSource("https://files.pythonhosted.org/packages/ae/f0/48285f0262fe47103a4a45972ed2f9b93e4c80b8fd609fa98da78b2a5706/filelock-3.15.4-py3-none-any.whl")
+                .setSha256Hash("6ca1fffae96225dab4c6eaf1c4f4f28cd2568d3ec2a44e15a08520504de468e7")
+                .setName(Filelock_3_15_4.class.getName());
     }
 
 
@@ -56,16 +56,10 @@ public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "System.Numerics.Vectors-4.5.0"),
-                        attributeValue(VERSION, "4.5.0"),
-                        attributeValue(PROJECTS, "[system.numerics.vectors.4.5.0.nupkg]"),
-                        attributeValue(PATH_IN_ASSET, "[system.numerics.vectors.4.5.0.nupkg]"))
-                .assertNotEmpty();
-
-        artifactList.with(attributeValue(ID, "cryptography-43.0.0"),
-                        attributeValue(VERSION, "43.0.0"),
-                        attributeValue(PROJECTS, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"))
+        artifactList.with(attributeValue(ID, "filelock-3.15.4"),
+                        attributeValue(VERSION, "3.15.4"),
+                        attributeValue(PROJECTS, "[filelock-3.15.4-py3-none-any.whl]"),
+                        attributeValue(PATH_IN_ASSET, "[filelock-3.15.4-py3-none-any.whl]"))
                 .assertNotEmpty();
     }
 }

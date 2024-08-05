@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.itest.analysis.libraries;
+package org.metaeffekt.core.itest.analysis.wheels;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -26,14 +26,14 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
-public class Openpyxl_3_1_5 extends AbstractCompositionAnalysisTest{
+public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
 
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
-                .setSource("https://files.pythonhosted.org/packages/c0/da/977ded879c29cbd04de313843e76868e6e13408a94ed6b987245dc7c8506/openpyxl-3.1.5-py2.py3-none-any.whl")
-                .setSha256Hash("5282c12b107bffeef825f4617dc029afaf41d0ea60823bbb665ef3079dc79de2")
-                .setName(Openpyxl_3_1_5.class.getName());
+                .setSource("https://files.pythonhosted.org/packages/ca/25/7b53082e4c373127c1fb190f70c5aca7bf7a03ac11f67ba15473bc6d9a0e/cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl")
+                .setSha256Hash("aae4d918f6b180a8ab8bf6511a419473d107df4dbb4225c7b48c5c9602c38c7f")
+                .setName(Cryptography_43_0_0.class.getName());
     }
 
 
@@ -56,11 +56,16 @@ public class Openpyxl_3_1_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "openpyxl-3.1.5"),
-                        attributeValue(VERSION, "3.1.5"),
-                        attributeValue(PROJECTS, "[openpyxl-3.1.5-py2.py3-none-any.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[openpyxl-3.1.5-py2.py3-none-any.whl]"))
+        artifactList.with(attributeValue(ID, "System.Numerics.Vectors-4.5.0"),
+                        attributeValue(VERSION, "4.5.0"),
+                        attributeValue(PROJECTS, "[system.numerics.vectors.4.5.0.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.numerics.vectors.4.5.0.nupkg]"))
+                .assertNotEmpty();
+
+        artifactList.with(attributeValue(ID, "cryptography-43.0.0"),
+                        attributeValue(VERSION, "43.0.0"),
+                        attributeValue(PROJECTS, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"),
+                        attributeValue(PATH_IN_ASSET, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"))
                 .assertNotEmpty();
     }
 }
-
