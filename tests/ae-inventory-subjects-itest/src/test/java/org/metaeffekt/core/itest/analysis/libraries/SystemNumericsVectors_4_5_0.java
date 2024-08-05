@@ -56,11 +56,10 @@ public class SystemNumericsVectors_4_5_0 extends AbstractCompositionAnalysisTest
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "system.numerics.vectors.4.5.0.nupkg"),
-                        attributeValue(CHECKSUM, "39ded0a965763bc5be721b4c0f263fde"),
-                        attributeValue(HASH_SHA256, "a9d49320581fda1b4f4be6212c68c01a22cdf228026099c20a8eabefcf90f9cf"),
-                        attributeValue(PROJECTS, "system.numerics.vectors.4.5.0.nupkg"),
-                        attributeValue(PATH_IN_ASSET, "system.numerics.vectors.4.5.0.nupkg"))
+        artifactList.with(attributeValue(ID, "System.Numerics.Vectors-4.5.0"),
+                        attributeValue(VERSION, "4.5.0"),
+                        attributeValue(PROJECTS, "[system.numerics.vectors.4.5.0.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.numerics.vectors.4.5.0.nupkg]"))
                 .assertNotEmpty();
     }
 }

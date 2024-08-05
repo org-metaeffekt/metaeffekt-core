@@ -56,11 +56,10 @@ public class SystemSecurityAccessescontrol_6_0_1 extends AbstractCompositionAnal
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "system.security.accesscontrol.6.0.1.nupkg"),
-                        attributeValue(CHECKSUM, "bd9b2506dd7bfc858d39fee988187094"),
-                        attributeValue(HASH_SHA256, "462e26f796417e8a4350655a85bbd4233b94cbd0f7150c1c5e9acfd88e885141"),
-                        attributeValue(PROJECTS, "system.security.accesscontrol.6.0.1.nupkg"),
-                        attributeValue(PATH_IN_ASSET, "system.security.accesscontrol.6.0.1.nupkg"))
+        artifactList.with(attributeValue(ID, "System.Security.AccessControl-6.0.1"),
+                        attributeValue(VERSION, "6.0.1"),
+                        attributeValue(PROJECTS, "[system.security.accesscontrol.6.0.1.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.security.accesscontrol.6.0.1.nupkg]"))
                 .assertNotEmpty();
     }
 }

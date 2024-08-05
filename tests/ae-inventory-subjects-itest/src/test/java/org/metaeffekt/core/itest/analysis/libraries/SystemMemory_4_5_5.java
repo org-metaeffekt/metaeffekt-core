@@ -56,11 +56,10 @@ public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "system.memory.4.5.5.nupkg"),
-                        attributeValue(CHECKSUM, "d15ff756699c95ac1b00329307e147ac"),
-                        attributeValue(HASH_SHA256, "10f43da352a29fb2b3188e4edd4dcf5100194c8b526e4f61fe2e2b5623775a22"),
-                        attributeValue(PROJECTS, "system.memory.4.5.5.nupkg"),
-                        attributeValue(PATH_IN_ASSET, "system.memory.4.5.5.nupkg"))
+        artifactList.with(attributeValue(ID, "System.Memory-4.5.5"),
+                        attributeValue(VERSION, "4.5.5"),
+                        attributeValue(PROJECTS, "[system.memory.4.5.5.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.memory.4.5.5.nupkg]"))
                 .assertNotEmpty();
     }
 }

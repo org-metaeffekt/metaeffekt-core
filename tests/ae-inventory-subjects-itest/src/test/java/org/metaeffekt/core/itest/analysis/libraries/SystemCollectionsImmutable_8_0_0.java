@@ -56,11 +56,10 @@ public class SystemCollectionsImmutable_8_0_0 extends AbstractCompositionAnalysi
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "system.collections.immutable.8.0.0.nupkg"),
-                        attributeValue(CHECKSUM, "8bf23537d1b961d9d0cc704f9b768e4e"),
-                        attributeValue(HASH_SHA256, "17b3958ca370a6a6d487c95389d6ea256622e3bea7b2af67fba934f90551a37c"),
-                        attributeValue(PROJECTS, "system.collections.immutable.8.0.0.nupkg"),
-                        attributeValue(PATH_IN_ASSET, "system.collections.immutable.8.0.0.nupkg"))
+        artifactList.with(attributeValue(ID, "System.Collections.Immutable-8.0.0"),
+                        attributeValue(VERSION, "8.0.0"),
+                        attributeValue(PROJECTS, "[system.collections.immutable.8.0.0.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.collections.immutable.8.0.0.nupkg]"))
                 .assertNotEmpty();
     }
 }

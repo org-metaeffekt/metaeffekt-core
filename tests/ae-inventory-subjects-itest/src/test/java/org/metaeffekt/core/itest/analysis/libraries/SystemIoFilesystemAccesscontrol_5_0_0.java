@@ -57,11 +57,10 @@ public class SystemIoFilesystemAccesscontrol_5_0_0 extends AbstractCompositionAn
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "system.io.filesystem.accesscontrol.5.0.0.nupkg"),
-                        attributeValue(CHECKSUM, "aa46bd3c45206e0ccecf1d3cebaef18a"),
-                        attributeValue(HASH_SHA256, "73d3250ca25f8fadd846f97b6eb44136ce7da25ae66cbf86d40ea84d2f32b447"),
-                        attributeValue(PROJECTS, "system.io.filesystem.accesscontrol.5.0.0.nupkg"),
-                        attributeValue(PATH_IN_ASSET, "system.io.filesystem.accesscontrol.5.0.0.nupkg"))
+        artifactList.with(attributeValue(ID, "System.IO.FileSystem.AccessControl-5.0.0"),
+                        attributeValue(VERSION, "5.0.0"),
+                        attributeValue(PROJECTS, "[system.io.filesystem.accesscontrol.5.0.0.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.io.filesystem.accesscontrol.5.0.0.nupkg]"))
                 .assertNotEmpty();
     }
 

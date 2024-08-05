@@ -56,11 +56,10 @@ public class SystemManagement_8_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "system.management.8.0.0.nupkg"),
-                        attributeValue(CHECKSUM, "806a939cc2689b0f83f063603f9e7161"),
-                        attributeValue(HASH_SHA256, "1f0a5f0dbfbeabbfefc51eaae7b986160979534bf1cbea1127aa2b14a3917cfd"),
-                        attributeValue(PROJECTS, "system.management.8.0.0.nupkg"),
-                        attributeValue(PATH_IN_ASSET, "system.management.8.0.0.nupkg"))
+        artifactList.with(attributeValue(ID, "System.Management-8.0.0"),
+                        attributeValue(VERSION, "8.0.0"),
+                        attributeValue(PROJECTS, "[system.management.8.0.0.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.management.8.0.0.nupkg]"))
                 .assertNotEmpty();
     }
 }
