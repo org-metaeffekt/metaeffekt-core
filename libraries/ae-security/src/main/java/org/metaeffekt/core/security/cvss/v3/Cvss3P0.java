@@ -23,25 +23,25 @@ import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import java.util.Collection;
 import java.util.Optional;
 
-public class Cvss3P1 extends Cvss3 {
+public class Cvss3P0 extends Cvss3 {
 
-    public Cvss3P1() {
+    public Cvss3P0() {
         super();
     }
 
-    public Cvss3P1(String vector) {
+    public Cvss3P0(String vector) {
         super(vector);
     }
 
-    public Cvss3P1(String vector, CvssSource source) {
+    public Cvss3P0(String vector, CvssSource source) {
         super(vector, source);
     }
 
-    public Cvss3P1(String vector, CvssSource source, JSONObject applicabilityCondition) {
+    public Cvss3P0(String vector, CvssSource source, JSONObject applicabilityCondition) {
         super(vector, source, applicabilityCondition);
     }
 
-    public Cvss3P1(String vector, Collection<CvssSource> sources, JSONObject applicabilityCondition) {
+    public Cvss3P0(String vector, Collection<CvssSource> sources, JSONObject applicabilityCondition) {
         super(vector, sources, applicabilityCondition);
         super.applyVector(vector);
     }
@@ -51,28 +51,24 @@ public class Cvss3P1 extends Cvss3 {
         double miss = calculateMISS();
         if (isModifiedScope())
             return Scope.SCOPE_UNCHANGED_FACTOR * miss;
-        else return Scope.SCOPE_CHANGED_FACTOR * (miss - 0.029) - 3.25 * Math.pow(miss * 0.9731 - 0.02, 13);
+        else return Scope.SCOPE_CHANGED_FACTOR * (miss - 0.029) - 3.25 * Math.pow(miss - 0.02, 15);
     }
 
     @Override
     public double roundUp(double value) {
-        int input = (int) Math.round(value * 100000);
-        if ((input % 10000) == 0)
-            return input / 100000.0;
-        else
-            return (Math.floor(Double.parseDouble(input + "") / 10000d) + 1) / 10.0;
+        return Math.ceil(value * 10) / 10;
     }
 
     @Override
-    public Cvss3P1 clone() {
-        return new Cvss3P1(toString(), super.sources, super.applicabilityCondition);
+    public Cvss3P0 clone() {
+        return new Cvss3P0(toString(), super.sources, super.applicabilityCondition);
     }
 
     @Override
-    public Optional<Cvss3P1> optionalParse(String vector) {
+    public Optional<Cvss3P0> optionalParse(String vector){
         if (vector == null || StringUtils.isEmpty(MultiScoreCvssVector.normalizeVector(vector))) {
             return Optional.empty();
         }
-        return Optional.of(new Cvss3P1(vector));
+        return Optional.of(new Cvss3P0(vector));
     }
 }
