@@ -13,6 +13,12 @@ pipeline {
             }
         }
 
+        stage('clean-workspace') {
+            steps {
+                clearWs()
+            }
+        }
+
         stage('Build') {
             steps {
                 withMaven(maven: 'maven-3.9.6') {
