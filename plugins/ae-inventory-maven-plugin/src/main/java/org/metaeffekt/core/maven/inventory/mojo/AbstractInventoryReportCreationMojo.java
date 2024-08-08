@@ -24,12 +24,12 @@ import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract mojo. Base class for reporting mojos.
@@ -262,16 +262,24 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean filterAdvisorySummary;
 
     /**
-     * Comma seperated list of advisory providers. For every provider, an additional overview table will be generated
+     * A map of multiple provider-name:implementation pairs.<br>
+     * For example:
+     * <pre>
+     *     &lt;advisoryProviders&gt;
+     *         &lt;CERT_FR/&gt;
+     *         &lt;CERT_SEI/&gt;
+     *     &lt;/advisoryProviders&gt;
+     * </pre>
+     * For every provider, an additional overview table will be generated
      * only evaluating the vulnerabilities containing the respecting provider.
      * If left empty, no additional table will be created.
      * <p>
-     * See {@link AeaaContentIdentifiers} for all available providers. Use the well-formed names.<br>
-     * To address all providers, use <code>ALL</code>.
+     * See {@link org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore} for all available providers. Use the well-formed names.<br>
+     * To address all providers, use <code>&lt;ALL/&gt;</code>.
      *
      * @parameter
      */
-    private List<String> generateOverviewTablesForAdvisories = new ArrayList<>();
+    private Map<String, String> generateOverviewTablesForAdvisories = new HashMap<>();
 
     // other template parameters
 

@@ -22,10 +22,11 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerabilityContextInventory;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatusHistoryEntry;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssSource;
@@ -97,8 +98,8 @@ public class StatisticsOverviewTableTest {
         }
 
         // add two VMDs (one CERT-FR, one CERT-FR + CERT-SEI; both applicable)
-        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.CRITICAL.getV3(), AeaaContentIdentifiers.CERT_FR));
-        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.CRITICAL.getV3(), AeaaContentIdentifiers.CERT_FR, AeaaContentIdentifiers.CERT_SEI));
+        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.CRITICAL.getV3(), AeaaAdvisoryTypeStore.CERT_FR));
+        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, Severity.CRITICAL.getV3(), AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.CERT_SEI));
         precalculateCvss(vulnerabilities, unmodifiedMapperSecurityPolicy);
 
         {
@@ -107,7 +108,7 @@ public class StatisticsOverviewTableTest {
         }
 
         {
-            final StatisticsOverviewTable frStatisitics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaContentIdentifiers.CERT_FR, false);
+            final StatisticsOverviewTable frStatisitics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.CERT_FR, false);
             Assert.assertFalse(frStatisitics.isEmpty());
             Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), frStatisitics.getHeaders());
             Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), frStatisitics.getSeverityCategories());
@@ -127,7 +128,7 @@ public class StatisticsOverviewTableTest {
         }
 
         {
-            final StatisticsOverviewTable seiStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaContentIdentifiers.CERT_SEI, false);
+            final StatisticsOverviewTable seiStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.CERT_SEI, false);
             Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), seiStatistics.getHeaders());
             Assert.assertEquals(constructList("Critical", "High", "Medium", "Low"), seiStatistics.getSeverityCategories());
             Assert.assertEquals(constructList("Critical", 1, 0, 0, 0, 0, 1, "100,0 %"), seiStatistics.getTableRowValues("critical"));
@@ -141,22 +142,22 @@ public class StatisticsOverviewTableTest {
             Assert.assertEquals(constructList("High", 0, 1, 0, 0, 0, 1, "0,0 %"), statistics.getTableRowValues("high"));
         }
 
-        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_VOID, null, AeaaContentIdentifiers.MSRC));
+        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_VOID, null, AeaaAdvisoryTypeStore.MSRC));
         precalculateCvss(vulnerabilities, unmodifiedMapperSecurityPolicy);
 
         {
-            final StatisticsOverviewTable msrcStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaContentIdentifiers.MSRC, false);
+            final StatisticsOverviewTable msrcStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.MSRC, false);
             Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), msrcStatistics.getHeaders());
             Assert.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
             Assert.assertEquals(constructList("High", 0, 0, 0, 0, 0, 0, "n/a"), msrcStatistics.getTableRowValues("high"));
             Assert.assertEquals(constructList("None", 0, 0, 0, 0, 1, 1, "100,0 %"), msrcStatistics.getTableRowValues("none"));
         }
 
-        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, Severity.MEDIUM.getV3(), AeaaContentIdentifiers.MSRC));
+        vulnerabilities.add(createVulnerabilityUnmodifiedSeverity(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, Severity.MEDIUM.getV3(), AeaaAdvisoryTypeStore.MSRC));
         precalculateCvss(vulnerabilities, unmodifiedMapperSecurityPolicy);
 
         {
-            final StatisticsOverviewTable msrcStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaContentIdentifiers.MSRC, false);
+            final StatisticsOverviewTable msrcStatistics = StatisticsOverviewTable.buildTable(unmodifiedMapperSecurityPolicy, vulnerabilities, AeaaAdvisoryTypeStore.MSRC, false);
             Assert.assertEquals(constructList("Severity", "Applicable", "In Review", "Not Applicable", "Insignificant", "Void", "Total", "Assessed"), msrcStatistics.getHeaders());
             Assert.assertEquals(constructList("Critical", "High", "Medium", "Low", "None"), msrcStatistics.getSeverityCategories());
             Assert.assertEquals(constructList("High", 0, 0, 0, 0, 0, 0, "n/a"), msrcStatistics.getTableRowValues("high"));
@@ -268,11 +269,11 @@ public class StatisticsOverviewTableTest {
         }
     }
 
-    private AeaaVulnerability createVulnerabilityUnmodifiedSeverity(String status, CvssVector cvssVector, AeaaContentIdentifiers... advisoryProviders) {
+    private AeaaVulnerability createVulnerabilityUnmodifiedSeverity(String status, CvssVector cvssVector, AeaaAdvisoryTypeIdentifier<?>... advisoryProviders) {
         return createVulnerabilityMultipleSeverities(status, cvssVector, null, advisoryProviders);
     }
 
-    private AeaaVulnerability createVulnerabilityMultipleSeverities(String status, CvssVector cvssVectorProvided, CvssVector cvssVectorEffective, AeaaContentIdentifiers... advisoryProviders) {
+    private AeaaVulnerability createVulnerabilityMultipleSeverities(String status, CvssVector cvssVectorProvided, CvssVector cvssVectorEffective, AeaaAdvisoryTypeIdentifier<?>... advisoryProviders) {
         final AeaaVulnerability vulnerability = new AeaaVulnerability(status + "-" + (cvssVectorProvided == null ? null : cvssVectorProvided.getOverallScore()) + "-" + (cvssVectorEffective == null ? null : cvssVectorEffective.getOverallScore()) + "-" + Arrays.toString(advisoryProviders) + "-" + UUID.randomUUID());
 
         if (cvssVectorProvided != null) {
@@ -291,8 +292,8 @@ public class StatisticsOverviewTableTest {
 
         if (advisoryProviders != null && advisoryProviders.length > 0) {
             final Random random = new Random(Arrays.hashCode(advisoryProviders));
-            for (AeaaContentIdentifiers advisoryProvider : advisoryProviders) {
-                final AeaaAdvisoryEntry securityAdvisory = advisoryProvider.getAdvisoryEntryFactory().get();
+            for (AeaaAdvisoryTypeIdentifier<?> advisoryProvider : advisoryProviders) {
+                final AeaaAdvisoryEntry securityAdvisory = advisoryProvider.getAdvisoryFactory().get();
                 securityAdvisory.setId(advisoryProvider.name() + "-" + random.nextInt(100000));
                 vulnerability.addSecurityAdvisory(securityAdvisory);
             }

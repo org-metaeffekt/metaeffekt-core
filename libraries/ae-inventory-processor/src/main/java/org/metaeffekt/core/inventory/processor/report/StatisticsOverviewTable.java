@@ -18,8 +18,9 @@ package org.metaeffekt.core.inventory.processor.report;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatusHistoryEntry;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssVector;
@@ -92,11 +93,11 @@ public class StatisticsOverviewTable {
     }
 
     public static StatisticsOverviewTable buildTableStrFilterAdvisor(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, String filterAdvisory, boolean useEffectiveSeverityScores) {
-        final AeaaContentIdentifiers filterCertAsAeaaContentIdentifiers = StringUtils.isEmpty(filterAdvisory) ? null : AeaaContentIdentifiers.fromName(filterAdvisory);
+        final AeaaAdvisoryTypeIdentifier<?> filterCertAsAeaaContentIdentifiers = StringUtils.isEmpty(filterAdvisory) ? null : AeaaAdvisoryTypeStore.get().fromNameWithoutCreation(filterAdvisory);
         return buildTable(securityPolicy, inputVulnerabilities, filterCertAsAeaaContentIdentifiers, useEffectiveSeverityScores);
     }
 
-    public static StatisticsOverviewTable buildTable(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, AeaaContentIdentifiers filterAdvisory, boolean useEffectiveSeverity) {
+    public static StatisticsOverviewTable buildTable(CentralSecurityPolicyConfiguration securityPolicy, Collection<AeaaVulnerability> inputVulnerabilities, AeaaAdvisoryTypeIdentifier<?> filterAdvisory, boolean useEffectiveSeverity) {
         final StatisticsOverviewTable table = new StatisticsOverviewTable(useEffectiveSeverity);
 
         final Collection<AeaaVulnerability> effectiveVulnerabilities;

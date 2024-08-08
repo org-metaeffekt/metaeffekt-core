@@ -256,6 +256,22 @@ public abstract class ProcessConfiguration {
         }
     }
 
+    protected <K, V> void loadMapProperty(Map<String, Object> properties, String key, Function<Object, K> keyConverter, Function<Object, V> valueConverter, Consumer<Map<K, V>> consumer) {
+        if (properties.containsKey(key)) {
+            final Object value = properties.get(key);
+            if (value instanceof Map<?, ?>) {
+                final Map<K, V> convertedMap = new LinkedHashMap<>();
+                final Map<?, ?> valueMap = (Map<?, ?>) value;
+                valueMap.forEach((k, v) -> {
+                    convertedMap.put(keyConverter.apply(k), valueConverter.apply(v));
+                });
+                consumer.accept(convertedMap);
+            } else {
+                throw createPropertyException(key, value, "map");
+            }
+        }
+    }
+
     protected <T> void loadSetProperty(Map<String, Object> properties, String key, Function<Object, T> converter, Consumer<Set<T>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);

@@ -162,6 +162,10 @@ public class ArtifactType {
     public static final ArtifactType PYTHON_MODULE = new ArtifactType("python-module", "python module");
 
     // FIXME: introduce further specific web module types
+    /**
+     * @deprecated use {@link #WEB_MODULE} instead
+     */
+    @Deprecated
     public static final ArtifactType NODEJS_MODULE = new ArtifactType("nodejs-module", "nodejs module");
     public static final ArtifactType WEB_MODULE = new ArtifactType("web-module", "web module", NODEJS_MODULE);
 

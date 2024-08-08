@@ -15,10 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,23 +38,42 @@ public class AeaaGeneralAdvisorEntry extends AeaaAdvisoryEntry {
     protected final static Set<String> CONVERSION_KEYS_MAP = new HashSet<String>(AeaaAdvisoryEntry.CONVERSION_KEYS_MAP) {{
     }};
 
+    private String url;
+    private String type = "alert";
+
 
     public AeaaGeneralAdvisorEntry() {
-        super(AeaaContentIdentifiers.UNKNOWN_ADVISORY);
+        super(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("UNKNOWN", "UNKNOWN"));
     }
 
     public AeaaGeneralAdvisorEntry(String id) {
-        super(AeaaContentIdentifiers.UNKNOWN_ADVISORY, id);
+        super(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("UNKNOWN", "UNKNOWN"), id);
+    }
+
+    public AeaaGeneralAdvisorEntry(AeaaAdvisoryTypeIdentifier<?> source) {
+        super(source);
+    }
+
+    public AeaaGeneralAdvisorEntry(AeaaAdvisoryTypeIdentifier<?> source, String id) {
+        super(source, id);
     }
 
     @Override
     public String getUrl() {
-        return "";
+        return url;
     }
 
     @Override
     public String getType() {
-        return AdvisoryUtils.normalizeType("alert");
+        return AdvisoryUtils.normalizeType(type);
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     /* TYPE CONVERSION METHODS */
@@ -86,18 +107,15 @@ public class AeaaGeneralAdvisorEntry extends AeaaAdvisoryEntry {
         return obj.toString();
     }
 
-    protected void inferSourceFromInput(String source) {
-        final AeaaContentIdentifiers inferredSource = AeaaContentIdentifiers.extractAdvisorySourceFromSourceOrName(this.getId(), source);
-        if (LOG.isDebugEnabled() && !inferredSource.name().equals(this.source)) {
-            LOG.debug("Inferred source differs from originally assigned [{}] --> [{}]", this.source, inferredSource.name());
-        }
-        this.source = inferredSource.name();
-    }
-
     @Override
     public void appendFromBaseModel(AdvisoryMetaData amd) {
         super.appendFromBaseModel(amd);
-        this.inferSourceFromInput(amd.get(AdvisoryMetaData.Attribute.SOURCE));
+
+        this.url = stringOrNull(amd.get(AdvisoryMetaData.Attribute.URL));
+
+        if (StringUtils.isNotEmpty(amd.get(AdvisoryMetaData.Attribute.TYPE))) {
+            this.type = String.valueOf(amd.get(AdvisoryMetaData.Attribute.TYPE));
+        }
     }
 
     @Override
@@ -108,12 +126,16 @@ public class AeaaGeneralAdvisorEntry extends AeaaAdvisoryEntry {
     @Override
     public void appendFromMap(Map<String, Object> map) {
         super.appendFromMap(map);
-        this.inferSourceFromInput(stringOrNull(map.get(AdvisoryMetaData.Attribute.SOURCE.getKey())));
+
+        this.url = stringOrNull(map.get("url"));
+
+        if (StringUtils.isNotEmpty(String.valueOf(map.get("type")))) {
+            this.type = String.valueOf(map.get("type"));
+        }
     }
 
     @Override
     public void appendToJson(JSONObject json) {
         super.appendToJson(json);
     }
-
 }
