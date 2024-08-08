@@ -19,12 +19,16 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.ID_MISMATCHING_VERSION;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
+
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
 
@@ -34,7 +38,7 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://repo1.maven.org/maven2/org/bouncycastle/bcprov-jdk18on/1.77/bcprov-jdk18on-1.77.jar")
-                .setSha256Hash("6fec79a57993aa10afe183d81aded02c10b5631547daf725739f1fb9b58b2d5b")
+                .setSha256Hash("dabb98c24d72c9b9f585633d1df9c5cd58d9ad373d0cd681367e6a603a495d58")
                 .setName(BouncyCastleTest.class.getName());
     }
 
@@ -51,14 +55,20 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-    //TODO
-    @Ignore
     @Test
-    public void versionMismatch() {
-        getAnalysisAfterInvariantCheck()
-                .selectArtifacts(ID_MISMATCHING_VERSION)
-                .logList("Type")
-                .assertEmpty();
+    public void assertContent() throws Exception {
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts()
+                .filter(a -> a.getVersion() != null);
+
+        artifactList.logListWithAllAttributes();
+
+        artifactList.with(attributeValue(ID, "bcprov-jdk18on-1.77.jar"),
+                        attributeValue(VERSION, "1.77"),
+                        attributeValue(CHECKSUM, "ca01387064e08db12e1345b474521ff1"),
+                        attributeValue(PROJECTS, "bcprov-jdk18on-1.77.jar"),
+                        attributeValue(PATH_IN_ASSET, "bcprov-jdk18on-1.77.jar"))
+                .assertNotEmpty();
     }
 
 

@@ -24,6 +24,10 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+
 public class SpringCoresourceTest_5_3_31 extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
@@ -49,7 +53,14 @@ public class SpringCoresourceTest_5_3_31 extends AbstractCompositionAnalysisTest
     }
 
     @Test
-    public void first() throws Exception{
-        LOG.info(testSetup.getInventory().toString());
+    public void assertContent() throws Exception {
+        getAnalysisAfterInvariantCheck()
+                .selectArtifacts()
+                .logListWithAllAttributes()
+                .with(attributeValue(ID, "spring-core-5.3.31-sources.jar"),
+                        attributeValue(CHECKSUM, "58d03cf0cc9d3fdcc820a5f3ecadaa73"),
+                        attributeValue(PROJECTS, "spring-core-5.3.31-sources.jar"),
+                        attributeValue(PATH_IN_ASSET, "spring-core-5.3.31-sources.jar"))
+                .assertNotEmpty();
     }
 }

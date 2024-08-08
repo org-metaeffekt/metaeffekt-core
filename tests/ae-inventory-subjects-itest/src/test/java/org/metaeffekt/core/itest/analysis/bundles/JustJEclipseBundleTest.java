@@ -58,7 +58,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception{
+    public void assertStructure() throws Exception{
         LOG.info(testSetup.getInventory().toString());
 
         final File scanBaseDir =  new File("target/.test/scan/analysis/bundles/JustJEclipseBundleTest");
@@ -81,7 +81,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void testCompositionAnalysis() throws Exception {
+    public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 

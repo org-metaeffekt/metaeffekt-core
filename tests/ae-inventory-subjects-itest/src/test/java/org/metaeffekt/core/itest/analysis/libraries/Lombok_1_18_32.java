@@ -58,7 +58,7 @@ public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception {
+    public void assertContent() throws Exception {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logListWithAllAttributes()
@@ -66,8 +66,7 @@ public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
                         attributeValue(CHECKSUM, "56e9be7b9a26802ac0c784ad824f3a29"),
                         attributeValue(HASH_SHA256, "97574674e2a25f567a313736ace00df8787d443de316407d57fc877d9f19a65d"),
                         attributeValue(PROJECTS, "lombok-1.18.32.jar"),
-                        attributeValue(PATH_IN_ASSET, "lombok-1.18.32.jar")
-                )
+                        attributeValue(PATH_IN_ASSET, "lombok-1.18.32.jar"))
                 .assertNotEmpty();
     }
 

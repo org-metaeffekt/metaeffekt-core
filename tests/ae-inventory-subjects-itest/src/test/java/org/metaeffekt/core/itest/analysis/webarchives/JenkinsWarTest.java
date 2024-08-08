@@ -75,6 +75,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty();
     }
 
+
     //TODO
     @Ignore
     @Test
@@ -88,7 +89,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Ignore
     @Test
     public void versionMismatch() {
-        getAnalysis()
+         getAnalysis()
                 .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
                 .logList()

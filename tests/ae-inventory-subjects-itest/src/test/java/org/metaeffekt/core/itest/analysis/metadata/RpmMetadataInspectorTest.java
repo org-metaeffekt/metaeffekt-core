@@ -49,17 +49,10 @@ public class RpmMetadataInspectorTest extends AbstractCompositionAnalysisTest {
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(testSetup.clear());
-
-    }
-
-    @Ignore
-    @Test
-    public void analyse() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test
-    public void testInspector() throws Exception {
+    public void assertContent() throws Exception {
         File projectDir = new File(testSetup.getScanFolder());
         File testRpm = new File("krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm");
         String rpmPath = testRpm.getPath();

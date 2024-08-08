@@ -56,7 +56,7 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void testCompositionComponentPattern() throws Exception {
+    public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 

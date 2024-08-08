@@ -55,13 +55,9 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-    @Test
-    public void first() throws Exception {
-        LOG.info("Inventory of size {}.", testSetup.getInventory().getArtifacts().size());
-    }
 
     @Test
-    public void testCompositionAnalysis() throws Exception {
+    public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);

@@ -55,13 +55,10 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-    @Test
-    public void first() throws Exception{
-        LOG.info(testSetup.getInventory().toString());
-    }
+
 
     @Test
-    public void testCompositionAnalysis() throws Exception {
+    public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
         Analysis analysis = new Analysis(inventory);
