@@ -203,6 +203,11 @@ public class RepositoryReportTest {
                 "Expecting references to license chapter.",
                 packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
 
+        // read license overview
+        File licenseOverviewFile = new File(reportDir, "report/tpc_inventory-licenses.dita");
+        String licenseOverview = FileUtils.readFileToString(licenseOverviewFile, FileUtils.ENCODING_UTF_8);
+        Assert.assertFalse("All artifacts counts must be greater than 0.", licenseOverview.contains("<codeph>0</codeph>"));
+
         // read/write inventory
         Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
         new InventoryWriter().writeInventory(inventory, new File(reportDir, "output_artifact-inventory.xls"));
@@ -276,22 +281,22 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("<path-to-inventory-dir>");
-        final File referenceInventoryDir = new File("<path-to-reference-inventory-dir>");
+        final File inventoryDir = new File("/Volumes/T-H-HAM/dSecureCloud");
+        final File referenceInventoryDir = new File("/Volumes/T-H-HAM/dSecureCloud");
 
         final File reportDir = new File("target/test-inventory-04");
 
         InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "*.xlsx",
-                referenceInventoryDir, "*.xlsx",
+        prepareReport(inventoryDir, "Biometrieclient-11.04.2024-Software Distribution Documentation.xlsx",
+                referenceInventoryDir, "Biometrieclient-11.04.2024-Software Distribution Documentation.xlsx",
                 reportDir, report);
 
-        report.setTemplateLanguageSelector("de");
+        report.setTemplateLanguageSelector("en");
 
-        report.setAssetBomReportEnabled(true);
-        report.setIncludeInofficialOsiStatus(true);
+        report.setAssetBomReportEnabled(false);
+        report.setIncludeInofficialOsiStatus(false);
 
-        report.setInventoryBomReportEnabled(false);
+        report.setInventoryBomReportEnabled(true);
         report.setAssessmentReportEnabled(false);
 
         report.setInventoryVulnerabilityReportEnabled(false);
