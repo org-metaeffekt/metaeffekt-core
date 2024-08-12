@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.118.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -620,6 +620,13 @@
                 <artifactId>log4j-to-slf4j</artifactId>
                 <version>${log4j-to-slf4j.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>1.18.32</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
