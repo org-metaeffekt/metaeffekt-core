@@ -56,9 +56,9 @@ public class Parser_3_3_4_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "parser-3.3.4.0.gem"),
+        artifactList.with(attributeValue(ID, "parser-3.3.4.0"),
                         attributeValue(VERSION, "3.3.4.0"),
-                        attributeValue(PROJECTS, "parser-3.3.4.0.gem"))
+                        attributeValue(PURL, "pkg:gem/parser@3.3.4.0"))
                 .assertNotEmpty();
     }
 }

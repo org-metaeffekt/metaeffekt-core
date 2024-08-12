@@ -56,9 +56,9 @@ public class Execjs_2_9_1 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "execjs-2.9.1.gem"),
+        artifactList.with(attributeValue(ID, "execjs-2.9.1"),
                         attributeValue(VERSION, "2.9.1"),
-                        attributeValue(PROJECTS, "execjs-2.9.1.gem"))
+                        attributeValue(PURL, "pkg:gem/execjs@2.9.1"))
                 .assertNotEmpty();
     }
 }

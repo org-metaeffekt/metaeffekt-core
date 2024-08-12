@@ -56,9 +56,9 @@ public class Multi_Json_1_15_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "multi_json-1.15.0.gem"),
+        artifactList.with(attributeValue(ID, "multi_json-1.15.0"),
                         attributeValue(VERSION, "1.15.0"),
-                        attributeValue(PROJECTS, "multi_json-1.15.0.gem"))
+                        attributeValue(PURL, "pkg:gem/multi_json@1.15.0"))
                 .assertNotEmpty();
     }
 }

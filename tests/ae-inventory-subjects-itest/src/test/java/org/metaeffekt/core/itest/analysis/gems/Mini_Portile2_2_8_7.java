@@ -56,9 +56,9 @@ public class Mini_Portile2_2_8_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "mini_portile2-2.8.7.gem"),
+        artifactList.with(attributeValue(ID, "mini_portile2-2.8.7"),
                         attributeValue(VERSION, "2.8.7"),
-                        attributeValue(PROJECTS, "mini_portile2-2.8.7.gem"))
+                        attributeValue(PURL, "pkg:gem/mini_portile2@2.8.7"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Google_Protobuf_4_27_3 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "google-protobuf-4.27.3.gem"),
+        artifactList.with(attributeValue(ID, "google-protobuf-4.27.3"),
                         attributeValue(VERSION, "4.27.3"),
-                        attributeValue(PROJECTS, "google-protobuf-4.27.3.gem"))
+                        attributeValue(PURL, "pkg:gem/google-protobuf@4.27.3"))
                 .assertNotEmpty();
     }
 }

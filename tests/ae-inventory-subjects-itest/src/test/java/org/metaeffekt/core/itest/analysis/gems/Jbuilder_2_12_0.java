@@ -56,9 +56,9 @@ public class Jbuilder_2_12_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "jbuilder-2.12.0.gem"),
+        artifactList.with(attributeValue(ID, "jbuilder-2.12.0"),
                         attributeValue(VERSION, "2.12.0"),
-                        attributeValue(PROJECTS, "jbuilder-2.12.0.gem"))
+                        attributeValue(PURL, "pkg:gem/jbuilder@2.12.0"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Retriable_3_1_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "retriable-3.1.2.gem"),
+        artifactList.with(attributeValue(ID, "retriable-3.1.2"),
                         attributeValue(VERSION, "3.1.2"),
-                        attributeValue(PROJECTS, "retriable-3.1.2.gem"))
+                        attributeValue(PURL, "pkg:gem/retriable@3.1.2"))
                 .assertNotEmpty();
     }
 }

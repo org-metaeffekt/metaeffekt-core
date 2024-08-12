@@ -56,9 +56,9 @@ public class Webrick_1_8_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "webrick-1.8.1.gem"),
+        artifactList.with(attributeValue(ID, "webrick-1.8.1"),
                         attributeValue(VERSION, "1.8.1"),
-                        attributeValue(PROJECTS, "webrick-1.8.1.gem"))
+                        attributeValue(PURL, "pkg:gem/webrick@1.8.1"))
                 .assertNotEmpty();
     }
 }

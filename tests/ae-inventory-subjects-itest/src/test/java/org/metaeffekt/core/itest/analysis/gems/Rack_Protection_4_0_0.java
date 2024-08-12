@@ -56,9 +56,9 @@ public class Rack_Protection_4_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rack-protection-4.0.0.gem"),
+        artifactList.with(attributeValue(ID, "rack-protection-4.0.0"),
                         attributeValue(VERSION, "4.0.0"),
-                        attributeValue(PROJECTS, "rack-protection-4.0.0.gem"))
+                        attributeValue(PURL, "pkg:gem/rack-protection@4.0.0"))
                 .assertNotEmpty();
     }
 }

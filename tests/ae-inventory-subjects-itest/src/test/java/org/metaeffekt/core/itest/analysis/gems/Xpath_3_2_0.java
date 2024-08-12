@@ -56,9 +56,9 @@ public class Xpath_3_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "xpath-3.2.0.gem"),
+        artifactList.with(attributeValue(ID, "xpath-3.2.0"),
                         attributeValue(VERSION, "3.2.0"),
-                        attributeValue(PROJECTS, "xpath-3.2.0.gem"))
+                        attributeValue(PURL, "pkg:gem/xpath@3.2.0"))
                 .assertNotEmpty();
     }
 }

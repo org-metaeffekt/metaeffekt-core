@@ -56,9 +56,9 @@ public class Oj_3_16_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "oj-3.16.5.gem"),
+        artifactList.with(attributeValue(ID, "oj-3.16.5"),
                         attributeValue(VERSION, "3.16.5"),
-                        attributeValue(PROJECTS, "oj-3.16.5.gem"))
+                        attributeValue(PURL, "pkg:gem/oj@3.16.5"))
                 .assertNotEmpty();
     }
 }

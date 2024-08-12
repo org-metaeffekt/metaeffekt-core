@@ -56,9 +56,9 @@ public class Coderay_1_1_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "coderay-1.1.3.gem"),
+        artifactList.with(attributeValue(ID, "coderay-1.1.3"),
                         attributeValue(VERSION, "1.1.3"),
-                        attributeValue(PROJECTS, "coderay-1.1.3.gem"))
+                        attributeValue(PURL, "pkg:gem/coderay@1.1.3"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Listen_3_9_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "listen-3.9.0.gem"),
+        artifactList.with(attributeValue(ID, "listen-3.9.0"),
                         attributeValue(VERSION, "3.9.0"),
-                        attributeValue(PROJECTS, "listen-3.9.0.gem"))
+                        attributeValue(PURL, "pkg:gem/listen@3.9.0"))
                 .assertNotEmpty();
     }
 }

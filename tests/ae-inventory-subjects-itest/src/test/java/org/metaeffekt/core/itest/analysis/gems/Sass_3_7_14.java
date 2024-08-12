@@ -56,9 +56,9 @@ public class Sass_3_7_14 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "sass-3.7.4.gem"),
+        artifactList.with(attributeValue(ID, "sass-3.7.4"),
                         attributeValue(VERSION, "3.7.4"),
-                        attributeValue(PROJECTS, "sass-3.7.4.gem"))
+                        attributeValue(PURL, "pkg:gem/sass@3.7.4"))
                 .assertNotEmpty();
     }
 }

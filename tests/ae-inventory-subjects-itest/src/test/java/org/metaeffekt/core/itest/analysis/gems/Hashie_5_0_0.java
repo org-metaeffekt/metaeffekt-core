@@ -56,9 +56,9 @@ public class Hashie_5_0_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "hashie-5.0.0.gem"),
+        artifactList.with(attributeValue(ID, "hashie-5.0.0"),
                         attributeValue(VERSION, "5.0.0"),
-                        attributeValue(PROJECTS, "hashie-5.0.0.gem"))
+                        attributeValue(PURL, "pkg:gem/hashie@5.0.0"))
                 .assertNotEmpty();
     }
 }

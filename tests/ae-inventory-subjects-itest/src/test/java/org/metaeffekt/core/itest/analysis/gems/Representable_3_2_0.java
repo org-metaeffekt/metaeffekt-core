@@ -56,9 +56,9 @@ public class Representable_3_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "representable-3.2.0.gem"),
+        artifactList.with(attributeValue(ID, "representable-3.2.0"),
                         attributeValue(VERSION, "3.2.0"),
-                        attributeValue(PROJECTS, "representable-3.2.0.gem"))
+                        attributeValue(PURL, "pkg:gem/representable@3.2.0"))
                 .assertNotEmpty();
     }
 }

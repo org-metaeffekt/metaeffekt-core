@@ -56,9 +56,9 @@ public class Rubocop_Ast_1_32_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rubocop-ast-1.32.0.gem"),
+        artifactList.with(attributeValue(ID, "rubocop-ast-1.32.0"),
                         attributeValue(VERSION, "1.32.0"),
-                        attributeValue(PROJECTS, "rubocop-ast-1.32.0.gem"))
+                        attributeValue(PURL, "pkg:gem/rubocop-ast@1.32.0"))
                 .assertNotEmpty();
     }
 }

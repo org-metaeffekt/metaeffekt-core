@@ -56,9 +56,9 @@ public class Hashdiff_1_1_1 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "hashdiff-1.1.1.gem"),
+        artifactList.with(attributeValue(ID, "hashdiff-1.1.1"),
                         attributeValue(VERSION, "1.1.1"),
-                        attributeValue(PROJECTS, "hashdiff-1.1.1.gem"))
+                        attributeValue(PURL, "pkg:gem/hashdiff@1.1.1"))
                 .assertNotEmpty();
     }
 }

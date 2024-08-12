@@ -56,9 +56,9 @@ public class Pg_1_5_7 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "pg-1.5.7.gem"),
+        artifactList.with(attributeValue(ID, "pg-1.5.7"),
                         attributeValue(VERSION, "1.5.7"),
-                        attributeValue(PROJECTS, "pg-1.5.7.gem"))
+                        attributeValue(PURL, "pkg:gem/pg@1.5.7"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Aws_Partitions_1_961_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "aws-partitions-1.961.0.gem"),
+        artifactList.with(attributeValue(ID, "aws-partitions-1.961.0"),
                         attributeValue(VERSION, "1.961.0"),
-                        attributeValue(PROJECTS, "aws-partitions-1.961.0.gem"))
+                        attributeValue(PURL, "pkg:gem/aws-partitions@1.961.0"))
                 .assertNotEmpty();
     }
 }

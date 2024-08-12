@@ -56,9 +56,9 @@ public class Selenium_Webdriver_4_23_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "selenium-webdriver-4.23.0.gem"),
+        artifactList.with(attributeValue(ID, "selenium-webdriver-4.23.0"),
                         attributeValue(VERSION, "4.23.0"),
-                        attributeValue(PROJECTS, "selenium-webdriver-4.23.0.gem"))
+                        attributeValue(PURL, "pkg:gem/selenium-webdriver@4.23.0"))
                 .assertNotEmpty();
     }
 }

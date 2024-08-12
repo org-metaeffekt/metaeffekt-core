@@ -56,9 +56,9 @@ public class Webmock_3_23_1 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "webmock-3.23.1.gem"),
+        artifactList.with(attributeValue(ID, "webmock-3.23.1"),
                         attributeValue(VERSION, "3.23.1"),
-                        attributeValue(PROJECTS, "webmock-3.23.1.gem"))
+                        attributeValue(PURL, "pkg:gem/webmock@3.23.1"))
                 .assertNotEmpty();
     }
 }

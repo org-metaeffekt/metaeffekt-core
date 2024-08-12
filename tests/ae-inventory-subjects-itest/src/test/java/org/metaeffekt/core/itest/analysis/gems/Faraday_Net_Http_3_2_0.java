@@ -56,9 +56,9 @@ public class Faraday_Net_Http_3_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "faraday-net_http-3.2.0.gem"),
+        artifactList.with(attributeValue(ID, "faraday-net_http-3.2.0"),
                         attributeValue(VERSION, "3.2.0"),
-                        attributeValue(PROJECTS, "faraday-net_http-3.2.0.gem"))
+                        attributeValue(PURL, "pkg:gem/faraday-net_http@3.2.0"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Domain_Name_0_6_20240107 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "domain_name-0.6.20240107.gem"),
+        artifactList.with(attributeValue(ID, "domain_name-0.6.20240107"),
                         attributeValue(VERSION, "0.6.20240107"),
-                        attributeValue(PROJECTS, "domain_name-0.6.20240107.gem"))
+                        attributeValue(PURL, "pkg:gem/domain_name@0.6.20240107"))
                 .assertNotEmpty();
     }
 }

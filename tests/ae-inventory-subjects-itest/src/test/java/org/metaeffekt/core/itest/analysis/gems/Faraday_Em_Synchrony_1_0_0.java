@@ -56,9 +56,9 @@ public class Faraday_Em_Synchrony_1_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "faraday-em_synchrony-1.0.0.gem"),
+        artifactList.with(attributeValue(ID, "faraday-em_synchrony-1.0.0"),
                         attributeValue(VERSION, "1.0.0"),
-                        attributeValue(PROJECTS, "faraday-em_synchrony-1.0.0.gem"))
+                        attributeValue(PURL, "pkg:gem/faraday-em_synchrony@1.0.0"))
                 .assertNotEmpty();
     }
 }

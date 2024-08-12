@@ -56,9 +56,9 @@ public class Terminal_Table_3_0_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "terminal-table-3.0.2.gem"),
+        artifactList.with(attributeValue(ID, "terminal-table-3.0.2"),
                         attributeValue(VERSION, "3.0.2"),
-                        attributeValue(PROJECTS, "terminal-table-3.0.2.gem"))
+                        attributeValue(PURL, "pkg:gem/terminal-table@3.0.2"))
                 .assertNotEmpty();
     }
 }

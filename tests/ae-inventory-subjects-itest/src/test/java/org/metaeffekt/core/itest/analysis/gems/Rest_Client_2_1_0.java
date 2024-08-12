@@ -56,9 +56,9 @@ public class Rest_Client_2_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rest-client-2.1.0.gem"),
+        artifactList.with(attributeValue(ID, "rest-client-2.1.0"),
                         attributeValue(VERSION, "2.1.0"),
-                        attributeValue(PROJECTS, "rest-client-2.1.0.gem"))
+                        attributeValue(PURL, "pkg:gem/rest-client@2.1.0"))
                 .assertNotEmpty();
     }
 }

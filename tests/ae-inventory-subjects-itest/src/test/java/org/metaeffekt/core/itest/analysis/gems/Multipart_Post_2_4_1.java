@@ -56,9 +56,9 @@ public class Multipart_Post_2_4_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "multipart-post-2.4.1.gem"),
+        artifactList.with(attributeValue(ID, "multipart-post-2.4.1"),
                         attributeValue(VERSION, "2.4.1"),
-                        attributeValue(PROJECTS, "multipart-post-2.4.1.gem"))
+                        attributeValue(PURL, "pkg:gem/multipart-post@2.4.1"))
                 .assertNotEmpty();
     }
 }

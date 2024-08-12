@@ -550,6 +550,7 @@ public class ComponentPatternProducer {
                 ComponentPatternContributorRunner.builder();
         contributorRunnerBuilder.add(new DpkgPackageContributor());
         contributorRunnerBuilder.add(new GemSpecContributor());
+        contributorRunnerBuilder.add(new GemMetadataContributor());
         contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
         contributorRunnerBuilder.add(new WebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());

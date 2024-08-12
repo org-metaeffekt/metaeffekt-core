@@ -56,9 +56,9 @@ public class Public_Suffix_6_0_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "public_suffix-6.0.1.gem"),
+        artifactList.with(attributeValue(ID, "public_suffix-6.0.1"),
                         attributeValue(VERSION, "6.0.1"),
-                        attributeValue(PROJECTS, "public_suffix-6.0.1.gem"))
+                        attributeValue(PURL, "pkg:gem/public_suffix@6.0.1"))
                 .assertNotEmpty();
     }
 }

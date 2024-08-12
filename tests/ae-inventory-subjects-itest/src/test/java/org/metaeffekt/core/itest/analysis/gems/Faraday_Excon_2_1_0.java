@@ -56,9 +56,9 @@ public class Faraday_Excon_2_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "faraday-excon-2.1.0.gem"),
+        artifactList.with(attributeValue(ID, "faraday-excon-2.1.0"),
                         attributeValue(VERSION, "2.1.0"),
-                        attributeValue(PROJECTS, "faraday-excon-2.1.0.gem"))
+                        attributeValue(PURL, "pkg:gem/faraday-excon@2.1.0"))
                 .assertNotEmpty();
     }
 }

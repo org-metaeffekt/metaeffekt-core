@@ -56,9 +56,9 @@ public class Unf_0_1_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "unf-0.1.4.gem"),
+        artifactList.with(attributeValue(ID, "unf-0.1.4"),
                         attributeValue(VERSION, "0.1.4"),
-                        attributeValue(PROJECTS, "unf-0.1.4.gem"))
+                        attributeValue(PURL, "pkg:gem/unf@0.1.4"))
                 .assertNotEmpty();
     }
 }

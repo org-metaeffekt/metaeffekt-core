@@ -56,9 +56,9 @@ public class Faraday_Middleware_1_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "faraday_middleware-1.2.0.gem"),
+        artifactList.with(attributeValue(ID, "faraday_middleware-1.2.0"),
                         attributeValue(VERSION, "1.2.0"),
-                        attributeValue(PROJECTS, "faraday_middleware-1.2.0.gem"))
+                        attributeValue(PURL, "pkg:gem/faraday_middleware@1.2.0"))
                 .assertNotEmpty();
     }
 }

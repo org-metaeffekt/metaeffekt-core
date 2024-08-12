@@ -56,9 +56,9 @@ public class Rails_Html_Sanitizer_1_6_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rails-html-sanitizer-1.6.0.gem"),
+        artifactList.with(attributeValue(ID, "rails-html-sanitizer-1.6.0"),
                         attributeValue(VERSION, "1.6.0"),
-                        attributeValue(PROJECTS, "rails-html-sanitizer-1.6.0.gem"))
+                        attributeValue(PURL, "pkg:gem/rails-html-sanitizer@1.6.0"))
                 .assertNotEmpty();
     }
 }

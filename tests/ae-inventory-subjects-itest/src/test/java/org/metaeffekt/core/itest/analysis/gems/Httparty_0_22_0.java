@@ -56,9 +56,9 @@ public class Httparty_0_22_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "httparty-0.22.0.gem"),
+        artifactList.with(attributeValue(ID, "httparty-0.22.0"),
                         attributeValue(VERSION, "0.22.0"),
-                        attributeValue(PROJECTS, "httparty-0.22.0.gem"))
+                        attributeValue(PURL, "pkg:gem/httparty@0.22.0"))
                 .assertNotEmpty();
     }
 }

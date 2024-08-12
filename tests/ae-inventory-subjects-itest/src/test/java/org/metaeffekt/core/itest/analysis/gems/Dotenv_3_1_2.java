@@ -56,9 +56,9 @@ public class Dotenv_3_1_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "dotenv-3.1.2.gem"),
+        artifactList.with(attributeValue(ID, "dotenv-3.1.2"),
                         attributeValue(VERSION, "3.1.2"),
-                        attributeValue(PROJECTS, "dotenv-3.1.2.gem"))
+                        attributeValue(PURL, "pkg:gem/dotenv@3.1.2"))
                 .assertNotEmpty();
     }
 }

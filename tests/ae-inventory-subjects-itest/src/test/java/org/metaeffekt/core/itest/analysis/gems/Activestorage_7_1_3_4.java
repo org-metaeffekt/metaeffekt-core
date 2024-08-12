@@ -56,9 +56,9 @@ public class Activestorage_7_1_3_4 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "activestorage-7.1.3.4.gem"),
+        artifactList.with(attributeValue(ID, "activestorage-7.1.3.4"),
                         attributeValue(VERSION, "7.1.3.4"),
-                        attributeValue(PROJECTS, "activestorage-7.1.3.4.gem"))
+                        attributeValue(PURL, "pkg:gem/activestorage@7.1.3.4"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Aws_Sigv4_1_9_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "aws-sigv4-1.9.1.gem"),
+        artifactList.with(attributeValue(ID, "aws-sigv4-1.9.1"),
                         attributeValue(VERSION, "1.9.1"),
-                        attributeValue(PROJECTS, "aws-sigv4-1.9.1.gem"))
+                        attributeValue(PURL, "pkg:gem/aws-sigv4@1.9.1"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Jwt_2_8_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "jwt-2.8.2.gem"),
+        artifactList.with(attributeValue(ID, "jwt-2.8.2"),
                         attributeValue(VERSION, "2.8.2"),
-                        attributeValue(PROJECTS, "jwt-2.8.2.gem"))
+                        attributeValue(PURL, "pkg:gem/jwt@2.8.2"))
                 .assertNotEmpty();
     }
 }

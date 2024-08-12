@@ -56,9 +56,9 @@ public class Mime_Types_Data_3_2024_0702 extends AbstractCompositionAnalysisTest
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "mime-types-data-3.2024.0702.gem"),
+        artifactList.with(attributeValue(ID, "mime-types-data-3.2024.0702"),
                         attributeValue(VERSION, "3.2024.0702"),
-                        attributeValue(PROJECTS, "mime-types-data-3.2024.0702.gem"))
+                        attributeValue(PURL, "pkg:gem/mime-types-data@3.2024.0702"))
                 .assertNotEmpty();
     }
 }

@@ -56,9 +56,9 @@ public class Sass_Rails_6_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "sass-rails-6.0.0.gem"),
+        artifactList.with(attributeValue(ID, "sass-rails-6.0.0"),
                         attributeValue(VERSION, "6.0.0"),
-                        attributeValue(PROJECTS, "sass-rails-6.0.0.gem"))
+                        attributeValue(PURL, "pkg:gem/sass-rails@6.0.0"))
                 .assertNotEmpty();
     }
 }

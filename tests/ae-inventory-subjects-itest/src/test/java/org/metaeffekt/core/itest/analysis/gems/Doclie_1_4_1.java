@@ -56,9 +56,9 @@ public class Doclie_1_4_1 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "docile-1.4.1.gem"),
+        artifactList.with(attributeValue(ID, "docile-1.4.1"),
                         attributeValue(VERSION, "1.4.1"),
-                        attributeValue(PROJECTS, "docile-1.4.1.gem"))
+                        attributeValue(PURL, "pkg:gem/docile@1.4.1"))
                 .assertNotEmpty();
     }
 }

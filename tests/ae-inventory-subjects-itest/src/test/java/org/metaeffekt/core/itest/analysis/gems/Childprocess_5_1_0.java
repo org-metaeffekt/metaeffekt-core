@@ -56,9 +56,9 @@ public class Childprocess_5_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "childprocess-5.1.0.gem"),
+        artifactList.with(attributeValue(ID, "childprocess-5.1.0"),
                         attributeValue(VERSION, "5.1.0"),
-                        attributeValue(PROJECTS, "childprocess-5.1.0.gem"))
+                        attributeValue(PURL, "pkg:gem/childprocess@5.1.0"))
                 .assertNotEmpty();
     }
 }

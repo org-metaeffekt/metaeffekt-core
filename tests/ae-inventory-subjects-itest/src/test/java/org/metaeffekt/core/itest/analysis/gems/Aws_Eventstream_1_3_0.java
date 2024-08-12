@@ -56,9 +56,9 @@ public class Aws_Eventstream_1_3_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "aws-eventstream-1.3.0.gem"),
+        artifactList.with(attributeValue(ID, "aws-eventstream-1.3.0"),
                         attributeValue(VERSION, "1.3.0"),
-                        attributeValue(PROJECTS, "aws-eventstream-1.3.0.gem"))
+                        attributeValue(PURL, "pkg:gem/aws-eventstream@1.3.0"))
                 .assertNotEmpty();
     }
 }

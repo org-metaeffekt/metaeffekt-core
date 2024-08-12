@@ -56,9 +56,9 @@ public class Globalid_1_2_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "globalid-1.2.1.gem"),
+        artifactList.with(attributeValue(ID, "globalid-1.2.1"),
                         attributeValue(VERSION, "1.2.1"),
-                        attributeValue(PROJECTS, "globalid-1.2.1.gem"))
+                        attributeValue(PURL, "pkg:gem/globalid@1.2.1"))
                 .assertNotEmpty();
     }
 }
