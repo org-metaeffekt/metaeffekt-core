@@ -59,6 +59,7 @@ public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
         artifactList.with(attributeValue(ID, "System.Memory-4.5.5"),
                         attributeValue(VERSION, "4.5.5"),
                         attributeValue(PROJECTS, "[system.memory.4.5.5.nupkg]"),
+                        attributeValue(PURL, "pkg:nuget/System.Memory@4.5.5"),
                         attributeValue(PATH_IN_ASSET, "[system.memory.4.5.5.nupkg]"))
                 .assertNotEmpty();
     }
