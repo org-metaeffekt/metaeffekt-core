@@ -51,14 +51,13 @@ public class EhCacheTest_3_10_8 extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception {
+    public void assertContent() throws Exception {
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logListWithAllAttributes()
                 .with(attributeValue(ID, "ehcache-3.10.8-jakarta.jar"),
                         attributeValue(CHECKSUM, "6767673b52b5c2157bb6b41daef38963"),
-                        attributeValue(VERSION, "3.10.8")
-                )
+                        attributeValue(VERSION, "3.10.8"))
                 .assertNotEmpty();
     }
 }
