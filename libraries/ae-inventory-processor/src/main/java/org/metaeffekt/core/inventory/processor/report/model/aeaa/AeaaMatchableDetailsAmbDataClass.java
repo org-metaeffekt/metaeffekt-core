@@ -342,17 +342,17 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
 
         final String referencedVulnerabilities = amb.get(AdvisoryMetaData.Attribute.REFERENCED_VULNERABILITIES);
         if (referencedVulnerabilities != null) {
-            this.addReferencedVulnerabilities(AeaaVulnerabilityTypeStore.get().fromJson(new JSONArray(referencedVulnerabilities)));
+            this.addReferencedVulnerabilities(AeaaVulnerabilityTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedVulnerabilities)));
         }
 
         final String referencedSecurityAdvisories = amb.get(AdvisoryMetaData.Attribute.REFERENCED_SECURITY_ADVISORIES);
         if (referencedSecurityAdvisories != null) {
-            this.addReferencedSecurityAdvisories(AeaaAdvisoryTypeStore.get().fromJson(new JSONArray(referencedSecurityAdvisories)));
+            this.addReferencedSecurityAdvisories(AeaaAdvisoryTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedSecurityAdvisories)));
         }
 
         final String referencedOtherIds = amb.get(AdvisoryMetaData.Attribute.REFERENCED_OTHER);
         if (referencedOtherIds != null) {
-            this.addOtherReferencedIds(AeaaOtherTypeStore.get().fromJson(new JSONArray(referencedOtherIds)));
+            this.addOtherReferencedIds(AeaaOtherTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedOtherIds)));
         }
 
         {
@@ -462,15 +462,15 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         super.appendFromMap(input);
 
         if (input.containsKey("referencedVulnerabilities") && input.get("referencedVulnerabilities") instanceof List) {
-            this.addReferencedVulnerabilities(AeaaVulnerabilityTypeStore.get().fromList((List<Map<String, Object>>) input.get("referencedVulnerabilities")));
+            this.addReferencedVulnerabilities(AeaaVulnerabilityTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedVulnerabilities")));
         }
 
         if (input.containsKey("referencedSecurityAdvisories") && input.get("referencedSecurityAdvisories") instanceof List) {
-            this.addReferencedSecurityAdvisories(AeaaAdvisoryTypeStore.get().fromList((List<Map<String, Object>>) input.get("referencedSecurityAdvisories")));
+            this.addReferencedSecurityAdvisories(AeaaAdvisoryTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedSecurityAdvisories")));
         }
 
         if (input.containsKey("referencedOtherIds") && input.get("referencedOtherIds") instanceof List) {
-            this.addOtherReferencedIds(AeaaOtherTypeStore.get().fromList((List<Map<String, Object>>) input.get("referencedOtherIds")));
+            this.addOtherReferencedIds(AeaaOtherTypeStore.get().fromListMultipleReferencedIds((List<Map<String, Object>>) input.get("referencedOtherIds")));
         }
 
         if (input.containsKey("referencedIds") && input.get("referencedIds") instanceof Map) {

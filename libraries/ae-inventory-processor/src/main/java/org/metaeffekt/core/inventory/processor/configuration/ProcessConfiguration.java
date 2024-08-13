@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -230,6 +232,32 @@ public abstract class ProcessConfiguration {
                 consumer.accept(Double.valueOf((String) value));
             } else {
                 throw createPropertyException(key, value, "double");
+            }
+        }
+    }
+
+    protected void loadJsonObjectProperty(Map<String, Object> properties, String key, Consumer<JSONObject> consumer) {
+        if (properties.containsKey(key)) {
+            final Object value = properties.get(key);
+            if (value instanceof Map<?, ?>) {
+                final Map<String, Object> valueMap = (Map<String, Object>) value;
+                final JSONObject jsonObject = new JSONObject(valueMap);
+                consumer.accept(jsonObject);
+            } else {
+                throw createPropertyException(key, value, "json-object");
+            }
+        }
+    }
+
+    protected void loadJsonArrayProperty(Map<String, Object> properties, String key, Consumer<JSONArray> consumer) {
+        if (properties.containsKey(key)) {
+            final Object value = properties.get(key);
+            if (value instanceof List<?>) {
+                final List<Object> valueList = (List<Object>) value;
+                final JSONArray jsonArray = new JSONArray(valueList);
+                consumer.accept(jsonArray);
+            } else {
+                throw createPropertyException(key, value, "json-array");
             }
         }
     }

@@ -98,8 +98,8 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     }
 
     @Override
-    public AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>> fromJson(JSONObject json) {
-        final AeaaSingleContentIdentifierParseResult<?> superResult = super.fromJson(json);
+    public AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>> fromJsonNameAndImplementation(JSONObject json) {
+        final AeaaSingleContentIdentifierParseResult<?> superResult = super.fromJsonNameAndImplementation(json);
 
         if (superResult.getIdentifier() instanceof AeaaAdvisoryTypeIdentifier) {
             return (AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>>) superResult;

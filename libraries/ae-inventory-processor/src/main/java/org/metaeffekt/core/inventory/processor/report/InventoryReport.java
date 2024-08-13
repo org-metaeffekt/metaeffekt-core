@@ -25,6 +25,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.json.JSONArray;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -1353,11 +1354,19 @@ public class InventoryReport {
         this.generateOverviewTablesForAdvisories.addAll(providers);
     }
 
-    public void addGenerateOverviewTablesForAdvisoriesByString(Map<String, String> providers) {
+    public void addGenerateOverviewTablesForAdvisoriesByMap(Map<String, String> providers) {
         if (providers == null || providers.isEmpty()) {
             return;
         }
-        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromNamesAndImplementations(providers);
+        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromMapNamesAndImplementations(providers);
+        this.generateOverviewTablesForAdvisories.addAll(parsed);
+    }
+
+    public void addGenerateOverviewTablesForAdvisoriesByMap(JSONArray providers) {
+        if (providers == null || providers.isEmpty()) {
+            return;
+        }
+        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(providers);
         this.generateOverviewTablesForAdvisories.addAll(parsed);
     }
 
