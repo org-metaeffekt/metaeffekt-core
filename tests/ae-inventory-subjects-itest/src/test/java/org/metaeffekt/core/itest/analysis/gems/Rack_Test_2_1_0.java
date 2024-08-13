@@ -36,7 +36,6 @@ public class Rack_Test_2_1_0 extends AbstractCompositionAnalysisTest{
                 .setName(Rack_Test_2_1_0.class.getName());
     }
 
-
     @Ignore
     @Test
     public void clear() throws Exception {
@@ -56,7 +55,7 @@ public class Rack_Test_2_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rack-test-2.1.0"),
+        artifactList.with(attributeValue(ID, "rack-test-2.1.0.gem"),
                         attributeValue(VERSION, "2.1.0"),
                         attributeValue(PURL, "pkg:gem/rack-test@2.1.0"))
                 .assertNotEmpty();

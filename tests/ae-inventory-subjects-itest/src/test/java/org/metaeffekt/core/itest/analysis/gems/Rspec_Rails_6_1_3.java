@@ -56,7 +56,7 @@ public class Rspec_Rails_6_1_3 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rspec-rails-6.1.3"),
+        artifactList.with(attributeValue(ID, "rspec-rails-6.1.3.gem"),
                         attributeValue(VERSION, "6.1.3"),
                         attributeValue(PURL, "pkg:gem/rspec-rails@6.1.3"))
                 .assertNotEmpty();

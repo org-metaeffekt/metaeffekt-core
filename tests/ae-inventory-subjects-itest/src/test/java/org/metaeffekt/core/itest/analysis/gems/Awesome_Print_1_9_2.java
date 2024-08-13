@@ -56,7 +56,7 @@ public class Awesome_Print_1_9_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "awesome_print-1.9.2"),
+        artifactList.with(attributeValue(ID, "awesome_print-1.9.2.gem"),
                         attributeValue(VERSION, "1.9.2"),
                         attributeValue(PURL, "pkg:gem/awesome_print@1.9.2"))
                 .assertNotEmpty();

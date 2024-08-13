@@ -56,7 +56,7 @@ public class Tilt_2_4_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "tilt-2.4.0"),
+        artifactList.with(attributeValue(ID, "tilt-2.4.0.gem"),
                         attributeValue(VERSION, "2.4.0"),
                         attributeValue(PURL, "pkg:gem/tilt@2.4.0"))
                 .assertNotEmpty();

@@ -56,7 +56,7 @@ public class Aws_Sdk_Core_3_201_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "aws-sdk-core-3.201.3"),
+        artifactList.with(attributeValue(ID, "aws-sdk-core-3.201.3.gem"),
                         attributeValue(VERSION, "3.201.3"),
                         attributeValue(PURL, "pkg:gem/aws-sdk-core@3.201.3"))
                 .assertNotEmpty();

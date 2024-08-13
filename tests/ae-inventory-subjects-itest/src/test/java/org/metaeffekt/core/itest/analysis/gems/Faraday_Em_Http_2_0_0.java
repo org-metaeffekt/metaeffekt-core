@@ -56,7 +56,7 @@ public class Faraday_Em_Http_2_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "faraday-em_http-2.0.0"),
+        artifactList.with(attributeValue(ID, "faraday-em_http-2.0.0.gem"),
                         attributeValue(VERSION, "2.0.0"),
                         attributeValue(PURL, "pkg:gem/faraday-em_http@2.0.0"))
                 .assertNotEmpty();

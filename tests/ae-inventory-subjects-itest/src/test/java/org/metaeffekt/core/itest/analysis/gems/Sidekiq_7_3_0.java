@@ -56,7 +56,7 @@ public class Sidekiq_7_3_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "sidekiq-7.3.0"),
+        artifactList.with(attributeValue(ID, "sidekiq-7.3.0.gem"),
                         attributeValue(VERSION, "7.3.0"),
                         attributeValue(PURL, "pkg:gem/sidekiq@7.3.0"))
                 .assertNotEmpty();

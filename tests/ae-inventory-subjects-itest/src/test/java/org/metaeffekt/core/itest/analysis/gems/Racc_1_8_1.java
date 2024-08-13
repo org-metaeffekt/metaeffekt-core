@@ -56,7 +56,7 @@ public class Racc_1_8_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "racc-1.8.1"),
+        artifactList.with(attributeValue(ID, "racc-1.8.1.gem"),
                         attributeValue(VERSION, "1.8.1"),
                         attributeValue(PURL, "pkg:gem/racc@1.8.1"))
                 .assertNotEmpty();

@@ -56,7 +56,7 @@ public class Excon_0_111_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "excon-0.111.0"),
+        artifactList.with(attributeValue(ID, "excon-0.111.0.gem"),
                         attributeValue(VERSION, "0.111.0"),
                         attributeValue(PURL, "pkg:gem/excon@0.111.0"))
                 .assertNotEmpty();

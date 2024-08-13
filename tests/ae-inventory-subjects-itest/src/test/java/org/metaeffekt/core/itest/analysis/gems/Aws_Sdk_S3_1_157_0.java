@@ -56,7 +56,7 @@ public class Aws_Sdk_S3_1_157_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "aws-sdk-s3-1.157.0"),
+        artifactList.with(attributeValue(ID, "aws-sdk-s3-1.157.0.gem"),
                         attributeValue(VERSION, "1.157.0"),
                         attributeValue(PURL, "pkg:gem/aws-sdk-s3@1.157.0"))
                 .assertNotEmpty();

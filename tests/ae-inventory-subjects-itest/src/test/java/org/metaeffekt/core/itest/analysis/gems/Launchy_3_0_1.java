@@ -56,7 +56,7 @@ public class Launchy_3_0_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "launchy-3.0.1"),
+        artifactList.with(attributeValue(ID, "launchy-3.0.1.gem"),
                         attributeValue(VERSION, "3.0.1"),
                         attributeValue(PURL, "pkg:gem/launchy@3.0.1"))
                 .assertNotEmpty();

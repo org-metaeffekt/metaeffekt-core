@@ -56,7 +56,7 @@ public class Rspec_Support_3_13_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rspec-support-3.13.1"),
+        artifactList.with(attributeValue(ID, "rspec-support-3.13.1.gem"),
                         attributeValue(VERSION, "3.13.1"),
                         attributeValue(PURL, "pkg:gem/rspec-support@3.13.1"))
                 .assertNotEmpty();

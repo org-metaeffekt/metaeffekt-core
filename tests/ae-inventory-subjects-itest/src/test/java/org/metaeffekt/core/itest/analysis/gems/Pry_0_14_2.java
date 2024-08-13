@@ -56,7 +56,7 @@ public class Pry_0_14_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "pry-0.14.2"),
+        artifactList.with(attributeValue(ID, "pry-0.14.2.gem"),
                         attributeValue(VERSION, "0.14.2"),
                         attributeValue(PURL, "pkg:gem/pry@0.14.2"))
                 .assertNotEmpty();

@@ -56,7 +56,7 @@ public class Actionview_7_1_3_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "actionview-7.1.3.4"),
+        artifactList.with(attributeValue(ID, "actionview-7.1.3.4.gem"),
                         attributeValue(VERSION, "7.1.3.4"),
                         attributeValue(PURL, "pkg:gem/actionview@7.1.3.4"))
                 .assertNotEmpty();

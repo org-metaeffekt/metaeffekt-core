@@ -56,7 +56,7 @@ public class Bootsnap_1_18_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "bootsnap-1.18.4"),
+        artifactList.with(attributeValue(ID, "bootsnap-1.18.4.gem"),
                         attributeValue(VERSION, "1.18.4"),
                         attributeValue(PURL, "pkg:gem/bootsnap@1.18.4"))
                 .assertNotEmpty();

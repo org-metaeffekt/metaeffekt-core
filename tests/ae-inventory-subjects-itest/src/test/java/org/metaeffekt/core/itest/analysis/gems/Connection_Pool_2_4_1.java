@@ -56,7 +56,7 @@ public class Connection_Pool_2_4_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "connection_pool-2.4.1"),
+        artifactList.with(attributeValue(ID, "connection_pool-2.4.1.gem"),
                         attributeValue(VERSION, "2.4.1"),
                         attributeValue(PURL, "pkg:gem/connection_pool@2.4.1"))
                 .assertNotEmpty();

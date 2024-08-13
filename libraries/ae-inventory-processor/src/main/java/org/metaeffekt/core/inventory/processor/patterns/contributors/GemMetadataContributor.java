@@ -55,18 +55,21 @@ public class GemMetadataContributor extends ComponentPatternContributor {
 
         try {
             // parse gemspec
-            String content = FileUtils.readFileToString(anchorFile, StandardCharsets.ISO_8859_1);
+            // FIXME: detect charset
+            String content8859 = FileUtils.readFileToString(anchorFile, StandardCharsets.ISO_8859_1);
+            String contentUtf8 = FileUtils.readFileToString(anchorFile, StandardCharsets.ISO_8859_1);
 
             final String anchorFileName = anchorFile.getName();
             final String id = anchorFileName.replace(".gemspec", "");
-
-            System.out.println("Hallo Ben!");
 
             String folderName = anchorFile.getParentFile().getParentFile().getName();
 
             if (folderName.startsWith("[") && folderName.endsWith("]")) {
                 folderName = folderName.substring(1, folderName.length()-1);
             }
+
+            String gemName = folderName;
+
             if (folderName.endsWith(".gem")) {
                 folderName = folderName.substring(0, folderName.length()-4);
             }
@@ -74,25 +77,35 @@ public class GemMetadataContributor extends ComponentPatternContributor {
             String name = folderName.substring(0, dashIndex);
             String version = folderName.substring(dashIndex+1, folderName.length());
 
-            // construct component pattern
-            final ComponentPatternData componentPatternData = new ComponentPatternData();
-            final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
+            // verify name / version against metadata file
+            boolean containsName = content8859.contains("name: " + name) || contentUtf8.contains("name: " + name);
+            boolean containsVersion = content8859.contains("version: " + version) || contentUtf8.contains("version: " + version);
 
-            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
-            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+            if (containsName && containsVersion) {
 
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
+                // construct component pattern
+                final ComponentPatternData componentPatternData = new ComponentPatternData();
+                final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
 
-            componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
-            componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
-            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_RUBY_GEM);
+                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-            String purl = buildPurl(name, version, "ruby");
-            componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, gemName);
 
-            return Collections.singletonList(componentPatternData);
+                componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+                componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
+                componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_RUBY_GEM);
+
+                String purl = buildPurl(name, version, "ruby");
+                componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
+
+                return Collections.singletonList(componentPatternData);
+            } else {
+                LOG.warn("Could not verify gem. Name and version not detected in file [{}]", anchorFile.getAbsolutePath());
+                return Collections.emptyList();
+            }
         } catch (Exception e) {
             LOG.warn("Failure while processing anchor [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
             return Collections.emptyList();

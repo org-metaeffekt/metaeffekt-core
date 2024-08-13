@@ -56,7 +56,7 @@ public class Os_1_1_4 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "os-1.1.4"),
+        artifactList.with(attributeValue(ID, "os-1.1.4.gem"),
                         attributeValue(VERSION, "1.1.4"),
                         attributeValue(PURL, "pkg:gem/os@1.1.4"))
                 .assertNotEmpty();

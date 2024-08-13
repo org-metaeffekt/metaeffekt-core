@@ -56,7 +56,7 @@ public class Faraday_Net_Http_Persistent_2_1_0 extends AbstractCompositionAnalys
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "faraday-net_http_persistent-2.1.0"),
+        artifactList.with(attributeValue(ID, "faraday-net_http_persistent-2.1.0.gem"),
                         attributeValue(VERSION, "2.1.0"),
                         attributeValue(PURL, "pkg:gem/faraday-net_http_persistent@2.1.0"))
                 .assertNotEmpty();

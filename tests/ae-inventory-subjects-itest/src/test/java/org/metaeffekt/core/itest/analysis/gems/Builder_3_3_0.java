@@ -56,7 +56,7 @@ public class Builder_3_3_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "builder-3.3.0"),
+        artifactList.with(attributeValue(ID, "builder-3.3.0.gem"),
                         attributeValue(VERSION, "3.3.0"),
                         attributeValue(PURL, "pkg:gem/builder@3.3.0"))
                 .assertNotEmpty();

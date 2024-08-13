@@ -56,7 +56,7 @@ public class Declarative_0_0_20 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "declarative-0.0.20"),
+        artifactList.with(attributeValue(ID, "declarative-0.0.20.gem"),
                         attributeValue(VERSION, "0.0.20"),
                         attributeValue(PURL, "pkg:gem/declarative@0.0.20"))
                 .assertNotEmpty();

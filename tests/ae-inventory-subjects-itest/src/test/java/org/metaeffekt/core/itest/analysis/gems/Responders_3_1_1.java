@@ -56,7 +56,7 @@ public class Responders_3_1_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "responders-3.1.1"),
+        artifactList.with(attributeValue(ID, "responders-3.1.1.gem"),
                         attributeValue(VERSION, "3.1.1"),
                         attributeValue(PURL, "pkg:gem/responders@3.1.1"))
                 .assertNotEmpty();

@@ -56,7 +56,7 @@ public class Ffi_1_17_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "ffi-1.17.0"),
+        artifactList.with(attributeValue(ID, "ffi-1.17.0.gem"),
                         attributeValue(VERSION, "1.17.0"),
                         attributeValue(PURL, "pkg:gem/ffi@1.17.0"))
                 .assertNotEmpty();

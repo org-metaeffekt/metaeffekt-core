@@ -56,7 +56,7 @@ public class Mini_Mime_1_1_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "mini_mime-1.1.5"),
+        artifactList.with(attributeValue(ID, "mini_mime-1.1.5.gem"),
                         attributeValue(VERSION, "1.1.5"),
                         attributeValue(PURL, "pkg:gem/mini_mime@1.1.5"))
                 .assertNotEmpty();

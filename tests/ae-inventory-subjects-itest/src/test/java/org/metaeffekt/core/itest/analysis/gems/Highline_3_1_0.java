@@ -56,7 +56,7 @@ public class Highline_3_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "highline-3.1.0"),
+        artifactList.with(attributeValue(ID, "highline-3.1.0.gem"),
                         attributeValue(VERSION, "3.1.0"),
                         attributeValue(PURL, "pkg:gem/highline@3.1.0"))
                 .assertNotEmpty();

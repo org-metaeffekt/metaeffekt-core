@@ -56,7 +56,7 @@ public class Ruby_Progressbar_1_13_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "ruby-progressbar-1.13.0"),
+        artifactList.with(attributeValue(ID, "ruby-progressbar-1.13.0.gem"),
                         attributeValue(VERSION, "1.13.0"),
                         attributeValue(PURL, "pkg:gem/ruby-progressbar@1.13.0"))
                 .assertNotEmpty();

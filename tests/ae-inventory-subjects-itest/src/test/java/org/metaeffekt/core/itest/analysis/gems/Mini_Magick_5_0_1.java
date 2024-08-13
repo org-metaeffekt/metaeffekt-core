@@ -56,7 +56,7 @@ public class Mini_Magick_5_0_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "mini_magick-5.0.1"),
+        artifactList.with(attributeValue(ID, "mini_magick-5.0.1.gem"),
                         attributeValue(VERSION, "5.0.1"),
                         attributeValue(PURL, "pkg:gem/mini_magick@5.0.1"))
                 .assertNotEmpty();

@@ -56,7 +56,7 @@ public class Memoist_0_16_2 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "memoist-0.16.2"),
+        artifactList.with(attributeValue(ID, "memoist-0.16.2.gem"),
                         attributeValue(VERSION, "0.16.2"),
                         attributeValue(PURL, "pkg:gem/memoist@0.16.2"))
                 .assertNotEmpty();

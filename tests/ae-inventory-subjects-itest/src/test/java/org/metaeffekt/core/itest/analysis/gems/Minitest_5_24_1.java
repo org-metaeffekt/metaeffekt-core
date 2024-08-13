@@ -56,7 +56,7 @@ public class Minitest_5_24_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "minitest-5.24.1"),
+        artifactList.with(attributeValue(ID, "minitest-5.24.1.gem"),
                         attributeValue(VERSION, "5.24.1"),
                         attributeValue(PURL, "pkg:gem/minitest@5.24.1"))
                 .assertNotEmpty();

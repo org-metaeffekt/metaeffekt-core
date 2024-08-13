@@ -56,7 +56,7 @@ public class Formatador_1_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "formatador-1.1.0"),
+        artifactList.with(attributeValue(ID, "formatador-1.1.0.gem"),
                         attributeValue(VERSION, "1.1.0"),
                         attributeValue(PURL, "pkg:gem/formatador@1.1.0"))
                 .assertNotEmpty();

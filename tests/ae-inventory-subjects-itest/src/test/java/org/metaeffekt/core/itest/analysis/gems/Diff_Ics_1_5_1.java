@@ -56,7 +56,7 @@ public class Diff_Ics_1_5_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "diff-lcs-1.5.1"),
+        artifactList.with(attributeValue(ID, "diff-lcs-1.5.1.gem"),
                         attributeValue(VERSION, "1.5.1"),
                         attributeValue(PURL, "pkg:gem/diff-lcs@1.5.1"))
                 .assertNotEmpty();

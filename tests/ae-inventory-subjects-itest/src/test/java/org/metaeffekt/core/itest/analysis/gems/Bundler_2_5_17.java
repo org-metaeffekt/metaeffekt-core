@@ -56,7 +56,7 @@ public class Bundler_2_5_17 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "bundler-2.5.17"),
+        artifactList.with(attributeValue(ID, "bundler-2.5.17.gem"),
                         attributeValue(VERSION, "2.5.17"),
                         attributeValue(PURL, "pkg:gem/bundler@2.5.17"))
                 .assertNotEmpty();

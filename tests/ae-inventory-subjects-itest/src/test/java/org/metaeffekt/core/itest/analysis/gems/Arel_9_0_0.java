@@ -56,7 +56,7 @@ public class Arel_9_0_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "arel-9.0.0"),
+        artifactList.with(attributeValue(ID, "arel-9.0.0.gem"),
                         attributeValue(VERSION, "9.0.0"),
                         attributeValue(PURL, "pkg:gem/arel@9.0.0"))
                 .assertNotEmpty();

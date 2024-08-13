@@ -56,7 +56,7 @@ public class Concurrent_Ruby_1_3_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "concurrent-ruby-1.3.3"),
+        artifactList.with(attributeValue(ID, "concurrent-ruby-1.3.3.gem"),
                         attributeValue(VERSION, "1.3.3"),
                         attributeValue(PURL, "pkg:gem/concurrent-ruby@1.3.3"))
                 .assertNotEmpty();

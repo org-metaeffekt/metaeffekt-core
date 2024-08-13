@@ -56,7 +56,7 @@ public class Mime_Types_3_5_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "mime-types-3.5.2"),
+        artifactList.with(attributeValue(ID, "mime-types-3.5.2.gem"),
                         attributeValue(VERSION, "3.5.2"),
                         attributeValue(PURL, "pkg:gem/mime-types@3.5.2"))
                 .assertNotEmpty();

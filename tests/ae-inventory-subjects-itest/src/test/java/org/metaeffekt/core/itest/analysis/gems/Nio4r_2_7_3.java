@@ -56,7 +56,7 @@ public class Nio4r_2_7_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "nio4r-2.7.3"),
+        artifactList.with(attributeValue(ID, "nio4r-2.7.3.gem"),
                         attributeValue(VERSION, "2.7.3"),
                         attributeValue(PURL, "pkg:gem/nio4r@2.7.3"))
                 .assertNotEmpty();

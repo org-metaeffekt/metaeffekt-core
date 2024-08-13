@@ -56,7 +56,7 @@ public class Rb_Fsevent_0_11_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rb-fsevent-0.11.2"),
+        artifactList.with(attributeValue(ID, "rb-fsevent-0.11.2.gem"),
                         attributeValue(VERSION, "0.11.2"),
                         attributeValue(PURL, "pkg:gem/rb-fsevent@0.11.2"))
                 .assertNotEmpty();

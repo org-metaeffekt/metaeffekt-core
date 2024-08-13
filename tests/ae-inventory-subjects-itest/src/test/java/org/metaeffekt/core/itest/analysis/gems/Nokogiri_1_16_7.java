@@ -56,7 +56,7 @@ public class Nokogiri_1_16_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "nokogiri-1.16.7"),
+        artifactList.with(attributeValue(ID, "nokogiri-1.16.7.gem"),
                         attributeValue(VERSION, "1.16.7"),
                         attributeValue(PURL, "pkg:gem/nokogiri@1.16.7"))
                 .assertNotEmpty();

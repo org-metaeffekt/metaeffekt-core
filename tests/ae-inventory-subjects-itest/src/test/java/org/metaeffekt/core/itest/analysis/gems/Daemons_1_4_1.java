@@ -56,7 +56,7 @@ public class Daemons_1_4_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "daemons-1.4.1"),
+        artifactList.with(attributeValue(ID, "daemons-1.4.1.gem"),
                         attributeValue(VERSION, "1.4.1"),
                         attributeValue(PURL, "pkg:gem/daemons@1.4.1"))
                 .assertNotEmpty();

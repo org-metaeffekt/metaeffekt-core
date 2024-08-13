@@ -56,7 +56,7 @@ public class Warden_1_2_9 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "warden-1.2.9"),
+        artifactList.with(attributeValue(ID, "warden-1.2.9.gem"),
                         attributeValue(VERSION, "1.2.9"),
                         attributeValue(PURL, "pkg:gem/warden@1.2.9"))
                 .assertNotEmpty();

@@ -56,7 +56,7 @@ public class Httpclient_2_8_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "httpclient-2.8.3"),
+        artifactList.with(attributeValue(ID, "httpclient-2.8.3.gem"),
                         attributeValue(VERSION, "2.8.3"),
                         attributeValue(PURL, "pkg:gem/httpclient@2.8.3"))
                 .assertNotEmpty();

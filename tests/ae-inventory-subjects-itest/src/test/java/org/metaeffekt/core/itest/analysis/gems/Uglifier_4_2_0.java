@@ -56,7 +56,7 @@ public class Uglifier_4_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "uglifier-4.2.0"),
+        artifactList.with(attributeValue(ID, "uglifier-4.2.0.gem"),
                         attributeValue(VERSION, "4.2.0"),
                         attributeValue(PURL, "pkg:gem/uglifier@4.2.0"))
                 .assertNotEmpty();

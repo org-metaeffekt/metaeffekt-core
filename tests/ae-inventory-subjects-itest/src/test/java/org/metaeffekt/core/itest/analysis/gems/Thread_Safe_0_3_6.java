@@ -56,7 +56,7 @@ public class Thread_Safe_0_3_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "thread_safe-0.3.6"),
+        artifactList.with(attributeValue(ID, "thread_safe-0.3.6.gem"),
                         attributeValue(VERSION, "0.3.6"),
                         attributeValue(PURL, "pkg:gem/thread_safe@0.3.6"))
                 .assertNotEmpty();

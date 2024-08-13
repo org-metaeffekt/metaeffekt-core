@@ -56,7 +56,7 @@ public class Sprockets_Rails_3_5_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "sprockets-rails-3.5.2"),
+        artifactList.with(attributeValue(ID, "sprockets-rails-3.5.2.gem"),
                         attributeValue(VERSION, "3.5.2"),
                         attributeValue(PURL, "pkg:gem/sprockets-rails@3.5.2"))
                 .assertNotEmpty();

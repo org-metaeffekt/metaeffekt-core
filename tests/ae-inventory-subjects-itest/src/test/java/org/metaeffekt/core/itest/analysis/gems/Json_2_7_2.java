@@ -56,7 +56,7 @@ public class Json_2_7_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "json-2.7.2"),
+        artifactList.with(attributeValue(ID, "json-2.7.2.gem"),
                         attributeValue(VERSION, "2.7.2"),
                         attributeValue(PURL, "pkg:gem/json@2.7.2"))
                 .assertNotEmpty();

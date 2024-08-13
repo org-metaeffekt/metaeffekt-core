@@ -56,7 +56,7 @@ public class Rack_3_1_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rack-3.1.7"),
+        artifactList.with(attributeValue(ID, "rack-3.1.7.gem"),
                         attributeValue(VERSION, "3.1.7"),
                         attributeValue(PURL, "pkg:gem/rack@3.1.7"))
                 .assertNotEmpty();

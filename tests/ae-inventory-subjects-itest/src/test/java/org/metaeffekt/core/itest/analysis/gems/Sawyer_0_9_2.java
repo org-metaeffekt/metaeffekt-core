@@ -56,7 +56,7 @@ public class Sawyer_0_9_2 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "sawyer-0.9.2"),
+        artifactList.with(attributeValue(ID, "sawyer-0.9.2.gem"),
                         attributeValue(VERSION, "0.9.2"),
                         attributeValue(PURL, "pkg:gem/sawyer@0.9.2"))
                 .assertNotEmpty();

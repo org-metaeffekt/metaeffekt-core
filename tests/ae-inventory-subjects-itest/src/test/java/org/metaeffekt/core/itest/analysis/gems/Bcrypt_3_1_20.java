@@ -56,7 +56,7 @@ public class Bcrypt_3_1_20 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "bcrypt-3.1.20"),
+        artifactList.with(attributeValue(ID, "bcrypt-3.1.20.gem"),
                         attributeValue(VERSION, "3.1.20"),
                         attributeValue(PURL, "pkg:gem/bcrypt@3.1.20"))
                 .assertNotEmpty();

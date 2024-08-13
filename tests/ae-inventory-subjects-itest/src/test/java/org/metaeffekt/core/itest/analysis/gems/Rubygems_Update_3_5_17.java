@@ -56,7 +56,7 @@ public class Rubygems_Update_3_5_17 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rubygems-update-3.5.17"),
+        artifactList.with(attributeValue(ID, "rubygems-update-3.5.17.gem"),
                         attributeValue(VERSION, "3.5.17"),
                         attributeValue(PURL, "pkg:gem/rubygems-update@3.5.17"))
                 .assertNotEmpty();
