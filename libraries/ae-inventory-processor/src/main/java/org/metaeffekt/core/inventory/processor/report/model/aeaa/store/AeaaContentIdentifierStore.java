@@ -87,7 +87,7 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         return contentIdentifier;
     }
 
-    public List<T> fromNamesAndImplementations(Map<String, String> entries) {
+    public List<T> fromMapNamesAndImplementations(Map<String, String> entries) {
         return entries.entrySet().stream()
                 .map(entry -> this.fromNameAndImplementation(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
@@ -166,7 +166,7 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
                 .findFirst();
     }
 
-    public AeaaSingleContentIdentifierParseResult<T> fromJson(JSONObject json) {
+    public AeaaSingleContentIdentifierParseResult<T> fromJsonNameAndImplementation(JSONObject json) {
         final String name = ObjectUtils.firstNonNull(json.optString("source", null), json.optString("name", null), "unknown");
         final String implementation = ObjectUtils.firstNonNull(json.optString("implementation", null), name, "unknown");
         final T identifier = fromNameAndImplementation(name, implementation);
@@ -176,12 +176,24 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         return new AeaaSingleContentIdentifierParseResult<>(identifier, id);
     }
 
-    public Map<T, Set<String>> fromJson(JSONArray json) {
+    public List<T> fromJsonNamesAndImplementations(JSONArray json) {
+        final List<T> identifiers = new ArrayList<>();
+
+        for (int i = 0; i < json.length(); i++) {
+            final JSONObject jsonObject = json.getJSONObject(i);
+            final AeaaSingleContentIdentifierParseResult<T> pair = fromJsonNameAndImplementation(jsonObject);
+            identifiers.add(pair.getIdentifier());
+        }
+
+        return identifiers;
+    }
+
+    public Map<T, Set<String>> fromJsonMultipleReferencedIds(JSONArray json) {
         final Map<T, Set<String>> referencedIds = new HashMap<>();
 
         for (int i = 0; i < json.length(); i++) {
             final JSONObject jsonObject = json.getJSONObject(i);
-            final AeaaSingleContentIdentifierParseResult<T> pair = fromJson(jsonObject);
+            final AeaaSingleContentIdentifierParseResult<T> pair = fromJsonNameAndImplementation(jsonObject);
             final T identifier = pair.getIdentifier();
             final String id = pair.getId();
 
@@ -201,7 +213,7 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         return new AeaaSingleContentIdentifierParseResult<>(identifier, id);
     }
 
-    public Map<T, Set<String>> fromList(List<Map<String, Object>> map) {
+    public Map<T, Set<String>> fromListMultipleReferencedIds(List<Map<String, Object>> map) {
         final Map<T, Set<String>> referencedIds = new HashMap<>();
 
         for (Map<String, Object> entry : map) {

@@ -400,7 +400,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     }
 
     public static AeaaAdvisoryEntry fromJson(JSONObject json) {
-        final AeaaContentIdentifierStore.AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>> foundType = AeaaAdvisoryTypeStore.get().fromJson(json);
+        final AeaaContentIdentifierStore.AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>> foundType = AeaaAdvisoryTypeStore.get().fromJsonNameAndImplementation(json);
         return fromJson(json, foundType.getIdentifier().getAdvisoryFactory());
     }
 

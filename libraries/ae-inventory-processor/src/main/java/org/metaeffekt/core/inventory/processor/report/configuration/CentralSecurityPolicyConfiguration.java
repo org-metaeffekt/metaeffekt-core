@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report.configuration;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessConfiguration;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessMisconfiguration;
@@ -170,23 +171,40 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
     /**
-     * includeVulnerabilitiesWithAdvisoryProviders<br>
-     * <code>Map&lt;String, String&gt;</code><p>
-     * A map of Advisory provider names with an optional implementation value that will be evaluated for each advisory.
-     * If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the report. <code>all, all</code> can be used to ignore this check.<p>
-     * Example: <code>{"CERT_FR":"", "CERT_SEI":"", "MSRC":"", "GHSA":"", "RHSA":"CSAF"}</code><br>
-     * Default: <code>{"all":"all"}</code>
+     * includeVulnerabilitiesWithAdvisoryProviders
+     * <p>
+     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * The key "name" is mandatory and can optionally be combined with an "implementation" value. If the implementation
+     * is not specified, the name will be used as the implementation. Each list entry represents a single advisory type.
+     * <p>
+     * If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the
+     * report. <code>all, all</code> can be used to ignore this check.<p>
+     * <p>
+     * Example:
+     * <pre>
+     *     [{"name":"CERT_FR"},
+     *      {"name":"CERT_SEI"},
+     *      {"name":"RHSA","implementation":"CSAF"}]
+     * </pre>
+     * Default: <code>{"name":"all","implementation":"all"}</code>
      */
-    private final Map<String, String> includeVulnerabilitiesWithAdvisoryProviders = new HashMap<>(Collections.singletonMap("all", "all"));
+    private final JSONArray includeVulnerabilitiesWithAdvisoryProviders = new JSONArray()
+            .put(new JSONObject().put("name", "all").put("implementation", "all"));
     /**
-     * includeAdvisoryProviders<br>
-     * <code>Map&lt;String, String&gt;</code><p>
-     * A map of Advisory provider names with an optional implementation value that will be evaluated for each advisory.
-     * If an advisory is not of one of the specified sources, it will be excluded. <code>all, all</code> can be used to ignore this check.<p>
-     * Example: <code>{"CERT_FR":"", "CERT_SEI":"", "MSRC":"", "GHSA":"", "RHSA":"CSAF"}</code><br>
-     * Default: <code>{"all":"all"}</code>
+     * includeAdvisoryProviders
+     * <p>
+     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * The key "name" is mandatory and can optionally be combined with an "implementation" value. If the implementation
+     * is not specified, the name will be used as the implementation. Each list entry represents a single advisory type.
+     * <p>
+     * A list of advisory provider names with an optional implementation value that will be evaluated for each advisory.
+     * If an advisory is not of one of the specified sources, it will be excluded. <code>all, all</code> can be used to
+     * ignore this check.
+     * <p>
+     * Default: <code>{"name":"all","implementation":"all"}</code>
      */
-    private final Map<String, String> includeAdvisoryProviders = new HashMap<>(Collections.singletonMap("all", "all"));
+    private final JSONArray includeAdvisoryProviders = new JSONArray()
+            .put(new JSONObject().put("name", "all").put("implementation", "all"));
     /**
      * includeAdvisoryTypes<br>
      * <code>List&lt;String&gt;</code><p>
@@ -325,11 +343,17 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(Map<String, String> includeVulnerabilitiesWithAdvisoryProviders) {
         this.includeVulnerabilitiesWithAdvisoryProviders.clear();
+        includeVulnerabilitiesWithAdvisoryProviders.forEach((name, implementation) -> this.includeVulnerabilitiesWithAdvisoryProviders.put(new JSONObject().put("name", name).put("implementation", StringUtils.isNotEmpty(implementation) ? implementation : name)));
+        return this;
+    }
+
+    public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(JSONArray includeVulnerabilitiesWithAdvisoryProviders) {
+        this.includeVulnerabilitiesWithAdvisoryProviders.clear();
         this.includeVulnerabilitiesWithAdvisoryProviders.putAll(includeVulnerabilitiesWithAdvisoryProviders);
         return this;
     }
 
-    public Map<String, String> getIncludeVulnerabilitiesWithAdvisoryProviders() {
+    public JSONArray getIncludeVulnerabilitiesWithAdvisoryProviders() {
         return includeVulnerabilitiesWithAdvisoryProviders;
     }
 
@@ -338,7 +362,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             return true;
         }
 
-        final List<AeaaAdvisoryTypeIdentifier<?>> filter = AeaaAdvisoryTypeStore.get().fromNamesAndImplementations(includeVulnerabilitiesWithAdvisoryProviders);
+        final List<AeaaAdvisoryTypeIdentifier<?>> filter = AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(includeVulnerabilitiesWithAdvisoryProviders);
         return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
     }
 
@@ -372,13 +396,19 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 .anyMatch(includeVulnerabilitiesWithAdvisoryReviewStatus::contains);
     }
 
-    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(Map<String, String> includeAdvisoryProviders) {
+    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(JSONArray includeAdvisoryProviders) {
         this.includeAdvisoryProviders.clear();
         this.includeAdvisoryProviders.putAll(includeAdvisoryProviders);
         return this;
     }
 
-    public Map<String, String> getIncludeAdvisoryProviders() {
+    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(Map<String, String> includeAdvisoryProviders) {
+        this.includeAdvisoryProviders.clear();
+        includeAdvisoryProviders.forEach((name, implementation) -> this.includeAdvisoryProviders.put(new JSONObject().put("name", name).put("implementation", StringUtils.isNotEmpty(implementation) ? implementation : name)));
+        return this;
+    }
+
+    public JSONArray getIncludeAdvisoryProviders() {
         return includeAdvisoryProviders;
     }
 
@@ -407,7 +437,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (containsAny(includeAdvisoryProviders)) {
             return true;
         }
-        for (AeaaAdvisoryTypeIdentifier<?> identifier : AeaaAdvisoryTypeStore.get().fromNamesAndImplementations(includeAdvisoryProviders)) {
+        for (AeaaAdvisoryTypeIdentifier<?> identifier : AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(includeAdvisoryProviders)) {
             if (identifier == advisory.getSourceIdentifier()) {
                 return true;
             }
@@ -419,7 +449,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (containsAny(includeAdvisoryProviders)) {
             return true;
         }
-        for (AeaaAdvisoryTypeIdentifier<?> identifier : AeaaAdvisoryTypeStore.get().fromNamesAndImplementations(includeAdvisoryProviders)) {
+        for (AeaaAdvisoryTypeIdentifier<?> identifier : AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(includeAdvisoryProviders)) {
             if (identifier.getName().equals(providerName)) {
                 return true;
             }
@@ -479,9 +509,9 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadProperty(properties, "jsonSchemaValidationErrorsHandling", value -> JsonSchemaValidationErrorsHandling.valueOf(String.valueOf(value)), this::setJsonSchemaValidationErrorsHandling);
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
-        super.loadMapProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
+        super.loadJsonArrayProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", this::setIncludeVulnerabilitiesWithAdvisoryProviders);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryReviewStatus", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryReviewStatus);
-        super.loadMapProperty(properties, "includeAdvisoryProviders", String::valueOf, String::valueOf, this::setIncludeAdvisoryProviders);
+        super.loadJsonArrayProperty(properties, "includeAdvisoryProviders", this::setIncludeAdvisoryProviders);
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
         super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
         super.loadListProperty(properties, "cvssVersionSelectionPolicy", value -> CvssScoreVersionSelectionPolicy.valueOf(String.valueOf(value)), this::setCvssVersionSelectionPolicy);
@@ -538,9 +568,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             misconfigurations.add(new ProcessMisconfiguration("vulnerabilityStatusDisplayMapper", "Unknown status mapper: " + vulnerabilityStatusDisplayMapper));
         }
 
-        for (Map.Entry<String, String> provider : includeVulnerabilitiesWithAdvisoryProviders.entrySet()) {
+        for (int i = 0; i < includeVulnerabilitiesWithAdvisoryProviders.length(); i++) {
+            final JSONObject provider = includeVulnerabilitiesWithAdvisoryProviders.optJSONObject(i, null);
             if (provider == null) {
-                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null"));
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null or is not a JSON object: " + includeVulnerabilitiesWithAdvisoryProviders));
             }
         }
 
@@ -552,9 +583,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             }
         }
 
-        for (Map.Entry<String, String> provider : includeAdvisoryProviders.entrySet()) {
+        for (int i = 0; i < includeAdvisoryProviders.length(); i++) {
+            final JSONObject provider = includeAdvisoryProviders.optJSONObject(i, null);
             if (provider == null) {
-                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null"));
+                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null or is not a JSON object: " + includeAdvisoryProviders));
             }
         }
 
@@ -914,6 +946,24 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     public static boolean containsAny(Map<String, String> collection) {
         return collection != null && !collection.isEmpty()
                 && (collection.containsKey("ALL") || collection.containsKey("all") || collection.containsKey("ANY") || collection.containsKey("any"));
+    }
+
+    public static boolean containsAny(JSONArray collection) { // List<Map<String, String>>
+        if (collection == null || collection.isEmpty()) {
+            return false;
+        }
+
+        for (int i = 0; i < collection.length(); i++) {
+            if (isAny(collection.getJSONObject(i))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isAny(JSONObject entry) {
+        return entry != null && isAny(entry.getString("name"));
     }
 
     public static boolean isAny(String value) {
