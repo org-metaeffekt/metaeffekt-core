@@ -282,14 +282,14 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("/Volumes/T-H-HAM/dSecureCloud");
-        final File referenceInventoryDir = new File("/Volumes/T-H-HAM/dSecureCloud");
+        final File inventoryDir = new File("<path-to-inventory-dir>");
+        final File referenceInventoryDir = new File("<path-to-reference-inventory-dir>");
 
         final File reportDir = new File("target/test-inventory-04");
 
         InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "Biometrieclient-11.04.2024-Software Distribution Documentation.xlsx",
-                referenceInventoryDir, "Biometrieclient-11.04.2024-Software Distribution Documentation.xlsx",
+        prepareReport(inventoryDir, "*.xlsx",
+                referenceInventoryDir, "*.xlsx",
                 reportDir, report);
 
         report.setTemplateLanguageSelector("en");
