@@ -264,11 +264,14 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         if (assetMetaDataList != null) {
             for (AssetMetaData assetMetaData : assetMetaDataList) {
-                final String path = assetMetaData.get(ATTRIBUTE_KEY_ASSET_PATH);
-                final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
-                if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(assetId)) {
-                    // FIXME: we may need a map to list; validated; refers to putIfAbsent
-                    fileSystemScanContext.getPathToAssetIdMap().putIfAbsent(path, assetId);
+                // FIXME: why does this fail sometimes? why does/can the list contain null objects?
+                if (assetMetaData != null) {
+                    final String path = assetMetaData.get(ATTRIBUTE_KEY_ASSET_PATH);
+                    final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+                    if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(assetId)) {
+                        // FIXME: we may need a map to list; validated; refers to putIfAbsent
+                        fileSystemScanContext.getPathToAssetIdMap().putIfAbsent(path, assetId);
+                    }
                 }
             }
         }

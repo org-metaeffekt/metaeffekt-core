@@ -80,6 +80,8 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
                     "**/bower_components/**/*" + "," +
                     "**/*.jar");
 
+            componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json, **/apps/**/**/*.json");
+
             componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_NEXTCLOUD_APP);
             componentPatternData.set(Artifact.Attribute.URL.getKey(), url);

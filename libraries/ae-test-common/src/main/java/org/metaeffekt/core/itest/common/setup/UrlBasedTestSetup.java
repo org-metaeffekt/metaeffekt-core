@@ -49,18 +49,6 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
                 "**/.git/**/*", "**/.git*",
                 "**/.svn/**/*", "**/.svn*",
                 "**/log/**/*",
-
-                // we should eliminate the below
-
-                "**/__pycache__/**/*", "**/__pycache__*",
-                "**/usr/lib/systemd/**/*",
-                "**/usr/lib/systemd*",
-                "**/usr/lib/udev/**/*",
-                "**/usr/lib/terminfo/**/*",
-                "**/var/cache/**/*",
-                "**/var/lib/systemd/**/*",
-                "**/var/lib/ucf/**/*",
-                "**/etc/**/*"
         };
 
         String[] unwrapIncludes = new String[]{"**/*"};

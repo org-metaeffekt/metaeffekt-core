@@ -76,7 +76,9 @@ public class ComponentPatternData extends AbstractModelBase {
         VERSION_ANCHOR("Version Anchor"),
         VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum"),
         TYPE("Type"),
-        COMPONENT_SOURCE_TYPE("Component Source Type");
+        COMPONENT_SOURCE_TYPE("Component Source Type"),
+        SHARED_INCLUDE_PATTERN("Shared Include Pattern"),
+        SHARED_EXCLUDE_PATTERN("Shared Exclude Pattern");
 
         private String key;
 

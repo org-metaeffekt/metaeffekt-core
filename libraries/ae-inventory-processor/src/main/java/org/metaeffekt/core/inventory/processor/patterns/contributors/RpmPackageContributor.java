@@ -27,6 +27,7 @@ import org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.Pa
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.RPMDBUtils;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.ndb.NDB;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.sqlite3.SQLite3;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,20 +101,20 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                                 installedFileName = installedFileName.startsWith("/") ? installedFileName.substring(1) : installedFileName;
 
                                 File file = new File(baseDir, virtualRootPath + "/" + installedFileName);
-                                if (file.exists() && file.isFile()) {
+                                if (file.exists() && file.isFile() && !FileUtils.isSymlink(file)) {
                                     sj.add(installedFileName);
                                 }
                             }
                         }
                     } catch (Exception e) { // FIXME: what kind of exceptions happen here; also observed NPE
                         LOG.warn("Could not include patterns for rpm-package: [{}]", packageInfo.getName());
-
-                        // NOTE: never add **/*; only add files which may contribute to the package from known locations
-                        // FIXME: check names of folder (distribution-specific)
-                        sj.add("usr/share/doc/" + packageInfo.getName() + "/**/*");
-                        sj.add("usr/share/licenses/" + packageInfo.getName() + "/**/*");
-                        sj.add("usr/share/man/**/" + packageInfo.getName() + "*");
                     }
+
+                    // NOTE: never add **/*; only add files which may contribute to the package from known locations
+                    // FIXME: check names of folder (distribution-specific)
+                    sj.add("usr/share/doc/" + packageInfo.getName() + "/**/*");
+                    sj.add("usr/share/licenses/" + packageInfo.getName() + "/**/*");
+                    sj.add("usr/share/man/**/" + packageInfo.getName() + "*");
 
                     ComponentPatternData cpd = new ComponentPatternData();
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageInfo.getName());

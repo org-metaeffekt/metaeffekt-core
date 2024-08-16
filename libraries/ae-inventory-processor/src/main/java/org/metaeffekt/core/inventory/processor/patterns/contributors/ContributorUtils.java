@@ -17,18 +17,26 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 public class ContributorUtils {
 
-    public static String slapSquareBracketsAroundLastPathElement(String path) {
+    public static String extendArchivePattern(String path) {
         int lastSlash = path.lastIndexOf("/");
 
         if (lastSlash == -1) {
+            if (path.contains("*")) {
+                return null;
+            }
             return "[" + path + "]";
         }
 
-        String toAddBeforeSlash = path.substring(0, lastSlash);
         String supposedArchiveName = path.substring(lastSlash + 1);
 
+        if (supposedArchiveName.contains("*")) {
+            return null;
+        }
+
+        String toAddBeforeSlash = path.substring(0, lastSlash);
+
         // only works for one level but that might already help with a LOT of issues
-        return toAddBeforeSlash + "/[" + supposedArchiveName + "]";
+        return toAddBeforeSlash + "/[" + supposedArchiveName + "]/**/*";
     }
 
 }

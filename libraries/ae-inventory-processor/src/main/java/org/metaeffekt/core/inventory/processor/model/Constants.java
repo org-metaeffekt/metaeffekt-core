@@ -123,6 +123,10 @@ public final class Constants {
 
     public static final String KEY_SCOPE = "Scope";
 
+    public static final String KEY_ARCHIVE_PATH = "Archive Path";
+
+    public static final String KEY_CONTENT_CHECKSUM = "Content Checksum";
+
     protected Constants() {
     }
 

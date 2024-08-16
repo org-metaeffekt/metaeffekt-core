@@ -330,7 +330,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // add list of comma-separated paths
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
 
-        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
+        // FIXME: clarify exclude patterns for java 11
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*, **/jspawnhelper, **/jvm/java-11-openjdk-amd64/lib/*.so");
+
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_EXCLUDE_PATTERN, "**/Bindu.pl");
 
         // get version from the entry
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
@@ -398,20 +401,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                     // handle this by skipping this line
                     LOG.debug("Component pattern from [{}] won't contain diverged entry [{}].",
                             correspondingMd5sumsFile, toAdd);
-                    return;
                 }
 
                 fileJoiner.add(toAdd);
-
-                // FIXME: remove this hack when archives are being handled properly and will match without "[blah]"
-                if (toAdd.endsWith(".gz")
-                        || toAdd.endsWith(".tar")
-                        || toAdd.endsWith(".zip")) {
-                    String uglyIncludeArchiveContentHack =
-                            ContributorUtils.slapSquareBracketsAroundLastPathElement(toAdd) + "/**";
-
-                    fileJoiner.add(uglyIncludeArchiveContentHack);
-                }
             });
         } catch (IOException e) {
             LOG.info("Could not read file list for entry with name [{}].", entry.packageName);
@@ -419,16 +411,18 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
 
         // FIXME: review with JKR; these files have not been covered
-        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
-        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
-        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
+        // fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
+        // FIXME: how do we know if these are right?
+        // fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
+        // fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
 
         // we have to include the files in the status.d directory as well
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
 
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
-        fileJoiner.add("usr/share/" + entry.packageName + "/**/*");
+        // FIXME: this is simply not right, since some packages don't have actually files in there but other packages need to access this directory
+        // fileJoiner.add("usr/share/" + entry.packageName + "/**/*");
         fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
         if ("tzdata".equals(entry.packageName)) {
             fileJoiner.add("usr/share/zoneinfo/**/*");

@@ -19,12 +19,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
@@ -51,6 +54,16 @@ public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
     @Test
     public void inventorize() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+    }
+
+    @Test
+    public void testComponentPatterns() throws Exception {
+        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        boolean hasDuplicates = ComponentPatternValidator.removeDuplicateComponentPatterns(referenceInventory, inventory, baseDir);
+        Assert.assertFalse(hasDuplicates);
     }
 
     @Test

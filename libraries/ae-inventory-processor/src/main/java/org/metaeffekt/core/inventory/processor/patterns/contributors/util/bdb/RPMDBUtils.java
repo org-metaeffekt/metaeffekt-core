@@ -649,7 +649,7 @@ public class RPMDBUtils {
                     break;
 
                 case RpmConstants.RPMTAG_GROUP:
-                    if (ie.getInfo().getType() != RpmConstants.RPM_I18NSTRING_TYPE) {
+                    if (ie.getInfo().getType() != RpmConstants.RPM_I18NSTRING_TYPE && ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
                         throw new IOException("invalid tag group");
                     }
                     String group = new String(ie.getData()).trim();

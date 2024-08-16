@@ -19,6 +19,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class AlpmPackageContributor extends ComponentPatternContributor {
@@ -98,13 +98,48 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             File filesFile = new File(packageDir, "files");
             if (filesFile.exists()) {
                 try (Stream<String> lines = Files.lines(filesFile.toPath())) {
-                    for (String line : lines.collect(Collectors.toList())) {
-                        if (!line.startsWith("%FILES%") && !line.startsWith("%BACKUP%")) {
-                            includePatterns.add(line.trim());
+                    Iterator<String> iterator = lines.iterator();
+                    List<String> specificPaths = new ArrayList<>();
+
+                    while (iterator.hasNext()) {
+                        String currentLine = iterator.next().trim();
+
+                        if (!currentLine.startsWith("%FILES%") && !currentLine.startsWith("%BACKUP%")) {
+                            boolean isMostSpecific = true;
+                            Iterator<String> existingPathsIterator = specificPaths.iterator();
+
+                            while (existingPathsIterator.hasNext()) {
+                                String existingPath = existingPathsIterator.next();
+
+                                if (currentLine.startsWith(existingPath)) {
+                                    // If currentLine is more specific, remove the broader existing path
+                                    existingPathsIterator.remove();
+                                } else if (existingPath.startsWith(currentLine)) {
+                                    // If an existing path is more specific, skip adding currentLine
+                                    isMostSpecific = false;
+                                    break;
+                                }
+                            }
+
+                            if (isMostSpecific) {
+                                specificPaths.add(currentLine);
+                            }
+                        }
+                    }
+
+                    // Include specificPaths in includePatterns
+                    for (String specificPath : specificPaths) {
+                        File specificFile = new File(new File(baseDir, virtualRootPath), specificPath);
+                        // check if the specific file exists and is not a symlink
+                        if (specificFile.exists() && specificFile.isFile() && !FileUtils.isSymlink(specificFile)) {
+                            includePatterns.add(specificPath);
                         }
                     }
                 }
             }
+
+
+
 
             if (includePatterns.length() == 0) {
                 LOG.warn("No include patterns found for package: [{}]-[{}]-[{}]", packageName, version, architecture);

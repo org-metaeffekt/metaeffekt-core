@@ -44,4 +44,6 @@ public interface TestSetup {
 
     String getScanFolder();
 
+    String getInventoryFolder();
+
 }

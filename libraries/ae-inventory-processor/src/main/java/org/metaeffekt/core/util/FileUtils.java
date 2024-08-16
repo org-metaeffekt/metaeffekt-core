@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -317,6 +319,63 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         scanner.setCaseSensitive(false);
         scanner.scan();
         return scanner.getIncludedFiles();
+    }
+
+    public static String[] scanDirectoryForFiles(File targetDir, String[] includes, String[] excludes) {
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(targetDir);
+        scanner.setIncludes(includes);
+        scanner.setExcludes(excludes);
+        scanner.setCaseSensitive(false);
+        scanner.scan();
+        return scanner.getIncludedFiles();
+    }
+
+    public static void createDirectoryContentChecksumFile(File baseDir, File targetContentChecksumFile) throws IOException {
+        final StringBuilder checksumSequence = new StringBuilder();
+        final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
+
+        Arrays.stream(files).map(fileName -> normalizePathToLinux(fileName)).sorted(String::compareTo).forEach(fileName -> {
+            final File file = new File(baseDir, fileName);
+            try {
+                final String fileChecksum = FileUtils.computeChecksum(file);
+                if (checksumSequence.length() > 0) {
+                    checksumSequence.append(0);
+                }
+                checksumSequence.append(fileChecksum);
+            } catch (Exception e) {
+                if (FileUtils.isSymlink(file)) {
+                    LOG.warn("Cannot compute checksum for symbolic link file [{}].", file);
+                } else {
+                    LOG.warn("Cannot compute checksum for file [{}].", file);
+                }
+            }
+        });
+        FileUtils.writeStringToFile(targetContentChecksumFile, checksumSequence.toString(), FileUtils.ENCODING_UTF_8);
+    }
+
+    /**
+     * Uses the native zip command to zip the file. Uses the -X attribute to create files with deterministic checksum.
+     *
+     * @param sourceDir     The directory to zip (recursively).
+     * @param targetZipFile The target zip file name.
+     */
+    public static void zipAnt(File sourceDir, File targetZipFile) {
+        Zip zip = new Zip();
+        Project project = new Project();
+        project.setBaseDir(sourceDir);
+        zip.setProject(project);
+        zip.setBasedir(sourceDir);
+        zip.setCompress(true);
+        zip.setDestFile(targetZipFile);
+        zip.setFollowSymlinks(false);
+        zip.execute();
+    }
+
+    public static void validateExists(File file) {
+        if (!file.exists()) {
+            throw new IllegalStateException(String.format("File '%s' does not exist.", file.getAbsolutePath()));
+        }
     }
 
 }
