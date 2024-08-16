@@ -16,12 +16,16 @@
 
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.Map;
 
+@Setter
+@Getter
 public class AeaaKevData {
     private String vulnerability;
     private String vendor;
@@ -34,6 +38,11 @@ public class AeaaKevData {
     private Date exploitDate;
     private Date dueDate;
     private RansomwareState ransomwareState;
+
+    public AeaaKevData(String vulnerability, RansomwareState state) {
+        this.vulnerability = vulnerability;
+        this.ransomwareState = state;
+    }
 
     public AeaaKevData() {
     }
@@ -124,94 +133,6 @@ public class AeaaKevData {
     public enum RansomwareState {
         UNKNOWN,
         KNOWN
-    }
-
-    public String getVulnerability() {
-        return vulnerability;
-    }
-
-    public void setVulnerability(String vulnerability) {
-        this.vulnerability = vulnerability;
-    }
-
-    public String getVendor() {
-        return vendor;
-    }
-
-    public void setVendor(String vendor) {
-        this.vendor = vendor;
-    }
-
-    public String getProduct() {
-        return product;
-    }
-
-    public void setProduct(String product) {
-        this.product = product;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public String getRecommendation() {
-        return recommendation;
-    }
-
-    public void setRecommendation(String recommendation) {
-        this.recommendation = recommendation;
-    }
-
-    public Date getPublishDate() {
-        return publishDate;
-    }
-
-    public void setPublishDate(Date publishDate) {
-        this.publishDate = publishDate;
-    }
-
-    public Date getExploitDate() {
-        return exploitDate;
-    }
-
-    public void setExploitDate(Date exploitDate) {
-        this.exploitDate = exploitDate;
-    }
-
-    public Date getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(Date dueDate) {
-        this.dueDate = dueDate;
-    }
-
-    public RansomwareState getRansomwareState() {
-        return ransomwareState;
-    }
-
-    public void setRansomwareState(RansomwareState ransomwareState) {
-        this.ransomwareState = ransomwareState;
     }
 }
 

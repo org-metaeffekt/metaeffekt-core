@@ -70,6 +70,18 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private CvssSeverityRanges cachedCvssSeverityRanges;
 
     /**
+     * priorityScoreSeverityRanges &rarr; cachedPriorityScoreSeverityRanges<br>
+     * <code>String &rarr; CvssSeverityRanges</code><p>
+     * Used to convert a numeric score, usually between 0.0 and 20.0 into a severity category for displaying in the report/VAD.<p>
+     * Default: JSON object value of {@link CvssSeverityRanges#PRIORITY_SCORE_SEVERITY_RANGES}
+     */
+    private String priorityScoreSeverityRanges = CvssSeverityRanges.PRIORITY_SCORE_SEVERITY_RANGES.toString();
+    /**
+     * See {@link CentralSecurityPolicyConfiguration#priorityScoreSeverityRanges}.
+     */
+    private CvssSeverityRanges cachedPriorityScoreSeverityRanges;
+
+    /**
      * initialCvssSelector &rarr; cachedInitialCvssSelector<br>
      * <code>String &rarr; JSONObject &rarr; CvssSelector</code><p>
      * Specifies rules that are applied step by step to overlay several selected vectors from different sources to calculate a resulting vector. This rule will be applied per CVSS version, meaning there will be multiple selected vectors.
@@ -227,6 +239,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT;
 
+    private VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration = new VulnerabilityPriorityScoreConfiguration();
+
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
         this.cvssSeverityRanges = cvssSeverityRanges == null ? CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString() : cvssSeverityRanges;
         this.cachedCvssSeverityRanges = new CvssSeverityRanges(this.cvssSeverityRanges);
@@ -245,6 +259,26 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             this.cachedCvssSeverityRanges = new CvssSeverityRanges(this.cvssSeverityRanges);
         }
         return this.cachedCvssSeverityRanges;
+    }
+
+    public CentralSecurityPolicyConfiguration setPriorityScoreSeverityRanges(String priorityScoreSeverityRanges) {
+        this.priorityScoreSeverityRanges = priorityScoreSeverityRanges == null ? CvssSeverityRanges.PRIORITY_SCORE_SEVERITY_RANGES.toString() : priorityScoreSeverityRanges;
+        this.cachedPriorityScoreSeverityRanges = new CvssSeverityRanges(this.priorityScoreSeverityRanges);
+        return this;
+    }
+
+    public CentralSecurityPolicyConfiguration setPriorityScoreSeverityRanges(CvssSeverityRanges priorityScoreSeverityRanges) {
+        this.priorityScoreSeverityRanges = priorityScoreSeverityRanges.toString();
+        this.cachedPriorityScoreSeverityRanges = priorityScoreSeverityRanges;
+        return this;
+    }
+
+    public CvssSeverityRanges getPriorityScoreSeverityRanges() {
+        if (this.cachedPriorityScoreSeverityRanges == null) {
+            this.priorityScoreSeverityRanges = this.priorityScoreSeverityRanges == null ? CvssSeverityRanges.PRIORITY_SCORE_SEVERITY_RANGES.toString() : this.priorityScoreSeverityRanges;
+            this.cachedPriorityScoreSeverityRanges = new CvssSeverityRanges(this.priorityScoreSeverityRanges);
+        }
+        return this.cachedPriorityScoreSeverityRanges;
     }
 
     public CentralSecurityPolicyConfiguration setInitialCvssSelector(JSONObject initialCvssSelector) {
@@ -477,11 +511,21 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this.vulnerabilityStatusDisplayMapper;
     }
 
+    public CentralSecurityPolicyConfiguration setPriorityScoreConfiguration(VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration) {
+        this.priorityScoreConfiguration = priorityScoreConfiguration;
+        return this;
+    }
+
+    public VulnerabilityPriorityScoreConfiguration getPriorityScoreConfiguration() {
+        return priorityScoreConfiguration;
+    }
+
     @Override
     public LinkedHashMap<String, Object> getProperties() {
         final LinkedHashMap<String, Object> configuration = new LinkedHashMap<>();
 
         configuration.put("cvssSeverityRanges", cvssSeverityRanges);
+        configuration.put("priorityScoreSeverityRanges", priorityScoreSeverityRanges);
         configuration.put("initialCvssSelector", initialCvssSelector);
         configuration.put("contextCvssSelector", contextCvssSelector);
         configuration.put("insignificantThreshold", insignificantThreshold);
@@ -493,6 +537,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
         configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
         configuration.put("cvssVersionSelectionPolicy", cvssVersionSelectionPolicy);
+        configuration.put("priorityScoreConfiguration", priorityScoreConfiguration.getProperties());
 
         return configuration;
     }
@@ -500,6 +545,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Override
     public void setProperties(LinkedHashMap<String, Object> properties) {
         super.loadStringProperty(properties, "cvssSeverityRanges", this::setCvssSeverityRanges);
+        super.loadStringProperty(properties, "priorityScoreSeverityRanges", this::setPriorityScoreSeverityRanges);
 
         super.loadProperty(properties, "baseCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector))); // deprecated
         super.loadProperty(properties, "initialCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector)));
@@ -515,6 +561,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
         super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
         super.loadListProperty(properties, "cvssVersionSelectionPolicy", value -> CvssScoreVersionSelectionPolicy.valueOf(String.valueOf(value)), this::setCvssVersionSelectionPolicy);
+
+        super.loadSubConfiguration(properties, "priorityScoreConfiguration", VulnerabilityPriorityScoreConfiguration::new, this::setPriorityScoreConfiguration);
     }
 
     private JSONObject parseJsonObjectFromProperties(Object input) {
@@ -534,6 +582,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (this.cvssSeverityRanges == null) {
             misconfigurations.add(new ProcessMisconfiguration("cvssSeverityRanges", "CVSS severity ranges must not be null"));
         }
+        if (this.priorityScoreSeverityRanges == null) {
+            misconfigurations.add(new ProcessMisconfiguration("priorityScoreSeverityRanges", "Priority score severity ranges must not be null"));
+        }
+
         if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
             misconfigurations.add(new ProcessMisconfiguration("cvssVersionSelectionPolicy", "CVSS version selection policy must not be null or empty"));
         }
@@ -601,6 +653,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         if (jsonSchemaValidationErrorsHandling == null) {
             misconfigurations.add(new ProcessMisconfiguration("strictJsonSchemaValidation", "JSON schema validation must not be null"));
+        }
+
+        if (this.priorityScoreConfiguration != null) {
+            this.priorityScoreConfiguration.collectMisconfigurations(misconfigurations);
         }
     }
 
