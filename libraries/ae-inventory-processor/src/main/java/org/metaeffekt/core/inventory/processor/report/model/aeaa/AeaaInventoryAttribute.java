@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
 import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.eol.export.AeaaExportedCycleState;
 
 /**
  * Mirrors structure of <code>com.metaeffekt.artifact.analysis.vulnerability.enrichment.AeaaInventoryAttribute</code>
@@ -64,7 +65,29 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     INAPPLICABLE_CVE("Inapplicable CVE"),
     ADDON_CVES("Addon CVEs"),
     KEV_DATA("KEV Data"),
-    EPSS_DATA("EPSS Data");
+    EPSS_DATA("Epss Data"),
+    KEYWORDS("Matched Keyword Sets"),
+    KEYWORDS_SCORE("Matched Keyword Total Score"),
+    /**
+     * Represents an EOL (End-of-Line) identifier to be used my the <code>EolEnrichment</code> in AEAA.
+     */
+    EOL_ID("EOL Id"),
+    EOL_OVERWRITE_CYCLE_QUERY_VERSION("EOL Overwrite Cycle Query Version"),
+    EOL_OVERWRITE_LATEST_VERSION_QUERY_VERSION("EOL Overwrite Latest Version Query Version"),
+    /**
+     * Contains a JSON object with the EOL information built by the {@link AeaaExportedCycleState#toJson()} method.
+     */
+    EOL_FULL_STATE("EOL State"),
+    EOL_RECOMMENDED_CYCLE_VERSION("EOL Latest Cycle Version"),
+    EOL_RECOMMENDED_LIFECYCLE_VERSION("EOL Latest Lifecycle Version"),
+    EOL_RECOMMENDED_NEXT_SUPPORTED_VERSION("EOL Next Supported Version"),
+    EOL_RECOMMENDED_NEXT_SUPPORTED_EXTENDED_VERSION("EOL Next Extended Supported Version"),
+    EOL_RECOMMENDED_CLOSEST_SUPPORTED_LTS_VERSION("EOL Closest Supported LTS Version"),
+    EOL_RECOMMENDED_LATEST_SUPPORTED_LTS_VERSION("EOL Latest Supported LTS Version"),
+    EOL_IS_EOL("EOL Is EOL"),
+    EOL_IS_SUPPORTED("EOL Is Support"),
+    EOL_IS_SUPPORTED_EXTENDED("EOL Is Extended Support"),
+    EOL_RATING("EOL Rating"),;
 
     private final String key;
 

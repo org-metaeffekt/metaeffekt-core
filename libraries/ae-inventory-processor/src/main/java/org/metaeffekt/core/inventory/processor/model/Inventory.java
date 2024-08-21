@@ -1995,7 +1995,7 @@ public class Inventory implements Serializable {
         inventoryPrintString.add(String.format("ld: %d", licenseData.size()));
 
         final StringJoiner vulnerabilityMetaDataPrintString = new StringJoiner(", ", "vmd: [", "]");
-        vulnerabilityMetaDataPrintString.setEmptyValue("vmd: 0  ");
+        vulnerabilityMetaDataPrintString.setEmptyValue("vmd: []");
         for (String context : vulnerabilityMetaData.keySet()) {
             vulnerabilityMetaDataPrintString.add(String.format("%s: %d", context, vulnerabilityMetaData.get(context).size()));
         }

@@ -155,7 +155,12 @@ public class CvssSeverityRanges {
 
         @Override
         public String toString() {
-            return String.format("%s:%s:%s:%s", name, color.getCssRootName(), floor, ceil);
+            return String.format("%s:%s:%s:%s",
+                    name,
+                    color.getCssRootName(),
+                    floor == -Double.MAX_VALUE ? "" : floor,
+                    ceil == Double.MAX_VALUE ? "" : ceil
+            );
         }
     }
 

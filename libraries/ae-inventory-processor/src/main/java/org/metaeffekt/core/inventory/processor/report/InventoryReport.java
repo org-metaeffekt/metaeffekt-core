@@ -221,6 +221,9 @@ public class InventoryReport {
 
     public boolean createReport() throws Exception {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
+        if (LOG.isDebugEnabled()) {
+            this.logConfiguration();
+        }
 
         final Inventory globalInventory = readGlobalInventory();
 
@@ -252,7 +255,7 @@ public class InventoryReport {
     }
 
     protected Inventory readGlobalInventory() throws IOException {
-        LOG.info("Reading global inventory for inventory report from file://{}", referenceInventoryDir);
+        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}", referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
 
@@ -1043,6 +1046,8 @@ public class InventoryReport {
         } else {
             LOG.info(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
         }
+
+        securityPolicy.logConfiguration();
     }
 
     private void logConfigurationLogFile(String property, File file) {
@@ -1255,7 +1260,7 @@ public class InventoryReport {
         this.failOnMissingNotice = failOnMissingNotice;
     }
 
-    public String xmlEscapeContentString(String string) {
+    public static String xmlEscapeContentString(String string) {
         if (string == null) return "";
 
         String s = StringEscapeUtils.escapeXml(string.trim());
