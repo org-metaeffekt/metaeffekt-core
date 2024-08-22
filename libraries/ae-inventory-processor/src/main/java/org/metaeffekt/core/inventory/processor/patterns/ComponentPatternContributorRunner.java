@@ -89,7 +89,7 @@ public class ComponentPatternContributorRunner {
      * @param baseDir as in {@link ComponentPatternContributor}
      * @param relativeAnchorFilePath as in {@link ComponentPatternContributor}
      * @param checksum as in {@link ComponentPatternContributor}
-     *
+     * @param virtualRootPath as in {@link ComponentPatternContributor}
      * @return returns a list of generated component patterns
      */
     public List<ComponentPatternData> run(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {

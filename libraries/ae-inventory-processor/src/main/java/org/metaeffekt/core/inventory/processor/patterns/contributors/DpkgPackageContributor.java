@@ -530,6 +530,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
      * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @param virtualRootPath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      * @return same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      */
     public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,

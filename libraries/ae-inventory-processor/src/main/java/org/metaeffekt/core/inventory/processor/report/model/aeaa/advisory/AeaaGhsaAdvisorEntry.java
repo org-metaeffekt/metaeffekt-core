@@ -19,8 +19,8 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaTimeUtils;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,11 +53,11 @@ public class AeaaGhsaAdvisorEntry extends AeaaAdvisoryEntry {
     private Date nvdPublishedAt;
 
     public AeaaGhsaAdvisorEntry() {
-        super(AeaaContentIdentifiers.GHSA);
+        super(AeaaAdvisoryTypeStore.GHSA);
     }
 
     public AeaaGhsaAdvisorEntry(String id) {
-        super(AeaaContentIdentifiers.GHSA, id);
+        super(AeaaAdvisoryTypeStore.GHSA, id);
     }
 
     public String getSeverity() {

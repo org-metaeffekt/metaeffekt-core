@@ -25,6 +25,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.json.JSONArray;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -33,7 +34,8 @@ import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter
 import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
@@ -157,7 +159,7 @@ public class InventoryReport {
      * For which advisory providers to generate additional tables in the overview section containing statistic data on
      * which vulnerabilities have already been reviewed.
      */
-    private final List<AeaaContentIdentifiers> generateOverviewTablesForAdvisories = new ArrayList<>();
+    private final List<AeaaAdvisoryTypeIdentifier<?>> generateOverviewTablesForAdvisories = new ArrayList<>();
 
     private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
@@ -1337,43 +1339,35 @@ public class InventoryReport {
         return securityPolicy;
     }
 
-    public List<AeaaContentIdentifiers> getGenerateOverviewTablesForAdvisories() {
+    public List<AeaaAdvisoryTypeIdentifier<?>> getGenerateOverviewTablesForAdvisories() {
         return generateOverviewTablesForAdvisories;
     }
 
-    public void addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers... providers) {
+    public void addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeIdentifier<?>... providers) {
         if (providers == null || providers.length == 0) {
             return;
         }
         this.addGenerateOverviewTablesForAdvisories(Arrays.asList(providers));
     }
 
-    public void addGenerateOverviewTablesForAdvisories(Collection<AeaaContentIdentifiers> providers) {
-        if (providers.contains(AeaaContentIdentifiers.UNKNOWN)) {
-            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", providers, AeaaContentIdentifiers.values());
-        }
-
-        providers.stream()
-                .filter(AeaaContentIdentifiers::isAdvisoryProvider)
-                .forEach(this.generateOverviewTablesForAdvisories::add);
+    public void addGenerateOverviewTablesForAdvisories(Collection<AeaaAdvisoryTypeIdentifier<?>> providers) {
+        this.generateOverviewTablesForAdvisories.addAll(providers);
     }
 
-    public void addGenerateOverviewTablesForAdvisories(String... providers) {
-        if (providers == null || providers.length == 0) {
-            return;
-        }
-        this.addGenerateOverviewTablesForAdvisories(Arrays.stream(providers)
-                .map(AeaaContentIdentifiers::fromName)
-                .collect(Collectors.toList()));
-    }
-
-    public void addGenerateOverviewTablesForAdvisoriesByString(Collection<String> providers) {
+    public void addGenerateOverviewTablesForAdvisoriesByMap(Map<String, String> providers) {
         if (providers == null || providers.isEmpty()) {
             return;
         }
-        this.addGenerateOverviewTablesForAdvisories(providers.stream()
-                .map(AeaaContentIdentifiers::fromName)
-                .collect(Collectors.toList()));
+        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromMapNamesAndImplementations(providers);
+        this.generateOverviewTablesForAdvisories.addAll(parsed);
+    }
+
+    public void addGenerateOverviewTablesForAdvisoriesByMap(JSONArray providers) {
+        if (providers == null || providers.isEmpty()) {
+            return;
+        }
+        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(providers);
+        this.generateOverviewTablesForAdvisories.addAll(parsed);
     }
 
     public void setTargetReportDir(File reportTarget) {
