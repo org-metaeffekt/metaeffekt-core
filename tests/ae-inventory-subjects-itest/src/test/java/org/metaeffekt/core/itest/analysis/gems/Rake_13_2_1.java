@@ -58,7 +58,7 @@ public class Rake_13_2_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "rake-13.2.1.gem"),
                         attributeValue(VERSION, "13.2.1"),
-                        attributeValue(PROJECTS, "rake-13.2.1.gem"))
+                        attributeValue(PURL, "pkg:gem/rake@13.2.1"))
                 .assertNotEmpty();
     }
 }

@@ -59,6 +59,7 @@ public class SystemSecurityAccessescontrol_6_0_1 extends AbstractCompositionAnal
         artifactList.with(attributeValue(ID, "System.Security.AccessControl-6.0.1"),
                         attributeValue(VERSION, "6.0.1"),
                         attributeValue(PROJECTS, "[system.security.accesscontrol.6.0.1.nupkg]"),
+                        attributeValue(PURL, "pkg:nuget/System.Security.AccessControl@6.0.1"),
                         attributeValue(PATH_IN_ASSET, "[system.security.accesscontrol.6.0.1.nupkg]"))
                 .assertNotEmpty();
     }

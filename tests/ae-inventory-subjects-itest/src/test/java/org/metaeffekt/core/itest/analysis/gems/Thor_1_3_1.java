@@ -58,7 +58,7 @@ public class Thor_1_3_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "thor-1.3.1.gem"),
                         attributeValue(VERSION, "1.3.1"),
-                        attributeValue(PROJECTS, "thor-1.3.1.gem"))
+                        attributeValue(PURL, "pkg:gem/thor@1.3.1"))
                 .assertNotEmpty();
     }
 }

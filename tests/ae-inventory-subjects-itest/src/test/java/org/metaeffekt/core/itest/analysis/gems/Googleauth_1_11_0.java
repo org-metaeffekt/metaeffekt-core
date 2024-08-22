@@ -58,7 +58,7 @@ public class Googleauth_1_11_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "googleauth-1.11.0.gem"),
                         attributeValue(VERSION, "1.11.0"),
-                        attributeValue(PROJECTS, "googleauth-1.11.0.gem"))
+                        attributeValue(PURL, "pkg:gem/googleauth@1.11.0"))
                 .assertNotEmpty();
     }
 }

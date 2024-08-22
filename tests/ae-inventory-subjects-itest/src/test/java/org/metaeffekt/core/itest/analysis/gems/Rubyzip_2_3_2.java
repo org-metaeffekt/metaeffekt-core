@@ -58,7 +58,7 @@ public class Rubyzip_2_3_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "rubyzip-2.3.2.gem"),
                         attributeValue(VERSION, "2.3.2"),
-                        attributeValue(PROJECTS, "rubyzip-2.3.2.gem"))
+                        attributeValue(PURL, "pkg:gem/rubyzip@2.3.2"))
                 .assertNotEmpty();
     }
 }

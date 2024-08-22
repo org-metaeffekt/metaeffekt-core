@@ -58,7 +58,7 @@ public class Adressable_2_8_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "addressable-2.8.7.gem"),
                         attributeValue(VERSION, "2.8.7"),
-                        attributeValue(PROJECTS, "addressable-2.8.7.gem"))
+                        attributeValue(PURL, "pkg:gem/addressable@2.8.7"))
                 .assertNotEmpty();
     }
 }

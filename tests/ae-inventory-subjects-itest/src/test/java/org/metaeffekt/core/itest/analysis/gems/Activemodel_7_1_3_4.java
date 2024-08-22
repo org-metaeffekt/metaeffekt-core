@@ -58,7 +58,7 @@ public class Activemodel_7_1_3_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "activemodel-7.1.3.4.gem"),
                         attributeValue(VERSION, "7.1.3.4"),
-                        attributeValue(PROJECTS, "activemodel-7.1.3.4.gem"))
+                        attributeValue(PURL, "pkg:gem/activemodel@7.1.3.4"))
                 .assertNotEmpty();
     }
 }

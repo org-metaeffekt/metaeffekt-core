@@ -58,7 +58,7 @@ public class Rubocop_1_65_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "rubocop-1.65.1.gem"),
                         attributeValue(VERSION, "1.65.1"),
-                        attributeValue(PROJECTS, "rubocop-1.65.1.gem"))
+                        attributeValue(PURL, "pkg:gem/rubocop@1.65.1"))
                 .assertNotEmpty();
     }
 }

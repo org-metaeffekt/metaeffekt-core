@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PURL;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
@@ -67,6 +68,7 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         // expect that the substructure is visible
         analysis.selectArtifacts().hasSizeGreaterThan(1);
         analysis.selectArtifacts(startsWith(ID, "jansi")).hasSizeOf(9);
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/org.fusesource.jansi/jansi-"));
         analysis.selectArtifacts(startsWith(ID, "commons")).hasSizeOf(2);
         analysis.selectArtifacts(startsWith(ID, "http")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(ID, "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);

@@ -58,7 +58,7 @@ public class Loofah_2_22_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "loofah-2.22.0.gem"),
                         attributeValue(VERSION, "2.22.0"),
-                        attributeValue(PROJECTS, "loofah-2.22.0.gem"))
+                        attributeValue(PURL, "pkg:gem/loofah@2.22.0"))
                 .assertNotEmpty();
     }
 }

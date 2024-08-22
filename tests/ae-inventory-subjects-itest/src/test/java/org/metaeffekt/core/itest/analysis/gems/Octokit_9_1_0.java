@@ -58,7 +58,7 @@ public class Octokit_9_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "octokit-9.1.0.gem"),
                         attributeValue(VERSION, "9.1.0"),
-                        attributeValue(PROJECTS, "octokit-9.1.0.gem"))
+                        attributeValue(PURL, "pkg:gem/octokit@9.1.0"))
                 .assertNotEmpty();
     }
 }

@@ -58,7 +58,7 @@ public class Sprockets_4_2_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "sprockets-4.2.1.gem"),
                         attributeValue(VERSION, "4.2.1"),
-                        attributeValue(PROJECTS, "sprockets-4.2.1.gem"))
+                        attributeValue(PURL, "pkg:gem/sprockets@4.2.1"))
                 .assertNotEmpty();
     }
 }

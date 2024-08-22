@@ -58,7 +58,7 @@ public class Actionmailer_7_1_3_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "actionmailer-7.1.3.4.gem"),
                         attributeValue(VERSION, "7.1.3.4"),
-                        attributeValue(PROJECTS, "actionmailer-7.1.3.4.gem"))
+                        attributeValue(PURL, "pkg:gem/actionmailer@7.1.3.4"))
                 .assertNotEmpty();
     }
 }

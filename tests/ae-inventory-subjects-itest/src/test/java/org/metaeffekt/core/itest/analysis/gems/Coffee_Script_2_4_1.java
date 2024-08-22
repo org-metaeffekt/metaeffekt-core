@@ -58,7 +58,7 @@ public class Coffee_Script_2_4_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "coffee-script-2.4.1.gem"),
                         attributeValue(VERSION, "2.4.1"),
-                        attributeValue(PROJECTS, "coffee-script-2.4.1.gem"))
+                        attributeValue(PURL, "pkg:gem/coffee-script@2.4.1"))
                 .assertNotEmpty();
     }
 }

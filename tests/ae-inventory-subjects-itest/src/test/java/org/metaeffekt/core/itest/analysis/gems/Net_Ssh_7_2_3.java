@@ -58,7 +58,7 @@ public class Net_Ssh_7_2_3 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "net-ssh-7.2.3.gem"),
                         attributeValue(VERSION, "7.2.3"),
-                        attributeValue(PROJECTS, "net-ssh-7.2.3.gem"))
+                        attributeValue(PURL, "pkg:gem/net-ssh@7.2.3"))
                 .assertNotEmpty();
     }
 }

@@ -58,7 +58,7 @@ public class I18n_1_14_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "i18n-1.14.5.gem"),
                         attributeValue(VERSION, "1.14.5"),
-                        attributeValue(PROJECTS, "i18n-1.14.5.gem"))
+                        attributeValue(PURL, "pkg:gem/i18n@1.14.5"))
                 .assertNotEmpty();
     }
 }

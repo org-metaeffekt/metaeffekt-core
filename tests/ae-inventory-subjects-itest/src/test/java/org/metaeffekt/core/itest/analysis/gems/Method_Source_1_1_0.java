@@ -58,7 +58,7 @@ public class Method_Source_1_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "method_source-1.1.0.gem"),
                         attributeValue(VERSION, "1.1.0"),
-                        attributeValue(PROJECTS, "method_source-1.1.0.gem"))
+                        attributeValue(PURL, "pkg:gem/method_source@1.1.0"))
                 .assertNotEmpty();
     }
 }

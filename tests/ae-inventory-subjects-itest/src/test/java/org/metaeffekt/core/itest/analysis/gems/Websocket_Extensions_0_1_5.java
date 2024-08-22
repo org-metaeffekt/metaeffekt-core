@@ -58,7 +58,7 @@ public class Websocket_Extensions_0_1_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "websocket-extensions-0.1.5.gem"),
                         attributeValue(VERSION, "0.1.5"),
-                        attributeValue(PROJECTS, "websocket-extensions-0.1.5.gem"))
+                        attributeValue(PURL, "pkg:gem/websocket-extensions@0.1.5"))
                 .assertNotEmpty();
     }
 }

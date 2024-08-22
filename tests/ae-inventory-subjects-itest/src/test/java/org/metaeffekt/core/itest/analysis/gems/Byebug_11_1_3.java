@@ -58,7 +58,7 @@ public class Byebug_11_1_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "byebug-11.1.3.gem"),
                         attributeValue(VERSION, "11.1.3"),
-                        attributeValue(PROJECTS, "byebug-11.1.3.gem"))
+                        attributeValue(PURL, "pkg:gem/byebug@11.1.3"))
                 .assertNotEmpty();
     }
 }

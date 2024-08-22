@@ -58,7 +58,7 @@ public class Aws_Sdk_Sqs_1_80_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "aws-sdk-sqs-1.80.0.gem"),
                         attributeValue(VERSION, "1.80.0"),
-                        attributeValue(PROJECTS, "aws-sdk-sqs-1.80.0.gem"))
+                        attributeValue(PURL, "pkg:gem/aws-sdk-sqs@1.80.0"))
                 .assertNotEmpty();
     }
 }

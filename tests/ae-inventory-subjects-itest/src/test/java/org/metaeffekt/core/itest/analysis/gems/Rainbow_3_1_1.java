@@ -58,7 +58,7 @@ public class Rainbow_3_1_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "rainbow-3.1.1.gem"),
                         attributeValue(VERSION, "3.1.1"),
-                        attributeValue(PROJECTS, "rainbow-3.1.1.gem"))
+                        attributeValue(PURL, "pkg:gem/rainbow@3.1.1"))
                 .assertNotEmpty();
     }
 }

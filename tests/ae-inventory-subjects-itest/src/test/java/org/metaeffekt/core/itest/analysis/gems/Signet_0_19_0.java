@@ -58,7 +58,7 @@ public class Signet_0_19_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "signet-0.19.0.gem"),
                         attributeValue(VERSION, "0.19.0"),
-                        attributeValue(PROJECTS, "signet-0.19.0.gem"))
+                        attributeValue(PURL, "pkg:gem/signet@0.19.0"))
                 .assertNotEmpty();
     }
 }

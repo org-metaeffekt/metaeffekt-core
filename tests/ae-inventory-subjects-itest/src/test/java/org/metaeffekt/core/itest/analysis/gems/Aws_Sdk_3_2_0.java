@@ -58,7 +58,7 @@ public class Aws_Sdk_3_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "aws-sdk-3.2.0.gem"),
                         attributeValue(VERSION, "3.2.0"),
-                        attributeValue(PROJECTS, "aws-sdk-3.2.0.gem"))
+                        attributeValue(PURL, "pkg:gem/aws-sdk@3.2.0"))
                 .assertNotEmpty();
     }
 }

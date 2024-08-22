@@ -58,7 +58,7 @@ public class Factory_Bot_6_4_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "factory_bot-6.4.6.gem"),
                         attributeValue(VERSION, "6.4.6"),
-                        attributeValue(PROJECTS, "factory_bot-6.4.6.gem"))
+                        attributeValue(PURL, "pkg:gem/factory_bot@6.4.6"))
                 .assertNotEmpty();
     }
 }

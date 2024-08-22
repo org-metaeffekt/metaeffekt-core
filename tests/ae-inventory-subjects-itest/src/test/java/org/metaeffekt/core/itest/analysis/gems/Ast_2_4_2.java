@@ -58,7 +58,7 @@ public class Ast_2_4_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "ast-2.4.2.gem"),
                         attributeValue(VERSION, "2.4.2"),
-                        attributeValue(PROJECTS, "ast-2.4.2.gem"))
+                        attributeValue(PURL, "pkg:gem/ast@2.4.2"))
                 .assertNotEmpty();
     }
 }

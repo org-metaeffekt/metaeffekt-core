@@ -58,7 +58,7 @@ public class Regexp_Parser_2_9_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "regexp_parser-2.9.2.gem"),
                         attributeValue(VERSION, "2.9.2"),
-                        attributeValue(PROJECTS, "regexp_parser-2.9.2.gem"))
+                        attributeValue(PURL, "pkg:gem/regexp_parser@2.9.2"))
                 .assertNotEmpty();
     }
 }

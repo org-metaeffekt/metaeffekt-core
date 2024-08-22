@@ -58,7 +58,7 @@ public class Msgpack_1_7_2 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "msgpack-1.7.2.gem"),
                         attributeValue(VERSION, "1.7.2"),
-                        attributeValue(PROJECTS, "msgpack-1.7.2.gem"))
+                        attributeValue(PURL, "pkg:gem/msgpack@1.7.2"))
                 .assertNotEmpty();
     }
 }

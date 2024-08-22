@@ -58,7 +58,7 @@ public class Uber_0_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "uber-0.1.0.gem"),
                         attributeValue(VERSION, "0.1.0"),
-                        attributeValue(PROJECTS, "uber-0.1.0.gem"))
+                        attributeValue(PURL, "pkg:gem/uber@0.1.0"))
                 .assertNotEmpty();
     }
 }

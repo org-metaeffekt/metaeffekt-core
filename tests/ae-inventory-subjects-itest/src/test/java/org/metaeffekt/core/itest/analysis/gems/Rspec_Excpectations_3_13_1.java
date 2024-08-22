@@ -58,7 +58,7 @@ public class Rspec_Excpectations_3_13_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "rspec-expectations-3.13.1.gem"),
                         attributeValue(VERSION, "3.13.1"),
-                        attributeValue(PROJECTS, "rspec-expectations-3.13.1.gem"))
+                        attributeValue(PURL, "pkg:gem/rspec-expectations@3.13.1"))
                 .assertNotEmpty();
     }
 }

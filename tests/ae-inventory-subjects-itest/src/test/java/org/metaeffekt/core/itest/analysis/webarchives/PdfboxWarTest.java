@@ -69,6 +69,8 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(startsWith(ID, "commons")).hasSizeOf(1);
         analysis.selectArtifacts(startsWith(ID, "jempbox")).hasSizeOf(1);
 
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/org.apache.pdfbox/")).hasSizeOf(4);
+
 
         analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.pdfbox")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(GROUPID, "commons-logging")).hasSizeOf(1);

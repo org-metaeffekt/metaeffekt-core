@@ -58,7 +58,7 @@ public class Jmespath_1_6_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "jmespath-1.6.2.gem"),
                         attributeValue(VERSION, "1.6.2"),
-                        attributeValue(PROJECTS, "jmespath-1.6.2.gem"))
+                        attributeValue(PURL, "pkg:gem/jmespath@1.6.2"))
                 .assertNotEmpty();
     }
 }

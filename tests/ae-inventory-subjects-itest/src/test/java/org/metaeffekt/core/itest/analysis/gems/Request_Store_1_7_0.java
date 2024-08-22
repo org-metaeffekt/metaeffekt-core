@@ -58,7 +58,7 @@ public class Request_Store_1_7_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "request_store-1.7.0.gem"),
                         attributeValue(VERSION, "1.7.0"),
-                        attributeValue(PROJECTS, "request_store-1.7.0.gem"))
+                        attributeValue(PURL, "pkg:gem/request_store@1.7.0"))
                 .assertNotEmpty();
     }
 }

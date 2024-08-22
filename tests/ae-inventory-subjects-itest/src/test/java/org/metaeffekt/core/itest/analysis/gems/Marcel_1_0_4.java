@@ -58,7 +58,7 @@ public class Marcel_1_0_4 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "marcel-1.0.4.gem"),
                         attributeValue(VERSION, "1.0.4"),
-                        attributeValue(PROJECTS, "marcel-1.0.4.gem"))
+                        attributeValue(PURL, "pkg:gem/marcel@1.0.4"))
                 .assertNotEmpty();
     }
 }

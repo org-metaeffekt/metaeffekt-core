@@ -58,7 +58,7 @@ public class Capybara_3_40_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "capybara-3.40.0.gem"),
                         attributeValue(VERSION, "3.40.0"),
-                        attributeValue(PROJECTS, "capybara-3.40.0.gem"))
+                        attributeValue(PURL, "pkg:gem/capybara@3.40.0"))
                 .assertNotEmpty();
     }
 }

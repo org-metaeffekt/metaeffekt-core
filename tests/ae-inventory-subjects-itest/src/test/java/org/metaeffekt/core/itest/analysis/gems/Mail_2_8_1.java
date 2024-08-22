@@ -58,7 +58,7 @@ public class Mail_2_8_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "mail-2.8.1.gem"),
                         attributeValue(VERSION, "2.8.1"),
-                        attributeValue(PROJECTS, "mail-2.8.1.gem"))
+                        attributeValue(PURL, "pkg:gem/mail@2.8.1"))
                 .assertNotEmpty();
     }
 }

@@ -92,6 +92,7 @@ public class ArchiveUtils {
         tarExtensions.add("deb");
         // apk: android package (for apps, special zip), alpine linux package (special tar file)
         tarExtensions.add("apk");
+        tarExtensions.add("gem");
 
         // cab: windows cabinet file
         windowsExtensions.add("cab");

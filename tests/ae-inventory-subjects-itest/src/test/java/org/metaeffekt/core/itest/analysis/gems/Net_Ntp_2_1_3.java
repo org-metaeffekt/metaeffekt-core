@@ -58,7 +58,7 @@ public class Net_Ntp_2_1_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "net-ntp-2.1.3.gem"),
                         attributeValue(VERSION, "2.1.3"),
-                        attributeValue(PROJECTS, "net-ntp-2.1.3.gem"))
+                        attributeValue(PURL, "pkg:gem/net-ntp@2.1.3"))
                 .assertNotEmpty();
     }
 }

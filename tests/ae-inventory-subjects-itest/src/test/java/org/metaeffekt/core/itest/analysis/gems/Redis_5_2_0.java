@@ -58,7 +58,7 @@ public class Redis_5_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "redis-5.2.0.gem"),
                         attributeValue(VERSION, "5.2.0"),
-                        attributeValue(PROJECTS, "redis-5.2.0.gem"))
+                        attributeValue(PURL, "pkg:gem/redis@5.2.0"))
                 .assertNotEmpty();
     }
 }

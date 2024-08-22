@@ -58,7 +58,7 @@ public class Rexml_3_3_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "rexml-3.3.4.gem"),
                         attributeValue(VERSION, "3.3.4"),
-                        attributeValue(PROJECTS, "rexml-3.3.4.gem"))
+                        attributeValue(PURL, "pkg:gem/rexml@3.3.4"))
                 .assertNotEmpty();
     }
 }

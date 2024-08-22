@@ -59,6 +59,7 @@ public class SystemNumericsVectors_4_5_0 extends AbstractCompositionAnalysisTest
         artifactList.with(attributeValue(ID, "System.Numerics.Vectors-4.5.0"),
                         attributeValue(VERSION, "4.5.0"),
                         attributeValue(PROJECTS, "[system.numerics.vectors.4.5.0.nupkg]"),
+                        attributeValue(PURL, "pkg:nuget/System.Numerics.Vectors@4.5.0"),
                         attributeValue(PATH_IN_ASSET, "[system.numerics.vectors.4.5.0.nupkg]"))
                 .assertNotEmpty();
     }

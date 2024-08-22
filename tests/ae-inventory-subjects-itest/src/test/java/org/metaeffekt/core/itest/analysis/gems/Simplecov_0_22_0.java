@@ -58,7 +58,7 @@ public class Simplecov_0_22_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "simplecov-0.22.0.gem"),
                         attributeValue(VERSION, "0.22.0"),
-                        attributeValue(PROJECTS, "simplecov-0.22.0.gem"))
+                        attributeValue(PURL, "pkg:gem/simplecov@0.22.0"))
                 .assertNotEmpty();
     }
 }

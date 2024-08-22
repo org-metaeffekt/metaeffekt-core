@@ -58,7 +58,7 @@ public class Faraday_2_10_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "faraday-2.10.1.gem"),
                         attributeValue(VERSION, "2.10.1"),
-                        attributeValue(PROJECTS, "faraday-2.10.1.gem"))
+                        attributeValue(PURL, "pkg:gem/faraday@2.10.1"))
                 .assertNotEmpty();
     }
 }

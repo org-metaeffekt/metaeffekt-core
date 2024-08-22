@@ -58,7 +58,7 @@ public class Crass_1_0_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "crass-1.0.6.gem"),
                         attributeValue(VERSION, "1.0.6"),
-                        attributeValue(PROJECTS, "crass-1.0.6.gem"))
+                        attributeValue(PURL, "pkg:gem/crass@1.0.6"))
                 .assertNotEmpty();
     }
 }

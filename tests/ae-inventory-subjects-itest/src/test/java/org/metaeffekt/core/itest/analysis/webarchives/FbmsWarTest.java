@@ -22,14 +22,12 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.matchers.ArtifactListMatcher;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.itest.common.matchers.ArtifactListMatcher.Cardinality.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
@@ -70,18 +68,23 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.core")).hasSizeOf(3);
         analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.datatype")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(GROUPID, "com.fasterxml.jackson.module")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/com.fasterxml.jackson.core")).hasSizeOf(3);
 
         analysis.selectArtifacts(startsWith(ID, "spring-")).hasSizeOf(34);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.data")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.hateoas")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.springframework.plugin")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/org.springframework")).hasSizeOf(5);
 
         analysis.selectArtifacts(startsWith(ID, "hibernate")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.hibernate.validator")).hasSizeOf(1);
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/org.hibernate.validator/hibernate-validator@6.0.10.Final?type=jar")).hasSizeOf(1);
 
         analysis.selectArtifacts(startsWith(ID, "log")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.apache.logging.log4j")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(GROUPID, "ch.qos.logback")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/org.apache.logging.log4j")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/ch")).hasSizeOf(2);
 
         analysis.selectArtifacts(startsWith(ID, "springfox")).hasSizeOf(7);
         analysis.selectArtifacts(attributeValue(VERSION, "2.8.0")).hasSizeOf(7);

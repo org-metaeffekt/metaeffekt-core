@@ -49,6 +49,7 @@ public class Erubis_2_7_0 extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
+    // FIXME: cannot unpack gem
     @Test
     public void assertContent() throws Exception {
         ArtifactList artifactList = getAnalysisAfterInvariantCheck()

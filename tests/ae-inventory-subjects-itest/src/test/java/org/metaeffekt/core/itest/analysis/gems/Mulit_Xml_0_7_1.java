@@ -58,7 +58,7 @@ public class Mulit_Xml_0_7_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "multi_xml-0.7.1.gem"),
                         attributeValue(VERSION, "0.7.1"),
-                        attributeValue(PROJECTS, "multi_xml-0.7.1.gem"))
+                        attributeValue(PURL, "pkg:gem/multi_xml@0.7.1"))
                 .assertNotEmpty();
     }
 }

@@ -58,7 +58,7 @@ public class Unicode_Display_Width_2_5_0 extends AbstractCompositionAnalysisTest
 
         artifactList.with(attributeValue(ID, "unicode-display_width-2.5.0.gem"),
                         attributeValue(VERSION, "2.5.0"),
-                        attributeValue(PROJECTS, "unicode-display_width-2.5.0.gem"))
+                        attributeValue(PURL, "pkg:gem/unicode-display_width@2.5.0"))
                 .assertNotEmpty();
     }
 }

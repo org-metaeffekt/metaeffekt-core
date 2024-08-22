@@ -58,7 +58,7 @@ public class Parallel_1_25_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "parallel-1.25.1.gem"),
                         attributeValue(VERSION, "1.25.1"),
-                        attributeValue(PROJECTS, "parallel-1.25.1.gem"))
+                        attributeValue(PURL, "pkg:gem/parallel@1.25.1"))
                 .assertNotEmpty();
     }
 }

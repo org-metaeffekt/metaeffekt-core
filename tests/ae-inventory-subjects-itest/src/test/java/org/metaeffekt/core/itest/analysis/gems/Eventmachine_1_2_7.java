@@ -58,7 +58,7 @@ public class Eventmachine_1_2_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "eventmachine-1.2.7.gem"),
                         attributeValue(VERSION, "1.2.7"),
-                        attributeValue(PROJECTS, "eventmachine-1.2.7.gem"))
+                        attributeValue(PURL, "pkg:gem/eventmachine@1.2.7"))
                 .assertNotEmpty();
     }
 }

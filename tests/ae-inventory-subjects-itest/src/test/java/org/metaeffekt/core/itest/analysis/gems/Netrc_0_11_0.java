@@ -58,7 +58,7 @@ public class Netrc_0_11_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "netrc-0.11.0.gem"),
                         attributeValue(VERSION, "0.11.0"),
-                        attributeValue(PROJECTS, "netrc-0.11.0.gem"))
+                        attributeValue(PURL, "pkg:gem/netrc@0.11.0"))
                 .assertNotEmpty();
     }
 }

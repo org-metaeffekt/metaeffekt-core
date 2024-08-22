@@ -58,7 +58,7 @@ public class Http_Cookie_1_0_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "http-cookie-1.0.6.gem"),
                         attributeValue(VERSION, "1.0.6"),
-                        attributeValue(PROJECTS, "http-cookie-1.0.6.gem"))
+                        attributeValue(PURL, "pkg:gem/http-cookie@1.0.6"))
                 .assertNotEmpty();
     }
 }

@@ -58,7 +58,7 @@ public class Jquery_Rails_4_6_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "jquery-rails-4.6.0.gem"),
                         attributeValue(VERSION, "4.6.0"),
-                        attributeValue(PROJECTS, "jquery-rails-4.6.0.gem"))
+                        attributeValue(PURL, "pkg:gem/jquery-rails@4.6.0"))
                 .assertNotEmpty();
     }
 }

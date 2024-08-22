@@ -58,7 +58,7 @@ public class Tzinfo_2_0_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "tzinfo-2.0.6.gem"),
                         attributeValue(VERSION, "2.0.6"),
-                        attributeValue(PROJECTS, "tzinfo-2.0.6.gem"))
+                        attributeValue(PURL, "pkg:gem/tzinfo@2.0.6"))
                 .assertNotEmpty();
     }
 }

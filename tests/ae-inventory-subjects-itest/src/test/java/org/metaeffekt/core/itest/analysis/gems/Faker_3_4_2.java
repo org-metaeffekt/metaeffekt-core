@@ -58,7 +58,7 @@ public class Faker_3_4_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "faker-3.4.2.gem"),
                         attributeValue(VERSION, "3.4.2"),
-                        attributeValue(PROJECTS, "faker-3.4.2.gem"))
+                        attributeValue(PURL, "pkg:gem/faker@3.4.2"))
                 .assertNotEmpty();
     }
 }

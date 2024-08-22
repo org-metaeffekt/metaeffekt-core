@@ -58,7 +58,7 @@ public class Puma_6_4_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "puma-6.4.2.gem"),
                         attributeValue(VERSION, "6.4.2"),
-                        attributeValue(PROJECTS, "puma-6.4.2.gem"))
+                        attributeValue(PURL, "pkg:gem/puma@6.4.2"))
                 .assertNotEmpty();
     }
 }

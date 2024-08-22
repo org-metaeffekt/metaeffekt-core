@@ -58,7 +58,7 @@ public class Rails_Dom_Testing_2_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "rails-dom-testing-2.2.0.gem"),
                         attributeValue(VERSION, "2.2.0"),
-                        attributeValue(PROJECTS, "rails-dom-testing-2.2.0.gem"))
+                        attributeValue(PURL, "pkg:gem/rails-dom-testing@2.2.0"))
                 .assertNotEmpty();
     }
 }

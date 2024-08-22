@@ -60,12 +60,14 @@ public class firebase_veraxai_0_2_2 extends AbstractCompositionAnalysisTest {
         artifactList.with(attributeValue(ID, "firebase_vertexai-0.2.2+2"),
                     attributeValue(VERSION, "0.2.2+2"),
                     attributeValue(PROJECTS, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]"),
+                    attributeValue(PURL, "pkg:pub/firebase_vertexai@0.2.2+2"),
                     attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "vertex_ai_example-1.0.0+1"),
                     attributeValue(VERSION, "1.0.0+1"),
                     attributeValue(PROJECTS, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"),
+                        attributeValue(PURL, "pkg:pub/vertex_ai_example@1.0.0+1"),
                     attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"))
                 .assertNotEmpty();
     }

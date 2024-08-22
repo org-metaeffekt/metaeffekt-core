@@ -59,6 +59,7 @@ public class SystemManagement_8_0_0 extends AbstractCompositionAnalysisTest{
         artifactList.with(attributeValue(ID, "System.Management-8.0.0"),
                         attributeValue(VERSION, "8.0.0"),
                         attributeValue(PROJECTS, "[system.management.8.0.0.nupkg]"),
+                        attributeValue(PURL, "pkg:nuget/System.Management@8.0.0"),
                         attributeValue(PATH_IN_ASSET, "[system.management.8.0.0.nupkg]"))
                 .assertNotEmpty();
     }

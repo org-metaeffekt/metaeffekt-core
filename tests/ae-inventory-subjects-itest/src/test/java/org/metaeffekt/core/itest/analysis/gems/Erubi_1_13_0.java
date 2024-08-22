@@ -58,7 +58,7 @@ public class Erubi_1_13_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "erubi-1.13.0.gem"),
                         attributeValue(VERSION, "1.13.0"),
-                        attributeValue(PROJECTS, "erubi-1.13.0.gem"))
+                        attributeValue(PURL, "pkg:gem/erubi@1.13.0"))
                 .assertNotEmpty();
     }
 }
