@@ -23,7 +23,7 @@
                 Column <codeph>Assessed</codeph> indicates to which extent the vulnerabilities have been analyzed. If
                 no modified severity is available the unmodified severity is applied.
             </p>
-            #assetAssessmentSummary("asset-assessment-summary-effective", "Effective Vulnerabilities by Asset" $assets, true)
+            #assetAssessmentSummary("asset-assessment-summary-effective", $assets, true)
         #end
     </body>
 </topic>
