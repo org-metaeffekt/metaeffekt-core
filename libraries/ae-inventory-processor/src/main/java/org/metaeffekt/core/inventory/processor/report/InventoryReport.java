@@ -36,6 +36,7 @@ import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecur
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
@@ -220,11 +221,14 @@ public class InventoryReport {
 
     public boolean createReport() throws Exception {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
+        if (LOG.isDebugEnabled()) {
+            this.logConfiguration();
+        }
 
-        Inventory globalInventory = readGlobalInventory();
+        final Inventory globalInventory = readGlobalInventory();
 
         // read local repository
-        Inventory localRepositoryInventory;
+        final Inventory localRepositoryInventory;
         if (this.inventory != null) {
             localRepositoryInventory = this.inventory;
         } else {
@@ -251,7 +255,7 @@ public class InventoryReport {
     }
 
     protected Inventory readGlobalInventory() throws IOException {
-        LOG.info("Reading global inventory for inventory report from {}", referenceInventoryDir);
+        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}", referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
 
@@ -1003,6 +1007,73 @@ public class InventoryReport {
         LOG.info(repeat("*", str.length() + 4));
     }
 
+    private void logConfiguration() {
+        LOG.info("Report configuration:");
+
+        LOG.info("- Source/Target paths:");
+        logConfigurationLogFile("referenceInventoryDir", referenceInventoryDir);
+        logConfigurationLogToString("referenceInventoryIncludes", referenceInventoryIncludes);
+        logConfigurationLogToString("referenceComponentPath", referenceComponentPath);
+        logConfigurationLogToString("referenceLicensePath", referenceLicensePath);
+        logConfigurationLogFile("targetReportDir", targetReportDir);
+        logConfigurationLogFile("diffInventoryFile", diffInventoryFile);
+        logConfigurationLogFile("targetInventoryDir", targetInventoryDir);
+        logConfigurationLogToString("targetInventoryPath", targetInventoryPath);
+        logConfigurationLogFile("targetComponentDir", targetComponentDir);
+        logConfigurationLogFile("targetLicenseDir", targetLicenseDir);
+        logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
+
+        LOG.info("- Validation fail flags:");
+        LOG.info(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", failOnError, failOnBanned, failOnDowngrade, failOnUnknown, failOnUnknownVersion, failOnDevelopment, failOnInternal);
+        LOG.info("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]", failOnUpgrade, failOnMissingLicense, failOnMissingLicenseFile, failOnMissingNotice, failOnMissingComponentFiles);
+
+        LOG.info("- Data display settings:");
+        LOG.info(" - generateOverviewTablesForAdvisories: {}", generateOverviewTablesForAdvisories.stream().map(AeaaContentIdentifierStore.AeaaContentIdentifier::toExtendedString).collect(Collectors.toList()));
+        logConfigurationLogToString("artifactFilter", artifactFilter);
+        logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", filterVulnerabilitiesNotCoveredByArtifacts);
+        logConfigurationLogToString("filterAdvisorySummary", filterAdvisorySummary);
+
+        LOG.info("- Template settings:");
+        LOG.info(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]", inventoryBomReportEnabled, inventoryDiffReportEnabled, inventoryPomEnabled, inventoryVulnerabilityReportEnabled);
+        LOG.info("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]", inventoryVulnerabilityReportSummaryEnabled, inventoryVulnerabilityStatisticsReportEnabled);
+        logConfigurationLogToString("templateLanguageSelector", templateLanguageSelector);
+
+        LOG.info("- Addon data:");
+        if (addOnArtifacts == null) {
+            LOG.info(" - addOnArtifacts: <null>");
+        } else if (addOnArtifacts.isEmpty()) {
+            LOG.info(" - addOnArtifacts: <empty>");
+        } else {
+            LOG.info(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
+        }
+
+        securityPolicy.logConfiguration();
+    }
+
+    private void logConfigurationLogFile(String property, File file) {
+        if (file == null) {
+            LOG.info(" - {}: <null>", property);
+        } else {
+            LOG.info(" - {}: file://{}", property, file.getAbsolutePath());
+        }
+    }
+
+    private void logConfigurationLogToString(String property, Object data) {
+        if (data == null) {
+            LOG.info(" - {}: <null>", property);
+        } else {
+            final String asString = String.valueOf(data);
+
+            final File fileAttempt = new File(asString);
+            if (fileAttempt.exists()) {
+                this.logConfigurationLogFile(property, fileAttempt);
+                return;
+            }
+
+            LOG.info(" - {}: {}", property, asString);
+        }
+    }
+
     private static String repeat(String str, int count) {
         if (count <= 0) return "";
         return IntStream.range(0, count).mapToObj(i -> str).collect(Collectors.joining());
@@ -1189,7 +1260,7 @@ public class InventoryReport {
         this.failOnMissingNotice = failOnMissingNotice;
     }
 
-    public String xmlEscapeContentString(String string) {
+    public static String xmlEscapeContentString(String string) {
         if (string == null) return "";
 
         String s = StringEscapeUtils.escapeXml(string.trim());

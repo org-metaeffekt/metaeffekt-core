@@ -1995,7 +1995,7 @@ public class Inventory implements Serializable {
         inventoryPrintString.add(String.format("ld: %d", licenseData.size()));
 
         final StringJoiner vulnerabilityMetaDataPrintString = new StringJoiner(", ", "vmd: [", "]");
-        vulnerabilityMetaDataPrintString.setEmptyValue("vmd: 0  ");
+        vulnerabilityMetaDataPrintString.setEmptyValue("vmd: []");
         for (String context : vulnerabilityMetaData.keySet()) {
             vulnerabilityMetaDataPrintString.add(String.format("%s: %d", context, vulnerabilityMetaData.get(context).size()));
         }
@@ -2007,6 +2007,45 @@ public class Inventory implements Serializable {
         inventoryPrintString.add(String.format("asmd: %d", assetMetaData.size()));
 
         return inventoryPrintString.toString();
+    }
+
+    public static List<String> mapAttributesToHorizontalTable(List<Map<String, String>> maps) {
+        if (maps == null || maps.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Collecting all unique attribute names and determining max width for each column
+        final Map<String, Integer> attributeWidths = new LinkedHashMap<>();
+        for (Map<String, String> map : maps) {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                final int maxAttributeLength = Math.max(entry.getKey().length(),
+                        entry.getValue() != null ? entry.getValue().replace("\n", "<br>").length() : 0);
+                attributeWidths.put(entry.getKey(), Math.max(attributeWidths.getOrDefault(entry.getKey(), 0), maxAttributeLength));
+            }
+        }
+
+        final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
+        // Header and separator
+        final String header = rearrangedAttributeWidths.entrySet().stream()
+                .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(" | ", "| ", " |"));
+        final String separator = rearrangedAttributeWidths.values().stream()
+                .map(integer -> StringUtils.repeat("-", integer + 2))
+                .collect(Collectors.joining("|", "|", "|"));
+
+        final List<String> table = new ArrayList<>();
+        table.add(header);
+        table.add(separator);
+
+        // Logging each map's attributes
+        for (Map<String, String> map : maps) {
+            String row = rearrangedAttributeWidths.keySet().stream()
+                    .map(key -> StringUtils.rightPad(map.get(key) != null ? map.get(key).replace("\n", "<br>") : "", rearrangedAttributeWidths.get(key)))
+                    .collect(Collectors.joining(" | ", "| ", " |"));
+            table.add(row);
+        }
+
+        return table;
     }
 
     /**

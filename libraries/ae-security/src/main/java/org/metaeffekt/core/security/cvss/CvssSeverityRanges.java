@@ -76,6 +76,15 @@ public class CvssSeverityRanges {
         return UNDEFINED_SEVERITY_RANGE;
     }
 
+    public SeverityRange getRangeByName(String name) {
+        for (SeverityRange range : ranges) {
+            if (range.getName().equals(name)) {
+                return range;
+            }
+        }
+        return UNDEFINED_SEVERITY_RANGE;
+    }
+
     public SeverityRange[] getRanges() {
         return ranges;
     }
@@ -146,7 +155,12 @@ public class CvssSeverityRanges {
 
         @Override
         public String toString() {
-            return String.format("%s:%s:%s:%s", name, color.getCssRootName(), floor, ceil);
+            return String.format("%s:%s:%s:%s",
+                    name,
+                    color.getCssRootName(),
+                    floor == -Double.MAX_VALUE ? "" : floor,
+                    ceil == Double.MAX_VALUE ? "" : ceil
+            );
         }
     }
 
@@ -157,8 +171,23 @@ public class CvssSeverityRanges {
 
     public final static SeverityRange UNDEFINED_SEVERITY_RANGE = new SeverityRange("Undefined:strong-gray:-100.0:100.0", -1);
 
-    public static final CvssSeverityRanges CVSS_2_SEVERITY_RANGES = new CvssSeverityRanges("Low:strong-yellow::3.9,Medium:strong-light-orange:4.0:6.9,High:strong-red:7.0:");
-    public static final CvssSeverityRanges CVSS_3_SEVERITY_RANGES = new CvssSeverityRanges("None:pastel-gray::0.0,Low:strong-yellow:0.1:3.9,Medium:strong-light-orange:4.0:6.9,High:strong-dark-orange:7.0:8.9,Critical:strong-red:9.0:");
+    public static final CvssSeverityRanges CVSS_2_SEVERITY_RANGES = new CvssSeverityRanges(
+            "Low:strong-yellow::3.9," +
+                    "Medium:strong-light-orange:4.0:6.9," +
+                    "High:strong-red:7.0:"
+    );
+    public static final CvssSeverityRanges CVSS_3_SEVERITY_RANGES = new CvssSeverityRanges(
+            "None:pastel-gray::0.0," +
+                    "Low:strong-yellow:0.1:3.9," +
+                    "Medium:strong-light-orange:4.0:6.9," +
+                    "High:strong-dark-orange:7.0:8.9," +
+                    "Critical:strong-red:9.0:"
+    );
+    public static final CvssSeverityRanges PRIORITY_SCORE_SEVERITY_RANGES = new CvssSeverityRanges(
+            "escalate:strong-red:9.0:," +
+                    "due:strong-dark-orange:7.0:8.9," +
+                    "elevated:strong-light-orange::6.9"
+    );
 
 
     private static String getAvailableColors() {
