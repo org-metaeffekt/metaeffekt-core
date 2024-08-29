@@ -573,28 +573,17 @@ public class Inventory implements Serializable {
                 continue;
             }
 
-            String artifactLicense = artifact.getLicense();
-
             if (!StringUtils.isNotBlank(artifact.getArtifactId())) {
                 if (includeLicensesWithArtifactsOnly) {
                     continue;
                 }
             }
 
-            // check whether there is an effective license (set of licenses)
+            // check whether there is an effective license or set of licenses
+            final List<String> effectiveLicenses = getEffectiveLicenses(artifact);
 
-            final LicenseMetaData matchingLicenseMetaData = findMatchingLicenseMetaData(artifact);
-            if (matchingLicenseMetaData != null) {
-                artifactLicense = matchingLicenseMetaData.deriveLicenseInEffect();
-            }
-
-            if (artifactLicense != null) {
-                String[] splitLicense = artifactLicense.split("\\|");
-                for (int i = 0; i < splitLicense.length; i++) {
-                    if (StringUtils.isNotBlank(splitLicense[i])) {
-                        licenses.add(splitLicense[i].trim());
-                    }
-                }
+            if (effectiveLicenses != null) {
+                licenses.addAll(effectiveLicenses);
             }
         }
 
@@ -640,6 +629,7 @@ public class Inventory implements Serializable {
      * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
+     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
@@ -656,7 +646,7 @@ public class Inventory implements Serializable {
                             append(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
                     ArtifactLicenseData artifactLicenseData = map.get(qualifier);
                     if (artifactLicenseData == null) {
-                        artifactLicenseData = new ArtifactLicenseData(artifact.getComponent(), artifact.getVersion(), match);
+                        artifactLicenseData = new ArtifactLicenseData(artifact.getComponent(), artifact.getVersion(), null);
                         map.put(qualifier, artifactLicenseData);
                     }
                     artifactLicenseData.add(artifact);
@@ -709,46 +699,61 @@ public class Inventory implements Serializable {
         return componentNotices;
     }
 
+    /**
+     * Collect ArtifactLicenseData aggregates artifacts that use the effective license given.
+     *
+     * @param effectiveLicense The effective license to evaluate the artifacts for.
+     *
+     * @return List of {@link ArtifactLicenseData} instances.
+     */
     public List<ArtifactLicenseData> evaluateComponents(String effectiveLicense) {
+
+        // the implementation collects ArtifactLicenseData which are shared by several artifacts
         final Map<String, ArtifactLicenseData> map = new LinkedHashMap<>();
+
         for (final Artifact artifact : artifacts) {
-            String artifactLicense = artifact.getLicense();
-            if (StringUtils.isNotBlank(artifact.getLicense()) &&
-                    StringUtils.isNotBlank(artifact.getVersion()) &&
-                    StringUtils.isNotBlank(artifact.getComponent())) {
-                artifactLicense = artifactLicense.trim();
-                // find a matching LMD instance
-                LicenseMetaData match = findMatchingLicenseMetaData(
-                        artifact.getComponent(), artifactLicense, artifact.getVersion());
 
-                if (match == null) {
-                    match = new LicenseMetaData();
-                    match.setLicense(artifactLicense);
-                }
+            final List<String> artifactLicenses = getEffectiveLicenses(artifact);
 
-                if (matches(effectiveLicense, match)) {
-                    // only version and name must be used here
-                    // there may be multiple entries (if validation for the component is disabled), but that
-                    // is not of interest here (we need just representatives for documentation).
-                    String qualifier = new StringBuilder(artifact.getVersion()).append("-").append(artifact.getComponent()).toString();
-                    ArtifactLicenseData artifactLicenseData = map.get(qualifier);
-                    if (artifactLicenseData == null) {
-                        artifactLicenseData = new ArtifactLicenseData(artifact.getComponent(), artifact.getVersion(), match);
-                        map.put(qualifier, artifactLicenseData);
-                    }
+            if (!artifactLicenses.isEmpty()) {
+                if (artifactLicenses.contains(effectiveLicense)) {
+
+                    // these may be null
+                    final String component = artifact.getComponent();
+                    final String version = artifact.getVersion();
+
+                    // normalize license
+                    final String normalizedLicenseExpression = artifactLicenses.stream().distinct().sorted().collect(Collectors.joining(", "));
+
+                    // the qualifier is used to condense and order the ArtifactLicenseData
+                    final String qualifier = computeQualifier(component, version, normalizedLicenseExpression);
+
+                    LicenseMetaData match = new LicenseMetaData();
+                    match.setLicense(normalizedLicenseExpression);
+
+                    // map / construct ArtifactLicenseData
+                    ArtifactLicenseData artifactLicenseData = map.computeIfAbsent(qualifier,
+                            k -> new ArtifactLicenseData(component, version, qualifier));
+
+                    // add current artifact
                     artifactLicenseData.add(artifact);
                 }
             }
         }
         final ArrayList<ArtifactLicenseData> artifactLicenseData = new ArrayList<>(map.values());
         Collections.sort(artifactLicenseData, (o1, o2) ->
-                Objects.compare(artifactSortString(o1), artifactSortString(o2), String::compareToIgnoreCase));
+                Objects.compare(o1.getQualifier(), o2.getQualifier(), String::compareToIgnoreCase));
         return artifactLicenseData;
     }
 
-
-    private String artifactSortString(ArtifactLicenseData o1) {
-        return o1.getComponentName() + "-" + o1.getComponentVersion();
+    private static String computeQualifier(String component, String version, String normalizedLicenseExpression) {
+        String qualifier = "";
+        if (StringUtils.isNotBlank(component)) qualifier += component;
+        qualifier += "|";
+        if (StringUtils.isNotBlank(component)) qualifier += version;
+        qualifier += "|";
+        qualifier += normalizedLicenseExpression;
+        return qualifier;
     }
 
     private boolean matches(String effectiveLicense, LicenseMetaData match) {
@@ -1702,15 +1707,24 @@ public class Inventory implements Serializable {
 
     public String getEffectiveLicense(Artifact artifact) {
         if (artifact == null) return null;
+
         String effectiveLicense = artifact.getLicense();
+
+        // return the associated licenses as effective licenses if required attributes for LMD are not set
         if (StringUtils.isEmpty(artifact.getComponent())) return effectiveLicense;
         if (StringUtils.isEmpty(artifact.getVersion())) return effectiveLicense;
         if (StringUtils.isEmpty(artifact.getLicense())) return effectiveLicense;
+
+        // use LMD to derive effective licenses
         LicenseMetaData licenseMetaData = findMatchingLicenseMetaData(artifact);
         if (licenseMetaData == null) return effectiveLicense;
+
         effectiveLicense = licenseMetaData.deriveLicenseInEffect();
         if (StringUtils.isEmpty(effectiveLicense)) return null;
+
+        // license from LMD are '|'-separated; replace with ', '
         effectiveLicense = effectiveLicense.replace("|", ", ");
+
         return effectiveLicense;
     }
 
@@ -1786,12 +1800,15 @@ public class Inventory implements Serializable {
         }
     }
 
-    public Set<String> evaluateComponentsRepresentedLicense(String representedNameLicense) {
-        final Set<String> componentNames = new HashSet<>();
+    public int countComponents(String representedNameLicense) {
+        final Set<String> componentQualifiers = new HashSet<>();
+
         for (String effectiveLicense : getLicensesRepresentedBy(representedNameLicense)) {
-            evaluateComponents(effectiveLicense).forEach(ald -> componentNames.add(ald.getComponentName()));
+            evaluateComponents(effectiveLicense).stream()
+                    .forEach(ald -> componentQualifiers.add(ald.deriveComponentQualifierForCounting()));
         }
-        return componentNames;
+
+        return componentQualifiers.size();
     }
 
     public boolean isFootnoteRequired(List<String> effectiveLicenses, List<String> representedEffectiveLicenses) {
@@ -1978,7 +1995,7 @@ public class Inventory implements Serializable {
         inventoryPrintString.add(String.format("ld: %d", licenseData.size()));
 
         final StringJoiner vulnerabilityMetaDataPrintString = new StringJoiner(", ", "vmd: [", "]");
-        vulnerabilityMetaDataPrintString.setEmptyValue("vmd: 0  ");
+        vulnerabilityMetaDataPrintString.setEmptyValue("vmd: []");
         for (String context : vulnerabilityMetaData.keySet()) {
             vulnerabilityMetaDataPrintString.add(String.format("%s: %d", context, vulnerabilityMetaData.get(context).size()));
         }
@@ -1990,6 +2007,45 @@ public class Inventory implements Serializable {
         inventoryPrintString.add(String.format("asmd: %d", assetMetaData.size()));
 
         return inventoryPrintString.toString();
+    }
+
+    public static List<String> mapAttributesToHorizontalTable(List<Map<String, String>> maps) {
+        if (maps == null || maps.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Collecting all unique attribute names and determining max width for each column
+        final Map<String, Integer> attributeWidths = new LinkedHashMap<>();
+        for (Map<String, String> map : maps) {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                final int maxAttributeLength = Math.max(entry.getKey().length(),
+                        entry.getValue() != null ? entry.getValue().replace("\n", "<br>").length() : 0);
+                attributeWidths.put(entry.getKey(), Math.max(attributeWidths.getOrDefault(entry.getKey(), 0), maxAttributeLength));
+            }
+        }
+
+        final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
+        // Header and separator
+        final String header = rearrangedAttributeWidths.entrySet().stream()
+                .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
+                .collect(Collectors.joining(" | ", "| ", " |"));
+        final String separator = rearrangedAttributeWidths.values().stream()
+                .map(integer -> StringUtils.repeat("-", integer + 2))
+                .collect(Collectors.joining("|", "|", "|"));
+
+        final List<String> table = new ArrayList<>();
+        table.add(header);
+        table.add(separator);
+
+        // Logging each map's attributes
+        for (Map<String, String> map : maps) {
+            String row = rearrangedAttributeWidths.keySet().stream()
+                    .map(key -> StringUtils.rightPad(map.get(key) != null ? map.get(key).replace("\n", "<br>") : "", rearrangedAttributeWidths.get(key)))
+                    .collect(Collectors.joining(" | ", "| ", " |"));
+            table.add(row);
+        }
+
+        return table;
     }
 
     /**

@@ -158,7 +158,8 @@ public class ComponentPatternProducer {
 
             try {
                 // try to apply contributors
-                final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir, artifact.get(VIRTUAL_ROOT_PATH), pathInContext, checksum);
+                final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir,
+                        artifact.get(VIRTUAL_ROOT_PATH), pathInContext, checksum);
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {
@@ -241,11 +242,17 @@ public class ComponentPatternProducer {
             final Artifact derivedArtifact = matchResult.deriveArtifact();
             fileSystemScanContext.contribute(derivedArtifact);
 
-            final Supplier<Inventory> expansionInventorySupplier = matchResult.componentPatternData.getExpansionInventorySupplier();
+            final Supplier<Inventory> expansionInventorySupplier =
+                    matchResult.componentPatternData.getExpansionInventorySupplier();
             if (expansionInventorySupplier != null) {
+
+                String checksum = derivedArtifact.getChecksum();
+                String assetId = "AID-" + derivedArtifact.getId() + (StringUtils.isEmpty(checksum) ? "" : checksum);
+                derivedArtifact.set(assetId, Constants.MARKER_CROSS);
 
                 for (Artifact artifact : expansionInventorySupplier.get().getArtifacts()) {
                     artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+                    artifact.set(assetId, Constants.MARKER_CONTAINS);
                     fileSystemScanContext.contribute(artifact);
                 }
             }
@@ -543,6 +550,7 @@ public class ComponentPatternProducer {
                 ComponentPatternContributorRunner.builder();
         contributorRunnerBuilder.add(new DpkgPackageContributor());
         contributorRunnerBuilder.add(new GemSpecContributor());
+        contributorRunnerBuilder.add(new GemMetadataContributor());
         contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
         contributorRunnerBuilder.add(new WebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());

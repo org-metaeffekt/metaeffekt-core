@@ -15,22 +15,24 @@
  */
 package org.metaeffekt.core.inventory.processor.report.adapter;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerabilityContextInventory;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable.SeverityToStatusRow;
-import static org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable.buildTable;
 
+@Slf4j
 public class AssessmentReportAdapter {
 
     private final Inventory inventory;
@@ -43,7 +45,58 @@ public class AssessmentReportAdapter {
 
     public List<AssetMetaData> getAssets() {
         return inventory.getAssetMetaData().stream()
-                .sorted(Comparator.comparing(o -> o.get(AssetMetaData.Attribute.NAME), String::compareToIgnoreCase))
+                .sorted(Comparator.comparing(this::assetDisplayName, String::compareToIgnoreCase))
+                .collect(Collectors.toList());
+    }
+
+    /* display strings and names of the asset */
+
+    public String assetDisplayName(AssetMetaData asset) {
+        return InventoryReport.xmlEscapeString(ObjectUtils.firstNonNull(asset.get(AssetMetaData.Attribute.NAME), asset.get(AssetMetaData.Attribute.ASSET_ID), "Unnamed Asset"));
+    }
+
+    public String assetDisplayType(AssetMetaData asset) {
+        return InventoryReport.xmlEscapeString(ObjectUtils.firstNonNull(asset.get("Type"), "Unknown Asset Type"));
+    }
+
+    public String assetGroupDisplayName(AssetMetaData asset) {
+        return InventoryReport.xmlEscapeString(ObjectUtils.firstNonNull(asset.get("Asset Group"), "Other Assets"));
+    }
+
+    /* counting and grouping assets */
+
+    public List<GroupedAssetsVulnerabilityCounts> groupAssetsByAssetGroup(Collection<AssetMetaData> assets) {
+        return assets.stream()
+                .sorted(Comparator.comparing(this::assetGroupDisplayName, (s, str) -> {
+                    // "Other Assets" should be last
+                    if (s.equals("Other Assets")) return 1;
+                    return s.compareToIgnoreCase(str);
+                }))
+                .collect(Collectors.groupingBy(this::assetGroupDisplayName, LinkedHashMap::new, Collectors.toList()))
+                .entrySet().stream()
+                .map(entry -> {
+
+                    final List<GroupedAssetVulnerabilityCounts> groupedAssetVulnerabilityCounts = entry.getValue().stream()
+                            .map(asset -> {
+                                final VulnerabilityCounts counts = countVulnerabilities(asset, true);
+                                final GroupedAssetVulnerabilityCounts groupedAssetCounts = new GroupedAssetVulnerabilityCounts();
+                                groupedAssetCounts.setAsset(asset);
+                                groupedAssetCounts.setAssetGroupDisplayName(entry.getKey());
+                                groupedAssetCounts.setAssetDisplayName(assetDisplayName(asset));
+                                groupedAssetCounts.setTotalCounts(counts);
+                                return groupedAssetCounts;
+                            })
+                            .collect(Collectors.toList());
+
+                    final GroupedAssetsVulnerabilityCounts groupedAssetsCounts = new GroupedAssetsVulnerabilityCounts();
+
+                    groupedAssetsCounts.setGroupedAssetVulnerabilityCounts(groupedAssetVulnerabilityCounts);
+                    groupedAssetsCounts.setAssetGroupDisplayName(entry.getKey());
+                    groupedAssetsCounts.setAssetGroupAsXmlId(InventoryReport.xmlEscapeStringAttribute(entry.getKey()));
+                    groupedAssetsCounts.setTotalVulnerabilityCounts(VulnerabilityCounts.sumFrom(groupedAssetVulnerabilityCounts.stream().map(GroupedAssetVulnerabilityCounts::getTotalCounts).collect(Collectors.toList())));
+
+                    return groupedAssetsCounts;
+                })
                 .collect(Collectors.toList());
     }
 
@@ -57,7 +110,7 @@ public class AssessmentReportAdapter {
         final VulnerabilityCounts counts = new VulnerabilityCounts();
 
         if (vulnerabilities != null && !vulnerabilities.isEmpty()) {
-            final StatisticsOverviewTable statisticsOverviewTable = buildTable(this.securityPolicy, vulnerabilities, null, useEffectiveSeverity);
+            final StatisticsOverviewTable statisticsOverviewTable = StatisticsOverviewTable.buildTable(this.securityPolicy, vulnerabilities, null, useEffectiveSeverity);
 
             counts.assessedCounter = statisticsOverviewTable.getRows().stream()
                     .map(SeverityToStatusRow::getAssessedCount)
@@ -66,25 +119,47 @@ public class AssessmentReportAdapter {
                     .map(SeverityToStatusRow::getTotal)
                     .reduce(0, Integer::sum);
 
-            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("critical"), counts::setCriticalCounter);
-            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("high"), counts::setHighCounter);
-            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("medium"), counts::setMediumCounter);
-            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("low"), counts::setLowCounter);
-            applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("none"), counts::setNoneCounter);
+            VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("critical"), counts::setCriticalCounter);
+            VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("high"), counts::setHighCounter);
+            VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("medium"), counts::setMediumCounter);
+            VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("low"), counts::setLowCounter);
+            VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("none"), counts::setNoneCounter);
         }
 
         return counts;
     }
 
-    private void applyTotalCountIfNotNull(SeverityToStatusRow row, Consumer<Integer> consumer) {
-        if (row != null) {
-            consumer.accept(row.getTotal());
+    @Data
+    public static class GroupedAssetVulnerabilityCounts {
+        public AssetMetaData asset;
+        public String assetGroupDisplayName;
+        public String assetDisplayName;
+        public VulnerabilityCounts totalCounts;
+
+        public void log() {
+            log.info(" - Asset:     {} (in {})",assetDisplayName, assetGroupDisplayName);
+            log.info("   Counts:    {}", totalCounts);
+        }
+    }
+
+    @Data
+    public static class GroupedAssetsVulnerabilityCounts {
+        public List<GroupedAssetVulnerabilityCounts> groupedAssetVulnerabilityCounts;
+        public VulnerabilityCounts totalVulnerabilityCounts;
+        public String assetGroupDisplayName;
+        public String assetGroupAsXmlId; // InventoryReport.xmlEscapeStringAttribute(assetGroup)
+
+        public void log() {
+            log.info("Asset Group:  {}", assetGroupDisplayName);
+            log.info("Total Counts: {}", totalVulnerabilityCounts);
+            groupedAssetVulnerabilityCounts.forEach(GroupedAssetVulnerabilityCounts::log);
         }
     }
 
     /**
      * Helper class to collect information per {@link AssetMetaData} instance.
      */
+    @Data
     public static class VulnerabilityCounts {
         public long criticalCounter;
         public long highCounter;
@@ -94,61 +169,22 @@ public class AssessmentReportAdapter {
         public long assessedCounter;
         public long totalCounter;
 
-        public long getCriticalCounter() {
-            return criticalCounter;
+        public static void applyTotalCountIfNotNull(SeverityToStatusRow row, Consumer<Integer> consumer) {
+            if (row != null) consumer.accept(row.getTotal());
         }
 
-        public long getHighCounter() {
-            return highCounter;
-        }
-
-        public long getMediumCounter() {
-            return mediumCounter;
-        }
-
-        public long getLowCounter() {
-            return lowCounter;
-        }
-
-        public long getNoneCounter() {
-            return noneCounter;
-        }
-
-        public long getTotalCounter() {
-            return totalCounter;
-        }
-
-        public long getAssessedCounter() {
-            return assessedCounter;
-        }
-
-        public void setCriticalCounter(long criticalCounter) {
-            this.criticalCounter = criticalCounter;
-        }
-
-        public void setHighCounter(long highCounter) {
-            this.highCounter = highCounter;
-        }
-
-        public void setMediumCounter(long mediumCounter) {
-            this.mediumCounter = mediumCounter;
-        }
-
-        public void setLowCounter(long lowCounter) {
-            this.lowCounter = lowCounter;
-        }
-
-        public void setNoneCounter(long noneCounter) {
-            this.noneCounter = noneCounter;
-        }
-
-        public void setAssessedCounter(long assessedCounter) {
-            this.assessedCounter = assessedCounter;
-        }
-
-        public void setTotalCounter(long totalCounter) {
-            this.totalCounter = totalCounter;
+        public static VulnerabilityCounts sumFrom(Collection<VulnerabilityCounts> other) {
+            final VulnerabilityCounts result = new VulnerabilityCounts();
+            other.forEach(counts -> {
+                result.criticalCounter += counts.criticalCounter;
+                result.highCounter += counts.highCounter;
+                result.mediumCounter += counts.mediumCounter;
+                result.lowCounter += counts.lowCounter;
+                result.noneCounter += counts.noneCounter;
+                result.assessedCounter += counts.assessedCounter;
+                result.totalCounter += counts.totalCounter;
+            });
+            return result;
         }
     }
-
 }

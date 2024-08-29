@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data container for artifacts and {@link LicenseMetaData}.
+ * Data container for artifacts sharing a {@link LicenseMetaData}. Currently, this is merely used as container / grouping
+ * of artifacts.
  *
  * @author Karsten Klein
  */
@@ -30,27 +31,18 @@ public class ArtifactLicenseData {
     private static final long serialVersionUID = 1L;
 
     private final List<Artifact> artifacts;
-    private final LicenseMetaData licenseMetaData;
+
     private final String componentName;
+
     private final String componentVersion;
 
-    public ArtifactLicenseData(String componentName, String componentVersion, LicenseMetaData licenseMetaData) {
-        this.licenseMetaData = licenseMetaData;
+    private String qualifier;
+
+    public ArtifactLicenseData(String componentName, String componentVersion, String qualifier) {
         this.componentName = componentName;
         this.componentVersion = componentVersion;
+        this.qualifier = qualifier;
         this.artifacts = new ArrayList<>();
-    }
-
-    public LicenseMetaData getLicenseMetaData() {
-        return licenseMetaData;
-    }
-
-    public void add(Artifact artifact) {
-        artifacts.add(artifact);
-    }
-
-    public List<Artifact> getArtifacts() {
-        return artifacts;
     }
 
     public String getComponentName() {
@@ -61,23 +53,25 @@ public class ArtifactLicenseData {
         return componentVersion;
     }
 
-    public String deriveId() {
-        return normalizeTokenId(LicenseMetaData.normalizeId(licenseMetaData.deriveQualifier()));
+    public void add(Artifact artifact) {
+        artifacts.add(artifact);
     }
 
-    public static String normalizeTokenId(String string) {
-        String result = string.replace(" ", "-");
-        result = result.replace("(", "");
-        result = result.replace(")", "");
-        return result;
+    public List<Artifact> getArtifacts() {
+        return artifacts;
     }
 
-    public String getLicenseInEffect() {
-        return licenseMetaData.deriveLicenseInEffect();
+    public String getQualifier() {
+        return qualifier;
     }
 
-    @Override
-    public String toString() {
-        return new StringBuilder(licenseMetaData.getComponent()).toString();
+    public String deriveComponentQualifierForCounting() {
+        // in case name and version are available we use this as unique component qualifer
+        if (componentName != null && componentVersion != null) {
+            return componentName + "|" + componentVersion;
+        } else {
+            // if one or the other misses we use the full qualifier for grouping and counting
+            return qualifier;
+        }
     }
 }

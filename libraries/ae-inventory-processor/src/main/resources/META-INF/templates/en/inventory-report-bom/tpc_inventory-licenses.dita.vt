@@ -36,7 +36,7 @@
             <tbody>
 #foreach($license in $effectiveLicensesRepresented)
 #set($folder=$inventory.getLicenseFolder($license))
-#set($group=$inventory.evaluateComponentsRepresentedLicense($license))
+#set($componentCount=$inventory.countComponents($license))
 #set($licenseData=$inventory.findMatchingLicenseData($license))
                 <row>
 #if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
@@ -62,7 +62,7 @@
 #end
                     <entry>
                          <xref href="#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
-                            <codeph>$group.size()</codeph>
+                            <codeph>$componentCount</codeph>
                         </xref>
                     </entry>
                 </row>

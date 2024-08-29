@@ -57,6 +57,7 @@ public class AdvisoryMetaData extends AbstractModelBase {
         URL("Url"),
         SUMMARY("Summary"),
         SOURCE("Source"),
+        SOURCE_IMPLEMENTATION("Source-Implementation"),
         TYPE("Type"),
 
         DESCRIPTION("Description"),
@@ -66,7 +67,11 @@ public class AdvisoryMetaData extends AbstractModelBase {
         ACKNOWLEDGEMENTS("Acknowledgements"),
         KEYWORDS("Keywords"),
         REFERENCES("References"),
+        @Deprecated
         REFERENCED_IDS("Referenced Ids"),
+        REFERENCED_VULNERABILITIES("Referenced Vulnerabilities"),
+        REFERENCED_SECURITY_ADVISORIES("Referenced Advisories"),
+        REFERENCED_OTHER("Other Referenced Ids"),
         DATA_SOURCE("Data Source"),
         MATCHING_SOURCE("Matching Source"),
 

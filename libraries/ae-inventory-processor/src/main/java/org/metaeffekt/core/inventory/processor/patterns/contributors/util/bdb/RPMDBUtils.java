@@ -74,7 +74,7 @@ public class RPMDBUtils {
         List<IndexEntry> dribbleIndexEntries;
 
         EntryInfo entry = ei2h(blob.getPeList().get(0));
-        int rdlen = 0;
+        int rdlen;
 
         if (entry.getTag() >= RpmConstants.RPMTAG_HEADERI18NTABLE) {
             RdlenWrapper dl = new RdlenWrapper();
@@ -649,7 +649,7 @@ public class RPMDBUtils {
                     break;
 
                 case RpmConstants.RPMTAG_GROUP:
-                    if (ie.getInfo().getType() != RpmConstants.RPM_I18NSTRING_TYPE) {
+                    if (ie.getInfo().getType() != RpmConstants.RPM_I18NSTRING_TYPE && ie.getInfo().getType() != RpmConstants.RPM_STRING_TYPE) {
                         throw new IOException("invalid tag group");
                     }
                     String group = new String(ie.getData()).trim();
@@ -712,7 +712,7 @@ public class RPMDBUtils {
         byte[] buffer = new byte[1];
 
         r.readFully(buffer);
-        int tag = buffer[0] & 0xFF;
+        // int tag = buffer[0] & 0xFF;
         r.readFully(buffer);
         int signatureType = buffer[0] & 0xFF;
         r.readFully(buffer);

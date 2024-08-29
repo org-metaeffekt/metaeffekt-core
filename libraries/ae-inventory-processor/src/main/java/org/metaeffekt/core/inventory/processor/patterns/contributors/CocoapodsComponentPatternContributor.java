@@ -40,6 +40,10 @@ public class CocoapodsComponentPatternContributor extends ComponentPatternContri
         add(".podspec");
     }});
 
+    private static final Pattern SPEC_NAME = Pattern.compile(".*\\.name\\s*=\\s*['\"](.+?)['\"]");
+    private static final Pattern PODSPEC_VERSION = Pattern.compile(".*\\.version\\s*=\\s*['\"](.+?)['\"]");
+
+
     @Override
     public boolean applies(String pathInContext) {
         return pathInContext.endsWith(".podspec");
@@ -59,12 +63,10 @@ public class CocoapodsComponentPatternContributor extends ComponentPatternContri
             String packageName = null;
             String version = null;
 
-            Pattern namePattern = Pattern.compile("spec\\.name\\s*=\\s*['\"](.+?)['\"]");
-            Pattern versionPattern = Pattern.compile("spec\\.version\\s*=\\s*['\"](.+?)['\"]");
 
             for (String line : lines.collect(Collectors.toList())) {
-                Matcher nameMatcher = namePattern.matcher(line);
-                Matcher versionMatcher = versionPattern.matcher(line);
+                Matcher nameMatcher = SPEC_NAME.matcher(line);
+                Matcher versionMatcher = PODSPEC_VERSION.matcher(line);
 
                 if (nameMatcher.find()) {
                     packageName = nameMatcher.group(1);
@@ -93,7 +95,7 @@ public class CocoapodsComponentPatternContributor extends ComponentPatternContri
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);

@@ -66,7 +66,7 @@ public class MavenProjectSourcesComponentPatternContributor extends ComponentPat
             cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifactId);
             cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
             cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, artifactId + "-" + version);
-            cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+            cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
             cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
             cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
             cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
@@ -87,9 +87,9 @@ public class MavenProjectSourcesComponentPatternContributor extends ComponentPat
                 depCpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, depArtifactId);
                 depCpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, depVersion);
                 depCpd.set(ComponentPatternData.Attribute.COMPONENT_PART, depArtifactId + "-" + depVersion);
-                depCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+                depCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
                 depCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+                depCpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
                 depCpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                 depCpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MAVEN_PROJECT_SOURCE_TYPE);
                 depCpd.set(Constants.KEY_SCOPE, depScope);

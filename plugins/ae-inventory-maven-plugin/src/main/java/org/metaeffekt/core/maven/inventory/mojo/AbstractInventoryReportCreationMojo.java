@@ -18,18 +18,18 @@ package org.metaeffekt.core.maven.inventory.mojo;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.json.JSONArray;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract mojo. Base class for reporting mojos.
@@ -262,16 +262,26 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean filterAdvisorySummary;
 
     /**
-     * Comma seperated list of advisory providers. For every provider, an additional overview table will be generated
-     * only evaluating the vulnerabilities containing the respecting provider.
-     * If left empty, no additional table will be created.
+     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * The key "name" is mandatory and can optionally be combined with an "implementation" value. If the implementation
+     * is not specified, the name will be used as the implementation. Each list entry represents a single advisory type.
      * <p>
-     * See {@link AeaaContentIdentifiers} for all available providers. Use the well-formed names.<br>
-     * To address all providers, use <code>ALL</code>.
+     * For every provider, an additional overview table will be generated
+     * only evaluating the vulnerabilities containing the respecting provider.
+     * If left empty, no additional table will be created.<br>
+     * See {@link org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore}
+     * or all available providers.
+     * <p>
+     * Example:
+     * <pre>
+     *     [{"name":"CERT_FR"},
+     *      {"name":"CERT_SEI"},
+     *      {"name":"RHSA","implementation":"CSAF"}]
+     * </pre>
      *
      * @parameter
      */
-    private List<String> generateOverviewTablesForAdvisories = new ArrayList<>();
+    private JSONArray generateOverviewTablesForAdvisories = new JSONArray();
 
     // other template parameters
 
@@ -353,7 +363,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setSecurityPolicy(securityPolicy);
         report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         report.setFilterAdvisorySummary(filterAdvisorySummary);
-        report.addGenerateOverviewTablesForAdvisoriesByString(generateOverviewTablesForAdvisories);
+        report.addGenerateOverviewTablesForAdvisoriesByMap(generateOverviewTablesForAdvisories);
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);

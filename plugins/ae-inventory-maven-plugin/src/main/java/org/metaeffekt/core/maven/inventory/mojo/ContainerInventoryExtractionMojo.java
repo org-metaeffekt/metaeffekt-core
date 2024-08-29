@@ -46,6 +46,9 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     @Parameter(defaultValue = "false")
     protected boolean filterPackagesWithoutVersion = false;
 
+    @Parameter(defaultValue = "false")
+    protected boolean filterArtifactsWithoutVersion = false;
+
     @Parameter
     protected String[] excludes;
 
@@ -123,12 +126,15 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
     }
 
     private void filterInventory(Inventory inventory) {
-        List<Artifact> toBeDeleted = new ArrayList<>();
+        final List<Artifact> toBeDeleted = new ArrayList<>();
         for (Artifact artifact : inventory.getArtifacts()) {
-            if (filterPackagesWithoutVersion &&
-                    Constants.ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(artifact.get(Constants.KEY_TYPE)) &&
-                    StringUtils.isEmpty(artifact.getVersion())) {
-                toBeDeleted.add(artifact);
+            if (StringUtils.isEmpty(artifact.getVersion())) {
+                if (filterArtifactsWithoutVersion) {
+                    toBeDeleted.add(artifact);
+                } else if (filterPackagesWithoutVersion &&
+                        ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
+                    toBeDeleted.add(artifact);
+                }
             }
         }
         inventory.getArtifacts().removeAll(toBeDeleted);

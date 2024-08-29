@@ -23,7 +23,7 @@
                 Column <codeph>Assessed</codeph> indicates to which extent the vulnerabilities have been analyzed on
                 asset-level.
             </p>
-            #assetAssessmentSummary("asset-assessment-summary-associated", "Associated Vulnerabilities by Asset" $assets, false)
+            #assetAssessmentSummary("asset-assessment-summary-associated", $assets, false)
         #end
     </body>
 </topic>

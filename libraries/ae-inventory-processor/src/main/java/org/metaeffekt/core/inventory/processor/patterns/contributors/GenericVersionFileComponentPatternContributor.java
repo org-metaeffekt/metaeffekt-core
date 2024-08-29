@@ -77,7 +77,7 @@ public class GenericVersionFileComponentPatternContributor extends ComponentPatt
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, pluginName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, pluginVersion);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, pluginName + "-" + pluginVersion);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
         cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");

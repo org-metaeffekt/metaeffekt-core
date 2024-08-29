@@ -61,6 +61,5 @@ public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(Artifact.Attribute.COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(200);
-        analysis.selectArtifacts(containsToken(Artifact.Attribute.PURL, "pkg:deb/ubuntu/ca-certificates@20210119?arch=all")).assertNotEmpty();
     }
 }

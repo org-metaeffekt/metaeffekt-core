@@ -87,6 +87,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     break;
                 }
                 if (entry.getValue() != null) {
+                    ComponentPatternData cpd = new ComponentPatternData();
                     List<IndexEntry> indexEntries = RPMDBUtils.headerImport(entry.getValue());
                     PackageInfo packageInfo = RPMDBUtils.getNEVRA(indexEntries);
                     StringJoiner sj = new StringJoiner(",");
@@ -105,6 +106,9 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                                 }
                             }
                         }
+                        if (sj.length() == 0) {
+                            throw new Exception("No files found for rpm-package: " + packageInfo.getName());
+                        }
                     } catch (Exception e) { // FIXME: what kind of exceptions happen here; also observed NPE
                         LOG.warn("Could not include patterns for rpm-package: [{}]", packageInfo.getName());
 
@@ -115,7 +119,6 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                         sj.add("usr/share/man/**/" + packageInfo.getName() + "*");
                     }
 
-                    ComponentPatternData cpd = new ComponentPatternData();
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageInfo.getName());
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, packageInfo.getVersion());
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageInfo.getName() + "-" + packageInfo.getVersion());
@@ -127,6 +130,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar,**/node_modules/**/*");
 
                     cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
+                    cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
                     cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getName(), packageInfo.getVersion() + "-" + packageInfo.getRelease(), packageInfo.getArch(), packageInfo.getEpoch(), packageInfo.getSourceRpm(), distro));

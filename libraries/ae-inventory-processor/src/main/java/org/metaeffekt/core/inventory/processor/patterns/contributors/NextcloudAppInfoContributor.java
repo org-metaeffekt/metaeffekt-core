@@ -66,7 +66,7 @@ public class NextcloudAppInfoContributor extends ComponentPatternContributor {
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
             final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
-            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFile.getName());
+            componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(contextRelPath, anchorFile.getName()).getPath());
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
             componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);

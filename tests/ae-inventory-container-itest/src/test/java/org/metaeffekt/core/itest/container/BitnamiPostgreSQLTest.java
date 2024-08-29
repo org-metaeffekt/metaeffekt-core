@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
-import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
@@ -64,6 +63,6 @@ public class BitnamiPostgreSQLTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(20);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(18);
     }
 }

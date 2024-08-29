@@ -40,11 +40,12 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         add(".csproj");
         add(".fsproj");
         add("packages.config");
+        add(".nuspec");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".csproj") || pathInContext.endsWith(".fsproj") || pathInContext.endsWith("packages.config");
+        return pathInContext.endsWith(".csproj") || pathInContext.endsWith(".fsproj") || pathInContext.endsWith("packages.config") || pathInContext.endsWith(".nuspec");
     }
 
     @Override
@@ -58,7 +59,11 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         }
 
         try {
-            processProjectFile(components, relativeAnchorPath, anchorChecksum);
+            if (relativeAnchorPath.endsWith(".nuspec")) {
+                processNuspecFile(components, projectFile, relativeAnchorPath, anchorChecksum);
+            } else {
+                processProjectFile(components, relativeAnchorPath, anchorChecksum);
+            }
             return components;
         } catch (Exception e) {
             LOG.warn("Error processing DotNet project file", e);
@@ -71,7 +76,7 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
@@ -81,14 +86,14 @@ public class DotNetComponentPatternContributor extends ComponentPatternContribut
         components.add(cpd);
     }
 
-    private void processNuspecFile(List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
+    private void processNuspecFile(List<ComponentPatternData> components, File nuspecFile, String relativeAnchorPath, String anchorChecksum) {
         // TODO: review, if nuspec files always contain the necessary information
         String packageName;
         String version;
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new File(relativeAnchorPath));
+            Document doc = builder.parse(nuspecFile);
 
             NodeList metadataList = doc.getElementsByTagName("metadata");
             if (metadataList.getLength() > 0) {

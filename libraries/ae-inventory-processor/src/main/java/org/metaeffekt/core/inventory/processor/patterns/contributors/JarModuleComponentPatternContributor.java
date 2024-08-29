@@ -119,7 +119,11 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 }
             } else {
                 if (artifactId != null) {
-                    id = artifactId + "-" + artifact.getVersion() + "." + deriveSuffix(artifact.get("Packaging"));
+                    if (artifact.get("Packaging") == null) {
+                        id = artifactId + "-" + artifact.getVersion();
+                    } else {
+                        id = artifactId + "-" + artifact.getVersion() + "." + deriveSuffix(artifact.get("Packaging"));
+                    }
                 }
             }
             artifact.setId(id);
@@ -150,6 +154,8 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                "**/package-lock.json" + "," +
+                "**/package.json" + "," +
                 "**/node_modules/**/*" + "," +
                 "**/bower_components/**/*" + "," +
                 "**/*.jar" + "," +
