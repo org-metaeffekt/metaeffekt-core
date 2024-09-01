@@ -18,10 +18,10 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.exception.ContributorFailureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +32,6 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -324,7 +323,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     public ComponentPatternData createComponentPattern(String versionAnchor,
                                                        DpkgStatusFileEntry entry,
                                                        String checksum,
-                                                       String includePatterns) {
+                                                       String includePatterns, LinuxDistributionUtil.LinuxDistro distro) {
         ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, entry.packageName);
         // add list of comma-separated paths
@@ -344,7 +343,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         try {
             componentPatternData.set(Artifact.Attribute.PURL.getKey(),
-                    buildPurl(readDistro(), entry.packageName, entry.version, entry.architecture));
+                    buildPurl(distro, entry.packageName, entry.version, entry.architecture));
         } catch (Exception e) {
             LOG.error("Could not create PURL for package [{}].", entry.packageName);
         }
@@ -447,9 +446,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         try {
             entries = readCompleteStatusFile(anchorFile);
         } catch (IOException e) {
-            // fail for this anchor if we can't read this file for some reason
-            throw new ContributorFailureException(e);
+            LOG.error("Unable to parse status file [{}].", anchorFile);
+            return Collections.emptyList();
         }
+
+        final LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(new File(baseDir, virtualRootPath));
 
         // contribute component patterns for each registered package
         List<ComponentPatternData> componentPatterns = new ArrayList<>();
@@ -508,12 +509,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 continue;
             }
 
-            ComponentPatternData cpd = createComponentPattern(
+            final ComponentPatternData cpd = createComponentPattern(
                     virtualRoot.relativize(relativeAnchorFile).toString(),
-                    entry,
-                    checksum,
-                    includePatternsJoiner.toString()
-            );
+                    entry, checksum, includePatternsJoiner.toString(), distro);
+
             cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
             cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "dpkg");
 
@@ -587,9 +586,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         File virtualRoot = md5sumsFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
         // create patterns
         if (!virtualRoot.exists()) {
-            LOG.warn("Should never happen: computed virtual root [{}] does not exist",
-                    virtualRoot.getAbsolutePath());
-            throw new ContributorFailureException("Should never happen: computed virtual root did not exist.");
+            LOG.warn("Computed virtual root [{}] does not exist", virtualRoot.getAbsolutePath());
+            return Collections.emptyList();
         }
 
         StringJoiner includesJoiner = createIncludePatternsFromHashFile(virtualRootPath,
@@ -597,10 +595,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         ComponentPatternData cpd = createComponentPattern(
                 virtualRoot.toPath().relativize(md5sumsFile.toPath()).toString(),
-                entry,
-                checksum,
-                includesJoiner.toString()
-        );
+                entry, checksum,
+                includesJoiner.toString(), LinuxDistributionUtil.parseDistro(new File(baseDir, virtualRootPath)));
 
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "dpkg-distroless");
@@ -632,46 +628,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return 1;
     }
 
-    // FIXME: move to separate class; consolidate with other distro parsers
-    public static String readDistro() throws IOException {
-        List<Path> paths = new ArrayList<>(Arrays.asList(
-                Paths.get("/etc/os-release"),
-                Paths.get("/etc/lsb-release"),
-                Paths.get("/etc/debian_version"),
-                Paths.get("/etc/redhat-release"),
-                Paths.get("/etc/centos-release"),
-                Paths.get("/etc/system-release") // Generic catch-all for some other distributions
-        ));
-
-        for (Path path : paths) {
-            if (Files.exists(path) && Files.size(path) > 0) {
-                List<String> lines = Files.readAllLines(path);
-                for (String line : lines) {
-                    if (path.endsWith(Constants.OS_RELEASE) || path.endsWith(Constants.LSB_RELEASE)) {
-                        // parse key-value pair files
-                        if (line.contains("=")) {
-                            String[] parts = line.split("=", 2);
-                            String key = parts[0];
-                            String value = parts[1].replace("\"", "").trim();
-                            if ("ID".equals(key) || "DISTRIB_ID".equals(key)) {
-                                return value;
-                            }
-                        }
-                    } else if (path.endsWith(Constants.DEBIAN_VERSION)) {
-                        // directly return "debian" if the file exists, assuming the file content isn't needed
-                        return "debian";
-                    } else if (path.endsWith(Constants.REDHAT_RELEASE) || path.endsWith(Constants.CENTOS_RELEASE) || path.endsWith(Constants.SYSTEM_RELEASE) || path.endsWith(Constants.FEDORA_RELEASE)) {
-                        return line.trim().split(" ")[0].toLowerCase();
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    private String buildPurl(String distro, String packageName, String version, String arch) {
-        if (distro != null) {
-            return String.format("pkg:deb/%s/%s@%s?arch=%s", distro, packageName, version, arch);
+    private String buildPurl(LinuxDistributionUtil.LinuxDistro distro, String packageName, String version, String arch) {
+        if (distro != null && distro.id != null) {
+            return String.format("pkg:deb/%s/%s@%s?arch=%s", distro.id, packageName, version, arch);
         }
         return null;
     }

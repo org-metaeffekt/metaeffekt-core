@@ -338,21 +338,31 @@ public class PackageInfo {
     }
 
     public List<String> installedFileNames() throws Exception {
+        if (dirNames == null || dirIndexes == null || baseNames == null) {
+            if (dirNames == null && dirIndexes == null && baseNames == null) {
+                return null;
+            }
+            throw new IllegalStateException("Invalid metadata detected for rpm: " + name);
+        }
+
         if (dirNames.isEmpty() || dirIndexes.isEmpty() || baseNames.isEmpty()) {
-            return null;
+            if (dirNames.isEmpty() && dirIndexes.isEmpty() && baseNames.isEmpty()) {
+                return null;
+            }
+            throw new IllegalStateException("Invalid metadata detected for rpm: " + name);
         }
 
         if (dirIndexes.size() != baseNames.size() || dirNames.size() > baseNames.size()) {
-            throw new Exception("invalid rpm " + name);
+            throw new IllegalStateException("Invalid metadata detected for rpm: " + name);
         }
 
-        List<String> filePaths = new ArrayList<>();
+        final List<String> filePaths = new ArrayList<>();
         for (int i = 0; i < baseNames.size(); i++) {
-            int idx = dirIndexes.get(i);
+            final int idx = dirIndexes.get(i);
             if (dirNames.size() <= idx) {
                 throw new Exception("invalid rpm " + name);
             }
-            String dir = dirNames.get(idx);
+            final String dir = dirNames.get(idx);
             filePaths.add(pathJoin(dir, baseNames.get(i))); // should be slash-separated
         }
         return filePaths;

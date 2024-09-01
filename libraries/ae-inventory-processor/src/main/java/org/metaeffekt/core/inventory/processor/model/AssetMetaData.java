@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -183,7 +184,11 @@ public class AssetMetaData extends AbstractModelBase {
      */
     public String deriveQualifier() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(get(Attribute.ASSET_ID)).append("-");
+        sb.append(get(Attribute.ASSET_ID));
+        final String assetPath = get(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH);
+        if (assetPath != null) {
+            sb.append("-").append(assetPath);
+        }
         return sb.toString();
     }
 
@@ -223,5 +228,9 @@ public class AssetMetaData extends AbstractModelBase {
     @Override
     public String toString() {
         return "Asset Id: " + get(Attribute.ASSET_ID);
+    }
+
+    public void merge(AssetMetaData a) {
+        super.merge(a);
     }
 }

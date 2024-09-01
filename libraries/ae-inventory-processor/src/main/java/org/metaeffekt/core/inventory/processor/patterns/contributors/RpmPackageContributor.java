@@ -16,6 +16,7 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -31,15 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class RpmPackageContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(RpmPackageContributor.class);
@@ -48,6 +43,12 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         add("/packages");
         add("/rpmdb.sqlite");
         add("/packages.db");
+    }});
+
+    private static final List<String> paths = Collections.unmodifiableList(new ArrayList<String>() {{
+        add("var/lib/rpm/packages");
+        add("var/lib/rpm/rpmdb.sqlite");
+        add("var/lib/rpm/packages.db");
     }});
 
     @Override
@@ -63,6 +64,8 @@ public class RpmPackageContributor extends ComponentPatternContributor {
             LOG.warn("RPM packages file does not exist: [{}]", packagesFile.getAbsolutePath());
             return Collections.emptyList();
         }
+
+        virtualRootPath = modulateVirtualRootPath(baseDir, virtualRootPath, relativeAnchorPath, paths);
 
         try {
             BlockingQueue<Entry> entries = getEntries(packagesFile);
@@ -90,33 +93,39 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     ComponentPatternData cpd = new ComponentPatternData();
                     List<IndexEntry> indexEntries = RPMDBUtils.headerImport(entry.getValue());
                     PackageInfo packageInfo = RPMDBUtils.getNEVRA(indexEntries);
-                    StringJoiner sj = new StringJoiner(",");
-                    String distro = getDistro(baseDir.getAbsolutePath(), virtualRootPath);
+                    StringJoiner includePatternJoiner = new StringJoiner(",");
+
+                    final File distroBaseDir = new File(baseDir, virtualRootPath);
+                    final LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(distroBaseDir);
+
                     try {
-                        List<String> installedFileNames = packageInfo.installedFileNames();
+                        final List<String> installedFileNames = packageInfo.installedFileNames();
                         if (installedFileNames != null && !installedFileNames.isEmpty()) {
                             for (String installedFileName : installedFileNames) {
 
                                 // NOTE: we must use the relative path from the perspective of the version anchor.
                                 installedFileName = installedFileName.startsWith("/") ? installedFileName.substring(1) : installedFileName;
 
-                                File file = new File(baseDir, virtualRootPath + "/" + installedFileName);
+                                final File file = new File(baseDir, virtualRootPath + "/" + installedFileName);
                                 if (file.exists() && file.isFile()) {
-                                    sj.add(installedFileName);
+                                    includePatternJoiner.add(installedFileName);
                                 }
                             }
                         }
-                        if (sj.length() == 0) {
-                            throw new Exception("No files found for rpm-package: " + packageInfo.getName());
+                        if (includePatternJoiner.length() == 0) {
+                            throw new IllegalStateException("No files found for rpm-package: " + packageInfo.getName());
                         }
                     } catch (Exception e) { // FIXME: what kind of exceptions happen here; also observed NPE
-                        LOG.warn("Could not include patterns for rpm-package: [{}]", packageInfo.getName());
+                        LOG.warn("Could not derive include patterns for rpm-package: [{}]", packageInfo.getName());
 
                         // NOTE: never add **/*; only add files which may contribute to the package from known locations
                         // FIXME: check names of folder (distribution-specific)
-                        sj.add("usr/share/doc/" + packageInfo.getName() + "/**/*");
-                        sj.add("usr/share/licenses/" + packageInfo.getName() + "/**/*");
-                        sj.add("usr/share/man/**/" + packageInfo.getName() + "*");
+                        includePatternJoiner.add("usr/share/doc/" + packageInfo.getName() + "/**/*");
+                        includePatternJoiner.add("usr/share/licenses/" + packageInfo.getName() + "/**/*");
+                        includePatternJoiner.add("usr/share/man/**/" + packageInfo.getName() + "*");
+
+                        // include even, when there is no file match
+                        cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
                     }
 
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageInfo.getName());
@@ -125,12 +134,11 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(Artifact.Attribute.CHECKSUM, packageInfo.getSigMD5());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, virtualRoot.relativize(relativeAnchorFile).toString());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, sj.toString());
+                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatternJoiner.toString());
 
                     cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar,**/node_modules/**/*");
 
                     cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
-                    cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
                     cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getName(), packageInfo.getVersion() + "-" + packageInfo.getRelease(), packageInfo.getArch(), packageInfo.getEpoch(), packageInfo.getSourceRpm(), distro));
@@ -170,11 +178,10 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         return 1;
     }
 
-    private String buildPurl(String name, String version, String arch, Integer epoch, String upstream, String distro) {
+    private String buildPurl(String name, String version, String arch, Integer epoch, String upstream, LinuxDistributionUtil.LinuxDistro distro) {
         StringBuilder sb = new StringBuilder();
         sb.append("pkg:rpm/");
-        String newVendor = distro.replaceAll("[^a-z]", "");
-        sb.append(newVendor).append("/");
+        sb.append(distro.id).append("/");
         sb.append(name).append("@");
         sb.append(version);
         if (arch != null && !arch.isEmpty()) {
@@ -186,99 +193,10 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         if (upstream != null && !upstream.isEmpty()) {
             sb.append("&upstream=").append(upstream);
         }
-        if (!distro.isEmpty()) {
-            sb.append("&distro=").append(distro);
+        if (!distro.versionId.isEmpty()) {
+            sb.append("&distro=").append(distro.id).append("-").append(distro.versionId);
         }
         return sb.toString();
     }
 
-    private String parseRedHatRelease(File file) {
-        Pattern pattern = Pattern.compile("(.*?)\\srelease\\s(\\d\\.\\d+)");
-        try (Stream<String> lines = Files.lines(file.toPath())) {
-            for (String line : lines.collect(Collectors.toList())) {
-                Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    if (matcher.groupCount() >= 2) {
-                        String[] words = matcher.group(1).split("\\s+");
-                        StringBuilder initials = new StringBuilder();
-                        for (String word : words) {
-                            initials.append(Character.toLowerCase(word.charAt(0)));
-                        }
-                        return initials + "-" + matcher.group(2);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOG.warn("Could not read redhat-release file", e);
-            return null;
-        }
-        return null;
-    }
-
-    private String getDistro(String baseDir, String virtualRootPath) {
-        List<Path> paths = new ArrayList<>(Arrays.asList(
-                Paths.get(baseDir + "/" + virtualRootPath + "/etc/os-release"),
-                Paths.get(baseDir + "/" + virtualRootPath + "/usr/lib/os-release"),
-                Paths.get(baseDir + "/" + virtualRootPath + "/etc/system-release-cpe"),
-                Paths.get(baseDir + "/" + virtualRootPath + "/etc/redhat-release")
-        ));
-        for (Path path : paths) {
-            if (path.endsWith("os-release")) {
-                File file = path.toFile();
-                if (file.exists()) {
-                    String distro = parseOsRelease(file);
-                    if (distro != null && !distro.isEmpty()) {
-                        return distro;
-                    }
-                }
-            }
-            if (path.endsWith("system-release-cpe")) {
-                File file = path.toFile();
-                if (file.exists()) {
-                    return parseSystemReleaseCpe(file);
-                }
-            }
-            if (path.endsWith("redhat-release")) {
-                File file = path.toFile();
-                if (file.exists()) {
-                    return parseRedHatRelease(file);
-                }
-            }
-        }
-        return "";
-    }
-
-    private String parseOsRelease(File file) {
-        StringBuilder distro = new StringBuilder();
-        try (Stream<String> lines = Files.lines(file.toPath())) {
-            for (String line : lines.collect(Collectors.toList())) {
-                if (line.startsWith("ID=")) {
-                    distro.append(line.substring(3).replaceAll("\"", ""));
-                }
-                if (line.startsWith("VERSION_ID=")) {
-                    distro.append("-").append(line.substring(11).replaceAll("\"", ""));
-                }
-            }
-            return distro.toString();
-        } catch (Exception e) {
-            LOG.warn("Could not read os-release file", e);
-            return null;
-        }
-    }
-
-    private String parseSystemReleaseCpe(File file) {
-        Pattern pattern = Pattern.compile("cpe:/o:(.*?):.*?:(.*?):.*?$");
-        try (Stream<String> lines = Files.lines(file.toPath())) {
-            for (String line : lines.collect(Collectors.toList())) {
-                Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    return matcher.group(1);
-                }
-            }
-        } catch (Exception e) {
-            LOG.warn("Could not read system-release-cpe file", e);
-            return null;
-        }
-        return null;
-    }
 }

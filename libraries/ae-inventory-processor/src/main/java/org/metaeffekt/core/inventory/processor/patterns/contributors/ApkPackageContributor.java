@@ -35,10 +35,10 @@ import java.util.stream.Stream;
 public class ApkPackageContributor extends ComponentPatternContributor {
 
     private static final Logger LOG = LoggerFactory.getLogger(ApkPackageContributor.class);
+
     private static final String APK_PACKAGE_TYPE = "apk";
-    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
-        add("lib/apk/db/installed");
-    }});
+
+    private static final List<String> suffixes = Collections.singletonList("lib/apk/db/installed");
 
     @Override
     public boolean applies(String pathInContext) {
@@ -167,7 +167,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, license);
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, APK_PACKAGE_TYPE);
-        cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
+        cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
 
         cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 

@@ -236,6 +236,7 @@ public class ArchiveUtils {
             expandTask.setDest(targetFile);
             expandTask.setSrc(file);
             expandTask.setAllowFilesToEscapeDest(false);
+            expandTask.setOverwrite(true);
             expandTask.execute();
         } catch (Exception antUntarException) {
             LOG.debug("Could not untar file [{}] due to [{}].", file.getAbsolutePath(), antUntarException.getMessage());

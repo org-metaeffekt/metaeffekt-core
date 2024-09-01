@@ -107,7 +107,9 @@ public class FileCollectTask extends ScanTask {
 
         attachEmbeddedPath(artifact, relativePath);
 
-        artifact.set(VIRTUAL_ROOT_PATH, asRelativePath(fileSystemScanContext.getBaseDir().getPath(), virtualContext.getVirtualBaseDirRef().getPath()));
+        final String virtualRelativePath = asRelativePath(fileSystemScanContext.getBaseDir().getPath(),
+                virtualContext.getVirtualBaseDirRef().getPath());
+        artifact.set(VIRTUAL_ROOT_PATH, virtualRelativePath);
 
         fileSystemScanContext.contribute(artifact);
     }

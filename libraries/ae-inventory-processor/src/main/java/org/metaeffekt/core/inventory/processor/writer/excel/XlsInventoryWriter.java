@@ -119,11 +119,13 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final List<String> finalOrder = new ArrayList<>(ComponentPatternData.CORE_ATTRIBUTES);
         finalOrder.addAll(ordered);
 
-        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
-                stylers.headerStyleDefault,
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
+                stylers.headerStyleColumnNameAssetId,
+                stylers.headerStyleDefault
         };
 
-        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
+        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[] {
+                stylers.contentStyleColumnNameAssetId
         };
 
         final int columnCount = super.populateSheetWithModelData(
@@ -151,7 +153,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         attributes.addAll(orderedOtherAttributes);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
-                stylers.headerStyleDefault,
+                stylers.headerStyleDefault
         };
 
         final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
@@ -329,13 +331,13 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         // remove core attributes
         final List<String> finalOrder = deriveOrder(attributes, AssetMetaData.CORE_ATTRIBUTES);
 
-        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleColumnNameSrcAssetSource,
                 stylers.headerStyleColumnNameAssetConfig,
                 stylers.headerStyleDefault,
         };
 
-        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
+        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[] {
                 stylers.contentStyleColumnNameSrcCentered,
         };
 

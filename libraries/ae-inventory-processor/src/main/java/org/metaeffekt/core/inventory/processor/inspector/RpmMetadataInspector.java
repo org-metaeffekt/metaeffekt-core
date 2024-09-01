@@ -37,21 +37,21 @@ public class RpmMetadataInspector implements ArtifactInspector {
 
     @Override
     public void run(Inventory inventory, Properties properties) {
-        ProjectPathParam projectPathParam = new ProjectPathParam(properties);
-        Stream<Artifact> filteredArtifacts = inventory.getArtifacts().stream()
-                .filter(artifact -> artifact.getPathInAsset().endsWith(".rpm"));
+        final ProjectPathParam projectPathParam = new ProjectPathParam(properties);
+        final Stream<Artifact> filteredArtifacts = inventory.getArtifacts().stream()
+                .filter(artifact -> artifact.getPathInAsset() != null && artifact.getPathInAsset().endsWith(".rpm"));
 
-        for (Artifact artifact : filteredArtifacts.collect(Collectors.toList())) {
-            File file = new File(projectPathParam.getProjectPath().getAbsolutePath() + "/" + artifact.getPathInAsset());
-            if (file.exists()) {
-                try {
-                    try (RpmInputStream in = new RpmInputStream(Files.newInputStream(file.toPath()))) {
-                        artifact.set(Artifact.Attribute.LICENSE, (String) in.getPayloadHeader().getTag(RpmTag.LICENSE));
-                        artifact.set(Artifact.Attribute.ORGANIZATION, (String) in.getPayloadHeader().getTag(RpmTag.VENDOR));
-                        artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
-                    }
-                } catch (IOException e) {
-                    LOG.info("Failed to read RPM metadata", e);
+            for (Artifact artifact : filteredArtifacts.collect(Collectors.toList())) {
+                final File file = new File(projectPathParam.getProjectPath().getAbsolutePath() + "/" + artifact.getPathInAsset());
+                if (file.exists()) {
+                    try {
+                        try (RpmInputStream in = new RpmInputStream(Files.newInputStream(file.toPath()))) {
+                            artifact.set(Artifact.Attribute.LICENSE, (String) in.getPayloadHeader().getTag(RpmTag.LICENSE));
+                            artifact.set(Artifact.Attribute.ORGANIZATION, (String) in.getPayloadHeader().getTag(RpmTag.VENDOR));
+                            artifact.set(Artifact.Attribute.SOURCE, (String) in.getPayloadHeader().getTag(RpmTag.SOURCE_PACKAGE));
+                        }
+                    } catch (IOException e) {
+                        LOG.info("Failed to read RPM metadata", e);
                 }
             }
         }

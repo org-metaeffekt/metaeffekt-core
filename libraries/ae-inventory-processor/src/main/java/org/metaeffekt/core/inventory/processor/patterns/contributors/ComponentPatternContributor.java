@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.util.Collections;
@@ -55,4 +56,22 @@ public abstract class ComponentPatternContributor {
      * @return the execution phase
      */
     public abstract int getExecutionPhase();
+
+    protected String modulateVirtualRootPath(File baseDir, String virtualRootPath, String relativeAnchorPath, List<String> validPathsToAnchorList) {
+        File dir = new File(baseDir, relativeAnchorPath);
+        String path = dir.getName();
+        dir = dir.getParentFile();
+
+        while (true) {
+            if (validPathsToAnchorList.contains(path)) break;
+            path = dir.getName() + "/" + path;
+            dir = dir.getParentFile();
+
+            if (dir.equals(baseDir)) {
+                break;
+            }
+        }
+
+        return FileUtils.asRelativePath(baseDir, dir);
+    }
 }
