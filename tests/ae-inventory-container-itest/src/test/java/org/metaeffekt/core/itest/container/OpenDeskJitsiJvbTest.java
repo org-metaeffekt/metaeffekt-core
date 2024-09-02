@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
@@ -27,6 +28,8 @@ import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
@@ -63,5 +66,14 @@ public class OpenDeskJitsiJvbTest extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         analysis.selectComponentPatterns(containsToken(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(57);
         analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(200);
+    }
+
+    @Test
+    public void testComponentPatterns() throws Exception {
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        boolean hasDuplicates = ComponentPatternValidator.removeDuplicateComponentPatterns(referenceInventory, inventory, baseDir);
+        Assert.assertFalse(hasDuplicates);
     }
 }

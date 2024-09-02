@@ -20,6 +20,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
@@ -69,5 +70,14 @@ public class OpenDeskNextcloudTest extends AbstractCompositionAnalysisTest {
         analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "npm")).hasSizeOf(31);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "php-composer")).hasSizeOf(94);
         analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
+    }
+
+    @Test
+    public void testComponentPatterns() throws Exception {
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        boolean hasDuplicates = ComponentPatternValidator.removeDuplicateComponentPatterns(referenceInventory, inventory, baseDir);
+        Assert.assertFalse(hasDuplicates);
     }
 }

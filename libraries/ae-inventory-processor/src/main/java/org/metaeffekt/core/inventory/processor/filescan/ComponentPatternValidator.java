@@ -93,22 +93,57 @@ public class ComponentPatternValidator {
                                               Map<String, Set<File>> qualifierToComponentPatternFilesMap,
                                               List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
         Map<File, String[]> filesToRemoveFromParent = new HashMap<>();
+        Set<File> duplicateAllowedFiles = new HashSet<>();
         Set<File> removedParentFiles = new HashSet<>(qualifierToComponentPatternFilesMap.get(childQualifier));
+        Set<File> sharedExcludedFiles = new HashSet<>();
         removedParentFiles.removeAll(qualifierToComponentPatternFilesMap.get(parentQualifier));
 
         // process removedParentFiles for exclude patterns
         processExcludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, filesToRemoveFromParent, childQualifier);
         // process removedParentFiles for shared include patterns
-        processSharedIncludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, childQualifier);
+        processSharedIncludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, duplicateAllowedFiles);
+        moveFilesToDuplicateAllowed(parentQualifier, filePatternQualifierMapperList, duplicateAllowedFiles);
         // process removedParentFiles for shared exclude patterns
-        processSharedExcludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, childQualifier);
+        processSharedExcludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, sharedExcludedFiles);
+        removeSharedExcludedFiles(parentQualifier, filePatternQualifierMapperList, sharedExcludedFiles);
 
         // remove all files of the processing above from the parent qualifier
         removedParentFiles.removeAll(filesToRemoveFromParent.keySet());
 
         if (removedParentFiles.isEmpty()) {
-            LOG.warn("Qualifier [{}] is a subset of qualifier [{}].", parentQualifier, childQualifier);
+            LOG.warn("Qualifier [{}] is a subset of qualifier [{}].", childQualifier, parentQualifier);
             removeAllFilesFromParent(parentQualifier, childQualifier, qualifierToComponentPatternFilesMap, filePatternQualifierMapperList);
+        }
+    }
+
+    private static void moveFilesToDuplicateAllowed(String qualifier,
+                                                    List<FilePatternQualifierMapper> filePatternQualifierMapperList,
+                                                    Set<File> duplicateAllowedFiles) {
+        for (File file : duplicateAllowedFiles) {
+            for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
+                if (filePatternQualifierMapper.getQualifier().equals(qualifier)) {
+                    filePatternQualifierMapper.getFileMap().get(false).remove(file);
+                    if (filePatternQualifierMapper.getFileMap().get(true) == null) {
+                        filePatternQualifierMapper.getFileMap().put(true, new ArrayList<>(Collections.singletonList(file)));
+                    } else if (!filePatternQualifierMapper.getFileMap().get(true).contains(file)) {
+                        filePatternQualifierMapper.getFileMap().get(true).add(file);
+                    }
+                    LOG.info("Moving file [{}] to allowed duplicates for qualifier [{}].", file, qualifier);
+                }
+            }
+        }
+    }
+
+    private static void removeSharedExcludedFiles(String qualifier,
+                                                  List<FilePatternQualifierMapper> filePatternQualifierMapperList,
+                                                  Set<File> sharedExcludedFiles) {
+        for (File file : sharedExcludedFiles) {
+            for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
+                if (filePatternQualifierMapper.getQualifier().equals(qualifier)) {
+                    filePatternQualifierMapper.getFileMap().get(false).remove(file);
+                    LOG.info("Removing file [{}] from qualifier [{}].", file, qualifier);
+                }
+            }
         }
     }
 
@@ -134,7 +169,7 @@ public class ComponentPatternValidator {
 
     private static void processSharedIncludePatterns(Set<File> removedParentFiles, String parentQualifier,
                                                      List<FilePatternQualifierMapper> filePatternQualifierMapperList,
-                                                     String childQualifier) {
+                                                     Set<File> duplicateAllowedFiles) {
         for (File file : removedParentFiles) {
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(parentQualifier)) {
@@ -142,15 +177,17 @@ public class ComponentPatternValidator {
                         String sharedIncludePattern = cpd.get(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN);
                         if (sharedIncludePattern != null && !sharedIncludePattern.isEmpty()) {
                             if (FileUtils.matches(sharedIncludePattern, FileUtils.normalizePathToLinux(file))) {
-                                List<File> duplicateAllowedFiles = filePatternQualifierMapper.getFileMap().get(true);
-                                if (duplicateAllowedFiles == null) {
+                                // mark the file as allowed for duplicates
+                                duplicateAllowedFiles.add(file);
+                                /*List<File> files = filePatternQualifierMapper.getFileMap().get(true);
+                                if (files == null) {
                                     filePatternQualifierMapper.getFileMap().put(true, new ArrayList<>(Collections.singletonList(file)));
                                     LOG.info("Adding file [{}] to allowed duplicates to be collected for qualifier [{}]. ", file, filePatternQualifierMapper.getQualifier());
-                                } else if (!duplicateAllowedFiles.contains(file)) {
+                                } else if (!files.contains(file)) {
                                     filePatternQualifierMapper.getFileMap().get(true).add(file);
                                     LOG.info("Adding file [{}] to allowed duplicates to be collected for qualifier [{}]. ", file, filePatternQualifierMapper.getQualifier());
                                 }
-                                filePatternQualifierMapper.getFileMap().get(false).remove(file);
+                                filePatternQualifierMapper.getFileMap().get(false).remove(file);*/
                             }
                         }
                     }
@@ -159,17 +196,17 @@ public class ComponentPatternValidator {
         }
     }
 
+
     private static void processSharedExcludePatterns(Set<File> removedParentFiles, String parentQualifier,
-                                                     List<FilePatternQualifierMapper> filePatternQualifierMapperList,
-                                                     String childQualifier) {
+                                                     List<FilePatternQualifierMapper> filePatternQualifierMapperList, Set<File> sharedExcludedFiles) {
         for (File file : removedParentFiles) {
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
-                if (filePatternQualifierMapper.getQualifier().equals(parentQualifier) || filePatternQualifierMapper.getQualifier().equals(childQualifier)) {
+                if (filePatternQualifierMapper.getQualifier().equals(parentQualifier)) {
                     for (ComponentPatternData cpd : filePatternQualifierMapper.getComponentPatternDataList()) {
                         String sharedExcludePattern = cpd.get(ComponentPatternData.Attribute.SHARED_EXCLUDE_PATTERN);
                         if (sharedExcludePattern != null && !sharedExcludePattern.isEmpty()) {
                             if (FileUtils.matches(sharedExcludePattern, FileUtils.normalizePathToLinux(file))) {
-                                filePatternQualifierMapper.getFileMap().get(false).remove(file);
+                                sharedExcludedFiles.add(file);
                             }
                         }
                     }
@@ -196,6 +233,8 @@ public class ComponentPatternValidator {
 
     private static boolean hasRemainingDuplicates(List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
         Map<File, List<String>> fileToQualifierMap = new HashMap<>();
+        boolean hasDuplicates = false;
+
         for (FilePatternQualifierMapper mapper : filePatternQualifierMapperList) {
             List<File> files = mapper.getFileMap().get(false);
             if (files != null) {
@@ -212,9 +251,10 @@ public class ComponentPatternValidator {
         for (Map.Entry<File, List<String>> entry : fileToQualifierMap.entrySet()) {
             if (entry.getValue().size() > 1) {
                 LOG.warn("Component pattern file [{}] is STILL associated with multiple qualifiers {}.", entry.getKey(), entry.getValue());
-                return true;
+                hasDuplicates = true;
             }
         }
-        return false;
+
+        return hasDuplicates;
     }
 }

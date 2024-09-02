@@ -331,9 +331,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
 
         // FIXME: clarify exclude patterns for java 11
-        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*, **/jspawnhelper, **/jvm/java-11-openjdk-amd64/lib/*.so");
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*, **/jspawnhelper , **/__pycache__/**/*, **/classes.jsa");
 
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_EXCLUDE_PATTERN, "**/Bindu.pl");
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/Bindu.pl, **/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt");
 
         // get version from the entry
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);

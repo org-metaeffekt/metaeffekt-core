@@ -70,7 +70,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                 componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "java-runtime");
                 // FIXME: clarify shared include patterns for java 11
-                componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/jrt-fs.jar, **/jspawnhelper, **/*.so");
+                componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/jrt-fs.jar, **/jspawnhelper, **/jvm/java-**/lib/*.so");
 
                 return Collections.singletonList(componentPatternData);
             }

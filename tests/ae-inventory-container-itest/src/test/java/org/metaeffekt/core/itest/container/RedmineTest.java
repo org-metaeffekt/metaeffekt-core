@@ -66,9 +66,9 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bower-module")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(2);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(246);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(245);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(163);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(4);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(2);
     }
 
     @Test
