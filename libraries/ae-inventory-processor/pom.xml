@@ -31,6 +31,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.metaeffekt.core</groupId>
+            <artifactId>ae-inspect-reader</artifactId>
+            <version>${ae.core.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <scope>compile</scope>

@@ -19,11 +19,13 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class AssetReportAdapter {
 
@@ -74,14 +76,14 @@ public class AssetReportAdapter {
     };
 
     public Pair<String, String>[] listKeys(AssetMetaData assetMetaData) {
-        final String type = assetMetaData.get("Type");
+        final String type = assetMetaData.get(Constants.KEY_TYPE);
         if (!StringUtils.isEmpty(type)) {
-            switch (type) {
-                case "Container":
+            switch (type.toLowerCase(Locale.US)) {
+                case "container":
                     return containerKeyList;
-                case "Appliance":
+                case "appliance":
                     return applianceKeyList;
-                case "Directory":
+                case "directory":
                     return directoryKeyList;
             }
         }

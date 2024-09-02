@@ -20,6 +20,8 @@
         <module>ae-artifact-publish-maven-plugin</module>
         <module>ae-jira-maven-plugin</module>
         <module>ae-shell-script-assembler-plugin</module>
+
+        <module>ae-dependency-analysis-plugin</module>
     </modules>
 
     <dependencyManagement>
@@ -72,6 +74,10 @@
         </pluginManagement>
 
         <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>

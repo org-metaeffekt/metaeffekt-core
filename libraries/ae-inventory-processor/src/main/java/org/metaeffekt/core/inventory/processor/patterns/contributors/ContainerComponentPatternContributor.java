@@ -68,7 +68,7 @@ public class ContainerComponentPatternContributor extends ComponentPatternContri
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, id);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, "layer-" + id);
 
-                componentPatternData.set(Constants.KEY_TYPE, "container");
+                componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_CONTAINER);
             }
 
             return Collections.singletonList(componentPatternData);

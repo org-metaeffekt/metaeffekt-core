@@ -46,6 +46,7 @@ public class FileSystemScanConstants {
 
     public static final String SCAN_DIRECTIVE_DELETE = "delete";
 
+    // FIXME: this key is of more general nature for assets; move to constants or to AssetMetaData
     public static final String ATTRIBUTE_KEY_ASSET_PATH = "ASSET PATH";
 
     public static final String ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER = "COMPONENT PATTERN MARKER";

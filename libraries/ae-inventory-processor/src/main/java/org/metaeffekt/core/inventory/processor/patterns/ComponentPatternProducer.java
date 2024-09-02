@@ -24,7 +24,6 @@ import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.*;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.exception.ContributorFailureException;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +34,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.NO_MATCHING_FILE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.util.FileUtils.*;
 
@@ -131,9 +129,11 @@ public class ComponentPatternProducer {
     }
 
     public void extractComponentPatterns(FileSystemScanContext fileSystemScanContext, Inventory targetInventory) {
+        // this is always the absolute root of the scan process
         final File baseDir = fileSystemScanContext.getBaseDir().getFile();
-        final Map<String, Artifact> pathToArtifactMap = new HashMap<>();
 
+        // produce a map with pathInAsset to artifact
+        final Map<String, Artifact> pathToArtifactMap = new HashMap<>();
         for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
             // ASSUMPTION: archives are never anchors
             if (artifact.getChecksum() != null) {
@@ -142,6 +142,7 @@ public class ComponentPatternProducer {
             }
         }
 
+        // sort artifact by case-insentive then path-length order
         final List<String> filesByPathLength = new ArrayList<>(pathToArtifactMap.keySet());
         filesByPathLength.sort(String.CASE_INSENSITIVE_ORDER);
         filesByPathLength.sort(Comparator.comparingInt(String::length));
@@ -158,12 +159,14 @@ public class ComponentPatternProducer {
 
             try {
                 // try to apply contributors
-                final List<ComponentPatternData> componentPatternDataList = runner.run(baseDir,
-                        artifact.get(VIRTUAL_ROOT_PATH), pathInContext, checksum);
+                final String virtualRootPath = artifact.get(VIRTUAL_ROOT_PATH);
+
+                final List<ComponentPatternData> componentPatternDataList =
+                        runner.collectApplicable(baseDir, virtualRootPath, pathInContext, checksum);
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {
-                        LOG.info("Identified component pattern: [{}]", cpd.createCompareStringRepresentation());
+                        LOG.info("Identified component pattern: [{}]", cpd.createToStringRepresentation());
 
                         // FIXME: defer to 2nd pass
                         final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
@@ -181,9 +184,8 @@ public class ComponentPatternProducer {
                         cpd.validate();
                     }
                 }
-            } catch (ContributorFailureException e) {
+            } catch (Exception e) {
                 LOG.warn(e.getMessage(), e);
-                // continue anyway: this won't ruin the scan but only fail to summarize some component.
             }
         }
     }
@@ -244,18 +246,41 @@ public class ComponentPatternProducer {
 
             final Supplier<Inventory> expansionInventorySupplier =
                     matchResult.componentPatternData.getExpansionInventorySupplier();
+
             if (expansionInventorySupplier != null) {
 
-                String checksum = derivedArtifact.getChecksum();
-                String assetId = "AID-" + derivedArtifact.getId() + (StringUtils.isEmpty(checksum) ? "" : checksum);
-                derivedArtifact.set(assetId, Constants.MARKER_CROSS);
+                final Inventory inventory = expansionInventorySupplier.get();
 
-                for (Artifact artifact : expansionInventorySupplier.get().getArtifacts()) {
-                    artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
-                    artifact.set(assetId, Constants.MARKER_CONTAINS);
-                    fileSystemScanContext.contribute(artifact);
+                boolean managedAssetId = false;
+
+                // assets have been detected
+                if (!inventory.getAssetMetaData().isEmpty()) {
+                    // FIXME: do via contribute signature
+                    fileSystemScanContext.getInventory().getAssetMetaData().addAll(inventory.getAssetMetaData());
+
+                    // do not set asset id; must be done by contributor itself
+                    managedAssetId = true;
+                }
+
+                final String checksum = derivedArtifact.getChecksum();
+                final String assetId = "AID-" + derivedArtifact.getId() + (StringUtils.isEmpty(checksum) ? "" : "-" + checksum);
+
+                if (!managedAssetId) {
+                    derivedArtifact.set(assetId, Constants.MARKER_CROSS);
+                }
+
+                // expand when there are artifacts contained
+                if (!inventory.getArtifacts().isEmpty()) {
+                    for (Artifact artifact : inventory.getArtifacts()) {
+                        if (!managedAssetId) {
+                            artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+                            artifact.set(assetId, Constants.MARKER_CONTAINS);
+                        }
+                        fileSystemScanContext.contribute(artifact);
+                    }
                 }
             }
+
         }
     }
 
@@ -347,7 +372,7 @@ public class ComponentPatternProducer {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
                     }
-                    if (cpd.get(NO_MATCHING_FILE) == null || !cpd.get(NO_MATCHING_FILE).equals(Constants.MARKER_CROSS)) {
+                    if (cpd.get(Constants.KEY_NO_FILE_MATCH_REQUIRED) == null || !cpd.get(Constants.KEY_NO_FILE_MATCH_REQUIRED).equals(Constants.MARKER_CROSS)) {
                         matchResultsWithoutFileMatches.add(matchResult);
                     }
                 }
@@ -424,6 +449,8 @@ public class ComponentPatternProducer {
         // match component patterns using version anchor; results in matchedComponentPatterns
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();
 
+        final File rootDir = fileSystemScanContext.getBaseDir().getFile();
+
         for (final ComponentPatternData cpd : componentPatternSourceInventory.getComponentPatternData()) {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Checking component pattern: {}", cpd.createCompareStringRepresentation());
@@ -456,8 +483,6 @@ public class ComponentPatternProducer {
 
             // memorize whether version anchor checksum is specific (and not just *)
             final boolean isVersionAnchorChecksumSpecific = !anchorChecksum.equalsIgnoreCase(Constants.ASTERISK);
-
-            final File rootDir = fileSystemScanContext.getBaseDir().getFile();
 
             if (versionAnchor.equalsIgnoreCase(Constants.ASTERISK) || versionAnchor.equalsIgnoreCase(Constants.DOT)) {
 
@@ -548,10 +573,13 @@ public class ComponentPatternProducer {
         // configure contributors; please note that currently the contributors consume anchors (no anchor can be used twice)
         final ComponentPatternContributorRunner.ComponentPatternContributorRunnerBuilder contributorRunnerBuilder =
                 ComponentPatternContributorRunner.builder();
+
         contributorRunnerBuilder.add(new DpkgPackageContributor());
         contributorRunnerBuilder.add(new GemSpecContributor());
         contributorRunnerBuilder.add(new GemMetadataContributor());
+        contributorRunnerBuilder.add(new ContainerAssetContributor());
         contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
+        contributorRunnerBuilder.add(new ContainerInspectAssetContributor());
         contributorRunnerBuilder.add(new WebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());
         contributorRunnerBuilder.add(new PythonModuleComponentPatternContributor());
@@ -581,6 +609,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new BitnamiComponentPatternContributor());
         contributorRunnerBuilder.add(new GenericVersionFileComponentPatternContributor());
         contributorRunnerBuilder.add(new MavenProjectSourcesComponentPatternContributor());
+        contributorRunnerBuilder.add(new LinuxDistributionAssetContributor());
 
         return contributorRunnerBuilder.build();
     }

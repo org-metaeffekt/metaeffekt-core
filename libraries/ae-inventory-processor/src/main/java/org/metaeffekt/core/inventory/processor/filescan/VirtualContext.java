@@ -17,6 +17,7 @@
 package org.metaeffekt.core.inventory.processor.filescan;
 
 public class VirtualContext {
+
     private FileRef virtualBaseDirRef;
 
     public VirtualContext(FileRef virtualBaseDirRef) {

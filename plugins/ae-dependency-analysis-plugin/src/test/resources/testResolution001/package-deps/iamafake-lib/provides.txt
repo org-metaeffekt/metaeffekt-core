@@ -1,0 +1,2 @@
+iamafakelibrary.so
+/sbin/sbinwassymlinked

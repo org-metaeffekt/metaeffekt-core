@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Cvss3P1Test {
-    private final static Logger LOG = LoggerFactory.getLogger(Cvss3P1Test.class);
+    private final static Logger LOG = LoggerFactory.getLogger(Cvss3P0Test.class);
 
     @Test
     public void evaluateCvssVectorsTest() {

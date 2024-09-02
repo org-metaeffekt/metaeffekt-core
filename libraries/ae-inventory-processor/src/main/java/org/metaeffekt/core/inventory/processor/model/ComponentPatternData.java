@@ -150,6 +150,22 @@ public class ComponentPatternData extends AbstractModelBase {
         return sb.toString();
     }
 
+    public String createToStringRepresentation() {
+        StringBuilder sb = new StringBuilder();
+        for (String attributeKey : CORE_ATTRIBUTES) {
+            // attribute keys to omit
+            if (attributeKey.equals(Attribute.INCLUDE_PATTERN.getKey())) continue;
+            if (attributeKey.equals(Attribute.EXCLUDE_PATTERN.getKey())) continue;
+
+            if (sb.length() > 0) {
+                sb.append(":");
+            }
+            String value = get(attributeKey);
+            sb.append(value == null ? "" : value);
+        }
+        return sb.toString();
+    }
+
     public String get(Attribute attribute, String defaultValue) {
         return get(attribute.getKey(), defaultValue);
     }
@@ -172,7 +188,7 @@ public class ComponentPatternData extends AbstractModelBase {
 
     @Override
     public String toString() {
-        return "ComponentPatternData: " + createCompareStringRepresentation();
+        return "ComponentPatternData: " + createToStringRepresentation();
     }
 
     public String getContext() {

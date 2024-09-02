@@ -260,7 +260,6 @@ public class JarInspector extends AbstractJarInspector {
 
             deriveQualifiers(dummyArtifact);
         } catch (IOException | XmlPullParserException e) {
-            e.printStackTrace();
             addError(artifact, "Exception while parsing 'pom.xml'.");
         }
 
@@ -558,6 +557,7 @@ public class JarInspector extends AbstractJarInspector {
                 artifact.setArtifactId(null);
 
                 deriveVersionIfNotSet(artifact);
+                deriveTypeIfNotSet(artifact);
 
                 artifact.deriveArtifactId();
 
@@ -580,6 +580,16 @@ public class JarInspector extends AbstractJarInspector {
         InventoryUtils.removeAssetAttribute(ATTRIBUTE_KEY_INSPECTION_SOURCE, inventory);
     }
 
+    private void deriveTypeIfNotSet(Artifact artifact) {
+        if (StringUtils.isBlank(artifact.get(Constants.KEY_TYPE))) {
+            String id = artifact.getId();
+            if (id != null && id.toLowerCase(Locale.US).endsWith(".jar")) {
+                artifact.set(Constants.KEY_TYPE, "module");
+                artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+            }
+        }
+    }
+
     private void addPurlIfMissing(Artifact artifact) {
         if (StringUtils.isEmpty(artifact.get(Artifact.Attribute.PURL.getKey()))) {
             final int suffixIndex = artifact.getId().lastIndexOf(".");
@@ -593,12 +603,12 @@ public class JarInspector extends AbstractJarInspector {
     private void deriveVersionIfNotSet(Artifact artifact) {
         if (StringUtils.isEmpty(artifact.getVersion())) {
 
-            String id = artifact.getId();
+            final String id = artifact.getId();
             if (StringUtils.isNotEmpty(id)) {
                 int lastDotIndex = id.lastIndexOf(".");
 
                 // create a list of possible separators
-                List<Integer> indexList = new ArrayList<>();
+                final List<Integer> indexList = new ArrayList<>();
                 for (int i = 0; i < id.length(); i++) {
                     final char c = id.charAt(i);
                     if (c == '_' || c =='-') {
@@ -671,6 +681,8 @@ public class JarInspector extends AbstractJarInspector {
 
             // construct asset metadata for containing artifacts (e.g. shaded jars)
             final AssetMetaData assetMetaData = new AssetMetaData();
+            assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_COMPOSITE);
+
             assetMetaData.set(ASSET_ID, assetId);
             assetMetaData.set(ATTRIBUTE_KEY_ASSET_PATH, parentArtifactPath);
             assetMetaData.set(KEY_CHECKSUM, containingArtifact.getChecksum());

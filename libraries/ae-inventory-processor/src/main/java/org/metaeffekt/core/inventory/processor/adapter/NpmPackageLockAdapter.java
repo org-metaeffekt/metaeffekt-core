@@ -44,7 +44,7 @@ public class NpmPackageLockAdapter {
     /**
      * @param packageLockJsonFile The package-lock.json file to parse.
      * @param relPath The relative path to the file from the relevant basedir.
-     * @param projectName
+     * @param projectName The name of the projectfor which to extract data.
      *
      * @return An inventory populated with the runtime modules defined in the package json file.
      *
