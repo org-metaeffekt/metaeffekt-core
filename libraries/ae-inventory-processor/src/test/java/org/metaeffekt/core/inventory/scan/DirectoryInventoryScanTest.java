@@ -163,6 +163,22 @@ public class DirectoryInventoryScanTest {
         new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
     }
 
+    @Test
+    public void testScan_LinuxDistro001() throws IOException {
+
+        final File scanInputDir = new File("src/test/resources/component-pattern-contributor/linux-distro-001");
+        final File scanDir = new File("target/scan/linux-distro-001");
+
+        final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
+
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+
+        Assertions.assertThat(inventory.getAssetMetaData().size()).isEqualTo(1);
+
+        new InventoryWriter().writeInventory(inventory, new File("target/linux-distro-001.xls"));
+
+    }
+
     @Ignore
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
@@ -170,22 +186,31 @@ public class DirectoryInventoryScanTest {
         final File scanInputDir = new File("<path-to-input>");
         final File scanDir = new File("<path-to-scan>");
 
-        final File referenceInventoryFile = new File("src/test/resources/test-inventory-01");
+        final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
-        String[] scanIncludes = new String[] {"**/*"};
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+        new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
+    }
+
+    private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir) throws IOException {
+        String[] scanIncludes = new String[] {
+                "**/*"
+        };
         String[] scanExcludes = new String[] {
                 "**/.DS_Store", "**/._*" ,
                 "**/.git/**/*", "**/.git*", "**/.git*"
         };
 
-        String[] unwrapIncludes = new String[] {"**/*"};
+        String[] unwrapIncludes = new String[] {
+                "**/*"
+        };
         String[] unwrapExcludes = new String[] {
                 "**/*.js.gz", "**/*.js.map.gz", "**/*.css.gz",
                 "**/*.css.map.gz", "**/*.svg.gz", "**/*.json.gz",
                 "**/*.ttf.gz", "**/*.eot.gz"
         };
 
-        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryFile, "*.xls");
+        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls");
 
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(
                 scanInputDir, scanDir,
@@ -197,9 +222,7 @@ public class DirectoryInventoryScanTest {
         scan.setEnableImplicitUnpack(true);
         scan.setEnableDetectComponentPatterns(true);
 
-        final Inventory inventory = scan.createScanInventory();
-
-        new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
+        return scan.createScanInventory();
     }
 
     @Ignore

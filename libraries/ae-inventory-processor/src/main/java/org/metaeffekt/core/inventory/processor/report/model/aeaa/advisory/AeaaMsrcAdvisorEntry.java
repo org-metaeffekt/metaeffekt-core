@@ -21,10 +21,10 @@ import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.msrc.AeaaMsThreat;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.msrc.AeaaMsrcRemediation;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,11 +57,11 @@ public class AeaaMsrcAdvisorEntry extends AeaaAdvisoryEntry {
     protected final Set<AeaaMsrcRemediation> msrcRemediations = new HashSet<>();
 
     public AeaaMsrcAdvisorEntry() {
-        super(AeaaContentIdentifiers.MSRC);
+        super(AeaaAdvisoryTypeStore.MSRC);
     }
 
     public AeaaMsrcAdvisorEntry(String id) {
-        super(AeaaContentIdentifiers.MSRC, id);
+        super(AeaaAdvisoryTypeStore.MSRC, id);
     }
 
     public void addAffectedProduct(String product) {

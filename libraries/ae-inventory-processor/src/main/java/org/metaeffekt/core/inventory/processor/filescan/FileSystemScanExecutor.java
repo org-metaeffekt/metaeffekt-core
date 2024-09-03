@@ -249,8 +249,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         // attempt to extract artifactId, version, groupId from contained POMs
         final Properties properties = new Properties();
         properties.put(ProjectPathParam.KEY_PROJECT_PATH, fileSystemScanContext.getBaseDir().getPath());
-        properties.put(JarInspectionParam.KEY_INCLUDE_EMBEDDED,
-                Boolean.toString(fileSystemScanContext.getScanParam().isIncludeEmbedded()));
+        properties.put(JarInspectionParam.KEY_INCLUDE_EMBEDDED,Boolean.toString(fileSystemScanContext.getScanParam().isIncludeEmbedded()));
 
         // run further inspections on identified artifacts
         final InspectorRunner runner = InspectorRunner.builder()

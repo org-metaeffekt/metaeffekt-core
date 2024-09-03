@@ -104,7 +104,7 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
                 cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, getDeclaredLicense(packageNode));
                 cpd.set(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE, getConcludedLicense(packageNode));
                 cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, BITNAMI_PACKAGE_TYPE);
-                cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
+                cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
                 cpd.set(Artifact.Attribute.PURL, getPurl(packageNode));
                 components.add(cpd);
             }
@@ -130,7 +130,7 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
                         cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
                         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, BITNAMI_PACKAGE_TYPE);
-                        cpd.set(Constants.KEY_NO_MATCHING_FILE, Constants.MARKER_CROSS);
+                        cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
                         components.add(cpd);
                     }
                 }

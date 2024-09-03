@@ -53,6 +53,11 @@ public final class Constants {
     public static final String KEY_HASH_SHA1 = "Hash (SHA-1)";
     public static final String KEY_HASH_SHA256 = "Hash (SHA-256)";
 
+    public static final String KEY_PATH_IN_ASSET = "Path in Asset";
+
+    public static final String KEY_CHECKSUM = "Checksum";
+    public static final String KEY_SCOPE = "Scope";
+
     /**
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
      * supplier (CycloneDX).
@@ -68,66 +73,46 @@ public final class Constants {
     public static final String KEY_DESCRIPTION = "Description";
     public static final String KEY_ARCHITECTURE = "Architecture";
     public static final String KEY_TYPE = "Type";
+
+    // FIXME: fix naming
     public static final String KEY_COMPONENT_SOURCE_TYPE = "Component Source Type";
-    public static final String KEY_NO_MATCHING_FILE = "No Matching File";
+
+    // FIXME: naming; not evaluated yet
+    public static final String KEY_NO_FILE_MATCH_REQUIRED = "No File Match Required";
+
     public static final String KEY_SOURCE_PROJECT = "Source Project";
+
     public static final String KEY_SPECIFIED_PACKAGE_LICENSE = "Specified Package License";
     public static final String KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE = "Specified Package Concluded License";
 
-
-    public static final String KEY_CONTAINER = "Container";
     public static final String KEY_ISSUE = "Issue";
 
+    public static final String KEY_ARCHIVE_PATH = "Archive Path";
+
+    public static final String ARTIFACT_TYPE_DISTRO = "distro";
+    public static final String ARTIFACT_TYPE_CONTAINER = "container";
     public static final String ARTIFACT_TYPE_PACKAGE = "package";
     public static final String ARTIFACT_TYPE_MODULE = "module";
     public static final String ARTIFACT_TYPE_FILE = "file";
+    public static final String ARTIFACT_TYPE_ARCHIVE = "archive";
+    public static final String ARTIFACT_TYPE_COMPOSITE = "composite";
 
     @Deprecated
     public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
 
     public static final String ARTIFACT_TYPE_WEB_MODULE = "web-module";
 
-    public static final String KEY_PATH_IN_ASSET = "Path in Asset";
-
-    public static final String KEY_CHECKSUM = "Checksum";
-
     public static final String MARKER_CROSS = "x";
-
     public static final String MARKER_CONTAINS = "c";
 
-    public static final String OS_RELEASE = "os-release";
-
-    public static final String LSB_RELEASE = "lsb-release";
-
-    public static final String DEBIAN_VERSION = "debian-version";
-
-    public static final String REDHAT_RELEASE = "redhat-release";
-
-    public static final String CENTOS_RELEASE = "centos-release";
-
-    public static final String SYSTEM_RELEASE = "system-release";
-
-    public static final String FEDORA_RELEASE = "fedora-release";
-
     public static final String PACKAGE_JSON = "package.json";
-
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
-
     public static final String COMPOSER_JSON = "composer.json";
-
     public static final String BOWER_JSON = "bower.json";
 
     public static final String DOT_BOWER_JSON = DOT + BOWER_JSON;
-
     public static final String DOT_PACKAGE_LOCK_JSON = DOT + PACKAGE_LOCK_JSON;
 
-    public static final String KEY_SCOPE = "Scope";
-
-    public static final String KEY_ARCHIVE_PATH = "Archive Path";
-
-    public static final String KEY_CONTENT_CHECKSUM = "Content Checksum";
-
-    protected Constants() {
+    private Constants() {
     }
-
 }

@@ -58,7 +58,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void first() throws Exception{
+    public void assertStructure() throws Exception{
         LOG.info(testSetup.getInventory().toString());
 
         final File scanBaseDir =  new File("target/.test/scan/analysis/bundles/JustJEclipseBundleTest");
@@ -81,7 +81,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void testCompositionAnalysis() throws Exception {
+    public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 
@@ -95,6 +95,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
         // FIXME: this is not of interest; snapshots contributions should be handled as secondary contribution; or be disabled (no value)
         analysis.selectArtifacts(attributeValue(ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.eclipse.justj")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(PURL, "pkg:maven/org.eclipse.justj/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64@17.0.2-SNAPSHOT?type=jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2-SNAPSHOT")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(ID, "temurin-jdk-17.0.2")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2")).hasSizeOf(1);

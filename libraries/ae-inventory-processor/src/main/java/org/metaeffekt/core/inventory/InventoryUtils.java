@@ -128,16 +128,29 @@ public abstract class InventoryUtils {
     }
 
     public static void removeArtifactAttribute(String key, Inventory inventory) {
+        final ArrayList<String> list = inventory.getSerializationContext().
+                get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
+
         for (Artifact artifact : inventory.getArtifacts()) {
             artifact.set(key, null);
+
+            if (list != null) {
+                list.remove(key);
+            }
         }
     }
 
     public static void removeArtifactAttributeContaining(String substring, Inventory inventory) {
+        final ArrayList<String> list = inventory.getSerializationContext().
+                get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
+
         for (Artifact artifact : inventory.getArtifacts()) {
             for (String key : new HashSet<>(artifact.getAttributes())) {
                 if (key.contains(substring)) {
                     artifact.set(key, null);
+                    if (list != null) {
+                        list.remove(key);
+                    }
                 }
             }
         }
@@ -232,8 +245,12 @@ public abstract class InventoryUtils {
     }
 
     public static Set<String> collectAssetIdsFromArtifact(Artifact artifact) {
+        return collectAssetIdFromGenericElement(artifact);
+    }
+
+    public static Set<String> collectAssetIdFromGenericElement(AbstractModelBase modelBaseElement) {
         final Set<String> artifactAssetIds = new HashSet<>();
-        for (String key : artifact.getAttributes()) {
+        for (String key : modelBaseElement.getAttributes()) {
             if (key.startsWith("AID:") ||
                     key.startsWith("EID:") ||
                     key.startsWith("CID:") ||
@@ -283,5 +300,60 @@ public abstract class InventoryUtils {
         }
         return null;
     }
+
+    public static Set<String> collectArtifactAttributes(Inventory inventory) {
+        // the attributes are aggregated in a hash set
+        final Set<String> attributes = new HashSet<>();
+
+        // evaluate attributes managed in the serialization context
+        final InventorySerializationContext serializationContext = inventory.getSerializationContext();
+        if (serializationContext != null) {
+            final List<String> serializedAttributes =
+                    serializationContext.get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
+            if (serializedAttributes != null) {
+                attributes.addAll(serializedAttributes);
+            }
+        }
+
+        // collect attributes used by artifacts
+        for (Artifact artifact : inventory.getArtifacts()) {
+            attributes.addAll(artifact.getAttributes());
+        }
+
+        return attributes;
+    }
+
+    public static void removeArtifactAttributeStartingWith(Inventory inventory, String prefix) {
+        final ArrayList<String> list = inventory.getSerializationContext().
+                get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
+
+        for (Artifact artifact : inventory.getArtifacts()) {
+            for (String attribute : new HashSet<>(artifact.getAttributes())) {
+                if (attribute.startsWith(prefix)) {
+                    artifact.set(attribute, null);
+                    if (list != null) {
+                        list.remove(attribute);
+                    }
+                }
+            }
+        }
+    }
+
+    protected static void removeAttributes(Inventory inventory, Collection<String> keys) {
+        final ArrayList<String> list = inventory.getSerializationContext().
+                get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
+
+        for (Artifact artifact : inventory.getArtifacts()) {
+            for (String attribute : new HashSet<>(artifact.getAttributes())) {
+                if (keys.contains(attribute)) {
+                    artifact.set(attribute, null);
+                    if (list != null) {
+                        list.remove(attribute);
+                    }
+                }
+            }
+        }
+    }
+
 
 }

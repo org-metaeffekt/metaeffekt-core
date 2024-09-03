@@ -107,7 +107,10 @@ public class XlsHSSFInventorySheetCellStylers {
 
         this.headerStyleColumnNameAssetConfig = InventorySheetCellStyler.createStyler(
                 context -> {
-                    return context.getFullColumnHeader().startsWith("config_");
+                    final String fullColumnHeader = context.getFullColumnHeader();
+                    return fullColumnHeader.startsWith("config_") ||
+                            fullColumnHeader.startsWith("prop_") ||
+                            fullColumnHeader.startsWith("meta_");
                 }, context -> {
                     context.getCell().setCellStyle(assetConfigHeaderStyle);
                     // number of pixel times magic number

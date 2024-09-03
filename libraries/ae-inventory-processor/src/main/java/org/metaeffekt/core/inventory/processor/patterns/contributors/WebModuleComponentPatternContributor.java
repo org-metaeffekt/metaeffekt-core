@@ -92,7 +92,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             // FIXME: use both package.json and package-lock.json to produce a consolidated outcome
             if (webModule.packageLockJsonFile != null) {
                 inventoryFromPackageLock = new NpmPackageLockAdapter().
-                        createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath);
+                        createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath, webModule.name);
             } else {
                 artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
             }

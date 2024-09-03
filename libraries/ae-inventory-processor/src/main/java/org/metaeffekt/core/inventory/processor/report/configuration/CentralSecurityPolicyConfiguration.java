@@ -16,15 +16,17 @@
 package org.metaeffekt.core.inventory.processor.report.configuration;
 
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessConfiguration;
 import org.metaeffekt.core.inventory.processor.configuration.ProcessMisconfiguration;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.KnownCvssEntities;
@@ -66,6 +68,18 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * See {@link CentralSecurityPolicyConfiguration#cvssSeverityRanges}.
      */
     private CvssSeverityRanges cachedCvssSeverityRanges;
+
+    /**
+     * priorityScoreSeverityRanges &rarr; cachedPriorityScoreSeverityRanges<br>
+     * <code>String &rarr; CvssSeverityRanges</code><p>
+     * Used to convert a numeric score, usually between 0.0 and 20.0 into a severity category for displaying in the report/VAD.<p>
+     * Default: JSON object value of {@link CvssSeverityRanges#PRIORITY_SCORE_SEVERITY_RANGES}
+     */
+    private String priorityScoreSeverityRanges = CvssSeverityRanges.PRIORITY_SCORE_SEVERITY_RANGES.toString();
+    /**
+     * See {@link CentralSecurityPolicyConfiguration#priorityScoreSeverityRanges}.
+     */
+    private CvssSeverityRanges cachedPriorityScoreSeverityRanges;
 
     /**
      * initialCvssSelector &rarr; cachedInitialCvssSelector<br>
@@ -169,23 +183,40 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
     /**
-     * includeVulnerabilitiesWithAdvisoryProviders<br>
-     * <code>List&lt;String&gt;</code><p>
-     * A list of <code>ContentIdentifiers.name()</code> or <code>ContentIdentifiers.getWellFormedName()</code> that will be evaluated for each vulnerability.
-     * If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the report. <code>all</code> can be used to ignore this check.<p>
-     * Example: <code>[CERT_FR, CERT_SEI, MSRC, GHSA]</code><br>
-     * Default: <code>[all]</code>
+     * includeVulnerabilitiesWithAdvisoryProviders
+     * <p>
+     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * The key "name" is mandatory and can optionally be combined with an "implementation" value. If the implementation
+     * is not specified, the name will be used as the implementation. Each list entry represents a single advisory type.
+     * <p>
+     * If a vulnerability does not have an advisory from one of the specified sources, it will be excluded from the
+     * report. <code>all, all</code> can be used to ignore this check.<p>
+     * <p>
+     * Example:
+     * <pre>
+     *     [{"name":"CERT_FR"},
+     *      {"name":"CERT_SEI"},
+     *      {"name":"RHSA","implementation":"CSAF"}]
+     * </pre>
+     * Default: <code>{"name":"all","implementation":"all"}</code>
      */
-    private final List<String> includeVulnerabilitiesWithAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
+    private final JSONArray includeVulnerabilitiesWithAdvisoryProviders = new JSONArray()
+            .put(new JSONObject().put("name", "all").put("implementation", "all"));
     /**
-     * includeAdvisoryProviders<br>
-     * <code>List&lt;String&gt;</code><p>
-     * A list of <code>ContentIdentifiers.name()</code> or <code>ContentIdentifiers.getWellFormedName()</code> that will be evaluated for each advisory.
-     * If an advisory is not of one of the specified sources, it will be excluded. <code>all</code> can be used to ignore this check.<p>
-     * Example: <code>[CERT_FR, CERT_SEI, MSRC, GHSA]</code><br>
-     * Default: <code>[all]</code>
+     * includeAdvisoryProviders
+     * <p>
+     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * The key "name" is mandatory and can optionally be combined with an "implementation" value. If the implementation
+     * is not specified, the name will be used as the implementation. Each list entry represents a single advisory type.
+     * <p>
+     * A list of advisory provider names with an optional implementation value that will be evaluated for each advisory.
+     * If an advisory is not of one of the specified sources, it will be excluded. <code>all, all</code> can be used to
+     * ignore this check.
+     * <p>
+     * Default: <code>{"name":"all","implementation":"all"}</code>
      */
-    private final List<String> includeAdvisoryProviders = new ArrayList<>(Collections.singletonList("all"));
+    private final JSONArray includeAdvisoryProviders = new JSONArray()
+            .put(new JSONObject().put("name", "all").put("implementation", "all"));
     /**
      * includeAdvisoryTypes<br>
      * <code>List&lt;String&gt;</code><p>
@@ -208,6 +239,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT;
 
+    private VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration = new VulnerabilityPriorityScoreConfiguration();
+
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
         this.cvssSeverityRanges = cvssSeverityRanges == null ? CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString() : cvssSeverityRanges;
         this.cachedCvssSeverityRanges = new CvssSeverityRanges(this.cvssSeverityRanges);
@@ -226,6 +259,26 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             this.cachedCvssSeverityRanges = new CvssSeverityRanges(this.cvssSeverityRanges);
         }
         return this.cachedCvssSeverityRanges;
+    }
+
+    public CentralSecurityPolicyConfiguration setPriorityScoreSeverityRanges(String priorityScoreSeverityRanges) {
+        this.priorityScoreSeverityRanges = priorityScoreSeverityRanges == null ? CvssSeverityRanges.PRIORITY_SCORE_SEVERITY_RANGES.toString() : priorityScoreSeverityRanges;
+        this.cachedPriorityScoreSeverityRanges = new CvssSeverityRanges(this.priorityScoreSeverityRanges);
+        return this;
+    }
+
+    public CentralSecurityPolicyConfiguration setPriorityScoreSeverityRanges(CvssSeverityRanges priorityScoreSeverityRanges) {
+        this.priorityScoreSeverityRanges = priorityScoreSeverityRanges.toString();
+        this.cachedPriorityScoreSeverityRanges = priorityScoreSeverityRanges;
+        return this;
+    }
+
+    public CvssSeverityRanges getPriorityScoreSeverityRanges() {
+        if (this.cachedPriorityScoreSeverityRanges == null) {
+            this.priorityScoreSeverityRanges = this.priorityScoreSeverityRanges == null ? CvssSeverityRanges.PRIORITY_SCORE_SEVERITY_RANGES.toString() : this.priorityScoreSeverityRanges;
+            this.cachedPriorityScoreSeverityRanges = new CvssSeverityRanges(this.priorityScoreSeverityRanges);
+        }
+        return this.cachedPriorityScoreSeverityRanges;
     }
 
     public CentralSecurityPolicyConfiguration setInitialCvssSelector(JSONObject initialCvssSelector) {
@@ -322,13 +375,19 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return jsonSchemaValidationErrorsHandling;
     }
 
-    public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(List<String> includeVulnerabilitiesWithAdvisoryProviders) {
+    public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(Map<String, String> includeVulnerabilitiesWithAdvisoryProviders) {
         this.includeVulnerabilitiesWithAdvisoryProviders.clear();
-        this.includeVulnerabilitiesWithAdvisoryProviders.addAll(includeVulnerabilitiesWithAdvisoryProviders);
+        includeVulnerabilitiesWithAdvisoryProviders.forEach((name, implementation) -> this.includeVulnerabilitiesWithAdvisoryProviders.put(new JSONObject().put("name", name).put("implementation", StringUtils.isNotEmpty(implementation) ? implementation : name)));
         return this;
     }
 
-    public List<String> getIncludeVulnerabilitiesWithAdvisoryProviders() {
+    public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(JSONArray includeVulnerabilitiesWithAdvisoryProviders) {
+        this.includeVulnerabilitiesWithAdvisoryProviders.clear();
+        this.includeVulnerabilitiesWithAdvisoryProviders.putAll(includeVulnerabilitiesWithAdvisoryProviders);
+        return this;
+    }
+
+    public JSONArray getIncludeVulnerabilitiesWithAdvisoryProviders() {
         return includeVulnerabilitiesWithAdvisoryProviders;
     }
 
@@ -337,26 +396,18 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             return true;
         }
 
-        final List<AeaaContentIdentifiers> filter = includeVulnerabilitiesWithAdvisoryProviders.stream()
-                .map(AeaaContentIdentifiers::fromName)
-                .collect(Collectors.toList());
-
-        if (filter.contains(AeaaContentIdentifiers.UNKNOWN)) {
-            LOG.warn("Unknown advisory provider in includeVulnerabilitiesWithAdvisoryProviders [{}], must be one of {}",
-                    includeVulnerabilitiesWithAdvisoryProviders, AeaaContentIdentifiers.values());
-        }
-
+        final List<AeaaAdvisoryTypeIdentifier<?>> filter = AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(includeVulnerabilitiesWithAdvisoryProviders);
         return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
     }
 
-    public static List<AeaaVulnerability> filterVulnerabilitiesForAdvisoryProviders(Collection<AeaaVulnerability> vulnerabilities, Collection<AeaaContentIdentifiers> filter) {
+    public static List<AeaaVulnerability> filterVulnerabilitiesForAdvisoryProviders(Collection<AeaaVulnerability> vulnerabilities, Collection<AeaaAdvisoryTypeIdentifier<?>> filter) {
         return vulnerabilities.stream()
                 .filter(v -> isVulnerabilityIncludedRegardingAdvisoryProviders(v, filter))
                 .collect(Collectors.toList());
     }
 
-    public static boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability, Collection<AeaaContentIdentifiers> filter) {
-        return vulnerability.getSecurityAdvisories().stream().anyMatch(a -> filter.contains(a.getEntrySource()));
+    public static boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability, Collection<AeaaAdvisoryTypeIdentifier<?>> filter) {
+        return vulnerability.getSecurityAdvisories().stream().anyMatch(a -> filter.contains(a.getSourceIdentifier()));
     }
 
     public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryReviewStatus(List<String> includeVulnerabilitiesWithAdvisoryReviewStatus) {
@@ -379,13 +430,19 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 .anyMatch(includeVulnerabilitiesWithAdvisoryReviewStatus::contains);
     }
 
-    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(List<String> includeAdvisoryProviders) {
+    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(JSONArray includeAdvisoryProviders) {
         this.includeAdvisoryProviders.clear();
-        this.includeAdvisoryProviders.addAll(includeAdvisoryProviders);
+        this.includeAdvisoryProviders.putAll(includeAdvisoryProviders);
         return this;
     }
 
-    public List<String> getIncludeAdvisoryProviders() {
+    public CentralSecurityPolicyConfiguration setIncludeAdvisoryProviders(Map<String, String> includeAdvisoryProviders) {
+        this.includeAdvisoryProviders.clear();
+        includeAdvisoryProviders.forEach((name, implementation) -> this.includeAdvisoryProviders.put(new JSONObject().put("name", name).put("implementation", StringUtils.isNotEmpty(implementation) ? implementation : name)));
+        return this;
+    }
+
+    public JSONArray getIncludeAdvisoryProviders() {
         return includeAdvisoryProviders;
     }
 
@@ -414,19 +471,24 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (containsAny(includeAdvisoryProviders)) {
             return true;
         }
-        return includeAdvisoryProviders.stream()
-                .map(AeaaContentIdentifiers::fromName)
-                .anyMatch(source -> source == advisory.getEntrySource());
+        for (AeaaAdvisoryTypeIdentifier<?> identifier : AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(includeAdvisoryProviders)) {
+            if (identifier == advisory.getSourceIdentifier()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isSecurityAdvisoryIncludedRegardingEntryProvider(String providerName) {
         if (containsAny(includeAdvisoryProviders)) {
             return true;
         }
-        final AeaaContentIdentifiers search = AeaaContentIdentifiers.fromName(providerName);
-        return includeAdvisoryProviders.stream()
-                .map(AeaaContentIdentifiers::fromName)
-                .anyMatch(source -> source == search);
+        for (AeaaAdvisoryTypeIdentifier<?> identifier : AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(includeAdvisoryProviders)) {
+            if (identifier.getName().equals(providerName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(String vulnerabilityStatusDisplayMapper) {
@@ -449,11 +511,21 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this.vulnerabilityStatusDisplayMapper;
     }
 
+    public CentralSecurityPolicyConfiguration setPriorityScoreConfiguration(VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration) {
+        this.priorityScoreConfiguration = priorityScoreConfiguration;
+        return this;
+    }
+
+    public VulnerabilityPriorityScoreConfiguration getPriorityScoreConfiguration() {
+        return priorityScoreConfiguration;
+    }
+
     @Override
     public LinkedHashMap<String, Object> getProperties() {
         final LinkedHashMap<String, Object> configuration = new LinkedHashMap<>();
 
         configuration.put("cvssSeverityRanges", cvssSeverityRanges);
+        configuration.put("priorityScoreSeverityRanges", priorityScoreSeverityRanges);
         configuration.put("initialCvssSelector", initialCvssSelector);
         configuration.put("contextCvssSelector", contextCvssSelector);
         configuration.put("insignificantThreshold", insignificantThreshold);
@@ -465,6 +537,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
         configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
         configuration.put("cvssVersionSelectionPolicy", cvssVersionSelectionPolicy);
+        configuration.put("priorityScoreConfiguration", priorityScoreConfiguration.getProperties());
 
         return configuration;
     }
@@ -472,6 +545,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Override
     public void setProperties(LinkedHashMap<String, Object> properties) {
         super.loadStringProperty(properties, "cvssSeverityRanges", this::setCvssSeverityRanges);
+        super.loadStringProperty(properties, "priorityScoreSeverityRanges", this::setPriorityScoreSeverityRanges);
 
         super.loadProperty(properties, "baseCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector))); // deprecated
         super.loadProperty(properties, "initialCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector)));
@@ -481,12 +555,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadProperty(properties, "jsonSchemaValidationErrorsHandling", value -> JsonSchemaValidationErrorsHandling.valueOf(String.valueOf(value)), this::setJsonSchemaValidationErrorsHandling);
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
-        super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryProviders);
+        super.loadJsonArrayProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", this::setIncludeVulnerabilitiesWithAdvisoryProviders);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryReviewStatus", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryReviewStatus);
-        super.loadListProperty(properties, "includeAdvisoryProviders", String::valueOf, this::setIncludeAdvisoryProviders);
+        super.loadJsonArrayProperty(properties, "includeAdvisoryProviders", this::setIncludeAdvisoryProviders);
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
         super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
         super.loadListProperty(properties, "cvssVersionSelectionPolicy", value -> CvssScoreVersionSelectionPolicy.valueOf(String.valueOf(value)), this::setCvssVersionSelectionPolicy);
+
+        super.loadSubConfiguration(properties, "priorityScoreConfiguration", VulnerabilityPriorityScoreConfiguration::new, this::setPriorityScoreConfiguration);
     }
 
     private JSONObject parseJsonObjectFromProperties(Object input) {
@@ -506,6 +582,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (this.cvssSeverityRanges == null) {
             misconfigurations.add(new ProcessMisconfiguration("cvssSeverityRanges", "CVSS severity ranges must not be null"));
         }
+        if (this.priorityScoreSeverityRanges == null) {
+            misconfigurations.add(new ProcessMisconfiguration("priorityScoreSeverityRanges", "Priority score severity ranges must not be null"));
+        }
+
         if (this.cvssVersionSelectionPolicy == null || this.cvssVersionSelectionPolicy.isEmpty()) {
             misconfigurations.add(new ProcessMisconfiguration("cvssVersionSelectionPolicy", "CVSS version selection policy must not be null or empty"));
         }
@@ -540,11 +620,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             misconfigurations.add(new ProcessMisconfiguration("vulnerabilityStatusDisplayMapper", "Unknown status mapper: " + vulnerabilityStatusDisplayMapper));
         }
 
-        for (String provider : includeVulnerabilitiesWithAdvisoryProviders) {
+        for (int i = 0; i < includeVulnerabilitiesWithAdvisoryProviders.length(); i++) {
+            final JSONObject provider = includeVulnerabilitiesWithAdvisoryProviders.optJSONObject(i, null);
             if (provider == null) {
-                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null"));
-            } else if (!CentralSecurityPolicyConfiguration.isAny(provider) && AeaaContentIdentifiers.fromName(provider) == AeaaContentIdentifiers.UNKNOWN) {
-                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + AeaaContentIdentifiers.values().stream().map(AeaaContentIdentifiers::name).collect(Collectors.joining(", "))));
+                misconfigurations.add(new ProcessMisconfiguration("includeVulnerabilitiesWithAdvisoryProviders", "Advisory provider must not be null or is not a JSON object: " + includeVulnerabilitiesWithAdvisoryProviders));
             }
         }
 
@@ -556,11 +635,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             }
         }
 
-        for (String provider : includeAdvisoryProviders) {
+        for (int i = 0; i < includeAdvisoryProviders.length(); i++) {
+            final JSONObject provider = includeAdvisoryProviders.optJSONObject(i, null);
             if (provider == null) {
-                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null"));
-            } else if (!CentralSecurityPolicyConfiguration.isAny(provider) && AeaaContentIdentifiers.fromName(provider) == AeaaContentIdentifiers.UNKNOWN) {
-                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Unknown advisory provider: " + provider + ", must be one of " + AeaaContentIdentifiers.values().stream().map(AeaaContentIdentifiers::name).collect(Collectors.joining(", "))));
+                misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null or is not a JSON object: " + includeAdvisoryProviders));
             }
         }
 
@@ -575,6 +653,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         if (jsonSchemaValidationErrorsHandling == null) {
             misconfigurations.add(new ProcessMisconfiguration("strictJsonSchemaValidation", "JSON schema validation must not be null"));
+        }
+
+        if (this.priorityScoreConfiguration != null) {
+            this.priorityScoreConfiguration.collectMisconfigurations(misconfigurations);
         }
     }
 
@@ -917,7 +999,34 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                 && (collection.contains("ALL") || collection.contains("all") || collection.contains("ANY") || collection.contains("any"));
     }
 
+    public static boolean containsAny(Map<String, String> collection) {
+        return collection != null && !collection.isEmpty()
+                && (collection.containsKey("ALL") || collection.containsKey("all") || collection.containsKey("ANY") || collection.containsKey("any"));
+    }
+
+    public static boolean containsAny(JSONArray collection) { // List<Map<String, String>>
+        if (collection == null || collection.isEmpty()) {
+            return false;
+        }
+
+        for (int i = 0; i < collection.length(); i++) {
+            if (isAny(collection.getJSONObject(i))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isAny(JSONObject entry) {
+        return entry != null && isAny(entry.getString("name"));
+    }
+
     public static boolean isAny(String value) {
         return StringUtils.isNotEmpty(value) && (value.equalsIgnoreCase("all") || value.equalsIgnoreCase("any"));
+    }
+
+    public static boolean isAny(Map.Entry<String, ?> value) {
+        return value != null && isAny(value.getKey());
     }
 }

@@ -15,12 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan;
 
+import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
+import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
@@ -65,7 +68,7 @@ public class MatchResult {
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
         derivedArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, componentPatternData.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
-        derivedArtifact.set(Constants.KEY_NO_MATCHING_FILE, componentPatternData.get(Constants.KEY_NO_MATCHING_FILE));
+
         derivedArtifact.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, componentPatternData.get(Constants.KEY_SPECIFIED_PACKAGE_LICENSE));
         derivedArtifact.set(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE, componentPatternData.get(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE));
         derivedArtifact.set(Constants.KEY_SCOPE, componentPatternData.get(Constants.KEY_SCOPE));
@@ -77,7 +80,17 @@ public class MatchResult {
         derivedArtifact.setChecksum(componentPatternData.get("Component Checksum"));
 
         derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, Constants.MARKER_CROSS);
+
         derivedArtifact.set(VIRTUAL_ROOT_PATH, asRelativePath(scanRootDir.getPath(), virtualRootDir.getPath()));
+
+        // take over assetId association
+        final Set<String> assetIds = InventoryUtils.collectAssetIdFromGenericElement(componentPatternData);
+        for (String assetId : assetIds) {
+            final String assetAssociation = componentPatternData.get(assetId);
+            if (StringUtils.isNotBlank(assetAssociation)) {
+                derivedArtifact.set(assetId, assetAssociation);
+            }
+        }
 
         return derivedArtifact;
     }

@@ -18,7 +18,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +38,11 @@ public class AeaaCertEuAdvisorEntry extends AeaaAdvisoryEntry {
 
 
     public AeaaCertEuAdvisorEntry() {
-        super(AeaaContentIdentifiers.CERT_EU);
+        super(AeaaAdvisoryTypeStore.CERT_EU);
     }
 
     public AeaaCertEuAdvisorEntry(String id) {
-        super(AeaaContentIdentifiers.CERT_EU, id);
+        super(AeaaAdvisoryTypeStore.CERT_EU, id);
     }
 
     @Override

@@ -42,12 +42,12 @@ other tools including Syft and (future work) ExtractCode as part of the ScanCode
 | 34   | Python (poetry)                                   | ✗           | ✓      |             |
 | 35   | Python (requirements.txt)                         | ✗           | ✓      |             |
 | 36   | Red Hat (rpm)                                     | ✓           | ✓      |             |
-| 37   | RPM Metadata                                      | ✗ (planned) | ✗      |             |
+| 37   | RPM Metadata                                      | ✓           | ✗      |             |
 | 38   | Ruby (gem)                                        | ✓           | ✓      |             |
 | 39   | Rust (cargo.lock)                                 | ✗ (planned) | ✓      |             |
 | 40   | Swift (cocoapods, swift-package-manager)          | ✗           | ✓      |             |
 | 41   | Web Application (web.xml)                         | ✓           | ✗      |             |
 | 42   | Wordpress plugins                                 | ✗           | ✓      |             |
 | 43   | XWikiExtension (.xed)                             | ✓           | ✗      |             |
-|      | **Total included**                                | **32**      | **29** | TBD         |
-|      | **Total missing**                                 | **11**      | **14** | TBD         |
+|      | **Total included**                                | **33**      | **29** | TBD         |
+|      | **Total missing**                                 | **10**      | **14** | TBD         |

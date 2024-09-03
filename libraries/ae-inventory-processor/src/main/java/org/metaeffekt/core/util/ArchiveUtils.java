@@ -92,6 +92,7 @@ public class ArchiveUtils {
         tarExtensions.add("deb");
         // apk: android package (for apps, special zip), alpine linux package (special tar file)
         tarExtensions.add("apk");
+        tarExtensions.add("gem");
 
         // cab: windows cabinet file
         windowsExtensions.add("cab");
@@ -235,6 +236,7 @@ public class ArchiveUtils {
             expandTask.setDest(targetFile);
             expandTask.setSrc(file);
             expandTask.setAllowFilesToEscapeDest(false);
+            expandTask.setOverwrite(true);
             expandTask.execute();
         } catch (Exception antUntarException) {
             LOG.debug("Could not untar file [{}] due to [{}].", file.getAbsolutePath(), antUntarException.getMessage());

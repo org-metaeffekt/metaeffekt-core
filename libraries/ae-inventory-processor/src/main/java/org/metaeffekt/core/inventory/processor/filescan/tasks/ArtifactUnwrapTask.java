@@ -15,18 +15,23 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan.tasks;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
@@ -40,6 +45,8 @@ import static org.metaeffekt.core.util.ArchiveUtils.unpackIfPossible;
 public class ArtifactUnwrapTask extends ScanTask {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArtifactUnwrapTask.class);
+
+    public static final String CONTAINER_AGGREGATION_FOLDER = "[root]";
 
     private final Artifact artifact;
 
@@ -107,6 +114,8 @@ public class ArtifactUnwrapTask extends ScanTask {
         if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap) && unpackIfPossible(file, targetFolder, issues)) {
             // unpack successful...
 
+            postProcessUnwrapped(artifact, file, targetFolder, issues);
+
             final boolean implicitExclude = !explicitInclude && !explicitUnrwap;
 
             boolean markForDelete = false;
@@ -140,7 +149,9 @@ public class ArtifactUnwrapTask extends ScanTask {
             // trigger collection of content
             LOG.info("Collecting subtree on [{}].", fileRef.getPath());
             final FileRef dirRef = new FileRef(targetFolder);
-            VirtualContext virtualContext = new VirtualContext(dirRef);
+
+            // currently we anticipate a virtual context with any unwrapped artifact
+            final VirtualContext virtualContext = new VirtualContext(dirRef);
             fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
                     rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext)));
         } else {
@@ -177,6 +188,52 @@ public class ArtifactUnwrapTask extends ScanTask {
         }
     }
 
+    private void postProcessUnwrapped(Artifact artifact, File file, File targetFolder, List<String> issues) {
+        try {
+            deriveType(artifact, file);
+
+            postProcessUnwrappedSavedContainer(targetFolder);
+        } catch (Exception e) {
+            issues.add("Detected saved container, but unable to postprocess.");
+        }
+    }
+
+    private static void deriveType(Artifact artifact, File file) {
+        artifact.set(Constants.KEY_TYPE, "archive");
+        final String extension = FilenameUtils.getExtension(file.getName());
+        if (extension != null) {
+            artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, extension + "-archive");
+        }
+    }
+
+    private void postProcessUnwrappedSavedContainer(File targetFolder) throws IOException {
+        final File manifestFile = new File(targetFolder, "manifest.json");
+
+        if (manifestFile.exists()) {
+            final String manifestContent = FileUtils.readFileToString(manifestFile, FileUtils.ENCODING_UTF_8);
+            final JSONArray manifestJson = new JSONArray(manifestContent);
+            final JSONObject jsonObject = manifestJson.getJSONObject(0);
+            final JSONArray layers = jsonObject.getJSONArray("Layers");
+            final List<Object> layerList = layers.toList();
+
+            // unpack layers in the given order
+            for (Object layer : layerList) {
+                final File layerFile = new File(targetFolder, String.valueOf(layer));
+                final File layerContentDir = new File(targetFolder, CONTAINER_AGGREGATION_FOLDER);
+                ArchiveUtils.untar(layerFile, layerContentDir);
+            }
+
+            // isolate primary config file
+            final String configPath = jsonObject.optString("Config");
+            final File configFile = new File(targetFolder, String.valueOf(configPath));
+            FileUtils.copyFile(configFile, new File(targetFolder, "config.json"));
+
+            // consume blobs dir; we are not expecting any contribution anymore
+            final File blobsDir = new File(targetFolder, "blobs");
+            FileUtils.deleteDirectoryQuietly(blobsDir);
+        }
+    }
+
     private void addChecksumsAndHashes(FileRef fileRef) {
         final File file = fileRef.getFile();
         artifact.setChecksum(FileUtils.computeChecksum(file));
@@ -207,6 +264,8 @@ public class ArtifactUnwrapTask extends ScanTask {
         final String assetId = "AID-" + artifact.getId() + "-" + fileChecksum;
 
         final AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_ARCHIVE);
+
         assetMetaData.set(ASSET_ID, assetId);
         assetMetaData.set(KEY_CHECKSUM, fileChecksum);
         assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, ArtifactUnwrapTask.class.getName());
@@ -217,6 +276,8 @@ public class ArtifactUnwrapTask extends ScanTask {
         context.getInventory().getAssetMetaData().add(assetMetaData);
 
         context.getPathToAssetIdMap().put(relativePath, assetId);
+
+        artifact.set(assetId, Constants.MARKER_CROSS);
 
         return assetIdChain;
     }

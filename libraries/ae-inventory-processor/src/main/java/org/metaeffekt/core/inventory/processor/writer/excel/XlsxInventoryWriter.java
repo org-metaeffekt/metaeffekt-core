@@ -172,11 +172,13 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         final List<String> finalOrder = new ArrayList<>(ComponentPatternData.CORE_ATTRIBUTES);
         finalOrder.addAll(ordered);
 
-        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
-                stylers.headerStyleDefault,
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
+                stylers.headerStyleColumnNameAssetId,
+                stylers.headerStyleDefault
         };
 
         final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
+                stylers.contentStyleColumnNameAssetId
         };
 
         final int columnCount = super.populateSheetWithModelData(
@@ -204,7 +206,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         attributes.addAll(orderedOtherAttributes);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
-                stylers.headerStyleDefault,
+                stylers.headerStyleDefault
         };
 
         final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
@@ -391,7 +393,6 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         sheet.setAutoFilter(new CellRangeAddress(0, sheet.getLastRowNum(), 0, columnCount - 1));
     }
-
 
     private void writeAssetMetaData(Inventory inventory, SXSSFWorkbook workbook, XlsxXSSFInventorySheetCellStylers stylers) {
         if (isEmpty(inventory.getAssetMetaData())) return;

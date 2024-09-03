@@ -25,6 +25,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
+import org.json.JSONArray;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -33,7 +34,9 @@ import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter
 import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaContentIdentifiers;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
@@ -157,7 +160,7 @@ public class InventoryReport {
      * For which advisory providers to generate additional tables in the overview section containing statistic data on
      * which vulnerabilities have already been reviewed.
      */
-    private final List<AeaaContentIdentifiers> generateOverviewTablesForAdvisories = new ArrayList<>();
+    private final List<AeaaAdvisoryTypeIdentifier<?>> generateOverviewTablesForAdvisories = new ArrayList<>();
 
     private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
@@ -218,11 +221,14 @@ public class InventoryReport {
 
     public boolean createReport() throws Exception {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
+        if (LOG.isDebugEnabled()) {
+            this.logConfiguration();
+        }
 
-        Inventory globalInventory = readGlobalInventory();
+        final Inventory globalInventory = readGlobalInventory();
 
         // read local repository
-        Inventory localRepositoryInventory;
+        final Inventory localRepositoryInventory;
         if (this.inventory != null) {
             localRepositoryInventory = this.inventory;
         } else {
@@ -249,7 +255,7 @@ public class InventoryReport {
     }
 
     protected Inventory readGlobalInventory() throws IOException {
-        LOG.info("Reading global inventory for inventory report from {}", referenceInventoryDir);
+        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}", referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
 
@@ -1001,6 +1007,73 @@ public class InventoryReport {
         LOG.info(repeat("*", str.length() + 4));
     }
 
+    private void logConfiguration() {
+        LOG.info("Report configuration:");
+
+        LOG.info("- Source/Target paths:");
+        logConfigurationLogFile("referenceInventoryDir", referenceInventoryDir);
+        logConfigurationLogToString("referenceInventoryIncludes", referenceInventoryIncludes);
+        logConfigurationLogToString("referenceComponentPath", referenceComponentPath);
+        logConfigurationLogToString("referenceLicensePath", referenceLicensePath);
+        logConfigurationLogFile("targetReportDir", targetReportDir);
+        logConfigurationLogFile("diffInventoryFile", diffInventoryFile);
+        logConfigurationLogFile("targetInventoryDir", targetInventoryDir);
+        logConfigurationLogToString("targetInventoryPath", targetInventoryPath);
+        logConfigurationLogFile("targetComponentDir", targetComponentDir);
+        logConfigurationLogFile("targetLicenseDir", targetLicenseDir);
+        logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
+
+        LOG.info("- Validation fail flags:");
+        LOG.info(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", failOnError, failOnBanned, failOnDowngrade, failOnUnknown, failOnUnknownVersion, failOnDevelopment, failOnInternal);
+        LOG.info("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]", failOnUpgrade, failOnMissingLicense, failOnMissingLicenseFile, failOnMissingNotice, failOnMissingComponentFiles);
+
+        LOG.info("- Data display settings:");
+        LOG.info(" - generateOverviewTablesForAdvisories: {}", generateOverviewTablesForAdvisories.stream().map(AeaaContentIdentifierStore.AeaaContentIdentifier::toExtendedString).collect(Collectors.toList()));
+        logConfigurationLogToString("artifactFilter", artifactFilter);
+        logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", filterVulnerabilitiesNotCoveredByArtifacts);
+        logConfigurationLogToString("filterAdvisorySummary", filterAdvisorySummary);
+
+        LOG.info("- Template settings:");
+        LOG.info(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]", inventoryBomReportEnabled, inventoryDiffReportEnabled, inventoryPomEnabled, inventoryVulnerabilityReportEnabled);
+        LOG.info("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]", inventoryVulnerabilityReportSummaryEnabled, inventoryVulnerabilityStatisticsReportEnabled);
+        logConfigurationLogToString("templateLanguageSelector", templateLanguageSelector);
+
+        LOG.info("- Addon data:");
+        if (addOnArtifacts == null) {
+            LOG.info(" - addOnArtifacts: <null>");
+        } else if (addOnArtifacts.isEmpty()) {
+            LOG.info(" - addOnArtifacts: <empty>");
+        } else {
+            LOG.info(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
+        }
+
+        securityPolicy.logConfiguration();
+    }
+
+    private void logConfigurationLogFile(String property, File file) {
+        if (file == null) {
+            LOG.info(" - {}: <null>", property);
+        } else {
+            LOG.info(" - {}: file://{}", property, file.getAbsolutePath());
+        }
+    }
+
+    private void logConfigurationLogToString(String property, Object data) {
+        if (data == null) {
+            LOG.info(" - {}: <null>", property);
+        } else {
+            final String asString = String.valueOf(data);
+
+            final File fileAttempt = new File(asString);
+            if (fileAttempt.exists()) {
+                this.logConfigurationLogFile(property, fileAttempt);
+                return;
+            }
+
+            LOG.info(" - {}: {}", property, asString);
+        }
+    }
+
     private static String repeat(String str, int count) {
         if (count <= 0) return "";
         return IntStream.range(0, count).mapToObj(i -> str).collect(Collectors.joining());
@@ -1187,7 +1260,7 @@ public class InventoryReport {
         this.failOnMissingNotice = failOnMissingNotice;
     }
 
-    public String xmlEscapeContentString(String string) {
+    public static String xmlEscapeContentString(String string) {
         if (string == null) return "";
 
         String s = StringEscapeUtils.escapeXml(string.trim());
@@ -1337,43 +1410,35 @@ public class InventoryReport {
         return securityPolicy;
     }
 
-    public List<AeaaContentIdentifiers> getGenerateOverviewTablesForAdvisories() {
+    public List<AeaaAdvisoryTypeIdentifier<?>> getGenerateOverviewTablesForAdvisories() {
         return generateOverviewTablesForAdvisories;
     }
 
-    public void addGenerateOverviewTablesForAdvisories(AeaaContentIdentifiers... providers) {
+    public void addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeIdentifier<?>... providers) {
         if (providers == null || providers.length == 0) {
             return;
         }
         this.addGenerateOverviewTablesForAdvisories(Arrays.asList(providers));
     }
 
-    public void addGenerateOverviewTablesForAdvisories(Collection<AeaaContentIdentifiers> providers) {
-        if (providers.contains(AeaaContentIdentifiers.UNKNOWN)) {
-            LOG.warn("Unknown vulnerability advisory provider [{}], must be one of {}", providers, AeaaContentIdentifiers.values());
-        }
-
-        providers.stream()
-                .filter(AeaaContentIdentifiers::isAdvisoryProvider)
-                .forEach(this.generateOverviewTablesForAdvisories::add);
+    public void addGenerateOverviewTablesForAdvisories(Collection<AeaaAdvisoryTypeIdentifier<?>> providers) {
+        this.generateOverviewTablesForAdvisories.addAll(providers);
     }
 
-    public void addGenerateOverviewTablesForAdvisories(String... providers) {
-        if (providers == null || providers.length == 0) {
-            return;
-        }
-        this.addGenerateOverviewTablesForAdvisories(Arrays.stream(providers)
-                .map(AeaaContentIdentifiers::fromName)
-                .collect(Collectors.toList()));
-    }
-
-    public void addGenerateOverviewTablesForAdvisoriesByString(Collection<String> providers) {
+    public void addGenerateOverviewTablesForAdvisoriesByMap(Map<String, String> providers) {
         if (providers == null || providers.isEmpty()) {
             return;
         }
-        this.addGenerateOverviewTablesForAdvisories(providers.stream()
-                .map(AeaaContentIdentifiers::fromName)
-                .collect(Collectors.toList()));
+        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromMapNamesAndImplementations(providers);
+        this.generateOverviewTablesForAdvisories.addAll(parsed);
+    }
+
+    public void addGenerateOverviewTablesForAdvisoriesByMap(JSONArray providers) {
+        if (providers == null || providers.isEmpty()) {
+            return;
+        }
+        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(providers);
+        this.generateOverviewTablesForAdvisories.addAll(parsed);
     }
 
     public void setTargetReportDir(File reportTarget) {

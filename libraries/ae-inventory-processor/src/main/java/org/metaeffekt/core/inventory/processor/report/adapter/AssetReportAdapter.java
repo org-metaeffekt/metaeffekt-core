@@ -15,14 +15,17 @@
  */
 package org.metaeffekt.core.inventory.processor.report.adapter;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class AssetReportAdapter {
 
@@ -34,11 +37,11 @@ public class AssetReportAdapter {
 
     public List<AssetMetaData> listAssets() {
         final List<AssetMetaData> assetMetaData = new ArrayList<>(inventory.getAssetMetaData());
-        assetMetaData.sort(Comparator.comparing(o -> o.get("Name").toLowerCase()));
+        assetMetaData.sort(Comparator.comparing(o -> ObjectUtils.firstNonNull(o.get(AssetMetaData.Attribute.NAME), o.get(AssetMetaData.Attribute.ASSET_ID), "").toLowerCase()));
         return assetMetaData;
     }
 
-    Pair<String, String>[] containerKeyList = new Pair[] {
+    final Pair<String, String>[] containerKeyList = new Pair[]{
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
             Pair.of("Repository", "Repository"),
@@ -52,14 +55,14 @@ public class AssetReportAdapter {
             Pair.of("Supplier", "Supplier"),
     };
 
-    Pair<String, String>[] applianceKeyList = new Pair[] {
+    final Pair<String, String>[] applianceKeyList = new Pair[]{
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
             Pair.of("Tag", "Machine Tag"),
             Pair.of("Snapshot Timestamp", "Snapshot Timestamp")
     };
 
-    Pair<String, String>[] defaultKeyList = new Pair[] {
+    final Pair<String, String>[] defaultKeyList = new Pair[]{
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
             Pair.of("Version", "Version"),
@@ -67,24 +70,23 @@ public class AssetReportAdapter {
             Pair.of("Hash (SHA-256)", "Hash (SHA-256)")
     };
 
-    Pair<String, String>[] directoryKeyList = new Pair[] {
+    final Pair<String, String>[] directoryKeyList = new Pair[]{
             Pair.of("Type", "Type"),
             Pair.of("Name", "Name"),
     };
 
     public Pair<String, String>[] listKeys(AssetMetaData assetMetaData) {
-        final String type = assetMetaData.get("Type");
+        final String type = assetMetaData.get(Constants.KEY_TYPE);
         if (!StringUtils.isEmpty(type)) {
-            switch (type) {
-                case "Container":
+            switch (type.toLowerCase(Locale.US)) {
+                case "container":
                     return containerKeyList;
-                case "Appliance":
+                case "appliance":
                     return applianceKeyList;
-                case "Directory":
+                case "directory":
                     return directoryKeyList;
             }
         }
         return defaultKeyList;
     }
-
 }

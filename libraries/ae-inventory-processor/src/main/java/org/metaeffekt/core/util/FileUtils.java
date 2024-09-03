@@ -177,9 +177,11 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
         // and append the path composed earlier
         relativePath += path;
+
         if (relativePath.trim().isEmpty()) {
             return Constants.DOT;
         }
+
         return relativePath;
     }
 

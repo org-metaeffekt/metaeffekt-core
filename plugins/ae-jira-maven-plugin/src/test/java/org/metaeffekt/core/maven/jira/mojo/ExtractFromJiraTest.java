@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.jira.mojo;
 
-
 import org.apache.maven.plugin.MojoFailureException;
 import org.junit.Ignore;
 import org.junit.Test;

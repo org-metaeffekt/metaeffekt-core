@@ -25,6 +25,7 @@ import java.io.IOException;
  * Collection of static functions for reading docker (image) inspect output to java objects..
  */
 public class ImageInspectReader {
+
     protected static ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -33,7 +34,8 @@ public class ImageInspectReader {
      * in the master array.
      *
      * @param file The json file to read from.
-     * @return Returns ImageInspectData containing the invididual inspect sections.
+     *
+     * @return Returns ImageInspectData containing the individual inspect sections.
      */
     public static ImageInspectData dataFromJson(File file) {
         if (!file.isFile()) {
@@ -44,8 +46,7 @@ public class ImageInspectReader {
         try {
             inspects = objectMapper.readValue(file, ImageInspectData.class);
         } catch (IOException e) {
-            throw new IllegalArgumentException("Encountered IOException (while reading '" +
-                    file.getName().replaceAll("[^A-Za-z0-9\\-\"_!?=.() ]", "□") + "'): " +
+            throw new IllegalArgumentException("Encountered exception while reading [" + file.getName() + "]: " +
                     e.getMessage(), e);
         }
 

@@ -1,0 +1,4 @@
+linux
+coreutils
+iamafakelibrary.so
+/sbin/sbinwassymlinked

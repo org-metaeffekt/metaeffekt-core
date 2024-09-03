@@ -15,14 +15,22 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
+import lombok.NoArgsConstructor;
 import org.json.JSONObject;
 
 
+@NoArgsConstructor
 public class AeaaEpssData {
 
     private String vulnerability;
     private float epssScore;
     private float percentile;
+
+    public AeaaEpssData(String vulnerability, double epssScore, double percentile) {
+        this.vulnerability = vulnerability;
+        this.epssScore = (float) epssScore;
+        this.percentile = (float) percentile;
+    }
 
     public static AeaaEpssData fromJson(JSONObject json) {
         if (json == null) {
@@ -84,5 +92,13 @@ public class AeaaEpssData {
 
     public float getPercentile() {
         return percentile;
+    }
+
+    public String getEpssScoreAsPercentage() {
+        return String.format("%.2f", epssScore * 100) + "%";
+    }
+
+    public String getTopRatedPercentileAsPercentage() {
+        return String.format("%.2f", 100 - percentile * 100) + "%";
     }
 }

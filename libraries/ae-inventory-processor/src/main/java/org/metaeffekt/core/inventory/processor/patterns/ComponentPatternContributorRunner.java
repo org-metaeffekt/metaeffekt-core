@@ -86,13 +86,14 @@ public class ComponentPatternContributorRunner {
     /**
      * Checks for and runs the first applicable contributor.
      *
-     * @param baseDir as in {@link ComponentPatternContributor}
-     * @param relativeAnchorFilePath as in {@link ComponentPatternContributor}
-     * @param checksum as in {@link ComponentPatternContributor}
+     * @param baseDir The baseDir of the scan.
+     * @param virtualRootPath The virtual root path. Currently only to be regarded a proposal with context change.
+     * @param relativeAnchorFilePath relative path to the file to check. Relative to baseDir (not virtualRootPath).
+     * @param checksum the checksum of the anchor file.
      *
      * @return returns a list of generated component patterns
      */
-    public List<ComponentPatternData> run(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
+    public List<ComponentPatternData> collectApplicable(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
         List<ComponentPatternData> results = new ArrayList<>();
         for (Map.Entry<Integer, Map<String, List<ComponentPatternContributor>>> phaseEntry : phaseContributors.entrySet()) {
             for (Map.Entry<String, List<ComponentPatternContributor>> suffixEntry : phaseEntry.getValue().entrySet()) {

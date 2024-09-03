@@ -17,11 +17,11 @@
     </body>
 #foreach($asset in $assets)
     <topic id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">
-        <title>$report.xmlEscapeString($asset.get("Type")) - $report.xmlEscapeString($asset.get("Name"))</title>
+        <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
         <body>
             <p>
                 <table id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">
-                <title>$report.xmlEscapeString($asset.get("Type")) - $report.xmlEscapeString($asset.get("Name"))</title>
+                <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
                 <tgroup cols="2">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="80*" />

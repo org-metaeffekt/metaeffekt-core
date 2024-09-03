@@ -57,7 +57,7 @@ public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
-    public void testCompositionAnalysis() throws Exception {
+    public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
@@ -66,6 +66,7 @@ public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts(startsWith(ID, "jolokia")).hasSizeOf(3);
         analysis.selectArtifacts(startsWith(ID, "json")).hasSizeOf(2);
+        analysis.selectArtifacts(startsWith(PURL, "pkg:maven/org.jolokia")).hasSizeOf(3);
 
         analysis.selectArtifacts(attributeValue(GROUPID, "org.jolokia")).hasSizeOf(3);
         analysis.selectArtifacts(attributeValue(GROUPID, "com.googlecode.json-simple")).hasSizeOf(1);
