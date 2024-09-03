@@ -29,6 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
+
 public class LinuxDistributionAssetContributor extends ComponentPatternContributor {
 
     private static List<String> SUFFIX_LIST = Arrays.stream(LinuxDistributionUtil.getContextPaths())
@@ -54,7 +57,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
 
         try {
-            virtualRootPath = modulateVirtualRootPath(baseDir, virtualRootPath, relativeAnchorPath, SUFFIX_LIST);
+            virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, SUFFIX_LIST);
 
             final File distroBaseDir = ".".equals(virtualRootPath) ? baseDir : new File(baseDir, virtualRootPath);
             final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistro(distroBaseDir);
@@ -65,14 +68,14 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
 
                 ComponentPatternData cpd = new ComponentPatternData();
 
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, linuxDistro.issue);
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, linuxDistro.versionId);
-                cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, linuxDistro.id + "-" + linuxDistro.versionId);
-                cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelativePath);
-                cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, getSuffixes().stream().collect(Collectors.joining(", ")));
-                cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_DISTRO);
-                cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "linux-distro");
+                cpd.set(COMPONENT_NAME, linuxDistro.issue);
+                cpd.set(COMPONENT_VERSION, linuxDistro.versionId);
+                cpd.set(COMPONENT_PART, linuxDistro.id + "-" + linuxDistro.versionId);
+                cpd.set(VERSION_ANCHOR, contextRelativePath);
+                cpd.set(VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+                cpd.set(INCLUDE_PATTERN, getSuffixes().stream().collect(Collectors.joining(", ")));
+                cpd.set(KEY_TYPE, ARTIFACT_TYPE_DISTRO);
+                cpd.set(KEY_COMPONENT_SOURCE_TYPE, "linux-distro");
 
                 cpd.setExpansionInventorySupplier(() -> createAssetInventory(baseDir, distroBaseDir, linuxDistro));
 
@@ -90,7 +93,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
         final String relativePathToDistroRoot = FileUtils.asRelativePath(baseDir, distroBaseDir);
 
         AssetMetaData assetMetaData = new AssetMetaData();
-        assetMetaData.set(Constants.KEY_TYPE, "os");
+        assetMetaData.set(KEY_TYPE, "os");
 
         assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "OSID-" + relativePathToDistroRoot);
         assetMetaData.set(AssetMetaData.Attribute.NAME, linuxDistro.id);

@@ -36,7 +36,7 @@ import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CHECKSUM;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 import static org.metaeffekt.core.util.ArchiveUtils.unpackIfPossible;
 
 /**
@@ -150,10 +150,10 @@ public class ArtifactUnwrapTask extends ScanTask {
             LOG.info("Collecting subtree on [{}].", fileRef.getPath());
             final FileRef dirRef = new FileRef(targetFolder);
 
-            // currently we anticipate a virtual context with any unwrapped artifact
+            // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)
             final VirtualContext virtualContext = new VirtualContext(dirRef);
             fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
-                    rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext)));
+                    rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext, markForDelete)));
         } else {
             // compute md5 to support component patterns (candidates for unwrap did not receive a checksum before)
             addChecksumsAndHashes(fileRef);
@@ -167,7 +167,7 @@ public class ArtifactUnwrapTask extends ScanTask {
 
             // mark artifacts matching a component pattern with anchor checksum
             if (!fileSystemScanContext.getScanParam().getComponentPatternsByChecksum(artifact.getChecksum()).isEmpty()) {
-                artifact.set(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, Constants.MARKER_CROSS);
+                artifact.set(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, MARKER_CROSS);
             }
 
             // the asset id chain remains as is
@@ -199,7 +199,7 @@ public class ArtifactUnwrapTask extends ScanTask {
     }
 
     private static void deriveType(Artifact artifact, File file) {
-        artifact.set(Constants.KEY_TYPE, "archive");
+        artifact.set(KEY_TYPE, "archive");
         final String extension = FilenameUtils.getExtension(file.getName());
         if (extension != null) {
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, extension + "-archive");
@@ -242,7 +242,7 @@ public class ArtifactUnwrapTask extends ScanTask {
     }
 
     private static List<String> rebuildAndExtendAssetIdChain(FileRef baseDir, Artifact artifact,
-                                                             FileRef file, FileSystemScanContext context) {
+                                                             FileRef file, FileSystemScanContext context, boolean intermediate) {
         // read existing
         final String assetChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
 
@@ -252,6 +252,9 @@ public class ArtifactUnwrapTask extends ScanTask {
             final String[] split = assetChain.split("\\|\n");
             Collections.addAll(assetIdChain, split);
         }
+
+        // return unmodified
+        if (intermediate) return assetIdChain;
 
         final String relativePath = FileUtils.asRelativePath(baseDir.getFile(), file.getFile());
         assetIdChain.add(relativePath);
@@ -264,8 +267,7 @@ public class ArtifactUnwrapTask extends ScanTask {
         final String assetId = "AID-" + artifact.getId() + "-" + fileChecksum;
 
         final AssetMetaData assetMetaData = new AssetMetaData();
-        assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_ARCHIVE);
-
+        assetMetaData.set(KEY_TYPE, Constants.ARTIFACT_TYPE_ARCHIVE);
         assetMetaData.set(ASSET_ID, assetId);
         assetMetaData.set(KEY_CHECKSUM, fileChecksum);
         assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, ArtifactUnwrapTask.class.getName());
@@ -277,7 +279,7 @@ public class ArtifactUnwrapTask extends ScanTask {
 
         context.getPathToAssetIdMap().put(relativePath, assetId);
 
-        artifact.set(assetId, Constants.MARKER_CROSS);
+        artifact.set(assetId, MARKER_CROSS);
 
         return assetIdChain;
     }

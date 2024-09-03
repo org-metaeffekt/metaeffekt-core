@@ -78,7 +78,7 @@ public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectComponentPatterns(tokenStartsWith(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(29);
+        analysis.selectComponentPatterns(tokenStartsWith(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(33);
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/installed")).hasSizeGreaterThan(1);
     }
 }

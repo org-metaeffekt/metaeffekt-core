@@ -36,7 +36,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
     private static final Logger LOG = LoggerFactory.getLogger(GemSpecContributor.class);
 
-    public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem";
+    public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem-spec";
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add(".gemspec");
@@ -58,7 +58,6 @@ public class GemSpecContributor extends ComponentPatternContributor {
             String content = FileUtils.readFileToString(anchorFile, StandardCharsets.UTF_8);
 
             final String anchorFileName = anchorFile.getName();
-            final String id = anchorFileName.replace(".gemspec", "");
             final String anchorFileNameNoSuffix = anchorFileName.replace(".gemspec", "");
 
             final String parentDirName = anchorFile.getParentFile().getName();
@@ -130,6 +129,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
             }
 
             concludedName = concludedName.replace(".gemspec", "");
+            concludedName = concludedName.replace(".gem", "");
 
             String concludedId = concludedName + "-" + version;
 
@@ -151,8 +151,8 @@ public class GemSpecContributor extends ComponentPatternContributor {
                 LOG.trace("No version denoted in file's or folder's name.");
             }
             if (version == null) {
-                LOG.error("No version extracted from Gemspec: " + relativeAnchorPath);
-                throw new IllegalStateException("No version could be extracted from the logged gemspec.");
+                LOG.warn("No version extracted from Gemspec [{}. Skipped.", relativeAnchorPath);
+                return Collections.emptyList();
             }
 
             if (versionDerivedFromFileName != null) {
@@ -160,7 +160,10 @@ public class GemSpecContributor extends ComponentPatternContributor {
                 sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + "/**/*").append(",");
 
                 // cover cache files
-                sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + "*").append(",");
+                sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem").append(",");
+
+                // this may be redundant
+                sb.append("/**/cache/**/[" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem]/**/*").append(",");
             } else {
                 if (versionDerivedFromFolderName != null) {
                     // covers folders with name as folder name and anything deeper nested

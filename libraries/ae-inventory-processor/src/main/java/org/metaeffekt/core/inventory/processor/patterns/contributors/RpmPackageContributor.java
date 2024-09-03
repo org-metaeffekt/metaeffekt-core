@@ -46,11 +46,10 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         add("/packages.db");
     }});
 
-    private static final List<String> paths = Collections.unmodifiableList(new ArrayList<String>() {{
-        add("var/lib/rpm/packages");
-        add("var/lib/rpm/rpmdb.sqlite");
-        add("var/lib/rpm/packages.db");
-    }});
+    private static final List<String> PATH_FRAGMENTS = new ArrayList<String>() {{
+        add("var/lib/");
+        add("usr/lib/");
+    }};
 
     @Override
     public boolean applies(String pathInContext) {
@@ -66,7 +65,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
             return Collections.emptyList();
         }
 
-        virtualRootPath = modulateVirtualRootPath(baseDir, virtualRootPath, relativeAnchorPath, paths);
+        virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, PATH_FRAGMENTS);
 
         try {
             BlockingQueue<Entry> entries = getEntries(packagesFile);
@@ -180,7 +179,11 @@ public class RpmPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String name, String version, String arch, Integer epoch, String upstream, LinuxDistributionUtil.LinuxDistro distro) {
-        StringBuilder sb = new StringBuilder();
+        if (distro == null || distro.id == null) {
+            return null;
+        }
+
+        final StringBuilder sb = new StringBuilder();
         sb.append("pkg:rpm/");
         sb.append(distro.id).append("/");
         sb.append(name).append("@");

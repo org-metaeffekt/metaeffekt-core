@@ -38,12 +38,16 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.P
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
+// FIXME: container no longer available
+@Ignore
 public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/univention/images-mirror/keycloak-keycloak", "22.0.3-ucs2@sha256:1e8e45a2e01050c1473595c3b143446363016ea292b0c599ccd9f1bd37112206", OpenDeskKeycloakTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de",
+                "bmi/opendesk/components/supplier/univention/images-mirror/keycloak-keycloak",
+                "22.0.3-ucs2@sha256:1e8e45a2e01050c1473595c3b143446363016ea292b0c599ccd9f1bd37112206", OpenDeskKeycloakTest.class.getName());
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash("1e8e45a2e01050c1473595c3b143446363016ea292b0c599ccd9f1bd37112206")

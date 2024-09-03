@@ -309,15 +309,18 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     }
 
     public boolean hasFileChangedMd5(File toCheck, String knownChecksum) {
-        String calculatedDigest;
-        try (InputStream inputStream = Files.newInputStream(toCheck.toPath())) {
-            calculatedDigest = DigestUtils.md5Hex(inputStream);
-        } catch (IOException e) {
-            LOG.warn("Could not check digest for supposed package file at [{}]. Assuming changed.", toCheck.getPath());
-            return true;
+        if (toCheck.exists()) {
+            final Path path = toCheck.toPath();
+            try (InputStream inputStream = Files.newInputStream(path)) {
+                final String calculatedDigest = DigestUtils.md5Hex(inputStream);
+                return knownChecksum.equals(calculatedDigest);
+            } catch (IOException e) {
+                LOG.debug("Could not check digest for supposed package file at [{}]. Assuming changed.", toCheck.getPath());
+            }
         }
 
-        return knownChecksum.equals(calculatedDigest);
+        // true in case the file does not exist (deleted) or does not match the expected checkum.
+        return true;
     }
 
     public ComponentPatternData createComponentPattern(String versionAnchor,
@@ -479,8 +482,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 correspondingMd5sumsFile = fileWithArch;
 
                 if (!fileWithoutArch.exists()) {
-                    LOG.error("Can't create ComponentPattern: No md5sums file found for package [{}].",
-                            entry.packageName);
+                    LOG.debug("No md5sums file found for package [{}].", entry.packageName);
                 }
             }
 

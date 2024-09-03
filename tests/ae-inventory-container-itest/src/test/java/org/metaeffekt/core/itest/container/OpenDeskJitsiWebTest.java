@@ -37,12 +37,16 @@ import java.util.List;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
+// FIXME: container no longer available
+@Ignore
 public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/web", "stable-8922@sha256:24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46", OpenDeskJitsiWebTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de",
+                "bmi/opendesk/components/supplier/nordeck/images-mirror/web",
+                "stable-8922@sha256:24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46", OpenDeskJitsiWebTest.class.getName());
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash("24bd4179998fe01ace1be74e53fea5308f4d91722953bb4334611e6886753f46")

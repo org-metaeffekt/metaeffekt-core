@@ -33,32 +33,13 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.util.FileUtils.*;
 
 public class ComponentPatternProducer {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
-
-    //FIXME: there needs to be a runtime sanity check for these: UPPERCASE won't do us well when checking against lower
-    public static final String[] FILE_SUFFIX_LIST = new String[] {
-
-            // TODO: many of the anchor patterns ignore context. some of them don't but then their applies method does.
-            //  this redundancy makes for uglier code and doing the same work twice. can we find a better method?
-            // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into
-            // context.
-
-            // FIXME: there is some unnecessary disarray between many file suffixes and the cpc's "applies" method.
-            //  one of these is the python modules contributor, that doesn't deal with __init__ at all, but registered
-            //  it in the default file suffix list anyway.
-            // python modules
-            "/metadata",
-            "/record",
-            "/wheel",
-            "/__init__.py",
-            "/__about__.py",
-    };
 
     /**
      * Consolidate locale settings across contributors.<br>
@@ -78,28 +59,17 @@ public class ComponentPatternProducer {
      * @return collection of lowercase suffixes
      */
     protected Set<String> getRelevantSuffixes(List<ComponentPatternContributor> contributors) {
-        // TODO: should defaults disappear once we spec every contributor to state its suffixes?
-        Set<String> relevantSuffixes = new HashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
-
-        // for checking whether i did everything correctly and don't need defaults any more
-        Set<String> uncoveredDefaults = new LinkedHashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
-
+        final Set<String> relevantSuffixes = new LinkedHashSet<>();
         for (ComponentPatternContributor cpc : contributors) {
             Collection<String> suffixes = cpc.getSuffixes();
 
             if (suffixes == null) {
-                LOG.error(
-                        "Component pattern contributor [{}] has null suffix list.",
-                        cpc.getClass().getName()
-                );
+                LOG.error("Component pattern contributor [{}] has null suffix list.", cpc.getClass().getName());
                 continue;
             }
 
             if (suffixes.isEmpty()) {
-                LOG.warn(
-                        "Component pattern contributor [{}] doesn't register any suffixes.",
-                        cpc.getClass().getName()
-                );
+                LOG.warn("Component pattern contributor [{}] doesn't register any suffixes.", cpc.getClass().getName());
                 continue;
             }
 
@@ -107,22 +77,10 @@ public class ComponentPatternProducer {
                 // use path locale since we will be using suffixes to compare paths
                 String lowercasedSuffix = suffix.toLowerCase(LocaleConstants.PATH_LOCALE);
                 if (!suffix.equals(lowercasedSuffix)) {
-                    LOG.debug(
-                            "Suffix [{}] of [{}] was not lowercase, then lowercased automagically.",
-                            suffix,
-                            cpc.getClass().getName()
-                    );
+                    LOG.debug("Suffix [{}] of [{}] was not lowercase, then lowercased automagically.", suffix, cpc.getClass().getName());
                 }
                 relevantSuffixes.add(lowercasedSuffix);
-
-                uncoveredDefaults.remove(suffix.toLowerCase(LocaleConstants.PATH_LOCALE));
             }
-        }
-
-        // we want to remove defaults eventually to make the system modular. output may need discussion
-        if (!uncoveredDefaults.isEmpty()) {
-            LOG.info("Some defaults have not been covered by component pattern contributors: [{}] ",
-                    uncoveredDefaults);
         }
 
         return relevantSuffixes;
@@ -231,8 +189,8 @@ public class ComponentPatternProducer {
         // delete artifacts marked with delete directive
         final List<Artifact> toBeDeleted = new ArrayList<>();
         for (Artifact artifact : fileSystemScanContext.getInventory().getArtifacts()) {
-            final String scanDirectiveDelete = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE);
-            if (!StringUtils.isEmpty(scanDirectiveDelete) && scanDirectiveDelete.contains(FileSystemScanConstants.SCAN_DIRECTIVE_DELETE)) {
+            final String scanDirectiveDelete = artifact.get(ATTRIBUTE_KEY_SCAN_DIRECTIVE);
+            if (!StringUtils.isEmpty(scanDirectiveDelete) && scanDirectiveDelete.contains(SCAN_DIRECTIVE_DELETE)) {
                 toBeDeleted.add(artifact);
             }
         }
@@ -300,35 +258,27 @@ public class ComponentPatternProducer {
 
             final Inventory inventory = fileSystemScanContext.getInventory();
             synchronized (inventory) {
+
                 boolean matched = false;
+
                 for (final Artifact artifact : inventory.getArtifacts()) {
+
                     final String relativePathFromBaseDir = getRelativePathFromBaseDir(artifact);
 
                     final String absolutePathFromBaseDir = "/" + relativePathFromBaseDir;
 
-                    // match absolute first (anchor matched, so we have to check anyway)
+                    // match absolute exclude first (anchor matched, so we have to check anyway)
                     if (matches(normalizedExcludePattern.absolutePatterns, absolutePathFromBaseDir)) {
-                        // continue without adding
+                        // continue without adding since excluded
                         continue;
                     }
 
                     // match absolute include patterns
                     if (matches(normalizedIncludePattern.absolutePatterns, absolutePathFromBaseDir)) {
-                        // marked matched
-                        artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
-                        artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
-
-                        if (LOG.isTraceEnabled()) {
-                            LOG.trace(
-                                    "Component anchor [{}] (checksum: [{}]): removed artifact covered by pattern: [{}] ",
-                                cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
-                                cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
-                                relativePathFromBaseDir
-                            );
-                        }
-
-                        // continue adding
+                        markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
                         matched = true;
+
+                        // continue with next artifact; skipping all further matching steps
                         continue;
                     }
 
@@ -350,18 +300,7 @@ public class ComponentPatternProducer {
                         // match patterns (relative only)
                         if (!matches(normalizedExcludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
                             if (matches(normalizedIncludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
-                                artifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_SCAN_DIRECTIVE, FileSystemScanConstants.SCAN_DIRECTIVE_DELETE);
-                                artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
-
-                                if (LOG.isTraceEnabled()) {
-                                    LOG.trace(
-                                            "Component anchor [{}] (checksum: {}): removed artifact covered by pattern: [{}]",
-                                        cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
-                                        cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
-                                        relativePathFromBaseDir
-                                    );
-                                }
-
+                                markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
                                 matched = true;
                             }
                         }
@@ -369,6 +308,7 @@ public class ComponentPatternProducer {
                 }
 
                 if (!matched) {
+                    // at this point none of the artifacts were matched
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
                     }
@@ -377,6 +317,22 @@ public class ComponentPatternProducer {
                     }
                 }
             }
+        }
+    }
+
+    private static void markAsMatched(Artifact artifact, MatchResult matchResult, ComponentPatternData cpd, String relativePathFromBaseDir) {
+        // marked matched
+        artifact.set(ATTRIBUTE_KEY_SCAN_DIRECTIVE, SCAN_DIRECTIVE_DELETE);
+
+        // FIXME: why do we manage the assetIdChain here; the file is marked for deletion; currently only the first
+        //  matchResult writes the assetIdChain here
+        artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Component anchor [{}] (checksum: {}): removed artifact covered by pattern: [{}]",
+                    cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR),
+                    cpd.get(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM),
+                    relativePathFromBaseDir);
         }
     }
 
@@ -442,9 +398,7 @@ public class ComponentPatternProducer {
      * @return List of matched / potential component patterns.
      */
     public List<MatchResult> matchComponentPatterns(final Inventory inputInventory,
-                                                    final Inventory componentPatternSourceInventory,
-                                                    final FileSystemScanContext fileSystemScanContext,
-                                                    final boolean applyDeferred) {
+            final Inventory componentPatternSourceInventory, final FileSystemScanContext fileSystemScanContext, final boolean applyDeferred) {
 
         // match component patterns using version anchor; results in matchedComponentPatterns
         final List<MatchResult> matchedComponentPatterns = new ArrayList<>();

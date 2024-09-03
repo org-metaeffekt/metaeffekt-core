@@ -32,12 +32,12 @@ import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 public class MatchResult {
 
-    public ComponentPatternData componentPatternData;
+    public final ComponentPatternData componentPatternData;
 
-    public File anchorFile;
-    public File scanRootDir;
-    public File virtualRootDir;
-    public File versionAnchorRootDir;
+    public final File anchorFile;
+    public final File scanRootDir;
+    public final File virtualRootDir;
+    public final File versionAnchorRootDir;
 
     public String assetIdChain;
 

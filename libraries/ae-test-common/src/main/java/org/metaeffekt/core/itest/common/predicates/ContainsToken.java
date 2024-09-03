@@ -36,7 +36,6 @@ public class ContainsToken<T, E extends Enum<E>> implements NamedBasePredicate<T
                 String attributeValue = (String) getMethod.invoke(instance, attributeKey);
                 return attributeValue != null && attributeValue.contains(token);
             } catch (Exception e) {
-                e.printStackTrace();
                 return false;
             }
         };
@@ -50,4 +49,5 @@ public class ContainsToken<T, E extends Enum<E>> implements NamedBasePredicate<T
     public static <T, E extends Enum<E>> NamedBasePredicate<T> containsToken(E attributeKey, String token) {
         return new ContainsToken<>(attributeKey, token);
     }
+
 }

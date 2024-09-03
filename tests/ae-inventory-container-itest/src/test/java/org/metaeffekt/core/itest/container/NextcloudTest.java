@@ -60,6 +60,8 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
     @Ignore
     @Test
     public void analyse() throws Exception {
+
+        // FIXME: runs extremely slow; needs to be optimized
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 

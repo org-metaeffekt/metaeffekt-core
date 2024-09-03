@@ -36,7 +36,7 @@ public class GemMetadataContributor extends ComponentPatternContributor {
 
     private static final Logger LOG = LoggerFactory.getLogger(GemMetadataContributor.class);
 
-    public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem";
+    public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem-metadata";
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("metadata");
@@ -70,9 +70,10 @@ public class GemMetadataContributor extends ComponentPatternContributor {
 
             String gemName = folderName;
 
-            if (folderName.endsWith(".gem")) {
-                folderName = folderName.substring(0, folderName.length()-4);
+            if (gemName.endsWith(".gem")) {
+                gemName = gemName.substring(0, folderName.length() - 4);
             }
+
             int dashIndex = folderName.lastIndexOf('-');
             String name = folderName.substring(0, dashIndex);
             String version = folderName.substring(dashIndex+1, folderName.length());

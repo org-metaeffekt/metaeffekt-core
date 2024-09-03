@@ -20,41 +20,55 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
+import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
-import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Predicate;
 
+import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.detectDuplicateComponentPatternMatches;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-public class KeycloakTest extends AbstractCompositionAnalysisTest {
+public class KeycloakTest_25_0_0 extends AbstractCompositionAnalysisTest {
+
+    public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
+        @Override
+        public Predicate<AssetMetaData> getPredicate() {
+            return a -> "container".equals(a.get(TYPE));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Asset of type container";
+        }
+    };
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag("quay.io/keycloak", "keycloak", "22.0.4", KeycloakTest.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
-        AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
-                .setSha256Hash(sha256Hash)
-                .setName(KeycloakTest.class.getName());
+        final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
+                "quay.io/keycloak", "keycloak", "25.0.0", KeycloakTest_25_0_0.class.getName());
+
+        AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
+                .setSource("file://" + baseDir.getAbsolutePath())
+                .setName(KeycloakTest_25_0_0.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore
@@ -65,12 +79,15 @@ public class KeycloakTest extends AbstractCompositionAnalysisTest {
 
     @Test
     public void testComponentPatterns() throws Exception {
-        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
-        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
-        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
-        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+        final Inventory inventory = testSetup.getInventory();
+        final Inventory referenceInventory = testSetup.readReferenceInventory();
+        final File baseDir = new File(testSetup.getScanFolder());
+        final List<FilePatternQualifierMapper> filePatternQualifierMapperList =
+                detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        final DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
+
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
@@ -80,7 +97,13 @@ public class KeycloakTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "generic-version")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(390);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(42);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(403);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(43);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "linux-distro")).hasSizeOf(1);
+
+        // we expect the container being only represented as asset
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
+        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
     }
+
 }
