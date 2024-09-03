@@ -89,8 +89,10 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                 }
             }
 
+            // FIXME: use both package.json and package-lock.json to produce a consolidated outcome
             if (webModule.packageLockJsonFile != null) {
-                inventoryFromPackageLock = new NpmPackageLockAdapter().createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath);
+                inventoryFromPackageLock = new NpmPackageLockAdapter().
+                        createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath);
             } else {
                 artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
             }
@@ -205,6 +207,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         }
 
         File packageLockJsonFile;
+        File packageJsonFile;
     }
 
     public void createInventory(File scanDir) throws IOException {
@@ -375,11 +378,20 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                 LOG.warn("Cannot parse web module information: [{}]", packageJsonFile);
             }
 
-            // in case of a package-lock.json file; keep the reference
+            // in case of a package-lock.json / package.json or pairs; keep the references
             if (packageJsonFile.getName().endsWith("package-lock.json")) {
                 webModule.packageLockJsonFile = packageJsonFile;
+                // check for adjacent package.json
+                final File file = new File(packageJsonFile.getParentFile(), "package.json");
+                if (file.exists()) {
+                    webModule.packageJsonFile = file;
+                }
+            } else {
+                final File file = new File(packageJsonFile.getParentFile(), "package-lock.json");
+                if (file.exists()) {
+                     webModule.packageLockJsonFile = file;
+                }
             }
-
         }
     }
 
