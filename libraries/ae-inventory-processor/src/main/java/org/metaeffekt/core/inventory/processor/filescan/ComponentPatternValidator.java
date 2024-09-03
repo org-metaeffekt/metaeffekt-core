@@ -32,7 +32,7 @@ public class ComponentPatternValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternValidator.class);
 
-    public static boolean removeDuplicateComponentPatterns(Inventory referenceInventory, Inventory resultInventory, File baseDir) {
+    public static List<FilePatternQualifierMapper> detectDuplicateComponentPatternMatches(Inventory referenceInventory, Inventory resultInventory, File baseDir) {
 
         DirectoryScanExtractorConfiguration configuration = new DirectoryScanExtractorConfiguration(
                 referenceInventory,
@@ -45,7 +45,7 @@ public class ComponentPatternValidator {
 
         findDuplicateFiles(qualifierToComponentPatternFilesMap, filePatternQualifierMapperList);
 
-        return hasRemainingDuplicates(filePatternQualifierMapperList);
+        return filePatternQualifierMapperList;
     }
 
     private static List<FilePatternQualifierMapper> loadComponentPatternFiles(DirectoryScanExtractorConfiguration configuration) {
@@ -229,32 +229,5 @@ public class ComponentPatternValidator {
 
     private static FilePatternQualifierMapper findMapperForQualifier(String qualifier, List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
         return filePatternQualifierMapperList.stream().filter(mapper -> mapper.getQualifier().equals(qualifier)).findFirst().orElse(null);
-    }
-
-    private static boolean hasRemainingDuplicates(List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
-        Map<File, List<String>> fileToQualifierMap = new HashMap<>();
-        boolean hasDuplicates = false;
-
-        for (FilePatternQualifierMapper mapper : filePatternQualifierMapperList) {
-            List<File> files = mapper.getFileMap().get(false);
-            if (files != null) {
-                for (File file : files) {
-                    if (fileToQualifierMap.containsKey(file) && !fileToQualifierMap.get(file).contains(mapper.getQualifier())) {
-                        fileToQualifierMap.get(file).add(mapper.getQualifier());
-                    } else if (!fileToQualifierMap.containsKey(file)) {
-                        fileToQualifierMap.computeIfAbsent(file, k -> new ArrayList<>()).add(mapper.getQualifier());
-                    }
-                }
-            }
-        }
-
-        for (Map.Entry<File, List<String>> entry : fileToQualifierMap.entrySet()) {
-            if (entry.getValue().size() > 1) {
-                LOG.warn("Component pattern file [{}] is STILL associated with multiple qualifiers {}.", entry.getKey(), entry.getValue());
-                hasDuplicates = true;
-            }
-        }
-
-        return hasDuplicates;
     }
 }

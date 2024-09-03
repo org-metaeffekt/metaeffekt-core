@@ -26,6 +26,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Untar;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -484,6 +485,24 @@ public class ArchiveUtils {
         } catch (IOException e) {
             LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed.");
         }
+    }
+
+    /**
+     * Uses the native zip command to zip the file. Uses the -X attribute to create files with deterministic checksum.
+     *
+     * @param sourceDir     The directory to zip (recursively).
+     * @param targetZipFile The target zip file name.
+     */
+    public static void zipAnt(File sourceDir, File targetZipFile) {
+        Zip zip = new Zip();
+        Project project = new Project();
+        project.setBaseDir(sourceDir);
+        zip.setProject(project);
+        zip.setBasedir(sourceDir);
+        zip.setCompress(true);
+        zip.setDestFile(targetZipFile);
+        zip.setFollowSymlinks(false);
+        zip.execute();
     }
 
 }

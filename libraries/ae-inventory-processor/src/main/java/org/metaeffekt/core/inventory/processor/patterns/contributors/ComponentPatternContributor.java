@@ -45,7 +45,7 @@ public abstract class ComponentPatternContributor {
     }
 
     /**
-     * Get a list of suffixes that this contributor may be able to use an an anchor.<br>
+     * Get a list of suffixes that this contributor may be able to use as an anchor.<br>
      * Note that this is not limited to filename extensions.
      * @return a list of supported file suffixes
      */

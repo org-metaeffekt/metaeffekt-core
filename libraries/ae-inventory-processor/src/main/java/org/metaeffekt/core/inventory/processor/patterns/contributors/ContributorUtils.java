@@ -21,22 +21,24 @@ public class ContributorUtils {
         int lastSlash = path.lastIndexOf("/");
 
         if (lastSlash == -1) {
+            // do not extend if a wildcard is in the path
             if (path.contains("*")) {
                 return null;
             }
             return "[" + path + "]";
         }
 
-        String supposedArchiveName = path.substring(lastSlash + 1);
+        String archiveName = path.substring(lastSlash + 1);
 
-        if (supposedArchiveName.contains("*")) {
+        if (archiveName.contains("*")) {
+            // do not extend if a wildcard is in the archive name
             return null;
         }
 
-        String toAddBeforeSlash = path.substring(0, lastSlash);
+        String archivePath = path.substring(0, lastSlash);
 
-        // only works for one level but that might already help with a LOT of issues
-        return toAddBeforeSlash + "/[" + supposedArchiveName + "]/**/*";
+        // apply square brackets only to archive name and extend with wildcard
+        return archivePath + "/[" + archiveName + "]/**/*";
     }
 
 }

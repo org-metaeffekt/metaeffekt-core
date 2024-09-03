@@ -112,10 +112,10 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
                                 String existingPath = existingPathsIterator.next();
 
                                 if (currentLine.startsWith(existingPath)) {
-                                    // If currentLine is more specific, remove the broader existing path
+                                    // if currentLine is more specific, remove the broader existing path
                                     existingPathsIterator.remove();
                                 } else if (existingPath.startsWith(currentLine)) {
-                                    // If an existing path is more specific, skip adding currentLine
+                                    // if an existing path is more specific, skip adding currentLine
                                     isMostSpecific = false;
                                     break;
                                 }

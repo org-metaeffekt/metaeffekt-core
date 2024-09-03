@@ -101,7 +101,6 @@ public class GemSpecContributor extends ComponentPatternContributor {
                 final String cutAfterFirstEquals = matchingVersionLine
                         .split("=", 2)[1]
                         .trim();
-                System.out.println(cutAfterFirstEquals);
                 final Pattern firstQuoteFinder = Pattern.compile("[\"']");
                 Matcher firstQuoteMatcher = firstQuoteFinder.matcher(cutAfterFirstEquals);
                 if (!firstQuoteMatcher.find()) {

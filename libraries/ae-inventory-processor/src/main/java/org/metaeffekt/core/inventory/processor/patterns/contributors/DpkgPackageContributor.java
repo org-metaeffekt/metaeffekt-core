@@ -329,10 +329,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // add list of comma-separated paths
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
 
-        // FIXME: clarify exclude patterns for java 11
-        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*, **/jspawnhelper , **/__pycache__/**/*, **/classes.jsa");
+        // FIXME: we need a post-processing step to clear the inventory by known individual components (e.g. if package 2 is fully a subset of package 1, remove package 2)
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
 
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/Bindu.pl, **/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt");
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/__pycache__/**/*");
 
         // get version from the entry
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
@@ -409,19 +409,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             return null;
         }
 
-        // FIXME: review with JKR; these files have not been covered
-        // fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
-        // FIXME: how do we know if these are right?
-        // fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
-        // fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
-
         // we have to include the files in the status.d directory as well
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
 
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
-        // FIXME: this is simply not right, since some packages don't have actually files in there but other packages need to access this directory
-        // fileJoiner.add("usr/share/" + entry.packageName + "/**/*");
+        // NOTE: we have to check if the share folder or the var/lib/dpkg/info folder are correct patterns or if we can assume that they are always present and belong to the package
         fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
         if ("tzdata".equals(entry.packageName)) {
             fileJoiner.add("usr/share/zoneinfo/**/*");

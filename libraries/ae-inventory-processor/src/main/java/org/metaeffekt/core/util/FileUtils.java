@@ -19,7 +19,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
-import org.apache.tools.ant.taskdefs.Zip;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -337,7 +336,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         final StringBuilder checksumSequence = new StringBuilder();
         final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
 
-        Arrays.stream(files).map(fileName -> normalizePathToLinux(fileName)).sorted(String::compareTo).forEach(fileName -> {
+        Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(fileName -> {
             final File file = new File(baseDir, fileName);
             try {
                 final String fileChecksum = FileUtils.computeChecksum(file);
@@ -356,27 +355,17 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         FileUtils.writeStringToFile(targetContentChecksumFile, checksumSequence.toString(), FileUtils.ENCODING_UTF_8);
     }
 
-    /**
-     * Uses the native zip command to zip the file. Uses the -X attribute to create files with deterministic checksum.
-     *
-     * @param sourceDir     The directory to zip (recursively).
-     * @param targetZipFile The target zip file name.
-     */
-    public static void zipAnt(File sourceDir, File targetZipFile) {
-        Zip zip = new Zip();
-        Project project = new Project();
-        project.setBaseDir(sourceDir);
-        zip.setProject(project);
-        zip.setBasedir(sourceDir);
-        zip.setCompress(true);
-        zip.setDestFile(targetZipFile);
-        zip.setFollowSymlinks(false);
-        zip.execute();
-    }
-
     public static void validateExists(File file) {
         if (!file.exists()) {
             throw new IllegalStateException(String.format("File '%s' does not exist.", file.getAbsolutePath()));
+        }
+    }
+
+    public static File combine(File baseDir, String relativePath) {
+        if (".".equals(relativePath)) {
+            return baseDir;
+        } else {
+            return new File(baseDir, relativePath);
         }
     }
 

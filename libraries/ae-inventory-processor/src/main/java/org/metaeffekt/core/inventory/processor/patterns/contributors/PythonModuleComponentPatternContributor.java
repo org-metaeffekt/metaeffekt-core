@@ -142,7 +142,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
                         + anchorParentDir.getName() + "/**/bower_components/**/*, **/__pycache__/**/*"
         );
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt");
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/*.exe");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "python-library");
