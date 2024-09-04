@@ -20,9 +20,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.DuplicateList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.util.FileUtils;
@@ -30,12 +33,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
+// FIXME: container no longer available
+@Ignore
 public class OpenDeskNextcloudTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -69,5 +75,17 @@ public class OpenDeskNextcloudTest extends AbstractCompositionAnalysisTest {
         analysis.selectComponentPatterns(tokenStartsWith(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, "npm")).hasSizeOf(31);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "php-composer")).hasSizeOf(94);
         analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
+    }
+
+    @Test
+    public void testComponentPatterns() throws Exception {
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+        duplicateList.identifyRemainingDuplicatesWithoutArtifact("Process Wrapper", "External storage support", "nextcloud-nextcloud-1.0.0-1.0.0");
+        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

@@ -177,8 +177,10 @@ public abstract class InventoryUtils {
     public static void mergeDuplicateAssets(Inventory mergedInventory) {
         final Map<String, HashSet<AssetMetaData>> qualiferAssetMap = new HashMap<>();
         for (AssetMetaData assetMetaData : mergedInventory.getAssetMetaData()) {
-            qualiferAssetMap.computeIfAbsent(assetMetaData.deriveQualifier(),
-                    c -> new LinkedHashSet<>()).add(assetMetaData);
+            if (assetMetaData != null) {
+                qualiferAssetMap.computeIfAbsent(assetMetaData.deriveQualifier(),
+                        c -> new LinkedHashSet<>()).add(assetMetaData);
+            }
         }
 
         final Set<AssetMetaData> toBeDeleted = new HashSet<>();

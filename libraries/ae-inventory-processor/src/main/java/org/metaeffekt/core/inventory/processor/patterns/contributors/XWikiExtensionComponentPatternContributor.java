@@ -28,7 +28,10 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringJoiner;
 
 public class XWikiExtensionComponentPatternContributor extends ComponentPatternContributor {
 
@@ -75,22 +78,6 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
 
             // construct include patterns
             patterns.add(anchorFile.getName().replaceAll(".xed$", ".*"));
-
-            // FIXME: remove bodge for archive / extracted path matching
-            for (String extension : Arrays.asList("webjar", "jar")) {
-                patterns.add(
-                        ContributorUtils
-                                .slapSquareBracketsAroundLastPathElement(
-                                        anchorFile.getName().replaceAll(".xed$", "." + extension)
-                                )
-                );
-                patterns.add(
-                        ContributorUtils
-                                .slapSquareBracketsAroundLastPathElement(anchorFile.getName().replaceAll(".xed$",
-                                        "." + extension))
-                                + "/**"
-                );
-            }
 
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();

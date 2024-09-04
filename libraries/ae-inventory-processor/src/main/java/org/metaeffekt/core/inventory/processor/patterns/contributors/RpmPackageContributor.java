@@ -28,6 +28,7 @@ import org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.Pa
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb.RPMDBUtils;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.ndb.NDB;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.util.sqlite3.SQLite3;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,11 +46,10 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         add("/packages.db");
     }});
 
-    private static final List<String> paths = Collections.unmodifiableList(new ArrayList<String>() {{
-        add("var/lib/rpm/packages");
-        add("var/lib/rpm/rpmdb.sqlite");
-        add("var/lib/rpm/packages.db");
-    }});
+    private static final List<String> PATH_FRAGMENTS = new ArrayList<String>() {{
+        add("var/lib/");
+        add("usr/lib/");
+    }};
 
     @Override
     public boolean applies(String pathInContext) {
@@ -65,7 +65,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
             return Collections.emptyList();
         }
 
-        virtualRootPath = modulateVirtualRootPath(baseDir, virtualRootPath, relativeAnchorPath, paths);
+        virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, PATH_FRAGMENTS);
 
         try {
             BlockingQueue<Entry> entries = getEntries(packagesFile);
@@ -107,7 +107,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                                 installedFileName = installedFileName.startsWith("/") ? installedFileName.substring(1) : installedFileName;
 
                                 final File file = new File(baseDir, virtualRootPath + "/" + installedFileName);
-                                if (file.exists() && file.isFile()) {
+                                if (file.exists() && file.isFile() && !FileUtils.isSymlink(file)) {
                                     includePatternJoiner.add(installedFileName);
                                 }
                             }
@@ -118,15 +118,15 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     } catch (Exception e) { // FIXME: what kind of exceptions happen here; also observed NPE
                         LOG.warn("Could not derive include patterns for rpm-package: [{}]", packageInfo.getName());
 
-                        // NOTE: never add **/*; only add files which may contribute to the package from known locations
-                        // FIXME: check names of folder (distribution-specific)
-                        includePatternJoiner.add("usr/share/doc/" + packageInfo.getName() + "/**/*");
-                        includePatternJoiner.add("usr/share/licenses/" + packageInfo.getName() + "/**/*");
-                        includePatternJoiner.add("usr/share/man/**/" + packageInfo.getName() + "*");
-
                         // include even, when there is no file match
                         cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
                     }
+
+                    // NOTE: never add **/*; only add files which may contribute to the package from known locations
+                    // NOTE: as of now (03.09.2024) we have no complications
+                    includePatternJoiner.add("usr/share/doc/" + packageInfo.getName() + "/**/*");
+                    includePatternJoiner.add("usr/share/licenses/" + packageInfo.getName() + "/**/*");
+                    includePatternJoiner.add("usr/share/man/**/" + packageInfo.getName() + "*");
 
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageInfo.getName());
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, packageInfo.getVersion());
@@ -179,7 +179,11 @@ public class RpmPackageContributor extends ComponentPatternContributor {
     }
 
     private String buildPurl(String name, String version, String arch, Integer epoch, String upstream, LinuxDistributionUtil.LinuxDistro distro) {
-        StringBuilder sb = new StringBuilder();
+        if (distro == null || distro.id == null) {
+            return null;
+        }
+
+        final StringBuilder sb = new StringBuilder();
         sb.append("pkg:rpm/");
         sb.append(distro.id).append("/");
         sb.append(name).append("@");

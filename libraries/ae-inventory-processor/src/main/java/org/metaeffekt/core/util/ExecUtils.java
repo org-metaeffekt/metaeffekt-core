@@ -30,7 +30,6 @@ public abstract class ExecUtils {
 
     public static int executeCommandAndWaitForProcessToTerminate(List<String> commandParts, String[] penv, File dir) throws IOException {
         final String commandAsString = commandParts.stream().collect(Collectors.joining(" "));
-        System.out.println(commandAsString);
         return waitForProcessToTerminate(Runtime.getRuntime().exec(commandParts.toArray(new String[commandParts.size()]), penv, dir),
                 commandAsString);
     }

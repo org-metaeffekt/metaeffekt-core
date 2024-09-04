@@ -20,18 +20,26 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.DuplicateList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
+// FIXME: container no longer available
+@Ignore
 public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -62,5 +70,17 @@ public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(172);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(173);
+    }
+
+    @Test
+    public void testComponentPatterns() throws Exception {
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+        duplicateList.identifyRemainingDuplicatesWithoutArtifact();
+        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

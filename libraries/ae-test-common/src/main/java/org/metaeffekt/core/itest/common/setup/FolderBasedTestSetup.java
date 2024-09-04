@@ -18,19 +18,16 @@ package org.metaeffekt.core.itest.common.setup;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.itest.common.download.WebAccess;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
-public class UrlBasedTestSetup extends AbstractTestSetup {
+public class FolderBasedTestSetup extends AbstractTestSetup {
 
-    private final Logger LOG = LoggerFactory.getLogger(UrlBasedTestSetup.class);
+    private final Logger LOG = LoggerFactory.getLogger(FolderBasedTestSetup.class);
 
     public boolean inventorize(boolean overwrite) throws Exception {
         String inventoryfile = getInventoryFolder() + "scan-inventory.ser";
@@ -79,39 +76,8 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         return true;
     }
 
-    private void httpDownload(String artifactfile) throws MalformedURLException {
-        File file = new File(artifactfile);
-        new WebAccess().fetchResponseBodyFromUrlToFile(new URL(url), file);
-        String hash = FileUtils.computeSHA256Hash(file);
-        LOG.info(hash);
-
-        if (!hash.equals(getSha256Hash())) {
-            org.metaeffekt.core.util.FileUtils.deleteQuietly(file);
-            throw new IllegalStateException("Expected hash does not match actual hash. " +
-                    "Expecting " + getSha256Hash() + "; calculated hash: " + hash + ".");
-        }
-    }
-
-    private void fileCopy(String artifactfile) throws IOException {
-        File source = new File(new URL(url).getFile());
-        File target = new File(artifactfile);
-        FileUtils.copyFile(source, target);
-    }
-
     public boolean load(boolean overwrite) throws IOException {
-        String[] filenameParts = url.split("/");
-        String filename = filenameParts[filenameParts.length - 1];
-        String artifactFile = getDownloadFolder() + filename;
-        if (overwrite || !new File(artifactFile).exists()) {
-            if (url.startsWith("http")) {
-                FileUtils.forceMkdir(new File(getDownloadFolder()));
-                httpDownload(artifactFile);
-            }
-            if (url.startsWith("file")) {
-                fileCopy(artifactFile);
-            }
-        }
-        return new File(artifactFile).exists();
+        return true;
     }
 
 }

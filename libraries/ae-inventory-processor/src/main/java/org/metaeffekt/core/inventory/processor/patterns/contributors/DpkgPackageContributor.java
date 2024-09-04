@@ -309,15 +309,18 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     }
 
     public boolean hasFileChangedMd5(File toCheck, String knownChecksum) {
-        String calculatedDigest;
-        try (InputStream inputStream = Files.newInputStream(toCheck.toPath())) {
-            calculatedDigest = DigestUtils.md5Hex(inputStream);
-        } catch (IOException e) {
-            LOG.warn("Could not check digest for supposed package file at [{}]. Assuming changed.", toCheck.getPath());
-            return true;
+        if (toCheck.exists()) {
+            final Path path = toCheck.toPath();
+            try (InputStream inputStream = Files.newInputStream(path)) {
+                final String calculatedDigest = DigestUtils.md5Hex(inputStream);
+                return knownChecksum.equals(calculatedDigest);
+            } catch (IOException e) {
+                LOG.debug("Could not check digest for supposed package file at [{}]. Assuming changed.", toCheck.getPath());
+            }
         }
 
-        return knownChecksum.equals(calculatedDigest);
+        // true in case the file does not exist (deleted) or does not match the expected checkum.
+        return true;
     }
 
     public ComponentPatternData createComponentPattern(String versionAnchor,
@@ -329,7 +332,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // add list of comma-separated paths
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatterns);
 
+        // FIXME: we need a post-processing step to clear the inventory by known individual components (e.g. if package 2 is fully a subset of package 1, remove package 2)
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
+
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/__pycache__/**/*");
 
         // get version from the entry
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, entry.version);
@@ -397,37 +403,21 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                     // handle this by skipping this line
                     LOG.debug("Component pattern from [{}] won't contain diverged entry [{}].",
                             correspondingMd5sumsFile, toAdd);
-                    return;
                 }
 
                 fileJoiner.add(toAdd);
-
-                // FIXME: remove this hack when archives are being handled properly and will match without "[blah]"
-                if (toAdd.endsWith(".gz")
-                        || toAdd.endsWith(".tar")
-                        || toAdd.endsWith(".zip")) {
-                    String uglyIncludeArchiveContentHack =
-                            ContributorUtils.slapSquareBracketsAroundLastPathElement(toAdd) + "/**";
-
-                    fileJoiner.add(uglyIncludeArchiveContentHack);
-                }
             });
         } catch (IOException e) {
             LOG.info("Could not read file list for entry with name [{}].", entry.packageName);
             return null;
         }
 
-        // FIXME: review with JKR; these files have not been covered
-        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ":*");
-        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + ".*");
-        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName);
-
         // we have to include the files in the status.d directory as well
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
 
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
-        fileJoiner.add("usr/share/" + entry.packageName + "/**/*");
+        // NOTE: we have to check if the share folder or the var/lib/dpkg/info folder are correct patterns or if we can assume that they are always present and belong to the package
         fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
         if ("tzdata".equals(entry.packageName)) {
             fileJoiner.add("usr/share/zoneinfo/**/*");
@@ -492,8 +482,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 correspondingMd5sumsFile = fileWithArch;
 
                 if (!fileWithoutArch.exists()) {
-                    LOG.error("Can't create ComponentPattern: No md5sums file found for package [{}].",
-                            entry.packageName);
+                    LOG.debug("No md5sums file found for package [{}].", entry.packageName);
                 }
             }
 

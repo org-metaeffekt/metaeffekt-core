@@ -20,8 +20,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.DuplicateList;
+import org.metaeffekt.core.itest.common.predicates.AttributeValue;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.util.FileUtils;
@@ -29,6 +34,7 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
@@ -64,9 +70,28 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bower-module")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "linux-distro")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(2);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(246);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(163);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(4);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(245);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(163);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(2);
+
+        // FIXME: why are so many files not covered
+        analysis.selectArtifacts(AttributeValue.attributeValue(Artifact.Attribute.COMPONENT, null)).hasSizeOf(7020);
+
+        // TODO:
+        // ruby-3.2.0 must be detected
+    }
+
+    @Test
+    public void testComponentPatterns() throws Exception {
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+        duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
+        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

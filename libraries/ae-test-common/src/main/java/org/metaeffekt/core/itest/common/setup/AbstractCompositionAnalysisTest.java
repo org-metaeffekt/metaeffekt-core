@@ -26,6 +26,7 @@ import java.net.URL;
 
 public abstract class AbstractCompositionAnalysisTest implements AnalysisAsserts {
 
+    // FIXME: must not be static; this must become an instance-specific "cache"
     static protected TestSetup testSetup;
 
     private Inventory inventory;

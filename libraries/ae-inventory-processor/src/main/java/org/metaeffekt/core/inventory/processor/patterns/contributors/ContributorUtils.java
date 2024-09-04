@@ -17,18 +17,28 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 public class ContributorUtils {
 
-    public static String slapSquareBracketsAroundLastPathElement(String path) {
+    public static String extendArchivePattern(String path) {
         int lastSlash = path.lastIndexOf("/");
 
         if (lastSlash == -1) {
+            // do not extend if a wildcard is in the path
+            if (path.contains("*")) {
+                return null;
+            }
             return "[" + path + "]";
         }
 
-        String toAddBeforeSlash = path.substring(0, lastSlash);
-        String supposedArchiveName = path.substring(lastSlash + 1);
+        String archiveName = path.substring(lastSlash + 1);
 
-        // only works for one level but that might already help with a LOT of issues
-        return toAddBeforeSlash + "/[" + supposedArchiveName + "]";
+        if (archiveName.contains("*")) {
+            // do not extend if a wildcard is in the archive name
+            return null;
+        }
+
+        String archivePath = path.substring(0, lastSlash);
+
+        // apply square brackets only to archive name and extend with wildcard
+        return archivePath + "/[" + archiveName + "]/**/*";
     }
 
 }

@@ -105,6 +105,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
 
                 artifact.setVersion(version);
                 artifact.setComponent(name);
+                artifact.setId(name + "-" + version);
             }
         }
 
@@ -138,9 +139,10 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         componentPatternData.set(
                 ComponentPatternData.Attribute.EXCLUDE_PATTERN,
                 anchorParentDir.getName() + "/**/node_modules/**/*,"
-                        + anchorParentDir.getName() + "/**/bower_components/**/*"
+                        + anchorParentDir.getName() + "/**/bower_components/**/*, **/__pycache__/**/*"
         );
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/*.exe");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "python-library");

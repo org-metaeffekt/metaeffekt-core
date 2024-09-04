@@ -101,6 +101,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             }
         }
 
+        awaitTasks();
         executor.shutdown();
 
         if (fileSystemScanContext.getScanParam().isDetectComponentPatterns()) {
@@ -263,11 +264,16 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         if (assetMetaDataList != null) {
             for (AssetMetaData assetMetaData : assetMetaDataList) {
-                final String path = assetMetaData.get(ATTRIBUTE_KEY_ASSET_PATH);
-                final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
-                if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(assetId)) {
-                    // FIXME: we may need a map to list; validated; refers to putIfAbsent
-                    fileSystemScanContext.getPathToAssetIdMap().putIfAbsent(path, assetId);
+                // NOTE: please check if this is still happening that assetMetaData can be null
+                if (assetMetaData != null) {
+                    final String path = assetMetaData.get(ATTRIBUTE_KEY_ASSET_PATH);
+                    final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+                    if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(assetId)) {
+                        // FIXME: we may need a map to list; validated; refers to putIfAbsent
+                        fileSystemScanContext.getPathToAssetIdMap().putIfAbsent(path, assetId);
+                    }
+                } else {
+                    LOG.warn("Potential concurrency issue detected in AssetMetaData list.");
                 }
             }
         }

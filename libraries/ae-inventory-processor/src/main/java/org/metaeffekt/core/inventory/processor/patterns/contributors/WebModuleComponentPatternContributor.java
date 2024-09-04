@@ -141,6 +141,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
         }
         componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json, **/apps/**/**/*.json");
 
         if (inventoryFromPackageLock != null) {
             final Inventory expansionInventory = inventoryFromPackageLock;

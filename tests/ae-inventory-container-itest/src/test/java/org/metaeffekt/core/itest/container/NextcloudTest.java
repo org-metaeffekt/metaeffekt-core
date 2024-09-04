@@ -20,8 +20,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.DuplicateList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.metaeffekt.core.util.FileUtils;
@@ -29,6 +32,7 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
@@ -56,6 +60,8 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
     @Ignore
     @Test
     public void analyse() throws Exception {
+
+        // FIXME: runs extremely slow; needs to be optimized
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
@@ -64,8 +70,21 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "generic-version")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "nextcloud-app")).hasSizeOf(49);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(276);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "php-composer")).hasSizeOf(95);
+    }
+
+    @Test
+    public void testComponentPatterns() throws Exception {
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+        duplicateList.identifyRemainingDuplicatesWithoutArtifact("nextcloud-nextcloud-1.0.0-1.0.0", "nextcloud-nextcloud/3rdparty-dev-stable29-dev-stable29");
+        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

@@ -27,6 +27,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -319,6 +320,53 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         scanner.setCaseSensitive(false);
         scanner.scan();
         return scanner.getIncludedFiles();
+    }
+
+    public static String[] scanDirectoryForFiles(File targetDir, String[] includes, String[] excludes) {
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(targetDir);
+        scanner.setIncludes(includes);
+        scanner.setExcludes(excludes);
+        scanner.setCaseSensitive(false);
+        scanner.scan();
+        return scanner.getIncludedFiles();
+    }
+
+    public static void createDirectoryContentChecksumFile(File baseDir, File targetContentChecksumFile) throws IOException {
+        final StringBuilder checksumSequence = new StringBuilder();
+        final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
+
+        Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(fileName -> {
+            final File file = new File(baseDir, fileName);
+            try {
+                final String fileChecksum = FileUtils.computeChecksum(file);
+                if (checksumSequence.length() > 0) {
+                    checksumSequence.append(0);
+                }
+                checksumSequence.append(fileChecksum);
+            } catch (Exception e) {
+                if (FileUtils.isSymlink(file)) {
+                    LOG.warn("Cannot compute checksum for symbolic link file [{}].", file);
+                } else {
+                    LOG.warn("Cannot compute checksum for file [{}].", file);
+                }
+            }
+        });
+        FileUtils.writeStringToFile(targetContentChecksumFile, checksumSequence.toString(), FileUtils.ENCODING_UTF_8);
+    }
+
+    public static void validateExists(File file) {
+        if (!file.exists()) {
+            throw new IllegalStateException(String.format("File '%s' does not exist.", file.getAbsolutePath()));
+        }
+    }
+
+    public static File combine(File baseDir, String relativePath) {
+        if (".".equals(relativePath)) {
+            return baseDir;
+        } else {
+            return new File(baseDir, relativePath);
+        }
     }
 
 }

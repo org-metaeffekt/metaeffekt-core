@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +103,12 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                                 }
                                 i--; // adjust the index back since the loop increment will move it forward
                             } else {
-                                includePatterns.add(folder + "/**/*");
+                                // check if the folder is actually a file
+                                File rootPath = new File(baseDir, virtualRootPath);
+                                File file = new File(rootPath, folder);
+                                if (file.exists() && file.isFile() && !FileUtils.isSymlink(file)) {
+                                    includePatterns.add(folder);
+                                }
                             }
                         }
                     } else {
@@ -170,6 +176,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
         cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
 
         cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
+        cpd.set(ComponentPatternData.Attribute.SHARED_EXCLUDE_PATTERN, "**/dad, **/*.pub");
 
         cpd.set(Artifact.Attribute.PURL, buildPurl(packageName, version, architecture));
         components.add(cpd);

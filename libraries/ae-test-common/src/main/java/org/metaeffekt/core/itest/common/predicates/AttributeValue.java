@@ -16,6 +16,7 @@
 package org.metaeffekt.core.itest.common.predicates;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class AttributeValue<T, E extends Enum<E>> implements NamedBasePredicate<T> {
@@ -40,9 +41,8 @@ public class AttributeValue<T, E extends Enum<E>> implements NamedBasePredicate<
             try {
                 Method getMethod = instance.getClass().getMethod("get", attributeKey.getDeclaringClass());
                 String attributeValue = (String) getMethod.invoke(instance, attributeKey);
-                return value.equals(attributeValue);
+                return Objects.equals(attributeValue, value);
             } catch (Exception e) {
-                e.printStackTrace();
                 return false;
             }
         };

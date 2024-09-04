@@ -21,6 +21,7 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class ComponentPatternContributor {
 
@@ -45,7 +46,7 @@ public abstract class ComponentPatternContributor {
     }
 
     /**
-     * Get a list of suffixes that this contributor may be able to use an an anchor.<br>
+     * Get a list of suffixes that this contributor may be able to use as an anchor.<br>
      * Note that this is not limited to filename extensions.
      * @return a list of supported file suffixes
      */
@@ -57,16 +58,28 @@ public abstract class ComponentPatternContributor {
      */
     public abstract int getExecutionPhase();
 
-    protected String modulateVirtualRootPath(File baseDir, String virtualRootPath, String relativeAnchorPath, List<String> validPathsToAnchorList) {
+    /**
+     * Tries to resolve the virtualRootPath of the given relativeAnchorPath. The relativeAnchorPath is relative to
+     * baseDir. The virtualRootPath may be in between baseDir and the partent of the anchor.
+     *
+     * @param baseDir The baseDir.
+     * @param relativeAnchorPath The relative path to the anchor file from the baseDir.
+     * @param validPathFragments The possible paths, where the root is the virtualRootPath.
+     *
+     * @return The relative path to the virtualRootPath based on baseDir.
+     */
+    protected String modulateVirtualRootPath(File baseDir, String relativeAnchorPath, List<String> validPathFragments) {
         File dir = new File(baseDir, relativeAnchorPath);
         String path = dir.getName();
         dir = dir.getParentFile();
 
         while (true) {
-            if (validPathsToAnchorList.contains(path)) break;
+            final String currentPath = path;
+            final Optional<String> matchingPathFragment = validPathFragments.stream().filter(l -> currentPath.startsWith(l)).findFirst();
+            if (matchingPathFragment.isPresent()) break;
+
             path = dir.getName() + "/" + path;
             dir = dir.getParentFile();
-
             if (dir.equals(baseDir)) {
                 break;
             }

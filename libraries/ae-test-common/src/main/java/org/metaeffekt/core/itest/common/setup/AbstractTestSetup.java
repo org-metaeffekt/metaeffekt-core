@@ -48,6 +48,7 @@ public abstract class AbstractTestSetup implements TestSetup {
         return TestConfig.getScanFolder() + myDir;
     }
 
+    @Override
     public String getInventoryFolder() {
         return TestConfig.getInventoryFolder() + myDir;
     }
