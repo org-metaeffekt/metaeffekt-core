@@ -15,11 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -106,7 +104,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
         assetMetaData.set("Distro - Version", linuxDistro.version);
         assetMetaData.set("Distro - URL", linuxDistro.url);
 
-        assetMetaData.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH, relativePathToDistroRoot);
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePathToDistroRoot);
 
         Inventory inventory = new Inventory();
         inventory.getAssetMetaData().add(assetMetaData);

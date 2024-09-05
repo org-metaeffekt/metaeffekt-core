@@ -41,6 +41,25 @@ public class ComponentPatternProducer {
 
     public static final String DOUBLE_ASTERISK = Constants.ASTERISK + Constants.ASTERISK;
 
+    //FIXME: there needs to be a runtime sanity check for these: UPPERCASE won't do us well when checking against lower
+    public static final String[] FILE_SUFFIX_LIST = new String[] {
+
+            // TODO: many of the anchor patterns ignore context. some of them don't but then their applies method does.
+            //  this redundancy makes for uglier code and doing the same work twice. can we find a better method?
+            // NOTE: the anchor patterns must allow for context. Always try to take the parent directory into
+            // context.
+
+            // FIXME: there is some unnecessary disarray between many file suffixes and the cpc's "applies" method.
+            //  one of these is the python modules contributor, that doesn't deal with __init__ at all, but registered
+            //  it in the default file suffix list anyway.
+            // python modules
+            "/metadata",
+            "/record",
+            "/wheel",
+            "/__init__.py",
+            "/__about__.py",
+    };
+
     /**
      * Consolidate locale settings across contributors.<br>
      * These should probably both be equal or both equal english.<br>
@@ -59,17 +78,28 @@ public class ComponentPatternProducer {
      * @return collection of lowercase suffixes
      */
     protected Set<String> getRelevantSuffixes(List<ComponentPatternContributor> contributors) {
-        final Set<String> relevantSuffixes = new LinkedHashSet<>();
+        // TODO: should defaults disappear once we spec every contributor to state its suffixes?
+        Set<String> relevantSuffixes = new HashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
+
+        // for checking whether i did everything correctly and don't need defaults any more
+        Set<String> uncoveredDefaults = new LinkedHashSet<>(Arrays.asList(FILE_SUFFIX_LIST));
+
         for (ComponentPatternContributor cpc : contributors) {
             Collection<String> suffixes = cpc.getSuffixes();
 
             if (suffixes == null) {
-                LOG.error("Component pattern contributor [{}] has null suffix list.", cpc.getClass().getName());
+                LOG.error(
+                        "Component pattern contributor [{}] has null suffix list.",
+                        cpc.getClass().getName()
+                );
                 continue;
             }
 
             if (suffixes.isEmpty()) {
-                LOG.warn("Component pattern contributor [{}] doesn't register any suffixes.", cpc.getClass().getName());
+                LOG.warn(
+                        "Component pattern contributor [{}] doesn't register any suffixes.",
+                        cpc.getClass().getName()
+                );
                 continue;
             }
 
@@ -77,10 +107,22 @@ public class ComponentPatternProducer {
                 // use path locale since we will be using suffixes to compare paths
                 String lowercasedSuffix = suffix.toLowerCase(LocaleConstants.PATH_LOCALE);
                 if (!suffix.equals(lowercasedSuffix)) {
-                    LOG.debug("Suffix [{}] of [{}] was not lowercase, then lowercased automagically.", suffix, cpc.getClass().getName());
+                    LOG.debug(
+                            "Suffix [{}] of [{}] was not lowercase, then lowercased automagically.",
+                            suffix,
+                            cpc.getClass().getName()
+                    );
                 }
                 relevantSuffixes.add(lowercasedSuffix);
+
+                uncoveredDefaults.remove(suffix.toLowerCase(LocaleConstants.PATH_LOCALE));
             }
+        }
+
+        // we want to remove defaults eventually to make the system modular. output may need discussion
+        if (!uncoveredDefaults.isEmpty()) {
+            LOG.info("Some defaults have not been covered by component pattern contributors: [{}] ",
+                    uncoveredDefaults);
         }
 
         return relevantSuffixes;

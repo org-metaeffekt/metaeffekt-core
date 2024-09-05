@@ -135,7 +135,7 @@ public class DirectoryInventoryScan {
         final Map<String, List<AssetMetaData>> mergeGroups = new HashMap<>();
         for (AssetMetaData assetMetaData : inventory.getAssetMetaData()) {
             if (containerGroupTypes.contains(assetMetaData.get(Constants.KEY_TYPE))) {
-                String relativePath = assetMetaData.get(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH);
+                String relativePath = assetMetaData.get(AssetMetaData.Attribute.ASSET_PATH.getKey());
                 if (relativePath != null) {
                     // the group-common denominator is the modulated asset path
                     String path = relativePath;
@@ -189,7 +189,7 @@ public class DirectoryInventoryScan {
                     }
 
                     // merge relative paths (in the end, we have a complete set; despite with which asset we started)
-                    final String relativePath = assetMetaData.get(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH);
+                    final String relativePath = assetMetaData.get(AssetMetaData.Attribute.ASSET_PATH.getKey());
                     if (relativePath != null) {
                         // ArtifactUnwrapTask.CONTAINER_AGGREGATION_FOLDER is an artificial sub-folder
                         final String path = relativePath.replace("/" + ArtifactUnwrapTask.CONTAINER_AGGREGATION_FOLDER, "");
@@ -200,7 +200,7 @@ public class DirectoryInventoryScan {
                 }
 
                 // combine collected assetPaths
-                primaryAssetMetaData.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH, assetPaths.stream().sorted().collect(Collectors.joining(", ")));
+                primaryAssetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), assetPaths.stream().sorted().collect(Collectors.joining(", ")));
 
                 // consolidate asset relationships
                 final List<Artifact> artifactsToBeDeleted = new ArrayList<>();

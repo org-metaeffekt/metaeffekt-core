@@ -355,10 +355,13 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             }
         }
 
-        getLog().info("");
-        getLog().info("-------------------< Security Policy Configuration >--------------------");
-        this.securityPolicy.logConfiguration();
-        getLog().info("");
+        // log the security policy only when it fits the context -->
+        if (enableAssessmentReport || enableVulnerabilityReport || enableVulnerabilityReportSummary || enableVulnerabilityStatisticsReport) {
+            getLog().info("");
+            getLog().info("-------------------< Security Policy Configuration >--------------------");
+            this.securityPolicy.logConfiguration();
+            getLog().info("");
+        }
 
         report.setSecurityPolicy(securityPolicy);
         report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);

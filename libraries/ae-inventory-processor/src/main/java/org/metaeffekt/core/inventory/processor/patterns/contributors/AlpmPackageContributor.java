@@ -138,9 +138,6 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
                 }
             }
 
-
-
-
             if (includePatterns.length() == 0) {
                 LOG.warn("No include patterns found for package: [{}]-[{}]-[{}]", packageName, version, architecture);
                 includePatterns.add(relativeAnchorPath);

@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.metaeffekt.core.inventory.processor.adapter.ContainerImageInspectAdapter;
-import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -86,7 +85,7 @@ public class ContainerInspectAssetContributor extends ComponentPatternContributo
 
     private Inventory createAssetInventory(AssetMetaData assetMetaData, String relativeAnchorPath) {
         // extend asset metadata
-        assetMetaData.set(FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_PATH, relativeAnchorPath);
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativeAnchorPath);
 
         final Inventory inventory = new Inventory();
         inventory.getAssetMetaData().add(assetMetaData);

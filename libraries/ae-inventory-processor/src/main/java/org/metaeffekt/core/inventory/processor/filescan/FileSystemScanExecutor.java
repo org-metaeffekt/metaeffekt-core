@@ -127,7 +127,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE, inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
-            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_PATH, inventory);
+            InventoryUtils.removeArtifactAttribute(AssetMetaData.Attribute.ASSET_PATH.getKey(), inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
             InventoryUtils.removeArtifactAttribute(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, inventory);
         }
@@ -266,7 +266,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             for (AssetMetaData assetMetaData : assetMetaDataList) {
                 // NOTE: please check if this is still happening that assetMetaData can be null
                 if (assetMetaData != null) {
-                    final String path = assetMetaData.get(ATTRIBUTE_KEY_ASSET_PATH);
+                    final String path = assetMetaData.get(AssetMetaData.Attribute.ASSET_PATH.getKey());
                     final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
                     if (StringUtils.isNotBlank(path) && StringUtils.isNotBlank(assetId)) {
                         // FIXME: we may need a map to list; validated; refers to putIfAbsent

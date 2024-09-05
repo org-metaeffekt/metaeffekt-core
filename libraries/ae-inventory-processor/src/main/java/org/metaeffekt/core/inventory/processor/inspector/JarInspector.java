@@ -684,7 +684,7 @@ public class JarInspector extends AbstractJarInspector {
             assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_COMPOSITE);
 
             assetMetaData.set(ASSET_ID, assetId);
-            assetMetaData.set(ATTRIBUTE_KEY_ASSET_PATH, parentArtifactPath);
+            assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), parentArtifactPath);
             assetMetaData.set(KEY_CHECKSUM, containingArtifact.getChecksum());
             assetMetaData.set(ATTRIBUTE_KEY_ARTIFACT_PATH, parentArtifactPath);
             assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, JarInspector.class.getName());
