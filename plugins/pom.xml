@@ -62,7 +62,7 @@
                                  particular when the plugin has already been installed. Approaches
                                  that workaround this concepts do not harmonize with the parent
                                  poms being build in the same reactor. -->
-                            <phase>install</phase>
+                            <phase>installX</phase>
                         </execution>
                     </executions>
                 </plugin>

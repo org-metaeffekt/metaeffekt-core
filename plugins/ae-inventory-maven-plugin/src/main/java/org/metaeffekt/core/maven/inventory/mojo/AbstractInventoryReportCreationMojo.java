@@ -281,7 +281,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      *
      * @parameter
      */
-    private JSONArray generateOverviewTablesForAdvisories = new JSONArray();
+    private String generateOverviewTablesForAdvisories = "[]";
 
     // other template parameters
 
@@ -366,7 +366,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setSecurityPolicy(securityPolicy);
         report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         report.setFilterAdvisorySummary(filterAdvisorySummary);
-        report.addGenerateOverviewTablesForAdvisoriesByMap(generateOverviewTablesForAdvisories);
+        try {
+            report.addGenerateOverviewTablesForAdvisoriesByMap(new JSONArray(generateOverviewTablesForAdvisories));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
+        }
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
