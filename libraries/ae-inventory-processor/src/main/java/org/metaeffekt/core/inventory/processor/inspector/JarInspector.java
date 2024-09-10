@@ -595,10 +595,7 @@ public class JarInspector extends AbstractJarInspector {
             final int suffixIndex = artifact.getId().lastIndexOf(".");
             final String suffix = (suffixIndex == -1) ? null : artifact.getId().substring(suffixIndex + 1);
             artifact.deriveArtifactId();
-            // FIXME: this is just a hack, please fix this as soon as possible
-            String nameWithoutGroupIdsAndVersionNumber = artifact.getId().replace(artifact.getGroupId() + ".", "");
-            String nameWithoutGroupIds = nameWithoutGroupIdsAndVersionNumber.replace("-" + artifact.getVersion() + ".jar", "");
-            String purl = buildPurl(artifact.getGroupId(), nameWithoutGroupIds, artifact.getVersion(), suffix);
+            String purl = buildPurl(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), suffix);
             artifact.set(Artifact.Attribute.PURL.getKey(), purl);
         }
     }
