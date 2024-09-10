@@ -78,8 +78,7 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(2);
 
         // FIXME: why are so many files not covered
-        // FIXME: also the number of files has decreased from 7020 to 7008
-        analysis.selectArtifacts(AttributeValue.attributeValue(Artifact.Attribute.COMPONENT, null)).hasSizeOf(7008);
+        analysis.selectArtifacts(AttributeValue.attributeValue(Artifact.Attribute.COMPONENT, null)).hasSizeOf(7020);
 
         // TODO:
         // ruby-3.2.0 must be detected
