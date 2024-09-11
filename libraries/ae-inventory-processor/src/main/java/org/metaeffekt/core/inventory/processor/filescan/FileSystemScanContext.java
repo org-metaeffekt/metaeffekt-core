@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.filescan;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -33,29 +35,35 @@ public class FileSystemScanContext {
     /**
      * The baseDir of the scan.
      */
+    @Getter
     private final FileRef baseDir;
 
     /**
      * The {@link FileSystemScanParam} instance contains information on includes and excludes to different file-level operations.
      */
+    @Getter
     private final FileSystemScanParam scanParam;
 
     /**
      * This inventory is filled with details during scan.
      */
+    @Getter
     private final Inventory inventory;
 
     /**
      * Listeners are used to integrate with the FileSystemScanning framework and allow derived tasks to be triggered.
      */
+    @Setter
     private FileSystemScanTaskListener scanTaskListener;
 
     /**
      * Virtual contexts are used to get the virtual root path of a file.
      */
+    @Getter
     private final VirtualContext virtualContext;
 
-    private Map<String, String> pathToAssetIdMap = new ConcurrentHashMap<>();
+    @Getter
+    private final Map<String, String> pathToAssetIdMap = new ConcurrentHashMap<>();
 
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
         this.baseDir = baseDir;
@@ -68,22 +76,6 @@ public class FileSystemScanContext {
         if (scanTaskListener != null) {
             scanTaskListener.notifyOnTaskPushed(scanTask);
         }
-    }
-
-    public FileRef getBaseDir() {
-        return baseDir;
-    }
-
-    public FileSystemScanParam getScanParam() {
-        return scanParam;
-    }
-
-    public Inventory getInventory() {
-        return inventory;
-    }
-
-    public void setScanTaskListener(FileSystemScanTaskListener scanTaskListener) {
-        this.scanTaskListener = scanTaskListener;
     }
 
     /**
@@ -118,17 +110,10 @@ public class FileSystemScanContext {
         }
     }
 
-    public Map<String, String> getPathToAssetIdMap() {
-        return pathToAssetIdMap;
-    }
-
     public void contribute(ComponentPatternData componentPatternData) {
         synchronized (inventory) {
             inventory.getComponentPatternData().add(componentPatternData);
         }
     }
 
-    public VirtualContext getVirtualContext() {
-        return virtualContext;
-    }
 }
