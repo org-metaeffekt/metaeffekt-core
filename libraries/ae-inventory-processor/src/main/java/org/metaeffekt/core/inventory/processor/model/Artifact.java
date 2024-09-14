@@ -305,7 +305,7 @@ public class Artifact extends AbstractModelBase {
 
     public void deriveArtifactId() {
         if (artifactId == null) {
-            String artifactId = extractArtifactId(getId(), getVersion());
+            String artifactId = extractArtifactId(getId(), getVersion(), getGroupId());
             if (artifactId == null) {
                 artifactId = getId();
             }
@@ -323,7 +323,7 @@ public class Artifact extends AbstractModelBase {
      * @param version The version of the artifact.
      * @return The derived artifact id or null, in case the version is not part of the file component.
      */
-    public String extractArtifactId(String id, String version) {
+    public String extractArtifactId(String id, String version, String groupId) {
         if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(version)) {
             int index = id.lastIndexOf(version);
             if (index != -1) {
@@ -335,6 +335,15 @@ public class Artifact extends AbstractModelBase {
                     id = id.substring(0, id.length() - 1);
                 }
                 if (StringUtils.isNotBlank(id)) {
+                    // consider case, when the groupId is prefixed
+                    if (StringUtils.isNotBlank(groupId)) {
+                        if (id.startsWith(groupId + ".")) {
+                            final String reducedId = id.substring(groupId.length() + 1);
+                            if (StringUtils.isNotBlank(reducedId)) {
+                                id = reducedId;
+                            }
+                        }
+                    }
                     return id;
                 }
             }
