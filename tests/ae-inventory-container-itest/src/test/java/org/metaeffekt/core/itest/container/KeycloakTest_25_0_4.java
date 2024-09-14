@@ -41,7 +41,7 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.T
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-public class KeycloakTest_25_0_0 extends AbstractCompositionAnalysisTest {
+public class KeycloakTest_25_0_4 extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
         @Override
@@ -58,11 +58,14 @@ public class KeycloakTest_25_0_0 extends AbstractCompositionAnalysisTest {
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
-                "quay.io/keycloak", "keycloak", "25.0.0", KeycloakTest_25_0_0.class.getName());
+                "quay.io/keycloak",
+                "keycloak",
+                "25.0.4",
+                KeycloakTest_25_0_4.class.getName());
 
         AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
                 .setSource("file://" + baseDir.getAbsolutePath())
-                .setName(KeycloakTest_25_0_0.class.getName());
+                .setName(KeycloakTest_25_0_4.class.getName());
     }
 
     @Ignore
