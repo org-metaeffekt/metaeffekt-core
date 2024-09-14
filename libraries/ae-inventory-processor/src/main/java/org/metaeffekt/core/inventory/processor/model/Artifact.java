@@ -321,6 +321,8 @@ public class Artifact extends AbstractModelBase {
      *
      * @param id      The artifact id.
      * @param version The version of the artifact.
+     * @param groupId The artifact group id.
+     *
      * @return The derived artifact id or null, in case the version is not part of the file component.
      */
     public String extractArtifactId(String id, String version, String groupId) {

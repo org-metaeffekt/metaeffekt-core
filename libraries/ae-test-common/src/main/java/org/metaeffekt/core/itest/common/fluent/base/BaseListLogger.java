@@ -44,6 +44,8 @@ public interface BaseListLogger<T extends AbstractModelBase, SELF extends BaseLi
      * Show some informational logs into the test logging stdout.
      *
      * @param info The info text to be logged during test execution.
+     *
+     * @return The instance itself for further logging.
      */
     default SELF logInfo(String... info) {
         LOG.info(info.length > 0 ? info[0] : "- - - - - ");
