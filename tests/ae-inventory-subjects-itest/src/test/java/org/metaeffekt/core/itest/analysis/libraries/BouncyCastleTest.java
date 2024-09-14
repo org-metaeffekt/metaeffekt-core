@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.itest.analysis.libraries;
 
+import org.apache.poi.ooxml.util.TransformerHelper;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
@@ -69,6 +71,10 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
                         attributeValue(PROJECTS, "bcprov-jdk18on-1.77.jar"),
                         attributeValue(PATH_IN_ASSET, "bcprov-jdk18on-1.77.jar"))
                 .assertNotEmpty();
+
+        ArtifactList packageList = artifactList.with(containsToken(ID, ".jar"));
+        packageList.with(attributeValue(TYPE, "package")).hasSizeOf(packageList);
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(packageList);
     }
 
 

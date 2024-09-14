@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
 
@@ -62,5 +64,13 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
                         attributeValue(PROJECTS, "spring-core-6.1.1.jar"),
                         attributeValue(PATH_IN_ASSET, "spring-core-6.1.1.jar"))
                 .assertNotEmpty();
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts()
+                .filter(a -> a.getVersion() != null);
+
+        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
+        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
     }
 }

@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.inspector.RpmMetadataInspector;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
+import org.metaeffekt.core.itest.common.predicates.AttributeValue;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -32,6 +34,9 @@ import java.util.Collections;
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class RpmMetadataInspectorTest extends AbstractCompositionAnalysisTest {
 
@@ -74,5 +79,16 @@ public class RpmMetadataInspectorTest extends AbstractCompositionAnalysisTest {
         // should have extracted
         assertEquals("krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm", artifact.getId());
         assertEquals(projectDir.getPath() + "/krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm", artifact.getPathInAsset());
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
+
+        artifactList.with(AttributeValue.attributeValue(Artifact.Attribute.ID, "krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm")).with();
+
+        ArtifactList packageList = artifactList.with(containsToken(ID, ".rpm"));
+        packageList.with(attributeValue(TYPE, "package")).hasSizeOf(packageList);
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "rpm-package")).hasSizeOf(packageList);
     }
 }

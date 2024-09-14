@@ -22,14 +22,16 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
+import org.metaeffekt.core.itest.common.predicates.ContainsToken;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PURL;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
@@ -72,5 +74,16 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(startsWith(ID, "commons")).hasSizeOf(2);
         analysis.selectArtifacts(startsWith(ID, "http")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(ID, "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
+    }
+
+    @Test
+    public void assertContentwo() throws Exception {
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
+
+        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
+        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
     }
 }

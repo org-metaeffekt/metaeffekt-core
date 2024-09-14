@@ -19,11 +19,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
 
@@ -59,6 +61,13 @@ public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
                         attributeValue(PURL, "pkg:pub/ffmpeg_kit_flutter@6.0.3"),
                         attributeValue(COMPONENT_SOURCE_TYPE, "pub"))
                 .assertNotEmpty();
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts()
+                .filter(a -> a.getVersion() != null);
+
+        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(packageList);
     }
 
 }

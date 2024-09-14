@@ -22,6 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.HINT_ATOMIC;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
 
@@ -68,6 +70,14 @@ public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
                         attributeValue(PROJECTS, "lombok-1.18.32.jar"),
                         attributeValue(PATH_IN_ASSET, "lombok-1.18.32.jar"))
                 .assertNotEmpty();
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts()
+                .filter(a -> a.getVersion() != null);
+
+        ArtifactList packageList = artifactList.with(containsToken(ID, ".jar"));
+        packageList.with(attributeValue(TYPE, "package")).hasSizeOf(packageList);
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(packageList);
     }
 
     @Test

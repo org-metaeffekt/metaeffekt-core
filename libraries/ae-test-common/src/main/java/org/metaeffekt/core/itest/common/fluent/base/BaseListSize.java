@@ -16,6 +16,7 @@
 
 package org.metaeffekt.core.itest.common.fluent.base;
 
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 
 import java.util.List;
@@ -35,6 +36,13 @@ public interface BaseListSize<T, SELF extends BaseListSize<T, SELF>> extends Bas
         assertThat(getItemList())
                 .as("Size of List where [" + getDescription() + "] should be equal to " + boundary)
                 .hasSize(boundary);
+        return (SELF) this;
+    }
+
+    default SELF hasSizeOf(ArtifactList boundaryList) {
+        assertThat(getItemList())
+                .as("Size of List where [" + getDescription() + "] should be equal to " + boundaryList.size())
+                .hasSize(boundaryList.size());
         return (SELF) this;
     }
 

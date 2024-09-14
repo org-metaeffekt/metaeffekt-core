@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Bootsnap_1_18_4 extends AbstractCompositionAnalysisTest{
 
@@ -60,5 +61,10 @@ public class Bootsnap_1_18_4 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "1.18.4"),
                         attributeValue(PURL, "pkg:gem/bootsnap@1.18.4"))
                 .assertNotEmpty();
+
+        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
+        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
+        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
     }
+
 }

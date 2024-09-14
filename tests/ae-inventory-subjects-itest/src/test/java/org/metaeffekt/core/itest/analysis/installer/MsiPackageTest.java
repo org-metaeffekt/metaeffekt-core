@@ -22,12 +22,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class MsiPackageTest extends AbstractCompositionAnalysisTest {
@@ -60,9 +62,19 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
+
         final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).getItemList().size();
 
         // result depends on installation of 7z
         Assertions.assertThat(size == 6 || size == 0).isTrue();
+
+        ArtifactList msList = artifactList.with(containsToken(ID, ".msi"));
+        msList.with(attributeValue(TYPE, "installer")).hasSizeOf(msList);
+        msList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ms-installer")).hasSizeOf(msList);
     }
+
 }

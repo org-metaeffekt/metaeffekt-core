@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class firebase_veraxai_0_2_2 extends AbstractCompositionAnalysisTest {
 
@@ -67,8 +68,11 @@ public class firebase_veraxai_0_2_2 extends AbstractCompositionAnalysisTest {
         artifactList.with(attributeValue(ID, "vertex_ai_example-1.0.0+1"),
                     attributeValue(VERSION, "1.0.0+1"),
                     attributeValue(PROJECTS, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"),
-                        attributeValue(PURL, "pkg:pub/vertex_ai_example@1.0.0+1"),
+                    attributeValue(PURL, "pkg:pub/vertex_ai_example@1.0.0+1"),
                     attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"))
                 .assertNotEmpty();
+
+        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(packageList);
     }
 }
