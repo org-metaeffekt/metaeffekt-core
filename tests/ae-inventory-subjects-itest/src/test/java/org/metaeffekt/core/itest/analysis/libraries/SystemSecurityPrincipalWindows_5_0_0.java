@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SystemSecurityPrincipalWindows_5_0_0 extends AbstractCompositionAnalysisTest{
 
@@ -62,6 +63,9 @@ public class SystemSecurityPrincipalWindows_5_0_0 extends AbstractCompositionAna
                         attributeValue(PURL, "pkg:nuget/System.Security.Principal.Windows@5.0.0"),
                         attributeValue(PATH_IN_ASSET, "[system.security.principal.windows.5.0.0.nupkg]"))
                 .assertNotEmpty();
+
+        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(packageList);
     }
 }
 

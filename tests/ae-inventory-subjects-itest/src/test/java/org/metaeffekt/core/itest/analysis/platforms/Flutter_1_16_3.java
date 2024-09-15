@@ -26,6 +26,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Flutter_1_16_3 extends AbstractCompositionAnalysisTest{
 
@@ -92,6 +93,14 @@ public class Flutter_1_16_3 extends AbstractCompositionAnalysisTest{
                     attributeValue(PATH_IN_ASSET, "[v1.16.3.zip]/flutter-1.16.3/examples/image_list"),
                     attributeValue(PURL, "pkg:pub/image_list@1.0.0+1"))
                 .assertNotEmpty();
+
+        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(packageList);
+
+        ArtifactList webModuleList = artifactList.with(attributeValue(TYPE, "web-module"));
+        webModuleList.with(attributeValue(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(webModuleList);
+
+
     }
 
 }

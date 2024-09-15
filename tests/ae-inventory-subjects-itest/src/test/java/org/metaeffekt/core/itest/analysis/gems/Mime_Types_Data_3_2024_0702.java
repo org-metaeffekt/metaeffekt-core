@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Mime_Types_Data_3_2024_0702 extends AbstractCompositionAnalysisTest{
 
@@ -60,5 +61,9 @@ public class Mime_Types_Data_3_2024_0702 extends AbstractCompositionAnalysisTest
                         attributeValue(VERSION, "3.2024.0702"),
                         attributeValue(PURL, "pkg:gem/mime-types-data@3.2024.0702"))
                 .assertNotEmpty();
+
+        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
+        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
+        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
     }
 }

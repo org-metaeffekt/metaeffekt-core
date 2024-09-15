@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Beautifulsoup4_4_12_3 extends AbstractCompositionAnalysisTest{
 
@@ -61,5 +62,9 @@ public class Beautifulsoup4_4_12_3 extends AbstractCompositionAnalysisTest{
                         attributeValue(PROJECTS, "[beautifulsoup4-4.12.3-py3-none-any.whl]"),
                         attributeValue(PATH_IN_ASSET, "[beautifulsoup4-4.12.3-py3-none-any.whl]"))
                 .assertNotEmpty();
+
+        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
+        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
     }
 }

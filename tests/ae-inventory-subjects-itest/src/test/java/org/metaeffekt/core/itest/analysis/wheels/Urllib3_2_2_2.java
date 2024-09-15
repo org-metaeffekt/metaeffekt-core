@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Urllib3_2_2_2 extends AbstractCompositionAnalysisTest{
 
@@ -61,5 +62,12 @@ public class Urllib3_2_2_2 extends AbstractCompositionAnalysisTest{
                         attributeValue(PROJECTS, "[urllib3-2.2.2-py3-none-any.whl]"),
                         attributeValue(PATH_IN_ASSET, "[urllib3-2.2.2-py3-none-any.whl]"))
                 .assertNotEmpty();
+
+        ArtifactList archiveList = artifactList.with(containsToken(ID, ".whl"));
+        archiveList.with(attributeValue(TYPE, "archive")).hasSizeOf(archiveList);
+        archiveList.with(attributeValue(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(archiveList);
+
+        ArtifactList pythonList = artifactList.with(attributeValue(TYPE, "module"));
+        pythonList.with(attributeValue(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(pythonList);
     }
 }

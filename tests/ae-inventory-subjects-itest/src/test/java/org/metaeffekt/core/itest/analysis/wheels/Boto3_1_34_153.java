@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Boto3_1_34_153 extends AbstractCompositionAnalysisTest{
 
@@ -61,5 +62,11 @@ public class Boto3_1_34_153 extends AbstractCompositionAnalysisTest{
                         attributeValue(PROJECTS, "[boto3-1.34.153-py3-none-any.whl]"),
                         attributeValue(PATH_IN_ASSET, "[boto3-1.34.153-py3-none-any.whl]"))
                 .assertNotEmpty();
+
+        ArtifactList archiveList = artifactList.with(attributeValue(TYPE, "archive"));
+        archiveList.with(attributeValue(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(archiveList);
+
+        ArtifactList pythonList = artifactList.with(attributeValue(TYPE, "module"));
+        pythonList.with(attributeValue(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(pythonList);
     }
 }

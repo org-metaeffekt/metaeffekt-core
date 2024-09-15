@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -34,8 +35,10 @@ import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.idMismatchesVersion;
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.getTokenAtPosition;
@@ -170,5 +173,21 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         analysis.selectComponentPatterns().hasSizeGreaterThan(1);
         ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
         componentPatternList.logListWithAllAttributes();
+    }
+
+
+    @Test
+    public void assertContent() throws Exception {
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
+
+        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
+        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
+
+        ArtifactList warList = artifactList.with(containsToken(ID, ".war"));
+        warList.with(attributeValue(TYPE, "module")).hasSizeOf(warList);
+        warList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(warList);
     }
 }

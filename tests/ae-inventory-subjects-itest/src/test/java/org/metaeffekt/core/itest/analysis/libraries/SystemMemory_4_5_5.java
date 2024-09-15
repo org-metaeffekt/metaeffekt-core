@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
 
@@ -62,5 +63,8 @@ public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
                         attributeValue(PURL, "pkg:nuget/System.Memory@4.5.5"),
                         attributeValue(PATH_IN_ASSET, "[system.memory.4.5.5.nupkg]"))
                 .assertNotEmpty();
+
+        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(packageList);
     }
 }

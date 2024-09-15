@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SystemCollectionsImmutable_8_0_0 extends AbstractCompositionAnalysisTest{
 
@@ -62,5 +63,8 @@ public class SystemCollectionsImmutable_8_0_0 extends AbstractCompositionAnalysi
                         attributeValue(PURL, "pkg:nuget/System.Collections.Immutable@8.0.0"),
                         attributeValue(PATH_IN_ASSET, "[system.collections.immutable.8.0.0.nupkg]"))
                 .assertNotEmpty();
+
+        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(packageList);
     }
 }
