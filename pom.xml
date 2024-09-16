@@ -212,7 +212,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.3.0</version>
+                        <version>3.10.0</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -263,6 +263,8 @@
                                     <placement>X</placement>
                                 </tag>
                             </tags>
+                            <failOnWarnings>true</failOnWarnings>
+                            <failOnError>true</failOnError>
                         </configuration>
                     </plugin>
                 </plugins>

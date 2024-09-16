@@ -148,4 +148,26 @@ public class ArtifactTest {
         Assert.assertEquals(ArtifactType.OPERATING_SYSTEM, artifact.getArtifactType().get());
         Assert.assertFalse(artifact.getArtifactType().get().isOrHasParent(ArtifactType.CATEGORY_SOFTWARE_LIBRARY));
     }
+
+    @Test
+    public void testDeriveArtifactId() {
+        Artifact a = new Artifact();
+        a.setId("a.b.c.d-1.0.0.jar");
+        a.setGroupId("a.b.c");
+        a.setVersion("1.0.0");
+        a.deriveArtifactId();
+        Assert.assertEquals("d", a.getArtifactId());
+    }
+
+    @Test
+    public void testDeriveArtifactIdAndClassifier() {
+        Artifact a = new Artifact();
+        a.setId("a.b.c.d-1.0.0-xyz.jar");
+        a.setGroupId("a.b.c");
+        a.setVersion("1.0.0");
+        a.deriveArtifactId();
+        Assert.assertEquals("d", a.getArtifactId());
+        Assert.assertEquals("xyz", a.getClassifier());
+    }
+
 }

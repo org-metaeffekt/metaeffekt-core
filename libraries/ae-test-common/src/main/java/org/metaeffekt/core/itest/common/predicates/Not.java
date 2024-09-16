@@ -26,7 +26,13 @@ public class Not<T> implements NamedBasePredicate<T> {
     }
 
     /**
-     * Return the inverted meaning for a filterpredicate.
+     * Return the inverted meaning for a {@link NamedBasePredicate}.
+     *
+     * @param input The predicate to negate.
+     *
+     * @param <T> Type the predicate applied to.
+     *
+     * @return The {@link BooleanPredicate} instance.
      */
     public static <T> NamedBasePredicate<T> not(NamedBasePredicate<T> input) {
         return new Not<>(input);
