@@ -421,7 +421,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
             this.setSourceIdentifier(AeaaAdvisoryTypeStore.get().fromNameAndImplementation(source, sourceImplementation));
         } else {
             AeaaAdvisoryTypeStore.get().fromId(this.getId()).ifPresent(inferred -> {
-                LOG.info("Inferred source identifier [{}] for advisory [{}]", inferred.toExtendedString(), this.getId());
+                LOG.debug("Inferred source identifier [{}] for advisory [{}]", inferred.toExtendedString(), this.getId());
                 setSourceIdentifier(inferred);
             });
         }
