@@ -41,8 +41,10 @@
         #foreach ($groupedAssetCounts in $groupedAssetVulnerabilityCounts)
             #set ($counts = $groupedAssetCounts.totalCounts)
             #set ($assetDisplayName = $groupedAssetCounts.assetDisplayName)
+            #set ($assetPath = $groupedAssetCounts.assetPath)
             <row>
-                <entry align="center">$assetDisplayName</entry>
+                <entry align="center"><lines>#if ($vulnerabilityAdapter.notNull($assetPath))<i>$assetPath</i>
+#end$assetDisplayName</lines></entry>
                 <entry>$counts.criticalCounter</entry>
                 <entry>$counts.highCounter</entry>
                 <entry>$counts.mediumCounter</entry>
