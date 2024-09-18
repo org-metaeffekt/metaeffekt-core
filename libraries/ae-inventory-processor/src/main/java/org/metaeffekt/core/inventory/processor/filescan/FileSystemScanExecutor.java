@@ -29,6 +29,7 @@ import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionPara
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.slf4j.Logger;
@@ -136,6 +137,19 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
 
         mergeDuplicates(inventory);
+
+        // post-processing steps
+        // 1. produce file lists
+        final File baseDir = fileSystemScanContext.getBaseDir().getFile();
+
+        List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(null, inventory, baseDir);
+        List<Component> components = new ArrayList<>();
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            components.add(Component.produceFileList(mapper));
+        }
+
+        // 2. analyze component containments
+
     }
 
     private void setArtifactAssetMarker() {
