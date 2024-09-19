@@ -16,7 +16,6 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -84,8 +83,7 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
         // FIXME: in ci numbers are toggling between 137 and 143; what is the difference (maybe platform/executor)
         // CI-16.09.2024: 143
         // CI-17.09.2024: 137
-        final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).getItemList().size();
-        Assertions.assertThat(size).isBetween(136, 144);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(137);
 
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages.db")).hasSizeGreaterThan(1);
     }

@@ -275,7 +275,7 @@ public class ArtifactUnwrapTask extends ScanTask {
         assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);
         assetMetaData.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
 
-        context.getInventory().getAssetMetaData().add(assetMetaData);
+        context.contribute(assetMetaData);
 
         context.getPathToAssetIdMap().put(relativePath, assetId);
 
