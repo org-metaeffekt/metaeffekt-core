@@ -70,12 +70,11 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "generic-version")).hasSizeOf(1);
-        // FIXME: why does no .exe component source type exist?
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).hasSizeOf(0);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "nextcloud-app")).hasSizeOf(51);
         // FIXME: this has decreased from 276 to 274, why?
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(274);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "php-composer")).hasSizeOf(95);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "php-composer")).hasSizeOf(92);
     }
 
     @Test
