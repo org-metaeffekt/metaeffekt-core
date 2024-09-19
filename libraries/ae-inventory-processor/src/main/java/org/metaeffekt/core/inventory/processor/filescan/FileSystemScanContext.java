@@ -65,6 +65,8 @@ public class FileSystemScanContext {
     @Getter
     private final Map<String, String> pathToAssetIdMap = new ConcurrentHashMap<>();
 
+    private volatile boolean acceptingNewTasks = true;
+
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
         this.baseDir = baseDir;
         this.scanParam = scanParam;
@@ -73,7 +75,7 @@ public class FileSystemScanContext {
     }
 
     public synchronized void push(ScanTask scanTask) {
-        if (scanTaskListener != null) {
+        if (scanTaskListener != null && acceptingNewTasks) {
             scanTaskListener.notifyOnTaskPushed(scanTask);
         }
     }
@@ -114,6 +116,10 @@ public class FileSystemScanContext {
         synchronized (inventory) {
             inventory.getComponentPatternData().add(componentPatternData);
         }
+    }
+
+    public void stopAcceptingNewTasks() {
+        acceptingNewTasks = false;
     }
 
 }
