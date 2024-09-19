@@ -85,10 +85,9 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
-        duplicateList.identifyRemainingDuplicatesWithoutArtifact("nextcloud-nextcloud-1.0.0-1.0.0", "nextcloud-nextcloud/3rdparty-dev-stable29-dev-stable29");
+        duplicateList.identifyRemainingDuplicatesWithoutArtifact("nextcloud-nextcloud-1.0.0-1.0.0", "nextcloud-nextcloud/3rdparty-dev-master-dev-master", "External storage support-files_external-1.22.0");
         // FIXME: os-release is a duplicate in the container
-        // FIXME: why are 45 duplicates remaining? this should not be the case
-        Assert.assertEquals(45, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(1, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }
