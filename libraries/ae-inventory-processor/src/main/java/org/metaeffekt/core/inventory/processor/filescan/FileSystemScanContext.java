@@ -20,12 +20,14 @@ import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Container for context information during file system scanning.
@@ -47,7 +49,6 @@ public class FileSystemScanContext {
     /**
      * This inventory is filled with details during scan.
      */
-    @Getter
     private final Inventory inventory;
 
     /**
@@ -65,6 +66,8 @@ public class FileSystemScanContext {
     @Getter
     private final Map<String, String> pathToAssetIdMap = new ConcurrentHashMap<>();
 
+    private volatile boolean acceptingNewTasks = true;
+
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
         this.baseDir = baseDir;
         this.scanParam = scanParam;
@@ -73,7 +76,7 @@ public class FileSystemScanContext {
     }
 
     public synchronized void push(ScanTask scanTask) {
-        if (scanTaskListener != null) {
+        if (scanTaskListener != null && acceptingNewTasks) {
             scanTaskListener.notifyOnTaskPushed(scanTask);
         }
     }
@@ -116,4 +119,32 @@ public class FileSystemScanContext {
         }
     }
 
+    public void stopAcceptingNewTasks() {
+        acceptingNewTasks = false;
+    }
+
+    public void contribute(AssetMetaData assetMetaData) {
+        synchronized (inventory) {
+            inventory.getAssetMetaData().add(assetMetaData);
+        }
+    }
+
+    public List<Artifact> getArtifactList() {
+        synchronized (inventory) {
+            return new CopyOnWriteArrayList<>(inventory.getArtifacts());
+        }
+    }
+
+    public List<AssetMetaData> getAssetMetaDataList() {
+        synchronized (inventory) {
+            return new CopyOnWriteArrayList<>(inventory.getAssetMetaData());
+        }
+    }
+
+    public Inventory getInventory() {
+        if (FileSystemScanExecutor.isExecutorThread.get() != null) {
+            throw new Error("Inventory must not be accessed from executor thread.");
+        }
+        return inventory;
+    }
 }

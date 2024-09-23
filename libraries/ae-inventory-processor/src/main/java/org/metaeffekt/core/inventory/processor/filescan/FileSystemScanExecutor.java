@@ -36,10 +36,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
@@ -53,7 +51,11 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
     private ExecutorService executor;
 
-    private final Map<ScanTask, Future<?>> monitor;
+    private final ConcurrentMap<ScanTask, Future<?>> monitor;
+
+    private final AtomicBoolean iteration = new AtomicBoolean(true);
+
+    public static ThreadLocal<Boolean> isExecutorThread = new ThreadLocal<>();
 
     public FileSystemScanExecutor(FileSystemScanContext fileSystemScan) {
         this.fileSystemScanContext = fileSystemScan;
@@ -73,9 +75,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         awaitTasks();
 
         // the scanner works in sequences
-        boolean iteration = true;
-        while (iteration) {
-            iteration = false;
+        while (iteration.get()) {
+            iteration.set(false);
 
             // wait for existing scan tasks to finish
             awaitTasks();
@@ -97,12 +98,14 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             if (!scanTasks.isEmpty()) {
                 LOG.info("Triggering {} outstanding tasks...", scanTasks.size());
                 scanTasks.forEach(fileSystemScanContext::push);
-                iteration = true;
+                iteration.set(true);
             }
         }
 
         awaitTasks();
         executor.shutdown();
+
+        fileSystemScanContext.stopAcceptingNewTasks();
 
         if (fileSystemScanContext.getScanParam().isDetectComponentPatterns()) {
             // currently we detect component patterns on the final directory
@@ -161,7 +164,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         final NestedJarInspector nestedJarInspector = new NestedJarInspector();
 
-        for (Artifact artifact : new ArrayList<>(fileSystemScanContext.getInventory().getArtifacts())) {
+        for (Artifact artifact : fileSystemScanContext.getArtifactList()) {
             boolean inspected = StringUtils.isNotBlank(artifact.get(ATTRIBUTE_KEY_INSPECTED));
             if (!inspected) {
 
@@ -179,11 +182,9 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
     private List<ScanTask> collectOutstandingScanTasks() {
 
-        final Inventory inventory = fileSystemScanContext.getInventory();
-
         final List<ScanTask> scanTasks = new ArrayList<>();
 
-        for (Artifact artifact : inventory.getArtifacts()) {
+        for (Artifact artifact : fileSystemScanContext.getArtifactList()) {
             if (!StringUtils.isEmpty(artifact.get(ATTRIBUTE_KEY_UNWRAP))) {
 
                 // TODO: exclude artifacts removed (though collection in component)
@@ -195,7 +196,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     }
 
     private void applyStaticComponentPatterns(boolean applyDeferred) {
-        final Inventory inventory = fileSystemScanContext.getInventory();
         final Inventory referenceInventory = fileSystemScanContext.getScanParam().getReferenceInventory();
 
         final ComponentPatternProducer componentPatternProducer = new ComponentPatternProducer();
@@ -230,10 +230,14 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     @Override
     public void notifyOnTaskPushed(ScanTask scanTask) {
         final Future<?> future = executor.submit(() -> {
+            isExecutorThread.set(true);
             try {
                 scanTask.process(fileSystemScanContext);
             } catch (Exception e) {
                 LOG.error(e.getMessage(), e);
+            } catch (Error error) {
+                LOG.error(error.getMessage(), error);
+                System.exit(-1);
             } finally {
                 notifyOnTaskPopped(scanTask);
             }
@@ -260,11 +264,10 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         runner.executeAll(fileSystemScanContext.getInventory(), properties);
 
-        final List<AssetMetaData> assetMetaDataList = fileSystemScanContext.getInventory().getAssetMetaData();
+        final List<AssetMetaData> assetMetaDataList = fileSystemScanContext.getAssetMetaDataList();
 
         if (assetMetaDataList != null) {
             for (AssetMetaData assetMetaData : assetMetaDataList) {
-                // NOTE: please check if this is still happening that assetMetaData can be null
                 if (assetMetaData != null) {
                     final String path = assetMetaData.get(AssetMetaData.Attribute.ASSET_PATH.getKey());
                     final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
@@ -273,9 +276,11 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                         fileSystemScanContext.getPathToAssetIdMap().putIfAbsent(path, assetId);
                     }
                 } else {
-                    LOG.warn("Potential concurrency issue detected in AssetMetaData list.");
+                    LOG.warn("Potential concurrency issue detected in AssetMetaData object.");
                 }
             }
+        } else {
+            LOG.warn("Potential concurrency issue detected in AssetMetaData list.");
         }
     }
 
@@ -286,7 +291,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         for (List<Artifact> list : stringListMap.values()) {
             Artifact artifact = list.get(0);
 
-            HashSet<String> paths = new HashSet<>();
+            Set<String> paths = ConcurrentHashMap.newKeySet();
             addPath(artifact, paths);
             for (int i = 1; i < list.size(); i++) {
                 final Artifact a = list.get(i);
@@ -345,7 +350,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         return a.getId() + "/" + a.get(Artifact.Attribute.PATH_IN_ASSET);
     }
 
-    private static void addPath(Artifact a, HashSet<String> paths) {
+    private static void addPath(Artifact a, Set<String> paths) {
         String path = a.get(KEY_PATH_IN_ASSET);
         if (StringUtils.isNotBlank(path)) {
             paths.add(path);
