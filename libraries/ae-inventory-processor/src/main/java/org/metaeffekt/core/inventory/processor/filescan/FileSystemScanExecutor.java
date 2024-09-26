@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.filescan;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
+import org.apache.tools.ant.types.ZipFileSet;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
@@ -192,6 +193,12 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 }
 
                 final File zipFile = new File(targetDir, mapper.getQualifier() + ".zip");
+                File relativeBaseDir;
+                if (mapper.getPathInAsset().contains(".|\n")) {
+                    relativeBaseDir = new File(baseDir.getPath(), ".");
+                } else {
+                    relativeBaseDir = new File(baseDir.getPath(), mapper.getPathInAsset());
+                }
 
                 // Create a new Ant Zip task
                 Zip zipTask = new Zip();
@@ -200,13 +207,19 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
                 // Add each file to the zip
                 for (File file : files) {
-                    org.apache.tools.ant.types.FileSet fileSet = new org.apache.tools.ant.types.FileSet();
+                    ZipFileSet zipFileSet = new ZipFileSet();
+
                     if (file.isFile()) {
-                        fileSet.setFile(file);
+                        zipFileSet.setFile(file);
                     } else if (file.isDirectory()) {
-                        fileSet.setDir(file);
+                        zipFileSet.setDir(file);
                     }
-                    zipTask.addFileset(fileSet);
+
+                    // Set the prefix to preserve the relative directory structure
+                    String relativePath = relativeBaseDir.toURI().relativize(file.getParentFile().toURI()).getPath();
+                    zipFileSet.setPrefix(relativePath);
+
+                    zipTask.addZipfileset(zipFileSet);
                 }
 
                 // Execute the zip task
