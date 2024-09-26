@@ -35,10 +35,12 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -133,7 +135,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_INSPECTED, inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE, inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
-            // InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
+            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
             InventoryUtils.removeArtifactAttribute(AssetMetaData.Attribute.ASSET_PATH.getKey(), inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
             InventoryUtils.removeArtifactAttribute(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, inventory);
@@ -192,6 +194,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     targetDir.mkdirs();
                 }
 
+                final File tmpFolder = initializeTmpFolder(targetDir);
+
                 final File zipFile = new File(targetDir, mapper.getQualifier() + ".zip");
                 File relativeBaseDir;
                 if (mapper.getPathInAsset().contains(".|\n")) {
@@ -215,12 +219,28 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                         zipFileSet.setDir(file);
                     }
 
+                    try {
+                        FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
+                    } catch (IOException e) {
+                        LOG.error("Failed to copy file to tmp folder.", e);
+                    }
+
                     // Set the prefix to preserve the relative directory structure
                     String relativePath = relativeBaseDir.toURI().relativize(file.getParentFile().toURI()).getPath();
                     zipFileSet.setPrefix(relativePath);
 
                     zipTask.addZipfileset(zipFileSet);
                 }
+
+                final File contentChecksumFile = new File(tmpFolder, zipFile.getName() + ".content.md5");
+                try {
+                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
+                } catch (IOException e) {
+                    LOG.error("Failed to create content checksum file.", e);
+                }
+                // set the content checksum
+                final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
+                mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
 
                 // Execute the zip task
                 zipTask.execute();
@@ -268,6 +288,19 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 }
             }
         }
+    }
+
+    private static File initializeTmpFolder(File targetDir) {
+        final File tmpFolder = new File(targetDir.getParentFile(), ".tmp");
+        if (tmpFolder.exists()) {
+            try {
+                FileUtils.deleteDirectory(tmpFolder);
+            } catch (IOException e) {
+                LOG.error("Failed to delete tmp folder.", e);
+            }
+        }
+        tmpFolder.mkdirs();
+        return tmpFolder;
     }
 
     private List<ScanTask> collectOutstandingScanTasks() {
