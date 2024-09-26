@@ -359,10 +359,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
     /**
      * Reads list of files that were in this package and tries to create an include pattern.
+     *
      * @param virtualRootPath the virtual "root" that pseudo-absolute paths will be based on
      * @param checksum the checksum of the anchor
      * @param entry the entry in the corresponding status file
      * @param correspondingMd5sumsFile the corresponding md5sums file
+     *
      * @return a joiner with resulting include patterns or null on failure
      */
     public StringJoiner createIncludePatternsFromHashFile(String virtualRootPath,
@@ -370,46 +372,15 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                                                           DpkgStatusFileEntry entry,
                                                           File correspondingMd5sumsFile) {
         // prepare file list
-        StringJoiner fileJoiner = new StringJoiner(",");
-        try(Stream<String> lineStream = Files.lines(correspondingMd5sumsFile.toPath(), StandardCharsets.UTF_8)) {
-            // stream lines so we don't need to preload to memory
-            lineStream.forEachOrdered(line -> {
-                // definitely cut off the hash before adding...
-                int spaceSeparatorPosision = line.indexOf("  ");
-                if (spaceSeparatorPosision == -1) {
-                    // skip invalid lines immediately.
-                    return;
-                }
-                String hash = line.substring(0, spaceSeparatorPosision);
-                String toAdd = line.substring(spaceSeparatorPosision + 2);
+        final StringJoiner fileJoiner = new StringJoiner(",");
 
-                // skip empty lines or invalid formatting
-                if (StringUtils.isBlank(toAdd)) {
-                    return;
-                }
-
-                // err out if the md5sum isn't an md5sum
-                if (!hexStringPattern.matcher(hash).matches()) {
-                    // this was not a real hash. should never happen. means splitting failed miserably.
-                    LOG.error("Splitting failed while reading line of dpkg md5sums at [{}].",
-                            correspondingMd5sumsFile.getAbsolutePath());
-                    return;
-                }
-
-                // use the checksum to detect and handle changed files
-                if (hasFileChanged(virtualRootPath, toAdd, checksum)) {
-                    // changed files might contain modifications and not truly be part of this package any more.
-
-                    // handle this by skipping this line
-                    LOG.debug("Component pattern from [{}] won't contain diverged entry [{}].",
-                            correspondingMd5sumsFile, toAdd);
-                }
-
-                fileJoiner.add(toAdd);
-            });
-        } catch (IOException e) {
-            LOG.info("Could not read file list for entry with name [{}].", entry.packageName);
-            return null;
+        if (correspondingMd5sumsFile.exists()) {
+            try (Stream<String> lineStream = Files.lines(correspondingMd5sumsFile.toPath(), StandardCharsets.UTF_8)) {
+                // stream lines so we don't need to preload to memory
+                lineStream.forEachOrdered(line -> append(virtualRootPath, checksum, correspondingMd5sumsFile, line, fileJoiner));
+            } catch (Exception e) {
+                LOG.info("Could not read file list for entry with name [{}]: {}", entry.packageName, e.getMessage());
+            }
         }
 
         // we have to include the files in the status.d directory as well
@@ -417,6 +388,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
 
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
+
         // NOTE: we have to check if the share folder or the var/lib/dpkg/info folder are correct patterns or if we can assume that they are always present and belong to the package
         fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
         if ("tzdata".equals(entry.packageName)) {
@@ -424,6 +396,38 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
 
         return fileJoiner;
+    }
+
+    private void append(String virtualRootPath, String checksum, File correspondingMd5sumsFile, String line, StringJoiner fileJoiner) {
+        try {
+            // definitely cut off the hash before adding...
+            int spaceSeparatorIndex = line.indexOf("  ");
+            if (spaceSeparatorIndex == -1) {
+                // skip invalid lines immediately.
+                return;
+            }
+            final String hash = line.substring(0, spaceSeparatorIndex);
+            final String toAdd = line.substring(spaceSeparatorIndex + 2);
+
+            // skip empty lines or invalid formatting
+            if (StringUtils.isBlank(toAdd)) {
+                return;
+            }
+
+            // err out if the md5sum isn't a md5sum
+            if (!hexStringPattern.matcher(hash).matches()) {
+                // this was not a real hash. should never happen. means splitting failed miserably.
+                LOG.error("Splitting failed while reading line of dpkg md5sums at [{}].",
+                        correspondingMd5sumsFile.getAbsolutePath());
+                return;
+            }
+
+            // NOTE: we are not analysing whether the checksum has changed here.
+
+            fileJoiner.add(toAdd);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     public List<ComponentPatternData> contributeStatusFileBased(File baseDir,

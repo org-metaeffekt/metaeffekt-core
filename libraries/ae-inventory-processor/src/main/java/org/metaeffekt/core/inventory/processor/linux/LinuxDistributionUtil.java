@@ -243,6 +243,7 @@ public class LinuxDistributionUtil {
                 String issueExtract = issue.replace("Welcome to ", "");
                 issueExtract = issueExtract.replace("Kernel \\r on an \\m (\\l)", "");
                 issueExtract = issueExtract.replace("\\S\nKernel \\r on an \\m", "");
+                issueExtract = issueExtract.replace("Kernel \\r on an \\m", ""); // this line exists in the issue file in centos 6.9
                 issueExtract = issueExtract.replace(" \\n \\l", "");
                 issueExtract = issueExtract.replace(" - Kernel %r (%t).", "");
                 issueExtract = issueExtract.trim();

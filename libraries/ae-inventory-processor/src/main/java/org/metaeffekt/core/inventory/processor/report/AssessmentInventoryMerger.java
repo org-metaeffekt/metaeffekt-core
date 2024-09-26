@@ -88,7 +88,7 @@ public class AssessmentInventoryMerger {
             final String localUniqueAssessmentId = String.format("%s-%03d", assessmentContext, inventoryDisplayIndex);
 
             assetMetaData.set(AssetMetaData.Attribute.ASSESSMENT, localUniqueAssessmentId);
-            assetMetaData.set(AssetMetaData.Attribute.NAME, assetName.toUpperCase());
+            assetMetaData.set(AssetMetaData.Attribute.NAME, assetName);
 
             commonInventories.add(inputInventory);
             assessmentInventoryMap.put(localUniqueAssessmentId, inputInventory);

@@ -595,6 +595,7 @@ public class JarInspector extends AbstractJarInspector {
             final int suffixIndex = artifact.getId().lastIndexOf(".");
             final String suffix = (suffixIndex == -1) ? null : artifact.getId().substring(suffixIndex + 1);
             artifact.deriveArtifactId();
+            // FIXME: we should reevaluate how to derive the artifactId
             String purl = buildPurl(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), suffix);
             artifact.set(Artifact.Attribute.PURL.getKey(), purl);
         }
@@ -684,7 +685,7 @@ public class JarInspector extends AbstractJarInspector {
             assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_COMPOSITE);
 
             assetMetaData.set(ASSET_ID, assetId);
-            assetMetaData.set(ATTRIBUTE_KEY_ASSET_PATH, parentArtifactPath);
+            assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), parentArtifactPath);
             assetMetaData.set(KEY_CHECKSUM, containingArtifact.getChecksum());
             assetMetaData.set(ATTRIBUTE_KEY_ARTIFACT_PATH, parentArtifactPath);
             assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, JarInspector.class.getName());

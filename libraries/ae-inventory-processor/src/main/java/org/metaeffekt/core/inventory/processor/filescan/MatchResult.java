@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.filescan;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
@@ -58,7 +59,7 @@ public class MatchResult {
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
 
         final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
-        derivedArtifact.set(ATTRIBUTE_KEY_ASSET_PATH, relativePath);
+        derivedArtifact.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
 
         // FIXME: this attribute is of no use for component patterns; consider removing this line

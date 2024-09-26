@@ -281,7 +281,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      *
      * @parameter
      */
-    private JSONArray generateOverviewTablesForAdvisories = new JSONArray();
+    private String generateOverviewTablesForAdvisories = "[]";
 
     // other template parameters
 
@@ -355,15 +355,22 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
             }
         }
 
-        getLog().info("");
-        getLog().info("-------------------< Security Policy Configuration >--------------------");
-        this.securityPolicy.logConfiguration();
-        getLog().info("");
+        // log the security policy only when it fits the context -->
+        if (enableAssessmentReport || enableVulnerabilityReport || enableVulnerabilityReportSummary || enableVulnerabilityStatisticsReport) {
+            getLog().info("");
+            getLog().info("-------------------< Security Policy Configuration >--------------------");
+            this.securityPolicy.logConfiguration();
+            getLog().info("");
+        }
 
         report.setSecurityPolicy(securityPolicy);
         report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         report.setFilterAdvisorySummary(filterAdvisorySummary);
-        report.addGenerateOverviewTablesForAdvisoriesByMap(generateOverviewTablesForAdvisories);
+        try {
+            report.addGenerateOverviewTablesForAdvisoriesByMap(new JSONArray(generateOverviewTablesForAdvisories));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
+        }
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);

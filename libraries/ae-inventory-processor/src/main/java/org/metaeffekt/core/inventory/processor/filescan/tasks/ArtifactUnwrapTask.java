@@ -254,9 +254,9 @@ public class ArtifactUnwrapTask extends ScanTask {
         }
 
         // return unmodified
-        if (intermediate) return assetIdChain;
+      //  if (intermediate) return assetIdChain;
 
-        final String relativePath = FileUtils.asRelativePath(baseDir.getFile(), file.getFile());
+        final String relativePath = FileUtils.asRelativePath(baseDir.getPath(), file.getPath());
         assetIdChain.add(relativePath);
 
         String fileChecksum = artifact.getChecksum();
@@ -272,10 +272,10 @@ public class ArtifactUnwrapTask extends ScanTask {
         assetMetaData.set(KEY_CHECKSUM, fileChecksum);
         assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, ArtifactUnwrapTask.class.getName());
 
-        assetMetaData.set(ATTRIBUTE_KEY_ASSET_PATH, relativePath);
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);
         assetMetaData.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
 
-        context.getInventory().getAssetMetaData().add(assetMetaData);
+        context.contribute(assetMetaData);
 
         context.getPathToAssetIdMap().put(relativePath, assetId);
 

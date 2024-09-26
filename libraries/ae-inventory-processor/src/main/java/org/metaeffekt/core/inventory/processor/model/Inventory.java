@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -76,7 +77,7 @@ public class Inventory implements Serializable {
     // Components are structured by context. This is the web module context.
     public static final String COMPONENT_CONTEXT_WEBMODULE = "web-module";
 
-    private List<Artifact> artifacts = new ArrayList<>();
+    private List<Artifact> artifacts = new CopyOnWriteArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
 

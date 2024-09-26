@@ -95,10 +95,10 @@ public class AeaaEpssData {
     }
 
     public String getEpssScoreAsPercentage() {
-        return String.format("%.2f", epssScore * 100) + "%";
+        return String.format("%.2f", epssScore * 100) + " %";
     }
 
     public String getTopRatedPercentileAsPercentage() {
-        return String.format("%.2f", 100 - percentile * 100) + "%";
+        return String.format("%.2f", 100 - percentile * 100) + " %";
     }
 }
