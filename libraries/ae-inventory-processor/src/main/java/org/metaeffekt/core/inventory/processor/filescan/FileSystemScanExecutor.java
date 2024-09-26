@@ -241,7 +241,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 // set the content checksum
                 final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
                 mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                tmpFolder.delete();
+                FileUtils.deleteDirectoryQuietly(tmpFolder);
 
                 // Execute the zip task
                 zipTask.execute();
