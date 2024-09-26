@@ -16,52 +16,32 @@
 
 package org.metaeffekt.core.inventory.processor.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.metaeffekt.core.inventory.processor.filescan.ArtifactFile;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Getter
+@Setter
 public class FilePatternQualifierMapper {
 
     private String qualifier;
     private List<File> files;
+    private Artifact artifact;
     private Map<Boolean, List<File>> fileMap;
     private List<ComponentPatternData> componentPatternDataList;
+    private String pathInAsset;
+    private List<ArtifactFile> includedComponentFiles;
+    private List<ArtifactFile> sharedIncludedPatternFiles;
+    private List<ArtifactFile> sharedExcludedPatternFiles;
+    private Map<String, List<File>> subSetMap;
 
     public FilePatternQualifierMapper() {
         this.files = new ArrayList<>();
         this.componentPatternDataList = new ArrayList<>();
-    }
-
-    public List<File> getFiles() {
-        return files;
-    }
-
-    public void setFiles(List<File> files) {
-        this.files = files;
-    }
-
-    public String getQualifier() {
-        return qualifier;
-    }
-
-    public void setQualifier(String qualifier) {
-        this.qualifier = qualifier;
-    }
-
-    public void setFileMap(Map<Boolean, List<File>> fileMap) {
-        this.fileMap = fileMap;
-    }
-
-    public Map<Boolean, List<File>> getFileMap() {
-        return fileMap;
-    }
-
-    public void setComponentPatternDataList(List<ComponentPatternData> componentPatternDataList) {
-        this.componentPatternDataList = componentPatternDataList;
-    }
-
-    public List<ComponentPatternData> getComponentPatternDataList() {
-        return componentPatternDataList;
     }
 }

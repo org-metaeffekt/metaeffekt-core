@@ -257,7 +257,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static String normalizePathToLinux(File file) {
         if (file == null) return null;
-        return normalizePathToLinux(file.getAbsolutePath());
+        return normalizePathToLinux(file.getPath());
     }
 
     public static void waitForProcess(Process p) {

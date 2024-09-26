@@ -80,6 +80,7 @@ public class DirectoryScanExtractorConfiguration {
         // iterate extracted artifacts and match with component patterns
         for (Artifact artifact : resultInventory.getArtifacts()) {
             FilePatternQualifierMapper filePatternQualifierMapper = new FilePatternQualifierMapper();
+            filePatternQualifierMapper.setArtifact(artifact);
 
             // check artifact is covered by a component pattern
             String componentName = artifact.getComponent();
@@ -94,6 +95,7 @@ public class DirectoryScanExtractorConfiguration {
             if (componentPatternMatches.list != null) {
                 Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
                 filePatternQualifierMapper.setQualifier(deriveMapQualifier(componentName, componentPart, componentVersion));
+                filePatternQualifierMapper.setPathInAsset(artifact.getPathInAsset());
                 List<File> componentPatternFiles = new ArrayList<>();
                 for (List<File> files : duplicateToComponentPatternFilesMap.values()) {
                     componentPatternFiles.addAll(files);
@@ -101,9 +103,7 @@ public class DirectoryScanExtractorConfiguration {
                 filePatternQualifierMapper.setFiles(componentPatternFiles);
                 filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
 
-                // qualifierToComponentPatternFilesMap.put(deriveMapQualifier(componentName, componentPart, componentVersion), componentPatternFiles);
                 filePatternQualifierMapperList.add(filePatternQualifierMapper);
-                // LOG.info("Found {} files for component pattern {}", componentPatternFiles.size(), componentPatternMatches.key);
             }
         }
 
@@ -329,12 +329,13 @@ public class DirectoryScanExtractorConfiguration {
 
     private String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
         final StringBuilder sb = new StringBuilder();
+        if (!StringUtils.isBlank(componentPart)) {
+            return componentPart;
+        }
         if (!StringUtils.isBlank(componentName)) {
             sb.append(componentName).append("-");
         }
-        sb.append(componentPart);
         if (!StringUtils.isBlank(componentVersion)) {
-            sb.append("-");
             sb.append(componentVersion);
         }
         return sb.toString();

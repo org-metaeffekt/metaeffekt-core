@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.util.FileUtils;
@@ -170,6 +171,7 @@ public class ComponentPatternValidator {
     private static void processSharedIncludePatterns(Set<File> removedParentFiles, String parentQualifier,
                                                      List<FilePatternQualifierMapper> filePatternQualifierMapperList,
                                                      Set<File> duplicateAllowedFiles) {
+        List<ArtifactFile> sharedIncludePatternFiles = new ArrayList<>();
         for (File file : removedParentFiles) {
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(parentQualifier)) {
@@ -179,18 +181,13 @@ public class ComponentPatternValidator {
                             if (FileUtils.matches(sharedIncludePattern, FileUtils.normalizePathToLinux(file))) {
                                 // mark the file as allowed for duplicates
                                 duplicateAllowedFiles.add(file);
-                                /*List<File> files = filePatternQualifierMapper.getFileMap().get(true);
-                                if (files == null) {
-                                    filePatternQualifierMapper.getFileMap().put(true, new ArrayList<>(Collections.singletonList(file)));
-                                    LOG.info("Adding file [{}] to allowed duplicates to be collected for qualifier [{}]. ", file, filePatternQualifierMapper.getQualifier());
-                                } else if (!files.contains(file)) {
-                                    filePatternQualifierMapper.getFileMap().get(true).add(file);
-                                    LOG.info("Adding file [{}] to allowed duplicates to be collected for qualifier [{}]. ", file, filePatternQualifierMapper.getQualifier());
-                                }
-                                filePatternQualifierMapper.getFileMap().get(false).remove(file);*/
+                                ArtifactFile artifactFile = new ArtifactFile(file);
+                                artifactFile.addOwningComponent(filePatternQualifierMapper);
+                                sharedIncludePatternFiles.add(artifactFile);
                             }
                         }
                     }
+                    filePatternQualifierMapper.setSharedIncludedPatternFiles(sharedIncludePatternFiles);
                 }
             }
         }
@@ -199,6 +196,7 @@ public class ComponentPatternValidator {
 
     private static void processSharedExcludePatterns(Set<File> removedParentFiles, String parentQualifier,
                                                      List<FilePatternQualifierMapper> filePatternQualifierMapperList, Set<File> sharedExcludedFiles) {
+        List<ArtifactFile> sharedExcludePatternFiles = new ArrayList<>();
         for (File file : removedParentFiles) {
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(parentQualifier)) {
@@ -207,9 +205,13 @@ public class ComponentPatternValidator {
                         if (sharedExcludePattern != null && !sharedExcludePattern.isEmpty()) {
                             if (FileUtils.matches(sharedExcludePattern, FileUtils.normalizePathToLinux(file))) {
                                 sharedExcludedFiles.add(file);
+                                ArtifactFile artifactFile = new ArtifactFile(file);
+                                artifactFile.addOwningComponent(filePatternQualifierMapper);
+                                sharedExcludePatternFiles.add(artifactFile);
                             }
                         }
                     }
+                    filePatternQualifierMapper.setSharedExcludedPatternFiles(sharedExcludePatternFiles);
                 }
             }
         }
@@ -219,11 +221,20 @@ public class ComponentPatternValidator {
                                                  Map<String, Set<File>> qualifierToComponentPatternFilesMap,
                                                  List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
         FilePatternQualifierMapper parentMapper = findMapperForQualifier(parentQualifier, filePatternQualifierMapperList);
+        FilePatternQualifierMapper childMapper = findMapperForQualifier(childQualifier, filePatternQualifierMapperList);
+        Map<String, List<File>> subsetMap = new HashMap<>();
         // TODO: implement logic so if a package modifies a file of a parent qualifier, the child qualifier package is now the true owner of the file, this can be done by a checksum check
         if (parentMapper != null) {
             LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
+            subsetMap.put(childQualifier, new ArrayList<>(qualifierToComponentPatternFilesMap.get(childQualifier)));
             qualifierToComponentPatternFilesMap.get(parentQualifier).removeAll(qualifierToComponentPatternFilesMap.get(childQualifier));
             parentMapper.getFileMap().get(false).removeAll(qualifierToComponentPatternFilesMap.get(childQualifier));
+            parentMapper.setSubSetMap(subsetMap);
+            if (childMapper != null) {
+                final String assetId = "AID-" + parentMapper.getArtifact().getId() + "-" + parentMapper.getArtifact().getChecksum();
+                childMapper.getArtifact().set(assetId, Constants.MARKER_CONTAINS);
+                parentMapper.getArtifact().set(assetId, Constants.MARKER_CROSS);
+            }
         }
     }
 

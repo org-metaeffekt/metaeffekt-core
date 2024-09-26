@@ -16,6 +16,8 @@
 package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Zip;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
@@ -130,7 +132,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_INSPECTED, inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_SCAN_DIRECTIVE, inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ARTIFACT_PATH, inventory);
-            InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
+            // InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_ASSET_ID_CHAIN, inventory);
             InventoryUtils.removeArtifactAttribute(AssetMetaData.Attribute.ASSET_PATH.getKey(), inventory);
             InventoryUtils.removeArtifactAttribute(ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, inventory);
             InventoryUtils.removeArtifactAttribute(FileCollectTask.ATTRIBUTE_KEY_ANCHOR, inventory);
@@ -139,17 +141,78 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         mergeDuplicates(inventory);
 
         // post-processing steps
-        // 1. produce file lists
+        // 1. produce one file with all ArtifactFile types
         final File baseDir = fileSystemScanContext.getBaseDir().getFile();
 
-        List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(null, inventory, baseDir);
-        List<Component> components = new ArrayList<>();
-        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-            components.add(Component.produceFileList(mapper));
-        }
+        List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(fileSystemScanContext.getScanParam().getReferenceInventory(), inventory, baseDir);
+
 
         // 2. analyze component containments
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
+            if (mapper.getSubSetMap() != null) {
+                for (String qualifier : mapper.getSubSetMap().keySet()) {
+                    Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream().filter(a -> a.getId().equals(qualifier) || qualifier.equals(a.getComponent() + "-" + a.getId() + "-" + a.getVersion())).findFirst().orElse(null);
+                    if (foundArtifact != null) {
+                        if (StringUtils.isBlank(assetId)) {
+                            LOG.warn("Cannot resolve asset id for qualifier " + mapper.getQualifier());
+                        } else {
+                            if (!foundArtifact.get(assetId).equals(MARKER_CONTAINS) && !foundArtifact.get(assetId).equals(MARKER_CROSS)) {
+                                LOG.error("Artifact " + foundArtifact.getId() + " does not contain asset " + assetId);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
+        // 3. build zips for all components
+        buildZipsForAllComponents(baseDir, filePatternQualifierMappers);
+    }
+
+    public void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers) {
+        // Create an Ant project
+        Project antProject = new Project();
+        antProject.init();
+
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            // filter out big tar files
+            mapper.getFileMap().values().forEach(files -> files.removeIf(f -> f.length() > 100000000));
+
+            // Loop over each entry in the file map
+            for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
+                List<File> files = entry.getValue();
+                if (files.isEmpty()) {
+                    continue;
+                }
+
+                final File targetDir = new File(baseDir, "components");
+                if (!targetDir.exists()) {
+                    targetDir.mkdirs();
+                }
+
+                final File zipFile = new File(targetDir, mapper.getQualifier() + ".zip");
+
+                // Create a new Ant Zip task
+                Zip zipTask = new Zip();
+                zipTask.setProject(antProject);
+                zipTask.setDestFile(zipFile);
+
+                // Add each file to the zip
+                for (File file : files) {
+                    org.apache.tools.ant.types.FileSet fileSet = new org.apache.tools.ant.types.FileSet();
+                    if (file.isFile()) {
+                        fileSet.setFile(file);
+                    } else if (file.isDirectory()) {
+                        fileSet.setDir(file);
+                    }
+                    zipTask.addFileset(fileSet);
+                }
+
+                // Execute the zip task
+                zipTask.execute();
+            }
+        }
     }
 
     private void setArtifactAssetMarker() {

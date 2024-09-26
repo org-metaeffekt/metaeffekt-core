@@ -34,7 +34,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.BlockingQueue;
 
 public class RpmPackageContributor extends ComponentPatternContributor {
@@ -91,9 +94,12 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                 }
                 if (entry.getValue() != null) {
                     ComponentPatternData cpd = new ComponentPatternData();
+                    Artifact artifact = new Artifact();
                     List<IndexEntry> indexEntries = RPMDBUtils.headerImport(entry.getValue());
                     PackageInfo packageInfo = RPMDBUtils.getNEVRA(indexEntries);
                     StringJoiner includePatternJoiner = new StringJoiner(",");
+
+                    artifact.setId(packageInfo.getName() + "-" + packageInfo.getVersion());
 
                     final File distroBaseDir = new File(baseDir, virtualRootPath);
                     final LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(distroBaseDir);
@@ -131,7 +137,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageInfo.getName());
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, packageInfo.getVersion());
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageInfo.getName() + "-" + packageInfo.getVersion());
-                    cpd.set(Artifact.Attribute.CHECKSUM, packageInfo.getSigMD5());
+                    artifact.setChecksum(packageInfo.getSigMD5());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, virtualRoot.relativize(relativeAnchorFile).toString());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
                     cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatternJoiner.toString());
