@@ -151,9 +151,8 @@ public class DirectoryScanExtractorConfiguration {
                         aggregateComponentFiles(cpd, getExtractedFilesBaseDir(), componentBaseDir, includes, excludes, componentPatternCoveredFiles);
                     } else {
                         // the component pattern matches a single file; this is what we add to the list
-                        if (!FileUtils.isSymlink(componentBaseDir) && componentBaseDir.length() > 0) {
-                            componentPatternCoveredFiles.add(componentBaseDir);
-                        }
+                        // TODO: check if we should add symbolic links as well
+                        componentPatternCoveredFiles.add(componentBaseDir);
                     }
                 }
             }
@@ -211,9 +210,8 @@ public class DirectoryScanExtractorConfiguration {
     private void aggregateFiles(File baseDir, String[] coveredFiles, List<File> componentPatternCoveredFiles) {
         for (String file : coveredFiles) {
             final File srcFile = new File(baseDir, file);
-            if (!FileUtils.isSymlink(srcFile) && srcFile.length() > 0) {
-                componentPatternCoveredFiles.add(srcFile);
-            }
+            // TODO: check if we should add symbolic links as well
+            componentPatternCoveredFiles.add(srcFile);
         }
     }
 
