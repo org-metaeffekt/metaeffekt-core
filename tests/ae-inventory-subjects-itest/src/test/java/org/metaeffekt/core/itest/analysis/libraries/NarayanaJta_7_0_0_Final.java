@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 
 public class NarayanaJta_7_0_0_Final extends AbstractCompositionAnalysisTest {
@@ -69,6 +70,10 @@ public class NarayanaJta_7_0_0_Final extends AbstractCompositionAnalysisTest {
                 .assertNotEmpty();
 
         artifactList.hasSizeOf(7);
+
+        ArtifactList packageList = artifactList.with(containsToken(ID, ".jar"));
+        packageList.with(attributeValue(TYPE, "module")).hasSizeOf(packageList);
+        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(packageList);
     }
 
 
