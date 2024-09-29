@@ -185,7 +185,12 @@ public class RpmPackageContributor extends ComponentPatternContributor {
 
         final StringBuilder sb = new StringBuilder();
         sb.append("pkg:rpm/");
-        sb.append(distro.id).append("/");
+        // FIXME: this is a hack; we should use the distro id as is
+        if ("rhel".equals(distro.id)) {
+            sb.append("redhat/");
+        } else {
+            sb.append(distro.id).append("/");
+        }
         sb.append(name).append("@");
         sb.append(version);
         if (arch != null && !arch.isEmpty()) {

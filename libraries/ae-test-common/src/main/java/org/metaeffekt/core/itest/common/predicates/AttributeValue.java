@@ -19,7 +19,14 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+/**
+ * {@link NamedBasePredicate} implementation checking for a specific attribute value in an object.
+ *
+ * @param <T> Type of the object.
+ * @param <E> Key type.
+ */
 public class AttributeValue<T, E extends Enum<E>> implements NamedBasePredicate<T> {
+
     private final E attributeKey;
     private final String value;
 
@@ -30,6 +37,14 @@ public class AttributeValue<T, E extends Enum<E>> implements NamedBasePredicate<
 
     /**
      * Only include Artifacts in the collection where attribute is not null.
+     *
+     * @param attributeKey The attribute key to use.
+     * @param value The attribute value to match.
+     *
+     * @param <T> Type of the object.
+     * @param <E> Key type.
+     *
+     * @return The created {@link AttributeValue} predicate.
      */
     public static <T, E extends Enum<E>> NamedBasePredicate<T> attributeValue(E attributeKey, String value) {
         return new AttributeValue<>(attributeKey, value);

@@ -20,10 +20,17 @@ import java.util.function.Predicate;
 /**
  * These trivial predicates are used during test development. You can implement the test asserts and filters
  * with these first and replace them when the Code under test becomes ready.
+ *
+ * @param <T> Type the predicate applied to.
  */
 public class BooleanPredicate<T> implements NamedBasePredicate<T> {
+
     /**
      * Will return the whole collection when filtered.
+     *
+     * @param <T> Type the predicate applied to.
+     *
+     * @return The {@link BooleanPredicate} instance.
      */
     public static <T> NamedBasePredicate<T> alwaysTrue() {
         return new BooleanPredicate<>(true);
@@ -31,6 +38,10 @@ public class BooleanPredicate<T> implements NamedBasePredicate<T> {
 
     /**
      * Will return an empty collection when filtered.
+     *
+     * @param <T> Type the predicate applied to.
+     *
+     * @return The {@link BooleanPredicate} instance.
      */
     public static <T> NamedBasePredicate<T> alwaysFalse() {
         return new BooleanPredicate<>(false);

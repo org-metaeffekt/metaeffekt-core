@@ -259,6 +259,13 @@ public class InventoryReport {
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
 
+    protected void checkReportInventory(Inventory inventory) {
+        final int totalSize = inventory.getArtifacts().size() + inventory.getAssetMetaData().size() + inventory.getLicenseMetaData().size() + inventory.getVulnerabilityMetaData().size();
+        if (totalSize == 0) {
+            LOG.warn("The provided inventory appears to be empty: {}", inventory.getInventorySizePrintString());
+        }
+    }
+
     protected boolean createReport(Inventory globalInventory, Inventory localInventory) throws Exception {
         final File targetInventoryFile = targetInventoryDir != null ? new File(targetInventoryDir, targetInventoryPath) : null;
 
@@ -541,6 +548,7 @@ public class InventoryReport {
         projectInventory.inheritAssetMetaData(globalInventory, false);
 
         LOG.debug("Project inventory constructed: {}", projectInventory.getInventorySizePrintString());
+        this.checkReportInventory(projectInventory);
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
         if (filterVulnerabilitiesNotCoveredByArtifacts) {

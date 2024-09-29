@@ -595,6 +595,7 @@ public class JarInspector extends AbstractJarInspector {
             final int suffixIndex = artifact.getId().lastIndexOf(".");
             final String suffix = (suffixIndex == -1) ? null : artifact.getId().substring(suffixIndex + 1);
             artifact.deriveArtifactId();
+            // FIXME: we should reevaluate how to derive the artifactId
             String purl = buildPurl(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), suffix);
             artifact.set(Artifact.Attribute.PURL.getKey(), purl);
         }

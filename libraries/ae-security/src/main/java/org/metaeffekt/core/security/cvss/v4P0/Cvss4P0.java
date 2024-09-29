@@ -45,64 +45,54 @@ import java.util.stream.Stream;
  * </ul>
  * See the paragraphs below to learn how a CVSS:4.0 Vector score is calculated and the individual methods to learn more
  * about the specifics of each step.
- * <p>
+ * <br>
  * The following formulae have been created from the implementation and are not provided by the standard.
- * <p>
+ * <br>
  * <pre>ScoreInterpolated(V) = ScoreBase(MV) − Mean(ScoreEQ)</pre>
  * <pre>ScoreEQ = ProportionDistance(V, EQ) × ScoreRange(MV, EQ)</pre>
  * <pre>ProportionDistance(V, EQ) = SeverityDistance(V, MacroVector) / Depth(MacroVector)</pre>
- *
  * <ul>
  *     <li>
  *         <code>ScoreInterpolated(V)</code><br>
  *         is the final calculated score for the vector.
- * <p>
  *     </li>
  *     <li>
  *         <code>ScoreBase(MV)</code><br>
  *         is the base score for the MacroVector as determined by the highest severity vector within that MacroVector by looking up the score in a lookup table.
- * <p>
  *     </li>
  *     <li>
  *         <code>Mean(scores)</code><br>
  *         takes the average score over all the EQ (Equivalence) groups that are applicable to the vector.
- * <p>
  *     </li>
  *     <li>
  *         <code>ScoreEQ</code><br>
  *         is a list of proportional score adjustments for each EQ group, calculated by a sub-formula.
- * <p>
  *     </li>
  *     <li>
  *         <code>ProportionDistance(V, EQ)</code> (severity distance scale)<br>
  *         calculated as the severity distance (the number of metric value changes needed to reach the vector from the highest severity vector within the same MacroVector) divided by the depth of the MacroVector for that EQ group.
  *         This yields a value between 0 and 1, calculated by a sub-formula.<br>
- * <p>
  *     </li>
  *     <li>
  *         <code>SeverityDistance(V, MacroVector)</code> (severity distance scale)<br>
  *         is the number of metric value changes needed to reach the vector V from the highest severity vector within the same MacroVector.
- * <p>
  *     </li>
  *     <li>
  *         <code>Depth(MacroVector)</code> (severity distance scale)<br>
  *         is the total number of metric value changes within a MacroVector from its highest to lowest severity vectors. It essentially represents the amount of changes that can be made within the MacroVector.
- * <p>
  *     </li>
  *     <li>
  *         <code>ScoreRange(MV, EQ)</code> (CVSS score scale)<br>
  *         is the difference in score between the highest and lowest severity vectors within the MacroVector for a given EQ group. This value represents the potential score span within the MacroVector.
  *     </li>
  * </ul>
- *
- * <p>
+ * <br>
  * It is important to distinguish the two scales that are at play here:
  * <ul>
  *     <li>
  *         <b>Severity Distance Scale</b><br>
  *         This scale is associated with the vector metrics and their values.<br>
  *         A change of +/-1 on this scale represents a change of a single metric one value up or down (moving from a less severe configuration to a more severe one, or vice versa).
- * <p>
  *     </li>
  *     <li>
  *         <b>CVSS Score Scale</b><br>

@@ -82,6 +82,7 @@ public class AssessmentReportAdapter {
                                 final GroupedAssetVulnerabilityCounts groupedAssetCounts = new GroupedAssetVulnerabilityCounts();
                                 groupedAssetCounts.setAsset(asset);
                                 groupedAssetCounts.setAssetGroupDisplayName(entry.getKey());
+                                groupedAssetCounts.setAssetPath(ObjectUtils.firstNonNull(asset.get("Path"), asset.get(AssetMetaData.Attribute.ASSET_PATH)));
                                 groupedAssetCounts.setAssetDisplayName(assetDisplayName(asset));
                                 groupedAssetCounts.setTotalCounts(counts);
                                 return groupedAssetCounts;
@@ -133,11 +134,12 @@ public class AssessmentReportAdapter {
     public static class GroupedAssetVulnerabilityCounts {
         public AssetMetaData asset;
         public String assetGroupDisplayName;
+        public String assetPath;
         public String assetDisplayName;
         public VulnerabilityCounts totalCounts;
 
         public void log() {
-            log.info(" - Asset:     {} (in {})",assetDisplayName, assetGroupDisplayName);
+            log.info(" - Asset:     {} (in {}) (path: {})", assetDisplayName, assetGroupDisplayName, assetPath);
             log.info("   Counts:    {}", totalCounts);
         }
     }
