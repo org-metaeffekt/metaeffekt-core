@@ -16,16 +16,17 @@
 
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 
 import java.util.Date;
 import java.util.Map;
 
-@Setter
 @Getter
+@Setter
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode
 public class AeaaKevData {
     private String vulnerability;
     private String vendor;
@@ -83,7 +84,16 @@ public class AeaaKevData {
         aeaaKevData.setExploitDate(AeaaTimeUtils.tryParse(map.get("exploitDate")));
         aeaaKevData.setDueDate(AeaaTimeUtils.tryParse(map.get("dueDate")));
         if (map.containsKey("knownRansomwareCampaignUse")) {
-            aeaaKevData.setRansomwareState(RansomwareState.valueOf((String) map.get("knownRansomwareCampaignUse")));
+            final Object knownRansomwareCampaignUse = map.get("knownRansomwareCampaignUse");
+            if (knownRansomwareCampaignUse instanceof Boolean) {
+                aeaaKevData.setRansomwareState((Boolean) knownRansomwareCampaignUse ? RansomwareState.KNOWN : RansomwareState.UNKNOWN);
+            } else if (knownRansomwareCampaignUse instanceof String) {
+                aeaaKevData.setRansomwareState(RansomwareState.valueOf((String) knownRansomwareCampaignUse));
+            } else if (knownRansomwareCampaignUse instanceof RansomwareState) {
+                aeaaKevData.setRansomwareState((RansomwareState) knownRansomwareCampaignUse);
+            } else {
+                throw new IllegalArgumentException("Unknown type for knownRansomwareCampaignUse: " + knownRansomwareCampaignUse.getClass() + " on " + map);
+            }
         }
         return aeaaKevData;
     }

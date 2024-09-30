@@ -15,11 +15,13 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.json.JSONObject;
 
 
 @NoArgsConstructor
+@EqualsAndHashCode
 public class AeaaEpssData {
 
     private String vulnerability;
