@@ -17,8 +17,6 @@ package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Zip;
-import org.apache.tools.ant.types.ZipFileSet;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
@@ -36,6 +34,7 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
+import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,34 +200,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     continue;
                 }
 
-                File relativeBaseDir;
-                if (mapper.getPathInAsset().contains(".|\n")) {
-                    relativeBaseDir = new File(baseDir.getPath(), ".");
-                } else {
-                    relativeBaseDir = new File(baseDir.getPath(), mapper.getPathInAsset());
-                }
-
-
-                // create a new Ant Zip task
-                Zip zipTask = new Zip();
-                zipTask.setProject(antProject);
-
                 // add each file to the zip
                 for (File file : files) {
-                    ZipFileSet zipFileSet = new ZipFileSet();
-
-                    if (file.isFile()) {
-                        zipFileSet.setFile(file);
-                    } else if (file.isDirectory()) {
-                        zipFileSet.setDir(file);
-                    }
-
-                    // set the prefix to preserve the relative directory structure
-                    String relativePath = FileUtils.asRelativePath(relativeBaseDir, file.getParentFile());
-                    zipFileSet.setPrefix(relativePath);
-
-                    zipTask.addZipfileset(zipFileSet);
-
                     // copy the file to the tmp folder
                     try {
                         FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
@@ -237,7 +210,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     }
                 }
 
-                final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
+                final File contentChecksumFile = new File(targetDir, mapper.getArtifact().getId() + ".content.md5");
                 try {
                     FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
                 } catch (IOException e) {
@@ -248,10 +221,13 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
 
                 final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
-                zipTask.setDestFile(zipFile);
 
-                // execute the zip task
-                zipTask.execute();
+
+                ArchiveUtils.zipAnt(tmpFolder, zipFile);
+
+                if (!zipFile.exists()) {
+                    throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
+                }
             }
             FileUtils.deleteDirectoryQuietly(tmpFolder);
         }
