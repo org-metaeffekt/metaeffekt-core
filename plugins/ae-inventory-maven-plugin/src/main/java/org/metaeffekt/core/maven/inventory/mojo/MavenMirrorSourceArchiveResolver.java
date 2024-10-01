@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;

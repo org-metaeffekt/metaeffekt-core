@@ -35,10 +35,10 @@ public class ComponentSourceArchiveResolver extends AbstractMirrorSourceArchiveR
         // ensure the artifactId is computed
         artifact.deriveArtifactId();
 
-        List<String> matches = new ArrayList<>();
+        final List<String> matches = new ArrayList<>();
 
         for (Mapping mapping : mappings) {
-            String pattern = mapping.getPattern();
+            final String pattern = mapping.getPattern();
 
             if (isNotEmpty(artifact.getComponent()) && isNotEmpty(artifact.getVersion())) {
                 // legacy (dash separated)

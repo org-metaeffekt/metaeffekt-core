@@ -221,7 +221,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
         if (matchingSourceRepositories != null && !matchingSourceRepositories.isEmpty()) {
 
-            getLog().info(format("Resolving source artifacts for '%s'", artifactRepresentation));
+            getLog().info(format("Resolving source artifacts for [%s].", artifactRepresentation));
 
             List<String> attemptedSourceLocations = new ArrayList<>();
             List<String> attemptedSourceRepositories = new ArrayList<>();
@@ -231,7 +231,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
                 // early exit for explicitly ignored artifacts
                 if (matchingSourceRepository.getSourceArchiveResolver() == null) {
                     if (!matchingSourceRepository.isIgnoreMatches()) {
-                        getLog().info(format("Skipped resolving sources for artifact '%s'.", artifactRepresentation));
+                        getLog().info(format("Skipped resolving sources for artifact [%s].", artifactRepresentation));
                     }
                     return;
                 }
@@ -264,10 +264,10 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
                     logOrFailOn(s, false, executionStatus);
                 }
             }
-            logOrFailOn(format("No sources resolved for artifact '%s', while matching source repositories were: '%s'",
+            logOrFailOn(format("No sources resolved for artifact [%s], while matching source repositories were: %s",
                     artifactRepresentation, attemptedSourceRepositories), true, executionStatus);
         } else {
-            logOrFailOn(format("No sources resolved for artifact '%s', no matching source repository identified.",
+            logOrFailOn(format("No sources resolved for artifact [%s], no matching source repository identified.",
                     artifactRepresentation), true, executionStatus);
         }
 
