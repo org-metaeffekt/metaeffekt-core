@@ -17,7 +17,7 @@ package org.metaeffekt.core.itest.common.setup;
 
 public class TestConfig {
 
-    private static final String DOWNLOAD_FOLDER = "target/.test/downloads/";
+    private static final String DOWNLOAD_FOLDER = ".test/downloads/";
     private static final String SCAN_FOLDER = "target/.test/scan/";
     private static final String INVENTORY_FOLDER = "target/.test/inventory/";
 
