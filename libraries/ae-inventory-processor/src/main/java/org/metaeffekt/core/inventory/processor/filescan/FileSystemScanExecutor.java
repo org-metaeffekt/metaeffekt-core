@@ -186,7 +186,13 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         Project antProject = new Project();
         antProject.init();
 
+        final File targetDir = new File(baseDir, "components");
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
+        }
+
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            final File tmpFolder = initializeTmpFolder(targetDir);
 
             // loop over each entry in the file map
             for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
@@ -195,14 +201,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     continue;
                 }
 
-                final File targetDir = new File(baseDir, "components");
-                if (!targetDir.exists()) {
-                    targetDir.mkdirs();
-                }
-
-                final File tmpFolder = initializeTmpFolder(targetDir);
-
-                final File zipFile = new File(targetDir, mapper.getDerivedQualifier() + ".zip");
                 File relativeBaseDir;
                 if (mapper.getPathInAsset().contains(".|\n")) {
                     relativeBaseDir = new File(baseDir.getPath(), ".");
@@ -214,7 +212,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 // create a new Ant Zip task
                 Zip zipTask = new Zip();
                 zipTask.setProject(antProject);
-                zipTask.setDestFile(zipFile);
 
                 // add each file to the zip
                 for (File file : files) {
@@ -240,7 +237,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     }
                 }
 
-                final File contentChecksumFile = new File(tmpFolder, zipFile.getName() + ".content.md5");
+                final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
                 try {
                     FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
                 } catch (IOException e) {
@@ -249,11 +246,14 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 // set the content checksum
                 final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
                 mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                FileUtils.deleteDirectoryQuietly(tmpFolder);
+
+                final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
+                zipTask.setDestFile(zipFile);
 
                 // execute the zip task
                 zipTask.execute();
             }
+            FileUtils.deleteDirectoryQuietly(tmpFolder);
         }
     }
 
