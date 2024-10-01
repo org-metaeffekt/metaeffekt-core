@@ -137,7 +137,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageInfo.getName());
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, packageInfo.getVersion());
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageInfo.getName() + "-" + packageInfo.getVersion());
-                    artifact.setChecksum(packageInfo.getSigMD5());
+                    cpd.set(Artifact.Attribute.CHECKSUM, packageInfo.getSigMD5());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, virtualRoot.relativize(relativeAnchorFile).toString());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
                     cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePatternJoiner.toString());

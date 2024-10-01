@@ -94,7 +94,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      */
     private static ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
 
-    private static String computeChecksum(File file, String algorithm) {
+    public static String computeChecksum(File file, String algorithm) {
         try {
             final Checksum checksum = getChecksumInstance();
             // cannot reuse the project

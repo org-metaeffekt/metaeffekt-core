@@ -153,12 +153,13 @@ public class ComponentPatternValidator {
                                                Map<File, String[]> filesToRemoveFromParent,
                                                String childQualifier) {
         for (File file : removedParentFiles) {
+            String normalizedPath = FileUtils.normalizePathToLinux(file);
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(parentQualifier)) {
                     for (ComponentPatternData cpd : filePatternQualifierMapper.getComponentPatternDataList()) {
                         String excludePattern = cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN);
                         if (excludePattern != null && !excludePattern.isEmpty()) {
-                            if (FileUtils.matches(excludePattern, FileUtils.normalizePathToLinux(file))) {
+                            if (FileUtils.matches(excludePattern, normalizedPath)) {
                                 filesToRemoveFromParent.put(file, new String[]{parentQualifier, childQualifier});
                             }
                         }
@@ -173,12 +174,13 @@ public class ComponentPatternValidator {
                                                      Set<File> duplicateAllowedFiles) {
         List<ArtifactFile> sharedIncludePatternFiles = new ArrayList<>();
         for (File file : removedParentFiles) {
+            String normalizedPath = FileUtils.normalizePathToLinux(file);
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(parentQualifier)) {
                     for (ComponentPatternData cpd : filePatternQualifierMapper.getComponentPatternDataList()) {
                         String sharedIncludePattern = cpd.get(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN);
                         if (sharedIncludePattern != null && !sharedIncludePattern.isEmpty()) {
-                            if (FileUtils.matches(sharedIncludePattern, FileUtils.normalizePathToLinux(file))) {
+                            if (FileUtils.matches(sharedIncludePattern, normalizedPath)) {
                                 // mark the file as allowed for duplicates
                                 duplicateAllowedFiles.add(file);
                                 ArtifactFile artifactFile = new ArtifactFile(file);
@@ -198,12 +200,13 @@ public class ComponentPatternValidator {
                                                      List<FilePatternQualifierMapper> filePatternQualifierMapperList, Set<File> sharedExcludedFiles) {
         List<ArtifactFile> sharedExcludePatternFiles = new ArrayList<>();
         for (File file : removedParentFiles) {
+            String normalizedPath = FileUtils.normalizePathToLinux(file);
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(parentQualifier)) {
                     for (ComponentPatternData cpd : filePatternQualifierMapper.getComponentPatternDataList()) {
                         String sharedExcludePattern = cpd.get(ComponentPatternData.Attribute.SHARED_EXCLUDE_PATTERN);
                         if (sharedExcludePattern != null && !sharedExcludePattern.isEmpty()) {
-                            if (FileUtils.matches(sharedExcludePattern, FileUtils.normalizePathToLinux(file))) {
+                            if (FileUtils.matches(sharedExcludePattern, normalizedPath)) {
                                 sharedExcludedFiles.add(file);
                                 ArtifactFile artifactFile = new ArtifactFile(file);
                                 artifactFile.addOwningComponent(filePatternQualifierMapper);
@@ -223,7 +226,6 @@ public class ComponentPatternValidator {
         FilePatternQualifierMapper parentMapper = findMapperForQualifier(parentQualifier, filePatternQualifierMapperList);
         FilePatternQualifierMapper childMapper = findMapperForQualifier(childQualifier, filePatternQualifierMapperList);
         Map<String, List<File>> subsetMap = new HashMap<>();
-        // TODO: implement logic so if a package modifies a file of a parent qualifier, the child qualifier package is now the true owner of the file, this can be done by a checksum check
         if (parentMapper != null) {
             LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
             subsetMap.put(childQualifier, new ArrayList<>(qualifierToComponentPatternFilesMap.get(childQualifier)));

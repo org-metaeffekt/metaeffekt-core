@@ -94,7 +94,8 @@ public class DirectoryScanExtractorConfiguration {
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
                 Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
-                filePatternQualifierMapper.setQualifier(deriveMapQualifier(componentName, componentPart, componentVersion));
+                filePatternQualifierMapper.setQualifier(componentPart);
+                filePatternQualifierMapper.setDerivedQualifier(deriveMapQualifier(componentName, componentPart, componentVersion));
                 filePatternQualifierMapper.setPathInAsset(artifact.getPathInAsset());
                 List<File> componentPatternFiles = new ArrayList<>();
                 for (List<File> files : duplicateToComponentPatternFilesMap.values()) {
@@ -111,7 +112,6 @@ public class DirectoryScanExtractorConfiguration {
     }
 
     private Map<Boolean, List<File>> mapCoveredFilesByDuplicateStatus(Artifact artifact, ComponentPatternMatches componentPatternMatches, FilePatternQualifierMapper filePatternQualifierMapper) {
-        // FIXME: check why some files are added to qualifiers even if they don't belong there
         HashMap<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>();
 
         // aggregate all covered files into one directory
@@ -327,12 +327,10 @@ public class DirectoryScanExtractorConfiguration {
 
     private String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
         final StringBuilder sb = new StringBuilder();
-        if (!StringUtils.isBlank(componentPart)) {
-            return componentPart;
-        }
         if (!StringUtils.isBlank(componentName)) {
             sb.append(componentName).append("-");
         }
+        sb.append(componentPart);
         if (!StringUtils.isBlank(componentVersion)) {
             sb.append(componentVersion);
         }

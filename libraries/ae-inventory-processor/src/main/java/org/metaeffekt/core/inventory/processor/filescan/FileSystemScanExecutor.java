@@ -157,12 +157,9 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 for (String qualifier : mapper.getSubSetMap().keySet()) {
                     Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream().filter(a -> a.getId().equals(qualifier) || qualifier.equals(a.getComponent() + "-" + a.getId() + "-" + a.getVersion())).findFirst().orElse(null);
                     if (foundArtifact != null) {
-                        if (StringUtils.isBlank(assetId)) {
-                            LOG.warn("Cannot resolve asset id for qualifier " + mapper.getQualifier());
-                        } else {
-                            if (!foundArtifact.get(assetId).equals(MARKER_CONTAINS) && !foundArtifact.get(assetId).equals(MARKER_CROSS)) {
-                                LOG.error("Artifact " + foundArtifact.getId() + " does not contain asset " + assetId);
-                            }
+                        String marker = foundArtifact.get(assetId);
+                        if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
+                            LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
                         }
                     }
                 }
@@ -174,15 +171,13 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     }
 
     public void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers) {
-        // Create an Ant project
+        // create an ant project
         Project antProject = new Project();
         antProject.init();
 
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-            // filter out big tar files
-            mapper.getFileMap().values().forEach(files -> files.removeIf(f -> f.length() > 100000000));
 
-            // Loop over each entry in the file map
+            // loop over each entry in the file map
             for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
                 List<File> files = entry.getValue();
                 if (files.isEmpty()) {
@@ -196,7 +191,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
                 final File tmpFolder = initializeTmpFolder(targetDir);
 
-                final File zipFile = new File(targetDir, mapper.getQualifier() + ".zip");
+                final File zipFile = new File(targetDir, mapper.getDerivedQualifier() + ".zip");
                 File relativeBaseDir;
                 if (mapper.getPathInAsset().contains(".|\n")) {
                     relativeBaseDir = new File(baseDir.getPath(), ".");
@@ -204,12 +199,13 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     relativeBaseDir = new File(baseDir.getPath(), mapper.getPathInAsset());
                 }
 
-                // Create a new Ant Zip task
+
+                // create a new Ant Zip task
                 Zip zipTask = new Zip();
                 zipTask.setProject(antProject);
                 zipTask.setDestFile(zipFile);
 
-                // Add each file to the zip
+                // add each file to the zip
                 for (File file : files) {
                     ZipFileSet zipFileSet = new ZipFileSet();
 
@@ -219,17 +215,18 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                         zipFileSet.setDir(file);
                     }
 
+                    // set the prefix to preserve the relative directory structure
+                    String relativePath = FileUtils.asRelativePath(relativeBaseDir, file.getParentFile());
+                    zipFileSet.setPrefix(relativePath);
+
+                    zipTask.addZipfileset(zipFileSet);
+
+                    // copy the file to the tmp folder
                     try {
                         FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
                     } catch (IOException e) {
                         LOG.error("Failed to copy file to tmp folder.", e);
                     }
-
-                    // Set the prefix to preserve the relative directory structure
-                    String relativePath = relativeBaseDir.toURI().relativize(file.getParentFile().toURI()).getPath();
-                    zipFileSet.setPrefix(relativePath);
-
-                    zipTask.addZipfileset(zipFileSet);
                 }
 
                 final File contentChecksumFile = new File(tmpFolder, zipFile.getName() + ".content.md5");
@@ -243,7 +240,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
                 FileUtils.deleteDirectoryQuietly(tmpFolder);
 
-                // Execute the zip task
+                // execute the zip task
                 zipTask.execute();
             }
         }

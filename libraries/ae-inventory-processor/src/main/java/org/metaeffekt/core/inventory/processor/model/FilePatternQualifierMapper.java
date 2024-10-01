@@ -30,6 +30,7 @@ import java.util.Map;
 public class FilePatternQualifierMapper {
 
     private String qualifier;
+    private String derivedQualifier;
     private List<File> files;
     private Artifact artifact;
     private Map<Boolean, List<File>> fileMap;
