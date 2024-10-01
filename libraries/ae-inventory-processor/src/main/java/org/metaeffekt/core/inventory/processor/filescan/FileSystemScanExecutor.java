@@ -20,6 +20,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.ZipFileSet;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.FileCollectTask;
@@ -155,7 +156,9 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
             if (mapper.getSubSetMap() != null) {
                 for (String qualifier : mapper.getSubSetMap().keySet()) {
-                    Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream().filter(a -> a.getId().equals(qualifier) || qualifier.equals(a.getComponent() + "-" + a.getId() + "-" + a.getVersion())).findFirst().orElse(null);
+                    Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream()
+                            .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
+                            .findFirst().orElse(null);
                     if (foundArtifact != null) {
                         String marker = foundArtifact.get(assetId);
                         if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
@@ -168,6 +171,14 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         // 3. build zips for all components
         buildZipsForAllComponents(baseDir, filePatternQualifierMappers);
+    }
+
+    private static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
+        return a.getId().equals(qualifier) || qualifier.equals(deriveQualifier(a));
+    }
+
+    private static String deriveQualifier(Artifact a) {
+        return DirectoryScanExtractorConfiguration.deriveMapQualifier(a.getComponent(), a.getVersion(), a.getId());
     }
 
     public void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers) {

@@ -325,7 +325,7 @@ public class DirectoryScanExtractorConfiguration {
         return sb.toString();
     }
 
-    private String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
+    public static String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
         final StringBuilder sb = new StringBuilder();
         if (!StringUtils.isBlank(componentName)) {
             sb.append(componentName).append("-");
