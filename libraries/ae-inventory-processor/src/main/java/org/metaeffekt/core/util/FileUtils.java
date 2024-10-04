@@ -369,4 +369,17 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
     }
 
+    public static File initializeTmpFolder(File targetDir) {
+        final File tmpFolder = new File(targetDir.getParentFile(), ".tmp");
+        if (tmpFolder.exists()) {
+            try {
+                FileUtils.deleteDirectory(tmpFolder);
+            } catch (IOException e) {
+                LOG.error("Failed to delete tmp folder.", e);
+            }
+        }
+        tmpFolder.mkdirs();
+        return tmpFolder;
+    }
+
 }

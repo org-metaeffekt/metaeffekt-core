@@ -27,16 +27,16 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.taskdefs.Zip;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CONTENT_CHECKSUM;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -503,6 +503,59 @@ public class ArchiveUtils {
         zip.setDestFile(targetZipFile);
         zip.setFollowSymlinks(false);
         zip.execute();
+    }
+
+    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers) {
+        // create an ant project
+        Project antProject = new Project();
+        antProject.init();
+
+        final File targetDir = new File(baseDir, "components");
+        if (!targetDir.exists()) {
+            targetDir.mkdirs();
+        }
+
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
+
+            // loop over each entry in the file map
+            for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
+                List<File> files = entry.getValue();
+                if (files.isEmpty()) {
+                    continue;
+                }
+
+                // add each file to the zip
+                for (File file : files) {
+                    // copy the file to the tmp folder
+                    try {
+                        FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
+                    } catch (IOException e) {
+                        LOG.error("Failed to copy file to tmp folder.", e);
+                    }
+                }
+
+                final File contentChecksumFile = new File(targetDir, mapper.getArtifact().getId() + ".content.md5");
+                try {
+                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
+                } catch (IOException e) {
+                    LOG.error("Failed to create content checksum file.", e);
+                }
+                // set the content checksum
+                final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
+                mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
+
+                final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
+
+
+                ArchiveUtils.zipAnt(tmpFolder, zipFile);
+
+                if (!zipFile.exists()) {
+                    throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
+                }
+            }
+            FileUtils.deleteDirectoryQuietly(tmpFolder);
+        }
     }
 
 }

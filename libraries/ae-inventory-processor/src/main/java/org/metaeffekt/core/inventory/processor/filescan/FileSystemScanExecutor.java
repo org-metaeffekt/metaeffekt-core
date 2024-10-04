@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tools.ant.Project;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
@@ -35,12 +34,10 @@ import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.util.ArchiveUtils;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -169,7 +166,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
 
         // 3. build zips for all components
-        buildZipsForAllComponents(baseDir, filePatternQualifierMappers);
+        ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers);
     }
 
     private static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
@@ -178,59 +175,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
     private static String deriveQualifier(Artifact a) {
         return DirectoryScanExtractorConfiguration.deriveMapQualifier(a.getComponent(), a.getVersion(), a.getId());
-    }
-
-    public void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers) {
-        // create an ant project
-        Project antProject = new Project();
-        antProject.init();
-
-        final File targetDir = new File(baseDir, "components");
-        if (!targetDir.exists()) {
-            targetDir.mkdirs();
-        }
-
-        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-            final File tmpFolder = initializeTmpFolder(targetDir);
-
-            // loop over each entry in the file map
-            for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
-                List<File> files = entry.getValue();
-                if (files.isEmpty()) {
-                    continue;
-                }
-
-                // add each file to the zip
-                for (File file : files) {
-                    // copy the file to the tmp folder
-                    try {
-                        FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
-                    } catch (IOException e) {
-                        LOG.error("Failed to copy file to tmp folder.", e);
-                    }
-                }
-
-                final File contentChecksumFile = new File(targetDir, mapper.getArtifact().getId() + ".content.md5");
-                try {
-                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
-                } catch (IOException e) {
-                    LOG.error("Failed to create content checksum file.", e);
-                }
-                // set the content checksum
-                final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
-                mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
-
-                final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
-
-
-                ArchiveUtils.zipAnt(tmpFolder, zipFile);
-
-                if (!zipFile.exists()) {
-                    throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
-                }
-            }
-            FileUtils.deleteDirectoryQuietly(tmpFolder);
-        }
     }
 
     private void setArtifactAssetMarker() {
@@ -273,19 +217,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 }
             }
         }
-    }
-
-    private static File initializeTmpFolder(File targetDir) {
-        final File tmpFolder = new File(targetDir.getParentFile(), ".tmp");
-        if (tmpFolder.exists()) {
-            try {
-                FileUtils.deleteDirectory(tmpFolder);
-            } catch (IOException e) {
-                LOG.error("Failed to delete tmp folder.", e);
-            }
-        }
-        tmpFolder.mkdirs();
-        return tmpFolder;
     }
 
     private List<ScanTask> collectOutstandingScanTasks() {
