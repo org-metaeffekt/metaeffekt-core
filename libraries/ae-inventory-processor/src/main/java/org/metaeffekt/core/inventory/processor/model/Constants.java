@@ -58,6 +58,12 @@ public final class Constants {
     public static final String KEY_CHECKSUM = "Checksum";
     public static final String KEY_SCOPE = "Scope";
 
+    public static final String KEY_ID = "Id";
+    public static final String KEY_URL = "URL";
+    public static final String KEY_VERSION = "Version";
+    public static final String KEY_GROUP_ID = "Group Id";
+    public static final String KEY_PURL = "PURL";
+
     /**
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
      * supplier (CycloneDX).
