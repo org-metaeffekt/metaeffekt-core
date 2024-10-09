@@ -27,7 +27,9 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.taskdefs.Zip;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,8 @@ import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor.matchQualifierToIdOrDerivedQualifier;
+import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ARCHIVE_PATH;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CONTENT_CHECKSUM;
 
 /**
@@ -505,19 +509,21 @@ public class ArchiveUtils {
         zip.execute();
     }
 
-    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers) {
+    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers, Inventory inventory, Set<Artifact> removeableArtifacts, String dir) {
         // create an ant project
         Project antProject = new Project();
         antProject.init();
 
-        final File targetDir = new File(baseDir, "components");
+        final File targetDir = new File(baseDir, dir);
         if (!targetDir.exists()) {
             targetDir.mkdirs();
         }
 
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
-
+            Artifact foundArtifact = inventory.getArtifacts().stream()
+                    .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
+                    .findFirst().orElse(null);
             // loop over each entry in the file map
             for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
                 List<File> files = entry.getValue();
@@ -535,23 +541,26 @@ public class ArchiveUtils {
                     }
                 }
 
-                final File contentChecksumFile = new File(targetDir, mapper.getArtifact().getId() + ".content.md5");
+                final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
                 try {
                     FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
                 } catch (IOException e) {
                     LOG.error("Failed to create content checksum file.", e);
                 }
                 // set the content checksum
-                final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
-                mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
+                if (foundArtifact != null) {
+                    final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
+                    mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
+                    foundArtifact.set(KEY_CONTENT_CHECKSUM, contentChecksum);
+                    final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
+                    mapper.getArtifact().set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
+                    foundArtifact.set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
+                    ArchiveUtils.zipAnt(tmpFolder, zipFile);
 
-                final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
-
-
-                ArchiveUtils.zipAnt(tmpFolder, zipFile);
-
-                if (!zipFile.exists()) {
-                    throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
+                    if (!zipFile.exists()) {
+                        removeableArtifacts.add(foundArtifact);
+                        throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
+                    }
                 }
             }
             FileUtils.deleteDirectoryQuietly(tmpFolder);

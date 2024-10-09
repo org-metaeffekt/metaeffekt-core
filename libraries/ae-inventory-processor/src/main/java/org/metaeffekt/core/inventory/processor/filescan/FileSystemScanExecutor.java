@@ -166,10 +166,10 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
 
         // 3. build zips for all components
-        ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers);
+        ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers, inventory, new HashSet<>(), "components");
     }
 
-    private static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
+    public static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
         return a.getId().equals(qualifier) || qualifier.equals(deriveQualifier(a));
     }
 
