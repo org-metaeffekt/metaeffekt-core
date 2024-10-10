@@ -509,15 +509,10 @@ public class ArchiveUtils {
         zip.execute();
     }
 
-    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers, Inventory inventory, Set<Artifact> removeableArtifacts, String dir) {
+    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers, Inventory inventory, Set<Artifact> removeableArtifacts, File targetDir) {
         // create an ant project
         Project antProject = new Project();
         antProject.init();
-
-        final File targetDir = new File(baseDir, dir);
-        if (!targetDir.exists()) {
-            targetDir.mkdirs();
-        }
 
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);

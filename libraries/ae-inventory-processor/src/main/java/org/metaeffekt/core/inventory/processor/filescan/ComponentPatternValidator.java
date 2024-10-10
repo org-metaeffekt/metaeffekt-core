@@ -112,7 +112,7 @@ public class ComponentPatternValidator {
         removedParentFiles.removeAll(filesToRemoveFromParent.keySet());
 
         if (removedParentFiles.isEmpty()) {
-            LOG.warn("Qualifier [{}] is a subset of qualifier [{}].", childQualifier, parentQualifier);
+            LOG.info("Qualifier [{}] is a subset of qualifier [{}].", childQualifier, parentQualifier);
             removeAllFilesFromParent(parentQualifier, childQualifier, qualifierToComponentPatternFilesMap, filePatternQualifierMapperList);
         }
     }

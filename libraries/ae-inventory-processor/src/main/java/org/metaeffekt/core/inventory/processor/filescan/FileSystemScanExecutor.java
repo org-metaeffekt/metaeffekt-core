@@ -140,33 +140,40 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         mergeDuplicates(inventory);
 
-        // post-processing steps
-        // 1. produce one file with all ArtifactFile types
-        final File baseDir = fileSystemScanContext.getBaseDir().getFile();
+        File aggregationDir = fileSystemScanContext.getAggregationDir();
 
-        List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(fileSystemScanContext.getScanParam().getReferenceInventory(), inventory, baseDir);
+        if (aggregationDir != null && !aggregationDir.exists()) {
+            aggregationDir.mkdirs();
+            if (aggregationDir.exists()) {
+                // post-processing steps
+                // 1. produce one file with all ArtifactFile types
+                final File baseDir = fileSystemScanContext.getBaseDir().getFile();
+
+                List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(fileSystemScanContext.getScanParam().getReferenceInventory(), inventory, baseDir);
 
 
-        // 2. analyze component containments
-        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-            final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
-            if (mapper.getSubSetMap() != null) {
-                for (String qualifier : mapper.getSubSetMap().keySet()) {
-                    Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream()
-                            .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
-                            .findFirst().orElse(null);
-                    if (foundArtifact != null) {
-                        String marker = foundArtifact.get(assetId);
-                        if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
-                            LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
+                // 2. analyze component containments
+                for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+                    final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
+                    if (mapper.getSubSetMap() != null) {
+                        for (String qualifier : mapper.getSubSetMap().keySet()) {
+                            Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream()
+                                    .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
+                                    .findFirst().orElse(null);
+                            if (foundArtifact != null) {
+                                String marker = foundArtifact.get(assetId);
+                                if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
+                                    LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
+                                }
+                            }
                         }
                     }
                 }
+
+                // 3. build zips for all components
+                ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers, inventory, new HashSet<>(), aggregationDir);
             }
         }
-
-        // 3. build zips for all components
-        ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers, inventory, new HashSet<>(), "components");
     }
 
     public static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
