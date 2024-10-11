@@ -42,7 +42,7 @@ public class BitnamiRedisTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, "bitnami/redis", null, BitnamiRedisTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, "bitnami/redis", "6.2.14", BitnamiRedisTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
