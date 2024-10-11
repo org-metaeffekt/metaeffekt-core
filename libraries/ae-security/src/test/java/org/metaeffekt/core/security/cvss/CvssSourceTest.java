@@ -20,8 +20,12 @@ import org.junit.Test;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CvssSourceTest {
+
+    private static final Logger log = LoggerFactory.getLogger(CvssSourceTest.class);
 
     @Test
     public void toColumnHeaderTest() {
@@ -131,5 +135,12 @@ public class CvssSourceTest {
             Assert.fail("Parsing should fail if there are too many provided parts.");
         } catch (IllegalArgumentException ignored) {
         }
+    }
+
+    @Test
+    public void checkCvePartnersExistTest() {
+        Assert.assertNotNull(KnownCvssEntities.findByNameOrMail("CVE_CNA_HONEYWELL"));
+        Assert.assertNotNull(KnownCvssEntities.findByNameOrMail("CVE_CNA_INCIBE"));
+        Assert.assertNotNull(KnownCvssEntities.findByNameOrMail("CVE_CNA_OKTA"));
     }
 }
