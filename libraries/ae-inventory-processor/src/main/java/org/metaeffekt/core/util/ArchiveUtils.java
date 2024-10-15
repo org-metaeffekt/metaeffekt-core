@@ -517,10 +517,10 @@ public class ArchiveUtils {
 
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
+            Artifact foundArtifact = inventory.getArtifacts().stream()
+                    .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
+                    .findFirst().orElse(null);
             try {
-                Artifact foundArtifact = inventory.getArtifacts().stream()
-                        .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
-                        .findFirst().orElse(null);
                 // loop over each entry in the file map
                 for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
                     List<File> files = entry.getValue();
@@ -531,19 +531,11 @@ public class ArchiveUtils {
                     // add each file to the zip
                     for (File file : files) {
                         // copy the file to the tmp folder
-                        try {
-                            FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
-                        } catch (IOException e) {
-                            LOG.error("Failed to copy file to tmp folder.", e);
-                        }
+                        FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
                     }
 
                     final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
-                    try {
-                        FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
-                    } catch (IOException e) {
-                        LOG.error("Failed to create content checksum file.", e);
-                    }
+                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
 
                     // set the content checksum
                     if (foundArtifact != null) {
@@ -561,6 +553,8 @@ public class ArchiveUtils {
                         }
                     }
                 }
+            } catch (IOException e) {
+                LOG.error("Error processing artifact: [{}].", mapper.getArtifact().getId(), e);
             } finally {
                 // ensure the tmp folder is deleted
                 FileUtils.deleteDirectoryQuietly(tmpFolder);
