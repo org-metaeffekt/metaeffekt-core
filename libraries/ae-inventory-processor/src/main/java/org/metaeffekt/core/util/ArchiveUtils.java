@@ -15,8 +15,10 @@
  */
 package org.metaeffekt.core.util;
 
-import org.apache.commons.compress.archivers.ar.ArArchiveEntry;
-import org.apache.commons.compress.archivers.ar.ArArchiveInputStream;
+import net.sf.sevenzipjbinding.*;
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.io.FilenameUtils;
@@ -25,18 +27,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
-import org.apache.tools.ant.taskdefs.Untar;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -146,28 +149,11 @@ public class ArchiveUtils {
         // preprocess tar wrappers and manage intermediate files
         try {
             if (fileName.endsWith(".gz")) {
-                GUnzip gunzip = new GUnzip();
-                gunzip.setProject(new Project());
-                gunzip.setSrc(file);
-                String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".gz"));
-                gunzip.setDest(target);
-                intermediateFiles.add(target);
-                gunzip.execute();
-                file = target;
+                extractAndCopyWithSymlinks(file, targetDir, ArchiveFormat.GZIP);
             }
 
             if (fileName.endsWith(".tgz")) {
-                GUnzip gunzip = new GUnzip();
-                gunzip.setProject(new Project());
-                gunzip.setSrc(file);
-                String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".tgz"));
-                gunzip.setDest(target);
-                intermediateFiles.add(target);
-
-                gunzip.execute();
-                file = target;
+                extractAndCopyWithSymlinks(file, targetDir, ArchiveFormat.GZIP);
             }
 
             if (fileName.endsWith(".xz")) {
@@ -180,12 +166,7 @@ public class ArchiveUtils {
             }
 
             if (fileName.endsWith(".bz2")) {
-                String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".bz2"));
-                intermediateFiles.add(target);
-
-                expandBzip2(file, target);
-                file = target;
+                extractAndCopyWithSymlinks(file, targetDir, ArchiveFormat.BZIP2);
             }
         } catch (Exception e) {
             LOG.warn(e.getMessage());
@@ -231,14 +212,41 @@ public class ArchiveUtils {
     private static void untarInternal(File file, File targetFile) throws IOException {
         try {
             // attempt ant untar (anticipating broad compatibility)
-            final Project project = new Project();
+            /*final Project project = new Project();
             Untar expandTask = new Untar();
             expandTask.setProject(project);
             expandTask.setDest(targetFile);
             expandTask.setSrc(file);
             expandTask.setAllowFilesToEscapeDest(false);
             expandTask.setOverwrite(true);
-            expandTask.execute();
+            expandTask.execute();*/
+
+            extractAndCopyWithSymlinks(file, targetFile, ArchiveFormat.TAR);
+
+            // now, handle symbolic links using commons-compress
+            /*try (InputStream fin = Files.newInputStream(file.toPath());
+                 BufferedInputStream in = new BufferedInputStream(fin);
+                 TarArchiveInputStream tarIn = new TarArchiveInputStream(in)) {
+                    TarArchiveEntry entry;
+                    while ((entry = tarIn.getNextEntry()) != null) {
+                        if (entry.isSymbolicLink() && !entry.isDirectory()) {
+                            // handle symbolic link separately
+                            if (entry.getFile().isDirectory()) {
+                                LOG.info("This is a directory: [{}].", entry.getFile().getAbsolutePath());
+                            }
+                            File symlinkFile = new File(targetFile, entry.getName());
+                            File symlinkTarget = new File(entry.getLinkName());
+                            Files.createSymbolicLink(symlinkFile.toPath(), symlinkTarget.toPath());
+                            LOG.info("Created symbolic link [{}] -> [{}].", symlinkFile, symlinkTarget);
+                        }  else if (entry.isLink() && !entry.isDirectory()) {
+                            // Handle hard link
+                            File hardLinkFile = new File(targetFile, entry.getName());
+                            File hardLinkTarget = new File(entry.getLinkName());
+                            // Handle hard link creation manually if needed
+                            LOG.info("Extracted hard link: " + entry.getName() + " -> " + entry.getLinkName());
+                        }
+                    }
+            }*/
         } catch (Exception antUntarException) {
             LOG.debug("Could not untar file [{}] due to [{}].", file.getAbsolutePath(), antUntarException.getMessage());
             try {
@@ -248,7 +256,7 @@ public class ArchiveUtils {
                 // fallback to commons-compress (local code with support for specific cases (i.e., .deb)
                 final InputStream fin = Files.newInputStream(file.toPath());
                 final BufferedInputStream in = new BufferedInputStream(fin);
-                final ArArchiveInputStream xzIn = new ArArchiveInputStream(in);
+                final TarArchiveInputStream xzIn = new TarArchiveInputStream(in);
                 unpackAndClose(xzIn, targetFile);
             } catch (Exception commonsCompressException) {
                 // report commons compress exception only and indicate fallback
@@ -320,18 +328,38 @@ public class ArchiveUtils {
         }
     }
 
-    private static void unpackAndClose(ArArchiveInputStream in, File targetDir) throws IOException {
+    private static void unpackAndClose(TarArchiveInputStream in, File targetDir) throws IOException {
         try {
-            ArArchiveEntry entry;
-            while ((entry = in.getNextArEntry()) != null) {
+            TarArchiveEntry entry;
+            while ((entry = in.getNextEntry()) != null) {
                 final File targetFile = new File(targetDir, entry.getName());
-                try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
-                    IOUtils.copy(in, out);
+                if (entry.isDirectory()) {
+                    // handle symbolic link separately
+                    File symlinkFile = new File(targetDir, entry.getName());
+                    File symlinkTarget = new File(targetDir, entry.getLinkName());
+                    Files.createSymbolicLink(symlinkFile.toPath(), symlinkTarget.toPath());
+                    LOG.info("Created symbolic link [{}] -> [{}].", symlinkFile, symlinkTarget);
+                } else {
+                    try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
+                        IOUtils.copy(in, out);
+                    }
                 }
             }
         } finally {
             in.close();
         }
+    }
+
+
+    public static void extractAndCopyWithSymlinks(File fileToUnzip, File targetDir, ArchiveFormat format) throws IOException {
+        IInArchive archive = SevenZip.openInArchive(format, new RandomAccessFileInStream(new RandomAccessFile(fileToUnzip, "r")));
+
+        // use IntStream to generate the array of item indices
+        int[] items = IntStream.range(0, archive.getNumberOfItems()).toArray();
+
+        archive.extract(items, false, // Non-test mode
+                new MyExtractCallback(archive, targetDir));
+        archive.close();
     }
 
     public static boolean unpackIfPossible(File archiveFile, File targetDir, List<String> issues) {
@@ -503,6 +531,87 @@ public class ArchiveUtils {
         zip.setDestFile(targetZipFile);
         zip.setFollowSymlinks(false);
         zip.execute();
+    }
+
+    static class MyExtractCallback implements IArchiveExtractCallback {
+        private int index;
+        private final IInArchive inArchive;
+        private final File targetDir;
+
+        public MyExtractCallback(IInArchive inArchive, File targetDir) {
+            this.inArchive = inArchive;
+            this.targetDir = targetDir;
+        }
+
+        public ISequentialOutStream getStream(int index,
+                                              ExtractAskMode extractAskMode) throws SevenZipException {
+            this.index = index;
+            if (extractAskMode != ExtractAskMode.EXTRACT) {
+                return null;
+            }
+
+            String path = (String) inArchive.getProperty(index, PropID.PATH);
+            File outputFile = new File(targetDir, path);
+            boolean isFolder = (Boolean) inArchive.getProperty(index, PropID.IS_FOLDER);
+            String symLink = inArchive.getStringProperty(index, PropID.SYM_LINK);
+
+            // create parent directories if necessary
+            if (outputFile.getParentFile() != null && !outputFile.getParentFile().exists()) {
+                outputFile.getParentFile().mkdirs();
+            }
+
+            // handle directories
+            if (isFolder) {
+                if (!outputFile.exists()) {
+                    outputFile.mkdirs();
+                }
+                return null; // directories don't need a stream
+            }
+
+            if (!StringUtils.isBlank(symLink)) {
+                // handle symbolic link separately
+                try {
+                    Files.createSymbolicLink(outputFile.toPath(), new File(targetDir, symLink).toPath());
+                    LOG.info("Created symbolic link [{}] -> [{}].", outputFile, symLink);
+                } catch (IOException e) {
+                    throw new SevenZipException("Error creating symbolic link: " + outputFile + " -> " + symLink, e);
+                }
+                return null;
+            }
+
+            // handle file extraction
+            try {
+                final OutputStream out = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                return data -> {
+                    try {
+                        out.write(data);
+                        out.flush();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return data.length;
+                };
+            } catch (IOException e) {
+                throw new SevenZipException("Error writing to file: " + outputFile, e);
+            }
+        }
+
+        public void prepareOperation(ExtractAskMode extractAskMode) {
+        }
+
+        public void setOperationResult(ExtractOperationResult
+                                               extractOperationResult) {
+            if (extractOperationResult != ExtractOperationResult.OK) {
+                LOG.error("Extract operation result is not OK: {}", extractOperationResult);
+            }
+        }
+
+        public void setCompleted(long completeValue) {
+        }
+
+        public void setTotal(long total) {
+        }
+
     }
 
 }
