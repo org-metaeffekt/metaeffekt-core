@@ -34,10 +34,12 @@ import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.util.ArchiveUtils;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -143,36 +145,41 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         File aggregationDir = fileSystemScanContext.getAggregationDir();
 
         if (aggregationDir != null && !aggregationDir.exists()) {
-            aggregationDir.mkdirs();
-            if (aggregationDir.exists()) {
-                // post-processing steps
-                // 1. produce one file with all ArtifactFile types
-                final File baseDir = fileSystemScanContext.getBaseDir().getFile();
+            try {
+                FileUtils.forceMkdir(aggregationDir);
+            } catch (IOException e) {
+                LOG.error("Cannot create aggregation directory [{}].", aggregationDir.getAbsolutePath(), e);
+            }
+        }
 
-                List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(fileSystemScanContext.getScanParam().getReferenceInventory(), inventory, baseDir);
+        if (aggregationDir != null && aggregationDir.exists()) {
+            // post-processing steps
+            // 1. produce one file with all ArtifactFile types
+            final File baseDir = fileSystemScanContext.getBaseDir().getFile();
+
+            List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(fileSystemScanContext.getScanParam().getReferenceInventory(), inventory, baseDir);
 
 
-                // 2. analyze component containments
-                for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-                    final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
-                    if (mapper.getSubSetMap() != null) {
-                        for (String qualifier : mapper.getSubSetMap().keySet()) {
-                            Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream()
-                                    .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
-                                    .findFirst().orElse(null);
-                            if (foundArtifact != null) {
-                                String marker = foundArtifact.get(assetId);
-                                if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
-                                    LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
-                                }
+            // 2. analyze component containments
+            for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+                final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
+                if (mapper.getSubSetMap() != null) {
+                    for (String qualifier : mapper.getSubSetMap().keySet()) {
+                        Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream()
+                                .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
+                                .findFirst().orElse(null);
+                        if (foundArtifact != null) {
+                            String marker = foundArtifact.get(assetId);
+                            if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
+                                LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
                             }
                         }
                     }
                 }
-
-                // 3. build zips for all components
-                ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers, inventory, new HashSet<>(), aggregationDir);
             }
+
+            // 3. build zips for all components
+            ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers, inventory, new HashSet<>(), aggregationDir);
         }
     }
 
