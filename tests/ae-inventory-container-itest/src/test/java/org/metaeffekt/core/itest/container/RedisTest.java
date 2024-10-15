@@ -38,16 +38,16 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.C
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-public class BitnamiRedisTest extends AbstractCompositionAnalysisTest {
+public class RedisTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, "bitnami/redis", "6.2.14", BitnamiRedisTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null, RedisTest.class.getSimpleName().toLowerCase(), "7.4.1-alpine", RedisTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
                 .setSha256Hash(sha256Hash)
-                .setName(BitnamiRedisTest.class.getName());
+                .setName(RedisTest.class.getName());
     }
 
     @Ignore
@@ -64,21 +64,21 @@ public class BitnamiRedisTest extends AbstractCompositionAnalysisTest {
     }
 
     @Test
+    public void testContainerStructure() throws Exception {
+        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
+        Analysis analysis = new Analysis(inventory);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(16);
+    }
+
+    @Test
     public void testComponentPatterns() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
-        duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
+        duplicateList.identifyRemainingDuplicatesWithoutArtifact();
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
-    }
-
-    @Test
-    public void testContainerStructure() throws Exception {
-        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
-        Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(7);
     }
 }

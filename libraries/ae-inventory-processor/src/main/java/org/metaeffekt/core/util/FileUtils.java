@@ -94,7 +94,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      */
     private static ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
 
-    private static String computeChecksum(File file, String algorithm) {
+    public static String computeChecksum(File file, String algorithm) {
         try {
             final Checksum checksum = getChecksumInstance();
             // cannot reuse the project
@@ -257,7 +257,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static String normalizePathToLinux(File file) {
         if (file == null) return null;
-        return normalizePathToLinux(file.getAbsolutePath());
+        return normalizePathToLinux(file.getPath());
     }
 
     public static void waitForProcess(Process p) {
@@ -367,6 +367,19 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         } else {
             return new File(baseDir, relativePath);
         }
+    }
+
+    public static File initializeTmpFolder(File targetDir) {
+        final File tmpFolder = new File(targetDir.getParentFile(), ".tmp");
+        if (tmpFolder.exists()) {
+            try {
+                FileUtils.deleteDirectory(tmpFolder);
+            } catch (IOException e) {
+                LOG.error("Failed to delete tmp folder.", e);
+            }
+        }
+        tmpFolder.mkdirs();
+        return tmpFolder;
     }
 
 }

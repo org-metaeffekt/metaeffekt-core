@@ -38,7 +38,7 @@ public class WebApplicationComponentPatternContributorTest {
 
         final ComponentPatternData cpd = cpdList.get(0);
         assertThat(cpd.get(COMPONENT_PART)).isEqualTo("test-001-15.8");
-        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("Test-001 Application");
+        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("Test-001");
         assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("15.8");
         assertThat(cpd.get("Release")).isNull();
     }

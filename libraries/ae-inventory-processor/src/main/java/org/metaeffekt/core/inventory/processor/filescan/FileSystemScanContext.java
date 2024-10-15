@@ -24,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,11 +69,19 @@ public class FileSystemScanContext {
 
     private volatile boolean acceptingNewTasks = true;
 
+    @Getter
+    private final File aggregationDir;
+
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
+        this(baseDir, scanParam, null);
+    }
+
+    public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam, File aggregationDir) {
         this.baseDir = baseDir;
         this.scanParam = scanParam;
         this.virtualContext = new VirtualContext(baseDir);
         this.inventory = new Inventory();
+        this.aggregationDir = aggregationDir;
     }
 
     public synchronized void push(ScanTask scanTask) {

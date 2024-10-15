@@ -15,11 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.command.PrepareScanDirectoryCommand;
-import org.metaeffekt.core.inventory.processor.filescan.*;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor;
+import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -59,17 +63,27 @@ public class DirectoryInventoryScan {
     @Setter
     private boolean enableDetectComponentPatterns = false;
 
+    @Getter
+    private final File aggregationDir;
+
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
                       String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
         this (inputDirectory, scanDirectory,
                 scanIncludes, scanExcludes, new String[] { "**/*" },
-                new String[0], referenceInventory);
+                new String[0], referenceInventory, null);
     }
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
                                   String[] scanIncludes, String[] scanExcludes,
                                   String[] unwrapIncludes, String[] unwrapExcludes,
                                   Inventory referenceInventory) {
+        this(inputDirectory, scanDirectory, scanIncludes, scanExcludes, unwrapIncludes, unwrapExcludes, referenceInventory, null);
+    }
+
+    public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
+                                  String[] scanIncludes, String[] scanExcludes,
+                                  String[] unwrapIncludes, String[] unwrapExcludes,
+                                  Inventory referenceInventory, File aggregationDir) {
         this.inputDirectory = inputDirectory;
 
         this.scanDirectory = scanDirectory;
@@ -80,6 +94,7 @@ public class DirectoryInventoryScan {
         this.unwrapExcludes = unwrapExcludes;
 
         this.referenceInventory = referenceInventory;
+        this.aggregationDir = aggregationDir;
     }
 
     public Inventory createScanInventory() {
@@ -109,7 +124,7 @@ public class DirectoryInventoryScan {
 
         LOG.info("Scanning directory [{}]...", directoryToScan.getAbsolutePath());
 
-        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
+        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam, aggregationDir);
         final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
 
         fileSystemScanExecutor.execute();
