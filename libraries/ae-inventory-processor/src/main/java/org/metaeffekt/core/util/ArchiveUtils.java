@@ -15,28 +15,26 @@
  */
 package org.metaeffekt.core.util;
 
-import org.apache.commons.compress.archivers.ar.ArArchiveEntry;
-import org.apache.commons.compress.archivers.ar.ArArchiveInputStream;
+import net.sf.sevenzipjbinding.*;
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.taskdefs.Expand;
-import org.apache.tools.ant.taskdefs.GUnzip;
-import org.apache.tools.ant.taskdefs.Untar;
-import org.apache.tools.ant.taskdefs.Zip;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -146,27 +144,15 @@ public class ArchiveUtils {
         // preprocess tar wrappers and manage intermediate files
         try {
             if (fileName.endsWith(".gz")) {
-                GUnzip gunzip = new GUnzip();
-                gunzip.setProject(new Project());
-                gunzip.setSrc(file);
-                String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".gz"));
-                gunzip.setDest(target);
-                intermediateFiles.add(target);
-                gunzip.execute();
-                file = target;
+                extractAndCopyWithSymlinks(file, targetDir, ArchiveFormat.GZIP);
             }
 
             if (fileName.endsWith(".tgz")) {
-                GUnzip gunzip = new GUnzip();
-                gunzip.setProject(new Project());
-                gunzip.setSrc(file);
                 String targetName = file.getName();
                 File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".tgz"));
-                gunzip.setDest(target);
                 intermediateFiles.add(target);
 
-                gunzip.execute();
+                expandTGZ(file, target);
                 file = target;
             }
 
@@ -220,6 +206,14 @@ public class ArchiveUtils {
         unpackAndClose(xzIn, Files.newOutputStream(targetFile.toPath()));
     }
 
+    private static void expandTGZ(File file, File targetFile) throws IOException {
+        final InputStream fin = Files.newInputStream(file.toPath());
+        final BufferedInputStream in = new BufferedInputStream(fin);
+        final GzipCompressorInputStream tgzIn = new GzipCompressorInputStream(in);
+
+        unpackAndClose(tgzIn, Files.newOutputStream(targetFile.toPath()));
+    }
+
     private static void expandBzip2(File file, File targetFile) throws IOException {
         final InputStream fin = Files.newInputStream(file.toPath());
         final BufferedInputStream in = new BufferedInputStream(fin);
@@ -230,80 +224,59 @@ public class ArchiveUtils {
 
     private static void untarInternal(File file, File targetFile) throws IOException {
         try {
-            // attempt ant untar (anticipating broad compatibility)
-            final Project project = new Project();
-            Untar expandTask = new Untar();
-            expandTask.setProject(project);
-            expandTask.setDest(targetFile);
-            expandTask.setSrc(file);
-            expandTask.setAllowFilesToEscapeDest(false);
-            expandTask.setOverwrite(true);
-            expandTask.execute();
-        } catch (Exception antUntarException) {
-            LOG.debug("Could not untar file [{}] due to [{}].", file.getAbsolutePath(), antUntarException.getMessage());
+            extractAndCopyWithSymlinks(file, targetFile, ArchiveFormat.TAR);
+        } catch (Exception exception) {
+            LOG.debug(
+                    "Cannot untar file [{}] due to [{}]. Attempting untar via command line.",
+                    file.getAbsolutePath(),
+                    exception.getMessage()
+            );
+
+            // FIXME: this fallback doesn't adjust file permissions, leading to "Permission denied" while scanning.
+            //  this also means that prepareScanDirectory may fail on rescan.
+            //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
+            //  this last-ditch efford to give good support.
+            // fallback to native support on command line
+
+            Process tarExtract = new ProcessBuilder().command(
+                            "tar",
+                            "-x",
+                            "-f", file.getAbsolutePath(),
+                            "--no-same-permissions",
+                            "-C", targetFile.getAbsolutePath())
+                    .redirectErrorStream(true)
+                    .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                    .start();
+
+            // wait for untar. if our untar takes more than one hour, we can be pretty sure that something is broken
             try {
-                // TODO: document or fix: why are we trying to extract a tar as an "ar" archive?
-                //  interpreting it as an ar archive might not support symlinks with the current api.
+                if (!tarExtract.waitFor(UNTAR_TIMEOUT_NUMBER, UNTAR_TIMEOUT_UNIT)) {
+                    // timeout
+                    LOG.error("Failed to untar [{}].", file.getAbsolutePath());
 
-                // fallback to commons-compress (local code with support for specific cases (i.e., .deb)
-                final InputStream fin = Files.newInputStream(file.toPath());
-                final BufferedInputStream in = new BufferedInputStream(fin);
-                final ArArchiveInputStream xzIn = new ArArchiveInputStream(in);
-                unpackAndClose(xzIn, targetFile);
-            } catch (Exception commonsCompressException) {
-                // report commons compress exception only and indicate fallback
-                LOG.debug(
-                        "Cannot untar file [{}] due to [{}]. Attempting untar via command line.",
-                        file.getAbsolutePath(),
-                        commonsCompressException.getMessage()
-                );
-
-                // FIXME: this fallback doesn't adjust file permissions, leading to "Permission denied" while scanning.
-                //  this also means that prepareScanDirectory may fail on rescan.
-                //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
-                //  this last-ditch efford to give good support.
-                // fallback to native support on command line
-
-                Process tarExtract = new ProcessBuilder().command(
-                                "tar",
-                                "-x",
-                                "-f", file.getAbsolutePath(),
-                                "--no-same-permissions",
-                                "-C", targetFile.getAbsolutePath())
-                        .redirectErrorStream(true)
-                        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                        .start();
-
-                // wait for untar. if our untar takes more than one hour, we can be pretty sure that something is broken
-                try {
-                    if (!tarExtract.waitFor(UNTAR_TIMEOUT_NUMBER, UNTAR_TIMEOUT_UNIT)) {
-                        // timeout
-                        LOG.error("Failed to untar [{}].", file.getAbsolutePath());
-
-                        LOG.error("Killing untar process...");
-                        tarExtract.destroyForcibly();
-                        if (!tarExtract.waitFor(1, TimeUnit.MINUTES)) {
-                            // once we are in Java 9 or newer, we should output PID in this case
-                            LOG.error("Failed to kill untar! This will leave a tar process with unknown state!");
-                        }
-
-                        throw new IOException("Untar failed: timed out.");
+                    LOG.error("Killing untar process...");
+                    tarExtract.destroyForcibly();
+                    if (!tarExtract.waitFor(1, TimeUnit.MINUTES)) {
+                        // once we are in Java 9 or newer, we should output PID in this case
+                        LOG.error("Failed to kill untar! This will leave a tar process with unknown state!");
                     }
-                } catch (InterruptedException e) {
-                    throw new IOException("Untar thread was interrupted.", e);
-                }
 
-                if (tarExtract.exitValue() != 0) {
-                    LOG.error(
-                            "Untar of [{}] failed with exit value [{}].",
-                            file.getAbsolutePath(),
-                            tarExtract.exitValue()
-                    );
-                    throw new IOException("Failed to untar requested file.");
+                    throw new IOException("Untar failed: timed out.");
                 }
-
-                // NOTE: further exceptions are handled upstream
+            } catch (InterruptedException e) {
+                throw new IOException("Untar thread was interrupted.", e);
             }
+
+            if (tarExtract.exitValue() != 0) {
+                LOG.error(
+                        "Untar of [{}] failed with exit value [{}].",
+                        file.getAbsolutePath(),
+                        tarExtract.exitValue()
+                );
+                throw new IOException("Failed to untar requested file.");
+            }
+
+            // NOTE: further exceptions are handled upstream
         }
     }
 
@@ -320,24 +293,19 @@ public class ArchiveUtils {
         }
     }
 
-    private static void unpackAndClose(ArArchiveInputStream in, File targetDir) throws IOException {
-        try {
-            ArArchiveEntry entry;
-            while ((entry = in.getNextArEntry()) != null) {
-                final File targetFile = new File(targetDir, entry.getName());
-                try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
-                    IOUtils.copy(in, out);
-                }
-            }
-        } finally {
-            in.close();
-        }
+
+    public static void extractAndCopyWithSymlinks(File fileToUnzip, File targetDir, ArchiveFormat format) throws IOException {
+        IInArchive archive = SevenZip.openInArchive(format, new RandomAccessFileInStream(new RandomAccessFile(fileToUnzip, "r")));
+
+        // use IntStream to generate the array of item indices
+        int[] items = IntStream.range(0, archive.getNumberOfItems()).toArray();
+
+        archive.extract(items, false, // Non-test mode
+                new MyExtractCallback(archive, targetDir));
+        archive.close();
     }
 
     public static boolean unpackIfPossible(File archiveFile, File targetDir, List<String> issues) {
-        final Project project = new Project();
-        project.setBaseDir(archiveFile.getParentFile());
-
         final String archiveFileName = archiveFile.getName().toLowerCase();
         final String extension = FilenameUtils.getExtension(archiveFileName);
 
@@ -347,11 +315,7 @@ public class ArchiveUtils {
         try {
             if (zipExtensions.contains(extension)) {
                 FileUtils.forceMkdir(targetDir);
-                Expand expandTask = new Expand();
-                expandTask.setProject(project);
-                expandTask.setDest(targetDir);
-                expandTask.setSrc(archiveFile);
-                expandTask.execute();
+                extractAndCopyWithSymlinks(archiveFile, targetDir, ArchiveFormat.ZIP);
                 return true;
             }
         } catch (Exception e) {
@@ -364,11 +328,7 @@ public class ArchiveUtils {
         try {
             if (gzipExtensions.contains(extension)) {
                 FileUtils.forceMkdir(targetDir);
-                GUnzip expandTask = new GUnzip();
-                expandTask.setProject(project);
-                expandTask.setDest(targetDir);
-                expandTask.setSrc(archiveFile);
-                expandTask.execute();
+                extractAndCopyWithSymlinks(archiveFile, targetDir, ArchiveFormat.GZIP);
                 return true;
             }
         } catch (Exception e) {
@@ -487,22 +447,105 @@ public class ArchiveUtils {
         }
     }
 
-    /**
-     * Uses the native zip command to zip the file. Uses the -X attribute to create files with deterministic checksum.
-     *
-     * @param sourceDir     The directory to zip (recursively).
-     * @param targetZipFile The target zip file name.
-     */
-    public static void zipAnt(File sourceDir, File targetZipFile) {
-        Zip zip = new Zip();
-        Project project = new Project();
-        project.setBaseDir(sourceDir);
-        zip.setProject(project);
-        zip.setBasedir(sourceDir);
-        zip.setCompress(true);
-        zip.setDestFile(targetZipFile);
-        zip.setFollowSymlinks(false);
-        zip.execute();
+    static class MyExtractCallback implements IArchiveExtractCallback {
+        private final IInArchive inArchive;
+        private final File targetDir;
+
+        public MyExtractCallback(IInArchive inArchive, File targetDir) {
+            this.inArchive = inArchive;
+            this.targetDir = targetDir;
+        }
+
+        public ISequentialOutStream getStream(int index,
+                                              ExtractAskMode extractAskMode) throws SevenZipException {
+            if (extractAskMode != ExtractAskMode.EXTRACT) {
+                return null;
+            }
+
+            String path = (String) inArchive.getProperty(index, PropID.PATH);
+            File outputFile = new File(targetDir, path);
+            boolean isFolder = (Boolean) inArchive.getProperty(index, PropID.IS_FOLDER);
+            String symLink = inArchive.getStringProperty(index, PropID.SYM_LINK);
+
+            // create parent directories if necessary
+            if (outputFile.getParentFile() != null && !outputFile.getParentFile().exists()) {
+                try {
+                    FileUtils.forceMkdir(outputFile.getParentFile());
+                } catch (IOException e) {
+                    throw new SevenZipException("Error creating parent directory: " + outputFile.getParentFile(), e);
+                }
+            }
+
+            // handle directories
+            if (isFolder) {
+                if (!outputFile.exists()) {
+                    try {
+                        FileUtils.forceMkdir(outputFile);
+                    } catch (IOException e) {
+                       throw new SevenZipException("Error creating directory: " + outputFile, e);
+                    }
+                }
+                return null; // directories don't need a stream
+            }
+
+            // handle symbolic links
+            if (!StringUtils.isBlank(symLink)) {
+                // Resolve the symbolic link target based on its relative path
+                Path symlinkTargetPath;
+                if (symLink.startsWith("../")) {
+                    // handle relative symbolic link
+                    symlinkTargetPath = outputFile.getParentFile().toPath().resolve(symLink).normalize();
+                } else if (!symLink.contains("/")) {
+                    // handle symlinks within the same directory (e.g., "alternatives")
+                    symlinkTargetPath = outputFile.getParentFile().toPath().resolve(symLink).normalize();
+                } else {
+                    // handle absolute or direct symbolic link within the target directory
+                    symlinkTargetPath = new File(targetDir, symLink).toPath();
+                }
+
+                // create the symbolic link
+                try {
+                    Files.createSymbolicLink(outputFile.toPath(), symlinkTargetPath);
+                    LOG.info("Created symbolic link [{}] -> [{}].", outputFile, symlinkTargetPath);
+                } catch (IOException e) {
+                    throw new SevenZipException("Error creating symbolic link: " + outputFile + " -> " + symlinkTargetPath, e);
+                }
+                return null;
+            }
+
+            // handle file extraction
+            try {
+                final OutputStream out = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                return data -> {
+                    try {
+                        out.write(data);
+                        out.flush();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return data.length;
+                };
+            } catch (IOException e) {
+                throw new SevenZipException("Error writing to file: " + outputFile, e);
+            }
+        }
+
+        public void prepareOperation(ExtractAskMode extractAskMode) {
+        }
+
+        public void setOperationResult(ExtractOperationResult
+                                               extractOperationResult) {
+            if (extractOperationResult != ExtractOperationResult.OK) {
+                LOG.error("Extract operation result is not OK: {}", extractOperationResult);
+            }
+        }
+
+        public void setCompleted(long completeValue) {
+        }
+
+        public void setTotal(long total) {
+        }
+
     }
 
 }
