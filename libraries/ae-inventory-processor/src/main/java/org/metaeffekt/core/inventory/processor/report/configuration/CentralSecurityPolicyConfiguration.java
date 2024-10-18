@@ -121,6 +121,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: <code>7.0</code>
      */
     private double insignificantThreshold = 7.0;
+
     /**
      * includeScoreThreshold<br>
      * <code>double</code><p>
@@ -878,8 +879,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = new VulnerabilityStatusMapper(
             "unmodified",
-            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, VulnerabilityMetaData.STATUS_VALUE_VOID),
-            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_VOID),
+            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW,
+                    VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT,
+                    VulnerabilityMetaData.STATUS_VALUE_VOID),
+            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE,
+                    VulnerabilityMetaData.STATUS_VALUE_VOID),
             name -> {
                 if (StringUtils.isEmpty(name)) {
                     return VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW;
