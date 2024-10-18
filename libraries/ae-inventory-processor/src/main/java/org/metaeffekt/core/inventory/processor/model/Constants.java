@@ -83,7 +83,7 @@ public final class Constants {
     public static final String KEY_DESCRIPTION = "Description";
     public static final String KEY_ARCHITECTURE = "Architecture";
     public static final String KEY_TYPE = "Type";
-    public static final String KEY_DIGEST = "Digest"
+    public static final String KEY_DIGEST = "Digest";
 
     // FIXME: fix naming
     public static final String KEY_COMPONENT_SOURCE_TYPE = "Component Source Type";
