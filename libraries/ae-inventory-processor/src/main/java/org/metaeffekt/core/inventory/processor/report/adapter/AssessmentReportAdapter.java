@@ -65,7 +65,7 @@ public class AssessmentReportAdapter {
 
     /* counting and grouping assets */
 
-    public List<GroupedAssetsVulnerabilityCounts> groupAssetsByAssetGroup(Collection<AssetMetaData> assets) {
+    public List<GroupedAssetsVulnerabilityCounts> groupAssetsByAssetGroup(Collection<AssetMetaData> assets, boolean useEffectiveSeverity) {
         return assets.stream()
                 .sorted(Comparator.comparing(this::assetGroupDisplayName, (s, str) -> {
                     // "Other Assets" should be last
@@ -78,7 +78,7 @@ public class AssessmentReportAdapter {
 
                     final List<GroupedAssetVulnerabilityCounts> groupedAssetVulnerabilityCounts = entry.getValue().stream()
                             .map(asset -> {
-                                final VulnerabilityCounts counts = countVulnerabilities(asset, true);
+                                final VulnerabilityCounts counts = countVulnerabilities(asset, useEffectiveSeverity);
                                 final GroupedAssetVulnerabilityCounts groupedAssetCounts = new GroupedAssetVulnerabilityCounts();
                                 groupedAssetCounts.setAsset(asset);
                                 groupedAssetCounts.setAssetGroupDisplayName(entry.getKey());

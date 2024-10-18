@@ -86,7 +86,7 @@ public class AssessmentReportAdapterTest {
 
         final AssessmentReportAdapter adapter = new AssessmentReportAdapter(testInventory, new CentralSecurityPolicyConfiguration());
 
-        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData());
+        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true);
 
         /*for (AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts group : grouped) {
             group.log();
