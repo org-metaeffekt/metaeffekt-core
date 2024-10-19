@@ -231,7 +231,7 @@ public class CvssSource {
         public String toString() {
             return "CvssEntity{" + name
                     + (email != null ? ", " + email : "")
-                    + (url != null ? " (" + url + ")" : "");
+                    + (url != null ? " (" + url + ")" : "") + "}";
         }
 
         @Override
