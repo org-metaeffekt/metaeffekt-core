@@ -52,17 +52,21 @@ public final class Constants {
 
     public static final String KEY_HASH_SHA1 = "Hash (SHA-1)";
     public static final String KEY_HASH_SHA256 = "Hash (SHA-256)";
+    public static final String KEY_HASH_SHA512 = "Hash (SHA-512)";
 
     public static final String KEY_PATH_IN_ASSET = "Path in Asset";
 
     public static final String KEY_CHECKSUM = "Checksum";
     public static final String KEY_SCOPE = "Scope";
 
+    // Artifact and Asset base keys
     public static final String KEY_ID = "Id";
+    public static final String KEY_ASSET_ID = "Asset Id";
     public static final String KEY_URL = "URL";
     public static final String KEY_VERSION = "Version";
     public static final String KEY_GROUP_ID = "Group Id";
     public static final String KEY_PURL = "PURL";
+
 
     /**
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
@@ -79,6 +83,7 @@ public final class Constants {
     public static final String KEY_DESCRIPTION = "Description";
     public static final String KEY_ARCHITECTURE = "Architecture";
     public static final String KEY_TYPE = "Type";
+    public static final String KEY_DIGEST = "Digest";
 
     // FIXME: fix naming
     public static final String KEY_COMPONENT_SOURCE_TYPE = "Component Source Type";
