@@ -189,7 +189,7 @@ public class DirectoryInventoryScanTest {
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
-        new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xls"));
+        new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xlsx"));
     }
 
     private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir) throws IOException {
@@ -204,11 +204,25 @@ public class DirectoryInventoryScanTest {
         String[] unwrapIncludes = new String[] {
                 "**/*"
         };
+
         String[] unwrapExcludes = new String[] {
+                // suffixed known to be non-strucutural
                 "**/*.js.gz", "**/*.js.map.gz", "**/*.css.gz",
                 "**/*.css.map.gz", "**/*.svg.gz", "**/*.json.gz",
-                "**/*.ttf.gz", "**/*.eot.gz"
+                "**/*.ttf.gz", "**/*.eot.gz",
+                "**/*.log.gz",
+
+                // bad tars
+                "**/invalid.tar",
+                "**/testtar.tar",
+
+                // suffix known to be non-archives;
+                "**/*.c", "**/*.cpp",
+                "**/*.js",
+                "**/*.log",
         };
+
+        // FIXME: at post-scan-filter (really; should the filter not apply after resolve/scan
 
         final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls");
 
