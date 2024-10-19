@@ -93,7 +93,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     ComponentPatternData cpd = new ComponentPatternData();
                     List<IndexEntry> indexEntries = RPMDBUtils.headerImport(entry.getValue());
                     PackageInfo packageInfo = RPMDBUtils.getNEVRA(indexEntries);
-                    StringJoiner includePatternJoiner = new StringJoiner(",");
+                    StringJoiner includePatternJoiner = new StringJoiner(", ");
 
                     final File distroBaseDir = new File(baseDir, virtualRootPath);
                     final LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(distroBaseDir);

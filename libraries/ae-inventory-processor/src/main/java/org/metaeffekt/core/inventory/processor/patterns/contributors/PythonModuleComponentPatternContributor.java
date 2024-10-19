@@ -63,7 +63,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         // TODO: something is definitely wrong here, some NOOP include patterns and some weird-looking ones
         // TODO: include binary libraries or not?
 
-        includePattern += "," + anchorFile.getParentFile().getName() + "/**/*";
+        includePattern += ", " + anchorFile.getParentFile().getName() + "/**/*";
 
         Artifact artifact = new Artifact();
 
@@ -113,17 +113,17 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         if (topLevelInfo.exists()) {
             try {
                 final List<String> topLevelNames = FileUtils.readLines(topLevelInfo, FileUtils.ENCODING_UTF_8);
-                includePattern += "," + topLevelNames.stream()
+                includePattern += ", " + topLevelNames.stream()
                         .map(String::trim).filter(s -> !StringUtils.isEmpty(s))
                         .map(s -> FileUtils.asRelativePath(contextBaseDir, new File(anchorFile.getParentFile().getParentFile(), s)) + "/**/*")
-                        .collect(Collectors.joining(","));
+                        .collect(Collectors.joining(", "));
             } catch (IOException e) {
                 LOG.debug("IOException while trying to parse top_level.txt at [{}]." , topLevelInfo);
             }
         } else {
             // FIXME: this creates VERY inclusive paths like "numpy/**/*" which didn't even do anything in testing
             // in case no top_level.txt exists we use the current component name
-            includePattern += "," + artifact.getComponent() + "/**/*";
+            includePattern += ", " + artifact.getComponent() + "/**/*";
         }
 
         // construct component pattern

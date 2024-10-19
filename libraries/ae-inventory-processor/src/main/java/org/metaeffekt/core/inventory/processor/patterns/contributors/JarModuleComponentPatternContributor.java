@@ -154,15 +154,15 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                "**/package-lock.json" + "," +
-                "**/package.json" + "," +
-                "**/node_modules/**/*" + "," +
-                "**/bower_components/**/*" + "," +
-                "**/*.jar" + "," +
-                "**/*.xar" + "," +
-                "**/*.xed" + "," +
-                "**/*.so*" + "," +
-                (isManifestAnchor ? "**/maven/**/*" + "," : "") +
+                "**/package-lock.json" + ", " +
+                "**/package.json" + ", " +
+                "**/node_modules/**/*" + ", " +
+                "**/bower_components/**/*" + ", " +
+                "**/*.jar" + ", " +
+                "**/*.xar" + ", " +
+                "**/*.xed" + ", " +
+                "**/*.so*" + ", " +
+                (isManifestAnchor ? "**/maven/**/*" + ", " : "") +
                 "**/*.dll");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
 

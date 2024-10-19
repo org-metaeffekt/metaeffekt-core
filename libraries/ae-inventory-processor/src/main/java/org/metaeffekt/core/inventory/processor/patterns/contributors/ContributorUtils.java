@@ -41,4 +41,34 @@ public class ContributorUtils {
         return archivePath + "/[" + archiveName + "]/**/*";
     }
 
+    public static String extendLibPattern(String path) {
+        int lastSlash = path.lastIndexOf("/");
+
+        if (lastSlash == -1) {
+            // do not extend if a wildcard is in the path
+            if (path.contains("*")) {
+                return null;
+            }
+            return "[" + path + "]";
+        }
+
+        String archiveName = path.substring(lastSlash + 1);
+
+        if (archiveName.contains("*")) {
+            // do not extend if a wildcard is in the archive name
+            return null;
+        }
+
+        String archivePath = path.substring(0, lastSlash);
+
+        final int lastDotIndex = archivePath.lastIndexOf(".");
+
+        if (lastDotIndex > -1) {
+            // apply square brackets only to archive name and extend with wildcard
+            return archivePath + "/" + archiveName.substring(0, lastDotIndex) + ".so*";
+        } else {
+            return archivePath + "/" + archiveName + ".so*";
+        }
+    }
+
 }

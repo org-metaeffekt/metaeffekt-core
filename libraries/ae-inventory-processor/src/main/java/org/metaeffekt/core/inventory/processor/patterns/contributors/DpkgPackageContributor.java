@@ -47,6 +47,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         add(".md5sums");
     }});
 
+    private static final List<String> PATH_FRAGMENTS = new ArrayList<String>() {{
+        add("var/lib/");
+        add("usr/lib/");
+    }};
+
     @SuppressWarnings("unused")
     public static class DpkgStatusFileEntry {
         private static final Logger LOG = LoggerFactory.getLogger(DpkgStatusFileEntry.class);
@@ -56,45 +61,45 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
          */
         public static final Map<String, String> dpkgToKey = Collections.unmodifiableMap(new HashMap<String, String>() {
             {
-                put("Architecture","architecture");
-                put("Breaks","breaks");
-                put("Build-Ids","buildIds");
-                put("Built-Using","builtUsing");
-                put("Cnf-Extra-Commands","cnfExtraCommands");
-                put("Cnf-Priority-Bonus","cnfPriorityBonus");
-                put("Cnf-Visible-Pkgname","cnfVisiblePkgname");
-                put("Conffiles","conffiles");
-                put("Config-Version","configVersion");
-                put("Conflicts","conflicts");
-                put("Depends","depends");
-                put("Description","description");
-                put("Efi-Vendor","efiVendor");
-                put("Enhances","enhances");
-                put("Essential","essential");
-                put("Gstreamer-Decoders","gstreamerDecoders");
-                put("Gstreamer-Elements","gstreamerElements");
-                put("Gstreamer-Encoders","gstreamerEncoders");
-                put("Gstreamer-Uri-Sinks","gstreamerUriSinks");
-                put("Gstreamer-Uri-Sources","gstreamerUriSources");
-                put("Gstreamer-Version","gstreamerVersion");
-                put("Homepage","homepage");
-                put("Important","important");
-                put("Installed-Size","installedSize");
-                put("Lua-Versions","luaVersions");
-                put("Maintainer","maintainer");
-                put("Multi-Arch","multiArch");
-                put("Package","packageName");
-                put("Pre-Depends","preDepends");
-                put("Priority","priority");
-                put("Protected","protectedAttr");
-                put("Provides","provides");
-                put("Recommends","recommends");
-                put("Replaces","replaces");
-                put("Section","section");
-                put("Source","source");
-                put("Status","status");
-                put("Suggests","suggests");
-                put("Version","version");
+                put("Architecture", "architecture");
+                put("Breaks", "breaks");
+                put("Build-Ids", "buildIds");
+                put("Built-Using", "builtUsing");
+                put("Cnf-Extra-Commands", "cnfExtraCommands");
+                put("Cnf-Priority-Bonus", "cnfPriorityBonus");
+                put("Cnf-Visible-Pkgname", "cnfVisiblePkgname");
+                put("Conffiles", "conffiles");
+                put("Config-Version", "configVersion");
+                put("Conflicts", "conflicts");
+                put("Depends", "depends");
+                put("Description", "description");
+                put("Efi-Vendor", "efiVendor");
+                put("Enhances", "enhances");
+                put("Essential", "essential");
+                put("Gstreamer-Decoders", "gstreamerDecoders");
+                put("Gstreamer-Elements", "gstreamerElements");
+                put("Gstreamer-Encoders", "gstreamerEncoders");
+                put("Gstreamer-Uri-Sinks", "gstreamerUriSinks");
+                put("Gstreamer-Uri-Sources", "gstreamerUriSources");
+                put("Gstreamer-Version", "gstreamerVersion");
+                put("Homepage", "homepage");
+                put("Important", "important");
+                put("Installed-Size", "installedSize");
+                put("Lua-Versions", "luaVersions");
+                put("Maintainer", "maintainer");
+                put("Multi-Arch", "multiArch");
+                put("Package", "packageName");
+                put("Pre-Depends", "preDepends");
+                put("Priority", "priority");
+                put("Protected", "protectedAttr");
+                put("Provides", "provides");
+                put("Recommends", "recommends");
+                put("Replaces", "replaces");
+                put("Section", "section");
+                put("Source", "source");
+                put("Status", "status");
+                put("Suggests", "suggests");
+                put("Version", "version");
             }
         });
 
@@ -344,7 +349,6 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART,
                 entry.packageName + "-" + entry.version);
 
-        // set whatever this is in whatever way i think might be correct from looking at other contributors
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
         try {
@@ -367,16 +371,15 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
      *
      * @return a joiner with resulting include patterns or null on failure
      */
-    public StringJoiner createIncludePatternsFromHashFile(String virtualRootPath,
-                                                          String checksum,
-                                                          DpkgStatusFileEntry entry,
-                                                          File correspondingMd5sumsFile) {
+    public StringJoiner createIncludePatternsFromHashFile(String virtualRootPath, String checksum,
+              DpkgStatusFileEntry entry, File correspondingMd5sumsFile) {
+
         // prepare file list
-        final StringJoiner fileJoiner = new StringJoiner(",");
+        final StringJoiner fileJoiner = new StringJoiner(", ");
 
         if (correspondingMd5sumsFile.exists()) {
             try (Stream<String> lineStream = Files.lines(correspondingMd5sumsFile.toPath(), StandardCharsets.UTF_8)) {
-                // stream lines so we don't need to preload to memory
+                // streamlines so we don't need to preload to memory
                 lineStream.forEachOrdered(line -> append(virtualRootPath, checksum, correspondingMd5sumsFile, line, fileJoiner));
             } catch (Exception e) {
                 LOG.info("Could not read file list for entry with name [{}]: {}", entry.packageName, e.getMessage());
@@ -387,9 +390,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName);
         fileJoiner.add("var/lib/dpkg/status.d/" + entry.packageName + ".*");
 
+        // NOTE: we have to check if the share folder or the var/lib/dpkg/info folder are correct patterns or if we can
+        //   assume that they are always present and belong to the package
+        fileJoiner.add("var/lib/dpkg/info/" + entry.packageName + "*");
+
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
 
-        // NOTE: we have to check if the share folder or the var/lib/dpkg/info folder are correct patterns or if we can assume that they are always present and belong to the package
         fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
         if ("tzdata".equals(entry.packageName)) {
             fileJoiner.add("usr/share/zoneinfo/**/*");
@@ -425,6 +431,37 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             // NOTE: we are not analysing whether the checksum has changed here.
 
             fileJoiner.add(toAdd);
+
+            if (toAdd.endsWith(".gz")) {
+                fileJoiner.add(ContributorUtils.extendArchivePattern(toAdd));
+            }
+
+            // FIXME: validate
+            if (toAdd.endsWith(".a") || toAdd.endsWith(".o")) {
+                fileJoiner.add(ContributorUtils.extendLibPattern(toAdd));
+            }
+
+            // FIXME: compensated symbolic link issue lib --> var/lib
+            if (toAdd.startsWith("lib/")) {
+                fileJoiner.add("var/" + toAdd);
+                fileJoiner.add("usr/" + toAdd);
+            }
+
+            // FIXME: compensated symbolic link issue sbin --> usr/sbin
+            if (toAdd.startsWith("sbin/")) {
+                fileJoiner.add("usr/" + toAdd);
+            }
+
+            // FIXME: compensated symbolic link issue bin --> usr/bin
+            if (toAdd.startsWith("bin/")) {
+                fileJoiner.add("usr/" + toAdd);
+            }
+
+            // FIXME: compensated symbolic link issue var/lib --> lib
+            if (toAdd.startsWith("var/lib/")) {
+                fileJoiner.add(toAdd.substring(4));
+            }
+
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
@@ -435,6 +472,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                                                                 String relativeAnchorFilePath,
                                                                 String checksum) {
         final File anchorFile = new File(baseDir, relativeAnchorFilePath);
+
+        virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
 
         List<DpkgStatusFileEntry> entries;
         try {
@@ -490,21 +529,19 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 }
             }
 
-            // get path of virtual root
-            Path virtualRoot = new File(virtualRootPath).toPath();
-            Path relativeAnchorFile = new File(relativeAnchorFilePath).toPath();
             // create patterns
-            StringJoiner includePatternsJoiner = createIncludePatternsFromHashFile(baseDir + "/" + virtualRootPath,
-                    checksum, entry, correspondingMd5sumsFile);
+            StringJoiner includePatternsJoiner = createIncludePatternsFromHashFile(
+                    virtualRootPath, checksum, entry, correspondingMd5sumsFile);
 
             if (includePatternsJoiner == null) {
                 // something went wrong. skip without adding.
                 continue;
             }
 
+
+            final String relativePath = org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRootPath, relativeAnchorFilePath);
             final ComponentPatternData cpd = createComponentPattern(
-                    virtualRoot.relativize(relativeAnchorFile).toString(),
-                    entry, checksum, includePatternsJoiner.toString(), distro);
+                    relativePath, entry, checksum, includePatternsJoiner.toString(), distro);
 
             cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
             cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "dpkg");
@@ -523,16 +560,16 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
      * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      * @param virtualRootPath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     *
      * @return same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
      */
     public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
-                                                                     String virtualRootPath,
-                                                                     String relativeAnchorFilePath,
-                                                                     String checksum) {
+                 String virtualRootPath, String relativeAnchorFilePath,String checksum) {
+
         final File md5sumsFile = new File(baseDir, relativeAnchorFilePath);
 
         // maybe this check should be moved to applies but it also requires a constructed File so...
-        String parentPath = md5sumsFile.getParentFile().getAbsolutePath();
+        final String parentPath = md5sumsFile.getParentFile().getAbsolutePath();
         if (!parentPath.endsWith("var/lib/dpkg/status.d")) {
             // this md5sums is not in the expected location. probably not a dpkg status.d anchor. skip it.
             return Collections.emptyList();
@@ -543,12 +580,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             return Collections.emptyList();
         }
 
-        List<ComponentPatternData> createdComponentPatterns = new ArrayList<>();
+        final List<ComponentPatternData> createdComponentPatterns = new ArrayList<>();
 
-        File fileWithoutMd5sums = new File(
-                md5sumsFile.getParentFile(),
-                md5sumsFile.getName().replaceAll("\\.md5sums$", "")
-        );
+        File fileWithoutMd5sums = new File(md5sumsFile.getParentFile(),
+                md5sumsFile.getName().replaceAll("\\.md5sums$", ""));
 
         if (!fileWithoutMd5sums.exists()) {
             // no metadata is not that useful. i'll just expect them to have valid metadata for now.
@@ -564,11 +599,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         }
 
         if (entries.size() != 1) {
-            LOG.warn(
-                    "Skipping potential status.d anchor with multiple entries: expected 1 but got [{}] from [{}].",
-                    entries.size(),
-                    fileWithoutMd5sums.getAbsoluteFile()
-            );
+            LOG.warn("Skipping potential status.d anchor with multiple entries: expected 1 but got [{}] from [{}].",
+                entries.size(), fileWithoutMd5sums.getAbsoluteFile());
         }
 
         DpkgStatusFileEntry entry = entries.get(0);
@@ -576,18 +608,17 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         // this may be less complicated since this type of format seems to have simpler filenames
 
         // compute pseudoroot
-        File virtualRoot = md5sumsFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+        final File virtualRoot = md5sumsFile.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
         // create patterns
         if (!virtualRoot.exists()) {
             LOG.warn("Computed virtual root [{}] does not exist", virtualRoot.getAbsolutePath());
             return Collections.emptyList();
         }
 
-        StringJoiner includesJoiner = createIncludePatternsFromHashFile(virtualRootPath,
-                checksum, entry, md5sumsFile);
+        StringJoiner includesJoiner = createIncludePatternsFromHashFile(virtualRootPath, checksum, entry, md5sumsFile);
 
         ComponentPatternData cpd = createComponentPattern(
-                virtualRoot.toPath().relativize(md5sumsFile.toPath()).toString(),
+                org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRoot, md5sumsFile),
                 entry, checksum,
                 includesJoiner.toString(), LinuxDistributionUtil.parseDistro(new File(baseDir, virtualRootPath)));
 

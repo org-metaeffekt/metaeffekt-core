@@ -98,7 +98,9 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
                         includePatterns.add("licenses/" + packageNameCandidate.toLowerCase() + "-" + versionCandidate + ".*");
                     }
                 }
-                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, packageFolder + "/**/*," + "scripts/" + packageFolder + "/**/*," + String.join(",", includePatterns));
+                // FIXME-AOE: the original include was way to eager; checkout bitnami discourse container
+                // cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, packageFolder + "/**/*," + "scripts/" + packageFolder + "/**/*," + String.join(", ", includePatterns));
+                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, String.join(", ", includePatterns));
                 cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
                 cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                 cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, getDeclaredLicense(packageNode));
