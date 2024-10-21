@@ -50,7 +50,7 @@ public abstract class AbstractModelBase implements Serializable {
     public AbstractModelBase() {
     }
 
-    public String get(String key) {
+    public final String get(final String key) {
         return get(key, null);
     }
 
@@ -59,20 +59,21 @@ public abstract class AbstractModelBase implements Serializable {
      *
      * @param key          The key to get the value for.
      * @param defaultValue The default value to use, in case the key is not associated.
+     *
      * @return The value associated with the key or defaultValue in case no value is associated. In case key is
      * <code>null</code> also <code>null</code> is returned.
      */
-    public String get(String key, String defaultValue) {
+    public final String get(final String key, final String defaultValue) {
         if (key == null) return null;
         final String currentValue = attributeMap.get(key);
         return (currentValue != null) ? currentValue : defaultValue;
     }
 
-    public String get(Attribute key) {
+    public final String get(final Attribute key) {
         return get(key.getKey(), null);
     }
 
-    public String get(Attribute key, String defaultValue) {
+    public final String get(final Attribute key, final String defaultValue) {
         return get(key.getKey(), defaultValue);
     }
 
@@ -80,9 +81,10 @@ public abstract class AbstractModelBase implements Serializable {
      * Function to check whether a key exists.
      *
      * @param key The key to check for.
+     *
      * @return <code>true</code> if the key exists, <code>false</code> if not.
      */
-    public boolean has(String key) {
+    public final boolean has(final String key) {
         return get(key) != null;
     }
 
@@ -90,10 +92,11 @@ public abstract class AbstractModelBase implements Serializable {
      * Function to check for a boolean value.
      *
      * @param key The key to get the boolean value for.
+     *
      * @return The boolean value associated with the key. Returns <code>false</code> in case the associated value is
      * not equivalent to <code>Boolean.TRUE</code> or in case key is <code>null</code>.
      */
-    public boolean is(String key) {
+    public final boolean is(final String key) {
         return is(key, false);
     }
 
@@ -105,7 +108,7 @@ public abstract class AbstractModelBase implements Serializable {
      * @return The boolean value associated with the key. Returns defaultValue in case the associated value is
      * not equivalent to <code>Boolean.TRUE</code> and <code>false</code> in case key is <code>null</code>.
      */
-    public boolean is(String key, boolean defaultValue) {
+    public final boolean is(final String key, final boolean defaultValue) {
         if (key == null) return defaultValue;
         final String currentValue = attributeMap.get(key);
         return (currentValue != null) ? Boolean.TRUE.toString().equalsIgnoreCase(currentValue) : defaultValue;

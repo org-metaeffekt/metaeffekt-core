@@ -51,6 +51,8 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static final String SEPARATOR_SLASH = "/";
     public static final String SEPARATOR_COMMA = ",";
 
+    public static final char SEPARATOR_SLASH_CHAR = '/';
+
     private static Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
     private static Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
     private static Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
@@ -213,7 +215,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      *
      * @return <code>true</code> in case the pattern matches the path.
      */
-    private static boolean internalMatching(String normalizedPath, String normalizedPattern) {
+    private static boolean xinternalMatching(String normalizedPath, String normalizedPattern) {
         if (normalizedPattern.startsWith(SEPARATOR_SLASH)) {
             // NOTE: many patterns are in the shape **/*.<suffix> and **/<sub-path>/**/*; these could be optimized
             if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
@@ -228,6 +230,60 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
                 return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
             }
         }
+    }
+
+    private static boolean internalMatching(final String normalizedPath, final String normalizedPattern) {
+
+        // match on string equals level when no wildcard is contained
+        if (!normalizedPattern.contains("*")) {
+            return normalizedPath.equals(normalizedPattern);
+        }
+
+        if (normalizedPattern.startsWith(SEPARATOR_SLASH)) {
+            // matching absolute path; check whether this is at all needed; i.e. by static defined component patterns
+
+            if (!normalizedPath.contains(":")) {
+                final Boolean matched = matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
+                if (matched != null) return matched;
+            }
+
+            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
+                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
+            } else {
+                return ANT_PATH_MATCHER.match(normalizedPattern.substring(1), normalizedPath);
+            }
+        } else {
+
+            if (!normalizedPath.contains(":")) {
+                if (normalizedPattern.startsWith("**/")) {
+                    final String subPattern = normalizedPattern.substring(2);
+                    if (!subPattern.contains("*") && !subPattern.contains(":")) {
+                        return normalizedPath.endsWith(subPattern);
+                    }
+                } else {
+                    final Boolean matched = matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
+                    if (matched != null) return matched;
+                }
+            }
+
+            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
+                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath.substring(1));
+            } else {
+                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
+            }
+        }
+    }
+
+    private static Boolean matchStandardPatternAnyFileInPath(String normalizedPath, String normalizedPattern) {
+        if (normalizedPattern.endsWith("/**/*")) {
+            final String subPattern = normalizedPattern.substring(0, normalizedPattern.length() - 4);
+            if (!subPattern.contains("*") && !subPattern.contains(":")) {
+                return normalizedPath.startsWith(subPattern);
+            }
+        }
+
+        // return null to indicate that match was not evaluated
+        return null;
     }
 
     public static boolean matches(final Set<String> normalizedPatternSet, final String normalizedPath) {
@@ -252,7 +308,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static String normalizePathToLinux(String path) {
         if (path == null) return null;
-        return path.replace("\\", SEPARATOR_SLASH);
+        return path.replace('\\', SEPARATOR_SLASH_CHAR);
     }
 
     public static String normalizePathToLinux(File file) {

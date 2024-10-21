@@ -68,7 +68,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
             String version = null;
             String architecture = null;
             String license = null;
-            StringJoiner includePatterns = new StringJoiner(",");
+            StringJoiner includePatterns = new StringJoiner(", ");
             includePatterns.add("lib/apk/db/**/*");
             String currentFolder = null;
             List<String> lines = lineStream.collect(Collectors.toList());
@@ -135,7 +135,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                     if (packageName != null && version != null && architecture != null) {
                         if (includePatterns.length() > 0) {
                             processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
-                            includePatterns = new StringJoiner(",");
+                            includePatterns = new StringJoiner(", ");
                         } else {
                             LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
                             // FIXME: collect only package-specific folders

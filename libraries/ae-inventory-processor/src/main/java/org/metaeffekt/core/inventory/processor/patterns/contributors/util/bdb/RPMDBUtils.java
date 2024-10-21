@@ -282,7 +282,7 @@ public class RPMDBUtils {
                 throw new IOException("Failed to read integer");
             }
             resultBuffer.put(temp);
-            resultBuffer.flip();
+            ((java.nio.Buffer) resultBuffer).flip();
             return resultBuffer.getInt();
         } catch (IOException e) {
             return 0;
@@ -309,7 +309,7 @@ public class RPMDBUtils {
                 throw new IOException("Failed to read integer");
             }
             resultBuffer.put(temp);
-            resultBuffer.flip();
+            ((java.nio.Buffer) resultBuffer).flip();
             return Integer.toUnsignedLong(resultBuffer.getInt());
         } catch (IOException e) {
             return 0L;

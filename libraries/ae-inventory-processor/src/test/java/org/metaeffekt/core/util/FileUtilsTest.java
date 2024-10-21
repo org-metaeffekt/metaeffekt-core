@@ -57,6 +57,14 @@ public class FileUtilsTest {
         Assertions.assertThat(FileUtils.matches("/**/*", "C:/hello/world/test")).isTrue();
         Assertions.assertThat(FileUtils.matches("/**/*", "C:/hello/world/test")).isTrue();
         Assertions.assertThat(FileUtils.matches("C:/**/*", "C:/hello/world/test")).isTrue();
+
+        Assertions.assertThat(FileUtils.matches("a/b/**/*", "a/b/c")).isTrue();
+        Assertions.assertThat(FileUtils.matches("a/b/**/*", "a/b/c/d")).isTrue();
+        Assertions.assertThat(FileUtils.matches("**/a/b/**/*", "f/e/a/b/c/d")).isTrue();
+        Assertions.assertThat(FileUtils.matches("**/a/b/**/*", "f/e/a/b/c/d")).isTrue();
+
+        Assertions.assertThat(FileUtils.matches("**/a/b", "f/e/a/b")).isTrue();
+        Assertions.assertThat(FileUtils.matches("**/a/b", "f/e/a/c")).isFalse();
     }
 
 }
