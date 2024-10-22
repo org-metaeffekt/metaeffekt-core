@@ -345,10 +345,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public boolean isVulnerabilityInsignificant(AeaaVulnerability vulnerability) {
+        final double insignificantThreshold = this.getInsignificantThreshold();
         if (insignificantThreshold == -1.0) return true;
         final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial();
-        final double score = vector == null ? 0.0 : vector.getOverallScore();
-        return score < insignificantThreshold;
+        if (vector == null) {
+            return false;
+        } else {
+            return vector.getOverallScore() < insignificantThreshold;
+        }
     }
 
     public double getIncludeScoreThreshold() {
