@@ -58,6 +58,7 @@ public final class Constants {
     public static final String KEY_PATH_IN_ASSET = "Path in Asset";
 
     public static final String KEY_CHECKSUM = "Checksum";
+    public static final String KEY_CONTENT_CHECKSUM = "Content Checksum";
     public static final String KEY_SCOPE = "Scope";
 
     // Artifact and Asset base keys

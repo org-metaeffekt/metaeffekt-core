@@ -80,6 +80,7 @@ public class DirectoryScanExtractorConfiguration {
         // iterate extracted artifacts and match with component patterns
         for (Artifact artifact : resultInventory.getArtifacts()) {
             FilePatternQualifierMapper filePatternQualifierMapper = new FilePatternQualifierMapper();
+            filePatternQualifierMapper.setArtifact(artifact);
 
             // check artifact is covered by a component pattern
             String componentName = artifact.getComponent();
@@ -93,7 +94,9 @@ public class DirectoryScanExtractorConfiguration {
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
                 Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
-                filePatternQualifierMapper.setQualifier(deriveMapQualifier(componentName, componentPart, componentVersion));
+                filePatternQualifierMapper.setQualifier(componentPart);
+                filePatternQualifierMapper.setDerivedQualifier(deriveMapQualifier(componentName, componentPart, componentVersion));
+                filePatternQualifierMapper.setPathInAsset(artifact.getPathInAsset());
                 List<File> componentPatternFiles = new ArrayList<>();
                 for (List<File> files : duplicateToComponentPatternFilesMap.values()) {
                     componentPatternFiles.addAll(files);
@@ -101,9 +104,7 @@ public class DirectoryScanExtractorConfiguration {
                 filePatternQualifierMapper.setFiles(componentPatternFiles);
                 filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
 
-                // qualifierToComponentPatternFilesMap.put(deriveMapQualifier(componentName, componentPart, componentVersion), componentPatternFiles);
                 filePatternQualifierMapperList.add(filePatternQualifierMapper);
-                // LOG.info("Found {} files for component pattern {}", componentPatternFiles.size(), componentPatternMatches.key);
             }
         }
 
@@ -111,7 +112,6 @@ public class DirectoryScanExtractorConfiguration {
     }
 
     private Map<Boolean, List<File>> mapCoveredFilesByDuplicateStatus(Artifact artifact, ComponentPatternMatches componentPatternMatches, FilePatternQualifierMapper filePatternQualifierMapper) {
-        // FIXME: check why some files are added to qualifiers even if they don't belong there
         HashMap<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>();
 
         // aggregate all covered files into one directory
@@ -151,9 +151,8 @@ public class DirectoryScanExtractorConfiguration {
                         aggregateComponentFiles(cpd, getExtractedFilesBaseDir(), componentBaseDir, includes, excludes, componentPatternCoveredFiles);
                     } else {
                         // the component pattern matches a single file; this is what we add to the list
-                        if (!FileUtils.isSymlink(componentBaseDir) && componentBaseDir.length() > 0) {
-                            componentPatternCoveredFiles.add(componentBaseDir);
-                        }
+                        // TODO: check if we should add symbolic links as well
+                        componentPatternCoveredFiles.add(componentBaseDir);
                     }
                 }
             }
@@ -211,9 +210,8 @@ public class DirectoryScanExtractorConfiguration {
     private void aggregateFiles(File baseDir, String[] coveredFiles, List<File> componentPatternCoveredFiles) {
         for (String file : coveredFiles) {
             final File srcFile = new File(baseDir, file);
-            if (!FileUtils.isSymlink(srcFile) && srcFile.length() > 0) {
-                componentPatternCoveredFiles.add(srcFile);
-            }
+            // TODO: check if we should add symbolic links as well
+            componentPatternCoveredFiles.add(srcFile);
         }
     }
 
@@ -327,14 +325,13 @@ public class DirectoryScanExtractorConfiguration {
         return sb.toString();
     }
 
-    private String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
+    public static String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
         final StringBuilder sb = new StringBuilder();
         if (!StringUtils.isBlank(componentName)) {
             sb.append(componentName).append("-");
         }
         sb.append(componentPart);
         if (!StringUtils.isBlank(componentVersion)) {
-            sb.append("-");
             sb.append(componentVersion);
         }
         return sb.toString();

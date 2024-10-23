@@ -94,6 +94,8 @@ public class LinuxDistributionUtil {
 
         public String release;
 
+        public String vendor;
+
         /**
          * The map enables to collect further details available for post-processing.
          */
@@ -191,6 +193,14 @@ public class LinuxDistributionUtil {
         if (linuxDistro.cpe != null) {
             if (linuxDistro.id == null) {
                 parseSystemReleaseCpe(linuxDistro);
+            }
+        }
+
+        if (linuxDistro.id != null) {
+            if ("rhel".equals(linuxDistro.id)) {
+                linuxDistro.vendor = "redhat";
+            } else {
+                linuxDistro.vendor = linuxDistro.id;
             }
         }
 
