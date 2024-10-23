@@ -348,7 +348,7 @@ public class ArchiveUtils {
         boolean mkdir = !targetDir.exists();
 
         // FIXME-KKL: discuss before enabling
-        // skip unwrap if target already exists
+        // skip unwrap if target already exists (we already have extracted the directory)
         // if (!mkdir) return true;
 
         // try unzip
@@ -565,4 +565,5 @@ public class ArchiveUtils {
             }
         }
     }
+
 }
