@@ -21,7 +21,13 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.taskdefs.Zip;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +35,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -99,10 +102,11 @@ public class ArchiveUtils {
 
         // cab: windows cabinet file
         windowsExtensions.add("cab");
+        windowsExtensions.add("chm");
         // exe: windows executable (sometimes self-extracting archives)
-        windowsExtensions.add("exe");
+//        windowsExtensions.add("exe");
         // msi: windows installer package
-        windowsExtensions.add("msi");
+//        windowsExtensions.add("msi");
 
         jmodExtensions.add("jmod");
 
@@ -299,14 +303,21 @@ public class ArchiveUtils {
 
 
     public static void extractAndCopyWithSymlinks(File fileToUnzip, File targetDir, ArchiveFormat format) throws IOException {
-        IInArchive archive = SevenZip.openInArchive(format, new RandomAccessFileInStream(new RandomAccessFile(fileToUnzip, "r")));
+        try (
+            final RandomAccessFile r = new RandomAccessFile(fileToUnzip, "r");
+            final RandomAccessFileInStream iInStream = new RandomAccessFileInStream(r);
+            IInArchive archive = SevenZip.openInArchive(format, iInStream)) {
 
-        // use IntStream to generate the array of item indices
-        int[] items = IntStream.range(0, archive.getNumberOfItems()).toArray();
+            // use IntStream to generate the array of item indices
+            int[] items = IntStream.range(0, archive.getNumberOfItems()).toArray();
 
-        archive.extract(items, false, // Non-test mode
-                new MyExtractCallback(archive, targetDir));
-        archive.close();
+            final LocalExtractCallback callback = new LocalExtractCallback(archive, targetDir);
+            try {
+                archive.extract(items, false, callback);
+            } finally {
+                callback.close();
+            }
+        }
     }
 
     public static boolean unpackIfPossible(File archiveFile, File targetDir, List<String> issues) {
@@ -448,37 +459,54 @@ public class ArchiveUtils {
     private static void extractWindowsFile(File file, File targetFile) {
         // this requires 7zip to perform the extraction
         try {
-            Process exec = Runtime.getRuntime().exec("7z x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
-            FileUtils.waitForProcess(exec);
+
+            String suffix = FilenameUtils.getExtension(file.getName());
+
+            ArchiveFormat format = null;
+            if ("chm".equalsIgnoreCase(suffix)) {
+                format = ArchiveFormat.CHM;
+            } else {
+                format = ArchiveFormat.CAB;
+            }
+
+            extractAndCopyWithSymlinks(file, targetFile, format);
+
+//            Process exec = Runtime.getRuntime().exec("7z x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
+//            FileUtils.waitForProcess(exec);
         } catch (IOException e) {
             LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed.");
         }
     }
 
-    static class MyExtractCallback implements IArchiveExtractCallback {
-        private final IInArchive inArchive;
+    private static class LocalExtractCallback implements IArchiveExtractCallback, Closeable {
+        private final IInArchive archive;
         private final File targetDir;
 
-        public MyExtractCallback(IInArchive inArchive, File targetDir) {
-            this.inArchive = inArchive;
+        // we need to memorize the output stream
+        private OutputStream outputStream;
+
+        public LocalExtractCallback(IInArchive archive, File targetDir) {
+            this.archive = archive;
             this.targetDir = targetDir;
         }
 
-        public ISequentialOutStream getStream(int index,
-                                              ExtractAskMode extractAskMode) throws SevenZipException {
+        public ISequentialOutStream getStream(int index, ExtractAskMode extractAskMode) throws SevenZipException {
+            // close existing
+            IOUtils.closeQuietly(outputStream);
+
             if (extractAskMode != ExtractAskMode.EXTRACT) {
                 return null;
             }
 
-            String path = (String) inArchive.getProperty(index, PropID.PATH);
-            File outputFile = new File(targetDir, path);
-            boolean isFolder = (Boolean) inArchive.getProperty(index, PropID.IS_FOLDER);
-            String symLink = inArchive.getStringProperty(index, PropID.SYM_LINK);
+            final String path = (String) archive.getProperty(index, PropID.PATH);
+            final File outputFile = new File(targetDir, path);
+            final boolean isFolder = (Boolean) archive.getProperty(index, PropID.IS_FOLDER);
+            final String symLink = archive.getStringProperty(index, PropID.SYM_LINK);
 
             // create parent directories if necessary
             if (outputFile.getParentFile() != null && !outputFile.getParentFile().exists()) {
                 try {
-                    FileUtils.forceMkdir(outputFile.getParentFile());
+                    FileUtils.forceMkdirParent(outputFile);
                 } catch (IOException e) {
                     throw new SevenZipException("Error creating parent directory: " + outputFile.getParentFile(), e);
                 }
@@ -498,8 +526,8 @@ public class ArchiveUtils {
 
             // handle symbolic links
             if (!StringUtils.isBlank(symLink)) {
-                // Resolve the symbolic link target based on its relative path
-                Path symlinkTargetPath;
+                // resolve the symbolic link target based on its relative path
+                final Path symlinkTargetPath;
                 if (symLink.startsWith("../")) {
                     // handle relative symbolic link
                     symlinkTargetPath = outputFile.getParentFile().toPath().resolve(symLink).normalize();
@@ -514,7 +542,9 @@ public class ArchiveUtils {
                 // create the symbolic link
                 try {
                     Files.createSymbolicLink(outputFile.toPath(), symlinkTargetPath);
-                    LOG.info("Created symbolic link [{}] -> [{}].", outputFile, symlinkTargetPath);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Created symbolic link [{}] -> [{}].", outputFile, symlinkTargetPath);
+                    }
                 } catch (IOException e) {
                     throw new SevenZipException("Error creating symbolic link: " + outputFile + " -> " + symlinkTargetPath, e);
                 }
@@ -523,29 +553,29 @@ public class ArchiveUtils {
 
             // handle file extraction
             try {
-                final OutputStream out = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                return data -> {
+                outputStream = Files.newOutputStream(outputFile.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                final ISequentialOutStream iSequentialOutStream = data -> {
                     try {
-                        out.write(data);
-                        out.flush();
+                        outputStream.write(data);
+                        outputStream.flush();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                     return data.length;
                 };
+                return iSequentialOutStream;
             } catch (IOException e) {
                 throw new SevenZipException("Error writing to file: " + outputFile, e);
             }
         }
 
-        public void prepareOperation(ExtractAskMode extractAskMode) {
-        }
-
-        public void setOperationResult(ExtractOperationResult
-                                               extractOperationResult) {
+        public void setOperationResult(ExtractOperationResult extractOperationResult) {
             if (extractOperationResult != ExtractOperationResult.OK) {
                 LOG.error("Extract operation result is not OK: {}", extractOperationResult);
             }
+        }
+
+        public void prepareOperation(ExtractAskMode extractAskMode) {
         }
 
         public void setCompleted(long completeValue) {
@@ -554,6 +584,81 @@ public class ArchiveUtils {
         public void setTotal(long total) {
         }
 
+        @Override
+        public void close() throws IOException {
+            IOUtils.closeQuietly(outputStream);
+        }
+    }
+
+    /**
+     * Uses the native zip command to zip the file. Uses the -X attribute to create files with deterministic checksum.
+     *
+     * @param sourceDir     The directory to zip (recursively).
+     * @param targetZipFile The target zip file name.
+     */
+    public static void zipAnt(File sourceDir, File targetZipFile) {
+        final Zip zip = new Zip();
+        final Project project = new Project();
+        project.setBaseDir(sourceDir);
+        zip.setProject(project);
+        zip.setBasedir(sourceDir);
+        zip.setCompress(true);
+        zip.setDestFile(targetZipFile);
+        zip.setFollowSymlinks(false);
+        zip.execute();
+    }
+
+    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers,
+                                                 Inventory inventory, Set<Artifact> removeableArtifacts, File targetDir) {
+        // create an ant project
+        final Project antProject = new Project();
+        antProject.init();
+
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
+            Artifact foundArtifact = inventory.getArtifacts().stream()
+                    .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
+                    .findFirst().orElse(null);
+            try {
+                // loop over each entry in the file map
+                for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
+                    List<File> files = entry.getValue();
+                    if (files.isEmpty()) {
+                        continue;
+                    }
+
+                    // add each file to the zip
+                    for (File file : files) {
+                        // copy the file to the tmp folder
+                        FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
+                    }
+
+                    final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
+                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
+
+                    // set the content checksum
+                    if (foundArtifact != null) {
+                        final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
+                        mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
+                        foundArtifact.set(KEY_CONTENT_CHECKSUM, contentChecksum);
+                        final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
+                        mapper.getArtifact().set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
+                        foundArtifact.set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
+                        ArchiveUtils.zipAnt(tmpFolder, zipFile);
+
+                        if (!zipFile.exists()) {
+                            removeableArtifacts.add(foundArtifact);
+                            throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                LOG.error("Error processing artifact: [{}].", mapper.getArtifact().getId(), e);
+            } finally {
+                // ensure the tmp folder is deleted
+                FileUtils.deleteDirectoryQuietly(tmpFolder);
+            }
+        }
     }
 
 }
