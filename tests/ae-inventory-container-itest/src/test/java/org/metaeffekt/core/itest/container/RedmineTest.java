@@ -44,7 +44,8 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, RedmineTest.class.getSimpleName().toLowerCase(), null, RedmineTest.class.getName());
+        String path = exportContainerFromRegistryByRepositoryAndTag(null,
+                RedmineTest.class.getSimpleName().toLowerCase(), null, RedmineTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
         AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
                 .setSource("file://" + path)
@@ -72,13 +73,14 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bower-module")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "linux-distro")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(2);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(245);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(246);
+
         // FIXME: why has this decreased to 162 from 163?
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(162);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(2);
 
         // FIXME: why are so many files not covered
-        analysis.selectArtifacts(AttributeValue.attributeValue(Artifact.Attribute.COMPONENT, null)).hasSizeOf(7020);
+        analysis.selectArtifacts(AttributeValue.attributeValue(Artifact.Attribute.COMPONENT, null)).hasSizeOf(5404);
 
         // TODO:
         // ruby-3.2.0 must be detected
@@ -89,10 +91,15 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
-        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+
+        final List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.
+                detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+
+        final DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
+
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
+
 }
