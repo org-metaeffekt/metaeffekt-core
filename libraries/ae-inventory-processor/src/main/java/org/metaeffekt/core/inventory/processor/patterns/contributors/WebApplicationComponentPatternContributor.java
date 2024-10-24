@@ -68,9 +68,9 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
                     derivedPart = derivedPart + "-" + version;
                 }
 
-                String derivedComponent = webXmlData.description;
+                String derivedComponent = webXmlData.displayName;
                 if (StringUtils.isBlank(derivedComponent)) {
-                    derivedComponent = webXmlData.displayName;
+                    derivedComponent = webXmlData.description;
                 }
 
                 String derivedVersion = version;

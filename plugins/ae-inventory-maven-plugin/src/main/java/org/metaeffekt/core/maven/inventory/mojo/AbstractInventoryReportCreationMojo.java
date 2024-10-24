@@ -245,11 +245,20 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
     /**
-     * If set, will overwrite the {@link #securityPolicy} with the contents of this file.
+     * If set, will overwrite the {@link #securityPolicy} with the contents of this file.<br>
+     * If the {@link #securityPolicyOverwriteJson} is set, the properties of both will be merged.
      *
      * @parameter
      */
     private File securityPolicyFile;
+
+    /**
+     * If set, will overwrite the {@link #securityPolicy} with the contents of this JSON string.<br>
+     * If the {@link #securityPolicyFile} is set, the properties of both will be merged.
+     *
+     * @parameter
+     */
+    private String securityPolicyOverwriteJson;
 
     /**
      * @parameter default-value="false"
@@ -346,13 +355,16 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setTargetComponentDir(targetComponentDir);
 
         // vulnerability settings
-        if (securityPolicyFile != null) {
-            try {
-                getLog().info("Reading security policy from securityPolicyFile: file://" + securityPolicyFile.getCanonicalPath());
-                securityPolicy = CentralSecurityPolicyConfiguration.fromFile(securityPolicyFile);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to read securityPolicyFile from file://" + securityPolicyFile.getAbsolutePath() + " " + e.getMessage(), e);
+        try {
+            if (securityPolicyOverwriteJson != null) {
+                getLog().info("Reading security policy from securityPolicyOverwriteJson: " + securityPolicyOverwriteJson);
             }
+            if (securityPolicyFile != null) {
+                getLog().info("Reading security policy from securityPolicyFile: file://" + securityPolicyFile.getCanonicalPath());
+            }
+            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to process security policy configuration: " + e.getMessage(), e);
         }
 
         // log the security policy only when it fits the context -->
