@@ -163,6 +163,10 @@ public abstract class ProcessConfiguration {
 
     /* PROPERTY LOADING UTILITY METHODS */
 
+    protected <F, T> T optionalConversion(F value, Function<F, T> converter) {
+        return value != null ? converter.apply(value) : null;
+    }
+
     protected void loadStringProperty(Map<String, Object> properties, String key, Consumer<String> consumer) {
         try {
             if (properties != null && properties.containsKey(key)) {

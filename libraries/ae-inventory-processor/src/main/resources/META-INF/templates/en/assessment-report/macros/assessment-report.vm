@@ -2,7 +2,7 @@
 ## this will result in the empty lines appearing at the head of the document, which is not allowed in XML.
 ##
 #macro (assetAssessmentSummary $id $assets, $useModifiedSeverity)
-    #set ($assetGroups = $assessmentReportAdapter.groupAssetsByAssetGroup($assets))
+    #set ($assetGroups = $assessmentReportAdapter.groupAssetsByAssetGroup($assets, $useModifiedSeverity))
     #foreach ($group in $assetGroups)
         #assetAssessmentSummaryTable($id $group)
     #end

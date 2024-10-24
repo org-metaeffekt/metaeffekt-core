@@ -58,6 +58,7 @@ public class ArtifactUnwrapTask extends ScanTask {
     @Override
     public void process(FileSystemScanContext fileSystemScanContext) {
         final String path = artifact.get(ATTRIBUTE_KEY_ARTIFACT_PATH);
+
         final FileRef fileRef = new FileRef(fileSystemScanContext.getBaseDir().getPath() + "/" + path);
 
         if (LOG.isTraceEnabled()) {
@@ -111,50 +112,58 @@ public class ArtifactUnwrapTask extends ScanTask {
                         !file.getName().toLowerCase().endsWith(".jar") &&
                         !file.getName().toLowerCase().endsWith(".xar"));
 
-        if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap) && unpackIfPossible(file, targetFolder, issues)) {
-            // unpack successful...
+        boolean unpacked = false;
 
-            postProcessUnwrapped(artifact, file, targetFolder, issues);
+        if (!explicitNoUnrwap && (implicitUnwrap || explicitUnrwap)) {
 
-            final boolean implicitExclude = !explicitInclude && !explicitUnrwap;
+            if (unpackIfPossible(file, targetFolder, issues)) {
+                // unpack successful...
+                unpacked = true;
 
-            boolean markForDelete = false;
+                postProcessUnwrapped(artifact, file, targetFolder, issues);
 
-            if (explicitExclude || implicitExclude) {
-                if (implicitExclude) {
-                    // apply implicit exclusion only for sub-artifacts
-                    final FileRef parentPath = new FileRef(fileRef.getFile().getParentFile().getAbsolutePath());
-                    if (!parentPath.getPath().equals(fileSystemScanContext.getBaseDir().getPath())) {
-                        LOG.info("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
-                        markForDelete = true;
+                final boolean implicitExclude = !explicitInclude && !explicitUnrwap;
+
+                boolean markForDelete = false;
+
+                if (explicitExclude || implicitExclude) {
+                    if (implicitExclude) {
+                        // apply implicit exclusion only for sub-artifacts
+                        final FileRef parentPath = new FileRef(fileRef.getFile().getParentFile().getAbsolutePath());
+                        if (!parentPath.getPath().equals(fileSystemScanContext.getBaseDir().getPath())) {
+                            LOG.info("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
+                            markForDelete = true;
+                        } else {
+                            LOG.info("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
+                        }
                     } else {
-                        LOG.info("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
+                        LOG.info("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
+                        markForDelete = true;
                     }
-                } else {
-                    LOG.info("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
-                    markForDelete = true;
                 }
+
+                if (markForDelete) {
+                    artifact.set(ATTRIBUTE_KEY_SCAN_DIRECTIVE, SCAN_DIRECTIVE_DELETE);
+
+                    // the original archive file is deleted if the inventory entry is bound to be removed
+                    // NOTE: otherwise the collection process will collect both the packed and the unpacked files.
+                    FileUtils.deleteQuietly(file);
+                } else {
+                    addChecksumsAndHashes(fileRef);
+                }
+
+                // trigger collection of content
+                LOG.info("Collecting subtree on [{}].", fileRef.getPath());
+                final FileRef dirRef = new FileRef(targetFolder);
+
+                // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)
+                final VirtualContext virtualContext = new VirtualContext(dirRef);
+                fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
+                        rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext, markForDelete)));
             }
+        }
 
-            if (markForDelete) {
-                artifact.set(ATTRIBUTE_KEY_SCAN_DIRECTIVE, SCAN_DIRECTIVE_DELETE);
-
-                // the original archive file is deleted if the inventory entry is bound to be removed
-                // NOTE: otherwise the collection process will collect both the packed and the unpacked files.
-                FileUtils.deleteQuietly(file);
-            } else {
-                addChecksumsAndHashes(fileRef);
-            }
-
-            // trigger collection of content
-            LOG.info("Collecting subtree on [{}].", fileRef.getPath());
-            final FileRef dirRef = new FileRef(targetFolder);
-
-            // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)
-            final VirtualContext virtualContext = new VirtualContext(dirRef);
-            fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
-                    rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext, markForDelete)));
-        } else {
+        if (!unpacked) {
             // compute md5 to support component patterns (candidates for unwrap did not receive a checksum before)
             addChecksumsAndHashes(fileRef);
 
@@ -221,6 +230,9 @@ public class ArtifactUnwrapTask extends ScanTask {
                 final File layerFile = new File(targetFolder, String.valueOf(layer));
                 final File layerContentDir = new File(targetFolder, CONTAINER_AGGREGATION_FOLDER);
                 ArchiveUtils.untar(layerFile, layerContentDir);
+
+                // consume layer file (independent of the location)
+                deleteLayerFiles(layerFile);
             }
 
             // isolate primary config file
@@ -232,6 +244,21 @@ public class ArtifactUnwrapTask extends ScanTask {
             final File blobsDir = new File(targetFolder, "blobs");
             FileUtils.deleteDirectoryQuietly(blobsDir);
         }
+    }
+
+    private static void deleteLayerFiles(File layerFile) {
+        FileUtils.deleteQuietly(layerFile);
+
+        final File versionFile = new File(layerFile.getParent(), "VERSION");
+        if (versionFile.exists()) {
+            FileUtils.deleteQuietly(versionFile);
+        }
+
+        final File jsonFile = new File(layerFile.getParent(), "json");
+        if (jsonFile.exists()) {
+            FileUtils.deleteQuietly(jsonFile);
+        }
+
     }
 
     private void addChecksumsAndHashes(FileRef fileRef) {
@@ -264,7 +291,10 @@ public class ArtifactUnwrapTask extends ScanTask {
             fileChecksum = FileUtils.computeChecksum(file.getFile());
         }
 
-        final String assetId = "AID-" + artifact.getId() + "-" + fileChecksum;
+        String assetId = artifact.getId() + "-" + fileChecksum;
+        if (!assetId.startsWith("CID-")) {
+            assetId = "AID-" + assetId;
+        }
 
         final AssetMetaData assetMetaData = new AssetMetaData();
         assetMetaData.set(KEY_TYPE, Constants.ARTIFACT_TYPE_ARCHIVE);

@@ -121,6 +121,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: <code>7.0</code>
      */
     private double insignificantThreshold = 7.0;
+
     /**
      * includeScoreThreshold<br>
      * <code>double</code><p>
@@ -344,10 +345,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public boolean isVulnerabilityInsignificant(AeaaVulnerability vulnerability) {
+        final double insignificantThreshold = this.getInsignificantThreshold();
         if (insignificantThreshold == -1.0) return true;
         final CvssVector vector = vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial();
-        final double score = vector == null ? 0.0 : vector.getOverallScore();
-        return score < insignificantThreshold;
+        if (vector == null) {
+            return false;
+        } else {
+            return vector.getOverallScore() < insignificantThreshold;
+        }
     }
 
     public double getIncludeScoreThreshold() {
@@ -526,8 +531,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
         configuration.put("cvssSeverityRanges", cvssSeverityRanges);
         configuration.put("priorityScoreSeverityRanges", priorityScoreSeverityRanges);
-        configuration.put("initialCvssSelector", initialCvssSelector);
-        configuration.put("contextCvssSelector", contextCvssSelector);
+        configuration.put("initialCvssSelector", super.optionalConversion(getInitialCvssSelector(), CvssSelector::toJson));
+        configuration.put("contextCvssSelector", super.optionalConversion(getContextCvssSelector(), CvssSelector::toJson));
         configuration.put("insignificantThreshold", insignificantThreshold);
         configuration.put("includeScoreThreshold", includeScoreThreshold);
         configuration.put("jsonSchemaValidationErrorsHandling", jsonSchemaValidationErrorsHandling);
@@ -685,6 +690,53 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             throw new IOException("Failed to parse security policy configuration file as JSON object from: " + jsonFile.getAbsolutePath() + "\nWith content: " + json, e);
         }
 
+        return fromJson(jsonObject, jsonFile + " - " + json);
+    }
+
+    public static CentralSecurityPolicyConfiguration fromConfiguration(
+            CentralSecurityPolicyConfiguration baseConfiguration,
+            File jsonFile,
+            String jsonOverwrite
+    ) throws IOException {
+
+        if (baseConfiguration != null) {
+            return baseConfiguration;
+        }
+
+        if (jsonFile == null && jsonOverwrite == null) {
+            return new CentralSecurityPolicyConfiguration();
+        }
+
+        final JSONObject effectiveApplyJson = new JSONObject();
+
+        try {
+            if (jsonFile != null) {
+                LOG.info("Reading security policy from securityPolicyFile: file://{}", jsonFile.getAbsolutePath());
+                final JSONObject jsonFromFile = new JSONObject(FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8));
+                for (String key : jsonFromFile.keySet()) {
+                    effectiveApplyJson.put(key, jsonFromFile.get(key));
+                }
+            }
+        } catch (IOException e) {
+            throw new IOException("Failed to read security policy configuration file from: " + jsonFile.getAbsolutePath(), e);
+        }
+
+        try {
+            if (jsonOverwrite != null) {
+                LOG.info("Applying security policy from securityPolicyJson: {}", String.join("", jsonOverwrite.split("\n")));
+                final JSONObject jsonFromOverwrite = new JSONObject(jsonOverwrite);
+                for (String key : jsonFromOverwrite.keySet()) {
+                    effectiveApplyJson.put(key, jsonFromOverwrite.get(key));
+                }
+            }
+        } catch (Exception e) {
+            throw new IOException("Failed to parse security policy configuration from JSON: " + jsonOverwrite, e);
+        }
+
+        return fromJson(effectiveApplyJson, jsonFile + " - " + effectiveApplyJson);
+    }
+
+    private static CentralSecurityPolicyConfiguration fromJson(JSONObject jsonObject, String errorMessage) throws IOException {
         final CentralSecurityPolicyConfiguration configuration = new CentralSecurityPolicyConfiguration();
         final Map<String, Object> policyConfigurationMap = jsonObject.toMap();
         configuration.setProperties(new LinkedHashMap<>(policyConfigurationMap));
@@ -693,12 +745,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.collectMisconfigurations(misconfigurations);
         if (!misconfigurations.isEmpty()) {
             throw new IOException(
-                    "Security policy configuration file contains a misconfiguration from: " + jsonFile.getAbsolutePath() +
-                            "\nWith content: " + json +
+                    "Security policy configuration file contains a misconfiguration from: " + errorMessage +
+                            "\nWith content: " + jsonObject +
                             "\nWith misconfigurations: " + misconfigurations.stream().map(ProcessMisconfiguration::toString).collect(Collectors.joining("\n"))
             );
         }
-
         return configuration;
     }
 
@@ -878,8 +929,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = new VulnerabilityStatusMapper(
             "unmodified",
-            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, VulnerabilityMetaData.STATUS_VALUE_VOID),
-            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_VOID),
+            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW,
+                    VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT,
+                    VulnerabilityMetaData.STATUS_VALUE_VOID),
+            Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE,
+                    VulnerabilityMetaData.STATUS_VALUE_VOID),
             name -> {
                 if (StringUtils.isEmpty(name)) {
                     return VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW;

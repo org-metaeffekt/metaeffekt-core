@@ -94,17 +94,20 @@ public class ComponentPatternContributorRunner {
      * @return returns a list of generated component patterns
      */
     public List<ComponentPatternData> collectApplicable(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
-        List<ComponentPatternData> results = new ArrayList<>();
+        final List<ComponentPatternData> results = new ArrayList<>();
+        final String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE);
+
+        final Map<String, Pattern> suffixPatternMap = new HashMap<>();
+
         for (Map.Entry<Integer, Map<String, List<ComponentPatternContributor>>> phaseEntry : phaseContributors.entrySet()) {
             for (Map.Entry<String, List<ComponentPatternContributor>> suffixEntry : phaseEntry.getValue().entrySet()) {
-                String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE);
 
                 // check whether on of the contributor applies before perform expensive regex operations
                 final List<ComponentPatternContributor> collect = suffixEntry.getValue().stream().
                         filter(c -> c.applies(relativeAnchorFilePath)).collect(Collectors.toList());
 
                 if (!collect.isEmpty()) {
-                    final Pattern pattern = convertWildcardPatternToRegex(suffixEntry.getKey());
+                    final Pattern pattern = convertWildcardPatternToRegex(suffixEntry.getKey(), suffixPatternMap);
                     final Matcher matcher = pattern.matcher(lowercasedPathInContext);
                     if (matcher.find()) {
                         for (ComponentPatternContributor contributor : collect) {
@@ -133,7 +136,12 @@ public class ComponentPatternContributorRunner {
      *
      * @return the converted pattern
      */
-    private Pattern convertWildcardPatternToRegex(String wildcardPattern) {
+    private Pattern convertWildcardPatternToRegex(String wildcardPattern, Map<String, Pattern> suffixPatternMap) {
+
+        // check for cached pattern
+        final Pattern cachedPattern = suffixPatternMap.get(wildcardPattern);
+        if (cachedPattern != null) return cachedPattern;
+
         // escape special regex characters except "*" (which we'll handle separately)
         String escapedPattern = wildcardPattern
                 .replace(".", "\\.")
@@ -146,7 +154,12 @@ public class ComponentPatternContributorRunner {
             escapedPattern = ".*" + escapedPattern + "$";
         }
 
-        return Pattern.compile(escapedPattern);
+        final Pattern compiledPattern = Pattern.compile(escapedPattern);
+
+        // cache pattern
+        suffixPatternMap.put(wildcardPattern, compiledPattern);
+
+        return compiledPattern;
     }
 
 }

@@ -31,7 +31,8 @@ public class HashOffPageEntry {
 
         HashOffPageEntry entry = new HashOffPageEntry();
         entry.pageType = buffer.get(0);
-        buffer.position(1);
+        // see https://morling.dev/blog/bytebuffer-and-the-dreaded-nosuchmethoderror/
+        ((java.nio.Buffer) buffer).position(1);
         buffer.get(entry.unused);
         entry.pageNo = buffer.getInt(4);
         entry.length = buffer.getInt(8);

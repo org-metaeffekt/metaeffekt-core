@@ -17,6 +17,7 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -39,6 +40,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.String.format;
+
 /**
  * Mojo dedicated to automated aggregation of sources. For each artifact in the provided inventory the license metadata
  * is evaluated. Using the source category of the license meta data it is determined whether and whereto download the
@@ -47,13 +50,23 @@ import java.util.List;
 @Mojo(name = "aggregate-sources", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
 
-    public static final String DELIMITER_NEWLINE = String.format("%n");
-
     /**
      * The ArtifactResolver to be used.
      */
     @Component
-    private org.apache.maven.artifact.resolver.ArtifactResolver resolver;
+    private org.apache.maven.artifact.resolver.ArtifactResolver artifactResolver;
+
+    /**
+     * The local Maven repository where artifacts are cached during the build process.
+     */
+    @Parameter(defaultValue = "${localRepository}", readonly = true, required = true)
+    private ArtifactRepository localRepository;
+
+    /**
+     * A list of remote Maven repositories to be used for the compile run.
+     */
+    @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
+    private List<ArtifactRepository> remoteRepositories;
 
     /**
      * A list of repositories, where the source archives for the included artifacts can be loaded from.
@@ -137,7 +150,8 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             final List<ArtifactSourceRepository> delegateArtifactSourceRepositories = new ArrayList<>();
             for (SourceRepository sourceRepository : sourceRepositories) {
                 sourceRepository.dumpConfig(getLog(), "");
-                delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate());
+                delegateArtifactSourceRepositories.add(sourceRepository.constructDelegate(
+                        artifactResolver, localRepository, remoteRepositories));
             }
 
             final ExecutionStatus executionStatus = new ExecutionStatus();
@@ -165,9 +179,8 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
                                 downloadArtifact(artifact, inventory, softwareDistributionAnnexSourcePath, delegateArtifactSourceRepositories, executionStatus);
                                 break;
                             default:
-                                throw new MojoExecutionException(
-                                        String.format("Source category of license meta data for %s unknown: '%s'",
-                                                licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
+                                throw new MojoExecutionException(format("Source category of license meta data for %s unknown: '%s'",
+                                    licenseMetaData.deriveQualifier(), licenseMetaData.getSourceCategory()));
                         }
                     } else {
                         // if license metadata or no source category annotation is given, we evaluate includeAllSources
@@ -200,55 +213,69 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
     private void downloadArtifact(Artifact artifact, Inventory inventory, File targetPath,
                                   List<ArtifactSourceRepository> sourceRepositories, ExecutionStatus executionStatus) throws IOException, MojoFailureException {
 
-        final ArtifactSourceRepository matchingSourceRepository =
-                findMatchingArtifactSourceRepository(artifact, inventory, sourceRepositories);
+        // otherwise apply matching repos
+        final List<ArtifactSourceRepository> matchingSourceRepositories =
+                findMatchingArtifactSourceRepositories(artifact, inventory, sourceRepositories);
 
         final Object artifactRepresentation = createArtifactRepresentation(artifact, inventory);
 
-        if (matchingSourceRepository != null) {
-            // early exit for explicitly ignored artifacts
-            if (matchingSourceRepository.getSourceArchiveResolver() == null) {
-                if (!matchingSourceRepository.isIgnoreMatches()) {
-                    getLog().info(String.format("Skipped resolving sources for artifact '%s'.", artifactRepresentation));
-                }
-                return;
-            }
+        if (matchingSourceRepositories != null && !matchingSourceRepositories.isEmpty()) {
 
-            // resolve
-            getLog().info(String.format("Resolving source artifacts for '%s'", artifactRepresentation));
-            SourceArchiveResolverResult result = matchingSourceRepository.resolveSourceArchive(artifact, targetPath);
+            getLog().info(format("Resolving source artifacts for [%s].", artifactRepresentation));
 
-            if (result.isEmpty()) {
-                if (!result.getAttemptedResourceLocations().isEmpty()) {
-                    logOrFailOn(String.format("Attempted resource locations:"), false, executionStatus);
-                    for (String s : result.getAttemptedResourceLocations()) {
-                        logOrFailOn(s, false, executionStatus);
+            List<String> attemptedSourceLocations = new ArrayList<>();
+            List<String> attemptedSourceRepositories = new ArrayList<>();
+
+            for (ArtifactSourceRepository matchingSourceRepository : matchingSourceRepositories) {
+
+                // early exit for explicitly ignored artifacts
+                if (matchingSourceRepository.getSourceArchiveResolver() == null) {
+                    if (!matchingSourceRepository.isIgnoreMatches()) {
+                        getLog().info(format("Skipped resolving sources for artifact [%s].", artifactRepresentation));
                     }
+                    return;
+                }
+
+                // resolve
+                SourceArchiveResolverResult result = matchingSourceRepository.resolveSourceArchive(artifact, targetPath);
+
+                if (result.isEmpty()) {
+                    if (!result.getAttemptedResourceLocations().isEmpty()) {
+                        attemptedSourceLocations.addAll(result.getAttemptedResourceLocations());
+                    }
+                    attemptedSourceRepositories.add(matchingSourceRepository.getId());
                 } else {
-                    logOrFailOn("No resource location mapped.", false, executionStatus);
-                }
-                logOrFailOn(String.format("No sources resolved for artifact '%s', while matching source repository was: '%s'",
-                        artifactRepresentation, matchingSourceRepository.getId()), true, executionStatus);
-                return;
-            } else {
-                for (File file : result.getFiles()) {
-                    // copy file to target folder if necessary
-                    File destFile = new File(targetPath, matchingSourceRepository.getTargetFolder() + "/" + file.getName());
-                    if (!destFile.exists()) {
-                        FileUtils.copyFile(file, destFile);
+                    for (File file : result.getFiles()) {
+                        // copy file to target folder if necessary
+                        File destFile = new File(targetPath, matchingSourceRepository.getTargetFolder() + "/" + file.getName());
+                        if (!destFile.exists()) {
+                            FileUtils.copyFile(file, destFile);
+                        }
                     }
+                    return;
                 }
-                return;
             }
+
+            logOrFailOn(format("Attempted resource locations:"), false, executionStatus);
+            if (attemptedSourceLocations.isEmpty()) {
+                logOrFailOn("No resource location mapped.", false, executionStatus);
+            } else {
+                for (String s : attemptedSourceLocations) {
+                    logOrFailOn(s, false, executionStatus);
+                }
+            }
+            logOrFailOn(format("No sources resolved for artifact [%s], while matching source repositories were: %s",
+                    artifactRepresentation, attemptedSourceRepositories), true, executionStatus);
         } else {
-            logOrFailOn(String.format("No sources resolved for artifact '%s', no matching source repository identified.",
+            logOrFailOn(format("No sources resolved for artifact [%s], no matching source repository identified.",
                     artifactRepresentation), true, executionStatus);
-            return;
         }
 
     }
 
-    private ArtifactSourceRepository findMatchingArtifactSourceRepository(Artifact artifact, Inventory inventory, List<ArtifactSourceRepository> sourceRepositories) {
+    private List<ArtifactSourceRepository> findMatchingArtifactSourceRepositories(Artifact artifact, Inventory inventory, List<ArtifactSourceRepository> sourceRepositories) {
+        final List<ArtifactSourceRepository> matchedRepositories = new ArrayList<>();
+
         final LicenseMetaData lmd = inventory.findMatchingLicenseMetaData(artifact);
         final String component = artifact.getComponent();
         final String artifactVersion = artifact.getVersion();
@@ -258,15 +285,14 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
             effectiveLicense = lmd.deriveLicenseInEffect();
         }
 
-        ArtifactSourceRepository matchingSourceRepository = null;
         for (ArtifactSourceRepository sourceRepository : sourceRepositories) {
-            ArtifactPattern artifactGroup = sourceRepository.findMatchingArtifactGroup(artifact.getId(), component, artifactVersion, effectiveLicense);
+            final ArtifactPattern artifactGroup = sourceRepository.findMatchingArtifactGroup(
+                artifact.getId(), component, artifactVersion, effectiveLicense);
             if (artifactGroup != null) {
-                matchingSourceRepository = sourceRepository;
-                break;
+                matchedRepositories.add(sourceRepository);
             }
         }
-        return matchingSourceRepository;
+        return matchedRepositories;
     }
 
     private Object createArtifactRepresentation(Artifact artifact, Inventory inventory) {
@@ -298,7 +324,7 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
         return sb;
     }
 
-    private void logOrFailOn(String message, boolean failInCase, ExecutionStatus executionStatus) throws MojoFailureException {
+    private void logOrFailOn(String message, boolean failInCase, ExecutionStatus executionStatus) {
         if (failOnMissingSources) {
             if (failInCase) {
                 executionStatus.error(message);

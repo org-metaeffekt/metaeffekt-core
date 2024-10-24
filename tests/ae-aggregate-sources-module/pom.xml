@@ -22,11 +22,11 @@
 
                 <executions>
                     <execution>
-                        <id>download-p2</id>
+                        <id>aggregate</id>
                         <goals>
                             <goal>aggregate-sources</goal>
                         </goals>
-                        <phase>initialize</phase>
+                        <phase>validate</phase>
                         <configuration>
                             <includeAllSources>true</includeAllSources>
                             <failOnMissingSources>true</failOnMissingSources>
@@ -42,7 +42,7 @@
                                     <id>No Source Repository</id>
 
                                     <!-- a source repository without resolver or mirror configuration will not perform
-                                         any aggregation. The ingnoreMatches flag only suppresses the message that
+                                         any aggregation. The ignoreMatches flag only suppresses the message that
                                          an artifact was skipped -->
 
                                     <targetFolder>none</targetFolder>
@@ -79,6 +79,38 @@
                                             <url>https://builds.gradle.org:8001/eclipse/update-site/mirror/releases-rolling/plugins/</url>
                                         </mirrorUrls>
                                     </eclipseMirror>
+                                </sourceRepository>
+
+                                <sourceRepository>
+                                    <id>Maven Repo (Mapped)</id>
+
+                                    <!-- this variant shows how incomplete artifacts can be mapped to a maven repository -->
+
+                                    <targetFolder>Original OSS</targetFolder>
+                                    <patterns>
+                                        <pattern>^.*\.jar</pattern>
+                                    </patterns>
+                                    <componentMirror>
+                                        <mappings>
+                                            <map>^Bouncy Castle-.*:org/bouncycastle/$artifactId/$version/$artifactId-$version.$type</map>
+                                            <map>^bcpkix-jdk18on-([0-9]*\.[0-9]*).jar:org/bouncycastle/bcpkix-jdk18on/$1/bcpkix-jdk18on-$1.jar</map>
+                                        </mappings>
+                                        <mirrorUrls>
+                                            <url>https://repo1.maven.org/maven2/</url>
+                                        </mirrorUrls>
+                                    </componentMirror>
+                                </sourceRepository>
+
+                                <sourceRepository>
+
+                                    <!-- this variant shows how arbitrary (yet complete gav) artifacts can be mapped -->
+
+                                    <id>Maven Repo (Fallback)</id>
+                                    <targetFolder>Original OSS</targetFolder>
+                                    <patterns>
+                                        <pattern>^.*\.jar</pattern>
+                                    </patterns>
+                                    <mavenMirror />
                                 </sourceRepository>
 
                             </sourceRepositories>

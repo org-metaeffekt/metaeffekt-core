@@ -53,7 +53,7 @@ public class ContainerImageInspectAdapter {
 
                 assetMetaData.set("Comment", element.getComment());
 
-                extractMetaEntires(element, assetMetaData);
+                extractMetaEntries(element, assetMetaData);
                 extractPropData(element, assetMetaData);
                 extractConfigData(element, assetMetaData);
                 extractRepoDigest(element, assetMetaData);
@@ -117,8 +117,8 @@ public class ContainerImageInspectAdapter {
         modulateValue(assetMetaData, "config_version", AssetMetaData.Attribute.VERSION.getKey());
         modulateValue(assetMetaData, "config_org.opencontainers.image.version", AssetMetaData.Attribute.VERSION.getKey());
 
-        modulateValue(assetMetaData, "config_name", AssetMetaData.Attribute.NAME.getKey());
         modulateValue(assetMetaData, "config_io.k8s.description", AssetMetaData.Attribute.NAME.getKey());
+        modulateValue(assetMetaData, "config_name", AssetMetaData.Attribute.NAME.getKey());
 
         modulateValue(assetMetaData, "config_architecture", "Architecture");
         modulateValue(assetMetaData, "config_url", "URL");
@@ -139,7 +139,7 @@ public class ContainerImageInspectAdapter {
         }
     }
 
-    private void extractMetaEntires(ImageInspectElement element, AssetMetaData assetMetaData) {
+    private void extractMetaEntries(ImageInspectElement element, AssetMetaData assetMetaData) {
         for (Map.Entry<String, String> entry : element.getMetadata().entrySet()) {
             assetMetaData.set("meta_" + entry.getKey(), entry.getValue());
         }

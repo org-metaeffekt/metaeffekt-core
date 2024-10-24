@@ -83,6 +83,14 @@ public abstract class KnownCvssEntities {
     public final static CvssEntity ASSESSMENT_HIGHER = ENTITIES_BY_KEYNAME.get("ASSESSMENT_HIGHER");
     public final static CvssEntity ASSESSMENT_ALL = ENTITIES_BY_KEYNAME.get("ASSESSMENT_ALL");
 
+    public static List<CvssEntity> getEntities() {
+        return new ArrayList<>(ENTITIES_BY_KEYNAME.values());
+    }
+
+    public static Map<String, CvssEntity> getEntitiesByKeyName() {
+        return new HashMap<>(ENTITIES_BY_KEYNAME);
+    }
+
     public static Optional<CvssEntity> findByNameOrMail(String name) {
         if (name == null) return Optional.empty();
         return Optional.ofNullable(ObjectUtils.firstNonNull(
@@ -200,6 +208,17 @@ public abstract class KnownCvssEntities {
         }
     }
 
+    /**
+     * Performs a topological sort on the given dependency graph starting from the specified node.
+     * <p>
+     * This method uses Depth-First Search (DFS) to traverse the graph and sort the nodes in topological order.
+     * It ensures that each node appears before any nodes it depends on.
+     *
+     * @param node The current node to process.
+     * @param dependencyGraph A map representing the dependency graph where keys are nodes and values are lists of dependent nodes.
+     * @param visited A set to keep track of visited nodes to avoid processing a node more than once.
+     * @param sortedKeys A list to collect the nodes in topologically sorted order.
+     */
     private static void topologicalSort(String node, Map<String, List<String>> dependencyGraph, Set<String> visited, List<String> sortedKeys) {
         if (visited.contains(node)) return;
         visited.add(node);

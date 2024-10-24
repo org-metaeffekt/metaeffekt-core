@@ -66,17 +66,16 @@
             <artifactId>json</artifactId>
         </dependency>
 
-        <!-- Due to the runtime dependency from POI to log4j-api the scope is managed to runtime -->
+        <!-- Due to the runtime dependency from POI to log4j-api the scope is managed to compile -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <scope>runtime</scope>
+            <scope>compile</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
-            <scope>runtime</scope>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
