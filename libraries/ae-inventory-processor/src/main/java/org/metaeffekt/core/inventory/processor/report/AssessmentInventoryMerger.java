@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -104,6 +105,17 @@ public class AssessmentInventoryMerger {
                 final Inventory singleInventory = assessmentInventoryMap.get(localUniqueAssessmentId);
                 if (singleInventory != null) {
                     outputInventory.getVulnerabilityMetaData(localUniqueAssessmentId).addAll(singleInventory.getVulnerabilityMetaData());
+                }
+            }
+        }
+
+        // add all security advisories to the output inventory, only once
+        final Set<String> knownAdvisoryIds = new LinkedHashSet<>();
+        for (Inventory inputInventory : collectedInventories.keySet()) {
+            for (AdvisoryMetaData securityAdvisory : inputInventory.getAdvisoryMetaData()) {
+                final String advisoryId = securityAdvisory.get(AdvisoryMetaData.Attribute.NAME);
+                if (knownAdvisoryIds.add(advisoryId)) {
+                    outputInventory.getAdvisoryMetaData().add(securityAdvisory);
                 }
             }
         }
