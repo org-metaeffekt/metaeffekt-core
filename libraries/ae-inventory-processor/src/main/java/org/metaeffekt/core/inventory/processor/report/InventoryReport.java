@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tools.ant.Project;
@@ -107,7 +109,9 @@ public class InventoryReport {
      */
     private File targetReportDir;
 
-    // The diff inventory is used for version diffs.
+    /**
+     * The diff inventory is used for version diffs.
+      */
     private File diffInventoryFile;
 
     // FIXME; dir / path ambiguity
@@ -213,6 +217,13 @@ public class InventoryReport {
     private Inventory inventory;
 
     /**
+     * The inventory for which to create the report.
+     */
+    @Getter
+    @Setter
+    private Inventory referenceInventory;
+
+    /**
      * Default {@link ReportContext}.
      */
     private ReportContext reportContext = new ReportContext("default", null, null);
@@ -255,6 +266,9 @@ public class InventoryReport {
     }
 
     protected Inventory readGlobalInventory() throws IOException {
+        if (referenceInventory != null) {
+            return referenceInventory;
+        }
         LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}", referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
