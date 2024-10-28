@@ -39,6 +39,8 @@ public abstract class AbstractTestSetup implements TestSetup {
 
     private String referenceInventory = "";
 
+    private File aggregationDir;
+
     public String getDownloadFolder() {
         return TestConfig.getDownloadFolder() + myDir;
     }
@@ -126,4 +128,14 @@ public abstract class AbstractTestSetup implements TestSetup {
         return sha256Hash;
     }
 
+    @Override
+    public File getAggregationDir() {
+        return aggregationDir;
+    }
+
+    // NOTE: this is used by artifact-analysis, please don't remove
+    @Override
+    public void setAggregationDir(File aggregationDir) {
+        this.aggregationDir = aggregationDir;
+    }
 }

@@ -135,6 +135,23 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         return sourceIdentifier;
     }
 
+    /**
+     * <p>Compute the effective state of this instance based on the given other instance.
+     * The effective instances is either a new instance or the same instance, depending on the implementation.</p>
+     * <p><i>'Effective'</i> is defined as the state of the instance that is the result of the computation of the
+     * instance and the other instance. What this means specifically is up to the implementation.
+     * This method returns <code>this</code> instance (itself) by default.</p>
+     * <p>The effective instance should not be written back into an inventory, rather should be recalculated whenever
+     * access to the effective instance is required to ensure data is not duplicated or left unmaintained in
+     * inventories. Only use this to generate e.g. vulnerability-specific views on the VAD or other Reports.</p>
+     *
+     * @param other The other instance to compute the effective state from.
+     * @return A new effective instance or the same instance, depending on the implementation.
+     */
+    public AeaaAdvisoryEntry computeEffectiveState(AeaaVulnerability other) {
+        return this;
+    }
+
     public AeaaAdvisoryEntry setSummary(String summary) {
         this.summary = summary;
         return this;
