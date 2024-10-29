@@ -15,8 +15,11 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
 import org.apache.maven.plugin.logging.Log;
 import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
+import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
 
 import java.util.List;
 import java.util.Properties;
@@ -32,13 +35,16 @@ public class SourceRepository extends IdentifiableComponent {
 
     private ComponentMirror componentMirror;
 
+    private MavenMirror mavenMirror;
+
     private List<String> patterns;
 
     private boolean ignoreMatches;
 
-    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate() {
+    public org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository constructDelegate(
+            ArtifactResolver artifactResolver, ArtifactRepository localRepository, List<ArtifactRepository> remoteRepositories) {
 
-        org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository artifactSourceRepository = new org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository();
+        ArtifactSourceRepository artifactSourceRepository = new ArtifactSourceRepository();
         artifactSourceRepository.setId(getId());
         artifactSourceRepository.setTargetFolder(targetFolder);
         artifactSourceRepository.setIgnoreMatches(ignoreMatches);
@@ -51,12 +57,17 @@ public class SourceRepository extends IdentifiableComponent {
             }
         }
 
-        if (eclipseMirror != null && componentMirror != null) {
+        int mirrorCount = 0;
+        mirrorCount += eclipseMirror == null ? 0 : 1;
+        mirrorCount += componentMirror == null ? 0 : 1;
+        mirrorCount += mavenMirror == null ? 0 : 1;
+
+        if (mirrorCount > 1) {
             throw new IllegalStateException(String.format(
                     "Cannot configure source repository with id %s. Only one mirror can be configured.", getId()));
         }
 
-        Properties p = new Properties();
+        final Properties p = new Properties();
         if (getProperties() != null) {
             p.putAll(getProperties());
         }
@@ -69,6 +80,10 @@ public class SourceRepository extends IdentifiableComponent {
             artifactSourceRepository.setSourceArchiveResolver(componentMirror.createResolver(p));
         }
 
+        if (mavenMirror != null) {
+            artifactSourceRepository.setSourceArchiveResolver(mavenMirror.createResolver(artifactResolver, localRepository, remoteRepositories));
+        }
+
         return artifactSourceRepository;
     }
 
@@ -76,39 +91,18 @@ public class SourceRepository extends IdentifiableComponent {
         return targetFolder;
     }
 
-    public void setTargetFolder(String targetFolder) {
-        this.targetFolder = targetFolder;
-    }
-
-    public EclipseMirror getEclipseMirror() {
-        return eclipseMirror;
-    }
-
-    public void setEclipseMirror(EclipseMirror eclipseMirror) {
-        this.eclipseMirror = eclipseMirror;
-    }
-
-    public ComponentMirror getComponentMirror() {
-        return componentMirror;
-    }
-
-    public void setComponentMirror(ComponentMirror componentMirror) {
-        this.componentMirror = componentMirror;
-    }
-
     public List<String> getPatterns() {
         return patterns;
-    }
-
-    public void setPatterns(List<String> patterns) {
-        this.patterns = patterns;
     }
 
     public void dumpConfig(Log log, String prefix) {
         super.dumpConfig(log, prefix);
         log.debug(prefix + "  targetFolder: " + getTargetFolder());
         log.debug(prefix + "  patterns: " + getPatterns());
+
         if (eclipseMirror != null) eclipseMirror.dumpConfig(log, prefix + "  ");
         if (componentMirror != null) componentMirror.dumpConfig(log, prefix + "  ");
+        if (mavenMirror != null) mavenMirror.dumpConfig(log, prefix + "  ");
     }
+
 }

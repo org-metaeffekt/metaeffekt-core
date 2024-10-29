@@ -74,7 +74,7 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
                 artifactId = id.substring(colonIndex + 1);
             }
 
-            final StringJoiner patterns = new StringJoiner(",");
+            final StringJoiner patterns = new StringJoiner(", ");
 
             // construct include patterns
             patterns.add(anchorFile.getName().replaceAll(".xed$", ".*"));

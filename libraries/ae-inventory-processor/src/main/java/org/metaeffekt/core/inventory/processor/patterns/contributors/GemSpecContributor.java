@@ -157,22 +157,22 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
             if (versionDerivedFromFileName != null) {
                 // covers folders with name as folder name and anything deeper nested
-                sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + "/**/*").append(",");
+                sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + "/**/*").append(", ");
 
                 // cover cache files
-                sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem").append(",");
+                sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem").append(", ");
 
                 // this may be redundant
-                sb.append("/**/cache/**/[" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem]/**/*").append(",");
+                sb.append("/**/cache/**/[" + nameDerivedFromFile + "-" + versionDerivedFromFileName + ".gem]/**/*").append(", ");
             } else {
                 if (versionDerivedFromFolderName != null) {
                     // covers folders with name as folder name and anything deeper nested
-                    sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFolderName + "/**/*").append(",");
-                    sb.append("**/" + nameDerivedFromFolderName + "-" + versionDerivedFromFolderName + "/**/*").append(",");
+                    sb.append("**/" + nameDerivedFromFile + "-" + versionDerivedFromFolderName + "/**/*").append(", ");
+                    sb.append("**/" + nameDerivedFromFolderName + "-" + versionDerivedFromFolderName + "/**/*").append(", ");
 
                     // cover cache folders (version may vary in cache; potential to catch more than required)
-                    sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + "*" + "/**/*").append(",");
-                    sb.append("/**/cache/**/" + nameDerivedFromFolderName + "-" + "*" + "/**/*").append(",");
+                    sb.append("/**/cache/**/" + nameDerivedFromFile + "-" + "*" + "/**/*").append(", ");
+                    sb.append("/**/cache/**/" + nameDerivedFromFolderName + "-" + "*" + "/**/*").append(", ");
                 }
             }
 

@@ -74,8 +74,12 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
                 final JSONArray layers = jsonObject.getJSONArray("Layers");
                 final List<Object> layerList = layers.toList();
                 if (layerList.size() > 0) {
-                    String lastImageHash = String.valueOf(layerList.get(layerList.size() - 1));
-                    lastImageHash = lastImageHash.substring(lastImageHash.lastIndexOf("/") + 1);
+                    String lastLayer = String.valueOf(layerList.get(layerList.size() - 1));
+                    final int slashIndex = lastLayer.lastIndexOf("/");
+                    String lastImageHash = lastLayer.substring(slashIndex + 1);
+                    if (lastImageHash.equals("layer.tar")) {
+                        lastImageHash = lastLayer.substring(0, slashIndex);
+                    }
 
                     String name = lastImageHash;
                     String version = lastImageHash;
@@ -94,7 +98,13 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
                     cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "*");
+
+                    // the assets must not be covered
+                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "-none-");
+
+                    // the detection of the version anchor is sufficient to match the component pattern
+                    cpd.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
+
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_CONTAINER);
 
                     final String containerAssetId = "CID-" + containerImageId;

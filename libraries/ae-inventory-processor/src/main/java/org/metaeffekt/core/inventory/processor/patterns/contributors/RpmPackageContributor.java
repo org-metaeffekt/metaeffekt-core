@@ -34,7 +34,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.BlockingQueue;
 
 public class RpmPackageContributor extends ComponentPatternContributor {
@@ -91,9 +94,12 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                 }
                 if (entry.getValue() != null) {
                     ComponentPatternData cpd = new ComponentPatternData();
+                    Artifact artifact = new Artifact();
                     List<IndexEntry> indexEntries = RPMDBUtils.headerImport(entry.getValue());
                     PackageInfo packageInfo = RPMDBUtils.getNEVRA(indexEntries);
-                    StringJoiner includePatternJoiner = new StringJoiner(",");
+                    StringJoiner includePatternJoiner = new StringJoiner(", ");
+
+                    artifact.setId(packageInfo.getName() + "-" + packageInfo.getVersion());
 
                     final File distroBaseDir = new File(baseDir, virtualRootPath);
                     final LinuxDistributionUtil.LinuxDistro distro = LinuxDistributionUtil.parseDistro(distroBaseDir);

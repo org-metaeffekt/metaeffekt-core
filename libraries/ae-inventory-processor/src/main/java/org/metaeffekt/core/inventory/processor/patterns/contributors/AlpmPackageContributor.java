@@ -61,7 +61,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
             String packageName = null;
             String version = null;
             String architecture = null;
-            StringJoiner includePatterns = new StringJoiner(",");
+            StringJoiner includePatterns = new StringJoiner(", ");
 
             // add the parent directory of the package directory to the include patterns
             Path relativeParentPath = virtualRoot.relativize(new File(relativeAnchorPath).getParentFile().toPath());
