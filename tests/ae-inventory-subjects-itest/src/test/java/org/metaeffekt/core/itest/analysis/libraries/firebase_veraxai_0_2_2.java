@@ -72,7 +72,7 @@ public class firebase_veraxai_0_2_2 extends AbstractCompositionAnalysisTest {
                     attributeValue(PATH_IN_ASSET, "[firebase_vertexai-0.2.2%2B2.tar.gz]/[firebase_vertexai-0.2.2%2B2.tar]/example"))
                 .assertNotEmpty();
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(2);
     }
 }

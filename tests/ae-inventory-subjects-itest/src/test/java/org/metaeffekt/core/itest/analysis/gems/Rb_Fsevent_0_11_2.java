@@ -57,13 +57,12 @@ public class Rb_Fsevent_0_11_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rb-fsevent-0.11.2.gem"),
+        artifactList.with(attributeValue(ID, "rb-fsevent-0.11.2"),
                         attributeValue(VERSION, "0.11.2"),
                         attributeValue(PURL, "pkg:gem/rb-fsevent@0.11.2"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

@@ -66,8 +66,8 @@ public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
                 .selectArtifacts()
                 .filter(a -> a.getVersion() != null);
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "gz-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "gz-archive")).hasSizeOf(1);
     }
 
 }

@@ -66,8 +66,7 @@ public class EhCacheTest_3_10_8 extends AbstractCompositionAnalysisTest {
                 .selectArtifacts()
                 .filter(a -> a.getVersion() != null);
 
-        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
-        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
-        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(11);
     }
 }

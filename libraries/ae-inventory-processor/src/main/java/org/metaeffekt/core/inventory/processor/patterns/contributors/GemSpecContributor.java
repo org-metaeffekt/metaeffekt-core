@@ -36,7 +36,7 @@ public class GemSpecContributor extends ComponentPatternContributor {
 
     private static final Logger LOG = LoggerFactory.getLogger(GemSpecContributor.class);
 
-    public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem-spec";
+    public static final String TYPE_VALUE_RUBY_GEM = "ruby-gem";
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add(".gemspec");

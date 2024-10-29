@@ -76,6 +76,8 @@ public class CoreRuntimeEclipseBundleTest extends AbstractCompositionAnalysisTes
 
         analysis.selectArtifacts().hasSizeOf(1);
 
+        analysis.selectArtifacts().filter(a -> a.get(FILE_NAME) == null).as("File Name is null").hasSizeOf(0);
+
         ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
         jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
     }

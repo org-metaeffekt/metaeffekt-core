@@ -63,11 +63,8 @@ public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
                         attributeValue(PATH_IN_ASSET, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"))
                 .assertNotEmpty();
 
-        ArtifactList archiveList = artifactList.with(containsToken(ID, ".whl"));
-        archiveList.with(attributeValue(TYPE, "archive")).hasSizeOf(archiveList);
-        archiveList.with(attributeValue(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(archiveList);
-
-        ArtifactList pythonList = artifactList.with(attributeValue(TYPE, "module"));
-        pythonList.with(attributeValue(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(pythonList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(1);
+        artifactList.hasSizeOf(2);
     }
 }

@@ -57,13 +57,12 @@ public class Ruby2_Keywords_0_0_5 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "ruby2_keywords-0.0.5.gem"),
+        artifactList.with(attributeValue(ID, "ruby2_keywords-0.0.5"),
                         attributeValue(VERSION, "0.0.5"),
                         attributeValue(PURL, "pkg:gem/ruby2_keywords@0.0.5"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

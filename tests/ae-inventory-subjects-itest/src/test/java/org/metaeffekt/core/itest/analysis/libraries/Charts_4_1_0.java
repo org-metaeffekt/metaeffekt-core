@@ -68,7 +68,7 @@ public class Charts_4_1_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(1);
     }
 }

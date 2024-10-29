@@ -57,13 +57,12 @@ public class Railties_7_1_3_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "railties-7.1.3.4.gem"),
+        artifactList.with(attributeValue(ID, "railties-7.1.3.4"),
                         attributeValue(VERSION, "7.1.3.4"),
                         attributeValue(PURL, "pkg:gem/railties@7.1.3.4"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

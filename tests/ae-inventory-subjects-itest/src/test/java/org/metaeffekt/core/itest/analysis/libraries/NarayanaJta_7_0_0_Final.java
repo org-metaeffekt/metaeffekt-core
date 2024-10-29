@@ -71,9 +71,8 @@ public class NarayanaJta_7_0_0_Final extends AbstractCompositionAnalysisTest {
 
         artifactList.hasSizeOf(7);
 
-        ArtifactList packageList = artifactList.with(containsToken(ID, ".jar"));
-        packageList.with(attributeValue(TYPE, "module")).hasSizeOf(packageList);
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(7);
     }
 
 

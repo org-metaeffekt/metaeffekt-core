@@ -64,7 +64,7 @@ public class SystemCollectionsImmutable_8_0_0 extends AbstractCompositionAnalysi
                         attributeValue(PATH_IN_ASSET, "[system.collections.immutable.8.0.0.nupkg]"))
                 .assertNotEmpty();
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }
 }

@@ -57,14 +57,13 @@ public class Mini_Mime_1_1_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "mini_mime-1.1.5.gem"),
+        artifactList.with(attributeValue(ID, "mini_mime-1.1.5"),
                         attributeValue(VERSION, "1.1.5"),
                         attributeValue(PURL, "pkg:gem/mini_mime@1.1.5"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }
 

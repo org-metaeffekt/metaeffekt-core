@@ -94,13 +94,10 @@ public class Flutter_1_16_3 extends AbstractCompositionAnalysisTest{
                     attributeValue(PURL, "pkg:pub/image_list@1.0.0+1"))
                 .assertNotEmpty();
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(packageList);
 
-        ArtifactList webModuleList = artifactList.with(attributeValue(TYPE, "web-module"));
-        webModuleList.with(attributeValue(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(webModuleList);
-
-
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "pub")).hasSizeOf(14);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(1);
+        artifactList.hasSizeOf(15);
     }
 
 }

@@ -57,13 +57,12 @@ public class Unicode_Display_Width_2_5_0 extends AbstractCompositionAnalysisTest
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "unicode-display_width-2.5.0.gem"),
+        artifactList.with(attributeValue(ID, "unicode-display_width-2.5.0"),
                         attributeValue(VERSION, "2.5.0"),
                         attributeValue(PURL, "pkg:gem/unicode-display_width@2.5.0"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

@@ -63,11 +63,8 @@ public class Yarl_1_9_4 extends AbstractCompositionAnalysisTest{
                         attributeValue(PATH_IN_ASSET, "[yarl-1.9.4-py3-none-any.whl]"))
                 .assertNotEmpty();
 
-        ArtifactList archiveList = artifactList.with(containsToken(ID, ".whl"));
-        archiveList.with(attributeValue(TYPE, "archive")).hasSizeOf(archiveList);
-        archiveList.with(attributeValue(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(archiveList);
-
-        ArtifactList pythonList = artifactList.with(attributeValue(TYPE, "module"));
-        pythonList.with(attributeValue(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(pythonList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(1);
+        artifactList.hasSizeOf(2);
     }
 }

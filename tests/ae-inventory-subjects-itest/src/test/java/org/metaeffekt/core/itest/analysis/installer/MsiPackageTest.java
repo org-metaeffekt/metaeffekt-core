@@ -72,9 +72,8 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
         // result depends on installation of 7z
         Assertions.assertThat(size == 6 || size == 0).isTrue();
 
-        ArtifactList msList = artifactList.with(containsToken(ID, ".msi"));
-        msList.with(attributeValue(TYPE, "installer")).hasSizeOf(msList);
-        msList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ms-installer")).hasSizeOf(msList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "msi-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "msi-archive")).hasSizeOf(1);
     }
 
 }

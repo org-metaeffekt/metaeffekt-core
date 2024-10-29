@@ -78,6 +78,8 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
         ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
         jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
 
+        analysis.selectArtifacts().filter(a -> a.get(FILE_NAME) == null).as("File Name is null").hasSizeOf(0);
+
         analysis.selectArtifacts().hasSizeOf(1);
     }
 

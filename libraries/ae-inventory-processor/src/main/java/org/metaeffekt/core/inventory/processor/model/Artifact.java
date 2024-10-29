@@ -41,6 +41,8 @@ public class Artifact extends AbstractModelBase {
      */
     public enum Attribute implements AbstractModelBase.Attribute {
         ID("Id"),
+        NAME("Name"),
+        FILE_NAME("File Name"),
         COMPONENT("Component"),
         CHECKSUM("Checksum"),
         VERSION("Version"),
@@ -490,6 +492,10 @@ public class Artifact extends AbstractModelBase {
     public String createCompareStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
         artifactRepresentation.append(normalize(getId()));
+        artifactRepresentation.append(DELIMITER_COLON);
+        artifactRepresentation.append(normalize(get(Attribute.NAME)));
+        artifactRepresentation.append(DELIMITER_COLON);
+        artifactRepresentation.append(normalize(get(Attribute.FILE_NAME)));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getChecksum()));
         artifactRepresentation.append(DELIMITER_COLON);

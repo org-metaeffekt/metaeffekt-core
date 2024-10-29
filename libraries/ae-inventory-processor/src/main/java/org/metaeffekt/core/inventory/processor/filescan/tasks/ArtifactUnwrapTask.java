@@ -208,8 +208,14 @@ public class ArtifactUnwrapTask extends ScanTask {
     }
 
     private static void deriveType(Artifact artifact, File file) {
+        // FIXME: wrong point in time
+
+        final String extension = FilenameUtils.getExtension(file.getName()).toLowerCase(Locale.US);
+
+        if (extension.equals("jar")) return;
+        if (extension.equals("war")) return;
+
         artifact.set(KEY_TYPE, "archive");
-        final String extension = FilenameUtils.getExtension(file.getName());
         if (extension != null) {
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, extension + "-archive");
         }

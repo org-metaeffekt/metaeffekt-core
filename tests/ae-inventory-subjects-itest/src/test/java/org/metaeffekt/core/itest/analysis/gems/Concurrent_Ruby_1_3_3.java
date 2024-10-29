@@ -57,13 +57,12 @@ public class Concurrent_Ruby_1_3_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "concurrent-ruby-1.3.3.gem"),
+        artifactList.with(attributeValue(ID, "concurrent-ruby-1.3.3"),
                         attributeValue(VERSION, "1.3.3"),
                         attributeValue(PURL, "pkg:gem/concurrent-ruby@1.3.3"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

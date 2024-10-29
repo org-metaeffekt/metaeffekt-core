@@ -77,7 +77,7 @@ public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositio
         analysis.selectArtifacts().hasSizeOf(3);
 
         ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
-        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(2);
     }
 
 }

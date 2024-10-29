@@ -63,8 +63,8 @@ public class Beautifulsoup4_4_12_3 extends AbstractCompositionAnalysisTest{
                         attributeValue(PATH_IN_ASSET, "[beautifulsoup4-4.12.3-py3-none-any.whl]"))
                 .assertNotEmpty();
 
-        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
-        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
-        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(1);
+        artifactList.hasSizeOf(47);
     }
 }

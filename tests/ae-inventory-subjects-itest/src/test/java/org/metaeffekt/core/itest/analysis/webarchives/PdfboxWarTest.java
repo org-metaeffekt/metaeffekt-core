@@ -84,8 +84,8 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        ArtifactList jarList = artifactList.with(attributeValue(TYPE, "module"));
-        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(5);
     }
 
 }

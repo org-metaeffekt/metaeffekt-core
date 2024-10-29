@@ -94,7 +94,7 @@ public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
                     attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(5);
     }
 }

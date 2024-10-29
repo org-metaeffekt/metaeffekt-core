@@ -57,14 +57,13 @@ public class Bcrypt_3_1_20 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "bcrypt-3.1.20.gem"),
+        artifactList.with(attributeValue(ID, "bcrypt-3.1.20"),
                         attributeValue(VERSION, "3.1.20"),
                         attributeValue(PURL, "pkg:gem/bcrypt@3.1.20"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 
 }

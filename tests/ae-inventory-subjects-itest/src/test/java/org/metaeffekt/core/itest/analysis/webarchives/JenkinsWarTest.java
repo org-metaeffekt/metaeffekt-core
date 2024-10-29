@@ -182,12 +182,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
-        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
-        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
-
-        ArtifactList warList = artifactList.with(containsToken(ID, ".war"));
-        warList.with(attributeValue(TYPE, "module")).hasSizeOf(warList);
-        warList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(warList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(138);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "web-app")).hasSizeOf(1);
+        artifactList.hasSizeOf(139);
     }
 }

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.itest.analysis.archives;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -28,6 +29,8 @@ import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
@@ -63,9 +66,8 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
-        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
-
         Analysis analysis = new Analysis(inventory);
+        analysis.selectArtifacts().logListWithAllAttributes();
 
         // expect that the substructure is visible
         analysis.selectArtifacts().hasSizeGreaterThan(1);
@@ -74,6 +76,15 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(startsWith(ID, "commons")).hasSizeOf(2);
         analysis.selectArtifacts(startsWith(ID, "http")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(ID, "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
+
+        Artifact keycloakAdminCli = analysis.selectArtifacts(attributeValue(NAME, "keycloak-admin-cli-23.0.1")).getItemList().get(0);
+        Assertions.assertThat(keycloakAdminCli.get(FILE_NAME)).as("detected jars must have a File Name").isEqualTo("keycloak-admin-cli-23.0.1.jar");
+
+        Artifact jansiWindows = analysis.selectArtifacts(attributeValue(NAME, "jansi-windows32-1.8")).getItemList().get(0);
+        Assertions.assertThat(jansiWindows.get(FILE_NAME)).as("embedded jars must not have a File Name").isNull();
+
+        analysis.selectArtifacts().filter(a -> a.get(FILE_NAME) == null).as("File Name is null").hasSizeOf(21);
+
     }
 
     @Test

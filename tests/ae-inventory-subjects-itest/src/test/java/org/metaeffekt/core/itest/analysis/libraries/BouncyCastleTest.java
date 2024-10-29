@@ -72,9 +72,8 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
                         attributeValue(PATH_IN_ASSET, "bcprov-jdk18on-1.77.jar"))
                 .assertNotEmpty();
 
-        ArtifactList packageList = artifactList.with(containsToken(ID, ".jar"));
-        packageList.with(attributeValue(TYPE, "package")).hasSizeOf(packageList);
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }
 
 

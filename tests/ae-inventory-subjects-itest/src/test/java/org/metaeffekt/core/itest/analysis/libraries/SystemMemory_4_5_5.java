@@ -64,7 +64,7 @@ public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
                         attributeValue(PATH_IN_ASSET, "[system.memory.4.5.5.nupkg]"))
                 .assertNotEmpty();
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }
 }

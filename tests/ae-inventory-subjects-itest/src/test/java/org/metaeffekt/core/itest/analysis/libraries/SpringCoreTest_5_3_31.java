@@ -66,15 +66,14 @@ public class SpringCoreTest_5_3_31 extends AbstractCompositionAnalysisTest {
                         attributeValue(VERSION, "5.3.31"),
                         attributeValue(PROJECTS, "spring-core-5.3.31.jar"),
                         attributeValue(PATH_IN_ASSET, "spring-core-5.3.31.jar"),
-                        attributeValue(TYPE, "package"))
+                        attributeValue(TYPE, "module"))
                 .assertNotEmpty();
 
         ArtifactList artifactList = getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .filter(a -> a.getVersion() != null);
 
-        ArtifactList packageList = artifactList.with(containsToken(ID, ".jar"));
-        packageList.with(attributeValue(TYPE, "package")).hasSizeOf(packageList);
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }
 }

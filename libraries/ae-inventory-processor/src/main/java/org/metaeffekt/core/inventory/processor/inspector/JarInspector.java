@@ -111,6 +111,7 @@ public class JarInspector extends AbstractJarInspector {
         String packaging = pomProperties.getProperty("packaging");
         dummyArtifact.setGroupId(groupId);
         dummyArtifact.setVersion(version);
+        dummyArtifact.set(Artifact.Attribute.NAME, artifactId + "-" + version);
 
         dummyArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         dummyArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");

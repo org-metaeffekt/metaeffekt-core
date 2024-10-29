@@ -57,13 +57,12 @@ public class Sprockets_Rails_3_5_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "sprockets-rails-3.5.2.gem"),
+        artifactList.with(attributeValue(ID, "sprockets-rails-3.5.2"),
                         attributeValue(VERSION, "3.5.2"),
                         attributeValue(PURL, "pkg:gem/sprockets-rails@3.5.2"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

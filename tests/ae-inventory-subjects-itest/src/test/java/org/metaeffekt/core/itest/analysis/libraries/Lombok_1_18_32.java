@@ -75,9 +75,8 @@ public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
                 .selectArtifacts()
                 .filter(a -> a.getVersion() != null);
 
-        ArtifactList packageList = artifactList.with(containsToken(ID, ".jar"));
-        packageList.with(attributeValue(TYPE, "package")).hasSizeOf(packageList);
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }
 
     @Test

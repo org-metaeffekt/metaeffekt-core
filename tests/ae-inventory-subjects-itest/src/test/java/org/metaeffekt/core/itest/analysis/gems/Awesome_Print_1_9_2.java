@@ -57,14 +57,13 @@ public class Awesome_Print_1_9_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "awesome_print-1.9.2.gem"),
+        artifactList.with(attributeValue(ID, "awesome_print-1.9.2"),
                         attributeValue(VERSION, "1.9.2"),
                         attributeValue(PURL, "pkg:gem/awesome_print@1.9.2"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 
 }

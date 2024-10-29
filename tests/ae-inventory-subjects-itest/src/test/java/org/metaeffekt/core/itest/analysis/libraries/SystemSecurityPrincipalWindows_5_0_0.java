@@ -64,8 +64,8 @@ public class SystemSecurityPrincipalWindows_5_0_0 extends AbstractCompositionAna
                         attributeValue(PATH_IN_ASSET, "[system.security.principal.windows.5.0.0.nupkg]"))
                 .assertNotEmpty();
 
-        ArtifactList packageList = artifactList.with(attributeValue(TYPE, "package"));
-        packageList.with(attributeValue(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(packageList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(1);
     }
 }
 

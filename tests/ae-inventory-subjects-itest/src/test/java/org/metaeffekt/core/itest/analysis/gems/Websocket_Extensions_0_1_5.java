@@ -57,13 +57,12 @@ public class Websocket_Extensions_0_1_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "websocket-extensions-0.1.5.gem"),
+        artifactList.with(attributeValue(ID, "websocket-extensions-0.1.5"),
                         attributeValue(VERSION, "0.1.5"),
                         attributeValue(PURL, "pkg:gem/websocket-extensions@0.1.5"))
                 .assertNotEmpty();
 
-        ArtifactList gemList = artifactList.with(containsToken(ID, ".gem"));
-        gemList.with(attributeValue(TYPE, "module")).hasSizeOf(gemList);
-        gemList.with(attributeValue(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(gemList);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }
