@@ -31,8 +31,7 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.FILE_NAME;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
@@ -79,6 +78,7 @@ public class FileCollectTask extends ScanTask {
         artifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
         artifact.set(KEY_PATH_IN_ASSET, relativePath);
         artifact.set(FILE_NAME, fileName);
+        artifact.set(CLASSIFIER, artifact.inferClassifierFromFileNameAndVersion());
 
         // evaluate conditions for unwrapping the file (file is not yet probed; any file may be subject to unwrapping)
         final boolean unwrap = fileSystemScanContext.getScanParam().isImplicitUnwrap() &&

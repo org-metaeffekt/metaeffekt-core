@@ -65,7 +65,7 @@ public class SystemManagement_8_0_0 extends AbstractCompositionAnalysisTest{
                         attributeValue(TYPE, "package"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archivee")).hasSizeOf(1);
     }
 }

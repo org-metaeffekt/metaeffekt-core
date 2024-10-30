@@ -27,6 +27,7 @@ import java.io.File;
 import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.CLASSIFIER;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
@@ -57,6 +58,7 @@ public class MatchResult {
         derivedArtifact.setId(componentPatternData.get(COMPONENT_PART));
         derivedArtifact.setComponent(componentPatternData.get(COMPONENT_NAME));
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
+
 
         final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
         derivedArtifact.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);

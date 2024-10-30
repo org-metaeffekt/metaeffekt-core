@@ -17,9 +17,12 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 public class Artifact extends AbstractModelBase {
 
@@ -43,6 +46,7 @@ public class Artifact extends AbstractModelBase {
         ID("Id"),
         NAME("Name"),
         FILE_NAME("File Name"),
+        CLASSIFIER("Classifier"),
         COMPONENT("Component"),
         CHECKSUM("Checksum"),
         VERSION("Version"),
@@ -264,6 +268,7 @@ public class Artifact extends AbstractModelBase {
         super.merge(a);
 
         deriveArtifactId();
+        set(Attribute.CLASSIFIER, inferClassifierFromFileNameAndVersion());
     }
 
     private void mergeProjects(Artifact a) {
@@ -385,7 +390,7 @@ public class Artifact extends AbstractModelBase {
         String type = null;
         String id = getId();
         if (id != null) {
-            String classifier = inferClassifierFromId();
+            String classifier = inferClassifierFromFileNameAndVersion();
             String version = inferVersionFromId();
 
             final String versionClassifierPart;
@@ -464,7 +469,7 @@ public class Artifact extends AbstractModelBase {
      *
      * @return
      */
-    private String inferClassifierFromId() {
+    public String inferClassifierFromId() {
         final String id = getId();
         final String version = getVersion();
         if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(version)) {
@@ -489,6 +494,31 @@ public class Artifact extends AbstractModelBase {
         return null;
     }
 
+    public String inferClassifierFromFileNameAndVersion() {
+        final String fileName = get(Attribute.FILE_NAME);
+        final String version = getVersion();
+        if (StringUtils.isNotBlank(fileName) && StringUtils.isNotBlank(version)) {
+            // get rid of anything right to version
+            final String queryString = DELIMITER_DASH + version + DELIMITER_DASH;
+            final int versionIndex = fileName.indexOf(queryString);
+            if (versionIndex < 0) {
+                // no '-<version>-' part, no classifier
+                return null;
+            }
+            final int beginIndex = versionIndex + queryString.length();
+            final String classifierAndType = fileName.substring(beginIndex);
+            // get rid of trailing .{type}
+            final int index = classifierAndType.indexOf(DELIMITER_DOT);
+            if (index != -1) {
+                final String classifier = classifierAndType.substring(0, index).trim();
+                if (StringUtils.isNotBlank(classifier)) {
+                    return classifier;
+                }
+            }
+        }
+        return null;
+    }
+
     public String createCompareStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
         artifactRepresentation.append(normalize(getId()));
@@ -496,6 +526,8 @@ public class Artifact extends AbstractModelBase {
         artifactRepresentation.append(normalize(get(Attribute.NAME)));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(get(Attribute.FILE_NAME)));
+        artifactRepresentation.append(DELIMITER_COLON);
+        artifactRepresentation.append(normalize(get(Attribute.CLASSIFIER)));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getChecksum()));
         artifactRepresentation.append(DELIMITER_COLON);
@@ -544,8 +576,9 @@ public class Artifact extends AbstractModelBase {
     }
 
 
+    @Deprecated
     public String getClassifier() {
-        return inferClassifierFromId();
+        return get(Attribute.CLASSIFIER);
     }
 
     public boolean isEnabledForDistribution() {

@@ -64,7 +64,7 @@ public class SystemRuntimeCompilerservicesUnsafe_6_0_0 extends AbstractCompositi
                         attributeValue(PATH_IN_ASSET, "[system.runtime.compilerservices.unsafe.6.0.0.nupkg]"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
     }
 }

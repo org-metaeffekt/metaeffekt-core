@@ -64,7 +64,7 @@ public class SystemSecurityAccessescontrol_6_0_1 extends AbstractCompositionAnal
                         attributeValue(PATH_IN_ASSET, "[system.security.accesscontrol.6.0.1.nupkg]"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
     }
 }

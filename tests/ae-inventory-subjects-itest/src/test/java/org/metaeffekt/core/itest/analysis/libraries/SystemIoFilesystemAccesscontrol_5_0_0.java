@@ -62,8 +62,8 @@ public class SystemIoFilesystemAccesscontrol_5_0_0 extends AbstractCompositionAn
                         attributeValue(PATH_IN_ASSET, "[system.io.filesystem.accesscontrol.5.0.0.nupkg]"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
     }
 
 }
