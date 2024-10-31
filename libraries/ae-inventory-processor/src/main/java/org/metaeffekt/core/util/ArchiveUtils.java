@@ -200,9 +200,15 @@ public class ArchiveUtils {
             }
         }
 
-        untarInternal(file, targetDir);
-        for (File intermediateFile : intermediateFiles) {
-            FileUtils.forceDelete(intermediateFile);
+
+        try {
+            untarInternal(file, targetDir);
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot untar " + file, e);
+        } finally {
+            for (File intermediateFile : intermediateFiles) {
+                FileUtils.forceDelete(intermediateFile);
+            }
         }
     }
 
@@ -227,7 +233,7 @@ public class ArchiveUtils {
         unpackAndClose(bzIn, Files.newOutputStream(targetFile.toPath()));
     }
 
-    private static void untarInternal(File file, File targetFile) {
+    private static void untarInternal(File file, File targetFile) throws IOException {
         try {
             final InputStream fin = Files.newInputStream(file.toPath());
             final BufferedInputStream in = new BufferedInputStream(fin);
@@ -237,7 +243,7 @@ public class ArchiveUtils {
             }
             unpackAndClose(xzIn, targetFile);
         } catch (Exception commonCompressException) {
-            LOG.error("Could not untar file [{}]", file.getAbsolutePath(), commonCompressException);
+            throw new IOException("Could not untar file [{" + file.getAbsolutePath() + "}]", commonCompressException);
         }
     }
 
