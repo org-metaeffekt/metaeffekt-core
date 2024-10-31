@@ -17,9 +17,7 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -82,6 +80,7 @@ public class Artifact extends AbstractModelBase {
         VERIFIED("Verified"),
         ERRORS("Errors"),
         HASH_SHA256("Hash (SHA-256)"),
+        HASH_SHA1("Hash (SHA-1"),
         PATH_IN_ASSET("Path in Asset"),
         VIRTUAL_ROOT_PATH("Virtual Root Path"),
         PURL("PURL"),
@@ -104,6 +103,31 @@ public class Artifact extends AbstractModelBase {
         }
     }
 
+    /**
+     * Defines a default order.
+     */
+    public static Artifact.Attribute[] ARTIFACT_ATTRIBUTE_LIST = new Artifact.Attribute[]{
+            Artifact.Attribute.ID,
+            Artifact.Attribute.NAME,
+            Artifact.Attribute.CHECKSUM,
+            Artifact.Attribute.COMPONENT,
+            Artifact.Attribute.GROUPID,
+            Artifact.Attribute.VERSION,
+            Artifact.Attribute.LATEST_VERSION,
+            Artifact.Attribute.LICENSE,
+            Artifact.Attribute.CLASSIFICATION,
+            Artifact.Attribute.SECURITY_RELEVANT,
+            Artifact.Attribute.SECURITY_CATEGORY,
+            Artifact.Attribute.VULNERABILITY,
+            Artifact.Attribute.COMMENT,
+            Artifact.Attribute.URL,
+            Artifact.Attribute.PURL,
+            Artifact.Attribute.PROJECTS,
+            Artifact.Attribute.VERIFIED
+    };
+
+    public static List<String> ARTIFACT_COLUMN_ORDER_LIST =
+            Arrays.stream(ARTIFACT_ATTRIBUTE_LIST).map(a -> a.key).collect(Collectors.toList());
 
     // artifact id (derived from id and version)
     private transient String artifactId;
@@ -780,6 +804,33 @@ public class Artifact extends AbstractModelBase {
         }
 
         return false;
+    }
+
+
+    public static List<String> orderAttributes(Collection<String> attributes, List<String> contextColumnList, List<String> artifactColumnOrder) {
+        // impose context or default order
+        final List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+        int insertIndex = 0;
+        if (contextColumnList != null) {
+            for (String key : contextColumnList) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        } else {
+            for (String key : artifactColumnOrder) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        }
+        return ordered;
+    }
+
+    private static int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Collection<String> attributesSet) {
+        if (attributesSet.contains(key)) {
+            orderedAttributesList.remove(key);
+            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
+            insertIndex++;
+        }
+        return insertIndex;
     }
 
 }

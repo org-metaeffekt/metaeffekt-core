@@ -36,30 +36,6 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
     private final static Logger LOG = LoggerFactory.getLogger(XlsxInventoryWriter.class);
 
-    /**
-     * Defines a default order.
-     * <p>
-     * FIXME: column-metadata
-     */
-    private final Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[]{
-            Artifact.Attribute.ID,
-            Artifact.Attribute.CHECKSUM,
-            Artifact.Attribute.COMPONENT,
-            Artifact.Attribute.GROUPID,
-            Artifact.Attribute.VERSION,
-            Artifact.Attribute.LATEST_VERSION,
-            Artifact.Attribute.LICENSE,
-            Artifact.Attribute.CLASSIFICATION,
-            Artifact.Attribute.SECURITY_RELEVANT,
-            Artifact.Attribute.SECURITY_CATEGORY,
-            Artifact.Attribute.VULNERABILITY,
-            Artifact.Attribute.COMMENT,
-            Artifact.Attribute.URL,
-            Artifact.Attribute.PURL,
-            Artifact.Attribute.PROJECTS,
-            Artifact.Attribute.VERIFIED
-    };
-
     public void writeInventory(Inventory inventory, File file) throws IOException {
         final SXSSFWorkbook workbook = new SXSSFWorkbook();
         final XlsxXSSFInventorySheetCellStylers stylers = new XlsxXSSFInventorySheetCellStylers(workbook);
@@ -116,20 +92,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         attributes.add(Artifact.Attribute.COMPONENT.getKey());
         attributes.add(Artifact.Attribute.VERSION.getKey());
 
-        // impose context or default order
-        final List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-        int insertIndex = 0;
-        if (contextColumnList != null) {
-            for (String key : contextColumnList) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        } else {
-            for (Artifact.Attribute a : artifactColumnOrder) {
-                String key = a.getKey();
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        }
+        final List<String> ordered = Artifact.orderAttributes(attributes, contextColumnList, Artifact.ARTIFACT_COLUMN_ORDER_LIST);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
@@ -362,18 +325,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         attributes.addAll(LicenseData.CORE_ATTRIBUTES);
 
         // impose context or default order
-        final List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-        int insertIndex = 0;
-        if (contextColumnList != null) {
-            for (String key : contextColumnList) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        } else {
-            for (String key : LicenseData.CORE_ATTRIBUTES) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        }
+        final List<String> ordered = Artifact.orderAttributes(attributes, contextColumnList, LicenseData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,

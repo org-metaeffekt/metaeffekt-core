@@ -596,12 +596,17 @@ public class JarInspector extends AbstractJarInspector {
         }
     }
 
-    // FIXME: adjust to optimal
     private void deriveNameIfNotSet(Artifact artifact) {
-        if (StringUtils.isBlank(artifact.get(Constants.KEY_TYPE))) {
-            String id = artifact.getId();
-            if (id != null && id.toLowerCase(Locale.US).endsWith(".jar")) {
-                artifact.set(Constants.KEY_TYPE, "module");
+        if (StringUtils.isBlank(artifact.get(Constants.KEY_NAME))) {
+            String fileName = artifact.get(Artifact.Attribute.FILE_NAME);
+            String version = artifact.getVersion();
+            if (fileName != null && fileName.toLowerCase(Locale.US).endsWith(".jar")) {
+                String name = fileName.substring(0, fileName.lastIndexOf("."));
+                String classifier = artifact.get(Artifact.Attribute.CLASSIFIER);
+                if (StringUtils.isNotBlank(classifier)  && name.endsWith("-" + classifier)) {
+                    name += "-" + classifier;
+                }
+                artifact.set(Constants.KEY_NAME, name);
                 artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
             }
         }
