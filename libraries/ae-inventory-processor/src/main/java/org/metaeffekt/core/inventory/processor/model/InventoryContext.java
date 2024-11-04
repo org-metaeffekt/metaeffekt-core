@@ -33,4 +33,13 @@ public class InventoryContext {
     String reportContextId;
     String reportContextTitle;
     String reportContext;
+
+    public InventoryContext(Inventory inventory, Inventory referenceInventory, String identifier, String reportContextId, String reportContextTitle, String reportContext) {
+        this.inventory = inventory;
+        this.identifier = identifier;
+        this.referenceInventory = referenceInventory;
+        this.reportContextId = reportContextId;
+        this.reportContextTitle = reportContextTitle;
+        this.reportContext = reportContext;
+    }
 }
