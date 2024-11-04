@@ -11,9 +11,25 @@ import lombok.Setter;
 @Setter
 public class InventoryContext {
 
+    /**
+     * The inventory which is defined in this context.
+     */
     Inventory inventory;
+
+    /**
+     * The custom identifier of an inventory, which is used for structuring the report.
+     */
     String identifier;
+
+    /**
+     * This inventory is used as a reference for e.g. handling of unknown fields, etc. If no reference seems fit, set
+     * this to the same inventory as the inventory of this context.
+     */
     Inventory referenceInventory;
+
+    /**
+     * Fields needed for the context of a report.
+     */
     String reportContextId;
     String reportContextTitle;
     String reportContext;

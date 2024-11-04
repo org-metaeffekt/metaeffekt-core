@@ -18,13 +18,15 @@ public class  DocumentDescriptorReportTest {
     public void testAnnex001() throws Exception {
         final File resourceRootDir = new File("src/test/resources/document-descriptor/annex-001");
 
-        // step 1 - create documentDescriptor and assign inventoryContext to it
+        // create documentDescriptor and assign documentType
         final DocumentDescriptor documentDescriptor = new DocumentDescriptor();
         documentDescriptor.setDocumentType(DocumentType.ANNEX);
 
+        // create and read inventory
         final File inventoryFile = new File(resourceRootDir, "scan-inventory.xlsx");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
+        // create inventoryContexts and define fields
         InventoryContext inventoryContext001 = new InventoryContext();
         inventoryContext001.setInventory(inventory);
         inventoryContext001.setIdentifier("Keycloak");
@@ -41,17 +43,16 @@ public class  DocumentDescriptorReportTest {
         inventoryContext002.setReportContextTitle("Test");
         inventoryContext002.setReportContext("Test");
 
-        DocumentDescriptorReportContext reportContext = new DocumentDescriptorReportContext();
-        reportContext.setTargetReportPath("target/document-descriptor-report-001/report");
-
         List<InventoryContext> inventoryContexts = new ArrayList<>();
         inventoryContexts.add(inventoryContext001);
         inventoryContexts.add(inventoryContext002);
-
         documentDescriptor.setInventoryContexts(inventoryContexts);
 
-        // step 2 - set parameters for documentDescriptor
+        // create reportContext for this report
+        DocumentDescriptorReportContext reportContext = new DocumentDescriptorReportContext();
+        reportContext.setTargetReportPath("target/document-descriptor-report-001/report");
 
+        // set params for documentDescriptor
         File target = new File("target/document-descriptor-report-001");
         target.mkdirs();
 
@@ -59,19 +60,13 @@ public class  DocumentDescriptorReportTest {
         File targetComponentDir = new File(target, "component");
 
         final Map<String, String> params = new HashMap<>();
-
         params.put("targetLicensesDir", targetLicenseDir.getPath());
         params.put("targetComponentDir", targetComponentDir.getPath());
-
         documentDescriptor.setParams(params);
 
-        // step 3 - create ReportGenerator and generate a report
+        // generate report
         DocumentDescriptorReportGenerator reportGenerator = new DocumentDescriptorReportGenerator();
-
         reportGenerator.generate(documentDescriptor, reportContext);
-
-
-
     }
 
 }

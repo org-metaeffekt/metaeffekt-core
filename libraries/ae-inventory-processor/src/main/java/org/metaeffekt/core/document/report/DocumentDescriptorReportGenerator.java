@@ -15,6 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class for controlling the process of generating reports from documentDescriptors and their respective ReportContexts.
+ */
 public class DocumentDescriptorReportGenerator {
 
     public void generate(DocumentDescriptor documentDescriptor, DocumentDescriptorReportContext reportContext) throws Exception {
@@ -35,9 +38,11 @@ public class DocumentDescriptorReportGenerator {
                 report.setInventoryBomReportEnabled(true);
                 // insert more pre-requisites for annex
             }
+
             report.setReferenceInventory(inventoryContext.getReferenceInventory());
             report.setInventory(inventoryContext.getInventory());
 
+            // set fields from reportContext
             report.setFailOnUnknown(reportContext.getFailOnUnknown());
             report.setFailOnUnknownVersion(reportContext.getFailOnUnknownVersion());
             report.setFailOnMissingLicense(reportContext.getFailOnMissingLicense());
