@@ -221,8 +221,6 @@ public class InventoryReport {
     /**
      * The inventory for which to create the report.
      */
-    @Getter
-    @Setter
     private Inventory referenceInventory;
 
     /**
