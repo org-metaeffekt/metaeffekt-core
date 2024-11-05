@@ -48,6 +48,8 @@ public class XlsxXSSFInventorySheetCellStylers {
     public final InventorySheetCellStyler headerStyleDefault;
     public final InventorySheetCellStyler headerStyleColumnNameSrcAssetSource;
     public final InventorySheetCellStyler headerStyleColumnNameAssetConfig;
+    public final InventorySheetCellStyler headerStyleColumnNameMarker;
+    public final InventorySheetCellStyler headerStyleColumnNameClassification;
 
     // DATA CELLS
     public final InventorySheetCellStyler contentStyleColumnNameAssetId;
@@ -55,6 +57,7 @@ public class XlsxXSSFInventorySheetCellStylers {
     public final InventorySheetCellStyler contentStyleCvssScoresDoubleValue;
     public final InventorySheetCellStyler contentStyleUrlValue;
     public final InventorySheetCellStyler contentStyleColumnNameSrcCentered;
+    public final InventorySheetCellStyler contentStyleColumnNameMarkerCentered;
 
     public XlsxXSSFInventorySheetCellStylers(SXSSFWorkbook workbook) {
         final CellStyle defaultHeaderStyle = createDefaultHeaderStyle(workbook);
@@ -64,6 +67,9 @@ public class XlsxXSSFInventorySheetCellStylers {
         final CellStyle centeredStyle = createCenteredStyle(workbook);
         final CellStyle warnHeaderStyle = createWarnHeaderStyle(workbook);
         final CellStyle errorHeaderStyle = createErrorHeaderStyle(workbook);
+
+        final CellStyle termsMarkerHeaderStyle = createMarkerHeaderStyle(workbook);
+        final CellStyle termsClassificationStyle = createClassificationHeaderStyle(workbook);
 
         // HEADER CELLS
         this.headerStyleColumnNameAssetId = InventorySheetCellStyler.createStyler(
@@ -108,11 +114,34 @@ public class XlsxXSSFInventorySheetCellStylers {
 
         this.headerStyleColumnNameAssetConfig = InventorySheetCellStyler.createStyler(
                 context -> {
-                    return context.getFullColumnHeader().startsWith("config_");
+                    final String fullColumnHeader = context.getFullColumnHeader();
+                    return fullColumnHeader.startsWith("config_") ||
+                            fullColumnHeader.startsWith("prop_") ||
+                            fullColumnHeader.startsWith("meta_");
                 }, context -> {
                     context.getCell().setCellStyle(assetConfigHeaderStyle);
                     // number of pixel times magic number
                     context.getSheet().setColumnWidth(context.getColumnIndex(), 40 * 42);
+                });
+
+        this.headerStyleColumnNameMarker = InventorySheetCellStyler.createStyler(
+                context -> {
+                    return context.getFullColumnHeader().startsWith("M-");
+                }, context -> {
+                    context.getCell().setCellStyle(termsMarkerHeaderStyle);
+                    // number of pixel times magic number
+                    context.getSheet().setColumnWidth(context.getColumnIndex(), 20 * 42);
+                    context.getRow().setHeight((short) (170 * 20));
+                });
+
+        this.headerStyleColumnNameClassification = InventorySheetCellStyler.createStyler(
+                context -> {
+                    return context.getFullColumnHeader().startsWith("C-");
+                }, context -> {
+                    context.getCell().setCellStyle(termsClassificationStyle);
+                    // number of pixel times magic number
+                    context.getSheet().setColumnWidth(context.getColumnIndex(), 20 * 42);
+                    context.getRow().setHeight((short) (170 * 20));
                 });
 
         // DATA CELLS
@@ -167,6 +196,14 @@ public class XlsxXSSFInventorySheetCellStylers {
         this.contentStyleColumnNameSrcCentered = InventorySheetCellStyler.createStyler(
                 context -> {
                     return context.getFullColumnHeader().startsWith("SRC-");
+                }, context -> {
+                    context.getCell().setCellStyle(centeredStyle);
+                });
+
+        this.contentStyleColumnNameMarkerCentered = InventorySheetCellStyler.createStyler(
+                context -> {
+                    return context.getFullColumnHeader().startsWith("M-") ||
+                            context.getFullColumnHeader().startsWith("C-")  ;
                 }, context -> {
                     context.getCell().setCellStyle(centeredStyle);
                 });
@@ -229,6 +266,16 @@ public class XlsxXSSFInventorySheetCellStylers {
 
     protected CellStyle createWarnHeaderStyle(SXSSFWorkbook workbook) {
         final XSSFColor headerColor = resolveColor(workbook, "244,176,132");
+        return createRotatedCellStyle(workbook, headerColor);
+    }
+
+    protected CellStyle createMarkerHeaderStyle(SXSSFWorkbook workbook) {
+        final XSSFColor headerColor = resolveColor(workbook, "250,234,173");
+        return createRotatedCellStyle(workbook, headerColor);
+    }
+
+    protected CellStyle createClassificationHeaderStyle(SXSSFWorkbook workbook) {
+        final XSSFColor headerColor = resolveColor(workbook, "248,214,128");
         return createRotatedCellStyle(workbook, headerColor);
     }
 
