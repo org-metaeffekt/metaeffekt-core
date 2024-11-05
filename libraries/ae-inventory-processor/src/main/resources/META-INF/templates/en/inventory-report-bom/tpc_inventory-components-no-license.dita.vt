@@ -41,7 +41,9 @@
                     <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
                 #end
                     <entry>
-                        <lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end#end</lines>
+## preserve lines for proper line-breaks
+<lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+#end#end</lines>
                     </entry>
                 </row>
             #end
