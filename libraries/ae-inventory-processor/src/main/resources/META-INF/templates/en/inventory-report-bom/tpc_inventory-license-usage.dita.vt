@@ -1,0 +1,34 @@
+#parse("META-INF/templates/en/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_license-usage-$reportContext.id">
+    <title>$reportContext.combinedTitle("License Usage", true)</title>
+#set($effectiveLicenses=$inventory.evaluateLicenses(false))
+#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+<body>
+    <p>
+        Licenses are used by several or individual components. In the following the components are listed for
+        each effective license.
+    </p>
+</body>
+
+#foreach($license in $effectiveLicensesRepresented)
+    #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
+        #insertLicenseArtifactTopic($license)
+    #else
+        <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
+            <title>$report.xmlEscapeLicense($license) Variants</title>
+            <body>
+                <p>
+                    $license is representative of all licenses with variations,
+                    characteristics and modifications of the original license template. In this subchapter,
+                    all these license variations, which are represented by the $license,
+                    are listed individually.</p>
+                    #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))
+                    #insertLicenseArtifactTopic($effLicense)
+                    #end
+            </body>
+        </topic>
+    #end
+#end
+</topic>
