@@ -62,7 +62,7 @@ public class LicenseData extends AbstractModelBase {
     public static List<String> CORE_ATTRIBUTES = new ArrayList<>();
 
     static {
-        // fix selection and order
+        // fix selection for string representation
         CORE_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
@@ -72,7 +72,7 @@ public class LicenseData extends AbstractModelBase {
     public static List<String> ORDERED_ATTRIBUTES = new ArrayList<>();
 
     static {
-        // fix selection and order
+        // fix order for serialization
         ORDERED_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
         ORDERED_ATTRIBUTES.add(Attribute.ID.getKey());
         ORDERED_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
