@@ -202,10 +202,11 @@ public class RepositoryReportTest {
         // check links from package report
         Assert.assertTrue(
                 "Expecting references to license chapter.",
-                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
+                packageReportEffective.contains
+                        ("<xref href=\"tpc_inventory-license-usage.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
 
         // read license overview
-        File licenseOverviewFile = new File(reportDir, "report/tpc_inventory-licenses.dita");
+        File licenseOverviewFile = new File(reportDir, "report/tpc_inventory-licenses-effective.dita");
         String licenseOverview = FileUtils.readFileToString(licenseOverviewFile, FileUtils.ENCODING_UTF_8);
         Assert.assertFalse("All artifacts counts must be greater than 0.", licenseOverview.contains("<codeph>0</codeph>"));
 
