@@ -73,11 +73,11 @@ public class LicenseData extends AbstractModelBase {
 
     static {
         // fix selection and order
-        CORE_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
-        CORE_ATTRIBUTES.add(Attribute.ID.getKey());
-        CORE_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
-        CORE_ATTRIBUTES.add(Attribute.SCANCODE_IDS.getKey());
-        CORE_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SCANCODE_IDS.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
     }
 
     /**
