@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory;
 
-import com.sun.tools.javac.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
