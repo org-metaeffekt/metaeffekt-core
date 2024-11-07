@@ -131,7 +131,7 @@ public class PomReportCreationMojo extends AbstractInventoryReportCreationMojo {
         return false;
     }
 
-    private Inventory createInventoryFromPom() {
+    private Inventory  createInventoryFromPom() {
         Inventory inventory = new Inventory();
         for (Object obj : getProject().getTestArtifacts()) {
             org.apache.maven.artifact.Artifact mavenArtifact = (org.apache.maven.artifact.Artifact) obj;

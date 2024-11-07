@@ -1055,7 +1055,6 @@ public class InventoryReport {
         } else {
             LOG.info(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
         }
-
         securityPolicy.logConfiguration();
     }
 

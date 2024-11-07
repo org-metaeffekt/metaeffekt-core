@@ -18,12 +18,14 @@ package org.metaeffekt.core.inventory.processor;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.ArtifactLicenseData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.report.AssessmentInventoryMerger;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
@@ -94,6 +96,7 @@ public class RepositoryReportTest {
         report.setTargetComponentDir(targetComponentDir);
         report.setTargetReportDir(targetReportPath);
 
+        report.setAssetBomReportEnabled(true);
         report.setInventoryBomReportEnabled(true);
         report.setInventoryPomEnabled(true);
         report.setInventoryDiffReportEnabled(false);
@@ -280,52 +283,6 @@ public class RepositoryReportTest {
 
     }
 
-    @Ignore // needs external resources
-    @Test
-    public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("<path-to-inventory-dir>");
-        final File referenceInventoryDir = new File("<path-to-reference-inventory-dir>");
-
-        final File reportDir = new File("target/test-inventory-04");
-
-        InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "*.xlsx",
-                referenceInventoryDir, "*.xlsx",
-                reportDir, report);
-
-        report.setTemplateLanguageSelector("en");
-
-        report.setAssetBomReportEnabled(false);
-        report.setIncludeInofficialOsiStatus(false);
-
-        report.setInventoryBomReportEnabled(true);
-        report.setAssessmentReportEnabled(false);
-
-        report.setInventoryVulnerabilityReportEnabled(false);
-        report.setInventoryVulnerabilityReportSummaryEnabled(false);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
-
-        report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC, AeaaAdvisoryTypeStore.GHSA);
-        report.getSecurityPolicy()
-                .setInsignificantThreshold(7.0f)
-                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
-                .setIncludeAdvisoryTypes(Arrays.asList("alert", "news", "notice"))
-                .setIncludeAdvisoryProviders(new HashMap<String, String>() {{
-                    put("CERT_FR", "");
-                    put("CERT_SEI", "");
-                    put("MSRC", "");
-                    put("GHSA", "");
-                }})
-                .setIncludeVulnerabilitiesWithAdvisoryProviders(new HashMap<String, String>() {{
-                    put("all", "");
-                }});
-
-        report.setFailOnMissingLicense(false);
-        report.setFailOnMissingLicenseFile(false);
-
-        report.createReport();
-    }
-
     @Test
     public void testCreateTestReportCertMetaData() throws Exception {
         final File inventoryDir = new File("src/test/resources/test-inventory-cert");
@@ -430,5 +387,4 @@ public class RepositoryReportTest {
         final InventoryReport report = new InventoryReport();
         Assert.assertEquals("2020-20-20", report.xmlEscapeDate("2020-20-20"));
     }
-
 }
