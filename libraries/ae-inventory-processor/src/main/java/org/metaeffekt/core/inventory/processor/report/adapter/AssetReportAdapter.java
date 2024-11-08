@@ -45,7 +45,6 @@ public class AssetReportAdapter {
 
     public List<Artifact> getRelatedArtifacts(AssetMetaData assetMetaData) {
         return new ArrayList<>(InventoryUtils.getArtifactsForAsset(inventory, assetMetaData));
-
     }
 
     final Pair<String, String>[] containerKeyList = new Pair[]{
