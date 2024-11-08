@@ -170,4 +170,24 @@ public class ArtifactTest {
         Assert.assertEquals("xyz", a.getClassifier());
     }
 
+    @Test
+    public void testDeriveArtifactAttributes_NoSuffix() {
+        Artifact a = new Artifact();
+        a.setId("commons-beanutil-1.8.3");
+        a.setVersion("1.8.3");
+        a.deriveArtifactId();
+        Assert.assertEquals("commons-beanutil", a.getArtifactId());
+        Assert.assertNull(a.getType());
+    }
+
+    @Test
+    public void testDeriveArtifactAttributesWithSuffix() {
+        Artifact a = new Artifact();
+        a.setId("commons-beanutil-1.8.3.jar");
+        a.setVersion("1.8.3");
+        a.deriveArtifactId();
+        Assert.assertEquals("commons-beanutil", a.getArtifactId());
+        Assert.assertEquals("jar", a.getType());
+    }
+
 }
