@@ -49,9 +49,6 @@ public class ArchiveUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArchiveUtils.class);
 
-    private static final long UNTAR_TIMEOUT_NUMBER = 1;
-    private static final TimeUnit UNTAR_TIMEOUT_UNIT = TimeUnit.HOURS;
-
     private static final Set<String> zipExtensions = new HashSet<>();
     private static final Set<String> gzipExtensions = new HashSet<>();
     private static final Set<String> tarExtensions = new HashSet<>();
@@ -539,6 +536,51 @@ public class ArchiveUtils {
                 // ensure the tmp folder is deleted
                 FileUtils.deleteDirectoryQuietly(tmpFolder);
             }
+        }
+    }
+
+    private static final long UNTAR_TIMEOUT_NUMBER = 1;
+    private static final TimeUnit UNTAR_TIMEOUT_UNIT = TimeUnit.HOURS;
+
+    public static void nativeUntar(File file, File targetFile) throws IOException {
+
+        // FIXME: this fallback doesn't adjust file permissions, leading to "Permission denied" while scanning.
+        //  this also means that prepareScanDirectory may fail on rescan.
+        //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
+        //  this last-ditch efford to give good support.
+        // fallback to native support on command line
+
+        Process tarExtract = new ProcessBuilder().command(
+                        "tar", "-x",
+                        "-f", file.getAbsolutePath(),
+                        "--no-same-permissions",
+                        "-C", targetFile.getAbsolutePath())
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+                .start();
+
+        // wait for untar. if our untar takes more than one hour, we can be pretty sure that something is broken
+        try {
+            if (!tarExtract.waitFor(UNTAR_TIMEOUT_NUMBER, UNTAR_TIMEOUT_UNIT)) {
+                // timeout
+                LOG.error("Failed to untar [{}].", file.getAbsolutePath());
+
+                LOG.error("Killing untar process...");
+                tarExtract.destroyForcibly();
+                if (!tarExtract.waitFor(1, TimeUnit.MINUTES)) {
+                    // once we are in Java 9 or newer, we should output PID in this case
+                    LOG.error("Failed to kill untar! This will leave a tar process with unknown state!");
+                }
+
+                throw new IOException("Untar failed: timed out.");
+            }
+        } catch (InterruptedException e) {
+            throw new IOException("Untar thread was interrupted.", e);
+        }
+
+        if (tarExtract.exitValue() != 0) {
+            LOG.error("Untar of [{}] failed with exit value [{}].", file.getAbsolutePath(), tarExtract.exitValue());
+            throw new IOException("Failed to untar requested file.");
         }
     }
 

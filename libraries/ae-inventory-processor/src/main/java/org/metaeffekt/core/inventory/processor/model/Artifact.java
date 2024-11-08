@@ -384,7 +384,11 @@ public class Artifact extends AbstractModelBase {
         String id = getId();
         if (id != null) {
             String classifier = inferClassifierFromId();
-            String version = inferVersionFromId();
+            String version = getVersion();
+
+            if (version == null) {
+                version = inferVersionFromId();
+            }
 
             final String versionClassifierPart;
             if (classifier == null) {
@@ -398,12 +402,7 @@ public class Artifact extends AbstractModelBase {
                 type = id.substring(index + versionClassifierPart.length());
             }
 
-            if (type == null) {
-                final int i = id.lastIndexOf(DELIMITER_DOT);
-                if (i != -1) {
-                    type = id.substring(i + 1);
-                }
-            }
+            // NOTE: we do not regard an extraction by last dot (expecting a suffix) as  option.
         }
         return type;
     }
@@ -419,6 +418,8 @@ public class Artifact extends AbstractModelBase {
     public String deriveVersionFromId() {
         String version = getId();
         if (version != null) {
+
+            // FIXME: heavy assumption; better use a pattern \.[a-zA-Z]{3}
             if (version.indexOf('.') > 0) {
                 version = version.substring(0, version.lastIndexOf('.'));
             }
