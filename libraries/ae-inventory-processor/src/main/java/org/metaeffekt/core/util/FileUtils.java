@@ -121,11 +121,16 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String computeSHA1Hash(File file) {
+
         return computeChecksum(file, "SHA-1");
     }
 
     public static String computeSHA256Hash(File file) {
         return computeChecksum(file, "SHA-256");
+    }
+
+    public static String computeSHA512Hash(File file) {
+        return computeChecksum(file, "SHA-512");
     }
 
     public static String asRelativePath(String workingDirPath, String filePath) {

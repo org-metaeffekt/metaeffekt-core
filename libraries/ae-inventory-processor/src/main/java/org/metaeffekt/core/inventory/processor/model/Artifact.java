@@ -41,28 +41,34 @@ public class Artifact extends AbstractModelBase {
      * Core attributes to support component patterns.
      */
     public enum Attribute implements AbstractModelBase.Attribute {
-        ID("Id"),
+        GROUPID("Group Id"),
         NAME("Name"),
-        FILE_NAME("File Name"),
-        CLASSIFIER("Classifier"),
-        COMPONENT("Component"),
-        CHECKSUM("Checksum"),
         VERSION("Version"),
+        RELEASE("Release"),
+        CLASSIFIER("Classifier"),
+        ARCHITECTURE("Architecture"),
+        DISTRO("Distro"),
+        PURL("PURL"),
+        FILE_NAME("File Name"),
+        CHECKSUM("Checksum"),
+        HASH_SHA1("Hash (SHA-1"),
+        HASH_SHA256("Hash (SHA-256)"),
+        HASH_SHA512("Hash (SHA-512"),
+        FILE_TYPE("File Type"),
+        SPECIFIC_FILE_TYPE("Specific File Type"),
+        PACKAGING("Packaging"),
+        COMPONENT("Component"),
+        COMPONENT_TYPE("Component Type"),
+
+        // FIXME: rename to locations
+        // project locations
+        PROJECTS("Projects"),
+        PATH_IN_ASSET("Path in Asset"),
 
         // latest available version
         LATEST_VERSION("Latest Version"),
-        CLASSIFICATION("Classification"),
         LICENSE("License"),
-        GROUPID("Group Id"),
-
-        // artifact type information
-        TYPE("Type"),
-
-        // comments (and hints)
-        COMMENT("Comment"),
-
-        // url of the project pages
-        URL("URL"),
+        CLASSIFICATION("Classification"),
 
         // indicates whether the artifact is security relevant and needs to be upgraded asap
         SECURITY_RELEVANT("Security Relevance"),
@@ -73,17 +79,18 @@ public class Artifact extends AbstractModelBase {
         // vulnerability information
         VULNERABILITY("Vulnerability"),
 
-        // FIXME: rename to locations
-        // project locations
-        PROJECTS("Projects"),
+        // comments (and hints)
+        COMMENT("Comment"),
 
+        // url of the project pages
+        URL("URL"),
         VERIFIED("Verified"),
+        ID("Id"),
+
+        // artifact type information
+        TYPE("Type"),
         ERRORS("Errors"),
-        HASH_SHA256("Hash (SHA-256)"),
-        HASH_SHA1("Hash (SHA-1"),
-        PATH_IN_ASSET("Path in Asset"),
         VIRTUAL_ROOT_PATH("Virtual Root Path"),
-        PURL("PURL"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
 
         // FIXME: consolidate
@@ -106,24 +113,37 @@ public class Artifact extends AbstractModelBase {
     /**
      * Defines a default order.
      */
+
     public static Artifact.Attribute[] ARTIFACT_ATTRIBUTE_LIST = new Artifact.Attribute[]{
-            Artifact.Attribute.ID,
-            Artifact.Attribute.NAME,
-            Artifact.Attribute.CHECKSUM,
-            Artifact.Attribute.COMPONENT,
-            Artifact.Attribute.GROUPID,
-            Artifact.Attribute.VERSION,
-            Artifact.Attribute.LATEST_VERSION,
-            Artifact.Attribute.LICENSE,
-            Artifact.Attribute.CLASSIFICATION,
-            Artifact.Attribute.SECURITY_RELEVANT,
-            Artifact.Attribute.SECURITY_CATEGORY,
-            Artifact.Attribute.VULNERABILITY,
-            Artifact.Attribute.COMMENT,
-            Artifact.Attribute.URL,
-            Artifact.Attribute.PURL,
-            Artifact.Attribute.PROJECTS,
-            Artifact.Attribute.VERIFIED
+            Attribute.GROUPID,
+            Attribute.NAME,
+            Attribute.VERSION,
+            Attribute.RELEASE,
+            Attribute.CLASSIFIER,
+            Attribute.ARCHITECTURE,
+            Attribute.DISTRO,
+            Attribute.PURL,
+            Attribute.FILE_NAME,
+            Attribute.CHECKSUM,
+            Attribute.HASH_SHA1,
+            Attribute.HASH_SHA256,
+            Attribute.HASH_SHA512,
+            Attribute.FILE_TYPE,
+            Attribute.SPECIFIC_FILE_TYPE,
+            Attribute.PACKAGING,
+            Attribute.COMPONENT,
+            Attribute.COMPONENT_TYPE,
+            Attribute.PROJECTS,
+            Attribute.PATH_IN_ASSET,
+            Attribute.LATEST_VERSION,
+            Attribute.LICENSE,
+            Attribute.CLASSIFICATION,
+            Attribute.SECURITY_RELEVANT,
+            Attribute.SECURITY_CATEGORY,
+            Attribute.VULNERABILITY,
+            Attribute.COMMENT,
+            Attribute.URL,
+            Attribute.VERIFIED
     };
 
     public static List<String> ARTIFACT_COLUMN_ORDER_LIST =

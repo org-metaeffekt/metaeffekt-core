@@ -67,8 +67,6 @@ public class SpringCoresourceTest_5_3_31 extends AbstractCompositionAnalysisTest
 
         ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
 
-        artifactList.logListWithAllAttributes();
-
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }

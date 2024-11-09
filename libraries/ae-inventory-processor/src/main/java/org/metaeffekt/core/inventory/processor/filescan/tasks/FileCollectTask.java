@@ -92,6 +92,7 @@ public class FileCollectTask extends ScanTask {
             // compute SHA hashes
             artifact.set(Constants.KEY_HASH_SHA1, FileUtils.computeSHA1Hash(file));
             artifact.set(Constants.KEY_HASH_SHA256, FileUtils.computeSHA256Hash(file));
+            artifact.set(Constants.KEY_HASH_SHA512, FileUtils.computeSHA512Hash(file));
 
             // compute md5 to support component patterns
             final String fileMd5Checksum = FileUtils.computeChecksum(file);
