@@ -71,6 +71,7 @@ public final class Constants {
     public static final String KEY_ARCHIVE = "Archive";
     public static final String KEY_STRUCTURED = "Structured";
     public static final String KEY_EXECUTABLE = "Executable";
+    public static final String KEY_PRIMARY = "Primary";
 
     /**
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
