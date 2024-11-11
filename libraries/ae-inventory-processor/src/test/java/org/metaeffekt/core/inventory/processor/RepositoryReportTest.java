@@ -149,6 +149,12 @@ public class RepositoryReportTest {
 
         artifactLicenseData = report.getLastProjectInventory().evaluateNotices("G License (with sub-components)");
         assertTrue(artifactLicenseData.isEmpty());
+
+        // copy bookmap
+        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-01/bm_test.ditamap"), target);
+
+        // generate PDF using 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISBALED -Ddita.source.dir=target/test-inventory-01' from terminal
+
     }
 
     @Test
