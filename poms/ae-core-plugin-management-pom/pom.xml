@@ -38,6 +38,8 @@
         <ant.version>1.10.11</ant.version>
 
         <dita.infrastructure.version>2.0-SNAPSHOT</dita.infrastructure.version>
+
+        <phase.inventory.check>validate</phase.inventory.check>
     </properties>
 
     <dependencyManagement>
@@ -315,7 +317,7 @@
                                     <goals>
                                         <goal>create-pom-report</goal>
                                     </goals>
-                                    <phase>validate</phase>
+                                    <phase>${phase.inventory.check}</phase>
                                 </execution>
                             </executions>
                             <dependencies>

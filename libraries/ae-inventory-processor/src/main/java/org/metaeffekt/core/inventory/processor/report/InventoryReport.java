@@ -33,6 +33,7 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.adapter.AssessmentReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter;
+import org.metaeffekt.core.inventory.processor.report.adapter.InventoryReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
@@ -56,8 +57,6 @@ import java.util.stream.IntStream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
-@Getter
-@Setter
 public class InventoryReport {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
@@ -546,7 +545,7 @@ public class InventoryReport {
         }
         projectInventory.mergeDuplicates();
 
-        // transfer license meta data into project inventory (required for the license related reports)
+        // transfer license metadata into project inventory (required for the license related reports)
         projectInventory.inheritLicenseMetaData(globalInventory, false);
         projectInventory.filterLicenseMetaData();
 
@@ -570,17 +569,20 @@ public class InventoryReport {
             LOG.debug("Project inventory after filtering using [filterVulnerabilitiesNotCoveredByArtifacts]: {}", projectInventory.getInventorySizePrintString());
         }
 
-        // build adapters
+        // FIXME: we need to unify this; filtering is more or less obsolete
         final Inventory filteredInventory = projectInventory.getFilteredInventory();
+
+        // build adapters
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(filteredInventory),
                 new VulnerabilityReportAdapter(projectInventory, securityPolicy),
-                new AssessmentReportAdapter(projectInventory, securityPolicy)
-        );
+                new AssessmentReportAdapter(projectInventory, securityPolicy),
+                new InventoryReportAdapter(filteredInventory));
 
         // write reports
         if (inventoryBomReportEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
         }
 
         if (inventoryDiffReportEnabled) {
@@ -588,32 +590,39 @@ public class InventoryReport {
         }
 
         if (inventoryVulnerabilityReportEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
         }
 
         if (inventoryVulnerabilityReportSummaryEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
         }
 
         if (inventoryVulnerabilityStatisticsReportEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
         }
 
         // all vulnerability-related templates require to generate labels
         if (inventoryVulnerabilityReportEnabled || inventoryVulnerabilityStatisticsReportEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    deriveTemplateBaseDir(), TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT, reportContext);
         }
 
         if (inventoryPomEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
         }
 
         if (assetBomReportEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
         }
 
         if (assessmentReportEnabled) {
-            writeReports(projectInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
+            writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
+                    deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -680,27 +689,19 @@ public class InventoryReport {
         return true;
     }
 
+    @Getter
     public static class InventoryReportAdapters {
         final AssetReportAdapter assetReportAdapter;
         final VulnerabilityReportAdapter vulnerabilityReportAdapter;
         final AssessmentReportAdapter assessmentReportAdapter;
+        final InventoryReportAdapter inventoryReportAdapter;
 
-        private InventoryReportAdapters(AssetReportAdapter assetReportAdapter, VulnerabilityReportAdapter vulnerabilityReportAdapter, AssessmentReportAdapter assessmentReportAdapter) {
+        private InventoryReportAdapters(AssetReportAdapter assetReportAdapter, VulnerabilityReportAdapter vulnerabilityReportAdapter,
+                    AssessmentReportAdapter assessmentReportAdapter, InventoryReportAdapter inventoryReportAdapter) {
             this.assetReportAdapter = assetReportAdapter;
             this.vulnerabilityReportAdapter = vulnerabilityReportAdapter;
             this.assessmentReportAdapter = assessmentReportAdapter;
-        }
-
-        public AssetReportAdapter getAssetReportAdapter() {
-            return assetReportAdapter;
-        }
-
-        public VulnerabilityReportAdapter getVulnerabilityReportAdapter() {
-            return vulnerabilityReportAdapter;
-        }
-
-        public AssessmentReportAdapter getAssessmentReportAdapter() {
-            return assessmentReportAdapter;
+            this.inventoryReportAdapter = inventoryReportAdapter;
         }
     }
 
@@ -708,7 +709,9 @@ public class InventoryReport {
         return TEMPLATES_BASE_DIR + SEPARATOR_SLASH + getTemplateLanguageSelector();
     }
 
-    protected void writeReports(Inventory projectInventory, Inventory filteredInventory, InventoryReportAdapters inventoryReportAdapters, String templateBaseDir, String templateGroup, ReportContext reportContext) throws Exception {
+    protected void writeReports(Inventory projectInventory, Inventory filteredInventory, InventoryReportAdapters report,
+                String templateBaseDir, String templateGroup, ReportContext reportContext) throws Exception {
+
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
         final Resource[] resources = resolver.getResources(vtClasspathResourcePattern);
@@ -724,18 +727,12 @@ public class InventoryReport {
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
             final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
 
-            produceDita(
-                    projectInventory, filteredInventory,
-                    inventoryReportAdapters.getAssetReportAdapter(),
-                    inventoryReportAdapters.getVulnerabilityReportAdapter(),
-                    inventoryReportAdapters.getAssessmentReportAdapter(),
-                    filePath, targetReportPath, reportContext
-            );
+            produceDita(projectInventory, filteredInventory, report, filePath, targetReportPath, reportContext);
         }
     }
 
     private void produceDita(Inventory projectInventory, Inventory filteredInventory,
-                             AssetReportAdapter assetReportAdapter, VulnerabilityReportAdapter vulnerabilityReportAdapter, AssessmentReportAdapter assessmentReportAdapter,
+                             InventoryReportAdapters inventoryReportAdapters,
                              String templateResourcePath, File target, ReportContext reportContext) throws Exception {
         LOG.info("Producing Dita for template [{}]", templateResourcePath);
 
@@ -753,9 +750,10 @@ public class InventoryReport {
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
-        context.put("vulnerabilityAdapter", vulnerabilityReportAdapter);
-        context.put("assessmentReportAdapter", assessmentReportAdapter);
-        context.put("assetAdapter", assetReportAdapter);
+        context.put("vulnerabilityAdapter", inventoryReportAdapters.getVulnerabilityReportAdapter());
+        context.put("assessmentReportAdapter", inventoryReportAdapters.getAssessmentReportAdapter());
+        context.put("assetAdapter", inventoryReportAdapters.getAssetReportAdapter());
+        context.put("inventoryReportAdapter", inventoryReportAdapters.getInventoryReportAdapter());
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
@@ -990,8 +988,8 @@ public class InventoryReport {
         final InventoryReportAdapters inventoryReportAdapters = new InventoryReportAdapters(
                 new AssetReportAdapter(baseFilteredInventory),
                 new VulnerabilityReportAdapter(baseFilteredInventory, securityPolicy),
-                new AssessmentReportAdapter(baseFilteredInventory, securityPolicy)
-        );
+                new AssessmentReportAdapter(baseFilteredInventory, securityPolicy),
+                new InventoryReportAdapter(baseFilteredInventory));
 
         writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
     }

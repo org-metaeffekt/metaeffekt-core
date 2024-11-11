@@ -55,7 +55,7 @@ public class RepositoryReportTest {
     public static final String UTF_8 = "UTF-8";
 
     @Test
-    public void testInventoryReport() throws Exception {
+    public void testCreateTestReport001() throws Exception {
 
         File inventoryDir = INVENTORY_DIR;
         String inventoryIncludes = INVENTORY_INCLUDES;
@@ -94,6 +94,7 @@ public class RepositoryReportTest {
         report.setTargetComponentDir(targetComponentDir);
         report.setTargetReportDir(targetReportPath);
 
+        report.setAssetBomReportEnabled(true);
         report.setInventoryBomReportEnabled(true);
         report.setInventoryPomEnabled(true);
         report.setInventoryDiffReportEnabled(false);
@@ -148,6 +149,12 @@ public class RepositoryReportTest {
 
         artifactLicenseData = report.getLastProjectInventory().evaluateNotices("G License (with sub-components)");
         assertTrue(artifactLicenseData.isEmpty());
+
+        // copy bookmap
+        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-01/bm_test.ditamap"), target);
+
+        // generate PDF using 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISBALED -Ddita.source.dir=target/test-inventory-01' from terminal
+
     }
 
     @Test
@@ -166,7 +173,7 @@ public class RepositoryReportTest {
 
     @Test
     public void testComponentPatterns() throws IOException {
-        File inventoryFile = new File(INVENTORY_DIR, "artifact-inventory.xls");
+        File inventoryFile = new File(INVENTORY_DIR, "artifact-inventory-01.xls");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
         Assert.assertNotNull(inventory.getComponentPatternData());
@@ -202,10 +209,11 @@ public class RepositoryReportTest {
         // check links from package report
         Assert.assertTrue(
                 "Expecting references to license chapter.",
-                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
+                packageReportEffective.contains
+                        ("<xref href=\"tpc_inventory-license-usage.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
 
         // read license overview
-        File licenseOverviewFile = new File(reportDir, "report/tpc_inventory-licenses.dita");
+        File licenseOverviewFile = new File(reportDir, "report/tpc_inventory-licenses-effective.dita");
         String licenseOverview = FileUtils.readFileToString(licenseOverviewFile, FileUtils.ENCODING_UTF_8);
         Assert.assertFalse("All artifacts counts must be greater than 0.", licenseOverview.contains("<codeph>0</codeph>"));
 
@@ -282,8 +290,8 @@ public class RepositoryReportTest {
     @Ignore // needs external resources
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("<path-to-inventory-dir>");
-        final File referenceInventoryDir = new File("<path-to-reference-inventory-dir>");
+        final File inventoryDir = new File("<path-to-inventory>");
+        final File referenceInventoryDir = new File("<path-to-reference-inventory>");
 
         final File reportDir = new File("target/test-inventory-04");
 

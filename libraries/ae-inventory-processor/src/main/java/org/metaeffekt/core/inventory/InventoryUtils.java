@@ -355,5 +355,38 @@ public abstract class InventoryUtils {
         }
     }
 
+    /**
+     * Maps all assets which contain the artifact.
+     *
+     * @param inventory the inventory
+     * @param artifacts artifacts for which to get all assets
+     *
+     * @return a map containing the artifact and a set of assets.
+     */
+    public static Set<AssetMetaData> getAssetsForArtifacts(Inventory inventory, Set<Artifact> artifacts) {
+        Set<AssetMetaData> setOfAssets = new HashSet<>();
+        for (AssetMetaData assetMetaData : inventory.getAssetMetaData()) {
+            String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+            for (Artifact artifact : artifacts) {
+				if (StringUtils.isNotBlank(artifact.get(assetId)) && artifact.get(assetId).equals(Constants.MARKER_CONTAINS)) {
+					setOfAssets.add(assetMetaData);
+				}
+			}
+        }
+        return setOfAssets;
+    }
+
+    public static Set<Artifact> getArtifactsForAsset(Inventory inventory, AssetMetaData assetMetaData) {
+        Set<Artifact> setOfArtifacts = new HashSet<>();
+        String assetId = assetMetaData.get(Constants.KEY_ASSET_ID);
+        for (Artifact artifact : inventory.getArtifacts()) {
+            if (StringUtils.isNotBlank(artifact.get(assetId))) {
+                if (artifact.get(assetId).equals(Constants.MARKER_CONTAINS)) {
+                    setOfArtifacts.add(artifact);
+                }
+            }
+        }
+        return setOfArtifacts;
+    }
 
 }

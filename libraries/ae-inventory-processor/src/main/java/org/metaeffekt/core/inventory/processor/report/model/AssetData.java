@@ -84,7 +84,6 @@ public class AssetData {
                 }
             }
         }
-
     }
 
     private void insertData(Inventory filteredInventory, Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap) {

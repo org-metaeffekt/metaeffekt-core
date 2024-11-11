@@ -42,6 +42,7 @@ public class LicenseData extends AbstractModelBase {
         CANONICAL_NAME("Canonical Name"),
         ID("Id"),
         SPDX_ID("SPDX Id"),
+        SCANCODE_IDS("ScanCode Ids"),
         OSI_APPROVED("OSI Approved"),
         COPYLEFT_TYPE("Copyleft Type"),
         COMMERCIAL("Commercial"),
@@ -61,11 +62,22 @@ public class LicenseData extends AbstractModelBase {
     public static List<String> CORE_ATTRIBUTES = new ArrayList<>();
 
     static {
-        // fix selection and order
+        // fix selection for string representation
         CORE_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
+    }
+
+    public static List<String> ORDERED_ATTRIBUTES = new ArrayList<>();
+
+    static {
+        // fix order for serialization
+        ORDERED_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SCANCODE_IDS.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
     }
 
     /**

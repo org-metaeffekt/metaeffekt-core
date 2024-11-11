@@ -1,0 +1,50 @@
+##
+## Lists all components which are contained in an asset to improve tracking of asset -> component relationships.
+##
+#macro(containedComponentsTable $artifacts)
+    #if ($artifacts.size() > 0)
+
+    <p>
+        Listed below are all components containing vulnerabilities which are associated with this asset.
+    </p>
+
+        <table>
+        <tgroup cols="3">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="25*"/>
+            <colspec colname="COLSPEC1" colnum="2" colwidth="60*"/>
+            <colspec colname="COLSPEC2" colnum="3" colwidth="15*"/>
+
+            <thead>
+            <row>
+                <entry colname="COLSPEC0" valign="top">Name</entry>
+                <entry colname="COLSPEC1" valign="top">Id</entry>
+                <entry colname="COLSPEC2" valign="top">Version</entry>
+            </row>
+            </thead>
+
+            <tbody>
+                #foreach ($artifact in $artifacts)
+                <row>
+                    <entry>
+                        #if($report.isInventoryVulnerabilityReportEnabled())
+                            <xref href="tpc_inventory-vulnerability-components.dita#component-$report
+                              .xmlEscapeStringAttribute($artifact.getComponent())" type="topic">
+                                $report.xmlEscapeString($artifact.getComponent())
+                            </xref>
+                        #else
+                            $report.xmlEscapeString($artifact.getComponent())
+                        #end
+                    </entry>
+                    <entry>$report.xmlEscapeString($artifact.getId())</entry>
+                    <entry>
+                        <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
+                    </entry>
+                </row>
+                #end
+            </tbody>
+        </tgroup>
+    </table>
+    #else
+        There are no components contained in this asset.
+    #end
+#end

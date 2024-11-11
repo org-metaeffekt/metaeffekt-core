@@ -24,13 +24,12 @@
                     <thead>
                         <row>
                             <entry colname="COLSPEC0" valign="top">Component</entry>
-                            <entry colname="COLSPEC1" valign="top">Artifact(s)</entry>
+                            <entry colname="COLSPEC1" valign="top">Artifactd / Packaged / Web Modules</entry>
                             <entry colname="COLSPEC2" valign="top">Effective License(s)</entry>
                         </row>
                     </thead>
 
                     <tbody>
-
 #foreach($component in $components)
     #set($groups=$inventory.evaluateComponent($component))
     #foreach($name in $groups)
@@ -46,7 +45,8 @@
                     <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
                     #end
                     <entry>
-                        <lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+                        <lines>#foreach($artifact in $name)
+                            #if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
 #end#end</lines>
                     </entry>
                     #set($licenses=$inventory.getEffectiveLicenses($name.get(0)))
@@ -55,8 +55,11 @@
                         <entry>&nbsp;</entry>
                     #else
                     #set($comma=false)
-                    <entry>## all in one line to not introduce whitespaces before a comma
-                        #foreach($license in $licenses)#if($comma), #end#set($comma=true)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-licenses.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>#else$report.xmlEscapeLicense($license)#end#end
+                    <entry>
+## preserve formating to achive proper line-breaks
+<lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+#else$report.xmlEscapeLicense($license)
+#end#end</lines>
                     </entry>
                     #end
                 </row>

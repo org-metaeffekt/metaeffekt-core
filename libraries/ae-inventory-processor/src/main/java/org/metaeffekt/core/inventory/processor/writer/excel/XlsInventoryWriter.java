@@ -34,8 +34,6 @@ import java.util.*;
 
 public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
-    private final static Logger LOG = LoggerFactory.getLogger(XlsInventoryWriter.class);
-
     public void writeInventory(Inventory inventory, File file) throws IOException {
         final HSSFWorkbook workbook = new HSSFWorkbook();
         final XlsHSSFInventorySheetCellStylers stylers = new XlsHSSFInventorySheetCellStylers(workbook);
@@ -298,12 +296,15 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
+                stylers.headerStyleColumnNameMarker,
+                stylers.headerStyleColumnNameClassification,
                 stylers.createLicensesHeaderCellStyler(serializationContext),
                 stylers.headerStyleDefault,
         };
 
         final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
                 stylers.contentStyleColumnNameAssetId,
+                stylers.contentStyleColumnNameMarkerCentered,
                 stylers.createLicensesCellStyler(serializationContext)
         };
 
