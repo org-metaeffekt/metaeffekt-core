@@ -9,6 +9,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+// FIXME: make this extend ReportContext and clean up wrong usage in DocumentDescriptorReportGenerator & DocumentDescriptorReportTest
 public class DocumentDescriptorReportContext {
 
     /**

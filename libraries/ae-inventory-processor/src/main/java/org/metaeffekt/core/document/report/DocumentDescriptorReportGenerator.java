@@ -63,5 +63,4 @@ public class DocumentDescriptorReportGenerator {
         // generate bookmaps to integrate InventoryReport-generated results
 
     }
-
 }
