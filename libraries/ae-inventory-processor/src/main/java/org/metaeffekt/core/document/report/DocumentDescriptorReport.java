@@ -1,24 +1,32 @@
+/*
+ * Copyright 2009-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.metaeffekt.core.document.report;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.report.InventoryReport;
-import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.ReportUtils;
-import org.metaeffekt.core.inventory.processor.report.adapter.AssessmentReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter;
-import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
@@ -27,6 +35,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
 
+@Slf4j
 @Getter
 @Setter
 public class DocumentDescriptorReport {
@@ -39,7 +48,9 @@ public class DocumentDescriptorReport {
     private static final String SEPARATOR_SLASH = "/";
     private static final String PATTERN_ANY_VT = "**/*.vt";
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
-    public static final String TEMPLATE_GROUP_INVENTORY_REPORT_BOOKMAP = "inventory-report-bookmap";
+
+    public static final String TEMPLATE_GROUP_ANNEX_BOOKMAP = "annex-bookmap";
+
     private String templateLanguageSelector = "en";
 
     /*
@@ -52,13 +63,20 @@ public class DocumentDescriptorReport {
     - creation of ditas for multiple inventories stays the way it's currently handled using InventoryReport.java
      */
 
-    private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
-
-    protected boolean createBookMap(DocumentDescriptor documentDescriptor) {
-        return false;
+    protected void createReport(DocumentDescriptor documentDescriptor) throws Exception {
+        writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
     }
 
-    protected void writeReports(Inventory projectInventory, Inventory filteredInventory, InventoryReport.InventoryReportAdapters inventoryReportAdapters, String templateBaseDir, String templateGroup, ReportContext reportContext) throws Exception {
+    @Getter
+    public static class DocumentDescriptorReportAdapters {
+        private DocumentDescriptorReportAdapters() {
+            // yet empty adapters list
+        }
+    }
+
+    protected void writeReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
+                    String templateBaseDir, String templateGroup) throws Exception {
+
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
         final Resource[] resources = resolver.getResources(vtClasspathResourcePattern);
@@ -74,21 +92,14 @@ public class DocumentDescriptorReport {
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
             final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
 
-            produceBookMap(
-                    projectInventory, filteredInventory,
-                    inventoryReportAdapters.getAssetReportAdapter(),
-                    inventoryReportAdapters.getVulnerabilityReportAdapter(),
-                    inventoryReportAdapters.getAssessmentReportAdapter(),
-                    filePath, targetReportPath, reportContext
-            );
+            produceDita(documentDescriptor, adapters, filePath, targetReportPath);
         }
     }
 
-    private void produceBookMap(Inventory projectInventory, Inventory filteredInventory, AssetReportAdapter assetReportAdapter,
-                                VulnerabilityReportAdapter vulnerabilityReportAdapter, AssessmentReportAdapter assessmentReportAdapter,
-                                String templateResourcePath, File target, ReportContext reportContext) throws IOException {
+    private void produceDita(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
+                    String templateResourcePath, File target) throws IOException {
 
-        LOG.info("Producing BookMap for template [{}]", templateResourcePath);
+        log.info("Producing BookMap for template [{}]", templateResourcePath);
 
         final Properties properties = new Properties();
         properties.put(Velocity.RESOURCE_LOADER, "class, file");
@@ -102,12 +113,8 @@ public class DocumentDescriptorReport {
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
 
-        // regarding the report we only use the filtered inventory for the time being
-        context.put("inventory", filteredInventory);
-        context.put("vulnerabilityAdapter", vulnerabilityReportAdapter);
-        context.put("assessmentReportAdapter", assessmentReportAdapter);
-        context.put("assetAdapter", assetReportAdapter);
-        context.put("report", this);
+        context.put("targetReportDir", this.targetReportDir);
+
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", new ReportUtils());
@@ -116,9 +123,8 @@ public class DocumentDescriptorReport {
         context.put("Float", Float.class);
         context.put("String", String.class);
 
-        context.put("targetReportDir", this.targetReportDir);
-
-        context.put("reportContext", reportContext);
+        // regarding the report we only use the filtered inventory for the time being
+        context.put("documentDescriptor", documentDescriptor);
 
         template.merge(context, sw);
 
@@ -128,6 +134,7 @@ public class DocumentDescriptorReport {
     private String deriveTemplateBaseDir() {
         return TEMPLATES_BASE_DIR + SEPARATOR_SLASH + getTemplateLanguageSelector();
     }
+
 }
 
 

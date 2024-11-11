@@ -1,3 +1,18 @@
+/*
+ * Copyright 2009-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.metaeffekt.core.document.model;
 
 import lombok.Getter;
@@ -22,24 +37,29 @@ public class DocumentDescriptor {
      * List containing the inventoryContexts for each inventory we want to add to a report. The information from
      * inventoryContext is used to control execution of report generation.
      */
-    List<InventoryContext> inventoryContexts;
+    private List<InventoryContext> inventoryContexts;
 
     /**
-     * object containing the context specific report generation parameters.
+     * Object containing the context specific report generation parameters.
      */
-    DocumentDescriptorReportContext reportContext;
+    private DocumentDescriptorReportContext reportContext;
 
     /**
      * Representation of each document type that we can report on, depending on the set documentType, different
      * pre-requisites are checked.
      */
-    DocumentType documentType;
+    private DocumentType documentType;
 
     /**
      * Params may include parameters to control the document structure and content. They may also contain configurable
      * placeholder replacement values or complete text-blocks (including basic markup).
      */
-    Map<String, String> params;
+    private Map<String, String> params;
+
+    /**
+     * The language in which the document should be produced.
+     */
+    private String templateLanguageSelector = "en";
 
     /**
      * A documentDescriptor must be validated with basic integrity checks (e.g. check for missing inventoryId, missing

@@ -204,6 +204,7 @@
             <properties>
                 <ae.dita.version>0.29.0</ae.dita.version>
 
+                <dita.map>bm_test.ditamap</dita.map>
                 <dita.source.dir>${project.build.directory}/test-inventory-01</dita.source.dir>
                 <dita.target.dir>${dita.source.dir}</dita.target.dir>
             </properties>
@@ -283,7 +284,7 @@
                                     <configuration>
                                         <documentItems>
                                             <documentItem>
-                                                <ditaMap>bm_test.ditamap</ditaMap>
+                                                <ditaMap>${dita.map}</ditaMap>
                                                 <artifactId>${project.artifactId}</artifactId>
                                                 <artifactClassifier>en</artifactClassifier>
                                             </documentItem>

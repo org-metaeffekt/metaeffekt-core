@@ -1,16 +1,27 @@
+/*
+ * Copyright 2009-2024 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.metaeffekt.core.document.report;
 
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentType;
-import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
-import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,16 +33,25 @@ public class DocumentDescriptorReportGenerator {
 
     public void generate(DocumentDescriptor documentDescriptor, DocumentDescriptorReportContext reportContext) throws Exception {
 
+        generateInventoryReports(documentDescriptor, reportContext);
+
+        // generate bookmaps to integrate InventoryReport-generated results
+        DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
+        documentDescriptorReport.setTargetReportDir(new File(reportContext.getTargetReportPath()));
+        documentDescriptorReport.setTemplateLanguageSelector(documentDescriptor.getTemplateLanguageSelector());
+
+        documentDescriptorReport.createReport(documentDescriptor);
+    }
+
+    private static void generateInventoryReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportContext reportContext) throws Exception {
         List<InventoryReport> inventoryReports = new ArrayList<InventoryReport>();
-
-
 
         // for each inventory trigger according InventoryReport instances to produce
         for(InventoryContext inventoryContext: documentDescriptor.getInventoryContexts()) {
 
             Map<String, String> params = documentDescriptor.getParams();
             InventoryReport report = new InventoryReport();
-            report.setReportContext(new ReportContext(params.get("reportContextId"), params.get("reportContextTitle"), params.get("reportContext")));
+            report.setReportContext(new ReportContext(inventoryContext.getReportContextId(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
             // check pre-requisites dependent on DocumentType
             if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
@@ -54,13 +74,13 @@ public class DocumentDescriptorReportGenerator {
             report.setTargetComponentDir(new File(params.get("targetComponentDir")));
             report.setTargetReportDir(new File(reportContext.getTargetReportPath(), inventoryContext.getIdentifier()));
 
+            report.setTemplateLanguageSelector(documentDescriptor.getTemplateLanguageSelector());
+
             if (report.createReport()) {
                 inventoryReports.add(report);
             } else {
                 throw new Exception(report.createReport() + " failed");
             }
         }
-        // generate bookmaps to integrate InventoryReport-generated results
-
     }
 }

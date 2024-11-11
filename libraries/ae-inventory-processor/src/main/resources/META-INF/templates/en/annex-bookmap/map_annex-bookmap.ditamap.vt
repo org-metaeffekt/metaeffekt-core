@@ -2,15 +2,21 @@
 <!DOCTYPE map PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/map.dtd">
 <map id="map_annex">
     <title>Annex</title>
-    <!--
-    <topicref href="../../../../ae-common-content/glossary/en/g_artifact.dita" keys="artifact"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_associated-licenses.dita" keys="associated-licenses"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_component.dita" keys="component"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_effective-licenses.dita" keys="effective-licenses"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_package.dita" keys="package"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_software-distribution.dita" keys="software-distribution"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_software-distribution-annex.dita" keys="software-distribution-annex"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_subcomponent.dita" keys="subcomponent"/>
-    <topicref href="../../../../ae-common-content/glossary/en/g_web-module.dita" keys="web-module"/>
-    -->
+
+    ## https://velocity.apache.org/engine/1.7/user-guide.html
+
+
+#foreach($inventoryContext in $documentDescriptor.getInventoryContexts())
+    <chapter href="$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita">
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
+
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-notices.dita" />
+    </chapter>
+
+#end
 </map>

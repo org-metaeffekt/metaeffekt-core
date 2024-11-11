@@ -57,6 +57,8 @@ import java.util.stream.IntStream;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
+@Getter
+@Setter
 public class InventoryReport {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryReport.class);
