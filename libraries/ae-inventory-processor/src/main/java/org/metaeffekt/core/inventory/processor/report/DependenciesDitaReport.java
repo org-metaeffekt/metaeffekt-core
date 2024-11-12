@@ -171,7 +171,6 @@ public class DependenciesDitaReport {
         VelocityContext context = new VelocityContext();
 
         context.put("report", this);
-
         context.put("internalDependencies", internalDependencies);
         context.put("externalDependencies", externalDependencies);
         context.put("projectId", artifactId);

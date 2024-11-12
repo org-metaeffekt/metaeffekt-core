@@ -85,7 +85,7 @@ public class RepositoryReportTest {
 
         File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
         File componentReport = new File(targetReportPath, "tpc_inventory-component-report.dita");
-        File noticeReport = new File(targetReportPath, "tpc_inventory-notices.dita");
+        File noticeReport = new File(targetReportPath, "tpc_inventory-component-license-details.dita");
         File artifactReport = new File(targetReportPath, "tpc_inventory-artifact-report.dita");
 
         final File targetLicensesDir = new File(target, "licenses");
@@ -99,6 +99,7 @@ public class RepositoryReportTest {
         report.setInventoryPomEnabled(true);
         report.setInventoryDiffReportEnabled(false);
         report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
         final boolean valid = report.createReport();
 

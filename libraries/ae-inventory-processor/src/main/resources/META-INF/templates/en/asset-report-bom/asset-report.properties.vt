@@ -1,0 +1,15 @@
+# General purpose variables required for the following properties
+#set($assets = $assetsAdapter.listAssets())
+
+#set($artifacts = [])
+#foreach($asset in $assets)
+    $artifacts.add($assetAdapter.getRelatedArtifacts($asset))
+#end
+
+# Switch to be used on an overview level
+# If no assets are listed in the inventory 'false'; 'true' otherwise
+ae.inventory.assets.contained=$assets.isEmpty()
+
+# Switch to be used on an overview level
+# If no assets do not contain any components 'false'; 'true' otherwise
+ae.inventory.assets.contain.components=$artifacts.isEmpty()
