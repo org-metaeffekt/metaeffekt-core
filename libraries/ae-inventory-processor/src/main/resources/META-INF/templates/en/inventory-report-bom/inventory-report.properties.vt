@@ -3,12 +3,13 @@
 
 #set($artifactNoticeList = [])
 #foreach($componentNotice in $componentNoticeList)
-   $artifactNoticeList.addAll($componentNotice.getArtifactNotices())
+   #set($unused = $artifactNoticeList.addAll($componentNotice.getArtifactNotices())
+   )
 #end
 
 #set($notices = [])
 #foreach($notice in $artifactNoticeList)
-    $notices.add($notice)
+    #set($unused = $notices.add($notice))
 #end
 
 # Switch to be used on a license details level

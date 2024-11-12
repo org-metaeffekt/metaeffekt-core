@@ -1,15 +1,23 @@
 # General purpose variables required for the following properties
-#set($assets = $assetsAdapter.listAssets())
+#set($assets = $assetAdapter.listAssets())
 
 #set($artifacts = [])
 #foreach($asset in $assets)
-    $artifacts.add($assetAdapter.getRelatedArtifacts($asset))
+    #set($unused = $artifacts.add($assetAdapter.getRelatedArtifacts($asset)))
 #end
 
 # Switch to be used on an overview level
 # If no assets are listed in the inventory 'false'; 'true' otherwise
-ae.inventory.assets.contained=$assets.isEmpty()
+#set($assetsContainedSwitch = true)
+#if($assets.isEmpty())
+    #set($assetsContainedSwitch = false)
+#end
+ae.inventory.assets.contained=$assetsContainedSwitch
 
 # Switch to be used on an overview level
-# If no assets do not contain any components 'false'; 'true' otherwise
-ae.inventory.assets.contain.components=$artifacts.isEmpty()
+# If all assets do not contain any components 'false'; 'true' otherwise
+#set($componentsContainedSwitch = true)
+#if($artifacts.isEmpty())
+    #set($componentsContainedSwitch = false)
+#end
+ae.inventory.assets.contain.components=$componentsContainedSwitch
