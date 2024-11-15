@@ -29,32 +29,51 @@ public class InventoryContext {
     /**
      * The inventory which is defined in this context.
      */
-    Inventory inventory;
+    private Inventory inventory;
+
+    /**
+     * The version of the defined inventory context.
+     */
+    //FIXME-DISCUSS: Is the version a field of an inventory context or rather of the inventory itself?
+    private String inventoryVersion;
 
     /**
      * The custom identifier of an inventory, which is used for structuring the report.
      */
-    String identifier;
+    private String identifier;
 
     /**
      * This inventory is used as a reference for e.g. handling of unknown fields, etc. If no reference seems fit, set
      * this to the same inventory as the inventory of this context.
      */
-    Inventory referenceInventory;
+    private Inventory referenceInventory;
 
     /**
      * Fields needed for the context of a report.
      */
-    String reportContextId;
-    String reportContextTitle;
-    String reportContext;
+    private String reportContextId;
+    private String reportContextTitle;
+    private String reportContext;
 
-    public InventoryContext(Inventory inventory, Inventory referenceInventory, String identifier, String reportContextId, String reportContextTitle, String reportContext) {
+    public InventoryContext(Inventory inventory, Inventory referenceInventory, String identifier, String reportContextId, String reportContextTitle, String reportContext, String inventoryVersion) {
         this.inventory = inventory;
         this.identifier = identifier;
         this.referenceInventory = referenceInventory;
         this.reportContextId = reportContextId;
         this.reportContextTitle = reportContextTitle;
         this.reportContext = reportContext;
+        this.inventoryVersion = inventoryVersion;
+    }
+
+    public void validate() {
+        if (inventory == null) {
+            throw new IllegalStateException("The Inventory must not be null");
+        }
+        if (identifier == null) {
+            throw new IllegalStateException("The identifier must not be null");
+        }
+        if (referenceInventory == null) {
+            throw new IllegalStateException("The referenceInventory must not be null");
+        }
     }
 }

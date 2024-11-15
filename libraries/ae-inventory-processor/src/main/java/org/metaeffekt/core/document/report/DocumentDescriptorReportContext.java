@@ -30,10 +30,6 @@ public class DocumentDescriptorReportContext {
     /**
      * Fields for handling different fail scenarios in report generation.
      */
-    // FIXME: review default values
-   private Boolean FailOnUnknown = false;
-   private Boolean FailOnUnknownVersion = false;
-   private Boolean FailOnMissingLicense = false;
 
    private String referenceLicensePath = "licenses";
    private String referenceComponentPath = "components";

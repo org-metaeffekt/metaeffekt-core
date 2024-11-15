@@ -17,18 +17,18 @@ package org.metaeffekt.core.document.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.metaeffekt.core.document.report.DocumentDescriptorReportContext;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A documentDescriptor encapsulates all information needed for document generation. documentDescriptors can be passed
  * to DocumentDescriptorReportGenerator.generate() for document generation.
  */
+@Slf4j
 @Getter
 @Setter
 public class DocumentDescriptor {
@@ -65,8 +65,29 @@ public class DocumentDescriptor {
      * A documentDescriptor must be validated with basic integrity checks (e.g. check for missing inventoryId, missing
      * documentType etc.) before a document can be generated with it.
      */
-    public void validate(){
+    public void validate() throws Exception {
 
+        if (documentType == null) {
+            throw new Exception("The document type must be specified");
+        }
+        if (inventoryContexts.isEmpty()) {
+            throw new Exception("No inventory contexts specified");
+        }
+        if (reportContext == null) {
+            throw new Exception("No report context specified");
+        }
+        Set<String> identifiers = new HashSet<>();
+
+        for (InventoryContext context : inventoryContexts) {
+            if (context.getInventory() == null) {
+                throw new Exception("the inventory for context [" + context.getIdentifier() + "] must not be null");
+            }
+            if (context.getIdentifier() == null){
+                throw new Exception("the identifier for context [" + context + "] must not be null");
+            }
+            if (!identifiers.add(context.getIdentifier())) {
+                throw new Exception("Duplicate context identifier found: [" + context.getIdentifier() + "]");
+            }
+        }
     }
-
 }

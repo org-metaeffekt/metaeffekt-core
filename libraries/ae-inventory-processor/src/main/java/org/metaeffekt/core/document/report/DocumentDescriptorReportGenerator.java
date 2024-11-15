@@ -43,6 +43,16 @@ public class DocumentDescriptorReportGenerator {
         documentDescriptorReport.createReport(documentDescriptor);
     }
 
+    /**
+     * Method for creating inventory Reports for the inventories of the given DocumentDescriptor. We currently use the
+     * functionality of InventoryReports.java for creating the dita.vt files needed for document generation, the outlook
+     * for this is that we extract documentDescriptor specific functionality out of InventoryReport.java and create an
+     * abstract class for encapsulating the functionality used by both types of reports.
+     *
+     * @param documentDescriptor the given DocumentDescriptor for which the report is generated
+     * @param reportContext the context containing fields necessary for starting report generation in InventoryReport
+     * @throws Exception
+     */
     private static void generateInventoryReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportContext reportContext) throws Exception {
         List<InventoryReport> inventoryReports = new ArrayList<InventoryReport>();
 
@@ -63,9 +73,9 @@ public class DocumentDescriptorReportGenerator {
             report.setInventory(inventoryContext.getInventory());
 
             // set fields from reportContext
-            report.setFailOnUnknown(reportContext.getFailOnUnknown());
-            report.setFailOnUnknownVersion(reportContext.getFailOnUnknownVersion());
-            report.setFailOnMissingLicense(reportContext.getFailOnMissingLicense());
+            report.setFailOnUnknown(false);
+            report.setFailOnUnknownVersion(false);
+            report.setFailOnMissingLicense(false);
 
             report.setReferenceComponentPath(reportContext.getReferenceComponentPath());
             report.setReferenceLicensePath(reportContext.getReferenceLicensePath());
@@ -73,6 +83,9 @@ public class DocumentDescriptorReportGenerator {
             report.setTargetLicenseDir(new File(params.get("targetLicensesDir")));
             report.setTargetComponentDir(new File(params.get("targetComponentDir")));
             report.setTargetReportDir(new File(reportContext.getTargetReportPath(), inventoryContext.getIdentifier()));
+
+            report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
+            report.getReportContext().setReportInventoryVersion(inventoryContext.getInventoryVersion());
 
             report.setTemplateLanguageSelector(documentDescriptor.getTemplateLanguageSelector());
 

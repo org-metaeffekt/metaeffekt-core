@@ -53,16 +53,6 @@ public class DocumentDescriptorReport {
 
     private String templateLanguageSelector = "en";
 
-    /*
-    next steps:
-
-    - extract functionality of writeReports() & produceDita() from InventoryReport.java
-    - change process to create BookMaps by passing a DocumentDescriptor instead of an Inventory
-
-    - the process of bookmap creation is controlled by DocumentDescriptorReportGenerator.java
-    - creation of ditas for multiple inventories stays the way it's currently handled using InventoryReport.java
-     */
-
     protected void createReport(DocumentDescriptor documentDescriptor) throws Exception {
         writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
     }

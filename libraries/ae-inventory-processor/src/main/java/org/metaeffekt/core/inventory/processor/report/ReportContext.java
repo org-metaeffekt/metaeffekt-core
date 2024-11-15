@@ -29,6 +29,12 @@ public class ReportContext {
     private String title;
     private String context;
 
+    /**
+     * Fields used for BOM topic generation
+     */
+    private String reportInventoryName;
+    private String reportInventoryVersion;
+
     public ReportContext(String id, String title, String context) {
         this.id = id;
         this.title = title;
