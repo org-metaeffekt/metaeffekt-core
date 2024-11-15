@@ -34,5 +34,7 @@ public class DocumentDescriptorReportContext {
    private String referenceLicensePath = "licenses";
    private String referenceComponentPath = "components";
 
+   // FIXME: make a file; rename to targetReportDir
    private String targetReportPath;
+
 }

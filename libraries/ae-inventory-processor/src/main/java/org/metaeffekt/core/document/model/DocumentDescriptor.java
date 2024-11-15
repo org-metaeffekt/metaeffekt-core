@@ -68,25 +68,25 @@ public class DocumentDescriptor {
     public void validate() throws Exception {
 
         if (documentType == null) {
-            throw new Exception("The document type must be specified");
+            throw new Exception("The document type must be specified.");
         }
         if (inventoryContexts.isEmpty()) {
-            throw new Exception("No inventory contexts specified");
+            throw new Exception("No inventory contexts specified.");
         }
         if (reportContext == null) {
-            throw new Exception("No report context specified");
+            throw new Exception("No report context specified.");
         }
-        Set<String> identifiers = new HashSet<>();
 
+        Set<String> identifiers = new HashSet<>();
         for (InventoryContext context : inventoryContexts) {
             if (context.getInventory() == null) {
-                throw new Exception("the inventory for context [" + context.getIdentifier() + "] must not be null");
+                throw new Exception("the inventory for context [" + context.getIdentifier() + "] must not be null.");
             }
             if (context.getIdentifier() == null){
-                throw new Exception("the identifier for context [" + context + "] must not be null");
+                throw new Exception("the identifier for context [" + context + "] must not be null.");
             }
             if (!identifiers.add(context.getIdentifier())) {
-                throw new Exception("Duplicate context identifier found: [" + context.getIdentifier() + "]");
+                throw new Exception("Duplicate context identifier found: [" + context.getIdentifier() + "].");
             }
         }
     }
