@@ -688,7 +688,7 @@ public class Inventory implements Serializable {
     }
 
     /**
-     * Used by tpc_inventory-notices.dita.vt.
+     * Used by tpc_inventory-component-license-details.dita.vt.
      *
      * @return List of component notices for this inventory.
      */

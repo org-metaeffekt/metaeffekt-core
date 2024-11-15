@@ -9,6 +9,10 @@
 ##
 #set($assets = $assetAdapter.listAssets())
 ##
+    #if($assets.isEmpty())
+        There are no overarching assets available.
+    #end
+
     #foreach($asset in $assets)
 
         #set($assetEscapedId = $report.xmlEscapeStringAttribute($asset))
