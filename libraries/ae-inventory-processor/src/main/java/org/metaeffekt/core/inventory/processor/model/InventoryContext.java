@@ -27,6 +27,11 @@ import lombok.Setter;
 public class InventoryContext {
 
     /**
+     * The custom identifier of an inventory, which is used for structuring the report.
+     */
+    private String identifier;
+
+    /**
      * The inventory which is defined in this context.
      */
     private Inventory inventory;
@@ -38,11 +43,6 @@ public class InventoryContext {
     private String inventoryVersion;
 
     /**
-     * The custom identifier of an inventory, which is used for structuring the report.
-     */
-    private String identifier;
-
-    /**
      * This inventory is used as a reference for e.g. handling of unknown fields, etc. If no reference seems fit, set
      * this to the same inventory as the inventory of this context.
      */
@@ -51,15 +51,13 @@ public class InventoryContext {
     /**
      * Fields needed for the context of a report.
      */
-    private String reportContextId;
     private String reportContextTitle;
     private String reportContext;
 
-    public InventoryContext(Inventory inventory, Inventory referenceInventory, String identifier, String reportContextId, String reportContextTitle, String reportContext, String inventoryVersion) {
+    public InventoryContext(Inventory inventory, Inventory referenceInventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion) {
         this.inventory = inventory;
         this.identifier = identifier;
         this.referenceInventory = referenceInventory;
-        this.reportContextId = reportContextId;
         this.reportContextTitle = reportContextTitle;
         this.reportContext = reportContext;
         this.inventoryVersion = inventoryVersion;

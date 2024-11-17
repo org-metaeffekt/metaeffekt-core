@@ -24,7 +24,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-// FIXME: make this extend ReportContext and clean up wrong usage in DocumentDescriptorReportGenerator & DocumentDescriptorReportTest
+// FIXME: make obsolete; we only need the targetDir
 public class DocumentDescriptorReportContext {
 
     /**

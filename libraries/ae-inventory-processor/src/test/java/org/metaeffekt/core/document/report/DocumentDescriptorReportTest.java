@@ -43,9 +43,9 @@ public class  DocumentDescriptorReportTest {
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
         // create inventoryContexts and define fields
-        InventoryContext inventoryContext001 = new InventoryContext(inventory, inventory, "keycloak", "keycloak", "Keycloak", "Keycloak", "0.0.1");
+        InventoryContext inventoryContext001 = new InventoryContext(inventory, inventory, "keycloak", "Keycloak", "Keycloak", "0.0.1");
 
-        InventoryContext inventoryContext002 = new InventoryContext(inventory, inventory, "scan", "Scan", "Scan", "Scan", "1.3.2");
+        InventoryContext inventoryContext002 = new InventoryContext(inventory, inventory, "scan", "Scan", "Scan", "1.3.2");
 
         List<InventoryContext> inventoryContexts = new ArrayList<>();
         inventoryContexts.add(inventoryContext001);

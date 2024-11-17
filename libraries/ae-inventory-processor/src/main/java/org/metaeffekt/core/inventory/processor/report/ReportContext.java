@@ -25,8 +25,21 @@ import java.util.Map;
 @Setter
 public class ReportContext {
 
+    /**
+     * Used in generated output to differentiate template results for different reports.
+     */
     private String id;
+
+    /**
+     * Used in generated output to differentiate section and chapters (used for prefixing captions)
+     */
+    // FIXME: consider renaming to something like captionPrefix
     private String title;
+
+    /**
+     * Used for providing more context to table captions; Table x (context)
+     */
+    // FIXME: consider renaming to something like tableCaptionContext
     private String context;
 
     /**

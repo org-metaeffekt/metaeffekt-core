@@ -40,7 +40,7 @@ public class DocumentDescriptor {
     private List<InventoryContext> inventoryContexts;
 
     /**
-     * Object containing the context specific report generation parameters.
+     * Object containing the context specific report generation parameters; specific to the process execution
      */
     private DocumentDescriptorReportContext reportContext;
 

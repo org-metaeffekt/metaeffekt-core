@@ -61,7 +61,7 @@ public class DocumentDescriptorReportGenerator {
 
             Map<String, String> params = documentDescriptor.getParams();
             InventoryReport report = new InventoryReport();
-            report.setReportContext(new ReportContext(inventoryContext.getReportContextId(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
+            report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
             // check pre-requisites dependent on DocumentType
             if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
