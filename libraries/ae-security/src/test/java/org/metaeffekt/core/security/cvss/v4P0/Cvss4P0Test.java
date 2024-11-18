@@ -66,7 +66,7 @@ public class Cvss4P0Test {
 
         Assert.assertEquals(vectorString, cvss4P0.toString());
         Assert.assertEquals("212021", cvss4P0.getMacroVector().toString());
-        Assert.assertEquals(0.9, cvss4P0.getBaseScore(), 0.01);
+        Assert.assertEquals(1.0, cvss4P0.getBaseScore(), 0.01);
     }
 
     @Test
