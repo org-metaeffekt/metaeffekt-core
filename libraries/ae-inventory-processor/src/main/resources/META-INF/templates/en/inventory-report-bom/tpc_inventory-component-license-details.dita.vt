@@ -6,7 +6,7 @@
     #set($licensesInEffect=$inventory.evaluateLicenses(false))
     #if($componentNoticeList.isEmpty())
         <body>
-        No component with license notices covered.
+            No component with license notices covered.
         </body>
     #else
         #foreach($componentNotice in $componentNoticeList)
@@ -16,28 +16,27 @@
 
                     #foreach($artifactNotice in $componentNotice.getArtifactNotices())
                         ## Assets Table start
-                        #foreach($asset in $utils.getAffectedAssets($artifactNotice.getArtifacts(), $inventory))
                         <section>
+                            <title>Assets containing $report.xmlEscapeString($componentNotice.getComponentName())</title>
                             <table otherprops="wide">
-                                <title>Assets of
-                                    component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
+                                <title>Assets of Component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
                                 <tgroup cols="3">
-                                    <colspec colname="COLSPEC0" colnum="1" colwidth="60*"/>
-                                    <colspec colname="COLSPEC1" colnum="2" colwidth="20*"/>
-                                    <colspec colname="COLSPEC2" colnum="3" colwidth="30*"/>
+                                    <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
+                                    <colspec colname="COLSPEC1" colnum="2" colwidth="25*"/>
+                                    <colspec colname="COLSPEC2" colnum="3" colwidth="25*"/>
                                     <thead>
                                     <row>
-                                        <entry colname="COLSPEC0" valign="top">Name</entry>
-                                        <entry colname="COLSPEC1" valign="top">Type</entry>
-                                        <entry colname="COLSPEC1" valign="top">Version</entry>
+                                        <entry colname="COLSPEC0" valign="top">Asset Name</entry>
+                                        <entry colname="COLSPEC1" valign="top">Asset Type</entry>
+                                        <entry colname="COLSPEC1" valign="top">Asset Version</entry>
                                     </row>
                                     </thead>
                                     <tbody>
+                        #foreach($asset in $utils.getAssetsForArtifacts($artifactNotice.getArtifacts(), $inventory))
                                     <row>
                                         <entry>
                                             #if($report.isAssetBomReportEnabled())
-                                                <xref href="tpc_asset-contained-components.dita#asset-$report.xmlEscapeStringAttribute
-                        ($asset)" type="topic">
+                                                <xref href="tpc_asset-contained-components.dita#asset-$report.xmlEscapeStringAttribute($asset)" type="topic">
                                                     $report.xmlEscapeString($asset.get("Name"))
                                                 </xref>
                                             #else
@@ -49,18 +48,18 @@
                                             <codeph>$report.xmlEscapeGAV($asset.get("Version"))</codeph>
                                         </entry>
                                     </row>
+                        #end
                                     </tbody>
                                 </tgroup>
                             </table>
                         </section>
-                        #end
-                        ## Assets Tabke end
+                        ## Assets Table end
 
                         ## Artifacts Table start
-                    <section>
+                        <section>
+                        <title>Artifacts of Component $report.xmlEscapeString($componentNotice.getComponentName())</title>
                         <table otherprops="wide">
-                            <title>Artifacts of
-                                component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
+                            <title>Artifacts of Component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
                             <tgroup cols="3">
                                 <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
                                 <colspec colname="COLSPEC1" colnum="2" colwidth="15*"/>
@@ -76,12 +75,8 @@
                                     #foreach($artifact in $artifactNotice.getArtifacts())
                                     <row>
                                         <entry>#if($artifact.getGroupId())
-                                            <lines>
-                                                <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
-                                                <line>
-                                                    <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
-                                                </line>
-                                            </lines>#else
+                                            <lines><line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                                                <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>#else
                                             <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
                                         </entry>
                                         <entry>
@@ -92,12 +87,11 @@
                                         #if($licenses.isEmpty())
                                             <entry>&nbsp;</entry>
                                         #else
-                                            #set($comma=false)
-                                            <entry>## all in one line to not introduce whitespaces before a comma
-                                                #foreach($license in $licenses)#if($comma)
-                                                    , #end#set($comma=true)#if($licensesInEffect.contains($license))
-                                                    <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)"
-                                                          type="topic">$report.xmlEscapeLicense($license)</xref>#else$report.xmlEscapeLicense($license)#end#end
+                                            <entry>
+## preserve formating to achive proper line-breaks
+<lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+#else$report.xmlEscapeLicense($license)
+#end#end</lines>
                                             </entry>
                                         #end
                                     </row>
@@ -105,13 +99,14 @@
                                 </tbody>
                             </tgroup>
                         </table>
-                    </section>
+                        </section>
                         ## Artifacts Table end
 
                         ## insert notice
+                        <section>
+                        <title>License Notices</title>
                         #set($notice=$artifactNotice.getNotice())
                         #if($notice.isEmpty())
-                        <section>
                             <p>
                                 The herein covered software distribution contains
                                 <b>$componentNotice.getComponentName()</b>.
@@ -119,14 +114,13 @@
                             #if($componentNotice.getLicense())
                                 <p>
                                     In the present version, $componentNotice.getComponentName() is subject to the terms
-                                    of
-                                    the $componentNotice.getLicense().
+                                    of the $componentNotice.getLicense().
                                 </p>
                             #end
                         #else
                             $notice.trim()
-                        </section>
                         #end
+                        </section>
                     #end
                 </body>
             </topic>

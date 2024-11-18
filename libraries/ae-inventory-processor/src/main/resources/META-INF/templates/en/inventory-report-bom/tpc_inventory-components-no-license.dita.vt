@@ -33,7 +33,7 @@
                 <row>
                 #if($hasNotice)
                     <entry>
-                        <xref href="tpc_inventory-notices.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)" type="topic">
+                        <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)" type="topic">
                             $report.xmlEscapeComponentName($component.getOriginalComponentName())
                         </xref>
                     </entry>

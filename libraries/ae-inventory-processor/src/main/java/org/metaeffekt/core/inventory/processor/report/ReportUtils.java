@@ -47,22 +47,30 @@ public class ReportUtils {
     /**
      * Returns a list of assets for which the give artifacts are contained in. If there is a primary asset in the list,
      * only the primary is returned. If there is no primary, all related assets are returned.
+     *
      * @param artifacts the artifacts for which to find the related assets
      * @param inventory the inventory containing the artifacts and assets
+     *
      * @return the set of related assets
      */
-    public Set<AssetMetaData> getAffectedAssets(List<Artifact> artifacts, Inventory inventory) {
-        Set<AssetMetaData> assets = InventoryUtils.getAssetsForArtifacts(inventory, new HashSet<>(artifacts));
+    public Set<AssetMetaData> getAssetsForArtifacts(List<Artifact> artifacts, Inventory inventory) {
+        final Set<AssetMetaData> assets = InventoryUtils.getAssetsForArtifacts(inventory, new HashSet<>(artifacts));
+
         if (!assets.isEmpty()) {
-            Set<AssetMetaData> primaries = assets.stream().filter(a -> a != null
-                    && a.get(Constants.KEY_PRIMARY) != null
-                    && Constants.MARKER_CROSS.equals(a.get(Constants.KEY_PRIMARY))).collect(Collectors.toSet());
-            if (!primaries.isEmpty()) {
-                return primaries;
+            final Set<AssetMetaData> primaryAssets = assets.stream()
+                    .filter(a -> a != null && a.isPrimary())
+                    .collect(Collectors.toSet());
+
+            if (!primaryAssets.isEmpty()) {
+                // return primary assets
+                return primaryAssets;
             } else {
+                // fallback to assets for artifact if no primary assets could be detected
                 return assets;
             }
         }
+
+        // return empty set
         return Collections.emptySet();
     }
 
