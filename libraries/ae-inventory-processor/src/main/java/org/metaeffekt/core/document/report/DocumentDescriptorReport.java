@@ -53,7 +53,7 @@ public class DocumentDescriptorReport {
 
     private String templateLanguageSelector = "en";
 
-    protected void createReport(DocumentDescriptor documentDescriptor) throws Exception {
+    protected void createReport(DocumentDescriptor documentDescriptor) throws IOException {
         writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
     }
 
@@ -65,7 +65,7 @@ public class DocumentDescriptorReport {
     }
 
     protected void writeReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
-                    String templateBaseDir, String templateGroup) throws Exception {
+                    String templateBaseDir, String templateGroup) throws IOException {
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;

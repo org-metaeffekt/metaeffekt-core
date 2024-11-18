@@ -23,6 +23,7 @@ import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +32,7 @@ import java.util.Map;
 public class  DocumentDescriptorReportTest {
 
     @Test
-    public void testAnnex001() throws Exception {
+    public void testAnnex001() throws IOException {
         final File resourceRootDir = new File("src/test/resources/document-descriptor/annex-001");
 
         // create documentDescriptor and assign documentType

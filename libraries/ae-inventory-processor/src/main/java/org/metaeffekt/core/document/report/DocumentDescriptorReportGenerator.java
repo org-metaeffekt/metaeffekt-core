@@ -22,6 +22,7 @@ import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,7 @@ import java.util.Map;
  */
 public class DocumentDescriptorReportGenerator {
 
-    public void generate(DocumentDescriptor documentDescriptor) throws Exception {
+    public void generate(DocumentDescriptor documentDescriptor) throws IOException {
 
         // validate documentDescriptor before report generation
         documentDescriptor.validate();
@@ -53,9 +54,10 @@ public class DocumentDescriptorReportGenerator {
      * abstract class for encapsulating the functionality used by both types of reports.
      *
      * @param documentDescriptor the given DocumentDescriptor for which the report is generated
-     * @throws Exception
+     *
+     * @throws IOException Throws an IOException in case the file access is not possible.
      */
-    private static void generateInventoryReports(DocumentDescriptor documentDescriptor) throws Exception {
+    private static void generateInventoryReports(DocumentDescriptor documentDescriptor) throws IOException {
         List<InventoryReport> inventoryReports = new ArrayList<InventoryReport>();
 
         // for each inventory trigger according InventoryReport instances to produce
@@ -99,7 +101,7 @@ public class DocumentDescriptorReportGenerator {
             if (report.createReport()) {
                 inventoryReports.add(report);
             } else {
-                throw new Exception(report.createReport() + " failed");
+                throw new RuntimeException(report.createReport() + " failed.");
             }
         }
     }

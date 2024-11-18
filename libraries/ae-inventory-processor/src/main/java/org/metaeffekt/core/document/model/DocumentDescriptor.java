@@ -64,27 +64,27 @@ public class DocumentDescriptor {
      * A documentDescriptor must be validated with basic integrity checks (e.g. check for missing inventoryId, missing
      * documentType etc.) before a document can be generated with it.
      */
-    public void validate() throws Exception {
+    public void validate() {
 
         // check if document type is set
         if (documentType == null) {
-            throw new Exception("The document type must be specified.");
+            throw new IllegalStateException("The document type must be specified.");
         }
         // check if there are inventoryContexts set
         if (inventoryContexts.isEmpty()) {
-            throw new Exception("No inventory contexts specified.");
+            throw new IllegalStateException("No inventory contexts specified.");
         }
         // check if the targetReportDir is set
         if (targetReportDir == null) {
-            throw new Exception("The target report directory must be specified.");
+            throw new IllegalStateException("The target report directory must be specified.");
         }
         // check if the targetReportDir is actually a directory
         if (!targetReportDir.isDirectory()) {
-            throw new Exception("The target report directory must be a directory.");
+            throw new IllegalStateException("The target report directory must be a directory.");
         }
         // check if the targetReportDir exists
         if(!targetReportDir.exists()) {
-            throw new Exception("The target report directory does not exist.");
+            throw new IllegalStateException("The target report directory does not exist.");
         }
 
         // validate each inventoryContext
@@ -92,15 +92,15 @@ public class DocumentDescriptor {
         for (InventoryContext context : inventoryContexts) {
             // check if each inventoryContext references an inventory
             if (context.getInventory() == null) {
-                throw new Exception("the inventory must be specified.");
+                throw new IllegalStateException("the inventory must be specified.");
             }
             // check if each inventoryContext has an identifier
             if (context.getIdentifier() == null){
-                throw new Exception("the identifier must be specified.");
+                throw new IllegalStateException("the identifier must be specified.");
             }
             // check if each inventoryContext has a unique identifier
             if (!identifiers.add(context.getIdentifier())) {
-                throw new Exception("Duplicate context identifier found: [" + context.getIdentifier() + "].");
+                throw new IllegalStateException("Duplicate context identifier found: [" + context.getIdentifier() + "].");
             }
         }
     }

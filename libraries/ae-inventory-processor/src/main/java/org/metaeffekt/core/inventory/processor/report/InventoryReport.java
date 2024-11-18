@@ -231,7 +231,7 @@ public class InventoryReport {
 
     private String templateLanguageSelector = "en";
 
-    public boolean createReport() throws Exception {
+    public boolean createReport() throws IOException {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
         if (LOG.isDebugEnabled()) {
             this.logConfiguration();
@@ -281,7 +281,7 @@ public class InventoryReport {
         }
     }
 
-    protected boolean createReport(Inventory globalInventory, Inventory localInventory) throws Exception {
+    protected boolean createReport(Inventory globalInventory, Inventory localInventory) throws IOException {
         final File targetInventoryFile = targetInventoryDir != null ? new File(targetInventoryDir, targetInventoryPath) : null;
 
         Inventory diffInventory = null;
@@ -712,7 +712,7 @@ public class InventoryReport {
     }
 
     protected void writeReports(Inventory projectInventory, Inventory filteredInventory, InventoryReportAdapters report,
-                String templateBaseDir, String templateGroup, ReportContext reportContext) throws Exception {
+                String templateBaseDir, String templateGroup, ReportContext reportContext) throws IOException {
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
@@ -735,7 +735,7 @@ public class InventoryReport {
 
     private void produceDita(Inventory projectInventory, Inventory filteredInventory,
                              InventoryReportAdapters inventoryReportAdapters,
-                             String templateResourcePath, File target, ReportContext reportContext) throws Exception {
+                             String templateResourcePath, File target, ReportContext reportContext) throws IOException {
         LOG.info("Producing Dita for template [{}]", templateResourcePath);
 
         final Properties properties = new Properties();
@@ -957,7 +957,7 @@ public class InventoryReport {
         return missingFiles;
     }
 
-    protected void writeDiffReport(Inventory referenceInventory, Inventory projectInventory, ReportContext reportContext) throws Exception {
+    protected void writeDiffReport(Inventory referenceInventory, Inventory projectInventory, ReportContext reportContext) throws IOException {
         if (referenceInventory != null) {
             for (Artifact artifact : projectInventory.getArtifacts()) {
                 if (artifact.getId() == null) {
