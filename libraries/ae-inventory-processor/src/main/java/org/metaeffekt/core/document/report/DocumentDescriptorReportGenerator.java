@@ -33,6 +33,9 @@ public class DocumentDescriptorReportGenerator {
 
     public void generate(DocumentDescriptor documentDescriptor) throws Exception {
 
+        // validate documentDescriptor before report generation
+        documentDescriptor.validate();
+
         generateInventoryReports(documentDescriptor);
 
         // generate bookmaps to integrate InventoryReport-generated results
@@ -57,6 +60,9 @@ public class DocumentDescriptorReportGenerator {
 
         // for each inventory trigger according InventoryReport instances to produce
         for(InventoryContext inventoryContext: documentDescriptor.getInventoryContexts()) {
+
+            // validate each inventoryContext before processing
+            inventoryContext.validate();
 
             Map<String, String> params = documentDescriptor.getParams();
             InventoryReport report = new InventoryReport();
