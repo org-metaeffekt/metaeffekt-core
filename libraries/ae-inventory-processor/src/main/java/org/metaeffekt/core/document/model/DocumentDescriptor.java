@@ -74,7 +74,20 @@ public class DocumentDescriptor {
         if (inventoryContexts.isEmpty()) {
             throw new Exception("No inventory contexts specified.");
         }
+        // check if the targetReportDir is set
+        if (targetReportDir == null) {
+            throw new Exception("The target report directory must be specified.");
+        }
+        // check if the targetReportDir is actually a directory
+        if (!targetReportDir.isDirectory()) {
+            throw new Exception("The target report directory must be a directory.");
+        }
+        // check if the targetReportDir exists
+        if(!targetReportDir.exists()) {
+            throw new Exception("The target report directory does not exist.");
+        }
 
+        // validate each inventoryContext
         Set<String> identifiers = new HashSet<>();
         for (InventoryContext context : inventoryContexts) {
             // check if each inventoryContext references an inventory
