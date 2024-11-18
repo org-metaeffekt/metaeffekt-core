@@ -15,9 +15,11 @@
                 <body>
 
                     #foreach($artifactNotice in $componentNotice.getArtifactNotices())
+                        #set($assets=$utils.getAssetsForArtifacts($artifactNotice.getArtifacts(), $inventory))
+                        #if(!$assets.isEmpty())
                         ## Assets Table start
                         <section>
-                            <title>Assets containing $report.xmlEscapeString($componentNotice.getComponentName())</title>
+                            <title>Assets covering $report.xmlEscapeString($componentNotice.getComponentName())</title>
                             <table otherprops="wide">
                                 <title>Assets of Component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
                                 <tgroup cols="3">
@@ -32,7 +34,7 @@
                                     </row>
                                     </thead>
                                     <tbody>
-                        #foreach($asset in $utils.getAssetsForArtifacts($artifactNotice.getArtifacts(), $inventory))
+                        #foreach($asset in $assets)
                                     <row>
                                         <entry>
                                             #if($report.isAssetBomReportEnabled())
@@ -53,6 +55,7 @@
                                 </tgroup>
                             </table>
                         </section>
+                        #end
                         ## Assets Table end
 
                         ## Artifacts Table start
