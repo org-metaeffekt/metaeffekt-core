@@ -53,8 +53,7 @@ public class  DocumentDescriptorReportTest {
         documentDescriptor.setInventoryContexts(inventoryContexts);
 
         // create reportContext for this report
-        DocumentDescriptorReportContext reportContext = new DocumentDescriptorReportContext();
-        reportContext.setTargetReportPath("target/document-descriptor-report-001/report");
+        documentDescriptor.setTargetReportDir(new File("target/document-descriptor-report-001/report"));
 
         // set params for documentDescriptor
         File target = new File("target/document-descriptor-report-001");
@@ -70,7 +69,7 @@ public class  DocumentDescriptorReportTest {
 
         // generate report
         DocumentDescriptorReportGenerator reportGenerator = new DocumentDescriptorReportGenerator();
-        reportGenerator.generate(documentDescriptor, reportContext);
+        reportGenerator.generate(documentDescriptor);
 
         // HINT: produce PDF using 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISBALED -Ddita.source.dir=target/document-descriptor-report-001/report -Ddita.map=map_annex-bookmap.ditamap'
     }

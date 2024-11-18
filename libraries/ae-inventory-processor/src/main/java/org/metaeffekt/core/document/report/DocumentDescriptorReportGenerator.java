@@ -31,13 +31,13 @@ import java.util.Map;
  */
 public class DocumentDescriptorReportGenerator {
 
-    public void generate(DocumentDescriptor documentDescriptor, DocumentDescriptorReportContext reportContext) throws Exception {
+    public void generate(DocumentDescriptor documentDescriptor) throws Exception {
 
-        generateInventoryReports(documentDescriptor, reportContext);
+        generateInventoryReports(documentDescriptor);
 
         // generate bookmaps to integrate InventoryReport-generated results
         DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
-        documentDescriptorReport.setTargetReportDir(new File(reportContext.getTargetReportPath()));
+        documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetReportDir());
         documentDescriptorReport.setTemplateLanguageSelector(documentDescriptor.getTemplateLanguageSelector());
 
         documentDescriptorReport.createReport(documentDescriptor);
@@ -50,10 +50,9 @@ public class DocumentDescriptorReportGenerator {
      * abstract class for encapsulating the functionality used by both types of reports.
      *
      * @param documentDescriptor the given DocumentDescriptor for which the report is generated
-     * @param reportContext the context containing fields necessary for starting report generation in InventoryReport
      * @throws Exception
      */
-    private static void generateInventoryReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportContext reportContext) throws Exception {
+    private static void generateInventoryReports(DocumentDescriptor documentDescriptor) throws Exception {
         List<InventoryReport> inventoryReports = new ArrayList<InventoryReport>();
 
         // for each inventory trigger according InventoryReport instances to produce
@@ -77,12 +76,14 @@ public class DocumentDescriptorReportGenerator {
             report.setFailOnUnknownVersion(false);
             report.setFailOnMissingLicense(false);
 
-            report.setReferenceComponentPath(reportContext.getReferenceComponentPath());
-            report.setReferenceLicensePath(reportContext.getReferenceLicensePath());
+            // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
+            // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
+            report.setReferenceComponentPath("components");
+            report.setReferenceLicensePath("licenses");
 
             report.setTargetLicenseDir(new File(params.get("targetLicensesDir")));
             report.setTargetComponentDir(new File(params.get("targetComponentDir")));
-            report.setTargetReportDir(new File(reportContext.getTargetReportPath(), inventoryContext.getIdentifier()));
+            report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
 
             report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
             report.getReportContext().setReportInventoryVersion(inventoryContext.getInventoryVersion());

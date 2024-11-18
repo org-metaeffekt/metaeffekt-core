@@ -18,10 +18,9 @@ package org.metaeffekt.core.document.model;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.metaeffekt.core.document.report.DocumentDescriptorReportContext;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -38,11 +37,6 @@ public class DocumentDescriptor {
      * inventoryContext is used to control execution of report generation.
      */
     private List<InventoryContext> inventoryContexts;
-
-    /**
-     * Object containing the context specific report generation parameters; specific to the process execution
-     */
-    private DocumentDescriptorReportContext reportContext;
 
     /**
      * Representation of each document type that we can report on, depending on the set documentType, different
@@ -62,6 +56,11 @@ public class DocumentDescriptor {
     private String templateLanguageSelector = "en";
 
     /**
+     * The target directory for the report.
+     */
+    private File targetReportDir;
+
+    /**
      * A documentDescriptor must be validated with basic integrity checks (e.g. check for missing inventoryId, missing
      * documentType etc.) before a document can be generated with it.
      */
@@ -72,9 +71,6 @@ public class DocumentDescriptor {
         }
         if (inventoryContexts.isEmpty()) {
             throw new Exception("No inventory contexts specified.");
-        }
-        if (reportContext == null) {
-            throw new Exception("No report context specified.");
         }
 
         Set<String> identifiers = new HashSet<>();
