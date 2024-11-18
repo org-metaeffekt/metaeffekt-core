@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Stream;
@@ -116,6 +117,8 @@ public class Cvss4P0 extends CvssVector {
             "CR", "IR", "AR",
             "E"
     };
+
+    private static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(17, RoundingMode.HALF_UP);
 
     // Base Metrics: Exploitability Metrics
     private AttackVector attackVector = AttackVector.NOT_DEFINED; // AV; NETWORK
@@ -595,46 +598,46 @@ public class Cvss4P0 extends CvssVector {
             // by converting the severity distance from this vector to the next higher severity from the [severity distance] scale into to the [score] scale
             if (!Double.isNaN(availableSeverityReduction) && macroVectorDepth != 0.0) {
                 final double percentageToNextSeverityDistance = severityDistanceFromThisToHighestSeverity / (double) macroVectorDepth;
-                final double normalizedSeverityDistance = percentageToNextSeverityDistance * availableSeverityReduction;
-                meanScoreAdjustment.add(normalizedSeverityDistance);
+                BigDecimal result = new BigDecimal(percentageToNextSeverityDistance).multiply(new BigDecimal(availableSeverityReduction));
+                meanScoreAdjustment.add(result);
             }
         }
 
         // calculate mean distance based on normalized severity distances
         // and adjust the original macro vector score by the mean distance
-        final double adjustedOriginalMacroVectorScore = thisMacroVectorScore - meanScoreAdjustment.getOrDefault(0.0);
+        final BigDecimal adjustedOriginalMacroVectorScore = BigDecimal.valueOf(thisMacroVectorScore).subtract(meanScoreAdjustment.getOrDefault(BigDecimal.ZERO), DEFAULT_MATH_CONTEXT);
 
-        if (adjustedOriginalMacroVectorScore < 0) {
+        if (adjustedOriginalMacroVectorScore.signum() < 0) {
             return 0.0;
-        } else if (adjustedOriginalMacroVectorScore > 10) {
+        } else if (adjustedOriginalMacroVectorScore.compareTo(BigDecimal.TEN) > 0) {
             return 10.0;
         } else {
-            return Double.parseDouble(javaScriptToFixed(adjustedOriginalMacroVectorScore, 1));
+            return Double.parseDouble(javaScriptToFixed(adjustedOriginalMacroVectorScore));
         }
     }
 
-    private String javaScriptToFixed(double number, int fractionDigits) {
+    private String javaScriptToFixed(BigDecimal number) {
         // set scale to round half up, which is the behavior in JS's toFixed
-        return new BigDecimal(number)
-                .setScale(fractionDigits, RoundingMode.HALF_UP)
+        return number
+                .setScale(1, RoundingMode.HALF_UP)
                 .toPlainString()
                 .replace(",", ".");
     }
 
     private static class Average {
-        private double sum = 0;
+        private BigDecimal sum = BigDecimal.ZERO;
         private int count = 0;
 
-        public void add(double value) {
-            sum += value;
+        public void add(BigDecimal value) {
+            sum = sum.add(value);
             count++;
         }
 
-        public Double getOrDefault(Double defaultValue) {
+        public BigDecimal getOrDefault(BigDecimal defaultValue) {
             if (count == 0) {
                 return defaultValue;
             } else {
-                return sum / count;
+                return sum.divide(BigDecimal.valueOf(count), DEFAULT_MATH_CONTEXT);
             }
         }
     }
