@@ -66,21 +66,26 @@ public class DocumentDescriptor {
      */
     public void validate() throws Exception {
 
+        // check if document type is set
         if (documentType == null) {
             throw new Exception("The document type must be specified.");
         }
+        // check if there are inventoryContexts set
         if (inventoryContexts.isEmpty()) {
             throw new Exception("No inventory contexts specified.");
         }
 
         Set<String> identifiers = new HashSet<>();
         for (InventoryContext context : inventoryContexts) {
+            // check if each inventoryContext references an inventory
             if (context.getInventory() == null) {
-                throw new Exception("the inventory for context [" + context.getIdentifier() + "] must not be null.");
+                throw new Exception("the inventory must be specified.");
             }
+            // check if each inventoryContext has an identifier
             if (context.getIdentifier() == null){
-                throw new Exception("the identifier for context [" + context + "] must not be null.");
+                throw new Exception("the identifier must be specified.");
             }
+            // check if each inventoryContext has a unique identifier
             if (!identifiers.add(context.getIdentifier())) {
                 throw new Exception("Duplicate context identifier found: [" + context.getIdentifier() + "].");
             }

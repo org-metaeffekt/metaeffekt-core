@@ -64,14 +64,17 @@ public class InventoryContext {
     }
 
     public void validate() {
+        // check if the referenced inventory is set
         if (inventory == null) {
-            throw new IllegalStateException("The Inventory must not be null");
+            throw new IllegalStateException("The Inventory must be specified");
         }
+        // check if the identifier is set
         if (identifier == null) {
-            throw new IllegalStateException("The identifier must not be null");
+            throw new IllegalStateException("The identifier must be specified");
         }
+        // check is the referenceInventory is set
         if (referenceInventory == null) {
-            throw new IllegalStateException("The referenceInventory must not be null");
+            throw new IllegalStateException("The referenceInventory must be specified");
         }
     }
 }
