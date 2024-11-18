@@ -1,17 +1,13 @@
 # General purpose variables required for the following properties
 #set($componentNoticeList=$inventory.evaluateComponentNotices())
-
 #set($artifactNoticeList = [])
 #foreach($componentNotice in $componentNoticeList)
-   #set($unused = $artifactNoticeList.addAll($componentNotice.getArtifactNotices())
-   )
+   #set($unused = $artifactNoticeList.addAll($componentNotice.getArtifactNotices()))
 #end
-
 #set($notices = [])
 #foreach($notice in $artifactNoticeList)
     #set($unused = $notices.add($notice))
 #end
-
 # Switch to be used on a license details level
 # If no notices are available across all components switch is 'false'; 'true' otherwise
 #set($noticesSwitch = true)
@@ -19,3 +15,6 @@
     #set($noticesSwitch = false)
 #end
 ae.inventory.report.bom.notices.switch=$noticesSwitch
+
+#set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
+ae.inventory.report.bom.count.artifacts.nolicense=$artifactsWithoutLicense.size()
