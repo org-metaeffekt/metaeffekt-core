@@ -39,7 +39,6 @@ public class InventoryContext {
     /**
      * The version of the defined inventory context.
      */
-    //FIXME-DISCUSS: Is the version a field of an inventory context or rather of the inventory itself?
     private String inventoryVersion;
 
     /**
@@ -49,8 +48,9 @@ public class InventoryContext {
     private Inventory referenceInventory;
 
     /**
-     * Fields needed for the context of a report.
+     * Fields that are passed to reportContext for inventoryReport generation.
      */
+    // FIXME: consider renaming these, currently the name is identical to the fields in reportContext.java, however these names do not make a lot of sense in this context
     private String reportContextTitle;
     private String reportContext;
 
@@ -72,9 +72,21 @@ public class InventoryContext {
         if (identifier == null) {
             throw new IllegalStateException("The identifier must be specified");
         }
-        // check is the referenceInventory is set
+        // check if the referenceInventory is set
         if (referenceInventory == null) {
             throw new IllegalStateException("The referenceInventory must be specified");
+        }
+        // check if the reportContextTitle is set
+        if (reportContextTitle == null) {
+            throw new IllegalStateException("The reportContextTitle must be specified");
+        }
+        // check if the reportContext is set
+        if (reportContext == null) {
+            throw new IllegalStateException("The reportContext must be specified");
+        }
+        // check if the inventoryVersion is set
+        if (inventoryVersion == null) {
+            throw new IllegalStateException("The inventoryVersion must be specified");
         }
     }
 }
