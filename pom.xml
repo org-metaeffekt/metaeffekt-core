@@ -6,7 +6,7 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
-    <version>0.126.0</version>
+    <version>HEAD-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>metaeffekt-core</name>
@@ -15,7 +15,7 @@
 
     <organization>
         <name>metaeffekt GmbH</name>
-        <url>http://metaeffekt.org</url>
+        <url>https://metaeffekt.org</url>
     </organization>
 
     <licenses>
@@ -39,7 +39,7 @@
         <developer>
             <email>contact@metaeffekt.org</email>
             <organization>metaeffekt GmbH</organization>
-            <organizationUrl>http://metaeffekt.com</organizationUrl>
+            <organizationUrl>https://metaeffekt.com</organizationUrl>
         </developer>
     </developers>
 
@@ -52,7 +52,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <ae.core.version>0.126.0</ae.core.version>
+        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
         <ae.core.version_last>${ae.core.version}</ae.core.version_last>
 
         <artifact.inventory.version>${ae.core.version}</artifact.inventory.version>
