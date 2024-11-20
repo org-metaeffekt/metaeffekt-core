@@ -24,6 +24,20 @@
                 <groupId>org.metaeffekt.bundle.sevenzip</groupId>
                 <artifactId>ae-7zip-installation-maven-plugin</artifactId>
                 <version>0.1.0</version>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>extract-7zip</goal>
+                        </goals>
+                        <configuration>
+                            <sevenZipGroupId>org.metaeffekt.bundle.sevenzip</sevenZipGroupId>
+                            <sevenZipArtifactId>ae-7zip-bundle-packager</sevenZipArtifactId>
+                            <sevenZipArtifactVersion>0.1.0</sevenZipArtifactVersion>
+                        </configuration>
+
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

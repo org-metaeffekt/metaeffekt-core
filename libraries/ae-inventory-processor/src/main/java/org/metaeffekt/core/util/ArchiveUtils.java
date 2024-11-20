@@ -461,7 +461,18 @@ public class ArchiveUtils {
 
     private static void extractWindowsFile(File file, File targetFile) {
         // this requires 7zip to perform the extraction
-        final File binaryFile = SevenZipExecutableUtils.getBinaryFile(System.getProperty("os.name").toLowerCase(), System.getProperty("os.arch").toLowerCase());
+        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        String arch = System.getProperty("os.arch").toLowerCase();
+
+        if ("mac os x".equalsIgnoreCase(os)) {
+            os = "mac";
+        }
+
+        if ("x86_64".equalsIgnoreCase(arch)) {
+            arch = "x64";
+        }
+
+        final File binaryFile = SevenZipExecutableUtils.getBinaryFile(os, arch);
         try {
             Process exec = Runtime.getRuntime().exec(binaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
             FileUtils.waitForProcess(exec);
