@@ -202,8 +202,10 @@
 
         <dependency>
             <groupId>org.metaeffekt.bundle.sevenzip</groupId>
-            <artifactId>ae-7zip-bundle</artifactId>
+            <artifactId>ae-7zip-java-util</artifactId>
             <version>0.1.0</version>
+            <scope>compile</scope>
         </dependency>
+
     </dependencies>
 </project>
