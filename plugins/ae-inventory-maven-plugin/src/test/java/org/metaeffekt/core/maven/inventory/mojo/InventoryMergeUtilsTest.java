@@ -15,12 +15,10 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
@@ -41,12 +39,29 @@ public class InventoryMergeUtilsTest {
 
         new InventoryMergeUtils().merge(sourceInventories, targetInventory);
 
-        System.out.println(targetInventory.getLicenseData().size());
         System.out.println(targetInventory.getArtifacts().size());
 
         Assertions.assertThat(targetInventory.getArtifacts()).hasSizeGreaterThan(0);
     }
 
+
+    @Test
+    public void emptyInventories() {
+
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        List<Inventory> sourceInventories = Arrays.asList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).isEmpty();
+    }
+
+    @Test
+    public void singleArtifactInventoryMergedIntoTarget() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        Artifact singleArtifact = buildArtifact("singleArtifact");
+        source.getArtifacts().add(singleArtifact);
 
         Assert.assertTrue(targetInventory.getLicenseData().size() > 0);
     }
