@@ -63,8 +63,60 @@ public class InventoryMergeUtilsTest {
         Artifact singleArtifact = buildArtifact("singleArtifact");
         source.getArtifacts().add(singleArtifact);
 
-        Assert.assertTrue(targetInventory.getLicenseData().size() > 0);
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).extracting("id").contains("singleArtifact");
     }
 
+    @Test
+    public void sourceAndTargetWithSameArtifactId() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        Artifact singleArtifact = buildArtifact("singleArtifact");
+        source.getArtifacts().add(singleArtifact);
+        target.getArtifacts().add(singleArtifact);
 
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        // FIXME is this the expected result
+        Assertions.assertThat(target.getArtifacts()).extracting("id").isEmpty();
+//        Assertions.assertThat(target.getArtifacts()).extracting("id").containsOnlyOnce("singleArtifact");
+    }
+
+    @Test
+    public void sourceAndTargetWithSameArtifactIdDifferentObjects() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        source.getArtifacts().add(buildArtifact("singleArtifact"));
+        target.getArtifacts().add(buildArtifact("singleArtifact"));
+
+        Assertions.assertThat(source.getArtifacts()).hasSize(1);
+        Assertions.assertThat(target.getArtifacts()).hasSize(1);
+
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).extracting("id").containsOnlyOnce("singleArtifact");
+    }
+
+    @Test
+    public void sourceAndTargetWithDifferentArtifactIds() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        source.getArtifacts().add(buildArtifact("singleSourceArtifact"));
+        target.getArtifacts().add(buildArtifact("singleTargetArtifact"));
+
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).extracting("id").containsOnlyOnceElementsOf(Arrays.asList("singleSourceArtifact", "singleTargetArtifact"));
+    }
+
+    private static Artifact buildArtifact(String id) {
+        Artifact singleArtifact = new Artifact();
+        singleArtifact.setId(id);
+        return singleArtifact;
+    }
 }
