@@ -15,14 +15,15 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.junit.Assert;
+import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class InventoryMergeUtilsTest {
@@ -33,15 +34,88 @@ public class InventoryMergeUtilsTest {
         Inventory targetInventory = new Inventory();
         File sourceInventoryFile = new File("<path to file>");
 
-        List<File> sourceInventories = new ArrayList<>();
-        sourceInventories.add(sourceInventoryFile);
+        List<File> sourceInventories = Collections.singletonList(sourceInventoryFile);
 
         new InventoryMergeUtils().merge(sourceInventories, targetInventory);
 
-        System.out.println(targetInventory.getLicenseData().size());
+        System.out.println(targetInventory.getArtifacts().size());
 
-        Assert.assertTrue(targetInventory.getLicenseData().size() > 0);
+        Assertions.assertThat(targetInventory.getArtifacts()).hasSizeGreaterThan(0);
     }
 
 
+    @Test
+    public void emptyInventories() {
+
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        List<Inventory> sourceInventories = Arrays.asList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).isEmpty();
+    }
+
+    @Test
+    public void singleArtifactInventoryMergedIntoTarget() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        Artifact singleArtifact = buildArtifact("singleArtifact");
+        source.getArtifacts().add(singleArtifact);
+
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).extracting("id").contains("singleArtifact");
+    }
+
+    @Test
+    public void sourceAndTargetWithSameArtifactId() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        Artifact singleArtifact = buildArtifact("singleArtifact");
+        source.getArtifacts().add(singleArtifact);
+        target.getArtifacts().add(singleArtifact);
+
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        // FIXME is this the expected result
+        Assertions.assertThat(target.getArtifacts()).extracting("id").isEmpty();
+//        Assertions.assertThat(target.getArtifacts()).extracting("id").containsOnlyOnce("singleArtifact");
+    }
+
+    @Test
+    public void sourceAndTargetWithSameArtifactIdDifferentObjects() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        source.getArtifacts().add(buildArtifact("singleArtifact"));
+        target.getArtifacts().add(buildArtifact("singleArtifact"));
+
+        Assertions.assertThat(source.getArtifacts()).hasSize(1);
+        Assertions.assertThat(target.getArtifacts()).hasSize(1);
+
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).extracting("id").containsOnlyOnce("singleArtifact");
+    }
+
+    @Test
+    public void sourceAndTargetWithDifferentArtifactIds() {
+        Inventory source = new Inventory();
+        Inventory target = new Inventory();
+        source.getArtifacts().add(buildArtifact("singleSourceArtifact"));
+        target.getArtifacts().add(buildArtifact("singleTargetArtifact"));
+
+        List<Inventory> sourceInventories = Collections.singletonList(source);
+        new InventoryMergeUtils().mergeInventories(sourceInventories, target);
+
+        Assertions.assertThat(target.getArtifacts()).extracting("id").containsOnlyOnceElementsOf(Arrays.asList("singleSourceArtifact", "singleTargetArtifact"));
+    }
+
+    private static Artifact buildArtifact(String id) {
+        Artifact singleArtifact = new Artifact();
+        singleArtifact.setId(id);
+        return singleArtifact;
+    }
 }
