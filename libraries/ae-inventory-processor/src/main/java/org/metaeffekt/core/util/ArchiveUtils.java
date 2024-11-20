@@ -465,7 +465,9 @@ public class ArchiveUtils {
         String arch = SevenZipExecutableUtils.detectArch();
         final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile(os, arch);
         try {
-            Process exec = Runtime.getRuntime().exec(sevenZipBinaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
+            final String command = sevenZipBinaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath();
+            LOG.info("Running command: " + command);
+            Process exec = Runtime.getRuntime().exec(command);
             FileUtils.waitForProcess(exec);
         } catch (IOException e) {
             LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed at [" + sevenZipBinaryFile + "].");
