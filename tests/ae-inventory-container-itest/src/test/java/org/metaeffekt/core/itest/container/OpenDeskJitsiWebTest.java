@@ -37,7 +37,6 @@ import java.util.List;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
 
-// FIXME: container no longer available
 @Ignore
 public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());

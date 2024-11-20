@@ -351,6 +351,8 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+
+        componentPatternData.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
         try {
             componentPatternData.set(Artifact.Attribute.PURL.getKey(),
                     buildPurl(distro, entry.packageName, entry.version, entry.architecture));
