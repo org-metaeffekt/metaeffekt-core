@@ -461,14 +461,14 @@ public class ArchiveUtils {
 
     private static void extractWindowsFile(File file, File targetFile) {
         // this requires 7zip to perform the extraction
-        String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        String arch = System.getProperty("os.arch").toLowerCase();
+        String os = System.getProperty("os.name").toLowerCase(Locale.US);
+        String arch = System.getProperty("os.arch").toLowerCase(Locale.US);
 
-        if ("mac os x".equalsIgnoreCase(os)) {
+        if (os.contains("mac")) {
             os = "mac";
         }
 
-        if ("x86_64".equalsIgnoreCase(arch)) {
+        if (arch.endsWith("64")) {
             arch = "x64";
         }
 
@@ -477,7 +477,7 @@ public class ArchiveUtils {
             Process exec = Runtime.getRuntime().exec(binaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
             FileUtils.waitForProcess(exec);
         } catch (IOException e) {
-            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed.");
+            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed as [" + binaryFile + "]");
         }
     }
 
