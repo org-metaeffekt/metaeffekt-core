@@ -477,7 +477,7 @@ public class ArchiveUtils {
             Process exec = Runtime.getRuntime().exec(binaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
             FileUtils.waitForProcess(exec);
         } catch (IOException e) {
-            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed as [" + binaryFile + "]");
+            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed at [" + binaryFile + "]");
         }
     }
 
