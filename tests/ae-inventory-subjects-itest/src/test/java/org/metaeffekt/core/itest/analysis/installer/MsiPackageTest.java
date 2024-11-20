@@ -63,6 +63,6 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
         final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).getItemList().size();
 
         // result depends on installation of 7z
-        Assertions.assertThat(size == 6 || size == 0).isTrue();
+        Assertions.assertThat(size == 6).isTrue();
     }
 }
