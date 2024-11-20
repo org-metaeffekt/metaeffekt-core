@@ -20,6 +20,11 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.metaeffekt.bundle.sevenzip</groupId>
+                <artifactId>ae-7zip-installation-maven-plugin</artifactId>
+                <version>0.1.0</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -193,6 +198,12 @@
             <groupId>com.github.package-url</groupId>
             <artifactId>packageurl-java</artifactId>
             <version>1.5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.metaeffekt.bundle.sevenzip</groupId>
+            <artifactId>ae-7zip-bundle</artifactId>
+            <version>0.1.0</version>
         </dependency>
     </dependencies>
 </project>

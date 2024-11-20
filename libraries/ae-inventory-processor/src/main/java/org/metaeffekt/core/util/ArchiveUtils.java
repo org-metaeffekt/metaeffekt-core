@@ -26,6 +26,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Zip;
+import org.metaeffekt.bundle.sevenzip.SevenZipExecutableUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -460,8 +461,9 @@ public class ArchiveUtils {
 
     private static void extractWindowsFile(File file, File targetFile) {
         // this requires 7zip to perform the extraction
+        final File binaryFile = SevenZipExecutableUtils.getBinaryFile(System.getProperty("os.name").toLowerCase(), System.getProperty("os.arch").toLowerCase());
         try {
-            Process exec = Runtime.getRuntime().exec("7z x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
+            Process exec = Runtime.getRuntime().exec(binaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
             FileUtils.waitForProcess(exec);
         } catch (IOException e) {
             LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed.");
