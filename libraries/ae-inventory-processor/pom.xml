@@ -24,6 +24,7 @@
                 <groupId>org.metaeffekt.bundle.sevenzip</groupId>
                 <artifactId>ae-7zip-installation-maven-plugin</artifactId>
                 <version>0.1.0</version>
+                <!-- FIXME: revise configuration after consolidation in bundle project -->
                 <executions>
                     <execution>
                         <id>default</id>
@@ -35,9 +36,15 @@
                             <sevenZipArtifactId>ae-7zip-bundle-packager</sevenZipArtifactId>
                             <sevenZipArtifactVersion>0.1.0</sevenZipArtifactVersion>
                         </configuration>
-
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.metaeffekt.bundle.sevenzip</groupId>
+                        <artifactId>ae-7zip-java-util</artifactId>
+                        <version>0.1.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
