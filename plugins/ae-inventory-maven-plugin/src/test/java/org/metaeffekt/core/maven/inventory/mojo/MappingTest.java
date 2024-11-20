@@ -15,9 +15,10 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.junit.Assert;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MappingTest {
 
@@ -26,7 +27,7 @@ public class MappingTest {
         Mapping mapping = new Mapping();
         mapping.setMapping("TestKey-->TestValue");
 
-        Assert.assertEquals("TestValue", mapping.getMap().get("TestKey"));
+        assertEquals("TestValue", mapping.getMap().get("TestKey"));
     }
 
 }

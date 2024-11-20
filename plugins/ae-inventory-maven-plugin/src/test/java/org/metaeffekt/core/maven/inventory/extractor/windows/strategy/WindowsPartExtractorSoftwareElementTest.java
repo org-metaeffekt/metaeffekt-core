@@ -15,16 +15,17 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor.windows.strategy;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WindowsPartExtractorSoftwareElementTest {
 
-    private final WindowsPartExtractorSoftwareElement partExtractor = new WindowsPartExtractorSoftwareElement();
+private final WindowsPartExtractorSoftwareElement partExtractor = new WindowsPartExtractorSoftwareElement();
 
     @Test
     public void extractPropertiesFromMappingStringTest() {

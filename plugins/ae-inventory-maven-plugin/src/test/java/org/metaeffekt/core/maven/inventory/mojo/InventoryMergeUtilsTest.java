@@ -18,27 +18,35 @@ package org.metaeffekt.core.maven.inventory.mojo;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class InventoryMergeUtilsTest {
 
-    @Ignore
+    @Disabled
     @Test
     public void testMerge() throws IOException {
         Inventory targetInventory = new Inventory();
         File sourceInventoryFile = new File("<path to file>");
 
-        List<File> sourceInventories = new ArrayList<>();
-        sourceInventories.add(sourceInventoryFile);
+        List<File> sourceInventories = Collections.singletonList(sourceInventoryFile);
 
         new InventoryMergeUtils().merge(sourceInventories, targetInventory);
 
         System.out.println(targetInventory.getLicenseData().size());
+        System.out.println(targetInventory.getArtifacts().size());
+
+        Assertions.assertThat(targetInventory.getArtifacts()).hasSizeGreaterThan(0);
+    }
+
 
         Assert.assertTrue(targetInventory.getLicenseData().size() > 0);
     }
