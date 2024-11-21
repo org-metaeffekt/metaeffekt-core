@@ -20,10 +20,7 @@ import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +54,12 @@ public class CvssVectorSet implements Cloneable {
     public void removeForSourceAndCondition(CvssSource source, JSONObject condition) {
         this.cvssVectors.removeIf(sourcedCvssVector -> Objects.equals(sourcedCvssVector.getCvssSource(), source) && Objects.equals(sourcedCvssVector.getApplicabilityCondition(), condition));
     }
+
+    public void removeForNonMatchingVulnSpecificCondition(JSONObject condition) {
+        this.cvssVectors.removeIf(sourcedCvssVector -> !Objects.equals(sourcedCvssVector.getApplicabilityCondition().toString(), condition.toString()));
+    }
+
+
 
     public void addCvssVector(CvssSource source, String cvssVector) {
         final CvssVector vector = source.parseVector(cvssVector).deriveAddSource(source);
