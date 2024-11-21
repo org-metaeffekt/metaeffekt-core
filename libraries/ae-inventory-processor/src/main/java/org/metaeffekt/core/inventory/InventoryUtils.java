@@ -368,7 +368,10 @@ public abstract class InventoryUtils {
         for (AssetMetaData assetMetaData : inventory.getAssetMetaData()) {
             String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
             for (Artifact artifact : artifacts) {
-				if (StringUtils.isNotBlank(artifact.get(assetId)) && artifact.get(assetId).equals(Constants.MARKER_CONTAINS)) {
+                // FIXME: review with JFU; including MARKER_CROSS in predicate
+                final String artifactAssetIdMarker = artifact.get(assetId);
+                if (Constants.MARKER_CONTAINS.equals(artifactAssetIdMarker) ||
+                     Constants.MARKER_CROSS.equals(artifactAssetIdMarker)) {
 					setOfAssets.add(assetMetaData);
 				}
 			}

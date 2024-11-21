@@ -19,6 +19,7 @@ import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.LicenseData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,57 @@ public class InventoryReportAdapter {
                 }
             }
         }
+    }
+
+    /**
+     * Complex type to enable different required terms categories to be differentiated.
+     */
+    @Getter
+    public static class TermsCategorization {
+        /**
+         * The termsNoOptions include terms/licenses that do not have an immediate (in contrast to secondary licenses)
+         * option (represent a choice).
+         */
+        List<LicenseData> termsNoOptions = new ArrayList<>();
+
+        /**
+         * The termsWithOptions include terms/licenses that do have an immediate option / choice.
+         */
+        List<LicenseData> termsWithOptions = new ArrayList<>();
+
+        /**
+         * The atomicTerms include all atomic terms/licenses. These may also cover atomic options, but no non-atomic
+         * options. 'A + B' is not included, but the parts A and B. 'A (or any later version)' is included as option.
+         */
+        List<LicenseData> atomicTerms = new ArrayList<>();
+    }
+
+    /**
+     * Categorizes the provided list of canonicalNames (license / terms ids) in determined
+     * categories.
+     *
+     * @param canonicalNames List of canonical names identifying a license or generic terms.
+     *
+     * @return A {@link TermsCategorization} instance carrying the categorized data.
+     */
+    public TermsCategorization categorizeTerms(List<String> canonicalNames) {
+        final TermsCategorization termsCategorization = new TermsCategorization();
+        for (String canonicalName : canonicalNames) {
+            LicenseData matchingLicenseData = inventory.findMatchingLicenseData(canonicalName);
+            if (matchingLicenseData == null) {
+                matchingLicenseData = new LicenseData();
+                matchingLicenseData.set(LicenseData.Attribute.CANONICAL_NAME, canonicalName);
+            }
+            if (matchingLicenseData.isOption()) {
+                termsCategorization.termsWithOptions.add(matchingLicenseData);
+            } else {
+                termsCategorization.termsNoOptions.add(matchingLicenseData);
+            }
+            if (matchingLicenseData.isAtomic()) {
+                termsCategorization.atomicTerms.add(matchingLicenseData);
+            }
+        }
+        return termsCategorization;
     }
 
 }

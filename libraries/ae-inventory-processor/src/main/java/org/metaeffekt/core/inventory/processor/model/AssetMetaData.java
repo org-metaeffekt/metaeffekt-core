@@ -225,6 +225,10 @@ public class AssetMetaData extends AbstractModelBase {
         return Boolean.TRUE.equals(get(attribute.getKey(), "false"));
     }
 
+    public boolean isPrimary() {
+        return Constants.MARKER_CROSS.equalsIgnoreCase(get(Constants.KEY_PRIMARY));
+    }
+
     @Override
     public String toString() {
         return "Asset Id: " + get(Attribute.ASSET_ID);

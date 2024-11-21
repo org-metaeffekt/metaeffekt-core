@@ -16,8 +16,14 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ReportUtils {
 
@@ -36,6 +42,36 @@ public class ReportUtils {
     public String percent(long part, long total) {
         if (total == 0) return "n/a";
         return String.format(Locale.GERMANY, "%.1f %%", (100d * part) / total);
+    }
+
+    /**
+     * Returns a list of assets for which the give artifacts are contained in. If there is a primary asset in the list,
+     * only the primary is returned. If there is no primary, all related assets are returned.
+     *
+     * @param artifacts the artifacts for which to find the related assets
+     * @param inventory the inventory containing the artifacts and assets
+     *
+     * @return the set of related assets
+     */
+    public Set<AssetMetaData> getAssetsForArtifacts(List<Artifact> artifacts, Inventory inventory) {
+        final Set<AssetMetaData> assets = InventoryUtils.getAssetsForArtifacts(inventory, new HashSet<>(artifacts));
+
+        if (!assets.isEmpty()) {
+            final Set<AssetMetaData> primaryAssets = assets.stream()
+                    .filter(a -> a != null && a.isPrimary())
+                    .collect(Collectors.toSet());
+
+            if (!primaryAssets.isEmpty()) {
+                // return primary assets
+                return primaryAssets;
+            } else {
+                // fallback to assets for artifact if no primary assets could be detected
+                return assets;
+            }
+        }
+
+        // return empty set
+        return Collections.emptySet();
     }
 
 }

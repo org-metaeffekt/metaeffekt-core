@@ -573,11 +573,12 @@ public class Inventory implements Serializable {
     }
 
     /**
-     * Returns a sorted list of licenses that is covered by this inventory. Please note that this
-     * method only produces the license names, which are assumed to be non-redundant and unique.
+     * Returns a sorted list of licenses that is covered by this inventory. Please note that this method only produces
+     * the license names, which are assumed to be non-redundant and unique.
      *
      * @param includeLicensesWithArtifactsOnly Result will cover licenses of artifacts without artifactId when true.
      * @param includeManagedArtifactsOnly      Results will only cover license of managed artifacts when true.
+     *
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
@@ -605,6 +606,15 @@ public class Inventory implements Serializable {
 
             if (effectiveLicenses != null) {
                 licenses.addAll(effectiveLicenses);
+
+                // in case of an effective multi-license, we add the individual parts to the resulting list as well
+                for (String effectiveLicense : effectiveLicenses) {
+                    final List<String> licenseParts = InventoryUtils.tokenizeLicense(effectiveLicense, true, false);
+                    if (licenseParts.size() > 1) {
+                        licenses.addAll(licenseParts);
+                    }
+                }
+
             }
         }
 
@@ -678,7 +688,7 @@ public class Inventory implements Serializable {
     }
 
     /**
-     * Used by tpc_inventory-notices.dita.vt.
+     * Used by tpc_inventory-component-license-details.dita.vt.
      *
      * @return List of component notices for this inventory.
      */

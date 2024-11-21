@@ -20,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.metaeffekt.core.inventory.InventoryUtils.tokenizeLicense;
+
 /**
  * Model class that supports to aggregate data around licenses. The information can be used in reports and documentation.
  */
@@ -135,6 +137,41 @@ public class LicenseData extends AbstractModelBase {
 
     public void merge(LicenseData otherLicenseData) {
         super.merge(otherLicenseData);
+    }
+
+    /**
+     * Evaluate available LicenceData information to determine, whether the covered terms
+     * enable immediate options from terms attribution. Options regarding secondary license
+     * options are not relevant here.
+     *
+     * @return Boolean indicating whether the covered licenses / terms contain an immediate option.
+     */
+    public boolean isOption() {
+        final String canonicalName = get(Attribute.CANONICAL_NAME);
+        if (canonicalName != null) {
+            if (!isAtomic(canonicalName)) return true;
+            // FIXME: currently a criteria on the canonicalName; how can we better express this (on this level)?
+            if (canonicalName.contains("or any later version")) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the LicenceData represesnts an 'atomic' license / terms and does not consist
+     * of individual parts.
+     *
+     * @return Boolean indicating whether the covered licenses / terms are atomic.
+     */
+    public boolean isAtomic() {
+        final String canonicalName = get(Attribute.CANONICAL_NAME);
+        if (canonicalName != null) {
+            return isAtomic(canonicalName);
+        }
+        return true;
+    }
+
+    private static boolean isAtomic(String canonicalName) {
+        return tokenizeLicense(canonicalName, false, false).size() == 1;
     }
 
 }
