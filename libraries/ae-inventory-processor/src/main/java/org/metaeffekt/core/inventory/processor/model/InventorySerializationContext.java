@@ -128,7 +128,7 @@ public class InventorySerializationContext {
         }
 
         // add minimum columns
-        attributes.addAll(LicenseData.CORE_ATTRIBUTES);
+        attributes.addAll(LicenseData.ORDERED_ATTRIBUTES);
 
         // impose context or default order
         List<String> ordered = new ArrayList<>(attributes);
@@ -139,7 +139,7 @@ public class InventorySerializationContext {
                 insertIndex = reinsert(insertIndex, key, ordered, attributes);
             }
         } else {
-            for (String key : LicenseData.CORE_ATTRIBUTES) {
+            for (String key : LicenseData.ORDERED_ATTRIBUTES) {
                 insertIndex = reinsert(insertIndex, key, ordered, attributes);
             }
         }

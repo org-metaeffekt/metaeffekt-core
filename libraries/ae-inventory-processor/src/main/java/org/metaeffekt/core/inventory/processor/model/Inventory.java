@@ -386,6 +386,26 @@ public class Inventory implements Serializable {
         return artifacts;
     }
 
+    public AssetMetaData findAssetMetaData(String id) {
+        return findAssetMetaData(id,false);
+    }
+
+    public AssetMetaData findAssetMetaData(String id, boolean matchWildcards) {
+        if (id == null) return null;
+
+        for (AssetMetaData assetMetaData : getAssetMetaData()) {
+            if (id.equals(assetMetaData.get(KEY_ASSET_ID))){
+                return assetMetaData;
+            }
+        }
+
+        if (matchWildcards) {
+            // TODO: Implement wildcard logic here.
+        }
+
+        return null;
+    }
+
     public Artifact findArtifact(String id) {
         return findArtifact(id, false);
     }
@@ -553,11 +573,12 @@ public class Inventory implements Serializable {
     }
 
     /**
-     * Returns a sorted list of licenses that is covered by this inventory. Please note that this
-     * method only produces the license names, which are assumed to be non-redundant and unique.
+     * Returns a sorted list of licenses that is covered by this inventory. Please note that this method only produces
+     * the license names, which are assumed to be non-redundant and unique.
      *
      * @param includeLicensesWithArtifactsOnly Result will cover licenses of artifacts without artifactId when true.
      * @param includeManagedArtifactsOnly      Results will only cover license of managed artifacts when true.
+     *
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
@@ -585,6 +606,15 @@ public class Inventory implements Serializable {
 
             if (effectiveLicenses != null) {
                 licenses.addAll(effectiveLicenses);
+
+                // in case of an effective multi-license, we add the individual parts to the resulting list as well
+                for (String effectiveLicense : effectiveLicenses) {
+                    final List<String> licenseParts = InventoryUtils.tokenizeLicense(effectiveLicense, true, false);
+                    if (licenseParts.size() > 1) {
+                        licenses.addAll(licenseParts);
+                    }
+                }
+
             }
         }
 
@@ -658,7 +688,7 @@ public class Inventory implements Serializable {
     }
 
     /**
-     * Used by tpc_inventory-notices.dita.vt.
+     * Used by tpc_inventory-component-license-details.dita.vt.
      *
      * @return List of component notices for this inventory.
      */
@@ -1029,9 +1059,15 @@ public class Inventory implements Serializable {
     }
 
     public List<Component> evaluateComponentsInContext(String context) {
-        Map<String, Component> nameComponentMap = new HashMap<>();
         // only evaluate artifacts for the given context
-        for (Artifact artifact : getArtifacts(context)) {
+        final List<Artifact> artifactsInContext = getArtifacts(context);
+
+        return evaluateComponents(artifactsInContext);
+    }
+
+    public List<Component> evaluateComponents(Collection<Artifact> artifactsInContext) {
+        final Map<String, Component> nameComponentMap = new HashMap<>();
+        for (Artifact artifact : artifactsInContext) {
             final Component component = createComponent(artifact);
             Component alreadyExistingComponent = nameComponentMap.get(component.getQualifier());
             if (alreadyExistingComponent != null) {
@@ -1043,11 +1079,10 @@ public class Inventory implements Serializable {
         }
 
         List<Component> sortedByComponent = new ArrayList<>(nameComponentMap.values());
-        Collections.sort(sortedByComponent, new Comparator<Component>() {
-            @Override
-            public int compare(Component o1, Component o2) {
-                return o1.toString().toLowerCase().compareTo(o2.toString().toLowerCase());
-            }
+        Collections.sort(sortedByComponent, (o1, o2) -> {
+            final String s1 = o1 == null ? "" : o1.toString();
+            final String s2 = o2 == null ? "" : o2.toString();
+            return s1.compareToIgnoreCase(s2);
         });
         return sortedByComponent;
     }
@@ -1307,12 +1342,18 @@ public class Inventory implements Serializable {
             componentName = artifact.getId();
             String version = artifact.getVersion();
             if (!StringUtils.isEmpty(version)) {
-                if (componentName.contains("-" + version)) {
-                    componentName = componentName.substring(0, componentName.indexOf("-" + version));
+                final String dashVersion = "-" + version;
+                if (componentName.contains(dashVersion)) {
+                    componentName = componentName.substring(0, componentName.indexOf(dashVersion));
+                } else {
+                    final String underscoreVersion = "_" + version;
+                    if (componentName.contains(underscoreVersion)) {
+                        componentName = componentName.substring(0, componentName.indexOf(underscoreVersion));
+                    }
                 }
             }
         }
-        return new Component(componentName, artifact.getComponent(), artifact.getLicense());
+        return new Component(componentName, componentName, artifact.getLicense());
     }
 
     /**
@@ -2057,6 +2098,7 @@ public class Inventory implements Serializable {
      * - add an optional component version to the artifacts or identify the component with version
      * - alternatively add a component version on license meta data level; rationale: an artifact can
      * belong in the same version can belong to several components.
+     * - currently originalComponentName is not correctly used
      */
     public class Component {
         private String name;

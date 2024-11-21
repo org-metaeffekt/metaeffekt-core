@@ -38,7 +38,7 @@ public class DirectoryInventoryScanTest {
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{"--none--"};
 
-        File inventoryFile = new File("src/test/resources/test-inventory-01/artifact-inventory.xls");
+        File inventoryFile = new File("src/test/resources/test-inventory-01/artifact-inventory-01.xls");
         Inventory referenceInventory = new InventoryReader().readInventory(inventoryFile);
 
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, referenceInventory);
@@ -49,7 +49,7 @@ public class DirectoryInventoryScanTest {
 
         final Inventory resultInventory = scan.createScanInventory();
 
-        new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory.xls"));
+        new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory-01.xls"));
 
         for (Artifact a : resultInventory.getArtifacts()) {
             System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getProjects());

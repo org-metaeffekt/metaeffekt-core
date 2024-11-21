@@ -47,6 +47,8 @@ public class XlsHSSFInventorySheetCellStylers {
     public final InventorySheetCellStyler headerStyleDefault;
     public final InventorySheetCellStyler headerStyleColumnNameSrcAssetSource;
     public final InventorySheetCellStyler headerStyleColumnNameAssetConfig;
+    public final InventorySheetCellStyler headerStyleColumnNameMarker;
+    public final InventorySheetCellStyler headerStyleColumnNameClassification;
 
     // DATA CELLS
     public final InventorySheetCellStyler contentStyleColumnNameAssetId;
@@ -54,6 +56,7 @@ public class XlsHSSFInventorySheetCellStylers {
     public final InventorySheetCellStyler contentStyleCvssScoresDoubleValue;
     public final InventorySheetCellStyler contentStyleUrlValue;
     public final InventorySheetCellStyler contentStyleColumnNameSrcCentered;
+    public final InventorySheetCellStyler contentStyleColumnNameMarkerCentered;
 
     public XlsHSSFInventorySheetCellStylers(HSSFWorkbook workbook) {
         final HSSFCellStyle defaultHeaderStyle = createDefaultHeaderStyle(workbook);
@@ -63,6 +66,9 @@ public class XlsHSSFInventorySheetCellStylers {
         final HSSFCellStyle centeredStyle = createCenteredStyle(workbook);
         final HSSFCellStyle warnHeaderStyle = createWarnHeaderStyle(workbook);
         final HSSFCellStyle errorHeaderStyle = createErrorHeaderStyle(workbook);
+
+        final HSSFCellStyle termsMarkerHeaderStyle = createMarkerHeaderStyle(workbook);
+        final HSSFCellStyle termsClassificationStyle = createClassificationHeaderStyle(workbook);
 
         // HEADER CELLS
         this.headerStyleColumnNameAssetId = InventorySheetCellStyler.createStyler(
@@ -117,6 +123,26 @@ public class XlsHSSFInventorySheetCellStylers {
                     context.getSheet().setColumnWidth(context.getColumnIndex(), 40 * 42);
                 });
 
+        this.headerStyleColumnNameMarker = InventorySheetCellStyler.createStyler(
+                context -> {
+                    return context.getFullColumnHeader().startsWith("M-");
+                }, context -> {
+                    context.getCell().setCellStyle(termsMarkerHeaderStyle);
+                    // number of pixel times magic number
+                    context.getSheet().setColumnWidth(context.getColumnIndex(), 20 * 42);
+                    context.getRow().setHeight((short) (170 * 20));
+                });
+
+        this.headerStyleColumnNameClassification = InventorySheetCellStyler.createStyler(
+                context -> {
+                    return context.getFullColumnHeader().startsWith("C-");
+                }, context -> {
+                    context.getCell().setCellStyle(termsClassificationStyle);
+                    // number of pixel times magic number
+                    context.getSheet().setColumnWidth(context.getColumnIndex(), 20 * 42);
+                    context.getRow().setHeight((short) (170 * 20));
+                });
+
         // DATA CELLS
         this.contentStyleColumnNameAssetId = InventorySheetCellStyler.createStyler(
                 context -> {
@@ -169,6 +195,14 @@ public class XlsHSSFInventorySheetCellStylers {
         this.contentStyleColumnNameSrcCentered = InventorySheetCellStyler.createStyler(
                 context -> {
                     return context.getFullColumnHeader().startsWith("SRC-");
+                }, context -> {
+                    context.getCell().setCellStyle(centeredStyle);
+                });
+
+        this.contentStyleColumnNameMarkerCentered = InventorySheetCellStyler.createStyler(
+                context -> {
+                    return context.getFullColumnHeader().startsWith("M-") ||
+                            context.getFullColumnHeader().startsWith("C-")  ;
                 }, context -> {
                     context.getCell().setCellStyle(centeredStyle);
                 });
@@ -231,6 +265,16 @@ public class XlsHSSFInventorySheetCellStylers {
 
     private HSSFCellStyle createWarnHeaderStyle(HSSFWorkbook workbook) {
         final HSSFColor headerColor = resolveColor(workbook, "244,176,132");
+        return createRotatedCellStyle(workbook, headerColor);
+    }
+
+    protected HSSFCellStyle createMarkerHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "250,234,173");
+        return createRotatedCellStyle(workbook, headerColor);
+    }
+
+    protected HSSFCellStyle createClassificationHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "248,214,128");
         return createRotatedCellStyle(workbook, headerColor);
     }
 

@@ -15,7 +15,7 @@
 
     <organization>
         <name>metaeffekt GmbH</name>
-        <url>http://metaeffekt.org</url>
+        <url>https://metaeffekt.org</url>
     </organization>
 
     <licenses>
@@ -39,7 +39,7 @@
         <developer>
             <email>contact@metaeffekt.org</email>
             <organization>metaeffekt GmbH</organization>
-            <organizationUrl>http://metaeffekt.com</organizationUrl>
+            <organizationUrl>https://metaeffekt.com</organizationUrl>
         </developer>
     </developers>
 

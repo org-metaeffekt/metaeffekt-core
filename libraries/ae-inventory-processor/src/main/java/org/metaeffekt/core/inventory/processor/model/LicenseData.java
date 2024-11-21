@@ -20,6 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.metaeffekt.core.inventory.InventoryUtils.tokenizeLicense;
+
 /**
  * Model class that supports to aggregate data around licenses. The information can be used in reports and documentation.
  */
@@ -42,6 +44,7 @@ public class LicenseData extends AbstractModelBase {
         CANONICAL_NAME("Canonical Name"),
         ID("Id"),
         SPDX_ID("SPDX Id"),
+        SCANCODE_IDS("ScanCode Ids"),
         OSI_APPROVED("OSI Approved"),
         COPYLEFT_TYPE("Copyleft Type"),
         COMMERCIAL("Commercial"),
@@ -61,11 +64,22 @@ public class LicenseData extends AbstractModelBase {
     public static List<String> CORE_ATTRIBUTES = new ArrayList<>();
 
     static {
-        // fix selection and order
+        // fix selection for string representation
         CORE_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
+    }
+
+    public static List<String> ORDERED_ATTRIBUTES = new ArrayList<>();
+
+    static {
+        // fix order for serialization
+        ORDERED_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SCANCODE_IDS.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
     }
 
     /**
@@ -123,6 +137,41 @@ public class LicenseData extends AbstractModelBase {
 
     public void merge(LicenseData otherLicenseData) {
         super.merge(otherLicenseData);
+    }
+
+    /**
+     * Evaluate available LicenceData information to determine, whether the covered terms
+     * enable immediate options from terms attribution. Options regarding secondary license
+     * options are not relevant here.
+     *
+     * @return Boolean indicating whether the covered licenses / terms contain an immediate option.
+     */
+    public boolean isOption() {
+        final String canonicalName = get(Attribute.CANONICAL_NAME);
+        if (canonicalName != null) {
+            if (!isAtomic(canonicalName)) return true;
+            // FIXME: currently a criteria on the canonicalName; how can we better express this (on this level)?
+            if (canonicalName.contains("or any later version")) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the LicenceData represesnts an 'atomic' license / terms and does not consist
+     * of individual parts.
+     *
+     * @return Boolean indicating whether the covered licenses / terms are atomic.
+     */
+    public boolean isAtomic() {
+        final String canonicalName = get(Attribute.CANONICAL_NAME);
+        if (canonicalName != null) {
+            return isAtomic(canonicalName);
+        }
+        return true;
+    }
+
+    private static boolean isAtomic(String canonicalName) {
+        return tokenizeLicense(canonicalName, false, false).size() == 1;
     }
 
 }
