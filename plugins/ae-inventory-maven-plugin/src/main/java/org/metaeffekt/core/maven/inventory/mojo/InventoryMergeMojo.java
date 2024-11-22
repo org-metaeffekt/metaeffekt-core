@@ -20,9 +20,11 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.metaeffekt.core.inventory.InventoryMergeUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Merges inventories. Reference inventories are usually the target inventory. Otherwise this Mojo is intended to
+ * Merges inventories. Reference inventories are usually the target inventory. Otherwise, this Mojo is intended to
  * be applied to inventories from the extraction process, only.
  */
 @Mojo(name = "merge-inventories", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
@@ -47,7 +49,7 @@ public class InventoryMergeMojo extends AbstractMultipleInputInventoriesMojo {
      * The excluded attributes will be dropped when merging. The list may also be considered
      * as selection of attributes, which must not be differentiated by the merge process.
      */
-    @Parameter(required = false)
+    @Parameter()
     protected Set<String> artifactExcludedAttributes = new HashSet<>();
 
     /**
@@ -57,10 +59,10 @@ public class InventoryMergeMojo extends AbstractMultipleInputInventoriesMojo {
     protected boolean addDefaultArtifactMergeAttributes = true;
 
     /**
-     * The merge attributes will be merged on attribute level. Also these attributes are not
+     * The merge attributes will be merged on attribute level. Also, these attributes are not
      * differentiated by the merge process.
      */
-    @Parameter(required = false)
+    @Parameter()
     protected Set<String> artifactMergeAttributes = new HashSet<>();
 
     /**
@@ -82,18 +84,18 @@ public class InventoryMergeMojo extends AbstractMultipleInputInventoriesMojo {
 
             final InventoryMergeUtils inventoryMergeUtils = new InventoryMergeUtils();
 
-            inventoryMergeUtils.addDefaultArtifactExcludedAttributes = addDefaultArtifactExcludedAttributes;
-            inventoryMergeUtils.artifactExcludedAttributes = artifactMergeAttributes;
+            inventoryMergeUtils.setAddDefaultArtifactExcludedAttributes(addDefaultArtifactExcludedAttributes);
+            inventoryMergeUtils.setArtifactExcludedAttributes(artifactExcludedAttributes);
 
-            inventoryMergeUtils.addDefaultArtifactMergeAttributes = addDefaultArtifactMergeAttributes;
-            inventoryMergeUtils.artifactMergeAttributes = artifactMergeAttributes;
+            inventoryMergeUtils.setAddDefaultArtifactMergeAttributes(addDefaultArtifactMergeAttributes);
+            inventoryMergeUtils.setArtifactMergeAttributes(artifactMergeAttributes);
 
             inventoryMergeUtils.merge(sourceInventories, targetInventory);
 
             // create target directory if not existing yet
             final File targetParentFile = this.targetInventory.getParentFile();
             if (targetParentFile != null && !this.targetInventory.exists()) {
-                targetParentFile.mkdirs();
+                FileUtils.forceMkdir(targetParentFile);
             }
 
             // write inventory to target location
