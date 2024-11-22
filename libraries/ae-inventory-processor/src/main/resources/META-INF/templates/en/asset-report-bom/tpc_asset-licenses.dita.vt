@@ -4,8 +4,7 @@
 <topic id="tpc_asset-license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Asset Licenses", true)</title>
 #set($assetData=$report.getAssetData($inventory))
-#set($licensesAll=$assetData.getRepresentedAssociatedLicenses())
-#set($licenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
+#set($singleLicenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
 #set($licenseExpressions=$assetData.getRepresentedAssociatedLicensesWithOption())
 <body>
     <p>
@@ -22,8 +21,8 @@
           An approval or license status may only be applicable for individual variants.</fn>
     #end
 
-#if (!$licenses.isEmpty())
-    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $licenses, true)
+#if (!$singleLicenses.isEmpty())
+    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true)
 #end
 
     #if (!$licenseExpressions.isEmpty())
@@ -70,7 +69,7 @@
     #end
 </body>
 
-#foreach($license in $licensesAll)
+#foreach($license in $assetData.getRepresentedAssociatedLicenses())
     #set($licenseList=$assetData.getLicensesForRepresentedLicense($license))
     #if(!$assetData.isLicenseSubstructureRequired($license))
         #insertLicenseAssetTopic($license)

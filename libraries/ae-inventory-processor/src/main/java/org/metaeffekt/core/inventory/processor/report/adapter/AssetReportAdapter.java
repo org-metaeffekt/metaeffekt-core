@@ -23,14 +23,42 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class AssetReportAdapter {
 
+    final Pair<String, String>[] containerKeyList = new Pair[]{
+            Pair.of("Type", "Type"),
+            Pair.of("Name", "Name"),
+            Pair.of("Repository", "Repository"),
+            Pair.of("Tag", "Tag"),
+            Pair.of("Size", "Size"),
+            Pair.of("Operating System", "Os"),
+            Pair.of("Architecture", "Architecture"),
+            Pair.of("Created", "Created"),
+            Pair.of("Image Id", "Image Id"),
+            Pair.of("Image Digest", "Digest"),
+            Pair.of("Supplier", "Supplier"),
+    };
+    final Pair<String, String>[] applianceKeyList = new Pair[]{
+            Pair.of("Type", "Type"),
+            Pair.of("Name", "Name"),
+            Pair.of("Tag", "Machine Tag"),
+            Pair.of("Snapshot Timestamp", "Snapshot Timestamp")
+    };
+    final Pair<String, String>[] defaultKeyList = new Pair[]{
+            Pair.of("Type", "Type"),
+            Pair.of("Name", "Name"),
+            Pair.of("Version", "Version"),
+            Pair.of("Checksum (MD5)", "Checksum (MD5)"),
+            Pair.of("Hash (SHA-256)", "Hash (SHA-256)")
+    };
+    final Pair<String, String>[] directoryKeyList = new Pair[]{
+            Pair.of("Type", "Type"),
+            Pair.of("Name", "Name"),
+    };
     private final Inventory inventory;
 
     public AssetReportAdapter(Inventory inventory) {
@@ -47,40 +75,6 @@ public class AssetReportAdapter {
         return new ArrayList<>(InventoryUtils.getArtifactsForAsset(inventory, assetMetaData));
     }
 
-    final Pair<String, String>[] containerKeyList = new Pair[]{
-            Pair.of("Type", "Type"),
-            Pair.of("Name", "Name"),
-            Pair.of("Repository", "Repository"),
-            Pair.of("Tag", "Tag"),
-            Pair.of("Size", "Size"),
-            Pair.of("Operating System", "Os"),
-            Pair.of("Architecture", "Architecture"),
-            Pair.of("Created", "Created"),
-            Pair.of("Image Id", "Image Id"),
-            Pair.of("Image Digest", "Digest"),
-            Pair.of("Supplier", "Supplier"),
-    };
-
-    final Pair<String, String>[] applianceKeyList = new Pair[]{
-            Pair.of("Type", "Type"),
-            Pair.of("Name", "Name"),
-            Pair.of("Tag", "Machine Tag"),
-            Pair.of("Snapshot Timestamp", "Snapshot Timestamp")
-    };
-
-    final Pair<String, String>[] defaultKeyList = new Pair[]{
-            Pair.of("Type", "Type"),
-            Pair.of("Name", "Name"),
-            Pair.of("Version", "Version"),
-            Pair.of("Checksum (MD5)", "Checksum (MD5)"),
-            Pair.of("Hash (SHA-256)", "Hash (SHA-256)")
-    };
-
-    final Pair<String, String>[] directoryKeyList = new Pair[]{
-            Pair.of("Type", "Type"),
-            Pair.of("Name", "Name"),
-    };
-
     public Pair<String, String>[] listKeys(AssetMetaData assetMetaData) {
         final String type = assetMetaData.get(Constants.KEY_TYPE);
         if (!StringUtils.isEmpty(type)) {
@@ -94,5 +88,22 @@ public class AssetReportAdapter {
             }
         }
         return defaultKeyList;
+    }
+
+    public Map<String, String> getOsiStatusMap(InventoryReport report) {
+        Map<String, String> osiStatusMap = new HashMap<>();
+        if (report.isIncludeInofficialOsiStatus()) {
+            osiStatusMap.put("approved", "approved");
+            osiStatusMap.put("submitted", "submitted");
+            osiStatusMap.put("not submitted", "not submitted");
+            osiStatusMap.put("pending", "pending");
+            osiStatusMap.put("withdrawn", "withdrawn");
+            osiStatusMap.put("rejected", "rejected");
+            osiStatusMap.put("ineligible", "ineligible");
+            osiStatusMap.put("unclear", "unclear");
+        } else {
+            osiStatusMap.put("approved", "approved");
+        }
+        return osiStatusMap;
     }
 }

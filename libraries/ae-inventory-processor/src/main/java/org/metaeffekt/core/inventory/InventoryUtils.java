@@ -392,4 +392,31 @@ public abstract class InventoryUtils {
         return setOfArtifacts;
     }
 
+    public static Map<AssetMetaData, Set<Artifact>> buildAssetToArtifactMap(Inventory filteredInventory) {
+        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = new HashMap<>();
+
+        // the report only operates on the specified assets (these may be filtered for the use case)
+        for (AssetMetaData assetMetaData : filteredInventory.getAssetMetaData()) {
+
+            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+
+            if (!StringUtils.isNotBlank(assetId)) continue;
+
+            // derive licenses from artifacts
+            for (Artifact artifact : filteredInventory.getArtifacts()) {
+                // skip all artifacts that do not belong to an asset
+                if (StringUtils.isNotBlank(artifact.get(assetId))) {
+                    assetMetaDataToArtifactsMap.computeIfAbsent(assetMetaData, c -> new HashSet<>()).add(artifact);
+                } else {
+                    // check via asset id; if artifact id matches asset id; add
+                    final String artifactAssetId = InventoryUtils.deriveAssetIdFromArtifact(artifact);
+                    if (assetId.equals(artifactAssetId)) {
+                        assetMetaDataToArtifactsMap.computeIfAbsent(assetMetaData, c -> new HashSet<>()).add(artifact);
+                    }
+                }
+            }
+        }
+        return assetMetaDataToArtifactsMap;
+    }
+
 }
