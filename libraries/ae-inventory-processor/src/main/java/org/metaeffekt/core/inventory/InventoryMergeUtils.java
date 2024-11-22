@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.inventory;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -27,17 +29,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+@Getter
+@Setter
 public class InventoryMergeUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryMergeUtils.class);
 
-    protected boolean addDefaultArtifactExcludedAttributes = true;
+    private boolean addDefaultArtifactExcludedAttributes = true;
 
-    protected Set<String> artifactExcludedAttributes = new HashSet<>();
+    private Set<String> artifactExcludedAttributes = new HashSet<>();
 
-    protected boolean addDefaultArtifactMergeAttributes = true;
+    private boolean addDefaultArtifactMergeAttributes = true;
 
-    protected Set<String> artifactMergeAttributes = new HashSet<>();
+    private Set<String> artifactMergeAttributes = new HashSet<>();
 
     public void merge(List<File> sourceInventories, Inventory targetInventory) throws IOException {
         List<Inventory> inventories = new ArrayList<>();

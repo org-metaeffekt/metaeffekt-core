@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.inventory;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
@@ -110,7 +111,8 @@ public class InventoryMergeUtilsTest {
         List<Inventory> sourceInventories = Collections.singletonList(source);
         new InventoryMergeUtils().mergeInventories(sourceInventories, target);
 
-        Assertions.assertThat(target.getArtifacts()).extracting("id").containsOnlyOnceElementsOf(Arrays.asList("singleSourceArtifact", "singleTargetArtifact"));
+        Assertions.assertThat(target.getArtifacts()).extracting("id")
+                .containsOnlyOnceElementsOf(Arrays.asList("singleSourceArtifact", "singleTargetArtifact"));
     }
 
     private static Artifact buildArtifact(String id) {
