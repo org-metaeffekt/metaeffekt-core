@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.format;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor.matchQualifierToIdOrDerivedQualifier;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ARCHIVE_PATH;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CONTENT_CHECKSUM;
@@ -197,11 +198,17 @@ public class ArchiveUtils {
             }
         }
 
-
         try {
             untarInternal(file, targetDir);
         } catch (Exception e) {
-            throw new IllegalStateException("Cannot untar " + file, e);
+            LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), e.getMessage());
+
+            try {
+                nativeUntar(file, targetDir);
+            } catch(Exception ex) {
+                throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), e);
+            }
+
         } finally {
             for (File intermediateFile : intermediateFiles) {
                 FileUtils.forceDelete(intermediateFile);
@@ -239,8 +246,8 @@ public class ArchiveUtils {
                 FileUtils.forceMkdir(targetFile);
             }
             unpackAndClose(xzIn, targetFile);
-        } catch (Exception commonCompressException) {
-            throw new IOException("Could not untar file [{" + file.getAbsolutePath() + "}]", commonCompressException);
+        } catch (Exception e) {
+            throw new IOException("Could not untar file [" + file.getAbsolutePath() + "]", e);
         }
     }
 
