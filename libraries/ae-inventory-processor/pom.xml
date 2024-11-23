@@ -179,6 +179,8 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <!-- FIXME: move version up in pom hierarchy -->
+            <version>3.26.3</version>
         </dependency>
 
         <dependency>
@@ -229,4 +231,125 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+
+        <!-- enable dita pdf generation for dita files generated in tests; EXPERIMENTAL -->
+        <profile>
+            <id>generate-dita</id>
+            <properties>
+                <ae.dita.version>0.29.0</ae.dita.version>
+
+                <dita.source.dir>${project.build.directory}/test-inventory-01</dita.source.dir>
+                <dita.target.dir>${dita.source.dir}</dita.target.dir>
+            </properties>
+            <build>
+
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.metaeffekt.core</groupId>
+                        <artifactId>ae-inventory-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.metaeffekt.dita</groupId>
+                        <artifactId>ae-dita-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-dependency-plugin</artifactId>
+                            <executions>
+                                <execution>
+                                    <id>retrieve-branding</id>
+                                    <goals>
+                                        <goal>unpack</goal>
+                                    </goals>
+                                    <phase>validate</phase>
+                                    <configuration>
+                                        <outputDirectory>${project.build.directory}/dita</outputDirectory>
+                                        <artifactItems>
+                                            <artifactItem>
+                                                <!-- Use the metaeffekt standard branding -->
+                                                <groupId>org.metaeffekt.dita</groupId>
+                                                <artifactId>ae-dita-branding</artifactId>
+                                                <type>zip</type>
+                                                <classifier>resources</classifier>
+                                                <version>${ae.dita.version}</version>
+                                            </artifactItem>
+                                        </artifactItems>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                        </plugin>
+
+                        <plugin>
+                            <groupId>org.metaeffekt.dita</groupId>
+                            <artifactId>ae-dita-maven-plugin</artifactId>
+                            <version>${ae.dita.version}</version>
+                            <executions>
+                                <execution>
+                                    <id>install-dita-toolkit</id>
+                                    <phase>initialize</phase>
+                                    <goals>
+                                        <goal>ensure-dita-toolkit</goal>
+                                    </goals>
+                                </execution>
+                                <execution>
+                                    <id>aggregate-dita-content</id>
+                                    <phase>initialize</phase>
+                                    <goals>
+                                        <goal>aggregate-content</goal>
+                                    </goals>
+                                    <configuration>
+                                        <ditaSourceDir>${dita.source.dir}</ditaSourceDir>
+                                    </configuration>
+                                </execution>
+                                <execution>
+                                    <id>generate-documentation</id>
+                                    <phase>initialize</phase>
+                                    <goals>
+                                        <goal>generate-documentation</goal>
+                                    </goals>
+                                    <configuration>
+                                        <documentItems>
+                                            <documentItem>
+                                                <ditaMap>bm_test.ditamap</ditaMap>
+                                                <artifactId>${project.artifactId}</artifactId>
+                                                <artifactClassifier>en</artifactClassifier>
+                                            </documentItem>
+                                        </documentItems>
+                                        <ditaBuildDir>${dita.source.dir}</ditaBuildDir>
+                                        <ditaTargetDir>${dita.target.dir}</ditaTargetDir>
+                                        <ditaCustomizationDir>${project.build.directory}/dita/ae-dita-branding</ditaCustomizationDir>
+                                    </configuration>
+                                </execution>
+                            </executions>
+                            <configuration>
+                                <ditaSourceGenDir>${dita.source.dir}/report</ditaSourceGenDir>
+                                <ditaCleanTemp>false</ditaCleanTemp>
+                            </configuration>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+
+            </build>
+
+            <dependencies>
+                <dependency>
+                    <groupId>org.metaeffekt.dita</groupId>
+                    <artifactId>ae-common-content</artifactId>
+                    <version>${ae.dita.version}</version>
+                    <classifier>doc</classifier>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+
+
 </project>

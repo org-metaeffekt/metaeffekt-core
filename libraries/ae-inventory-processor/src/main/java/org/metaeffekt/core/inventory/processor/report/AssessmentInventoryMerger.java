@@ -50,7 +50,10 @@ public class AssessmentInventoryMerger {
         final Inventory outputInventory = new Inventory();
 
         final Map<Inventory, File> collectedInventories = new LinkedHashMap<>();
-        inputInventories.forEach(i -> collectedInventories.put(i, null));
+
+        if (inputInventories != null && !inputInventories.isEmpty()) {
+            inputInventories.forEach(i -> collectedInventories.put(i, null));
+        }
 
         final List<File> inventoryFiles = collectInventoryFiles();
 
@@ -140,7 +143,7 @@ public class AssessmentInventoryMerger {
 
         for (File inputInventory : inputInventoryFiles) {
             if (inputInventory.isDirectory()) {
-                final String[] files = FileUtils.scanDirectoryForFiles(inputInventory, "*.xls");
+                final String[] files = FileUtils.scanDirectoryForFiles(inputInventory, "**/*.xls", "**/*.xlsx");
                 for (String file : files) {
                     inventoryFiles.add(new File(inputInventory, file));
                 }

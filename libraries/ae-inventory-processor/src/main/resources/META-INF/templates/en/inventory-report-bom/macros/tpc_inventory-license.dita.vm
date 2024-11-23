@@ -36,7 +36,7 @@
                                     <row>
                                         <entry>
                                             #if($hasNotice)
-                                                <xref href="tpc_inventory-notices.dita#tpc_component_notice_$inventory.deriveLicenseId($artifact.getComponent())" type="topic">
+                                                <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($artifact.getComponent())" type="topic">
                                                     $report.xmlEscapeString($artifact.getComponent())
                                                 </xref>
                                             #else
