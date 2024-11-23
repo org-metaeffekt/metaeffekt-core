@@ -351,6 +351,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchor);
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, checksum);
+
+        // FIXME: how do we handle symlinks? they are not included in the md5sums file but can be part of the package
+        componentPatternData.set(Constants.KEY_NO_FILE_MATCH_REQUIRED, Constants.MARKER_CROSS);
         try {
             componentPatternData.set(Artifact.Attribute.PURL.getKey(),
                     buildPurl(distro, entry.packageName, entry.version, entry.architecture));
