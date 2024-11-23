@@ -20,7 +20,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
@@ -28,6 +30,9 @@ import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DirectoryInventoryScanTest {
 
@@ -67,6 +72,21 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").getProjects()).hasSize(1);
 
         Assertions.assertThat(resultInventory.findArtifact("Please not")).isNull();
+
+        Assertions.assertThat(resultInventory.findArtifact("test-alpha-1.0.0.jar")).isNotNull();
+
+        // most primitive test on DirectoryScanExtractorConfiguration
+        DirectoryScanExtractorConfiguration directoryScanExtractorConfiguration =
+                new DirectoryScanExtractorConfiguration(referenceInventory, resultInventory, scanDir);
+
+        final List<FilePatternQualifierMapper> filePatternQualifierMappers = directoryScanExtractorConfiguration.mapArtifactsToComponentPatterns();
+
+        Set<String> qualifiers = new HashSet<>();
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            qualifiers.add(mapper.getQualifier());
+        }
+        Assertions.assertThat(qualifiers.contains("test-alpha-1.0.0.jar")).isTrue();
+
     }
 
     @Test

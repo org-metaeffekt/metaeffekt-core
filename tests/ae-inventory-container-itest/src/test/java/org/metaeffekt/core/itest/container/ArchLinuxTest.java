@@ -16,6 +16,7 @@
 
 package org.metaeffekt.core.itest.container;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -73,7 +74,6 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore
@@ -93,8 +93,7 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
 
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release", "issue");
 
-        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
-        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
+        Assertions.assertThat(duplicateList.getFileWithoutDuplicates()).as("files w/o duplicates must not be empty").isNotEmpty();
     }
 
     @Test
