@@ -169,8 +169,6 @@ public class LinuxDistributionUtil {
         parseAlmaLinuxRelease(distroBaseDir, linuxDistro);
         parsePfSenseVersion(distroBaseDir, linuxDistro);
 
-        parseRedHatRelease(distroBaseDir, linuxDistro);
-
         parseUsrBinOsRelease(distroBaseDir, linuxDistro);
         parseEtcOsRelease(distroBaseDir, linuxDistro);
 
@@ -191,6 +189,8 @@ public class LinuxDistributionUtil {
                 linuxDistro.version = modulateValue(prettyVersion, linuxDistro.version);
             }
         }
+
+        parseRedHatRelease(distroBaseDir, linuxDistro);
 
         if (linuxDistro.cpe != null) {
             if (linuxDistro.id == null) {
@@ -240,9 +240,9 @@ public class LinuxDistributionUtil {
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     if (matcher.groupCount() >= 2) {
-                        linuxDistro.id = matcher.group(1);
-                        linuxDistro.version = matcher.group(2);
-                        linuxDistro.versionId = matcher.group(2);
+                        if (linuxDistro.id == null) linuxDistro.id = matcher.group(1);
+                        if (linuxDistro.version == null) linuxDistro.version = matcher.group(2);
+                        if (linuxDistro.versionId == null) linuxDistro.versionId = matcher.group(2);
                     }
                 }
             }
