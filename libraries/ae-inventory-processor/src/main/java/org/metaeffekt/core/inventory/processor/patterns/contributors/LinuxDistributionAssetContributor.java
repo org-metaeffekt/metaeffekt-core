@@ -68,10 +68,23 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
 
                 cpd.set(COMPONENT_NAME, linuxDistro.issue);
                 cpd.set(COMPONENT_VERSION, linuxDistro.versionId);
-                cpd.set(COMPONENT_PART, linuxDistro.id + "-" + linuxDistro.versionId);
+
+                if (linuxDistro != null && linuxDistro.versionId != null) {
+                    cpd.set(COMPONENT_PART, linuxDistro.id + "-" + linuxDistro.versionId);
+                } else {
+                    // in case the distro instance does not convey sufficient information we fallback to the anchor name
+                    cpd.set(COMPONENT_PART, new File(relativeAnchorPath).getName());
+                }
+
                 cpd.set(VERSION_ANCHOR, contextRelativePath);
                 cpd.set(VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                cpd.set(INCLUDE_PATTERN, getSuffixes().stream().collect(Collectors.joining(", ")));
+
+                final String coveredFiled = getSuffixes().stream().collect(Collectors.joining(", "));
+                cpd.set(INCLUDE_PATTERN, coveredFiled);
+
+                // also include to shared includes
+                cpd.set(SHARED_INCLUDE_PATTERN, coveredFiled);
+
                 cpd.set(KEY_TYPE, ARTIFACT_TYPE_DISTRO);
                 cpd.set(KEY_COMPONENT_SOURCE_TYPE, "linux-distro");
 
