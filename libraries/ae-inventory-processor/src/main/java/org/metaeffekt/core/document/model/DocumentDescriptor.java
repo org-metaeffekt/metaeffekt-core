@@ -92,15 +92,19 @@ public class DocumentDescriptor {
         for (InventoryContext context : inventoryContexts) {
             // check if each inventoryContext references an inventory
             if (context.getInventory() == null) {
-                throw new IllegalStateException("the inventory must be specified.");
+                throw new IllegalStateException("The inventory must be specified.");
             }
             // check if each inventoryContext has an identifier
             if (context.getIdentifier() == null){
-                throw new IllegalStateException("the identifier must be specified.");
+                throw new IllegalStateException("The identifier must be specified.");
+            }
+            // check if each inventoryContext has an identifier
+            if (context.getIdentifier().isEmpty()){
+                throw new IllegalStateException("The identifier must not be empty.");
             }
             // check if each inventoryContext has a unique identifier
             if (!identifiers.add(context.getIdentifier())) {
-                throw new IllegalStateException("Duplicate context identifier found: [" + context.getIdentifier() + "].");
+                throw new IllegalStateException("Duplicate context identifier found [" + context.getIdentifier() + "].");
             }
         }
     }
