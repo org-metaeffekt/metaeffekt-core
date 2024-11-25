@@ -242,7 +242,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter
      */
-    private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
+    private CentralSecurityPolicyConfiguration securityPolicy;
 
     /**
      * If set, will overwrite the {@link #securityPolicy} with the contents of this file.<br>
