@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.inventory;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -27,43 +29,45 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+@Getter
+@Setter
 public class InventoryMergeUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(InventoryMergeUtils.class);
 
-    protected boolean addDefaultArtifactExcludedAttributes = true;
+    private boolean addDefaultArtifactExcludedAttributes = true;
 
-    protected Set<String> artifactExcludedAttributes = new HashSet<>();
+    private Set<String> artifactExcludedAttributes = new HashSet<>();
 
-    protected boolean addDefaultArtifactMergeAttributes = true;
+    private boolean addDefaultArtifactMergeAttributes = true;
 
-    protected Set<String> artifactMergeAttributes = new HashSet<>();
+    private Set<String> artifactMergeAttributes = new HashSet<>();
 
-    // NOTE: we merge
-    // - artifacts
-    // - assets (currently only by adding; not merging; not cleaning duplicates)
-    // - license data (resolving duplicates; merge on attribute level; input inventory should be consistent/up-to-date)
-    // - license data (applying consecutive inherits)
-
-    // TODO: revise the following once assets have been fully established
-    // - we do not merge component patterns; the target component patterns are preserved (future: tbc; currently not required)
-    // - we do not merge vulnerabilities; for inventories with vulnerabilities dedicated procedures exist.
     public void merge(List<File> sourceInventories, Inventory targetInventory) throws IOException {
-        // parse and merge the collected inventories
+        List<Inventory> inventories = new ArrayList<>();
         for (File sourceInventoryFile : sourceInventories) {
             final Inventory sourceInventory = new InventoryReader().readInventory(sourceInventoryFile);
+            inventories.add(sourceInventory);
+        }
+        mergeInventories(inventories, targetInventory);
+    }
 
-            // merge and manage artifacts
-            mergeArtifacts(sourceInventory, targetInventory);
+    public void mergeInventories(List<Inventory> sourceInventories, Inventory target) {
+        // NOTE: we merge
+        // - artifacts
+        // - assets (currently only by adding; not merging; not cleaning duplicates)
+        // - license data (resolving duplicates; merge on attribute level; input inventory should be consistent/up-to-date)
+        // - license data (applying consecutive inherits)
 
-            // simply add asset data (anticipating there are no duplicates)
-            mergeAssetMetaData(sourceInventory, targetInventory);
+        // TODO: revise the following once assets have been fully established
+        // - we do not merge component patterns; the target component patterns are preserved (future: tbc; currently not required)
+        // - we do not merge vulnerabilities; for inventories with vulnerabilities dedicated procedures exist.
 
-            // merge license data
-            mergeLicenseData(sourceInventory, targetInventory);
-
-            // also merge license notices
-            mergeLicenseMetaData(sourceInventory, targetInventory);
+        for (Inventory source : sourceInventories) {
+            mergeArtifacts(source, target);
+            mergeAssetMetaData(source, target);
+            mergeLicenseData(source, target);
+            mergeLicenseMetaData(source, target);
         }
     }
 
@@ -207,5 +211,4 @@ public class InventoryMergeUtils {
         }
         return false;
     }
-
 }

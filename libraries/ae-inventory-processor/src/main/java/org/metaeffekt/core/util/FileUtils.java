@@ -27,6 +27,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -53,9 +54,9 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static final char SEPARATOR_SLASH_CHAR = '/';
 
-    private static Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
-    private static Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
-    private static Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
+    private static final Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
+    private static final Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
+    private static final Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
 
     /**
      * Scans the given baseDir for files matching the includes and excludes.
@@ -94,7 +95,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     /**
      * The thread-local enables to reuse the Ant Checksum instance per thread.
      */
-    private static ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
 
     public static String computeChecksum(File file, String algorithm) {
         try {
@@ -335,7 +336,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static void deleteDirectoryQuietly(File directory) {
         try {
             forceDelete(directory);
-        } catch (IOException e) {
+        } catch (UncheckedIOException | IOException e) {
             // ignore
         }
     }

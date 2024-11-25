@@ -27,23 +27,22 @@ import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
-import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.function.Predicate;
 
 import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.detectDuplicateComponentPatternMatches;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
-import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+public class BitnamiDiscourseTest extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
         @Override
@@ -58,11 +57,15 @@ public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
     };
 
     @BeforeClass
-    public static void prepare() {
-        AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("http://ae-scanner/images/CID-clamav-icap%40891f267a6b2a304616854ad2f013dc5d23f6f6c84d535c8b46e76d124fe39b6a-export.tar")
-                .setSha256Hash("51e4d79caa561f31834b8cdd3d19f1ed85e239986f69e33b9e46b9c384eddbee")
-                .setName(ClamavIcapTest.class.getName());
+    public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
+        final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
+                null,
+                "bitnami/discourse",
+                "3.3.2",
+                BitnamiDiscourseTest.class.getName());
+        AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
+                .setSource("file://" + baseDir.getAbsolutePath())
+                .setName(BitnamiDiscourseTest.class.getName());
     }
 
     @Ignore
@@ -83,12 +86,11 @@ public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-
         List<FilePatternQualifierMapper> filePatternQualifierMapperList =
                 detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
-        duplicateList.identifyRemainingDuplicatesWithoutArtifact();
+        duplicateList.identifyRemainingDuplicatesWithoutFile("os-release", "issue");
 
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
@@ -99,11 +101,11 @@ public class ClamavIcapTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
 
         final Analysis analysis = new Analysis(inventory);
-        analysis.selectComponentPatterns(tokenStartsWith(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(33);
-        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/installed")).hasSizeGreaterThan(1);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "alpm")).hasSizeOf(119);
+        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/desc")).hasSizeGreaterThan(1);
 
-        // there must be only once container asset; this is only possible for save/inspect pairs; did that ever work
-        //analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
+        // there must be only once container asset
+        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
         analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);

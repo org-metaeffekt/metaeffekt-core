@@ -143,7 +143,7 @@ public class AssessmentInventoryMerger {
 
         for (File inputInventory : inputInventoryFiles) {
             if (inputInventory.isDirectory()) {
-                final String[] files = FileUtils.scanDirectoryForFiles(inputInventory, "*.xls");
+                final String[] files = FileUtils.scanDirectoryForFiles(inputInventory, "**/*.xls", "**/*.xlsx");
                 for (String file : files) {
                     inventoryFiles.add(new File(inputInventory, file));
                 }

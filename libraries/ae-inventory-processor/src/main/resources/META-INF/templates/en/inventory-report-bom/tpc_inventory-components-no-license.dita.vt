@@ -40,10 +40,13 @@
                 #else
                     <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
                 #end
-                    <entry>
-## preserve lines for proper line-breaks
-<lines>#foreach($artifact in $name)#if($artifact.getId())<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
-#end#end</lines>
+                    #set($addParagraph=false)
+                    <entry>#foreach($artifact in $name)#if($artifact.getGroupId())
+                        <lines>#if($addParagraph)<line>
+                        </line>#end<line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                            <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>#else
+                        <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
+                        #set($addParagraph=true)#end
                     </entry>
                 </row>
             #end

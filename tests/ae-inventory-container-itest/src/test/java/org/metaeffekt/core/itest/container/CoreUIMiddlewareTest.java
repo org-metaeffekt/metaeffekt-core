@@ -19,25 +19,37 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
+import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Predicate;
 
+import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.detectDuplicateComponentPatternMatches;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+    public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
+        @Override
+        public Predicate<AssetMetaData> getPredicate() {
+            return a -> "container".equals(a.get(TYPE));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Asset of type container";
+        }
+    };
 
     @BeforeClass
     public static void prepare() {
@@ -64,9 +76,12 @@ public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList =
+                detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
+
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
@@ -74,11 +89,17 @@ public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
     @Test
     public void testCompositionAnalysis() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
-        Analysis analysis = new Analysis(inventory);
+        final Analysis analysis = new Analysis(inventory);
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg-distroless")).hasSizeOf(9);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "node-runtime")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(163);
+
+        // there must be only once container asset
+        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
+
+        // we expect the container being only represented as asset; no artifacts with type container
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 }
