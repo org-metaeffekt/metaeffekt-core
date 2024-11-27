@@ -288,50 +288,61 @@ public class RepositoryReportTest {
 
     }
 
-    @Ignore // needs external resources
+    @Ignore
     @Test
     public void testCreateTestReport004() throws Exception {
-        final File inventoryDir = new File("<path-to-inventory>");
-        final File referenceInventoryDir = new File("<path-to-reference-inventory>");
 
-        final File reportDir = new File("target/test-inventory-04");
+        File inventoryDir = new File("src/test/resources/test-inventory-04");
+        String inventoryIncludes = INVENTORY_INCLUDES;
 
         InventoryReport report = new InventoryReport();
-        prepareReport(inventoryDir, "*.xlsx",
-                referenceInventoryDir, "*.xlsx",
-                reportDir, report);
 
-        report.setTemplateLanguageSelector("en");
+        report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setAssetBomReportEnabled(false);
-        report.setIncludeInofficialOsiStatus(false);
+        report.setFailOnUnknown(false);
+        report.setFailOnUnknownVersion(false);
+        report.setReferenceInventoryDir(inventoryDir);
+        report.setReferenceInventoryIncludes(inventoryIncludes);
+        report.setReferenceLicensePath(LICENSES_PATH);
+        report.setReferenceComponentPath(COMPONENTS_PATH);
 
+        report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
+
+        PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
+        artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
+        report.setArtifactFilter(artifactFilter);
+
+        File target = new File("target/test-inventory-04");
+        target.mkdirs();
+
+        File targetReportPath = new File(target, "report");
+        targetReportPath.mkdirs();
+
+        File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
+        File componentReport = new File(targetReportPath, "tpc_inventory-component-report.dita");
+        File noticeReport = new File(targetReportPath, "tpc_inventory-component-license-details.dita");
+        File artifactReport = new File(targetReportPath, "tpc_inventory-artifact-report.dita");
+
+        final File targetLicensesDir = new File(target, "licenses");
+        final File targetComponentDir = new File(target, "components");
+        report.setTargetLicenseDir(targetLicensesDir);
+        report.setTargetComponentDir(targetComponentDir);
+        report.setTargetReportDir(targetReportPath);
+
+        report.setAssetBomReportEnabled(true);
         report.setInventoryBomReportEnabled(true);
-        report.setAssessmentReportEnabled(false);
+        report.setInventoryPomEnabled(true);
+        report.setInventoryDiffReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
-        report.setInventoryVulnerabilityReportEnabled(false);
-        report.setInventoryVulnerabilityReportSummaryEnabled(false);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
+        final boolean valid = report.createReport();
+        assertTrue(valid);
 
-        report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC, AeaaAdvisoryTypeStore.GHSA);
-        report.getSecurityPolicy()
-                .setInsignificantThreshold(7.0f)
-                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
-                .setIncludeAdvisoryTypes(Arrays.asList("alert", "news", "notice"))
-                .setIncludeAdvisoryProviders(new HashMap<String, String>() {{
-                    put("CERT_FR", "");
-                    put("CERT_SEI", "");
-                    put("MSRC", "");
-                    put("GHSA", "");
-                }})
-                .setIncludeVulnerabilitiesWithAdvisoryProviders(new HashMap<String, String>() {{
-                    put("all", "");
-                }});
+        // copy bookmap
+        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-01/bm_test.ditamap"), target);
 
-        report.setFailOnMissingLicense(false);
-        report.setFailOnMissingLicenseFile(false);
-
-        report.createReport();
+        // generate PDF using 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISBALED -Ddita.source.dir=target/test-inventory-04' from terminal
     }
 
     @Test
