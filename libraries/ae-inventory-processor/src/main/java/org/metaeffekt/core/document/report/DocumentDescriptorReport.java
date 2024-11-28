@@ -24,8 +24,10 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
+import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.ReportUtils;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.PropertiesUtils;
 import org.metaeffekt.core.util.RegExUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -33,6 +35,8 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 @Slf4j
@@ -57,15 +61,31 @@ public class DocumentDescriptorReport {
         writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
     }
 
+    @Setter
     @Getter
     public static class DocumentDescriptorReportAdapters {
+            Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
+
         private DocumentDescriptorReportAdapters() {
-            // yet empty adapters list
+        }
+    }
+
+    private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
+        // read properties from each subdirectory in targetReportPath and pass them to the DocumentDescriptorReportAdapter
+        for (InventoryContext inventoryContext : documentDescriptor.getInventoryContexts()) {
+            // create filepath to subdirectory by combining targetReportPath with the identifier of the context
+            // read .properties file from subdirectory
+            Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
+            adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            // extract property fields and save them into the reportAdapters
+
         }
     }
 
     protected void writeReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
                     String templateBaseDir, String templateGroup) throws IOException {
+
+        addPropertiesToAdapter(documentDescriptor, adapters);
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
@@ -90,7 +110,6 @@ public class DocumentDescriptorReport {
                     String templateResourcePath, File target) throws IOException {
 
         log.info("Producing BookMap for template [{}]", templateResourcePath);
-
         final Properties properties = new Properties();
         properties.put(Velocity.RESOURCE_LOADER, "class, file");
         properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
@@ -104,7 +123,6 @@ public class DocumentDescriptorReport {
         final VelocityContext context = new VelocityContext();
 
         context.put("targetReportDir", this.targetReportDir);
-
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", new ReportUtils());
@@ -115,6 +133,7 @@ public class DocumentDescriptorReport {
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("documentDescriptor", documentDescriptor);
+        context.put("documentDescriptorReportAdapters", adapters);
 
         template.merge(context, sw);
 

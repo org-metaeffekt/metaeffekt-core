@@ -15,8 +15,11 @@
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
-        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" />
-    </chapter>
 
+        #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
+        #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
+            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" />
+        #end
+    </chapter>
 #end
 </map>
