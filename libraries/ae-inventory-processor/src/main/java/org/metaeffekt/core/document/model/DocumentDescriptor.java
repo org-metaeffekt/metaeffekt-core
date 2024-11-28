@@ -37,7 +37,6 @@ import java.util.*;
  *   <li>Parameters for customizing the document's structure, content, and placeholders.</li>
  *   <li>The target directory where the generated report will be saved.</li>
  * </ul>
- * </p>
  *
  * @see DocumentDescriptorReportGenerator
  * @see InventoryContext
