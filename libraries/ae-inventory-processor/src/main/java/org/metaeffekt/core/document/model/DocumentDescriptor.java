@@ -18,14 +18,30 @@ package org.metaeffekt.core.document.model;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.metaeffekt.core.document.report.DocumentDescriptorReportGenerator;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 
 import java.io.File;
 import java.util.*;
 
 /**
- * A documentDescriptor encapsulates all information needed for document generation. documentDescriptors can be passed
- * to DocumentDescriptorReportGenerator.generate() for document generation.
+ * Represents the descriptor for a document, encapsulating all the information necessary for generating a document report.
+ * The `DocumentDescriptor` contains metadata about the document, such as inventory contexts, document type, parameters,
+ * and the target directory for report output. This descriptor can be passed to the {@link DocumentDescriptorReportGenerator}
+ * to initiate the document generation process.
+ * <p>
+ * A `DocumentDescriptor` contains:
+ * <ul>
+ *   <li>Inventory contexts that define the data to be included in the report.</li>
+ *   <li>A document type to control the generation process based on specific pre-requisites.</li>
+ *   <li>Parameters for customizing the document's structure, content, and placeholders.</li>
+ *   <li>The target directory where the generated report will be saved.</li>
+ * </ul>
+ * </p>
+ *
+ * @see DocumentDescriptorReportGenerator
+ * @see InventoryContext
+ * @see DocumentType
  */
 @Slf4j
 @Getter

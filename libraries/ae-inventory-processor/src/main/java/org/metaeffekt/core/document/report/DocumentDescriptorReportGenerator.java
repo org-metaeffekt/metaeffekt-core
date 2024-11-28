@@ -29,10 +29,36 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class for controlling the process of generating reports from documentDescriptors and their respective ReportContexts.
+ * This class is responsible for orchestrating the generation of reports for a given {@link DocumentDescriptor}.
+ * It controls the entire process of validating the document descriptor, generating inventory reports, and producing
+ * the final document descriptor report (such as a DITA BookMap).
+ * <p>
+ * The report generation process involves validating the {@link DocumentDescriptor} and its associated inventory
+ * contexts, generating inventory reports using the {@link InventoryReport} class, and then using the results to
+ * produce a final report (including DITA BookMap) with the {@link DocumentDescriptorReport}.
+ * </p>
+ *
+ * @see DocumentDescriptor
+ * @see DocumentDescriptorReport
+ * @see InventoryReport
+ * @see InventoryContext
  */
 public class DocumentDescriptorReportGenerator {
 
+    /**
+     * Generates the complete set of reports for the given {@link DocumentDescriptor}.
+     * This method validates the descriptor, triggers the inventory report generation, and then proceeds to
+     * generate the final report using {@link DocumentDescriptorReport}.
+     * <p>
+     * The report generation consists of:
+     * 1. Validating the {@link DocumentDescriptor}.
+     * 2. Generating inventory reports.
+     * 3. Creating the final document descriptor report.
+     * </p>
+     *
+     * @param documentDescriptor the document descriptor containing the metadata for generating reports
+     * @throws IOException if there is an error during file handling or report generation
+     */
     public void generate(DocumentDescriptor documentDescriptor) throws IOException {
 
         // validate documentDescriptor before report generation
@@ -49,14 +75,17 @@ public class DocumentDescriptorReportGenerator {
     }
 
     /**
-     * Method for creating inventory Reports for the inventories of the given DocumentDescriptor. We currently use the
-     * functionality of InventoryReports.java for creating the dita.vt files needed for document generation, the outlook
-     * for this is that we extract documentDescriptor specific functionality out of InventoryReport.java and create an
-     * abstract class for encapsulating the functionality used by both types of reports.
+     * Generates inventory reports for the inventories associated with the given {@link DocumentDescriptor}.
+     * This method uses the {@link InventoryReport} class to generate reports for each inventory context.
+     * It currently triggers the creation of the necessary DITA templates (e.g., dita.vt files).
+     * <p>
+     * This method works by iterating over all inventory contexts and validating each before generating the
+     * corresponding inventory report. The pre-requisites for generating these reports are checked based on the
+     * {@link DocumentType}.
+     * </p>
      *
-     * @param documentDescriptor the given DocumentDescriptor for which the report is generated
-     *
-     * @throws IOException Throws an IOException in case the file access is not possible.
+     * @param documentDescriptor the document descriptor containing the inventory contexts for report generation
+     * @throws IOException if there is an error accessing inventory files or generating reports
      */
     private static void generateInventoryReports(DocumentDescriptor documentDescriptor) throws IOException {
         List<InventoryReport> inventoryReports = new ArrayList<InventoryReport>();
@@ -102,7 +131,7 @@ public class DocumentDescriptorReportGenerator {
             if (report.createReport()) {
                 inventoryReports.add(report);
             } else {
-                throw new RuntimeException(report.createReport() + " failed.");
+                throw new RuntimeException("Report creation failed for " + report);
             }
         }
     }

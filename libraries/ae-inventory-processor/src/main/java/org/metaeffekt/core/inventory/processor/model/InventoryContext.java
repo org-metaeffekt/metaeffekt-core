@@ -17,10 +17,22 @@ package org.metaeffekt.core.inventory.processor.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.metaeffekt.core.document.model.DocumentDescriptor;
 
 /**
- * Class for defining context information for an inventory. Enables DocumentDescriptors to identify each referenced
- * inventory and access document generation relevant fields.
+ * Represents the context for a specific inventory, providing the necessary metadata and references to facilitate
+ * document generation.
+ * <p>
+ * The {@code InventoryContext} defines a unique identifier, the associated inventory, and additional information
+ * required for generating structured reports. It also includes a reference inventory to handle unknown fields or
+ * provide comparisons.
+ * </p>
+ * <p>
+ * Each {@code InventoryContext} is validated to ensure all required fields are properly configured before being used
+ * in the document generation process.
+ * </p>
+ *
+ * @see DocumentDescriptor
  */
 @Getter
 @Setter

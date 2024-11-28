@@ -40,8 +40,17 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Class for encapsulating functionality for the generation of a document report. This class is used to trigger inventory
- * report generation and provides the function creating a dita bookMap.
+ * Class responsible for generating reports for document descriptors. It facilitates the creation of a DITA BookMap
+ * and other report-related tasks by integrating with the Velocity templating engine.
+ * <p>
+ * This class manages the process of applying inventory context information to Velocity templates and producing final
+ * reports (typically in DITA format). It reads template resources from the classpath, applies necessary context data,
+ * and outputs the results to the specified target directory.
+ * </p>
+ *
+ * @see DocumentDescriptor
+ * @see InventoryContext
+ * @see org.apache.velocity.Template
  */
 @Slf4j
 @Getter
@@ -61,10 +70,22 @@ public class DocumentDescriptorReport {
 
     private String templateLanguageSelector = "en";
 
+    /**
+     * Creates a report based on the given DocumentDescriptor. This method will generate a DITA BookMap and other reports
+     * using the template specified in the report generation process.
+     *
+     * @param documentDescriptor the descriptor containing document-specific information for the report generation
+     * @throws IOException if there is an error reading or writing report files
+     */
     protected void createReport(DocumentDescriptor documentDescriptor) throws IOException {
         writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
     }
 
+    /**
+     * Adapter class for holding properties related to document report generation.
+     * <p>This class acts as a container for properties associated with each inventory context. It allows dynamic
+     * manipulation and management of properties during the report creation process.</p>
+     */
     @Setter
     @Getter
     public static class DocumentDescriptorReportAdapters {
@@ -75,13 +96,13 @@ public class DocumentDescriptorReport {
     }
 
     /**
-     * Method for adding properties of an inventory report to a DocumentDescriptorReportAdapter. We already have properties
-     * on class level within the dita creation, but we also need to process the visibility switches provided for each
-     * inventoryContext. We do this by reading the inventory.report.properties file from the targetReportPath and passing
-     * the contents of the file manually to the velocity context for in-dita-usage.
+     * Adds inventory-specific properties to the given {@link DocumentDescriptorReportAdapters} object.
+     * This method loads the properties from the inventory's report properties file and adds them to the context used
+     * in DITA creation.
      *
-     * @param documentDescriptor the DocumentDescriptor specifying the document we want to generate
-     * @param adapters the DocumentDescriptorReportAdapters containing additional fields used in dita creation process.
+     * @param documentDescriptor the document descriptor used to extract inventory contexts
+     * @param adapters the adapters object to which the properties will be added
+     * @throws IOException if there is an error loading the properties file
      */
     private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
         for (InventoryContext inventoryContext : documentDescriptor.getInventoryContexts()) {
@@ -90,6 +111,17 @@ public class DocumentDescriptorReport {
         }
     }
 
+    /**
+     * Writes the generated reports based on the provided document descriptor and adapters.
+     * <p>This method resolves Velocity template files and applies them to generate reports in the target report
+     * directory. It iterates through all relevant templates and produces the final report output.</p>
+     *
+     * @param documentDescriptor the document descriptor containing the metadata for report generation
+     * @param adapters the adapters holding additional properties to be used in the templates
+     * @param templateBaseDir the base directory for loading the template files
+     * @param templateGroup the group of templates to be applied for report generation
+     * @throws IOException if there is an error reading templates or writing reports
+     */
     protected void writeReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
                     String templateBaseDir, String templateGroup) throws IOException {
 
@@ -114,6 +146,15 @@ public class DocumentDescriptorReport {
         }
     }
 
+    /**
+     * Produces a DITA report by applying a Velocity template to the given context data and writing the result to the target file.
+     *
+     * @param documentDescriptor the document descriptor containing the metadata for report generation
+     * @param adapters the adapters containing properties to be used in the report
+     * @param templateResourcePath the path to the Velocity template resource
+     * @param target the file where the generated report will be saved
+     * @throws IOException if there is an error during the report generation process
+     */
     private void produceDita(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
                     String templateResourcePath, File target) throws IOException {
 
