@@ -39,6 +39,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * Class for encapsulating functionality for the generation of a document report. This class is used to trigger inventory
+ * report generation and provides the function creating a dita bookMap.
+ */
 @Slf4j
 @Getter
 @Setter
@@ -70,15 +74,19 @@ public class DocumentDescriptorReport {
         }
     }
 
+    /**
+     * Method for adding properties of an inventory report to a DocumentDescriptorReportAdapter. We already have properties
+     * on class level within the dita creation, but we also need to process the visibility switches provided for each
+     * inventoryContext. We do this by reading the inventory.report.properties file from the targetReportPath and passing
+     * the contents of the file manually to the velocity context for in-dita-usage.
+     *
+     * @param documentDescriptor the DocumentDescriptor specifying the document we want to generate
+     * @param adapters the DocumentDescriptorReportAdapters containing additional fields used in dita creation process.
+     */
     private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
-        // read properties from each subdirectory in targetReportPath and pass them to the DocumentDescriptorReportAdapter
         for (InventoryContext inventoryContext : documentDescriptor.getInventoryContexts()) {
-            // create filepath to subdirectory by combining targetReportPath with the identifier of the context
-            // read .properties file from subdirectory
             Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
             adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-            // extract property fields and save them into the reportAdapters
-
         }
     }
 
