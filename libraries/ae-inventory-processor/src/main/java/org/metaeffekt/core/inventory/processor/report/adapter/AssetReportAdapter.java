@@ -24,10 +24,8 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AssetReportAdapter {
 
@@ -45,6 +43,10 @@ public class AssetReportAdapter {
 
     public List<Artifact> getRelatedArtifacts(AssetMetaData assetMetaData) {
         return new ArrayList<>(InventoryUtils.getArtifactsForAsset(inventory, assetMetaData));
+    }
+
+    public List<String> getRelatedComponents(AssetMetaData assetMetaData) {
+        return InventoryUtils.getArtifactsForAsset(inventory, assetMetaData).stream().map(Artifact::getComponent).collect(Collectors.toList());
     }
 
     final Pair<String, String>[] containerKeyList = new Pair[]{
