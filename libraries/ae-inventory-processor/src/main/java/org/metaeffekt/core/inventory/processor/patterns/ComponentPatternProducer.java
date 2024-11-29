@@ -249,6 +249,7 @@ public class ComponentPatternProducer {
 
     private void deriveAddonArtifactsFromMatchResult(List<MatchResult> componentPatterns, FileSystemScanContext fileSystemScanContext) {
         for (MatchResult matchResult : componentPatterns) {
+
             final Artifact derivedArtifact = matchResult.deriveArtifact();
             fileSystemScanContext.contribute(derivedArtifact);
 
@@ -622,6 +623,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new PubComponentPatternContributor());
         contributorRunnerBuilder.add(new CocoapodsComponentPatternContributor());
         contributorRunnerBuilder.add(new HexComponentPatternContributor());
+        contributorRunnerBuilder.add(new ExeVersionComponentPatternContributor());
         contributorRunnerBuilder.add(new ExeComponentPatternContributor());
         contributorRunnerBuilder.add(new BitnamiComponentPatternContributor());
         contributorRunnerBuilder.add(new GenericVersionFileComponentPatternContributor());

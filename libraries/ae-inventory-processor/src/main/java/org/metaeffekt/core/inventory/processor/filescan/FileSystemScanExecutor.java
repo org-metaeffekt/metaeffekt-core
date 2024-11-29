@@ -139,6 +139,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         mergeDuplicates(inventory);
 
+        // FIXME: this should be separated; currently not executed in scan case, since getAggregationDir is not configured
         File aggregationDir = fileSystemScanContext.getAggregationDir();
 
         if (aggregationDir != null && !aggregationDir.exists()) {
