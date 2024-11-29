@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
+import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -192,6 +193,29 @@ public class AeaaDataSourceIndicator {
 
         public String getCoordinates() {
             return coordinates;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            return super.toJson()
+                    .put("coordinates", coordinates);
+        }
+    }
+
+    @Getter
+    public static class ArtifactOsvReason extends ArtifactReason {
+        public final static String TYPE = "artifact-osv";
+
+        private final String coordinates;
+
+        public ArtifactOsvReason(Artifact artifact, String coordinates) {
+            super(TYPE, artifact);
+            this.coordinates = coordinates;
+        }
+
+        protected ArtifactOsvReason(JSONObject artifactData, String coordinates) {
+            super(TYPE, artifactData);
+            this.coordinates = coordinates;
         }
 
         @Override
@@ -472,6 +496,11 @@ public class AeaaDataSourceIndicator {
                     );
                 case ArtifactGhsaReason.TYPE:
                     return new ArtifactGhsaReason(
+                            json,
+                            json.optString("coordinates", null)
+                    );
+                case ArtifactOsvReason.TYPE:
+                    return new ArtifactOsvReason(
                             json,
                             json.optString("coordinates", null)
                     );
