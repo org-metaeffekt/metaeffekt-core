@@ -24,6 +24,7 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
+import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.ReportUtils;
 import org.metaeffekt.core.util.FileUtils;
@@ -67,6 +68,8 @@ public class DocumentDescriptorReport {
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
 
     public static final String TEMPLATE_GROUP_ANNEX_BOOKMAP = "annex-bookmap";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP = "vulnerability-report-bookmap";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-report-bookmap";
 
     private String templateLanguageSelector = "en";
 
@@ -78,7 +81,15 @@ public class DocumentDescriptorReport {
      * @throws IOException if there is an error reading or writing report files
      */
     protected void createReport(DocumentDescriptor documentDescriptor) throws IOException {
-        writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
+        if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
+        }
+        if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
+        }
+        if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
+        }
     }
 
     /**

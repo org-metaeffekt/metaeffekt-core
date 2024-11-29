@@ -103,16 +103,22 @@ public class DocumentDescriptorReportGenerator {
             // check pre-requisites dependent on DocumentType
             if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
                 report.setInventoryBomReportEnabled(true);
-                // insert more pre-requisites for annex
+            }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
+                report.setInventoryVulnerabilityReportEnabled(true);
+            }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                report.setInventoryVulnerabilityReportSummaryEnabled(true);
             }
 
             report.setReferenceInventory(inventoryContext.getReferenceInventory());
             report.setInventory(inventoryContext.getInventory());
 
-            // set fields from reportContext
+            //FIXME-REVIEW: maybe pass these fields through the asset descriptor yaml file
             report.setFailOnUnknown(false);
             report.setFailOnUnknownVersion(false);
             report.setFailOnMissingLicense(false);
+            report.setFailOnMissingLicenseFile(false);
 
             // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
             // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
