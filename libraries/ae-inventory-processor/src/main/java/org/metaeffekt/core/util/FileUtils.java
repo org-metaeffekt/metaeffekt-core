@@ -27,6 +27,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -323,6 +324,21 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try {
                     IOUtils.copy(p.getInputStream(), baos);
+                } catch (IOException e) {
+                    LOG.error("Unable to copy input stream into output stream.", e);
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void waitForProcess(Process p, OutputStream out) {
+        try {
+            while (p.isAlive()) {
+                p.waitFor(1000, TimeUnit.MILLISECONDS);
+                try {
+                    IOUtils.copy(p.getInputStream(), out);
                 } catch (IOException e) {
                     LOG.error("Unable to copy input stream into output stream.", e);
                 }

@@ -476,7 +476,8 @@ public class ArchiveUtils {
             final String command = sevenZipBinaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath();
             LOG.info("Running command: " + command);
             Process exec = Runtime.getRuntime().exec(command);
-            FileUtils.waitForProcess(exec);
+            FileUtils.waitForProcess(exec, System.err);
+            LOG.info("Command returned with exit value [{}]", exec.exitValue());
         } else {
             LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
 
