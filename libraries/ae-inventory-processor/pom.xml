@@ -33,7 +33,7 @@
                         </goals>
                         <configuration>
                             <sevenZipGroupId>org.metaeffekt.bundle.sevenzip</sevenZipGroupId>
-                            <sevenZipArtifactId>ae-7zip-bundle-packager</sevenZipArtifactId>
+                            <sevenZipArtifactId>ae-7zip-resource-bundle</sevenZipArtifactId>
                             <sevenZipArtifactVersion>${ae.7zip.bundle.version}</sevenZipArtifactVersion>
                         </configuration>
                     </execution>
