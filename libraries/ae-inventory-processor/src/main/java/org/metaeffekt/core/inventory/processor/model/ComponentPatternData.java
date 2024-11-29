@@ -77,7 +77,13 @@ public class ComponentPatternData extends AbstractModelBase {
         VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum"),
         TYPE("Type"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
+
+        // files covered by a component pattern may be shared with other component patterns; this attribute allows
+        // to specify files which are known to be shared, but should remain included, when the files are collected
         SHARED_INCLUDE_PATTERN("Shared Include Pattern"),
+
+        // files covered by a component pattern may be shared with other component patterns; this attribute allows
+        // to specify files which are known to be shared, and should not be collected for the component
         SHARED_EXCLUDE_PATTERN("Shared Exclude Pattern");
 
         private String key;

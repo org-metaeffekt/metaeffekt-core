@@ -64,7 +64,6 @@ public class CryptpadTest extends AbstractCompositionAnalysisTest {
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore

@@ -323,6 +323,11 @@ public class ArchiveUtils {
     }
 
     public static boolean unpackIfPossible(File archiveFile, File targetDir, List<String> issues) {
+        if (!archiveFile.exists() || !archiveFile.getParentFile().exists()) {
+            LOG.warn("Trying to unpack a file, which does not exists (anymore): {}", archiveFile);
+            return false;
+        }
+
         final Project project = new Project();
         project.setBaseDir(archiveFile.getParentFile());
 

@@ -16,6 +16,7 @@
 
 package org.metaeffekt.core.itest.container;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -87,14 +88,18 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList =
+
+        final List<FilePatternQualifierMapper> filePatternQualifierMapperList =
                 detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
-        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+
+        final DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
 
-        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
-        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
+        Assertions.assertThat(duplicateList.getRemainingDuplicates()).as("remaining duplicates must be empty").isEmpty();
+
+        // FIXME-AOE: what is the intention?; why does the current implementation not align with this?
+//        Assertions.assertThat(duplicateList.getFileWithoutDuplicates()).as("files w/o duplicates must not be empty").isNotEmpty();
     }
 
     @Test

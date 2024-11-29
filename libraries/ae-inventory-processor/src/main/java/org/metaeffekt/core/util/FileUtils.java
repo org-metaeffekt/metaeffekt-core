@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -351,7 +352,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static void deleteDirectoryQuietly(File directory) {
         try {
             forceDelete(directory);
-        } catch (IOException e) {
+        } catch (UncheckedIOException | IOException e) {
             // ignore
         }
     }
