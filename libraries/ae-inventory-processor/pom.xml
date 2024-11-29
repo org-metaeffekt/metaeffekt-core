@@ -38,13 +38,6 @@
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.metaeffekt.bundle.sevenzip</groupId>
-                        <artifactId>ae-7zip-java-util</artifactId>
-                        <version>${ae.7zip.bundle.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>

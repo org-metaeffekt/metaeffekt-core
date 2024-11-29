@@ -202,14 +202,17 @@ public class ArchiveUtils {
         try {
             untarInternal(file, targetDir);
         } catch (Exception e) {
-            LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), e.getMessage());
-
+            LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
             try {
-                nativeUntar(file, targetDir);
-            } catch(Exception ex) {
-                throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), e);
+                extractFileWithSevenZip(file, targetDir);
+            } catch (Exception ex) {
+                LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
+                try {
+                    nativeUntar(file, targetDir);
+                } catch(Exception exc) {
+                    throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), exc);
+                }
             }
-
         } finally {
             for (File intermediateFile : intermediateFiles) {
                 FileUtils.forceDelete(intermediateFile);
@@ -415,7 +418,7 @@ public class ArchiveUtils {
         try {
             if (windowsExtensions.contains(extension)) {
                 FileUtils.forceMkdir(targetDir);
-                extractWindowsFile(archiveFile, targetDir);
+                extractFileWithSevenZip(archiveFile, targetDir);
                 return true;
             }
         } catch (Exception e) {
@@ -466,18 +469,17 @@ public class ArchiveUtils {
         }
     }
 
-    private static void extractWindowsFile(File file, File targetFile) {
+    private static void extractFileWithSevenZip(File file, File targetFile) throws IOException {
         // this requires 7zip to perform the extraction
-        String os = SevenZipExecutableUtils.detectOS();
-        String arch = SevenZipExecutableUtils.detectArch();
-        final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile(os, arch);
-        try {
+        final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
+        if (sevenZipBinaryFile.exists()) {
             final String command = sevenZipBinaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath();
             LOG.info("Running command: " + command);
             Process exec = Runtime.getRuntime().exec(command);
             FileUtils.waitForProcess(exec);
-        } catch (IOException e) {
-            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed at [" + sevenZipBinaryFile + "].");
+        } else {
+            LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
+
         }
     }
 
