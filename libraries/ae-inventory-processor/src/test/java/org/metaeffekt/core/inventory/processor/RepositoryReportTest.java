@@ -288,9 +288,13 @@ public class RepositoryReportTest {
 
     }
 
-    @Ignore
     @Test
     public void testCreateTestReport004() throws Exception {
+        File target = new File("target/test-inventory-04");
+        target.mkdirs();
+
+        // copy bookmap to enable PDF generation testing
+        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-01/bm_test.ditamap"), target);
 
         File inventoryDir = new File("src/test/resources/test-inventory-04");
         String inventoryIncludes = INVENTORY_INCLUDES;
@@ -312,16 +316,8 @@ public class RepositoryReportTest {
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);
 
-        File target = new File("target/test-inventory-04");
-        target.mkdirs();
-
         File targetReportPath = new File(target, "report");
         targetReportPath.mkdirs();
-
-        File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
-        File componentReport = new File(targetReportPath, "tpc_inventory-component-report.dita");
-        File noticeReport = new File(targetReportPath, "tpc_inventory-component-license-details.dita");
-        File artifactReport = new File(targetReportPath, "tpc_inventory-artifact-report.dita");
 
         final File targetLicensesDir = new File(target, "licenses");
         final File targetComponentDir = new File(target, "components");
@@ -336,13 +332,13 @@ public class RepositoryReportTest {
         report.setInventoryVulnerabilityReportEnabled(true);
         report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
+        report.setFailOnMissingLicenseFile(false);
+
         final boolean valid = report.createReport();
         assertTrue(valid);
 
-        // copy bookmap
-        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-01/bm_test.ditamap"), target);
-
-        // generate PDF using 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISBALED -Ddita.source.dir=target/test-inventory-04' from terminal
+        // generate PDF using the following command from terminal:
+        // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/test-inventory-04'
     }
 
     @Test
