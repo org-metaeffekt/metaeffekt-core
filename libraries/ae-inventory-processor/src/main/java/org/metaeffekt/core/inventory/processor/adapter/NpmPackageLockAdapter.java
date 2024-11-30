@@ -99,7 +99,7 @@ public class NpmPackageLockAdapter {
             addDependencies(packageLockJsonFile, obj, inventory, path, "packages");
         } else {
             // name provided
-            final JSONObject packages = obj.getJSONObject("packages");
+            final JSONObject packages = obj.optJSONObject("packages");
             if (packages != null) {
                 final JSONObject project = packages.optJSONObject(name);
 

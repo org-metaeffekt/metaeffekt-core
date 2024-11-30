@@ -1,0 +1,49 @@
+## load macros from other files
+#parse("META-INF/templates/en/asset-report-bom/macros/tpc_inventory-asset-info.vm")
+##
+## main template content
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_vulnerability-assets-$reportContext.id">
+    <title>$reportContext.combinedTitle("Contained Components", true)</title>
+##
+#set($assets = $assetAdapter.listAssets())
+##
+    #if($assets.isEmpty())
+        There are no overarching assets available.
+    #end
+
+    #foreach($asset in $assets)
+
+        #set($assetEscapedId = $report.xmlEscapeStringAttribute($asset))
+        #set($assetName = $asset.get("Name"))
+        #set($title = "${assetName} Components:")
+        #set($artifacts = $assetAdapter.getRelatedArtifacts($asset))
+        #set($toRemove = [])
+
+        #foreach($artifact in $artifacts)
+            #if($vulnerabilityAdapter.getVulnerabilitiesForComponent($artifact.getComponent()).isEmpty())
+                #set($unused = $toRemove.add($artifact))
+            #end
+        #end
+
+        #foreach($artifact in $toRemove)
+            #set($unused = $artifacts.remove($artifact))
+        #end
+
+        #if(!$artifacts.isEmpty())
+        <body>
+        <topic id="asset-$assetEscapedId">
+                <body>
+                    <section>
+                        <title>$title</title>
+                            <body>
+                                #containedComponentsTable($artifacts)
+                            </body>
+                    </section>
+                </body>
+        </topic>
+        </body>
+        #end
+    #end
+</topic>

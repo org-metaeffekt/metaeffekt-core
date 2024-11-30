@@ -190,6 +190,8 @@ public class LinuxDistributionUtil {
             }
         }
 
+        parseRedHatRelease(distroBaseDir, linuxDistro);
+
         if (linuxDistro.cpe != null) {
             if (linuxDistro.id == null) {
                 parseSystemReleaseCpe(linuxDistro);
@@ -229,6 +231,24 @@ public class LinuxDistributionUtil {
 
     private static void parsePfSenseVersion(File distroBaseDir, LinuxDistro linuxDistro) {
         parsePlainVersionFile(linuxDistro, new File(distroBaseDir, "etc/" + PFSENSE_VERSION));
+    }
+
+    private static void parseRedHatRelease(File file, LinuxDistro linuxDistro) {
+        Pattern pattern = Pattern.compile("(.*?)\\srelease\\s(\\d\\.\\d+)");
+        try (Stream<String> lines = Files.lines(new File(file, "etc/" + REDHAT_RELEASE).toPath())) {
+            for (String line : lines.collect(Collectors.toList())) {
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    if (matcher.groupCount() >= 2) {
+                        if (linuxDistro.id == null) linuxDistro.id = matcher.group(1);
+                        if (linuxDistro.version == null) linuxDistro.version = matcher.group(2);
+                        if (linuxDistro.versionId == null) linuxDistro.versionId = matcher.group(2);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.debug("Cannot parse [{}].", file.getAbsolutePath());
+        }
     }
 
     private static void parsePlainVersionFile(LinuxDistro linuxDistro, File file) {
@@ -312,31 +332,6 @@ public class LinuxDistributionUtil {
             }
         }
         return currentValue;
-    }
-
-    // perhaps still useful
-
-    private static String parseRedHatRelease(File file) {
-        Pattern pattern = Pattern.compile("(.*?)\\srelease\\s(\\d\\.\\d+)");
-        try (Stream<String> lines = Files.lines(file.toPath())) {
-            for (String line : lines.collect(Collectors.toList())) {
-                Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    if (matcher.groupCount() >= 2) {
-                        String[] words = matcher.group(1).split("\\s+");
-                        StringBuilder initials = new StringBuilder();
-                        for (String word : words) {
-                            initials.append(Character.toLowerCase(word.charAt(0)));
-                        }
-                        return initials + "-" + matcher.group(2);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LOG.warn("Could not read redhat-release file", e);
-            return null;
-        }
-        return null;
     }
 
     private static void parseSystemReleaseCpe(File distroBaseDir, LinuxDistro linuxDistro) {

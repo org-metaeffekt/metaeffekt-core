@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Stream;
@@ -104,6 +105,9 @@ import java.util.stream.Stream;
 public class Cvss4P0 extends CvssVector {
 
     private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0.class);
+
+    private final static MathContext ROUNDING_MATH_CONTEXT = new MathContext(17, RoundingMode.HALF_UP);
+    private final static double ROUNDING_EPSILON = Math.pow(10, -6);
 
     public final static String[] VECTOR_PARTS = new String[]{
             "AV", "AC", "AT", "PR", "UI",
@@ -614,8 +618,9 @@ public class Cvss4P0 extends CvssVector {
     }
 
     private String javaScriptToFixed(double number, int fractionDigits) {
-        // set scale to round half up, which is the behavior in JS's toFixed
-        return new BigDecimal(number)
+        // - set scale to round half up, which is the behavior in JS's toFixed.
+        // - additive adjustment value (ROUNDING_EPSILON) to avoid floating-point misrepresentations of values. See https://en.wikipedia.org/wiki/Machine_epsilon.
+        return new BigDecimal(number + ROUNDING_EPSILON, ROUNDING_MATH_CONTEXT)
                 .setScale(fractionDigits, RoundingMode.HALF_UP)
                 .toPlainString()
                 .replace(",", ".");

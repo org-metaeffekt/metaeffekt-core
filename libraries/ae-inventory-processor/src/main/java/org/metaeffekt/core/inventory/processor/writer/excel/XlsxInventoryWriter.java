@@ -34,8 +34,6 @@ import java.util.*;
 
 public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
-    private final static Logger LOG = LoggerFactory.getLogger(XlsxInventoryWriter.class);
-
     public void writeInventory(Inventory inventory, File file) throws IOException {
         final SXSSFWorkbook workbook = new SXSSFWorkbook();
         final XlsxXSSFInventorySheetCellStylers stylers = new XlsxXSSFInventorySheetCellStylers(workbook);
@@ -237,8 +235,8 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         // create columns for key / value map content
         final Set<String> attributes = new HashSet<>();
-        for (AdvisoryMetaData cm : inventory.getAdvisoryMetaData()) {
-            attributes.addAll(cm.getAttributes());
+        for (AdvisoryMetaData am : inventory.getAdvisoryMetaData()) {
+            attributes.addAll(am.getAttributes());
         }
 
         AdvisoryMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
@@ -322,19 +320,22 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         }
 
         // add minimum columns
-        attributes.addAll(LicenseData.CORE_ATTRIBUTES);
+        attributes.addAll(LicenseData.ORDERED_ATTRIBUTES);
 
         // impose context or default order
-        final List<String> ordered = Artifact.orderAttributes(attributes, contextColumnList, LicenseData.CORE_ATTRIBUTES);
+        final List<String> ordered = Artifact.orderAttributes(attributes, contextColumnList, LicenseData.ORDERED_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
+                stylers.headerStyleColumnNameMarker,
+                stylers.headerStyleColumnNameClassification,
                 stylers.createLicensesHeaderCellStyler(serializationContext),
                 stylers.headerStyleDefault,
         };
 
         final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
                 stylers.contentStyleColumnNameAssetId,
+                stylers.contentStyleColumnNameMarkerCentered,
                 stylers.createLicensesCellStyler(serializationContext)
         };
 
@@ -362,13 +363,13 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         // remove core attributes
         final List<String> finalOrder = deriveOrder(attributes, AssetMetaData.CORE_ATTRIBUTES);
 
-        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleColumnNameSrcAssetSource,
                 stylers.headerStyleColumnNameAssetConfig,
                 stylers.headerStyleDefault,
         };
 
-        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
+        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[] {
                 stylers.contentStyleColumnNameSrcCentered,
         };
 
@@ -432,5 +433,4 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         finalOrder.addAll(ordered);
         return finalOrder;
     }
-
 }

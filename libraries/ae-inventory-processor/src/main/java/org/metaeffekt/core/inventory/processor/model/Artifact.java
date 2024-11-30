@@ -21,7 +21,6 @@ import org.metaeffekt.core.inventory.InventoryUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 public class Artifact extends AbstractModelBase {
 
     // Maximize compatibility with serialized inventories
@@ -41,34 +40,37 @@ public class Artifact extends AbstractModelBase {
      * Core attributes to support component patterns.
      */
     public enum Attribute implements AbstractModelBase.Attribute {
-        GROUPID("Group Id"),
+        ID("Id"),
         NAME("Name"),
+        COMPONENT("Component"),
+        COMPONENT_TYPE("Component Type"),
+
+        CHECKSUM("Checksum"),
         VERSION("Version"),
         RELEASE("Release"),
         CLASSIFIER("Classifier"),
         ARCHITECTURE("Architecture"),
         DISTRO("Distro"),
-        PURL("PURL"),
         FILE_NAME("File Name"),
-        CHECKSUM("Checksum"),
-        HASH_SHA1("Hash (SHA-1"),
-        HASH_SHA256("Hash (SHA-256)"),
-        HASH_SHA512("Hash (SHA-512"),
         FILE_TYPE("File Type"),
         SPECIFIC_FILE_TYPE("Specific File Type"),
         PACKAGING("Packaging"),
-        COMPONENT("Component"),
-        COMPONENT_TYPE("Component Type"),
 
-        // FIXME: rename to locations
-        // project locations
-        PROJECTS("Projects"),
-        PATH_IN_ASSET("Path in Asset"),
 
         // latest available version
         LATEST_VERSION("Latest Version"),
-        LICENSE("License"),
         CLASSIFICATION("Classification"),
+        LICENSE("License"),
+        GROUPID("Group Id"),
+
+        // artifact type information
+        TYPE("Type"),
+
+        // comments (and hints)
+        COMMENT("Comment"),
+
+        // url of the project pages
+        URL("URL"),
 
         // indicates whether the artifact is security relevant and needs to be upgraded asap
         SECURITY_RELEVANT("Security Relevance"),
@@ -79,18 +81,20 @@ public class Artifact extends AbstractModelBase {
         // vulnerability information
         VULNERABILITY("Vulnerability"),
 
-        // comments (and hints)
-        COMMENT("Comment"),
+        // FIXME: rename to locations
+        // project locations
+        PROJECTS("Projects"),
+        PATH_IN_ASSET("Path in Asset"),
 
-        // url of the project pages
-        URL("URL"),
         VERIFIED("Verified"),
-        ID("Id"),
-
-        // artifact type information
-        TYPE("Type"),
         ERRORS("Errors"),
+
+        HASH_SHA1("Hash (SHA-1"),
+        HASH_SHA256("Hash (SHA-256)"),
+        HASH_SHA512("Hash (SHA-512"),
+
         VIRTUAL_ROOT_PATH("Virtual Root Path"),
+        PURL("PURL"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
 
         // FIXME: consolidate
@@ -113,8 +117,8 @@ public class Artifact extends AbstractModelBase {
     /**
      * Defines a default order.
      */
-
-    public static Artifact.Attribute[] ARTIFACT_ATTRIBUTE_LIST = new Artifact.Attribute[]{
+    public static Artifact.Attribute[] ARTIFACT_ATTRIBUTE_LIST = new Artifact.Attribute[] {
+            Attribute.ID,
             Attribute.GROUPID,
             Attribute.NAME,
             Attribute.VERSION,
@@ -435,7 +439,11 @@ public class Artifact extends AbstractModelBase {
         String id = getId();
         if (id != null) {
             String classifier = inferClassifierFromFileNameAndVersion();
-            String version = inferVersionFromId();
+            String version = getVersion();
+
+            if (version == null) {
+                version = inferVersionFromId();
+            }
 
             final String versionClassifierPart;
             if (classifier == null) {
@@ -449,12 +457,7 @@ public class Artifact extends AbstractModelBase {
                 type = id.substring(index + versionClassifierPart.length());
             }
 
-            if (type == null) {
-                final int i = id.lastIndexOf(DELIMITER_DOT);
-                if (i != -1) {
-                    type = id.substring(i + 1);
-                }
-            }
+            // NOTE: we do not regard an extraction by last dot (expecting a suffix) as  option.
         }
         return type;
     }
@@ -470,6 +473,8 @@ public class Artifact extends AbstractModelBase {
     public String deriveVersionFromId() {
         String version = getId();
         if (version != null) {
+
+            // FIXME: heavy assumption; better use a pattern \.[a-zA-Z]{3}
             if (version.indexOf('.') > 0) {
                 version = version.substring(0, version.lastIndexOf('.'));
             }
@@ -825,7 +830,6 @@ public class Artifact extends AbstractModelBase {
 
         return false;
     }
-
 
     public static List<String> orderAttributes(Collection<String> attributes, List<String> contextColumnList, List<String> artifactColumnOrder) {
         // impose context or default order

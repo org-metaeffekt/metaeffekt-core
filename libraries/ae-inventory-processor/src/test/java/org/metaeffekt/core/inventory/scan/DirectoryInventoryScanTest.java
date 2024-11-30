@@ -20,7 +20,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
@@ -28,6 +30,9 @@ import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DirectoryInventoryScanTest {
 
@@ -38,7 +43,7 @@ public class DirectoryInventoryScanTest {
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{"--none--"};
 
-        File inventoryFile = new File("src/test/resources/test-inventory-01/artifact-inventory.xls");
+        File inventoryFile = new File("src/test/resources/test-inventory-01/artifact-inventory-01.xls");
         Inventory referenceInventory = new InventoryReader().readInventory(inventoryFile);
 
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, referenceInventory);
@@ -49,7 +54,7 @@ public class DirectoryInventoryScanTest {
 
         final Inventory resultInventory = scan.createScanInventory();
 
-        new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory.xls"));
+        new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory-01.xls"));
 
         for (Artifact a : resultInventory.getArtifacts()) {
             System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getProjects());
@@ -67,6 +72,21 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").getProjects()).hasSize(1);
 
         Assertions.assertThat(resultInventory.findArtifact("Please not")).isNull();
+
+        Assertions.assertThat(resultInventory.findArtifact("test-alpha-1.0.0.jar")).isNotNull();
+
+        // most primitive test on DirectoryScanExtractorConfiguration
+        DirectoryScanExtractorConfiguration directoryScanExtractorConfiguration =
+                new DirectoryScanExtractorConfiguration(referenceInventory, resultInventory, scanDir);
+
+        final List<FilePatternQualifierMapper> filePatternQualifierMappers = directoryScanExtractorConfiguration.mapArtifactsToComponentPatterns();
+
+        Set<String> qualifiers = new HashSet<>();
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            qualifiers.add(mapper.getQualifier());
+        }
+        Assertions.assertThat(qualifiers.contains("test-alpha-1.0.0.jar")).isTrue();
+
     }
 
     @Test

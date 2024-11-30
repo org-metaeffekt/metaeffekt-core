@@ -157,9 +157,11 @@ public class ArtifactUnwrapTask extends ScanTask {
                 final FileRef dirRef = new FileRef(targetFolder);
 
                 // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)
-                final VirtualContext virtualContext = new VirtualContext(dirRef);
-                fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
-                        rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext, markForDelete)));
+                if (!markForDelete) {
+                    final VirtualContext virtualContext = new VirtualContext(dirRef);
+                    fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
+                            rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext)));
+                }
             }
         }
 
@@ -276,7 +278,7 @@ public class ArtifactUnwrapTask extends ScanTask {
     }
 
     private static List<String> rebuildAndExtendAssetIdChain(FileRef baseDir, Artifact artifact,
-                                                             FileRef file, FileSystemScanContext context, boolean intermediate) {
+                                                             FileRef file, FileSystemScanContext context) {
         // read existing
         final String assetChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
 

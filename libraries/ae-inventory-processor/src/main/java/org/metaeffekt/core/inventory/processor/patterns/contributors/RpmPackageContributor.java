@@ -16,6 +16,7 @@
 
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -147,7 +148,12 @@ public class RpmPackageContributor extends ComponentPatternContributor {
                     cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, packageInfo.getLicense());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                     cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, RPM_TYPE);
-                    cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getName(), packageInfo.getVersion() + "-" + packageInfo.getRelease(), packageInfo.getArch(), packageInfo.getEpoch(), packageInfo.getSourceRpm(), distro));
+                    cpd.set(Artifact.Attribute.PURL, buildPurl(packageInfo.getName(),
+                            ((StringUtils.isNotBlank(packageInfo.getRelease())) ?
+                                packageInfo.getVersion() + "-" + packageInfo.getRelease() :
+                                packageInfo.getVersion()),
+                            packageInfo.getArch(), packageInfo.getEpoch(),
+                            packageInfo.getSourceRpm(), distro));
 
                     components.add(cpd);
                 }
@@ -191,7 +197,8 @@ public class RpmPackageContributor extends ComponentPatternContributor {
 
         final StringBuilder sb = new StringBuilder();
         sb.append("pkg:rpm/");
-        // FIXME: this is a hack; we should use the distro id as is
+
+        // FIXME: this is a hack; we should use the distro id as is or have a dedicated mapping con
         if ("rhel".equals(distro.id)) {
             sb.append("redhat/");
         } else {
@@ -199,16 +206,16 @@ public class RpmPackageContributor extends ComponentPatternContributor {
         }
         sb.append(name).append("@");
         sb.append(version);
-        if (arch != null && !arch.isEmpty()) {
+        if (StringUtils.isNotBlank(arch)) {
             sb.append("?arch=").append(arch);
         }
         if (epoch != null) {
             sb.append("&epoch=").append(epoch);
         }
-        if (upstream != null && !upstream.isEmpty()) {
+        if (StringUtils.isNotBlank(upstream)) {
             sb.append("&upstream=").append(upstream);
         }
-        if (!distro.versionId.isEmpty()) {
+        if (StringUtils.isNotBlank(distro.versionId)) {
             sb.append("&distro=").append(distro.id).append("-").append(distro.versionId);
         }
         return sb.toString();

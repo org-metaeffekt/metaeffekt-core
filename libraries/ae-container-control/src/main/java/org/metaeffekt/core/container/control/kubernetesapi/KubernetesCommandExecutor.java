@@ -15,10 +15,7 @@
  */
 package org.metaeffekt.core.container.control.kubernetesapi;
 
-import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.NamespaceBuilder;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -26,6 +23,7 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.PodResource;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -65,13 +63,25 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * @param imageIdentifier identifier of the container image to use in creation
      */
     public KubernetesCommandExecutor(Config kubeconfig, String namespaceName, String imageIdentifier) {
+        this(kubeconfig, namespaceName, imageIdentifier, null);
+    }
+
+    /**
+     * Creates a new object.
+     *
+     * @param kubeconfig      kubeconfig for client creation, null for default config
+     * @param namespaceName   namespace to use for creation of resources
+     * @param imageIdentifier identifier of the container image to use in creation
+     * @param envVars         environment for command execution
+     */
+    public KubernetesCommandExecutor(Config kubeconfig, String namespaceName, String imageIdentifier, List<EnvVar> envVars) {
         KubernetesClient client = null;
         try {
-            // TODO: constructor overloads that allow configuration of the client (such as endpoint addredd, port)
+            // TODO: constructor overloads that allow configuration of the client (such as endpoint address, port)
             client = new KubernetesClientBuilder().withConfig(kubeconfig).build();
 
             this.client = client;
-            this.reservedPod = getPod(client, namespaceName, imageIdentifier);
+            this.reservedPod = getPod(client, namespaceName, imageIdentifier, envVars);
         } catch (Exception e) {
             // manual closure only on exception
             if (client != null) {
@@ -87,10 +97,12 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * @param client          the client to create the pod with
      * @param namespaceName   name of the namespace to use for resource creation
      * @param imageIdentifier the image identifier to use for this pod
+     * @param envVars         environment for command execution
+     *
      * @return returns the created pod object as returned by the api's {@link PodResource#create()}
      */
-    protected static Pod getPod(KubernetesClient client, String namespaceName, String imageIdentifier) {
-        return getPod(client, namespaceName, imageIdentifier, UUID.randomUUID());
+    protected static Pod getPod(KubernetesClient client, String namespaceName, String imageIdentifier, List<EnvVar> envVars) {
+        return getPod(client, namespaceName, imageIdentifier, UUID.randomUUID(), envVars);
     }
 
     // TODO: support proxying pods for internet access
@@ -101,13 +113,15 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      * @param namespaceName   name of the namespace to use for resource creation
      * @param imageIdentifier the image identifier to use for this pod
      * @param runnerId        a runner id, a UUID unique to this pod
+     * @param envVars         environment for command execution
+     *
      * @return returns the created pod object as returned by the api's {@link PodResource#create()}
      */
     protected static Pod getPod(
             KubernetesClient client,
             String namespaceName,
             String imageIdentifier,
-            UUID runnerId) {
+            UUID runnerId, List<EnvVar> envVars) {
 
         // prepare our own namespace for easier management and deletion of leftovers in case of any issues
         if (client.namespaces().withName(namespaceName).get() == null) {
@@ -138,6 +152,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 .withActiveDeadlineSeconds(60L * 60 * 4)
                 .addNewContainer()
                 .withName(containerName)
+                .withEnv(envVars)
                 .withImage(imageIdentifier)
                 .withStdin()
                 .endContainer()

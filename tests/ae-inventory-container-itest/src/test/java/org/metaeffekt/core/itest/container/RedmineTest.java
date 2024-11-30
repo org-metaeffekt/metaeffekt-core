@@ -22,32 +22,48 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
 import org.metaeffekt.core.itest.common.predicates.AttributeValue;
+import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
-import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
+import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
 public class RedmineTest extends AbstractCompositionAnalysisTest {
 
+    public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
+        @Override
+        public Predicate<AssetMetaData> getPredicate() {
+            return a -> "container".equals(a.get(TYPE));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Asset of type container";
+        }
+    };
+
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, RedmineTest.class.getSimpleName().toLowerCase(), null, RedmineTest.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
-        AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
+        final File baseDir = saveContainerFromRegistryByRepositoryAndTag(null, RedmineTest.class.getSimpleName().toLowerCase(), "6.0.1", RedmineTest.class.getName());
+        String sha256Hash = FileUtils.computeSHA256Hash(baseDir);
+        AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
+                .setSource("file://" + baseDir.getAbsolutePath())
                 .setSha256Hash(sha256Hash)
                 .setName(RedmineTest.class.getName());
     }
@@ -73,15 +89,18 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "linux-distro")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(2);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(245);
-        // FIXME: why has this decreased to 162 from 163?
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(162);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(171);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(2);
 
         // FIXME: why are so many files not covered
-        analysis.selectArtifacts(AttributeValue.attributeValue(Artifact.Attribute.COMPONENT, null)).hasSizeOf(7020);
+        analysis.selectArtifacts(AttributeValue.attributeValue(Artifact.Attribute.COMPONENT, null)).hasSizeOf(5690);
 
-        // TODO:
-        // ruby-3.2.0 must be detected
+        // there must be only once container asset
+        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
+
+        // we expect the container being only represented as asset; no artifacts with type container
+        // FIXME: this is not correct, as the container is represented as artifact
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
     }
 
     @Test

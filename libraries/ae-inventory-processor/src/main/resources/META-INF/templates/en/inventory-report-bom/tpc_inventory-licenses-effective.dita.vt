@@ -1,0 +1,130 @@
+#parse("META-INF/templates/en/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_license-summary-$reportContext.id">
+    <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
+#set($effectiveLicenses=$inventory.evaluateLicenses(false))
+#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+#set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
+#set($termsWithOptions=$termsCategorization.getTermsWithOptions())
+#set($termsNoOptions=$termsCategorization.getTermsNoOptions())
+#set($atomicTerms=$termsCategorization.getAtomicTerms())
+<body>
+    <p>
+        This chapter outlines the different licenses considered effective within the given context.
+
+        Table <xref href="#tpc_license-summary-$reportContext.id/LicenseOptions" type="table">License Options$reportContext.inContextOf()</xref> provides an
+        outline of licenses options for the recipient of the software.
+
+        In <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect$reportContext.inContextOf()</xref>
+        provides an overview of the licenses in effect. In the following paragraphs the individual components are listed
+        for each effective license.
+    </p>
+    <p>
+        A component may be subject to several licenses in effect. The individual parts of a license option are also
+        listed as effective license.
+    </p>
+
+    #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
+        <fn id="id-footnote">License variations are represented as a single effective license. The concrete
+        license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
+    #end
+
+## License Options (not necessarily expressions)
+    #if (!$termsWithOptions.isEmpty())
+        <table id="LicenseOptions" otherprops="wide">
+            <title>License Options$reportContext.inContextOf()</title>
+            <tgroup cols="2">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="88*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="12*" />
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">License Option</entry>
+                        <entry colname="COLSPEC1" valign="top">Number of Components</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    #foreach($licenseData in $termsWithOptions)
+                        #set($license=$licenseData.get("Canonical Name"))
+                        #set($componentCount=$inventory.countComponents($license))
+                        <row>
+                            #if ($inventory.isLicenseSubstructureRequired($license, $effectiveLicensesRepresented))
+                                <entry>
+                                    <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                        $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                    </xref>
+                                </entry>
+                            #else
+                                <entry>
+                                    <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                        $report.xmlEscapeLicense($license)
+                                    </xref>
+                                </entry>
+                            #end
+                            <entry>
+                                <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                    <codeph>$componentCount</codeph>
+                                </xref>
+                            </entry>
+                        </row>
+                    #end
+                </tbody>
+            </tgroup>
+        </table>
+    #end
+
+    <table id="LicensesInEffect" otherprops="wide">
+        <title>Licenses in Effect$reportContext.inContextOf()</title>
+        <tgroup cols="4">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="53*" />
+            <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
+            <colspec colname="COLSPEC2" colnum="3" colwidth="10*" />
+            <colspec colname="COLSPEC3" colnum="4" colwidth="12*" />
+            <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">License in Effect</entry>
+                    <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+                    <entry colname="COLSPEC2" valign="top">OSI Status</entry>
+                    <entry colname="COLSPEC3" valign="top">Number of Components</entry>
+                </row>
+            </thead>
+            <tbody>
+#foreach($licenseData in $atomicTerms)
+#set($license=$licenseData.get("Canonical Name"))
+#set($folder=$inventory.getLicenseFolder($license))
+#set($componentCount=$inventory.countComponents($license))
+#set($licenseData=$inventory.findMatchingLicenseData($license))
+                <row>
+#if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
+                    <entry>
+                        <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                            $report.xmlEscapeLicense($license)<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
+                        </xref>
+                    </entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>
+                        #if ($licenseData)#if ($licenseData.get("OSI Status"))$licenseData.get("OSI Status")<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                    </entry>
+#else
+                    <entry>
+                        <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                            $report.xmlEscapeLicense($license)
+                        </xref>
+                    </entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>
+                        #if($licenseData)#if($licenseData.get("OSI Status"))$licenseData.get("OSI Status")#else&nbsp;#end#else&nbsp;#end
+                    </entry>
+#end
+                    <entry>
+                         <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                            <codeph>$componentCount</codeph>
+                        </xref>
+                    </entry>
+                </row>
+#end
+            </tbody>
+        </tgroup>
+    </table>
+</body>
+</topic>

@@ -29,20 +29,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+// FIXME: use this validator also in the subject-itests; such that this is not only covered in container-level tests.
 public class ComponentPatternValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternValidator.class);
 
     public static List<FilePatternQualifierMapper> detectDuplicateComponentPatternMatches(Inventory referenceInventory, Inventory resultInventory, File baseDir) {
 
-        DirectoryScanExtractorConfiguration configuration = new DirectoryScanExtractorConfiguration(
-                referenceInventory,
-                resultInventory,
-                baseDir
-        );
+        final DirectoryScanExtractorConfiguration configuration =
+                new DirectoryScanExtractorConfiguration(referenceInventory, resultInventory, baseDir);
 
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList = loadComponentPatternFiles(configuration);
-        Map<String, Set<File>> qualifierToComponentPatternFilesMap = buildQualifierToFileSetMap(filePatternQualifierMapperList);
+        final List<FilePatternQualifierMapper> filePatternQualifierMapperList = loadComponentPatternFiles(configuration);
+
+        final Map<String, Set<File>> qualifierToComponentPatternFilesMap = buildQualifierToFileSetMap(filePatternQualifierMapperList);
 
         findDuplicateFiles(qualifierToComponentPatternFilesMap, filePatternQualifierMapperList);
 
@@ -53,7 +52,6 @@ public class ComponentPatternValidator {
         try {
             return configuration.mapArtifactsToComponentPatterns();
         } catch (IOException e) {
-
             throw new RuntimeException(e);
         }
     }
@@ -101,9 +99,11 @@ public class ComponentPatternValidator {
 
         // process removedParentFiles for exclude patterns
         processExcludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, filesToRemoveFromParent, childQualifier);
+
         // process removedParentFiles for shared include patterns
         processSharedIncludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, duplicateAllowedFiles);
         moveFilesToDuplicateAllowed(parentQualifier, filePatternQualifierMapperList, duplicateAllowedFiles);
+
         // process removedParentFiles for shared exclude patterns
         processSharedExcludePatterns(removedParentFiles, parentQualifier, filePatternQualifierMapperList, sharedExcludedFiles);
         removeSharedExcludedFiles(parentQualifier, filePatternQualifierMapperList, sharedExcludedFiles);
@@ -123,11 +123,12 @@ public class ComponentPatternValidator {
         for (File file : duplicateAllowedFiles) {
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(qualifier)) {
-                    filePatternQualifierMapper.getFileMap().get(false).remove(file);
-                    if (filePatternQualifierMapper.getFileMap().get(true) == null) {
-                        filePatternQualifierMapper.getFileMap().put(true, new ArrayList<>(Collections.singletonList(file)));
-                    } else if (!filePatternQualifierMapper.getFileMap().get(true).contains(file)) {
-                        filePatternQualifierMapper.getFileMap().get(true).add(file);
+                    final Map<Boolean, List<File>> fileMap = filePatternQualifierMapper.getFileMap();
+                    fileMap.get(false).remove(file);
+                    if (fileMap.get(true) == null) {
+                        fileMap.put(true, new ArrayList<>(Collections.singletonList(file)));
+                    } else if (!fileMap.get(true).contains(file)) {
+                        fileMap.get(true).add(file);
                     }
                     LOG.info("Moving file [{}] to allowed duplicates for qualifier [{}].", file, qualifier);
                 }
@@ -136,8 +137,8 @@ public class ComponentPatternValidator {
     }
 
     private static void removeSharedExcludedFiles(String qualifier,
-                                                  List<FilePatternQualifierMapper> filePatternQualifierMapperList,
-                                                  Set<File> sharedExcludedFiles) {
+            List<FilePatternQualifierMapper> filePatternQualifierMapperList, Set<File> sharedExcludedFiles) {
+
         for (File file : sharedExcludedFiles) {
             for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
                 if (filePatternQualifierMapper.getQualifier().equals(qualifier)) {

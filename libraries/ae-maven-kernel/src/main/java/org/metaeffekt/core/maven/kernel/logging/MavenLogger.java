@@ -176,7 +176,11 @@ public class MavenLogger extends MarkerIgnoringBase implements Logger {
     @Override
     public void warn(String msg, Throwable t) {
         if (isWarnEnabled()) {
-            mavenLog.warn(msg, t);
+            if (t == null) {
+                mavenLog.warn(msg);
+            } else {
+                mavenLog.warn(msg, t);
+            }
         }
     }
 
@@ -216,7 +220,11 @@ public class MavenLogger extends MarkerIgnoringBase implements Logger {
     @Override
     public void error(String msg, Throwable t) {
         if (isErrorEnabled()) {
-            mavenLog.error(msg, t);
+            if (t == null) {
+                mavenLog.error(msg);
+            } else {
+                mavenLog.error(msg, t);
+            }
         }
     }
 

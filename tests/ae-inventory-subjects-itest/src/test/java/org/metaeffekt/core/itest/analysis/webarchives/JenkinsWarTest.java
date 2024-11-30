@@ -51,8 +51,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
-                .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.1/jenkins.war")
-                .setSha256Hash("8d84f3cdd6430c098d1f4f38740957e3f2d0ac261b2f9c68cbf9c306363fd1c8")
+                .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.2/jenkins.war")
+                .setSha256Hash("3731b9f44973fbbf3e535f98a80c21aad9719cb4eea8a1e59e974c11fe846848")
                 .setName(JenkinsWarTest.class.getName());
     }
 
@@ -68,8 +68,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-
-    //TODO
+    // TODO: eliminate @Ignore
     @Ignore
     @Test
     public void typesMustBeSetPredicate() {
@@ -78,8 +77,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty();
     }
 
-
-    //TODO
+    // TODO: eliminate @Ignore
     @Ignore
     @Test
     public void noErrorsExist() {
@@ -88,7 +86,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty();
     }
 
-    //TODO
+    // TODO: eliminate @Ignore
     @Ignore
     @Test
     public void versionMismatch() {
@@ -99,6 +97,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty(idMismatchesVersion());
     }
 
+    // TODO: eliminate @Ignore
     @Ignore
     @Test
     public void testPredicatePrimitives() {
@@ -116,6 +115,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
     }
 
+    // TODO: eliminate @Ignore
     @Ignore
     @Test
     public void namedLists() {

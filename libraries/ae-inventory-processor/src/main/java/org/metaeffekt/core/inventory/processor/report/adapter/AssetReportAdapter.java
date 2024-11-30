@@ -18,14 +18,14 @@ package org.metaeffekt.core.inventory.processor.report.adapter;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AssetReportAdapter {
 
@@ -39,6 +39,14 @@ public class AssetReportAdapter {
         final List<AssetMetaData> assetMetaData = new ArrayList<>(inventory.getAssetMetaData());
         assetMetaData.sort(Comparator.comparing(o -> ObjectUtils.firstNonNull(o.get(AssetMetaData.Attribute.NAME), o.get(AssetMetaData.Attribute.ASSET_ID), "").toLowerCase()));
         return assetMetaData;
+    }
+
+    public List<Artifact> getRelatedArtifacts(AssetMetaData assetMetaData) {
+        return new ArrayList<>(InventoryUtils.getArtifactsForAsset(inventory, assetMetaData));
+    }
+
+    public List<String> getRelatedComponents(AssetMetaData assetMetaData) {
+        return InventoryUtils.getArtifactsForAsset(inventory, assetMetaData).stream().map(Artifact::getComponent).collect(Collectors.toList());
     }
 
     final Pair<String, String>[] containerKeyList = new Pair[]{

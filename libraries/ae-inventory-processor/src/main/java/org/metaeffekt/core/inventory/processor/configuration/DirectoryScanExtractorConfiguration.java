@@ -35,6 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
+
 public class DirectoryScanExtractorConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(DirectoryScanExtractorConfiguration.class);
@@ -79,33 +81,49 @@ public class DirectoryScanExtractorConfiguration {
 
         // iterate extracted artifacts and match with component patterns
         for (Artifact artifact : resultInventory.getArtifacts()) {
-            FilePatternQualifierMapper filePatternQualifierMapper = new FilePatternQualifierMapper();
-            filePatternQualifierMapper.setArtifact(artifact);
 
-            // check artifact is covered by a component pattern
-            String componentName = artifact.getComponent();
-            String componentVersion = artifact.getVersion();
-            String componentPart = artifact.getId();
+            // use artifact attributes to identify component pattern
+            final String componentName = artifact.getComponent();
+            final String componentVersion = artifact.getVersion();
+            final String componentPart = artifact.getId();
 
             // identify matching component patterns (this may overlap with real artifacts)
             final ComponentPatternMatches componentPatternMatches = findComponentPatternMatches(
                     qualifierToComponentPatternMap, componentName, componentVersion, componentPart);
 
+            // build FilePatternQualifierMapper baseline
+            final FilePatternQualifierMapper filePatternQualifierMapper = new FilePatternQualifierMapper();
+            filePatternQualifierMapper.setArtifact(artifact);
+            filePatternQualifierMapper.setQualifier(componentPart);
+            filePatternQualifierMapper.setDerivedQualifier(deriveMapQualifier(componentName, componentPart, componentVersion));
+            filePatternQualifierMapper.setPathInAsset(artifact.getPathInAsset());
+
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
-                Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
-                filePatternQualifierMapper.setQualifier(componentPart);
-                filePatternQualifierMapper.setDerivedQualifier(deriveMapQualifier(componentName, componentPart, componentVersion));
-                filePatternQualifierMapper.setPathInAsset(artifact.getPathInAsset());
-                List<File> componentPatternFiles = new ArrayList<>();
+                final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap =
+                    new HashMap<>(mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
+                filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
+
+                // collect component-pattern-covered files
+                final List<File> componentPatternFiles = new ArrayList<>();
                 for (List<File> files : duplicateToComponentPatternFilesMap.values()) {
                     componentPatternFiles.addAll(files);
                 }
                 filePatternQualifierMapper.setFiles(componentPatternFiles);
-                filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
 
-                filePatternQualifierMapperList.add(filePatternQualifierMapper);
+            } else {
+                // handle artifacts that cannot be mapped to files; we need that the inventory is completely represented
+                // even in case no files are directly or indirectly associated
+
+                filePatternQualifierMapper.setFileMap(Collections.emptyMap());
+                filePatternQualifierMapper.setFiles(Collections.emptyList());
+
+                // FIXME: add real test case for this
             }
+
+            // add mapper
+            filePatternQualifierMapperList.add(filePatternQualifierMapper);
+
         }
 
         return filePatternQualifierMapperList;
@@ -274,8 +292,8 @@ public class DirectoryScanExtractorConfiguration {
 
                 // also include fallback mapping (in case component name does not match)
                 componentPatternMap.put(deriveFallbackMapQualifier(
-                        cpd.get(ComponentPatternData.Attribute.COMPONENT_PART),
-                        cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION)), list);
+                        cpd.get(COMPONENT_PART),
+                        cpd.get(COMPONENT_VERSION)), list);
             }
             list.add(cpd);
         }
@@ -299,12 +317,15 @@ public class DirectoryScanExtractorConfiguration {
         return scanBaseDir;
     }
 
-    private ComponentPatternMatches findComponentPatternMatches(Map<String, List<ComponentPatternData>> componentPatternMap, String componentName, String componentVersion, String componentPart) {
-        ComponentPatternMatches componentPatternMatch = new ComponentPatternMatches();
+    private ComponentPatternMatches findComponentPatternMatches(Map<String, List<ComponentPatternData>> componentPatternMap,
+                String componentName, String componentVersion, String componentPart) {
+
+        final ComponentPatternMatches componentPatternMatch = new ComponentPatternMatches();
         componentPatternMatch.key = deriveMapQualifier(componentName, componentPart, componentVersion);
         componentPatternMatch.list = componentPatternMap.get(componentPatternMatch.key);
+
         if (componentPatternMatch.list == null) {
-            String modulatedKey = deriveFallbackMapQualifier(componentPart, componentVersion);
+            final String modulatedKey = deriveFallbackMapQualifier(componentPart, componentVersion);
             componentPatternMatch.list = componentPatternMap.get(modulatedKey);
         }
         return componentPatternMatch;
@@ -317,9 +338,11 @@ public class DirectoryScanExtractorConfiguration {
 
     private String deriveFallbackMapQualifier(String componentPart, String componentVersion) {
         final StringBuilder sb = new StringBuilder();
-        sb.append(componentPart);
-        if (!StringUtils.isBlank(componentVersion)) {
-            sb.append("-");
+        if (StringUtils.isNotBlank(componentPart)) {
+            sb.append(componentPart);
+        }
+        sb.append("-");
+        if (StringUtils.isNotBlank(componentVersion)) {
             sb.append(componentVersion);
         }
         return sb.toString();
@@ -327,21 +350,23 @@ public class DirectoryScanExtractorConfiguration {
 
     public static String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
         final StringBuilder sb = new StringBuilder();
-        if (!StringUtils.isBlank(componentName)) {
-            sb.append(componentName).append("-");
+        if (StringUtils.isNotBlank(componentName)) {
+            sb.append(componentName);
         }
-        sb.append(componentPart);
-        if (!StringUtils.isBlank(componentVersion)) {
+        sb.append("-");
+        // NOTE: the componentPart is the artifact id; it is usually not blank; we nevertheless treat it equivalently
+        if (StringUtils.isNotBlank(componentPart)) {
+            sb.append(componentPart);
+        }
+        sb.append("-");
+        if (StringUtils.isNotBlank(componentVersion)) {
             sb.append(componentVersion);
         }
         return sb.toString();
     }
 
     private String deriveMapQualifier(ComponentPatternData cpd) {
-        return deriveMapQualifier(
-            cpd.get(ComponentPatternData.Attribute.COMPONENT_NAME),
-            cpd.get(ComponentPatternData.Attribute.COMPONENT_PART),
-            cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION));
+        return deriveMapQualifier(cpd.get(COMPONENT_NAME), cpd.get(COMPONENT_PART), cpd.get(COMPONENT_VERSION));
     }
 
     public File getResultInventoryFile() {
