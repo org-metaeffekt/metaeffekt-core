@@ -31,11 +31,12 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add(".exe]/.rdata");
+        add(".exe]/.idata");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith(".exe]/.rdata");
+        return pathInContext.endsWith(".exe]/.rdata") || pathInContext.endsWith(".exe]/.idata");
     }
 
     @Override
