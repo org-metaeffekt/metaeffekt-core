@@ -328,16 +328,22 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static void waitForProcess(Process p, OutputStream out) {
         try {
+            copyStream(p, out);
             while (p.isAlive()) {
                 p.waitFor(1000, TimeUnit.MILLISECONDS);
-                try {
-                    IOUtils.copy(p.getInputStream(), out);
-                } catch (IOException e) {
-                    LOG.error("Unable to copy input stream into output stream.", e);
-                }
+                copyStream(p, out);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+        copyStream(p, out);
+    }
+
+    private static void copyStream(Process p, OutputStream out) {
+        try {
+            IOUtils.copy(p.getInputStream(), out);
+        } catch (IOException e) {
+            LOG.error("Unable to copy input stream into output stream.", e);
         }
     }
 
