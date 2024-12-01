@@ -482,7 +482,7 @@ public class ArchiveUtils {
             final String command = sevenZipBinaryFile.getAbsolutePath() + " x " +
                     file.getAbsolutePath() + " -aoa -o" + targetFile.getAbsolutePath();
             final Process exec = Runtime.getRuntime().exec(command);
-            FileUtils.waitForProcess(exec, System.err);
+            FileUtils.waitForProcess(exec);
             if (exec.exitValue() != 0) {
                 LOG.error("Failed running command with exit value [{}]: [{}]", exec.exitValue(), command);
             }
