@@ -18,8 +18,6 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,45 +27,47 @@ import java.util.Locale;
 
 public class ExeComponentPatternContributor extends ComponentPatternContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExeComponentPatternContributor.class);
     private static final String EXE_SOURCE_TYPE = "exe";
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
-        add("/.text");
+        add(".exe]/.rdata");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("/.text");
+        return pathInContext.endsWith(".exe]/.rdata");
     }
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        File detectedFile = new File(baseDir, relativeAnchorPath);
-        List<ComponentPatternData> components = new ArrayList<>();
+        final File detectedFile = new File(baseDir, relativeAnchorPath);
+        final List<ComponentPatternData> components = new ArrayList<>();
 
-        File parentDir = detectedFile.getParentFile();
-        while (!parentDir.getName().toLowerCase(Locale.ROOT).endsWith(".exe]")) {
-            parentDir = parentDir.getParentFile();
+        File unpackedExeDir = detectedFile.getParentFile();
+        while (!unpackedExeDir.getName().toLowerCase(Locale.ROOT).endsWith(".exe]")) {
+            unpackedExeDir = unpackedExeDir.getParentFile();
         }
 
-        String relativePath = FileUtils.asRelativePath(parentDir, detectedFile);
+        String relativePath = FileUtils.asRelativePath(unpackedExeDir, detectedFile);
 
-        addComponent(parentDir, components, relativePath, anchorChecksum);
+        addComponent(unpackedExeDir, components, relativePath, anchorChecksum, relativeAnchorPath);
 
         return components;
     }
 
-    private void addComponent(File parentDir, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
-        final String name = parentDir.getName();
-        final String exeName = name.substring(1, name.length() - 1);
+    private void addComponent(File unpackedExeDir, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum, String fullRelativeAnchorPath) {
+        final String unpackedExeDirName = unpackedExeDir.getName();
+        final String exeName = unpackedExeDirName.substring(1, unpackedExeDirName.length() - 1);
 
-        ComponentPatternData cpd = new ComponentPatternData();
+        final ComponentPatternData cpd = new ComponentPatternData();
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, exeName);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+        final File fullRelativeAnchorFile = new File(fullRelativeAnchorPath).getParentFile();
+
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "/" + fullRelativeAnchorFile.getPath() + "/**/*");
+        cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.exe");
 
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, EXE_SOURCE_TYPE);

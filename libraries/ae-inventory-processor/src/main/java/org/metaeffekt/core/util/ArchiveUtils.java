@@ -137,8 +137,9 @@ public class ArchiveUtils {
      * Tar files may be wrapped. This method extracts the tar-construct until it reaches the content and keeps book
      * on the intermediate files created.
      *
-     * @param file      The file to untar
-     * @param targetDir The directory to untar the file into
+     * @param file      The file to untar.
+     * @param targetDir The directory to untar the file into.
+     *
      * @throws IOException If the file could not be untared
      */
     public static void untar(File file, File targetDir) throws IOException {
@@ -478,14 +479,15 @@ public class ArchiveUtils {
         // this requires 7zip to perform the extraction
         final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
         if (sevenZipBinaryFile.exists()) {
-            final String command = sevenZipBinaryFile.getAbsolutePath() + " x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath();
-            LOG.info("Running command: " + command);
-            Process exec = Runtime.getRuntime().exec(command);
+            final String command = sevenZipBinaryFile.getAbsolutePath() + " x " +
+                    file.getAbsolutePath() + " -aoa -o" + targetFile.getAbsolutePath();
+            final Process exec = Runtime.getRuntime().exec(command);
             FileUtils.waitForProcess(exec);
-            LOG.info("Command returned with exit value [{}]", exec.exitValue());
+            if (exec.exitValue() != 0) {
+                LOG.error("Failed running command with exit value [{}]: [{}]", exec.exitValue(), command);
+            }
         } else {
             LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
-
         }
     }
 

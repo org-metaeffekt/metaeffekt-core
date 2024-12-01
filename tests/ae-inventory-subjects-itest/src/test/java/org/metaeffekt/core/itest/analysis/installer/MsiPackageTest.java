@@ -64,9 +64,9 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
 
-        final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe-version")).getItemList().size();
+        final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).getItemList().size();
 
         // result depends on installation of 7z
-        Assertions.assertThat(size).isEqualTo(8);
+        Assertions.assertThat(size).isEqualTo(22);
     }
 }

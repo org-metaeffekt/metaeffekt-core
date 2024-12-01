@@ -319,18 +319,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static void waitForProcess(Process p) {
-        try {
-            while (p.isAlive()) {
-                p.waitFor(1000, TimeUnit.MILLISECONDS);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                try {
-                    IOUtils.copy(p.getInputStream(), baos);
-                } catch (IOException e) {
-                    LOG.error("Unable to copy input stream into output stream.", e);
-                }
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            waitForProcess(p, baos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

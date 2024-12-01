@@ -122,6 +122,7 @@ public class ExeVersionComponentPatternContributor extends ComponentPatternContr
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+        cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.exe");
 
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, EXE_SOURCE_TYPE);
