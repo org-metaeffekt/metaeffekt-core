@@ -58,8 +58,8 @@ public class Boto3_1_34_153 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "boto3-1.34.153"),
                         attributeValue(VERSION, "1.34.153"),
-                        attributeValue(PROJECTS, "[boto3-1.34.153-py3-none-any.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[boto3-1.34.153-py3-none-any.whl]"))
+                        attributeValue(PROJECTS, "boto3-1.34.153-py3-none-any.whl"),
+                        attributeValue(PATH_IN_ASSET, "boto3-1.34.153-py3-none-any.whl"))
                 .assertNotEmpty();
     }
 }

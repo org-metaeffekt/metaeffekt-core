@@ -58,9 +58,9 @@ public class SystemSecurityPrincipalWindows_5_0_0 extends AbstractCompositionAna
 
         artifactList.with(attributeValue(ID, "System.Security.Principal.Windows-5.0.0"),
                         attributeValue(VERSION, "5.0.0"),
-                        attributeValue(PROJECTS, "[system.security.principal.windows.5.0.0.nupkg]"),
+                        attributeValue(PROJECTS, "system.security.principal.windows.5.0.0.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.Security.Principal.Windows@5.0.0"),
-                        attributeValue(PATH_IN_ASSET, "[system.security.principal.windows.5.0.0.nupkg]"))
+                        attributeValue(PATH_IN_ASSET, "system.security.principal.windows.5.0.0.nupkg"))
                 .assertNotEmpty();
     }
 }

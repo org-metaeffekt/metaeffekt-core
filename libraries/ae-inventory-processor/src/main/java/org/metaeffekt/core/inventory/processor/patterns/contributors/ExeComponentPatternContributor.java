@@ -13,109 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Locale;
 
 public class ExeComponentPatternContributor extends ComponentPatternContributor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExeComponentPatternContributor.class);
     private static final String EXE_SOURCE_TYPE = "exe";
+
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
-        add(".rsrc/**/version.txt");
-        add(".rsrc/version.txt");
+        add(".exe]/.rdata");
+        add(".exe]/.idata");
     }});
 
     @Override
     public boolean applies(String pathInContext) {
-        return pathInContext.endsWith("version.txt");
+        return pathInContext.endsWith(".exe]/.rdata") || pathInContext.endsWith(".exe]/.idata");
     }
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        File versionFile = new File(baseDir, relativeAnchorPath);
-        List<ComponentPatternData> components = new ArrayList<>();
+        final File detectedFile = new File(baseDir, relativeAnchorPath);
+        final List<ComponentPatternData> components = new ArrayList<>();
 
-        File parentDir = versionFile.getParentFile();
-
-        while (!parentDir.getName().equals(".rsrc")) {
-            parentDir = parentDir.getParentFile();
+        File unpackedExeDir = detectedFile.getParentFile();
+        while (!unpackedExeDir.getName().toLowerCase(Locale.ROOT).endsWith(".exe]")) {
+            unpackedExeDir = unpackedExeDir.getParentFile();
         }
 
-        parentDir = parentDir.getParentFile();
+        String relativePath = FileUtils.asRelativePath(unpackedExeDir, detectedFile);
 
-        String relativePath = FileUtils.asRelativePath(parentDir, versionFile);
+        addComponent(unpackedExeDir, components, relativePath, anchorChecksum, relativeAnchorPath);
 
-        if (!versionFile.exists()) {
-            LOG.warn("MSI version file does not exist: {}", versionFile.getAbsolutePath());
-            return Collections.emptyList();
-        }
-
-        try (Stream<String> lines = Files.lines(versionFile.toPath(), StandardCharsets.UTF_16LE)) {
-            String productName = null;
-            String productVersion = null;
-
-            Pattern productNamePattern = Pattern.compile("VALUE\\s+\"ProductName\"\\s*,\\s*\"([^\"]*)\"");
-            Pattern productVersionPattern = Pattern.compile("VALUE\\s+\"ProductVersion\"\\s*,\\s*\"([^\"]*)\"");
-
-            for (String line : lines.collect(Collectors.toList())) {
-                Matcher nameMatcher = productNamePattern.matcher(line);
-                if (nameMatcher.find()) {
-                    productName = nameMatcher.group(1).replace("\0", "").trim();
-                }
-
-                Matcher versionMatcher = productVersionPattern.matcher(line);
-                if (versionMatcher.find()) {
-                    productVersion = versionMatcher.group(1).replace("\0", "").trim();
-                }
-
-                // If both values are found, we can stop processing further lines
-                if (productName != null && productVersion != null) {
-                    break;
-                }
-            }
-
-            if (productName != null && productVersion != null) {
-                addComponent(components, productName, productVersion, relativePath, anchorChecksum);
-            } else {
-                LOG.warn("Could not find ProductName or ProductVersion in MSI version file: {}", versionFile.getAbsolutePath());
-                return Collections.emptyList();
-            }
-            return components;
-        } catch (Exception e) {
-            LOG.warn("Error reading MSI version file: {}", versionFile.getAbsolutePath(), e);
-            return Collections.emptyList();
-        }
+        return components;
     }
 
-    private void addComponent(List<ComponentPatternData> components, String productName, String productVersion, String relativeAnchorPath, String anchorChecksum) {
-        ComponentPatternData cpd = new ComponentPatternData();
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, productName);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, productVersion);
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, productName + "-" + productVersion);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
+    private void addComponent(File unpackedExeDir, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum, String fullRelativeAnchorPath) {
+        final String unpackedExeDirName = unpackedExeDir.getName();
+        final String exeName = unpackedExeDirName.substring(1, unpackedExeDirName.length() - 1);
+
+        final ComponentPatternData cpd = new ComponentPatternData();
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, exeName);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+
+        final File fullRelativeAnchorFile = new File(fullRelativeAnchorPath).getParentFile();
+
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "/" + fullRelativeAnchorFile.getPath() + "/**/*");
+        cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.exe");
+
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, EXE_SOURCE_TYPE);
-        cpd.set(Artifact.Attribute.PURL, buildPurl(productName, productVersion));
 
         components.add(cpd);
     }

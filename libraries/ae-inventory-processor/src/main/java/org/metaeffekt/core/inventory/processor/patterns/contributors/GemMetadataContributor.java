@@ -74,9 +74,9 @@ public class GemMetadataContributor extends ComponentPatternContributor {
                 gemName = gemName.substring(0, folderName.length() - 4);
             }
 
-            int dashIndex = folderName.lastIndexOf('-');
-            String name = folderName.substring(0, dashIndex);
-            String version = folderName.substring(dashIndex+1, folderName.length());
+            int dashIndex = gemName.lastIndexOf('-');
+            String name = gemName.substring(0, dashIndex);
+            String version = gemName.substring(dashIndex+1, gemName.length());
 
             // verify name / version against metadata file
             boolean containsName = content8859.contains("name: " + name) || contentUtf8.contains("name: " + name);
@@ -93,7 +93,7 @@ public class GemMetadataContributor extends ComponentPatternContributor {
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, gemName);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, folderName);
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);

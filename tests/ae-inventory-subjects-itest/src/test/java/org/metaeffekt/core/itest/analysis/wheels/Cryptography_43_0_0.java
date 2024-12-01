@@ -64,8 +64,8 @@ public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "cryptography-43.0.0"),
                         attributeValue(VERSION, "43.0.0"),
-                        attributeValue(PROJECTS, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"))
+                        attributeValue(PROJECTS, "cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl"),
+                        attributeValue(PATH_IN_ASSET, "cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl"))
                 .assertNotEmpty();
     }
 }

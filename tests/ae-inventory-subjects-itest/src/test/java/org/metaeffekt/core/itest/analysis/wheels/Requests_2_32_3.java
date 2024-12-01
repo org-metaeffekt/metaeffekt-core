@@ -58,8 +58,8 @@ public class Requests_2_32_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "requests-2.32.3"),
                         attributeValue(VERSION, "2.32.3"),
-                        attributeValue(PROJECTS, "[requests-2.32.3-py3-none-any.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[requests-2.32.3-py3-none-any.whl]"))
+                        attributeValue(PROJECTS, "requests-2.32.3-py3-none-any.whl"),
+                        attributeValue(PATH_IN_ASSET, "requests-2.32.3-py3-none-any.whl"))
                 .assertNotEmpty();
     }
 }

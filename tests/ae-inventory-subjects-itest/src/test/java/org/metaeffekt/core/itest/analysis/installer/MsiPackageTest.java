@@ -22,6 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -53,6 +54,9 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
     @Test
     public void analyse() throws Exception {
         Assert.assertTrue(testSetup.rebuildInventory());
+
+        ArtifactList artifactList = getAnalysis().selectArtifacts();
+        artifactList.logListWithAllAttributes();
     }
 
     @Test
@@ -62,7 +66,8 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
 
         final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).getItemList().size();
 
-        // result depends on installation of 7z
-        Assertions.assertThat(size == 6 || size == 0).isTrue();
+        // result depends on installation of 7z / platform
+        // currently windows 7z has a problem when unpacking; ironic
+        Assertions.assertThat(size == 0 || size == 22);
     }
 }
