@@ -107,9 +107,6 @@ public class DocumentDescriptorReportGenerator {
             if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
                 report.setInventoryVulnerabilityReportEnabled(true);
             }
-            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
-                report.setInventoryVulnerabilityReportSummaryEnabled(true);
-            }
 
             report.setReferenceInventory(inventoryContext.getReferenceInventory());
             report.setInventory(inventoryContext.getInventory());
