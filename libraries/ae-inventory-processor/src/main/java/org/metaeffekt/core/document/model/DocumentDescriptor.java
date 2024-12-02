@@ -117,10 +117,6 @@ public class DocumentDescriptor {
             if (context.getIdentifier().isEmpty()){
                 throw new IllegalStateException("The identifier must not be empty.");
             }
-            // check if each inventoryContext has a unique identifier
-            if (!identifiers.add(context.getIdentifier())) {
-                throw new IllegalStateException("Duplicate context identifier found [" + context.getIdentifier() + "].");
-            }
         }
     }
 }
