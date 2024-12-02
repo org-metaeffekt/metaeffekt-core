@@ -58,8 +58,8 @@ public class Filelock_3_15_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "filelock-3.15.4"),
                         attributeValue(VERSION, "3.15.4"),
-                        attributeValue(PROJECTS, "[filelock-3.15.4-py3-none-any.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[filelock-3.15.4-py3-none-any.whl]"))
+                        attributeValue(PROJECTS, "filelock-3.15.4-py3-none-any.whl"),
+                        attributeValue(PATH_IN_ASSET, "filelock-3.15.4-py3-none-any.whl"))
                 .assertNotEmpty();
     }
 }

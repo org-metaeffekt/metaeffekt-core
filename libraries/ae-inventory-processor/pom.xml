@@ -20,6 +20,25 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.metaeffekt.bundle.sevenzip</groupId>
+                <artifactId>ae-7zip-installation-maven-plugin</artifactId>
+                <version>${ae.7zip.bundle.version}</version>
+                <!-- FIXME: revise configuration after consolidation in bundle project -->
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>extract-7zip</goal>
+                        </goals>
+                        <configuration>
+                            <sevenZipGroupId>org.metaeffekt.bundle.sevenzip</sevenZipGroupId>
+                            <sevenZipArtifactId>ae-7zip-resource-bundle</sevenZipArtifactId>
+                            <sevenZipArtifactVersion>${ae.7zip.bundle.version}</sevenZipArtifactVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -196,6 +215,14 @@
             <artifactId>packageurl-java</artifactId>
             <version>1.5.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.metaeffekt.bundle.sevenzip</groupId>
+            <artifactId>ae-7zip-java-util</artifactId>
+            <version>${ae.7zip.bundle.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>

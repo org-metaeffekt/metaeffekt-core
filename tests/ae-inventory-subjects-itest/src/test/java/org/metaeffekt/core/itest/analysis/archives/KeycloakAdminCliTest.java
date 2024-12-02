@@ -65,6 +65,8 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
 
         Analysis analysis = new Analysis(inventory);
 
+        analysis.selectArtifacts().logListWithAllAttributes();
+
         // expect that the substructure is visible
         analysis.selectArtifacts().hasSizeGreaterThan(1);
         analysis.selectArtifacts(startsWith(ID, "jansi")).hasSizeOf(9);

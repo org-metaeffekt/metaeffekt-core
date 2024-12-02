@@ -26,6 +26,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Zip;
+import org.metaeffekt.bundle.sevenzip.SevenZipExecutableUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -136,8 +137,9 @@ public class ArchiveUtils {
      * Tar files may be wrapped. This method extracts the tar-construct until it reaches the content and keeps book
      * on the intermediate files created.
      *
-     * @param file      The file to untar
-     * @param targetDir The directory to untar the file into
+     * @param file      The file to untar.
+     * @param targetDir The directory to untar the file into.
+     *
      * @throws IOException If the file could not be untared
      */
     public static void untar(File file, File targetDir) throws IOException {
@@ -201,14 +203,17 @@ public class ArchiveUtils {
         try {
             untarInternal(file, targetDir);
         } catch (Exception e) {
-            LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), e.getMessage());
-
+            LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
             try {
-                nativeUntar(file, targetDir);
-            } catch(Exception ex) {
-                throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), e);
+                extractFileWithSevenZip(file, targetDir);
+            } catch (Exception ex) {
+                LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
+                try {
+                    nativeUntar(file, targetDir);
+                } catch(Exception exc) {
+                    throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), exc);
+                }
             }
-
         } finally {
             for (File intermediateFile : intermediateFiles) {
                 FileUtils.forceDelete(intermediateFile);
@@ -419,7 +424,7 @@ public class ArchiveUtils {
         try {
             if (windowsExtensions.contains(extension)) {
                 FileUtils.forceMkdir(targetDir);
-                extractWindowsFile(archiveFile, targetDir);
+                extractFileWithSevenZip(archiveFile, targetDir);
                 return true;
             }
         } catch (Exception e) {
@@ -470,13 +475,19 @@ public class ArchiveUtils {
         }
     }
 
-    private static void extractWindowsFile(File file, File targetFile) {
+    private static void extractFileWithSevenZip(File file, File targetFile) throws IOException {
         // this requires 7zip to perform the extraction
-        try {
-            Process exec = Runtime.getRuntime().exec("7z x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
+        final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
+        if (sevenZipBinaryFile.exists()) {
+            final String command = sevenZipBinaryFile.getAbsolutePath() + " x " +
+                    file.getAbsolutePath() + " -aoa -o" + targetFile.getAbsolutePath();
+            final Process exec = Runtime.getRuntime().exec(command);
             FileUtils.waitForProcess(exec);
-        } catch (IOException e) {
-            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed.");
+            if (exec.exitValue() != 0) {
+                LOG.error("Failed running command with exit value [{}]: [{}]", exec.exitValue(), command);
+            }
+        } else {
+            LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
         }
     }
 
