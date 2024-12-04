@@ -18,20 +18,22 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
+import org.metaeffekt.core.inventory.processor.adapter.YarnLockAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class WebModuleComponentPatternContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(WebModuleComponentPatternContributor.class);
@@ -143,10 +145,27 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json, **/apps/**/**/*.json");
 
+        // check whether alternatively a yarn.lock file is available
+        File yarnLock = new File(anchorParentDir, "yarn.lock");
+
+        Inventory inventoryFromYarnLock = null;
+        if (anchorFile.exists()) {
+            inventoryFromYarnLock = new YarnLockAdapter().extractInventory(yarnLock, relativeAnchorPath);
+        }
+
         if (inventoryFromPackageLock != null) {
             final Inventory expansionInventory = inventoryFromPackageLock;
             componentPatternData.setExpansionInventorySupplier(() -> expansionInventory);
+
+            // FIXME: consolidate with yarnLock
+        } else {
+            if (inventoryFromYarnLock != null) {
+                final Inventory expansionInventory = inventoryFromYarnLock;
+                // FIXME: consolidate with package.json (dev/prod)
+                componentPatternData.setExpansionInventorySupplier(() -> expansionInventory);
+            }
         }
+
 
         return Collections.singletonList(componentPatternData);
     }
@@ -181,6 +200,8 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         File anchor;
         String anchorChecksum;
 
+        String url;
+
         @Override
         public int compareTo(WebModule o) {
             return path.compareToIgnoreCase(o.path);
@@ -195,6 +216,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                     ", license='" + license + '\'' +
                     ", path='" + path + '\'' +
                     ", anchor='" + anchor + '\'' +
+                    ", url='" + url + '\'' +
                     '}';
         }
 
@@ -208,6 +230,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
         File packageLockJsonFile;
         File packageJsonFile;
+        File yarnLockFile;
     }
 
     protected void scanWebComponents(File inventoryFile, Map<String, WebModule> pathModuleMap, File baseDir) throws IOException {
