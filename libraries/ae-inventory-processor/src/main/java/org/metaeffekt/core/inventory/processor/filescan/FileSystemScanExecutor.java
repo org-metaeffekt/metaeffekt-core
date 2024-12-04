@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.FileCollectTask;
@@ -25,15 +24,14 @@ import org.metaeffekt.core.inventory.processor.filescan.tasks.ScanTask;
 import org.metaeffekt.core.inventory.processor.inspector.*;
 import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionParam;
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
-import org.metaeffekt.core.util.ArchiveUtils;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -135,55 +133,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
 
         mergeDuplicates(inventory);
-
-        // FIXME: this should be separated; currently not executed in scan case, since getAggregationDir is not configured
-        File aggregationDir = fileSystemScanContext.getAggregationDir();
-
-        if (aggregationDir != null && !aggregationDir.exists()) {
-            try {
-                FileUtils.forceMkdir(aggregationDir);
-            } catch (IOException e) {
-                LOG.error("Cannot create aggregation directory [{}].", aggregationDir.getAbsolutePath(), e);
-            }
-        }
-
-        if (aggregationDir != null && aggregationDir.exists()) {
-            // post-processing steps
-            // 1. produce one file with all ArtifactFile types
-            final File baseDir = fileSystemScanContext.getBaseDir().getFile();
-
-            List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(fileSystemScanContext.getScanParam().getReferenceInventory(), inventory, baseDir);
-
-
-            // 2. analyze component containments
-            for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-                final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
-                if (mapper.getSubSetMap() != null) {
-                    for (String qualifier : mapper.getSubSetMap().keySet()) {
-                        Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream()
-                                .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
-                                .findFirst().orElse(null);
-                        if (foundArtifact != null) {
-                            String marker = foundArtifact.get(assetId);
-                            if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
-                                LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 3. build zips for all components
-            ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers, inventory, new HashSet<>(), aggregationDir);
-        }
-    }
-
-    public static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
-        return a.getId().equals(qualifier) || qualifier.equals(deriveQualifier(a));
-    }
-
-    private static String deriveQualifier(Artifact a) {
-        return DirectoryScanExtractorConfiguration.deriveMapQualifier(a.getComponent(), a.getVersion(), a.getId());
     }
 
     private void setArtifactAssetMarker() {

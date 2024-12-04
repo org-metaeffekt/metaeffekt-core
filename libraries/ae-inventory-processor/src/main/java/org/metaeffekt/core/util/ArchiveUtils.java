@@ -27,22 +27,19 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.metaeffekt.bundle.sevenzip.SevenZipExecutableUtils;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor.matchQualifierToIdOrDerivedQualifier;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ARCHIVE_PATH;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CONTENT_CHECKSUM;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -507,59 +504,6 @@ public class ArchiveUtils {
         zip.setDestFile(targetZipFile);
         zip.setFollowSymlinks(false);
         zip.execute();
-    }
-
-    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers,
-                                                 Inventory inventory, Set<Artifact> removeableArtifacts, File targetDir) {
-        // create an ant project
-        Project antProject = new Project();
-        antProject.init();
-
-        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-            final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
-            Artifact foundArtifact = inventory.getArtifacts().stream()
-                    .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
-                    .findFirst().orElse(null);
-            try {
-                // loop over each entry in the file map
-                for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
-                    List<File> files = entry.getValue();
-                    if (files.isEmpty()) {
-                        continue;
-                    }
-
-                    // add each file to the zip
-                    for (File file : files) {
-                        // copy the file to the tmp folder
-                        FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
-                    }
-
-                    final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
-                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
-
-                    // set the content checksum
-                    if (foundArtifact != null) {
-                        final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
-                        mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                        foundArtifact.set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                        final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
-                        mapper.getArtifact().set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
-                        foundArtifact.set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
-                        ArchiveUtils.zipAnt(tmpFolder, zipFile);
-
-                        if (!zipFile.exists()) {
-                            removeableArtifacts.add(foundArtifact);
-                            throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                LOG.error("Error processing artifact: [{}].", mapper.getArtifact().getId(), e);
-            } finally {
-                // ensure the tmp folder is deleted
-                FileUtils.deleteDirectoryQuietly(tmpFolder);
-            }
-        }
     }
 
     private static final long UNTAR_TIMEOUT_NUMBER = 1;

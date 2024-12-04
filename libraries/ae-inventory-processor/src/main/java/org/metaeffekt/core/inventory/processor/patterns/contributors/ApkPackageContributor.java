@@ -132,9 +132,14 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                     license = line.substring(2).trim();
                 } else if (line.isEmpty()) {
                     // end of package block, process collected data
+
+                    // determine the root of the distro (may be in an nested folder structure)
+                    final String modulatedPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, suffixes);
+                    final String modulatedAnchorPath = FileUtils.asRelativePath(modulatedPath, relativeAnchorPath);
+
                     if (packageName != null && version != null && architecture != null) {
                         if (includePatterns.length() > 0) {
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
+                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), modulatedAnchorPath, anchorChecksum, license);
                             includePatterns = new StringJoiner(", ");
                         } else {
                             LOG.warn("No include patterns found for package: [{}-{}-{}]", packageName, version, architecture);
@@ -143,7 +148,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
                             includePatterns.add("usr/share/doc/" + packageName + "/**/*");
                             includePatterns.add("usr/share/licenses/" + packageName + "/**/*");
                             includePatterns.add("usr/share/man/" + packageName + "/**/*");
-                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), virtualRoot.relativize(relativeAnchorFile).toString(), anchorChecksum, license);
+                            processCollectedData(components, packageName, version, architecture, includePatterns.toString(), modulatedAnchorPath, anchorChecksum, license);
                         }
                     }
                     packageName = null;
@@ -163,6 +168,7 @@ public class ApkPackageContributor extends ComponentPatternContributor {
     private void processCollectedData(List<ComponentPatternData> components, String packageName, String version,
                                       String architecture, String includePatterns, String path, String checksum,
                                       String license) {
+
         ComponentPatternData cpd = new ComponentPatternData();
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);

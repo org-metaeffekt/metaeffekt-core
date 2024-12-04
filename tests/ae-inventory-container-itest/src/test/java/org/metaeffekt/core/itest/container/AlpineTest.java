@@ -21,9 +21,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
-import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
@@ -35,8 +34,9 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.detectDuplicateComponentPatternMatches;
+import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
@@ -90,7 +90,7 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
 
         final List<FilePatternQualifierMapper> filePatternQualifierMapperList =
-                detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+                evaluateComponentPatterns(referenceInventory, inventory, baseDir);
 
         final DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
@@ -108,6 +108,7 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
 
         final Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "apk")).hasSizeOf(15);
+
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/installed")).hasSizeGreaterThan(1);
 
         // there must be only once container asset
@@ -116,4 +117,23 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
         // we expect the container being only represented as asset; no artifacts with type container
         analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
+
+    @Test
+    public void testAggregation() throws Exception {
+        final File aggregationDir = new File(testSetup.getInventoryFolder(), "aggregation");
+
+        DirectoryScanAggregatorConfiguration config =
+                new DirectoryScanAggregatorConfiguration(testSetup.readReferenceInventory(),
+                        testSetup.getInventory(), new File(testSetup.getScanFolder()));
+
+        config.aggregateFiles(aggregationDir);
+
+        final List<Artifact> apk = testSetup.getInventory().getArtifacts();
+
+        final List<Artifact> collect = apk.stream().filter(a -> a.get(Constants.KEY_ARCHIVE_PATH) != null).collect(Collectors.toList());
+
+        Assertions.assertThat(collect.size()).isEqualTo(15);
+
+    }
+
 }
