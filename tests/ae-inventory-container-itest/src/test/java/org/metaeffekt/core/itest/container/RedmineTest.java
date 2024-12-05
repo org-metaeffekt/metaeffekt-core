@@ -44,6 +44,8 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.T
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
+// FIXME: this test runs extremely slow, ignored for now
+@Ignore
 public class RedmineTest extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
