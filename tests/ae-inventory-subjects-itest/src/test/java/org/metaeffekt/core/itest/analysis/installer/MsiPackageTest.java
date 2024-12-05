@@ -68,6 +68,6 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
 
         // result depends on installation of 7z / platform
         // currently windows 7z has a problem when unpacking; ironic
-        Assertions.assertThat(size == 0 || size == 22);
+        Assertions.assertThat(size == 22);
     }
 }
