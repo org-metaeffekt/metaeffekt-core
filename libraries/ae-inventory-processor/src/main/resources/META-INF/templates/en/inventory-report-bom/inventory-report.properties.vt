@@ -14,7 +14,7 @@
 #if($notices.isEmpty())
     #set($noticesSwitch = false)
 #end
-ae.inventory.report.bom.notices.switch=$noticesSwitch
+ae.inventory.component.license.details.switch=$noticesSwitch
 
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 ae.inventory.report.bom.count.artifacts.nolicense=$artifactsWithoutLicense.size()

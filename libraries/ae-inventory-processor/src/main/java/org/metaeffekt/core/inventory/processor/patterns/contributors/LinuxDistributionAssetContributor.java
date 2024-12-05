@@ -32,7 +32,7 @@ import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 public class LinuxDistributionAssetContributor extends ComponentPatternContributor {
 
-    private static List<String> SUFFIX_LIST = Arrays.stream(LinuxDistributionUtil.getContextPaths())
+    private static final List<String> SUFFIX_LIST = Arrays.stream(LinuxDistributionUtil.getContextPaths())
             .map(s->s.substring(1))
             .collect(Collectors.toList());
 

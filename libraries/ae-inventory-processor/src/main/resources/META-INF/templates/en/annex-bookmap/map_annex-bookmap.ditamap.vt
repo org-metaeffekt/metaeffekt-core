@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/map.dtd">
+<map id="map_annex">
+    <title>Annex</title>
+
+    ## https://velocity.apache.org/engine/1.7/user-guide.html
+
+
+#foreach($inventoryContext in $documentDescriptor.getInventoryContexts())
+    <chapter href="$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita">
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
+
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
+
+        #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
+        #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
+            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" />
+        #end
+    </chapter>
+#end
+</map>

@@ -223,9 +223,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         public boolean hasData() {
             if (StringUtils.isBlank(name)) return false;
             if (StringUtils.isBlank(version)) return false;
-            if (anchor == null) return false;
-
-            return true;
+            return anchor != null;
         }
 
         File packageLockJsonFile;
@@ -290,10 +288,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         if (artifactPath.endsWith(Constants.COMPOSER_JSON)) {
             return true;
         }
-        if (artifactPath.endsWith(Constants.DOT_BOWER_JSON)) {
-            return true;
-        }
-        return false;
+        return artifactPath.endsWith(Constants.DOT_BOWER_JSON);
     }
 
     protected WebModule getOrInitWebModule(String path, Map<String, WebModule> pathModuleMap) {

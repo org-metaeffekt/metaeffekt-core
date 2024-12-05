@@ -50,7 +50,7 @@ public class InventoryMergeUtilsTest {
 
         Inventory source = new Inventory();
         Inventory target = new Inventory();
-        List<Inventory> sourceInventories = Arrays.asList(source);
+        List<Inventory> sourceInventories = Collections.singletonList(source);
         new InventoryMergeUtils().mergeInventories(sourceInventories, target);
 
         Assertions.assertThat(target.getArtifacts()).isEmpty();
