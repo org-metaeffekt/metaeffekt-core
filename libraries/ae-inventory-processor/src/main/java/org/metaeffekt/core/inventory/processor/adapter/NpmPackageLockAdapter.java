@@ -155,7 +155,7 @@ public class NpmPackageLockAdapter {
             String componentName = module.getName();
             int slashIndex = componentName.indexOf("/");
             if (slashIndex > 0) {
-                componentName = componentName.substring(0, slashIndex - 1);
+                componentName = componentName.substring(0, slashIndex);
             }
             artifact.setComponent(componentName);
             artifact.setVersion(module.getVersion());
