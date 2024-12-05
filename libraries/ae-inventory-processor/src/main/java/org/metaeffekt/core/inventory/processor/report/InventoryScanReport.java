@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.report;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
+import java.io.IOException;
 
 public class InventoryScanReport extends InventoryReport {
 
@@ -39,7 +40,7 @@ public class InventoryScanReport extends InventoryReport {
     private boolean includeEmbedded = false;
 
     @Override
-    public boolean createReport() throws Exception {
+    public boolean createReport() throws IOException {
         Inventory globalInventory = readGlobalInventory();
 
         DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
@@ -54,7 +55,7 @@ public class InventoryScanReport extends InventoryReport {
     }
 
     @Override
-    public boolean createReport(Inventory globalInventory, Inventory scanInventory) throws Exception {
+    public boolean createReport(Inventory globalInventory, Inventory scanInventory) throws IOException {
         if (globalInventory == null) globalInventory = readGlobalInventory();
 
         // insert (potentially incomplete) artifacts for reporting

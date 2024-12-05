@@ -66,6 +66,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
                 componentPatternData.set("Release", rpd.release);
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
+                componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.exe");
 
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                 componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "java-runtime");

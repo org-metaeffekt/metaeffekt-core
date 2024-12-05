@@ -26,22 +26,20 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Zip;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.bundle.sevenzip.SevenZipExecutableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanExecutor.matchQualifierToIdOrDerivedQualifier;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ARCHIVE_PATH;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CONTENT_CHECKSUM;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -136,8 +134,9 @@ public class ArchiveUtils {
      * Tar files may be wrapped. This method extracts the tar-construct until it reaches the content and keeps book
      * on the intermediate files created.
      *
-     * @param file      The file to untar
-     * @param targetDir The directory to untar the file into
+     * @param file      The file to untar.
+     * @param targetDir The directory to untar the file into.
+     *
      * @throws IOException If the file could not be untared
      */
     public static void untar(File file, File targetDir) throws IOException {
@@ -201,14 +200,17 @@ public class ArchiveUtils {
         try {
             untarInternal(file, targetDir);
         } catch (Exception e) {
-            LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), e.getMessage());
-
+            LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
             try {
-                nativeUntar(file, targetDir);
-            } catch(Exception ex) {
-                throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), e);
+                extractFileWithSevenZip(file, targetDir);
+            } catch (Exception ex) {
+                LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
+                try {
+                    nativeUntar(file, targetDir);
+                } catch(Exception exc) {
+                    throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), exc);
+                }
             }
-
         } finally {
             for (File intermediateFile : intermediateFiles) {
                 FileUtils.forceDelete(intermediateFile);
@@ -419,7 +421,7 @@ public class ArchiveUtils {
         try {
             if (windowsExtensions.contains(extension)) {
                 FileUtils.forceMkdir(targetDir);
-                extractWindowsFile(archiveFile, targetDir);
+                extractFileWithSevenZip(archiveFile, targetDir);
                 return true;
             }
         } catch (Exception e) {
@@ -470,13 +472,19 @@ public class ArchiveUtils {
         }
     }
 
-    private static void extractWindowsFile(File file, File targetFile) {
+    private static void extractFileWithSevenZip(File file, File targetFile) throws IOException {
         // this requires 7zip to perform the extraction
-        try {
-            Process exec = Runtime.getRuntime().exec("7z x " + file.getAbsolutePath() + " -o" + targetFile.getAbsolutePath());
+        final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
+        if (sevenZipBinaryFile.exists()) {
+            final String command = sevenZipBinaryFile.getAbsolutePath() + " x " +
+                    file.getAbsolutePath() + " -aoa -o" + targetFile.getAbsolutePath();
+            final Process exec = Runtime.getRuntime().exec(command);
             FileUtils.waitForProcess(exec);
-        } catch (IOException e) {
-            LOG.error("Cannot unpack windows file: " + file.getAbsolutePath() + ". Ensure 7zip is installed.");
+            if (exec.exitValue() != 0) {
+                LOG.error("Failed running command with exit value [{}]: [{}]", exec.exitValue(), command);
+            }
+        } else {
+            LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
         }
     }
 
@@ -496,59 +504,6 @@ public class ArchiveUtils {
         zip.setDestFile(targetZipFile);
         zip.setFollowSymlinks(false);
         zip.execute();
-    }
-
-    public static void buildZipsForAllComponents(File baseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers,
-                                                 Inventory inventory, Set<Artifact> removeableArtifacts, File targetDir) {
-        // create an ant project
-        Project antProject = new Project();
-        antProject.init();
-
-        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-            final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
-            Artifact foundArtifact = inventory.getArtifacts().stream()
-                    .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
-                    .findFirst().orElse(null);
-            try {
-                // loop over each entry in the file map
-                for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
-                    List<File> files = entry.getValue();
-                    if (files.isEmpty()) {
-                        continue;
-                    }
-
-                    // add each file to the zip
-                    for (File file : files) {
-                        // copy the file to the tmp folder
-                        FileUtils.copyFile(file, new File(tmpFolder, file.getName()));
-                    }
-
-                    final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
-                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
-
-                    // set the content checksum
-                    if (foundArtifact != null) {
-                        final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
-                        mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                        foundArtifact.set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                        final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
-                        mapper.getArtifact().set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
-                        foundArtifact.set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
-                        ArchiveUtils.zipAnt(tmpFolder, zipFile);
-
-                        if (!zipFile.exists()) {
-                            removeableArtifacts.add(foundArtifact);
-                            throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                LOG.error("Error processing artifact: [{}].", mapper.getArtifact().getId(), e);
-            } finally {
-                // ensure the tmp folder is deleted
-                FileUtils.deleteDirectoryQuietly(tmpFolder);
-            }
-        }
     }
 
     private static final long UNTAR_TIMEOUT_NUMBER = 1;

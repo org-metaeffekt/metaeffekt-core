@@ -58,8 +58,8 @@ public class Beautifulsoup4_4_12_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "beautifulsoup4-4.12.3"),
                         attributeValue(VERSION, "4.12.3"),
-                        attributeValue(PROJECTS, "[beautifulsoup4-4.12.3-py3-none-any.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[beautifulsoup4-4.12.3-py3-none-any.whl]"))
+                        attributeValue(PROJECTS, "beautifulsoup4-4.12.3-py3-none-any.whl"),
+                        attributeValue(PATH_IN_ASSET, "beautifulsoup4-4.12.3-py3-none-any.whl"))
                 .assertNotEmpty();
     }
 }

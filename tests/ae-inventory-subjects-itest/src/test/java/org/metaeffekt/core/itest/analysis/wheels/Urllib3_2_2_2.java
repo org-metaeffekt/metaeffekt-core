@@ -58,8 +58,8 @@ public class Urllib3_2_2_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "urllib3-2.2.2"),
                         attributeValue(VERSION, "2.2.2"),
-                        attributeValue(PROJECTS, "[urllib3-2.2.2-py3-none-any.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[urllib3-2.2.2-py3-none-any.whl]"))
+                        attributeValue(PROJECTS, "urllib3-2.2.2-py3-none-any.whl"),
+                        attributeValue(PATH_IN_ASSET, "urllib3-2.2.2-py3-none-any.whl"))
                 .assertNotEmpty();
     }
 }

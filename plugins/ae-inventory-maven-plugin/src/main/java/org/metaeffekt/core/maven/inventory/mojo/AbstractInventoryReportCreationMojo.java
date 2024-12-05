@@ -290,7 +290,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      *
      * @parameter
      */
-    private String generateOverviewTablesForAdvisories = "[]";
+    private final String generateOverviewTablesForAdvisories = "[]";
 
     // other template parameters
 

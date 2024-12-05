@@ -168,7 +168,7 @@ public class ComponentPatternProducer {
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {
-                        LOG.info("Identified component pattern: [{}]", cpd.createToStringRepresentation());
+                        LOG.info("Identified component pattern: [{}] [{}]", cpd.createToStringRepresentation(), cpd.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
 
                         // FIXME: defer to 2nd pass
                         final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
@@ -249,6 +249,7 @@ public class ComponentPatternProducer {
 
     private void deriveAddonArtifactsFromMatchResult(List<MatchResult> componentPatterns, FileSystemScanContext fileSystemScanContext) {
         for (MatchResult matchResult : componentPatterns) {
+
             final Artifact derivedArtifact = matchResult.deriveArtifact();
             fileSystemScanContext.contribute(derivedArtifact);
 
@@ -622,6 +623,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new PubComponentPatternContributor());
         contributorRunnerBuilder.add(new CocoapodsComponentPatternContributor());
         contributorRunnerBuilder.add(new HexComponentPatternContributor());
+        contributorRunnerBuilder.add(new ExeVersionComponentPatternContributor());
         contributorRunnerBuilder.add(new ExeComponentPatternContributor());
         contributorRunnerBuilder.add(new BitnamiComponentPatternContributor());
         contributorRunnerBuilder.add(new GenericVersionFileComponentPatternContributor());

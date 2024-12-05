@@ -27,7 +27,7 @@ import java.util.List;
 
 public class ContainerInspectAssetContributor extends ComponentPatternContributor {
 
-    private static List<String> SUFFIX_LIST = Collections.singletonList(".json");
+    private static final List<String> SUFFIX_LIST = Collections.singletonList(".json");
 
     @Override
     public boolean applies(String pathInContext) {

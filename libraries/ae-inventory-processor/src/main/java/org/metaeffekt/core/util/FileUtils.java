@@ -27,6 +27,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -54,9 +55,9 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static final char SEPARATOR_SLASH_CHAR = '/';
 
-    private static Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
-    private static Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
-    private static Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
+    private static final Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
+    private static final Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
+    private static final Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
 
     /**
      * Scans the given baseDir for files matching the includes and excludes.
@@ -95,7 +96,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     /**
      * The thread-local enables to reuse the Ant Checksum instance per thread.
      */
-    private static ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Checksum> checksumThreadLocal = new ThreadLocal<>();
 
     public static String computeChecksum(File file, String algorithm) {
         try {
@@ -318,18 +319,31 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static void waitForProcess(Process p) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            waitForProcess(p, baos);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void waitForProcess(Process p, OutputStream out) {
         try {
+            copyStream(p, out);
             while (p.isAlive()) {
                 p.waitFor(1000, TimeUnit.MILLISECONDS);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                try {
-                    IOUtils.copy(p.getInputStream(), baos);
-                } catch (IOException e) {
-                    LOG.error("Unable to copy input stream into output stream.", e);
-                }
+                copyStream(p, out);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+        }
+        copyStream(p, out);
+    }
+
+    private static void copyStream(Process p, OutputStream out) {
+        try {
+            IOUtils.copy(p.getInputStream(), out);
+        } catch (IOException e) {
+            LOG.error("Unable to copy input stream into output stream.", e);
         }
     }
 

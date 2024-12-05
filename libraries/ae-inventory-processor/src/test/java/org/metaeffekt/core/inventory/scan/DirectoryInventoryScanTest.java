@@ -15,12 +15,13 @@
  */
 package org.metaeffekt.core.inventory.scan;
 
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -75,11 +76,12 @@ public class DirectoryInventoryScanTest {
 
         Assertions.assertThat(resultInventory.findArtifact("test-alpha-1.0.0.jar")).isNotNull();
 
-        // most primitive test on DirectoryScanExtractorConfiguration
-        DirectoryScanExtractorConfiguration directoryScanExtractorConfiguration =
-                new DirectoryScanExtractorConfiguration(referenceInventory, resultInventory, scanDir);
+        // most primitive test on DirectoryScanAggregatorConfiguration
+        DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
+                new DirectoryScanAggregatorConfiguration(referenceInventory, resultInventory, scanDir);
 
-        final List<FilePatternQualifierMapper> filePatternQualifierMappers = directoryScanExtractorConfiguration.mapArtifactsToComponentPatterns();
+        final List<FilePatternQualifierMapper> filePatternQualifierMappers =
+                directoryScanAggregatorConfiguration.mapArtifactsToCoveredFiles();
 
         Set<String> qualifiers = new HashSet<>();
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
@@ -210,6 +212,22 @@ public class DirectoryInventoryScanTest {
 
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
         new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xlsx"));
+
+        for (Artifact artifact : inventory.getArtifacts()) {
+            final String pathInAsset = artifact.get(Artifact.Attribute.PATH_IN_ASSET);
+            if (StringUtils.isBlank(pathInAsset)) {
+                throw new IllegalStateException("Attribute [Path in Asset] must be available after scan.");
+            }
+        }
+
+        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls");
+
+        final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
+                new DirectoryScanAggregatorConfiguration(referenceInventory, inventory, scanDir);
+        directoryScanAggregatorConfiguration.aggregateFiles(new File("target/aggregation"));
+
+        new InventoryWriter().writeInventory(inventory, new File("target/aggregated-inventory.xlsx"));
+
     }
 
     private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir) throws IOException {

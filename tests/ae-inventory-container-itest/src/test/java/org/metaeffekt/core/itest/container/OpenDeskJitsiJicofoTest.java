@@ -33,7 +33,7 @@ import java.io.File;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.detectDuplicateComponentPatternMatches;
+import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
@@ -103,7 +103,7 @@ public class OpenDeskJitsiJicofoTest extends AbstractCompositionAnalysisTest {
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         List<FilePatternQualifierMapper> filePatternQualifierMapperList =
-                detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+                evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
         // FIXME: we have to write a function, which ignores sym links or we have to process them before
