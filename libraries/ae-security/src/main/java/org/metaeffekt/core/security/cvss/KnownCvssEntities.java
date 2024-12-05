@@ -75,6 +75,7 @@ public abstract class KnownCvssEntities {
 
     public final static CvssEntity NVD = ENTITIES_BY_KEYNAME.get("NIST_NVD");
     public final static CvssEntity GHSA = ObjectUtils.firstNonNull(ENTITIES_BY_KEYNAME.get("CVE_CNA_GITHUB_M"), ENTITIES_BY_NAME.get("GitHub, Inc."));
+    public final static CvssEntity OSV = ObjectUtils.firstNonNull(ENTITIES_BY_KEYNAME.get("CVE_CNA_GITHUB_M"), ENTITIES_BY_NAME.get("GitHub, Inc."));
     public final static CvssEntity CERT_SEI = ENTITIES_BY_KEYNAME.get("CERT_SEI");
     public final static CvssEntity MSRC = ENTITIES_BY_KEYNAME.get("CVE_CNA_MICROSOFT");
 
