@@ -405,7 +405,6 @@ public class DirectoryScanAggregatorConfiguration {
         if (aggregationDir != null && aggregationDir.exists()) {
             // post-processing steps
             // 1. produce one file with all ArtifactFile types
-
             final List<FilePatternQualifierMapper> filePatternQualifierMappers =
                     ComponentPatternValidator.evaluateComponentPatterns(referenceInventory, resultInventory, scanBaseDir);
 
