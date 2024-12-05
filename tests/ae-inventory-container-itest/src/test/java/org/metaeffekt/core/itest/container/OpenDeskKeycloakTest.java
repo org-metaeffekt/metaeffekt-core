@@ -40,7 +40,6 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-@Ignore
 public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -91,8 +90,7 @@ public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        // FIXME: this is not correct, as the container is represented as artifact
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 
     @Test

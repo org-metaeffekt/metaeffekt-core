@@ -40,7 +40,6 @@ import static org.metaeffekt.core.itest.common.predicates.ContainsToken.contains
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-@Ignore
 public class OpenDeskJitsiJicofoTest extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
@@ -93,8 +92,7 @@ public class OpenDeskJitsiJicofoTest extends AbstractCompositionAnalysisTest {
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        // FIXME: this is not correct, as the container is represented as artifact
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 
     @Test

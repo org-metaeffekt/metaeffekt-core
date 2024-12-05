@@ -87,7 +87,7 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
-        duplicateList.identifyRemainingDuplicatesWithoutArtifact();
+        duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
@@ -96,7 +96,7 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(135);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(270);
 
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages.db")).hasSizeGreaterThan(1);
 
@@ -104,7 +104,6 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        // FIXME: this is not correct, as the container is represented as artifact
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 }

@@ -108,8 +108,7 @@ public class CentOSTest extends AbstractCompositionAnalysisTest {
         // there must be only one container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
-        // FIXME-AOE: here the merge logic seems not to apply. The container-inspect artifact remains
         // we expect the container being only represented as asset; no artifacts with type container or container-inspect expected
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 }

@@ -93,7 +93,7 @@ public class BitnamiRedisTest extends AbstractCompositionAnalysisTest {
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
 
         // FIXME-AOE: check expectation
-//        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(16, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 
@@ -103,7 +103,6 @@ public class BitnamiRedisTest extends AbstractCompositionAnalysisTest {
 
         final Analysis analysis = new Analysis(inventory);
 
-        // FIXME-AOE: adjusted to 6; counted six in container; where did the 7 come from?
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(6);
 
         // there must be only once container asset

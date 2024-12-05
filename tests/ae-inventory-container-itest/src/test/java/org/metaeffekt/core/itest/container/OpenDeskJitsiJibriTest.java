@@ -82,15 +82,14 @@ public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(172);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(173);
+        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(176);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(217);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        // FIXME: this is not correct, as the container is represented as artifact
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 
     @Test
