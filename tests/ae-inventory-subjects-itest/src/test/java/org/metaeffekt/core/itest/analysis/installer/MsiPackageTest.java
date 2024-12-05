@@ -66,8 +66,7 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
 
         final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).getItemList().size();
 
-        // result depends on installation of 7z / platform
-        // currently windows 7z has a problem when unpacking; ironic
+        // it should now result in the size of 22
         Assertions.assertThat(size == 0 || size == 22);
     }
 }
