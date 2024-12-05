@@ -113,8 +113,14 @@ public class DocumentDescriptorReport {
      */
     private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
         for (InventoryContext inventoryContext : documentDescriptor.getInventoryContexts()) {
-            Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
-            adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            if (documentDescriptor.getDocumentType() == DocumentType.ANNEX){
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT){
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
         }
     }
 
@@ -149,7 +155,7 @@ public class DocumentDescriptorReport {
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
             final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
 
-            produceDita(documentDescriptor, adapters, filePath, targetReportPath);
+            produceBookMapDita(documentDescriptor, adapters, filePath, targetReportPath);
         }
     }
 
@@ -162,8 +168,8 @@ public class DocumentDescriptorReport {
      * @param target the file where the generated report will be saved
      * @throws IOException if there is an error during the report generation process
      */
-    private void produceDita(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
-                    String templateResourcePath, File target) throws IOException {
+    private void produceBookMapDita(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
+                                    String templateResourcePath, File target) throws IOException {
 
         log.info("Producing BookMap for template [{}]", templateResourcePath);
         final Properties properties = new Properties();
