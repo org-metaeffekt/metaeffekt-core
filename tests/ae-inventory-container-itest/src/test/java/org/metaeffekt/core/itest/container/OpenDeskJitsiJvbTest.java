@@ -92,8 +92,7 @@ public class OpenDeskJitsiJvbTest extends AbstractCompositionAnalysisTest {
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        // FIXME: this is not correct, as the container is represented as artifact
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 
     @Test

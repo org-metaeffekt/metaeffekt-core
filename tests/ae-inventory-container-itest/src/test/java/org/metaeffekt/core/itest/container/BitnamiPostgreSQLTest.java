@@ -90,7 +90,7 @@ public class BitnamiPostgreSQLTest extends AbstractCompositionAnalysisTest {
                 evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
-        duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
+        duplicateList.identifyRemainingDuplicatesWithoutFile("os-release", "libpam-modules-bin.list", "libpam-modules-bin.md5sums");
 
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
@@ -101,7 +101,7 @@ public class BitnamiPostgreSQLTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
 
         final Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(18);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(19);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);

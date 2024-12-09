@@ -142,6 +142,10 @@ public class ArchiveUtils {
     public static void untar(File file, File targetDir) throws IOException {
         final String fileName = file.getName().toLowerCase();
 
+        if (!file.exists()) {
+            LOG.warn("Requested to untar path [{}] but file doesn't even exist.", file.getAbsolutePath());
+        }
+
         final List<File> intermediateFiles = new ArrayList<>();
 
         // preprocess tar wrappers and manage intermediate files
@@ -192,6 +196,7 @@ public class ArchiveUtils {
             LOG.warn(e.getMessage());
             for (File intermediateFile : intermediateFiles) {
                 if (intermediateFile.exists()) {
+                    LOG.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
                     FileUtils.forceDelete(intermediateFile);
                 }
             }
@@ -202,6 +207,7 @@ public class ArchiveUtils {
         } catch (Exception e) {
             LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
             try {
+                FileUtils.forceMkdir(targetDir);
                 extractFileWithSevenZip(file, targetDir);
             } catch (Exception ex) {
                 LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
@@ -213,6 +219,7 @@ public class ArchiveUtils {
             }
         } finally {
             for (File intermediateFile : intermediateFiles) {
+                LOG.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
                 FileUtils.forceDelete(intermediateFile);
             }
         }
@@ -476,15 +483,26 @@ public class ArchiveUtils {
         // this requires 7zip to perform the extraction
         final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
         if (sevenZipBinaryFile.exists()) {
-            final String command = sevenZipBinaryFile.getAbsolutePath() + " x " +
-                    file.getAbsolutePath() + " -aoa -o" + targetFile.getAbsolutePath();
+            final String[] command = {sevenZipBinaryFile.getAbsolutePath(), "x",
+                    file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath()};
             final Process exec = Runtime.getRuntime().exec(command);
-            FileUtils.waitForProcess(exec);
+
+            try {
+                if (!exec.waitFor(4, TimeUnit.HOURS)) {
+                    LOG.error("Could not unpack [{}] within time limit.", file.getAbsolutePath());
+                    throw new IOException("Failed to execute unpack within time limit.");
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
             if (exec.exitValue() != 0) {
-                LOG.error("Failed running command with exit value [{}]: [{}]", exec.exitValue(), command);
+                LOG.error("Command execution failed with exit value [{}]: [{}]", exec.exitValue(), command);
+                throw new IOException("Command execution gave nonzero exit code.");
             }
         } else {
             LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
+            throw new IOException("Could not execute command due to missing binary.");
         }
     }
 

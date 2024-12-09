@@ -89,8 +89,7 @@ public class RedisTest extends AbstractCompositionAnalysisTest {
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        // FIXME: this is not correct, as the container is represented as artifact
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 
     @Test
@@ -100,10 +99,9 @@ public class RedisTest extends AbstractCompositionAnalysisTest {
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
-        // FIXME: we have to write a function, which ignores sym links or we have to process them before
         // FIXME: what is it with the "X11" file here?
         duplicateList.identifyRemainingDuplicatesWithoutFile("X11");
-        Assert.assertEquals(97, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

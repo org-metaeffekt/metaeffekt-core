@@ -91,7 +91,8 @@ public class JettyTest extends AbstractCompositionAnalysisTest {
 
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
 
-        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+        // FIXME: md5sums, list files and so on are used by several artifacts
+        Assert.assertEquals(27, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 
@@ -99,13 +100,13 @@ public class JettyTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(122);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(135);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(71);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "java-runtime")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jetty-runtime")).hasSizeOf(1);
 
-        // FIXME: why are so many files not covered
-        analysis.selectArtifacts(AttributeValue.attributeValue(TYPE, null)).hasSizeOf(4559);
+        // FIXME: some files are not covered
+        analysis.selectArtifacts(AttributeValue.attributeValue(TYPE, null)).hasSizeOf(215);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);

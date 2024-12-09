@@ -224,7 +224,13 @@ public class DirectoryInventoryScanTest {
 
         final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
                 new DirectoryScanAggregatorConfiguration(referenceInventory, inventory, scanDir);
+
+        final List<FilePatternQualifierMapper> filePatternQualifierMappers =
+                directoryScanAggregatorConfiguration.mapArtifactsToCoveredFiles();
+        // FIXME-AOE: add assertions
+
         directoryScanAggregatorConfiguration.aggregateFiles(new File("target/aggregation"));
+        // FIXME-AOE: add assertions
 
         new InventoryWriter().writeInventory(inventory, new File("target/aggregated-inventory.xlsx"));
 
