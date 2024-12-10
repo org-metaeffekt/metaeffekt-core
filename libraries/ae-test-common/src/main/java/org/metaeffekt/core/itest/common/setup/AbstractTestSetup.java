@@ -39,8 +39,6 @@ public abstract class AbstractTestSetup implements TestSetup {
 
     private String referenceInventory = "";
 
-    private File aggregationDir;
-
     public String getDownloadFolder() {
         return TestConfig.getDownloadFolder() + localDir;
     }
@@ -134,9 +132,4 @@ public abstract class AbstractTestSetup implements TestSetup {
         return TestConfig.getAggregationFolder() + localDir;
     }
 
-    // NOTE: this is used by artifact-analysis, please don't remove
-    @Override
-    public void setAggregationDir(File aggregationDir) {
-        this.aggregationDir = aggregationDir;
-    }
 }
