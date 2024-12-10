@@ -50,5 +50,5 @@ public interface TestSetup {
 
     void setAggregationDir(File aggregationDir);
 
-    File getAggregationDir();
+    String getAggregationDir();
 }
