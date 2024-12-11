@@ -55,10 +55,10 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     /**
      * <a href="https://github.com/github/advisory-database">Pattern source</a>.
      */
-    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> GHSA = new AeaaAdvisoryTypeIdentifier<>(
+    public final static AeaaAdvisoryTypeIdentifier<AeaaGhsaAdvisorEntry> GHSA = new AeaaAdvisoryTypeIdentifier<>(
             "GHSA", "GHSA", "",
             Pattern.compile("GHSA(-[23456789cfghjmpqrvwx]{4}){3}"),
-            AeaaOsvAdvisorEntry.class, AeaaOsvAdvisorEntry::new);
+            AeaaGhsaAdvisorEntry.class, AeaaGhsaAdvisorEntry::new);
 // OSV DATA SOURCES
 
     /**
