@@ -20,9 +20,14 @@ public class TestConfig {
     private static final String DOWNLOAD_FOLDER = ".test/downloads/";
     private static final String SCAN_FOLDER = "target/.test/scan/";
     private static final String INVENTORY_FOLDER = "target/.test/inventory/";
+    private static final String AGGREGATION_FOLDER = "target/.test/aggregation/";
 
     public static String getDownloadFolder() {
         return DOWNLOAD_FOLDER;
+    }
+
+    public static String getAggregationFolder() {
+        return AGGREGATION_FOLDER;
     }
 
     public static String getScanFolder() {

@@ -202,6 +202,9 @@ public class ArtifactUnwrapTask extends ScanTask {
         try {
             deriveType(artifact, file);
 
+            // unwrapped items mit aggregate directive skip
+            artifact.set(Constants.KEY_AGGREGATE_DIRECTIVE, AGGREGATE_DIRECTIVE_SKIP);
+
             postProcessUnwrappedSavedContainer(targetFolder);
         } catch (Exception e) {
             issues.add("Detected saved container, but unable to postprocess.");

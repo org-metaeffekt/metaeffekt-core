@@ -114,6 +114,9 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_ARCHIVE = "archive";
     public static final String ARTIFACT_TYPE_COMPOSITE = "composite";
 
+    public static final String KEY_AGGREGATE_DIRECTIVE = "Aggregate Directive";
+    public static final String AGGREGATE_DIRECTIVE_SKIP = "skip";
+
     @Deprecated
     public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
 
@@ -129,6 +132,7 @@ public final class Constants {
 
     public static final String DOT_BOWER_JSON = DOT + BOWER_JSON;
     public static final String DOT_PACKAGE_LOCK_JSON = DOT + PACKAGE_LOCK_JSON;
+
 
     private Constants() {
     }
