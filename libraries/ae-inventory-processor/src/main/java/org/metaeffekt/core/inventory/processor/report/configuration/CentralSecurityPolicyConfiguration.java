@@ -763,9 +763,97 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
+
                     // OSV
-                    new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
-                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.OSV),
+
+                    // ANDROID
+                    new SourceSelectorEntry(KnownCvssEntities.ANDROID, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.ANDROID),
+
+                    // ALMA
+                    new SourceSelectorEntry(KnownCvssEntities.ALMA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.ALMA),
+
+                    // BIT
+                    new SourceSelectorEntry(KnownCvssEntities.BIT, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.BIT),
+
+                    // CGA
+                    new SourceSelectorEntry(KnownCvssEntities.CGA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.CGA),
+
+                    // CURL
+                    new SourceSelectorEntry(KnownCvssEntities.CURL, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.CURL),
+
+                    // DEBIAN
+                    new SourceSelectorEntry(KnownCvssEntities.DEBIAN, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.DEBIAN),
+
+                    // GO
+                    new SourceSelectorEntry(KnownCvssEntities.GO, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GO),
+
+                    // GSD
+                    new SourceSelectorEntry(KnownCvssEntities.GSD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GSD),
+
+                    // HSEC
+                    new SourceSelectorEntry(KnownCvssEntities.HSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.HSEC),
+
+                    // LBSA
+                    new SourceSelectorEntry(KnownCvssEntities.LBSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.LBSA),
+
+                    // MGASA
+                    new SourceSelectorEntry(KnownCvssEntities.MGASA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MGASA),
+
+                    // MAL
+                    new SourceSelectorEntry(KnownCvssEntities.MAL, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MAL),
+
+                    // OSS_FUZZ
+                    new SourceSelectorEntry(KnownCvssEntities.OSS_FUZZ, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.OSS_FUZZ),
+
+                    // PSF
+                    new SourceSelectorEntry(KnownCvssEntities.PSF, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.PSF),
+
+                    // PYSEC
+                    new SourceSelectorEntry(KnownCvssEntities.PYSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.PYSEC),
+
+                    // RHEL
+                    new SourceSelectorEntry(KnownCvssEntities.RHEL, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.RHEL),
+
+                    // ROCKY
+                    new SourceSelectorEntry(KnownCvssEntities.ROCKY, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.ROCKY),
+
+                    // RSEC
+                    new SourceSelectorEntry(KnownCvssEntities.RSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.RSEC),
+
+                    // RUSTSEC
+                    new SourceSelectorEntry(KnownCvssEntities.RUSTSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.RUSTSEC),
+
+                    // SUSE
+                    new SourceSelectorEntry(KnownCvssEntities.SUSE, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.SUSE),
+
+                    // UBUNTU
+                    new SourceSelectorEntry(KnownCvssEntities.UBUNTU, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.UBUNTU),
+
+                    // USN
+                    new SourceSelectorEntry(KnownCvssEntities.USN, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.USN),
+
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     // CERT-SEI
@@ -789,9 +877,97 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
+
                     // OSV
-                    new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
-                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.OSV),
+
+                    // ANDROID
+                    new SourceSelectorEntry(KnownCvssEntities.ANDROID, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.ANDROID),
+
+                    // ALMA
+                    new SourceSelectorEntry(KnownCvssEntities.ALMA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.ALMA),
+
+                    // BIT
+                    new SourceSelectorEntry(KnownCvssEntities.BIT, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.BIT),
+
+                    // CGA
+                    new SourceSelectorEntry(KnownCvssEntities.CGA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.CGA),
+
+                    // CURL
+                    new SourceSelectorEntry(KnownCvssEntities.CURL, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.CURL),
+
+                    // DEBIAN
+                    new SourceSelectorEntry(KnownCvssEntities.DEBIAN, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.DEBIAN),
+
+                    // GO
+                    new SourceSelectorEntry(KnownCvssEntities.GO, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GO),
+
+                    // GSD
+                    new SourceSelectorEntry(KnownCvssEntities.GSD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GSD),
+
+                    // HSEC
+                    new SourceSelectorEntry(KnownCvssEntities.HSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.HSEC),
+
+                    // LBSA
+                    new SourceSelectorEntry(KnownCvssEntities.LBSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.LBSA),
+
+                    // MGASA
+                    new SourceSelectorEntry(KnownCvssEntities.MGASA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MGASA),
+
+                    // MAL
+                    new SourceSelectorEntry(KnownCvssEntities.MAL, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MAL),
+
+                    // OSS_FUZZ
+                    new SourceSelectorEntry(KnownCvssEntities.OSS_FUZZ, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.OSS_FUZZ),
+
+                    // PSF
+                    new SourceSelectorEntry(KnownCvssEntities.PSF, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.PSF),
+
+                    // PYSEC
+                    new SourceSelectorEntry(KnownCvssEntities.PYSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.PYSEC),
+
+                    // RHEL
+                    new SourceSelectorEntry(KnownCvssEntities.RHEL, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.RHEL),
+
+                    // ROCKY
+                    new SourceSelectorEntry(KnownCvssEntities.ROCKY, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.ROCKY),
+
+                    // RSEC
+                    new SourceSelectorEntry(KnownCvssEntities.RSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.RSEC),
+
+                    // RUSTSEC
+                    new SourceSelectorEntry(KnownCvssEntities.RUSTSEC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.RUSTSEC),
+
+                    // SUSE
+                    new SourceSelectorEntry(KnownCvssEntities.SUSE, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.SUSE),
+
+                    // UBUNTU
+                    new SourceSelectorEntry(KnownCvssEntities.UBUNTU, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.UBUNTU),
+
+                    // USN
+                    new SourceSelectorEntry(KnownCvssEntities.USN, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.USN),
+
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     // CERT-SEI
