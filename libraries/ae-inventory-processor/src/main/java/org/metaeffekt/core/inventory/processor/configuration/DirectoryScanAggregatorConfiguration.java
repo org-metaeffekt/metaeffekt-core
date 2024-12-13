@@ -442,7 +442,7 @@ public class DirectoryScanAggregatorConfiguration {
                     }
                 }
             } catch (IOException e) {
-                LOG.error("Error processing artifact: [{}].", mapper.getArtifact().getId(), e);
+                LOG.error("Error processing artifact: [{}] with following error: [{}]", mapper.getArtifact().getId(), e.getMessage());
             } finally {
                 // ensure the tmp folder is deleted
                 FileUtils.deleteDirectoryQuietly(tmpFolder);
