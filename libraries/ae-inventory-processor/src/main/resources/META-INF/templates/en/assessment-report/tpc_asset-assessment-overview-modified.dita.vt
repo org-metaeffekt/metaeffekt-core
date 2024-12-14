@@ -9,20 +9,15 @@
     <title>$reportContext.combinedTitle("Effective Vulnerabilities by Asset", true)</title>
 ##
     #set($assets = $assessmentReportAdapter.getAssets())
+    #set($lang = $utils.getLanguagePropertyFile())
 ##
+
     <body>
         #if ($assets.isEmpty)
-            No assets have been identified.
+        $lang.get("general.assets-empty")
         #else
-            <p>
-                The following table provides information on the severity of vulnerabilities for each individual asset.
-                Vulnerabilities may be counted several times in case these apply for multiple assets and their parts.
-            </p>
-            <p>
-                The table shows the modified severities applying asset-specific assessment details.
-                Column <codeph>Assessed</codeph> indicates to which extent the vulnerabilities have been analyzed. If
-                no modified severity is available the unmodified severity is applied.
-            </p>
+            <p>$lang.get("assessment-report.vuln-table-descr")</p>
+            <p>$lang.get("assessment-report.vuln-table-descr-modified")</p>
             #assetAssessmentSummary("asset-assessment-summary-effective", $assets, true)
         #end
     </body>

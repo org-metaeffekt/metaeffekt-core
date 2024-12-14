@@ -3,17 +3,14 @@
 <topic id="tpc_webmodules-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Web Modules", true)</title>
     <body>
-#set($components=$inventory.evaluateComponentsInContext("web-module"))
-#set($licensesInEffect=$inventory.evaluateLicenses(false))
-#if($components.isEmpty())
-        <p>
-            There are no individual <abbreviated-form keyref="web-module"/>.
-        </p>
+        #set($components=$inventory.evaluateComponentsInContext("web-module"))
+        #set($licensesInEffect=$inventory.evaluateLicenses(false))
+        #set($lang = $utils.getLanguagePropertyFile())
+
+        #if($components.isEmpty())
+        <p>$lang.get("inventory-report-bom.no-individual-web-module")</p>
 #else
-        <p>
-            The following table lists all <abbreviated-form keyref="web-module"/> included in the software covered by
-            this document. The list is organized by components to group the web modules.
-        </p>
+        <p>$lang.get("inventory-report-bom.web-module-table-descr")</p>
         <p>
             <table otherprops="wide" id="table_web_modules">
                 <title>Artifacts$reportContext.inContextOf()</title>

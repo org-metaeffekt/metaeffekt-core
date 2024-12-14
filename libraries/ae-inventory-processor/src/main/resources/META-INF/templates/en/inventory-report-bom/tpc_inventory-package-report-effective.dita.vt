@@ -3,17 +3,14 @@
 <topic id="tpc_packages-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Packages", true)</title>
     <body>
-#set($components=$inventory.evaluateComponentsInContext("package"))
-#set($licensesInEffect=$inventory.evaluateLicenses(false))
-#if($components.isEmpty())
-        <p>
-            There are no individual <abbreviated-form keyref="package"/>.
-        </p>
+        #set($components=$inventory.evaluateComponentsInContext("package"))
+        #set($licensesInEffect=$inventory.evaluateLicenses(false))
+        #set($lang = $utils.getLanguagePropertyFile())
+
+        #if($components.isEmpty())
+        <p>$lang.get("inventory-report-bom.no-individual-package")</p>
 #else
-        <p>
-            The following table lists all <abbreviated-form keyref="package"/> included in the software covered by
-            this document. The list is organized by components to group the packages.
-        </p>
+        <p>$lang.get("inventory-report-bom.package-table-descr")</p>
         <p>
             <table otherprops="wide" id="table_packages">
                 <title>Packages$reportContext.inContextOf()</title>

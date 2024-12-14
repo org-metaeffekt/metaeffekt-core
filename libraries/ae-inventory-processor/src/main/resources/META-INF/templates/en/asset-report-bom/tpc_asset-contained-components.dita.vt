@@ -7,10 +7,11 @@
 <topic id="tpc_vulnerability-assets-$reportContext.id">
     <title>$reportContext.combinedTitle("Contained Components", true)</title>
 ##
-#set($assets = $assetAdapter.listAssets())
+    #set($assets = $assetAdapter.listAssets())
+    #set($lang = $utils.getLanguagePropertyFile())
 ##
     #if($assets.isEmpty())
-        There are no overarching assets available.
+        $lang.get("general.assets-empty")
     #end
 
     #foreach($asset in $assets)

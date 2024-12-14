@@ -3,22 +3,15 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_asset-license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Asset Licenses", true)</title>
-#set($assetData=$report.getAssetData($inventory))
-#set($singleLicenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
-#set($licenseExpressions=$assetData.getRepresentedAssociatedLicensesWithOption())
+    #set($assetData=$report.getAssetData($inventory))
+    #set($singleLicenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
+    #set($licenseExpressions=$assetData.getRepresentedAssociatedLicensesWithOption())
+    #set($lang = $utils.getLanguagePropertyFile())
 <body>
-    <p>
-        Table <xref href="#tpc_asset-license-summary-$reportContext.id/AssociatedLicenses" type="table">Asset Licenses</xref>
-        provides an overview of all licenses and license expressions associated with the software assets covered by
-        this documentation.
-    </p>
-    <p>
-        Please note, that a license / license expression may be associated with several assets.
-    </p>
+    <p>$lang.get("asset-report-bom.asset-table-descr")</p>
+    <p>$lang.get("asset-report-bom.asset-table-note")</p>
     #if ($assetData.isLicenseSubstructureRequired())
-        <fn id="id-footnote">License variations of the same kind are displayed as
-          single license. The variations are detailed in the corresponding paragraphs.
-          An approval or license status may only be applicable for individual variants.</fn>
+        $lang.get("asset-report-bom.asset-table-foot-note")
     #end
 
 #if (!$singleLicenses.isEmpty())
@@ -78,9 +71,7 @@
             <title>$report.xmlEscapeLicense($license)</title>
             <body>
                 <p>
-                    $license is representative of all licenses with variations,
-                    characteristics and modifications of the original license or license template. In this chapter,
-                    all variations, which are represented by $report.xmlEscapeString($license), are listed individually.
+                    $lang.get("asset-report-bom.license-detail-notice")
                 </p>
                 <p>
                     #insertLicenseTable($license, "Lizenzenvarianten", $licenseList, false)

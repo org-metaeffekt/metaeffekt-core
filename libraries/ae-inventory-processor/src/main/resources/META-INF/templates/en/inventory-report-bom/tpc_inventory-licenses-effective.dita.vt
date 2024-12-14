@@ -3,31 +3,18 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
-#set($effectiveLicenses=$inventory.evaluateLicenses(false))
-#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
-#set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
-#set($termsWithOptions=$termsCategorization.getTermsWithOptions())
-#set($termsNoOptions=$termsCategorization.getTermsNoOptions())
-#set($atomicTerms=$termsCategorization.getAtomicTerms())
+    #set($effectiveLicenses=$inventory.evaluateLicenses(false))
+    #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+    #set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
+    #set($termsWithOptions=$termsCategorization.getTermsWithOptions())
+    #set($termsNoOptions=$termsCategorization.getTermsNoOptions())
+    #set($atomicTerms=$termsCategorization.getAtomicTerms())
+    #set($lang = $utils.getLanguagePropertyFile())
 <body>
-    <p>
-        This chapter outlines the different licenses considered effective within the given context.
-
-        Table <xref href="#tpc_license-summary-$reportContext.id/LicenseOptions" type="table">License Options$reportContext.inContextOf()</xref> provides an
-        outline of licenses options for the recipient of the software.
-
-        In <xref href="#tpc_license-summary-$reportContext.id/LicensesInEffect" type="table">Licenses in Effect$reportContext.inContextOf()</xref>
-        provides an overview of the licenses in effect. In the following paragraphs the individual components are listed
-        for each effective license.
-    </p>
-    <p>
-        A component may be subject to several licenses in effect. The individual parts of a license option are also
-        listed as effective license.
-    </p>
+    <p>$lang.get("inventory-report-bom.different-effective-licenses")</p>
 
     #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
-        <fn id="id-footnote">License variations are represented as a single effective license. The concrete
-        license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
+        $lang.get("inventory-report-bom.different-effective-licenses-footnote")
     #end
 
 ## License Options (not necessarily expressions)

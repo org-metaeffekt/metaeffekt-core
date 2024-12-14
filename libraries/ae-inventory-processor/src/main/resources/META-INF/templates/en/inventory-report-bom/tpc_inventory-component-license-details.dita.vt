@@ -4,10 +4,9 @@
     <title>$reportContext.combinedTitle("License Notices", true)</title>
     #set($componentNoticeList=$inventory.evaluateComponentNotices())
     #set($licensesInEffect=$inventory.evaluateLicenses(false))
+    #set($lang = $utils.getLanguagePropertyFile())
     #if($componentNoticeList.isEmpty())
-        <body>
-            No component with license notices covered.
-        </body>
+        <body>$lang.get("inventory-report-bom.no-component-licenses")</body>
     #else
         #foreach($componentNotice in $componentNoticeList)
             <topic id="tpc_component_notice_$inventory.deriveLicenseId($componentNotice.getComponentName())">
@@ -111,14 +110,11 @@
                         #set($notice=$artifactNotice.getNotice())
                         #if($notice.isEmpty())
                             <p>
-                                The herein covered software distribution contains
+                                $lang.get("inventory-report-bom.license-notice")
                                 <b>$componentNotice.getComponentName()</b>.
                             </p>
                             #if($componentNotice.getLicense())
-                                <p>
-                                    In the present version, $componentNotice.getComponentName() is subject to the terms
-                                    of the $componentNotice.getLicense().
-                                </p>
+                                <p>$lang.get("inventory-report-bom.component-license")</p>
                             #end
                         #else
                             $notice.trim()

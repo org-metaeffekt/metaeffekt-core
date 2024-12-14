@@ -13,13 +13,14 @@
                             <entry>${dependency.groupId} / ${dependency.artifactId}#provided($dependency.scope)#optional($dependency.optional)</entry>
                         </row>
 #end
+    #set($lang = $utils.getLanguagePropertyFile())
    <title>Dependencies</title>
    <body>
 #if(!$internalDependencies.dependencies.isEmpty())
       <section>
          <title>Internal Dependencies $projectName</title>
          <p>
-            There are internal dependencies to the following artifacts:
+            $lang.get("dependencies.artifact-dependencies")
          </p>
          <p>
             <table id="tbl_internal-dependencies">
@@ -46,7 +47,7 @@
       <section>
          <title>Dependencies $projectName</title>
          <p>
-            There are dependencies to the following third-party artifacts:
+             $lang.get("dependencies.third-party-artifact-dependencies")
          </p>
          <p>
             <table id="tbl_ae-external-dependencies">

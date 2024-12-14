@@ -3,13 +3,12 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-usage-$reportContext.id">
     <title>$reportContext.combinedTitle("License Usage", true)</title>
-#set($effectiveLicenses=$inventory.evaluateLicenses(false))
-#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
-<body>
-    <p>
-        Licenses are used by several or individual components. In the following the components are listed for
-        each effective license.
-    </p>
+    #set($effectiveLicenses=$inventory.evaluateLicenses(false))
+    #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+    #set($lang = $utils.getLanguagePropertyFile())
+
+    <body>
+    <p>$lang.get("inventory-report-bom.effective-license-table")</p>
 </body>
 
 #foreach($license in $effectiveLicensesRepresented)
@@ -19,11 +18,7 @@
         <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
             <title>$report.xmlEscapeLicense($license) Variants</title>
             <body>
-                <p>
-                    $license is representative of all licenses with variations,
-                    characteristics and modifications of the original license template. In this subchapter,
-                    all these license variations, which are represented by the $license,
-                    are listed individually.</p>
+                <p>$lang.get("inventory-report-bom.license-variations")</p>
                     #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))
                     #insertLicenseArtifactTopic($effLicense)
                     #end

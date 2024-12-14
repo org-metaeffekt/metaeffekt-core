@@ -94,6 +94,7 @@ public class RepositoryReportTest {
         report.setTargetComponentDir(targetComponentDir);
         report.setTargetReportDir(targetReportPath);
 
+        report.setAssessmentReportEnabled(true);
         report.setAssetBomReportEnabled(true);
         report.setInventoryBomReportEnabled(true);
         report.setInventoryPomEnabled(true);

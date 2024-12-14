@@ -15,16 +15,28 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.xmlbeans.impl.schema.PathResourceLoader;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ReportUtils {
+
+    /**
+     * It is recommended to use Locale.getLanguage().toString() as those abbreviations are used in the
+     * getLanguagePropertyFile() method and as the property file names.
+     */
+    @Setter
+    private String lang;
 
     public boolean isEmpty(String value) {
         return !StringUtils.isNotBlank(value);
@@ -74,4 +86,25 @@ public class ReportUtils {
         return Collections.emptySet();
     }
 
+    /**
+     * Loads the relevant language properties file for use in all report templates and returns
+     * the file as properties.
+     * @return the properties contained in the file
+     */
+    public Properties getLanguagePropertyFile() {
+        Properties props = new Properties();
+        InputStream inputStream = this.getClass()
+                .getClassLoader()
+                .getResourceAsStream("META-INF/templates/lang/" + lang + ".properties");
+
+        try {
+            if (inputStream != null) {
+                props.load(inputStream);
+                return props;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
 }

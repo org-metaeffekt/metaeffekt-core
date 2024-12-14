@@ -736,6 +736,8 @@ public class InventoryReport {
         final Template template = velocityEngine.getTemplate(templateResourcePath);
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
+        final ReportUtils reportUtils = new ReportUtils();
+        reportUtils.setLang(Locale.ENGLISH.getLanguage());
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
@@ -746,7 +748,7 @@ public class InventoryReport {
         context.put("report", this);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
-        context.put("utils", new ReportUtils());
+        context.put("utils", reportUtils);
 
         context.put("Double", Double.class);
         context.put("Float", Float.class);

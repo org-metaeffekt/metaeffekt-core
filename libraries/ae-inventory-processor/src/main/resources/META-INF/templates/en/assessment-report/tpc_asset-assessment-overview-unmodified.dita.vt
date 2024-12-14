@@ -9,20 +9,15 @@
     <title>$reportContext.combinedTitle("Associated Vulnerabilities by Asset", true)</title>
 ##
     #set($assets = $assessmentReportAdapter.getAssets())
-##
+    #set($lang = $utils.getLanguagePropertyFile())
+
+    ##
     <body>
         #if ($assets.isEmpty)
-            No assets have been identified.
+            $lang.get("general.assets-empty")
         #else
-            <p>
-                The following table provides information on the severity of vulnerabilities for each individual asset.
-                Vulnerabilities may be counted several times in case these apply for multiple assets and their parts.
-            </p>
-            <p>
-                The table shows the original severity without any assessment details and resulting severity adjustments.
-                Column <codeph>Assessed</codeph> indicates to which extent the vulnerabilities have been analyzed on
-                asset-level.
-            </p>
+        <p>$lang.get("assessment-report.vuln-table-descr")</p>
+        <p>$lang.get("assessment-report.vuln-table-descr-unmodified")</p>
             #assetAssessmentSummary("asset-assessment-summary-associated", $assets, false)
         #end
     </body>
