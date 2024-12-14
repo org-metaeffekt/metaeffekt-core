@@ -108,6 +108,12 @@ public class DocumentDescriptorReportGenerator {
             if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
                 report.setInventoryBomReportEnabled(true);
             }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT) {
+                report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+            }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                report.setInventoryVulnerabilityReportSummaryEnabled(true);
+            }
             if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
                 File securityPolicyFile = new File(params.get("securityPolicyFile"));
                 String securityPolicyOverwriteJson = "";
@@ -139,10 +145,8 @@ public class DocumentDescriptorReportGenerator {
 
                 report.setInventoryVulnerabilityReportEnabled(true);
                 report.setInventoryVulnerabilityReportEnabled(true);
-
             }
 
-            // set inventory and reference inventory
             report.setReferenceInventory(inventoryContext.getReferenceInventory());
             report.setInventory(inventoryContext.getInventory());
 
