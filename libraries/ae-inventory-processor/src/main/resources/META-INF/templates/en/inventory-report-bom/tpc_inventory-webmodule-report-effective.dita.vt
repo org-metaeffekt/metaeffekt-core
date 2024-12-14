@@ -16,7 +16,7 @@
         </p>
         <p>
             <table otherprops="wide" id="table_web_modules">
-                <title>Artifacts$reportContext.inContextOf()</title>
+                <title>Web Modules$reportContext.inContextOf()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="45*" />

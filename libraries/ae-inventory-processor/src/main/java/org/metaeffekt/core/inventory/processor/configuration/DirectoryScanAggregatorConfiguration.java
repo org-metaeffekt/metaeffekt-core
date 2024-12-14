@@ -16,18 +16,13 @@
 package org.metaeffekt.core.inventory.processor.configuration;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.apache.tools.ant.Project;
-import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.InventoryMergeUtils;
 import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.ContributorUtils;
-import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.util.ArchiveUtils;
+import org.metaeffekt.core.util.ArtifactUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,13 +33,10 @@ import java.util.*;
 
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_ARCHIVE_PATH;
 
 public class DirectoryScanAggregatorConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(DirectoryScanAggregatorConfiguration.class);
-
-    final private File referenceInventoryFile;
 
     final private Inventory referenceInventory;
 
@@ -57,18 +49,11 @@ public class DirectoryScanAggregatorConfiguration {
     public DirectoryScanAggregatorConfiguration(Inventory referenceInventory, Inventory resultInventory, File scanBaseDir) {
         this.scanBaseDir = scanBaseDir;
         this.referenceInventory = referenceInventory;
-        this.referenceInventoryFile = null;
         this.scanResultInventoryFile = null;
         this.resultInventory = resultInventory;
     }
 
     public List<FilePatternQualifierMapper> mapArtifactsToCoveredFiles() throws IOException {
-
-        // load reference inventory
-        final Inventory referenceInventory = loadReferenceInventory();
-
-        // load result inventory
-        final Inventory resultInventory = loadResultInventory();
 
         // initialize component pattern and file pattern map
         final Map<String, List<ComponentPatternData>> qualifierToComponentPatternMap = new HashMap<>();
@@ -115,11 +100,11 @@ public class DirectoryScanAggregatorConfiguration {
 
                 filePatternQualifierMapper.setFiles(componentPatternFiles);
             } else {
-                // handle artifacts that cannot be mapped to files; we need that the inventory is completely represented
-                // even in case no files are directly or indirectly associated
+                // handle artifacts that cannot be mapped to files by component patterns;
+                // we need that the inventory is completely represented even in case no files are directly or indirectly
+                // associated
                 filePatternQualifierMapper.setFileMap(Collections.emptyMap());
                 filePatternQualifierMapper.setFiles(Collections.emptyList());
-                // FIXME: add comprehensive test case for this
             }
 
             // add mapper
@@ -271,33 +256,6 @@ public class DirectoryScanAggregatorConfiguration {
         return relativizedPatterns;
     }
 
-    private Inventory loadResultInventory() throws IOException {
-        if (resultInventory != null) {
-            return resultInventory;
-        } else {
-            final File scanResultInventoryFile = getResultInventoryFile();
-            FileUtils.validateExists(scanResultInventoryFile);
-            final Inventory inventory = new InventoryReader().readInventory(scanResultInventoryFile);
-            return inventory;
-        }
-    }
-
-    private Inventory loadReferenceInventory() throws IOException {
-        final Inventory referenceInventory;
-        if (referenceInventoryFile != null) {
-            FileUtils.validateExists(referenceInventoryFile);
-            if (referenceInventoryFile.isDirectory()) {
-                referenceInventory = InventoryUtils.readInventory(referenceInventoryFile, "*.xls");
-            } else {
-                referenceInventory = new InventoryReader().readInventory(referenceInventoryFile);
-            }
-        } else {
-            Validate.notNull(this.referenceInventory);
-            referenceInventory = this.referenceInventory;
-        }
-        return referenceInventory;
-    }
-
     private void contributeComponentPatterns(Inventory referenceInventory, Map<String, List<ComponentPatternData>> componentPatternMap) {
         for (ComponentPatternData cpd : referenceInventory.getComponentPatternData()) {
             final String key = deriveMapQualifier(cpd);
@@ -435,10 +393,6 @@ public class DirectoryScanAggregatorConfiguration {
 
         final Set<Artifact> coveredArtifacts = new HashSet<>();
 
-        // create an ant project
-        Project antProject = new Project();
-        antProject.init();
-
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
 
@@ -498,12 +452,18 @@ public class DirectoryScanAggregatorConfiguration {
         // copy remaining artifacts not covered by component-patterns to aggregation dir
         for (Artifact artifact : resultInventory.getArtifacts()) {
             if (!coveredArtifacts.contains(artifact)) {
+
+                // evaluate directive
+                if (hasSkipAggregationDirective(artifact)) continue;
+
                 for (String project : artifact.getProjects()) {
                     File file = new File(scanBaseDir, project);
                     if (file.exists()) {
                         final String relativePath = FileUtils.asRelativePath(scanBaseDir, file);
                         try {
-                            FileUtils.copyFile(file, new File(targetDir, relativePath));
+                            final File targetFile = new File(targetDir, relativePath);
+                            FileUtils.copyFile(file, targetFile);
+                            artifact.set(KEY_ARCHIVE_PATH, targetFile.getAbsolutePath());
                         } catch (IOException e) {
                             LOG.warn("Cannot copy file [{}] to aggregation folder [{}]", file.getAbsolutePath(), targetDir.getAbsolutePath());
                         }
@@ -511,6 +471,11 @@ public class DirectoryScanAggregatorConfiguration {
                 }
             }
         }
+    }
+
+    private boolean hasSkipAggregationDirective(Artifact artifact) {
+        final String directive = artifact.get(KEY_AGGREGATE_DIRECTIVE);
+        return AGGREGATE_DIRECTIVE_SKIP.equalsIgnoreCase(directive);
     }
 
     private File determineCommonRootDir(File scanBaseDir, List<File> files) {
@@ -545,6 +510,65 @@ public class DirectoryScanAggregatorConfiguration {
 
     private static String deriveQualifier(Artifact a) {
         return DirectoryScanAggregatorConfiguration.deriveMapQualifier(a.getComponent(), a.getVersion(), a.getId());
+    }
+
+
+    public void contribute(File targetDir, Inventory aggregatedInventory) throws IOException {
+        aggregateFiles(targetDir);
+
+        final InventoryMergeUtils inventoryMergeUtils = new InventoryMergeUtils();
+        inventoryMergeUtils.setAddDefaultArtifactMergeAttributes(true);
+        inventoryMergeUtils.setAddDefaultArtifactExcludedAttributes(false);
+        inventoryMergeUtils.mergeInventories(Collections.singletonList(resultInventory), aggregatedInventory);
+
+        checkCompletenessOfArchivePath(aggregatedInventory);
+    }
+
+    /**
+     * There are multiple reasons for empty archive paths:
+     * <ul>
+     *     <li>
+     *          The relevant component pattern is not included in the reference inventory, This is a configuration issue.
+     *     </li>
+     *     <li>
+     *         There is no content available for the artifact. E.g. a logical package configuration without physical files.
+     *         This may require provision of download urls or additional content (however at a later stage)
+     *     </li>
+     *     <li>
+     *         Artifacts that have been unpacked for scanning the content (classification contains 'scan')
+     *     </li>
+     * </ul>
+     *
+     * @param inventory The inventory to check for KEY_ARCHIVE_PATH completeness.
+     */
+    private void checkCompletenessOfArchivePath(Inventory inventory) {
+        for (final Artifact artifact : inventory.getArtifacts()) {
+            final String archivePath = artifact.get(Constants.KEY_ARCHIVE_PATH);
+            final String contentChecksum = artifact.get(KEY_CONTENT_CHECKSUM);
+            final String checksum = artifact.getChecksum();
+
+            final boolean hasChecksum = StringUtils.isNotBlank(checksum);
+            final boolean hasContentChecksum = StringUtils.isNotBlank(contentChecksum);
+
+            // deep scanned artifacts are not further scanned. It would be good to get an aggregated view however
+            if (ArtifactUtils.hasScanClassification(artifact)) {
+                if (hasContentChecksum || hasChecksum) {
+                    LOG.warn("Artifact {} with scan classification must have checksum and a content checksum.", artifact);
+                }
+                continue;
+            }
+
+            // skipped artifacts have no archive path (no redundant aggregation)
+            if (hasSkipAggregationDirective(artifact)) continue;
+
+            if (StringUtils.isBlank(archivePath)) {
+                // only report issue, when we have a checksum; implicitly excluded shaded subcomponents from being reported
+                if (hasContentChecksum || hasChecksum) {
+                    LOG.warn("Artifact {} with file content does not have an archive path! " +
+                            "Validate that the component patterns for this process are complete.", artifact);
+                }
+            }
+        }
     }
 
 }

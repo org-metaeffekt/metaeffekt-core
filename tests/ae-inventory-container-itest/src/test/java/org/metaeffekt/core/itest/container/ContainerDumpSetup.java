@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.itest.common.setup.TestConfig.getDownloadFolder;
 import static org.metaeffekt.core.itest.common.setup.TestConfig.getScanFolder;
@@ -113,10 +115,10 @@ public class ContainerDumpSetup {
             }
         }
 
-        int exitVal = process.waitFor(); // Wait for the process to complete.
-        if (exitVal != 0) {
+        final int exitValue = ExecUtils.waitForProcessToTerminate(process, Arrays.stream(commands).collect(Collectors.joining(" ")));
+        if (exitValue != 0) {
             // Handle the case where the process did not complete successfully.
-            throw new IOException("Command execution failed with exit code " + exitVal);
+            throw new IOException("Command execution failed with exit code " + exitValue);
         }
 
         return output.toString().trim(); // Return the accumulated output, which includes the container ID at the end.

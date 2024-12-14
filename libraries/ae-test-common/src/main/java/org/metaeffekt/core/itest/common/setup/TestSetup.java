@@ -48,7 +48,5 @@ public interface TestSetup {
 
     String getInventoryFolder();
 
-    void setAggregationDir(File aggregationDir);
-
-    File getAggregationDir();
+    String getAggregationDir();
 }
