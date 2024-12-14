@@ -58,8 +58,8 @@ public class Yarl_1_9_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "yarl-1.9.4"),
                         attributeValue(VERSION, "1.9.4"),
-                        attributeValue(PROJECTS, "[yarl-1.9.4-py3-none-any.whl]"),
-                        attributeValue(PATH_IN_ASSET, "[yarl-1.9.4-py3-none-any.whl]"))
+                        attributeValue(PROJECTS, "yarl-1.9.4-py3-none-any.whl"),
+                        attributeValue(PATH_IN_ASSET, "yarl-1.9.4-py3-none-any.whl"))
                 .assertNotEmpty();
     }
 }

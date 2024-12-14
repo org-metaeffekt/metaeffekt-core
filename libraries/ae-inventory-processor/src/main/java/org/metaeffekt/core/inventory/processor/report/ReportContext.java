@@ -15,46 +15,42 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
+@Getter
+@Setter
 public class ReportContext {
 
+    /**
+     * Used in generated output to differentiate template results for different reports.
+     */
     private String id;
+
+    /**
+     * Used in generated output to differentiate section and chapters (used for prefixing captions)
+     */
+    // FIXME: consider renaming to something like captionPrefix
     private String title;
+
+    /**
+     * Used for providing more context to table captions; Table x (context)
+     */
+    // FIXME: consider renaming to something like tableCaptionContext
     private String context;
 
-    public ReportContext() {
-    }
+    /**
+     * Fields used for BOM topic generation
+     */
+    private String reportInventoryName;
+    private String reportInventoryVersion;
 
     public ReportContext(String id, String title, String context) {
         this.id = id;
         this.title = title;
-        this.context = context;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getContext() {
-        return context;
-    }
-
-    public void setContext(String context) {
         this.context = context;
     }
 

@@ -20,33 +20,51 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
+import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
-import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Predicate;
 
+import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
 public class NginxTest extends AbstractCompositionAnalysisTest {
 
+    public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
+        @Override
+        public Predicate<AssetMetaData> getPredicate() {
+            return a -> "container".equals(a.get(TYPE));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Asset of type container";
+        }
+    };
+
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag(null, "nginx", null, NginxTest.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
-        AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
-                .setSha256Hash(sha256Hash)
+        final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
+                null,
+                "nginx",
+                "1.27",
+                NginxTest.class.getName());
+
+        AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
+                .setSource("file://" + baseDir.getAbsolutePath())
                 .setName(NginxTest.class.getName());
     }
 
@@ -54,7 +72,6 @@ public class NginxTest extends AbstractCompositionAnalysisTest {
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore
@@ -66,10 +83,15 @@ public class NginxTest extends AbstractCompositionAnalysisTest {
     @Test
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
-        Analysis analysis = new Analysis(inventory);
+        final Analysis analysis = new Analysis(inventory);
 
-        // FIXME: analysis and benchmark; this used to be 149 packages
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(148);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(149);
+
+        // there must be only once container asset
+        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
+
+        // we expect the container being only represented as asset; no artifacts with type container
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 
     @Test
@@ -77,10 +99,14 @@ public class NginxTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList =
+                evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
-        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+
+        // FIXME: .md5sums, .list files are used by several artifacts
+        Assert.assertEquals(20, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

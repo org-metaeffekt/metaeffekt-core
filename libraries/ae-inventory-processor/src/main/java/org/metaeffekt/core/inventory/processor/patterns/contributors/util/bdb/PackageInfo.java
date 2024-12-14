@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.metaeffekt.core.inventory.processor.patterns.contributors.util.bdb;
 
 import java.util.ArrayList;

@@ -58,9 +58,9 @@ public class SystemRuntimeCompilerservicesUnsafe_6_0_0 extends AbstractCompositi
 
         artifactList.with(attributeValue(ID, "System.Runtime.CompilerServices.Unsafe-6.0.0"),
                         attributeValue(VERSION, "6.0.0"),
-                        attributeValue(PROJECTS, "[system.runtime.compilerservices.unsafe.6.0.0.nupkg]"),
+                        attributeValue(PROJECTS, "system.runtime.compilerservices.unsafe.6.0.0.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.Runtime.CompilerServices.Unsafe@6.0.0"),
-                        attributeValue(PATH_IN_ASSET, "[system.runtime.compilerservices.unsafe.6.0.0.nupkg]"))
+                        attributeValue(PATH_IN_ASSET, "system.runtime.compilerservices.unsafe.6.0.0.nupkg"))
                 .assertNotEmpty();
     }
 }

@@ -97,8 +97,9 @@ public class ArtifactUnwrapTask extends ScanTask {
         final boolean explicitNoUnrwap = !explicitUnrwap && referenceArtifact.isPresent() &&
                 referenceArtifact.get().hasClassification(HINT_ATOMIC);
 
-        final boolean explicitInclude = referenceArtifact.isPresent() &&
-                referenceArtifact.get().hasClassification(HINT_INCLUDE);
+        final boolean explicitInclude = (referenceArtifact.isPresent() &&
+                referenceArtifact.get().hasClassification(HINT_INCLUDE)) ||
+                    file.getName().toLowerCase(Locale.ROOT).endsWith(".exe");
 
         final boolean explicitExclude = !explicitInclude && referenceArtifact.isPresent() &&
                 (referenceArtifact.get().hasClassification(HINT_EXCLUDE) || referenceArtifact.get().hasClassification(HINT_IGNORE));
@@ -153,7 +154,7 @@ public class ArtifactUnwrapTask extends ScanTask {
                 }
 
                 // trigger collection of content
-                LOG.info("Collecting subtree on [{}].", fileRef.getPath());
+                LOG.info("Collecting subtree on [{}].", targetFolder.getPath());
                 final FileRef dirRef = new FileRef(targetFolder);
 
                 // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)
@@ -200,6 +201,9 @@ public class ArtifactUnwrapTask extends ScanTask {
     private void postProcessUnwrapped(Artifact artifact, File file, File targetFolder, List<String> issues) {
         try {
             deriveType(artifact, file);
+
+            // unwrapped items mit aggregate directive skip
+            artifact.set(Constants.KEY_AGGREGATE_DIRECTIVE, AGGREGATE_DIRECTIVE_SKIP);
 
             postProcessUnwrappedSavedContainer(targetFolder);
         } catch (Exception e) {
@@ -269,7 +273,7 @@ public class ArtifactUnwrapTask extends ScanTask {
     }
 
     private static List<String> rebuildAndExtendAssetIdChain(FileRef baseDir, Artifact artifact,
-                                                             FileRef file, FileSystemScanContext context, boolean intermediate) {
+                                                             FileRef file, FileSystemScanContext context, boolean markForDeletion) {
         // read existing
         final String assetChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
 
@@ -280,8 +284,8 @@ public class ArtifactUnwrapTask extends ScanTask {
             Collections.addAll(assetIdChain, split);
         }
 
-        // return unmodified
-      //  if (intermediate) return assetIdChain;
+        // return unmodified list in case the artifact is marked for deletion
+        if (markForDeletion) return assetIdChain;
 
         final String relativePath = FileUtils.asRelativePath(baseDir.getPath(), file.getPath());
         assetIdChain.add(relativePath);

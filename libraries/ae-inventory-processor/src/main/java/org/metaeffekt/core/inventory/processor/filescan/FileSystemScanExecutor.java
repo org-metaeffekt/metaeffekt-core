@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.processor.filescan;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
-import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanExtractorConfiguration;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.ArtifactUnwrapTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.DirectoryScanTask;
 import org.metaeffekt.core.inventory.processor.filescan.tasks.FileCollectTask;
@@ -27,16 +26,12 @@ import org.metaeffekt.core.inventory.processor.inspector.param.JarInspectionPara
 import org.metaeffekt.core.inventory.processor.inspector.param.ProjectPathParam;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
-import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
-import org.metaeffekt.core.util.ArchiveUtils;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -138,54 +133,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         }
 
         mergeDuplicates(inventory);
-
-        File aggregationDir = fileSystemScanContext.getAggregationDir();
-
-        if (aggregationDir != null && !aggregationDir.exists()) {
-            try {
-                FileUtils.forceMkdir(aggregationDir);
-            } catch (IOException e) {
-                LOG.error("Cannot create aggregation directory [{}].", aggregationDir.getAbsolutePath(), e);
-            }
-        }
-
-        if (aggregationDir != null && aggregationDir.exists()) {
-            // post-processing steps
-            // 1. produce one file with all ArtifactFile types
-            final File baseDir = fileSystemScanContext.getBaseDir().getFile();
-
-            List<FilePatternQualifierMapper> filePatternQualifierMappers = ComponentPatternValidator.detectDuplicateComponentPatternMatches(fileSystemScanContext.getScanParam().getReferenceInventory(), inventory, baseDir);
-
-
-            // 2. analyze component containments
-            for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-                final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
-                if (mapper.getSubSetMap() != null) {
-                    for (String qualifier : mapper.getSubSetMap().keySet()) {
-                        Artifact foundArtifact = fileSystemScanContext.getInventory().getArtifacts().stream()
-                                .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
-                                .findFirst().orElse(null);
-                        if (foundArtifact != null) {
-                            String marker = foundArtifact.get(assetId);
-                            if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
-                                LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 3. build zips for all components
-            ArchiveUtils.buildZipsForAllComponents(baseDir, filePatternQualifierMappers, inventory, new HashSet<>(), aggregationDir);
-        }
-    }
-
-    public static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {
-        return a.getId().equals(qualifier) || qualifier.equals(deriveQualifier(a));
-    }
-
-    private static String deriveQualifier(Artifact a) {
-        return DirectoryScanExtractorConfiguration.deriveMapQualifier(a.getComponent(), a.getVersion(), a.getId());
     }
 
     private void setArtifactAssetMarker() {
@@ -337,6 +284,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
     public void mergeDuplicates(Inventory inventory) {
 
+        modulateAssetPath(inventory);
+
         final Map<String, List<Artifact>> stringListMap = buildQualifierArtifactMap(inventory);
 
         for (List<Artifact> list : stringListMap.values()) {
@@ -360,6 +309,36 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         InventoryUtils.mergeDuplicateAssets(inventory);
 
         mergeRedundantContainerArtifacts(inventory);
+    }
+
+    /**
+     * Normalize PATH_IN_ASSET. Only strips-off square brackets from last element. Does not introduce
+     * anything new.
+     *
+     * @param inventory The inventory with artiacts to normalize.
+     */
+    private static void modulateAssetPath(Inventory inventory) {
+        for (Artifact artifact : inventory.getArtifacts()) {
+            final String relativePath = artifact.get(KEY_PATH_IN_ASSET);
+            if (!StringUtils.isBlank(relativePath)) {
+                final String modulatedRelativePath = stripSquareBraketsFromLastElement(relativePath);
+                artifact.set(KEY_PATH_IN_ASSET, modulatedRelativePath);
+            }
+        }
+    }
+
+    private static String stripSquareBraketsFromLastElement(String relativePath) {
+        final File file = new File(relativePath);
+        String name = file.getName();
+        if (name.startsWith("[") && name.endsWith("]")) {
+            name = name.substring(1, name.length() - 1);
+        }
+        String path = "";
+        if (file.getParentFile() != null) {
+            path = file.getParentFile().getPath() + "/";
+        }
+        final String modulatedRelativePath = path + name;
+        return modulatedRelativePath;
     }
 
     private void mergeRedundantContainerArtifacts(Inventory inventory) {
@@ -412,29 +391,47 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         final Map<String, List<Artifact>> qualifierArtifactMap = new LinkedHashMap<>();
 
         for (final Artifact artifact : inventory.getArtifacts()) {
-            final String artifactQualifier = qualifierOf(artifact);
-            final List<Artifact> artifacts = qualifierArtifactMap.computeIfAbsent(artifactQualifier, a -> new ArrayList<>());
-            artifacts.add(artifact);
+            final Set<String> artifactQualifiers = qualifiersOf(artifact);
+            for (String qualifier : artifactQualifiers) {
+                final List<Artifact> artifacts = qualifierArtifactMap.computeIfAbsent(qualifier, a -> new ArrayList<>());
+                artifacts.add(artifact);
+            }
         }
         return qualifierArtifactMap;
     }
 
-    public String qualifierOf(Artifact artifact) {
+    /**
+     * Produces multiple qualifiers that - if matching - map the same artifacts and can be merged.
+     *
+     * @param artifact The artifact to produce the qualifiers for.
+     *
+     * @return Set of qalifiers for the given artifact.
+     */
+    public Set<String> qualifiersOf(Artifact artifact) {
+        final Set<String> qualifiers = new HashSet<>();
+
+        final String id = artifact.getId();
+
+        // id + checksum
         if (StringUtils.isNotBlank(artifact.getChecksum())) {
             // in case we have a checksum id and checksum are sufficient
-            return "[" +
-                    artifact.getId() + "-" +
-                    artifact.getChecksum() +
-                    "]";
-        } else {
-            // in case there is no checksum use groupId and version as discriminator
-            return "[" +
-                    artifact.getId() + "-" +
-                    artifact.getGroupId() + "-" +
-                    artifact.getVersion() +
-                    "]";
-
+            qualifiers.add("i:[" + id + "]-c:[" + artifact.getChecksum() + "]");
         }
+
+        // id + gv
+        if (StringUtils.isNotBlank(artifact.getGroupId()) && StringUtils.isNotBlank(artifact.getVersion())) {
+            qualifiers.add("i:[" + id + "]-g:[" + artifact.getGroupId() + "]-v:[" + artifact.getVersion() + "]");
+        }
+
+        // id + PATH_IN_ASSET
+        final String pathInAsset = artifact.get(KEY_PATH_IN_ASSET);
+        // FIXME: pathInAsset.contains(id) must not be true; PIA must not contain filename
+        if (StringUtils.isNotBlank(pathInAsset) && pathInAsset.contains(id)) {
+            // create qualifier
+            qualifiers.add("i:[" + id + "]-p:[" + pathInAsset + "]");
+        }
+
+        return qualifiers;
     }
 
 }

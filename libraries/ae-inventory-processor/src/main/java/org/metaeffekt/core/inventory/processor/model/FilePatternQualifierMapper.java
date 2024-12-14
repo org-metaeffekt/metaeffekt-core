@@ -25,24 +25,74 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Collects information for file aggregation and intersection management.
+ */
 @Getter
 @Setter
 public class FilePatternQualifierMapper {
 
-    private String qualifier;
-    private String derivedQualifier;
-    private List<File> files;
+    /**
+     * The artifact for which information is aggregated. May represent a single file or a component-pattern-derived
+     * group.
+     */
     private Artifact artifact;
+
+    /**
+     * Qualifier based on component part (artifact id).
+     */
+    private String qualifier;
+
+    /**
+     * Qualifier based on component part (artifact id), component name and version.
+     */
+    private String derivedQualifier;
+
+    /**
+     * The list of files covered (single file or matching files for component-pattern-derived artifacts).
+     */
+    private List<File> files;
+
+    /**
+     * Mapping a boolean to a list of files.
+     *
+     * In the 'true' bucket xxx are collected.
+     *
+     * In the 'false' bucket all XXX are collected.
+     */
     private Map<Boolean, List<File>> fileMap;
+
+    /**
+     * List of ComponentPatternData contributing to the artifact.
+     */
     private List<ComponentPatternData> componentPatternDataList;
+
+    /**
+     * The path in asset for the given artifact or the component pattern anchor.
+     */
     private String pathInAsset;
+
+    /**
+     * All included files with parent / owner containment information
+     */
     private List<ArtifactFile> includedComponentFiles;
+
+    /**
+     * All files managed as shared includes.
+     */
     private List<ArtifactFile> sharedIncludedPatternFiles;
+
+    /**
+     * All files managed as shared excludes.
+     */
     private List<ArtifactFile> sharedExcludedPatternFiles;
+
+    // FIXME: review and comment required.
     private Map<String, List<File>> subSetMap;
 
     public FilePatternQualifierMapper() {
         this.files = new ArrayList<>();
         this.componentPatternDataList = new ArrayList<>();
     }
+
 }

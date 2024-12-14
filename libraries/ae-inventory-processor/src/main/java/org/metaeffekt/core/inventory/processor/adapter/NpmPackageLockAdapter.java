@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -44,7 +44,7 @@ public class NpmPackageLockAdapter {
     /**
      * @param packageLockJsonFile The package-lock.json file to parse.
      * @param relPath The relative path to the file from the relevant basedir.
-     * @param projectName The name of the projectfor which to extract data.
+     * @param projectName The name of the project for which to extract data.
      *
      * @return An inventory populated with the runtime modules defined in the package json file.
      *
@@ -91,7 +91,7 @@ public class NpmPackageLockAdapter {
         final String json = FileUtils.readFileToString(packageLockJsonFile, FileUtils.ENCODING_UTF_8);
         final JSONObject obj = new JSONObject(json);
 
-        // support old versions, where the dependecies were listed top-level.
+        // support old versions, where the dependencies were listed top-level.
         addDependencies(packageLockJsonFile, obj, inventory, path, "dependencies");
 
         // in case a name is not provided, take all packages into account
@@ -144,21 +144,30 @@ public class NpmPackageLockAdapter {
             }
         } while (changed);
 
+        populateInventory(inventory, path, modules);
+
+    }
+
+    public static void populateInventory(Inventory inventory, String path, Collection<NpmModule> modules) {
         for (NpmModule module : modules) {
             Artifact artifact = new Artifact();
             artifact.setId(module.getName() + "-" + module.getVersion());
-            artifact.setComponent(module.getName());
+            String componentName = module.getName();
+            int slashIndex = componentName.indexOf("/");
+            if (slashIndex > 0) {
+                componentName = componentName.substring(0, slashIndex);
+            }
+            artifact.setComponent(componentName);
             artifact.setVersion(module.getVersion());
             artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
-            artifact.setUrl(module.getUrl());
+            artifact.set("Source Archive - URL", module.getUrl());
             artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getId() + "]");
             artifact.set(Artifact.Attribute.VIRTUAL_ROOT_PATH, path);
             String purl = buildPurl(module.getName(), module.getVersion());
             artifact.set(Artifact.Attribute.PURL, purl);
 
             inventory.getArtifacts().add(artifact);
-
         }
     }
 

@@ -58,9 +58,9 @@ public class SystemCollectionsImmutable_8_0_0 extends AbstractCompositionAnalysi
 
         artifactList.with(attributeValue(ID, "System.Collections.Immutable-8.0.0"),
                         attributeValue(VERSION, "8.0.0"),
-                        attributeValue(PROJECTS, "[system.collections.immutable.8.0.0.nupkg]"),
+                        attributeValue(PROJECTS, "system.collections.immutable.8.0.0.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.Collections.Immutable@8.0.0"),
-                        attributeValue(PATH_IN_ASSET, "[system.collections.immutable.8.0.0.nupkg]"))
+                        attributeValue(PATH_IN_ASSET, "system.collections.immutable.8.0.0.nupkg"))
                 .assertNotEmpty();
     }
 }

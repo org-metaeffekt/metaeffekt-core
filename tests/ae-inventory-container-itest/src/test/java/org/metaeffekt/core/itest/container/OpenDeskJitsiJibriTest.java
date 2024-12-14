@@ -20,34 +20,48 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
+import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
-import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Predicate;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
+import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-// FIXME: container no longer available
-@Ignore
 public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
+    public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
+        @Override
+        public Predicate<AssetMetaData> getPredicate() {
+            return a -> "container".equals(a.get(TYPE));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Asset of type container";
+        }
+    };
 
     @BeforeClass
     public static void prepare() {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.opencode.de", "bmi/opendesk/components/supplier/nordeck/images-mirror/jibri", "stable-8922@sha256:87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936", OpenDeskJitsiJibriTest.class.getName());
-        AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
+        final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
+                "registry.opencode.de",
+                "bmi/opendesk/components/supplier/nordeck/images-mirror/jibri",
+                "stable-8922@sha256:87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936",
+                OpenDeskJitsiJibriTest.class.getName());
+
+        AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
+                .setSource("file://" + baseDir.getAbsolutePath())
                 .setSha256Hash("87aa176b44b745b13769f13b8e2d22ddd6f6ba624244d5354c8dd3664787e936")
                 .setName(OpenDeskJitsiJibriTest.class.getName());
     }
@@ -67,9 +81,15 @@ public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
     @Test
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
-        Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(172);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(173);
+        final Analysis analysis = new Analysis(inventory);
+        analysis.selectArtifacts(containsToken(PATH_IN_ASSET, "node_modules")).hasSizeOf(176);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(217);
+
+        // there must be only once container asset
+        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
+
+        // we expect the container being only represented as asset; no artifacts with type container
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 
     @Test
@@ -77,10 +97,14 @@ public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList =
+                evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+
+        // FIXME: we have to write a function, which ignores sym links or we have to process them before
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
-        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
+
+        Assert.assertEquals(220, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

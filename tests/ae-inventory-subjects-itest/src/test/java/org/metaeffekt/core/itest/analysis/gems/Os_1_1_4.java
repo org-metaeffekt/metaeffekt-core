@@ -51,14 +51,14 @@ public class Os_1_1_4 extends AbstractCompositionAnalysisTest {
 
     @Test
     public void assertContent() throws Exception {
-        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
-                .selectArtifacts();
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "os-1.1.4.gem"),
-                        attributeValue(VERSION, "1.1.4"),
-                        attributeValue(PURL, "pkg:gem/os@1.1.4"))
-                .assertNotEmpty();
+        artifactList.with(
+            attributeValue(ID, "os-1.1.4.gem"),
+            attributeValue(VERSION, "1.1.4"),
+            attributeValue(PURL, "pkg:gem/os@1.1.4")
+        ).assertNotEmpty();
     }
 }
