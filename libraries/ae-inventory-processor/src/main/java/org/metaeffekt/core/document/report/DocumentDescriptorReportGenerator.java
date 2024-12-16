@@ -106,6 +106,8 @@ public class DocumentDescriptorReportGenerator {
                 report.setInventoryVulnerabilityReportSummaryEnabled(true);
             }
             if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
+                setPolicy(params, report);
+
                 report.setInventoryBomReportEnabled(true);
             }
             if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT) {
@@ -115,36 +117,18 @@ public class DocumentDescriptorReportGenerator {
                 report.setInventoryVulnerabilityReportSummaryEnabled(true);
             }
             if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
-                File securityPolicyFile = new File(params.get("securityPolicyFile"));
-                String securityPolicyOverwriteJson = "";
+                setPolicy(params, report);
 
-                if (params.get("securityPolicyOverwriteJson") != null) {
-                    securityPolicyOverwriteJson = params.get("securityPolicyOverwriteJson");
-                }
+                report.setInventoryVulnerabilityReportEnabled(true);
+                report.setInventoryVulnerabilityReportEnabled(true);
 
                 String generateOverviewTablesForAdvisories = params.get("generateOverviewTablesForAdvisories");
-
-                boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(params.get("vulnerabilitiesNotCoveredByArtifacts"));
-                //boolean filterAdvisorySummary = Boolean.parseBoolean(params.get("filterAdvisorySummary"));
-                //File diffInventoryFile = new File(params.get("diffInventoryFile"));
-
-                CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
-                securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
-
-
-                report.setSecurityPolicy(securityPolicy);
-                report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
-                //report.setFilterAdvisorySummary(filterAdvisorySummary);
-                //report.setDiffInventoryFile(diffInventoryFile);
 
                 try {
                     report.addGenerateOverviewTablesForAdvisoriesByMap(new JSONArray(generateOverviewTablesForAdvisories));
                 } catch (Exception e) {
                     throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
                 }
-
-                report.setInventoryVulnerabilityReportEnabled(true);
-                report.setInventoryVulnerabilityReportEnabled(true);
             }
 
             report.setReferenceInventory(inventoryContext.getReferenceInventory());
@@ -183,6 +167,29 @@ public class DocumentDescriptorReportGenerator {
             } else {
                 throw new RuntimeException("Report creation failed for " + report);
             }
+        }
+    }
+
+    private static void setPolicy(Map<String, String> params, InventoryReport report) throws IOException {
+        if (params != null && (params.containsKey("securityPolicyFile") || params.containsKey("securityPolicyOverwriteJson"))) {
+            String securityPolicyFilePath = params.get("securityPolicyFile");
+            File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
+
+            String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
+
+            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(
+                    params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")
+            );
+
+            CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
+            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(
+                    securityPolicy,
+                    securityPolicyFile,
+                    securityPolicyOverwriteJson
+            );
+
+            report.setSecurityPolicy(securityPolicy);
+            report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         }
     }
 }
