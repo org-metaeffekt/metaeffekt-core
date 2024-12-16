@@ -35,7 +35,7 @@
 ## License Options (not necessarily expressions)
     #if (!$termsWithOptions.isEmpty())
         <table id="LicenseOptions" otherprops="wide">
-            <title>Liznezoptionen$reportContext.inContextOf()</title>
+            <title>Lizenzoptionen$reportContext.inContextOf()</title>
             <tgroup cols="2">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="88*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="12*" />
