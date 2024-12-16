@@ -28,8 +28,8 @@
         von Lizenzoptionen.
     </p>
     #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
-        <fn id="id-footnote">Lizenzvariationen werden als einzelne Liznez gef&#252;hrt. Die spezifische Auspr&#258;gung der Liznez
-            kann vom der Standardlizenzvolage abweichen. Die Varianten werden in den entsprechenden Kapitel detailliert..</fn>
+        <fn id="id-footnote">Lizenzvariationen werden als einzelne Lizenz gef&#252;hrt. Die spezifische Auspr&#258;gung der Lizenz
+            kann vom der Standardlizenzvolage abweichen. Die Varianten werden in den entsprechenden Kapitel detailliert.</fn>
     #end
 
 ## License Options (not necessarily expressions)

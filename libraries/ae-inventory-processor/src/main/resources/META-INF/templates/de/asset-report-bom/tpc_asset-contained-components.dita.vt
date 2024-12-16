@@ -1,5 +1,5 @@
 ## load macros from other files
-#parse("META-INF/templates/en/asset-report-bom/macros/tpc_inventory-asset-info.vm")
+#parse("META-INF/templates/de/asset-report-bom/macros/tpc_inventory-asset-info.vm")
 ##
 ## main template content
 <?xml version="1.0" encoding="UTF-8"?>
