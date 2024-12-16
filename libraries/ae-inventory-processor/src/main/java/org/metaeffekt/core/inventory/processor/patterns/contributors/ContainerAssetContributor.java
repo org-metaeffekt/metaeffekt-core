@@ -58,7 +58,9 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
                 final JSONObject jsonObject = manifestJson.getJSONObject(0);
 
                 // isolate repo tags; pick single from list (de-prioritize latest tags)
-                final JSONArray repoTags = jsonObject.getJSONArray("RepoTags");
+                final JSONArray repoTags = jsonObject.optJSONArray("RepoTags");
+                if (repoTags == null) return Collections.emptyList();
+
                 final List<Object> repoTagList = repoTags.toList();
                 final List<String> repoTagStringList = repoTagList.stream().map(String::valueOf).collect(Collectors.toList());
                 Optional<String> first = repoTagStringList.stream().filter(rt -> !rt.endsWith("latest")).sorted().findFirst();
@@ -68,10 +70,14 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
 
                 // isolate primary config file; the hash is the container id
                 final String configPath = jsonObject.optString("Config");
+                if (configPath == null) return Collections.emptyList();
+
                 final String containerImageId = configPath.substring(configPath.lastIndexOf("/") + 1);
 
                 // isolate last image hash
-                final JSONArray layers = jsonObject.getJSONArray("Layers");
+                final JSONArray layers = jsonObject.optJSONArray("Layers");
+                if (layers == null) return Collections.emptyList();
+
                 final List<Object> layerList = layers.toList();
                 if (layerList.size() > 0) {
                     String lastLayer = String.valueOf(layerList.get(layerList.size() - 1));

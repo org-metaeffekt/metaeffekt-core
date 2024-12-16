@@ -147,11 +147,13 @@ public class ContainerImageInspectAdapter {
 
     private void extractCreatedTimestamp(ImageInspectElement element, AssetMetaData assetMetaData) {
         String created = element.getCreated();
-        int index = created.indexOf(".");
-        if (index != -1) {
-            created = created.substring(0, index);
+        if (created != null) {
+            int index = created.indexOf(".");
+            if (index != -1) {
+                created = created.substring(0, index);
+            }
+            assetMetaData.set("Created", created);
         }
-        assetMetaData.set("Created", created);
     }
 
 }

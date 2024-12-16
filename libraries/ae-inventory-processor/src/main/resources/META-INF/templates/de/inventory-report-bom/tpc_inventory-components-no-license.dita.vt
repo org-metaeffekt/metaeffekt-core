@@ -1,8 +1,8 @@
-#parse("META-INF/templates/en/asset-report-bom/macros/tpc_inventory-license.dita.vm")
+#parse("META-INF/templates/de/asset-report-bom/macros/tpc_inventory-license.dita.vm")
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_component-no-license-summary-$reportContext.id">
-    <title>$reportContext.combinedTitle("Components without License", true)</title>
+    <title>$reportContext.combinedTitle("Komponenten ohne Lizenz", true)</title>
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($components=$inventory.evaluateComponents($artifactsWithoutLicense))
 <body>
@@ -13,7 +13,7 @@
     </p>
 
     <table otherprops="wide" id="table_artifacts">
-        <title>Components without License$reportContext.inContextOf()</title>
+        <title>Komponenten ohne Lizenz$reportContext.inContextOf()</title>
 
         <tgroup cols="2">
             <colspec colname="COLSPEC0" colnum="1" colwidth="35*" />
