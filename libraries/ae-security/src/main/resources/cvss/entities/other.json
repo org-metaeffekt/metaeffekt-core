@@ -1,1 +1,180 @@
-{"OTHER":{"name":"OTHER","description":"Unspecified"},"CERT_SEI":{"name":"CERT-SEI","description":"CERT Software Engineering Institute","email":"info@sei.cmu.edu","url":"https://www.kb.cert.org/vuls","country":"US","reportSteps":[{"stepIndex":0,"title":"Read disclosure policy","link":"https://www.kb.cert.org/vuls/report/"},{"stepIndex":1,"title":"Submit Vulnerability Reporting Form","link":"https://www.kb.cert.org/vuls/vulcoordrequest/"}]},"NIST_NVD":{"name":"NVD","description":"National Vulnerability Database","email":"nvd@nist.gov","url":"https://nvd.nist.gov","country":"US"},"ELASTIC":{"name":"Elastic","description":"Elastic Security","email":"bressers@elastic.co","url":"https://www.elastic.co/security","country":"US"}}
+{
+  "OTHER": {
+    "name": "OTHER",
+    "description": "Unspecified"
+  },
+  "CERT_SEI": {
+    "name": "CERT-SEI",
+    "description": "CERT Software Engineering Institute",
+    "email": "info@sei.cmu.edu",
+    "url": "https://www.kb.cert.org/vuls",
+    "country": "US",
+    "reportSteps": [
+      {
+        "stepIndex": 0,
+        "title": "Read disclosure policy",
+        "link": "https://www.kb.cert.org/vuls/report/"
+      },
+      {
+        "stepIndex": 1,
+        "title": "Submit Vulnerability Reporting Form",
+        "link": "https://www.kb.cert.org/vuls/vulcoordrequest/"
+      }
+    ]
+  },
+  "NIST_NVD": {
+    "name": "NVD",
+    "description": "National Vulnerability Database",
+    "email": "nvd@nist.gov",
+    "url": "https://nvd.nist.gov",
+    "country": "US"
+  },
+  "ELASTIC": {
+    "name": "Elastic",
+    "description": "Elastic Security",
+    "email": "bressers@elastic.co",
+    "url": "https://www.elastic.co/security",
+    "country": "US"
+  },
+  "ANDROID": {
+    "name": "Android",
+    "description": "Android Security Bulletin",
+    "email": "security@android.com",
+    "url": "https://source.android.com/security/bulletin",
+    "country": "US"
+  },
+  "ALMA": {
+    "name": "AlmaLinux",
+    "description": "AlmaLinux Security Advisory",
+    "email": "packager@almalinux.org",
+    "url": "https://errata.almalinux.org/",
+    "country": "US"
+  },
+  "BIT": {
+    "name": "Bitnami",
+    "description": "Bitnami Security Database",
+    "url": "https://github.com/bitnami/vulndb/tree/main",
+    "country": "US"
+  },
+  "CGA": {
+    "name": "Chainguard",
+    "description": "Chainguard Security Notices",
+    "url": "https://www.chainguard.dev/",
+    "country": "US"
+  },
+  "CURL": {
+    "name": "CURL",
+    "description": "CURL CVEs",
+    "url": "https://curl.se/docs/security.html",
+    "country": "SE"
+  },
+  "DEBIAN": {
+    "name": "Debian",
+    "description": "Debian Security Advisory Database",
+    "email": "security@debian.org",
+    "url": "https://www.debian.org/security/",
+    "country": "US"
+  },
+  "GO": {
+    "name": "GO",
+    "description": "Go Vulnerability Database",
+    "email": "security@golang.org",
+    "url": "https://pkg.go.dev/vuln/",
+    "country": "US"
+  },
+  "GSD": {
+    "name": "GSD",
+    "description": "Global Security Database",
+    "email": "support@cloudsecurityalliance.org",
+    "url": "https://github.com/cloudsecurityalliance/gsd-database",
+    "country": "US"
+  },
+  "HSEC": {
+    "name": "Haskell",
+    "description": "Haskell Security Advisory Database",
+    "email": " security-advisories@haskell.org",
+    "url": "https://github.com/haskell/security-advisories",
+    "country": "US"
+  },
+  "LBSA": {
+    "name": "LoopBack",
+    "description": "LoopBack Advisory Database",
+    "email": "security@loopback.io",
+    "url": "https://github.com/loopbackio/security/tree/main/advisories",
+    "country": "US"
+  },
+  "MGASA": {
+    "name": "Mageia",
+    "description": "Mageia Security Advisories",
+    "url": "https://advisories.mageia.org/",
+    "country": "US"
+  },
+  "MAL": {
+    "name": "Malicious",
+    "description": "Malicious Packages Repository",
+    "url": "https://openssf.org/",
+    "country": "US"
+  },
+  "OSS-FUZZ": {
+    "name": "OSV-Fuzz",
+    "description": "Advisories allocated by OSV.dev (currently only from OSS-Fuzz)",
+    "url": "https://osv.dev/",
+    "country": "US"
+  },
+  "PSF": {
+    "name": "Python Software Foundation",
+    "description": "Python Software Foundation Vulnerability Database",
+    "url": "https://github.com/psf/advisory-database/",
+    "country": "US"
+  },
+  "PYSEC": {
+    "name": "PyPi",
+    "description": "PyPI Vulnerability Database",
+    "url": "https://github.com/pypa/advisory-database/",
+    "country": "US"
+  },
+  "RHEL": {
+    "name": "Red Hat",
+    "description": "Red Hat Security Data",
+    "email": "secalert@redhat.com",
+    "url": "https://access.redhat.com/security/",
+    "country": "US"
+  },
+  "ROCKY": {
+    "name": "Rocky Linux",
+    "description": "Rocky Linux Security Advisory Database",
+    "email": "security@rockylinux.org",
+    "url": "https://errata.rockylinux.org/"
+  },
+  "RSEC": {
+    "name": "R",
+    "description": "RConsortium Advisory Database",
+    "email": "info@r-consortium.org",
+    "url": "https://github.com/RConsortium/r-advisory-database"
+  },
+  "RUSTSEC": {
+    "name": "Rust",
+    "description": "RustSec Advisory Database",
+    "url": "https://rustsec.org/advisories/"
+  },
+  "SUSE": {
+    "name": "SUSE / openSUSE",
+    "description": "SUSE Security Landing page",
+    "url": "https://www.suse.com/support/security/",
+    "country" : "LUX"
+  },
+  "UBUNTU": {
+    "name": "Ubuntu",
+    "description": "Ubuntu CVE Reports",
+    "email": "security@ubuntu.com",
+    "url": "https://ubuntu.com/security/cves",
+    "country": "UK"
+  },
+  "USN" : {
+    "name": "Ubuntu Security Notice",
+    "description": "Ubuntu Security Notice",
+    "email": "security@ubuntu.com",
+    "url": "https://ubuntu.com/security/notices",
+    "country": "UK"
+  }
+}
