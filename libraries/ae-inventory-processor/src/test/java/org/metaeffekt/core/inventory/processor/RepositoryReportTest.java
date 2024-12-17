@@ -80,7 +80,7 @@ public class RepositoryReportTest {
         File target = new File("target/test-inventory-01");
         target.mkdirs();
 
-        File targetReportPath = new File(target, "report");
+        File  targetReportPath = new File(target, "report");
         targetReportPath.mkdirs();
 
         File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
@@ -101,6 +101,7 @@ public class RepositoryReportTest {
         report.setInventoryDiffReportEnabled(false);
         report.setInventoryVulnerabilityReportEnabled(true);
         report.setInventoryVulnerabilityReportSummaryEnabled(true);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
         final boolean valid = report.createReport();
 

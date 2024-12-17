@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_bom-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+
+    <title>$reportContext.combinedTitle("Bill of Materials", true) - $reportContext.getReportInventoryVersion()</title>
+    <body>
+        <p>
+            $utils.getText("inventory-report-bom.bill-of-materials")
+        </p>
+
+    </body>
+</topic>

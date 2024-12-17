@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_${projectId}-dependencies-description">
+#macro(provided $provided)
+#if($provided == "provided") (provided)#end
+#end
+#macro(optional $optional)
+#if($optional) (optional)#end
+#end
+#macro(dep $dependency)
+                        <row>
+                            <entry>${dependency.name}</entry>
+                            <entry>${dependency.groupId} / ${dependency.artifactId}#provided($dependency.scope)#optional($dependency.optional)</entry>
+                        </row>
+#end
+
+   <title>Dependencies</title>
+   <body>
+#if(!$internalDependencies.dependencies.isEmpty())
+      <section>
+         <title>Internal Dependencies $projectName</title>
+         <p>
+            $utils.getText("dependencies.artifact-dependencies")
+         </p>
+         <p>
+            <table id="tbl_internal-dependencies">
+                <tgroup cols="2">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="40*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="60*" />
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC1" valign="top">Group Id / Artifact Id</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+#foreach($dependency in $internalDependencies.dependencies)
+#dep($dependency)
+#end
+                    </tbody>
+                </tgroup>
+            </table>
+         </p>
+      </section>
+#end
+#if(!$externalDependencies.dependencies.isEmpty())
+      <section>
+         <title>Dependencies $projectName</title>
+         <p>
+             $utils.getText("dependencies.third-party-artifact-dependencies")
+         </p>
+         <p>
+            <table id="tbl_ae-external-dependencies">
+                <tgroup cols="2">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="0.4*" />
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="0.6*" />
+                    <thead>
+                        <row>
+                            <entry colname="COLSPEC0" valign="top">Component</entry>
+                            <entry colname="COLSPEC1" valign="top">Group Id / Artifact Id</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+#foreach($dependency in $externalDependencies.dependencies)
+#dep($dependency)
+#end
+                    </tbody>
+                </tgroup>
+            </table>
+         </p>
+      </section>
+#end
+   </body>
+</topic>

@@ -17,26 +17,47 @@ package org.metaeffekt.core.inventory.processor.report;
 
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.apache.xmlbeans.impl.schema.PathResourceLoader;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ReportUtils {
 
+    @Setter
+    private VelocityContext context;
+
+    private Properties languageProperties;
+
     /**
      * It is recommended to use Locale.getLanguage().toString() as those abbreviations are used in the
      * getLanguagePropertyFile() method and as the property file names.
      */
-    @Setter
     private String lang;
+
+    public void setLang(String lang) {
+        this.lang = lang;
+        Properties props = new Properties();
+        InputStream inputStream = this.getClass()
+                .getClassLoader()
+                .getResourceAsStream("META-INF/templates/lang/" + lang + ".properties");
+
+        try {
+            if (inputStream != null) {
+                props.load(inputStream);
+                languageProperties = props;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public boolean isEmpty(String value) {
         return !StringUtils.isNotBlank(value);
@@ -82,29 +103,26 @@ public class ReportUtils {
             }
         }
 
-        // return empty set
+
         return Collections.emptySet();
     }
 
-    /**
-     * Loads the relevant language properties file for use in all report templates and returns
-     * the file as properties.
-     * @return the properties contained in the file
-     */
-    public Properties getLanguagePropertyFile() {
-        Properties props = new Properties();
-        InputStream inputStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream("META-INF/templates/lang/" + lang + ".properties");
+    public String getText(String key) {
+        String value = languageProperties.get(key).toString();
+        if (StringUtils.isNotBlank(value)) {
+            return evaluate(value);
+        }
+        return "";
+    }
 
+    // FIXME: Manually evaluate how expensive this operation is compared to previous report iterations.
+    public String evaluate(String template) {
+        StringWriter writer = new StringWriter();
         try {
-            if (inputStream != null) {
-                props.load(inputStream);
-                return props;
-            }
-        } catch (IOException e) {
+            Velocity.evaluate(context, writer, "TemplateEval", new StringReader(template));
+        } catch ( Exception e ) {
             throw new RuntimeException(e);
         }
-        return null;
+        return writer.toString();
     }
 }

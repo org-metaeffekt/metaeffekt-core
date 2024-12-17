@@ -584,7 +584,7 @@ public class InventoryReport {
         // write reports
         if (inventoryBomReportEnabled) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
         }
 
         if (inventoryDiffReportEnabled) {
@@ -593,23 +593,23 @@ public class InventoryReport {
 
         if (inventoryVulnerabilityReportEnabled) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
         }
 
         if (inventoryVulnerabilityReportSummaryEnabled) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
         }
 
         if (inventoryVulnerabilityStatisticsReportEnabled) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
         }
 
         // all vulnerability-related templates require to generate labels
         if (inventoryVulnerabilityReportEnabled || inventoryVulnerabilityStatisticsReportEnabled) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    deriveTemplateBaseDir(), TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT, reportContext);
         }
 
         if (inventoryPomEnabled) {
@@ -619,12 +619,12 @@ public class InventoryReport {
 
         if (assetBomReportEnabled) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
         }
 
         if (assessmentReportEnabled) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
-                    deriveTemplateBaseDir(), TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
+                    TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
 
         // evaluate licenses only for managed artifacts
@@ -707,10 +707,6 @@ public class InventoryReport {
         }
     }
 
-    private String deriveTemplateBaseDir() {
-        return TEMPLATES_BASE_DIR + SEPARATOR_SLASH + getTemplateLanguageSelector();
-    }
-
     protected void writeReports(Inventory projectInventory, Inventory filteredInventory, InventoryReportAdapters report,
                 String templateBaseDir, String templateGroup, ReportContext reportContext) throws IOException {
 
@@ -750,7 +746,8 @@ public class InventoryReport {
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
         final ReportUtils reportUtils = new ReportUtils();
-        reportUtils.setLang(Locale.ENGLISH.getLanguage());
+        reportUtils.setLang(templateLanguageSelector);
+        reportUtils.setContext(context);
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("inventory", filteredInventory);
@@ -995,7 +992,7 @@ public class InventoryReport {
                 new AssessmentReportAdapter(baseFilteredInventory, securityPolicy),
                 new InventoryReportAdapter(baseFilteredInventory));
 
-        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, deriveTemplateBaseDir(), TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
+        writeReports(baseFilteredInventory, filteredInventory, inventoryReportAdapters, TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_DIFF, reportContext);
     }
 
     /**
