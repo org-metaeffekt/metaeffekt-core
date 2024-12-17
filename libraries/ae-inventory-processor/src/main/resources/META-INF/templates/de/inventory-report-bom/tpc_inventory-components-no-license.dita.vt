@@ -1,0 +1,63 @@
+#parse("META-INF/templates/de/asset-report-bom/macros/tpc_inventory-license.dita.vm")
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_component-no-license-summary-$reportContext.id">
+    <title>$reportContext.combinedTitle("Komponenten ohne Lizenz", true)</title>
+#set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
+#set($components=$inventory.evaluateComponents($artifactsWithoutLicense))
+<body>
+#if (!$components.isEmpty())
+    <p>
+        F&#252;r einige Komponenten konnten kein Bezug zur Lizenzierung hergestellt werden. Diese Komponenten werden
+        nachfolgend aufgelistet.
+    </p>
+
+    <table otherprops="wide" id="table_artifacts">
+        <title>Komponenten ohne Lizenz$reportContext.inContextOf()</title>
+
+        <tgroup cols="2">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="35*" />
+            <colspec colname="COLSPEC1" colnum="2" colwidth="65*" />
+            <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">Komponente</entry>
+                    <entry colname="COLSPEC1" valign="top">Artefakt(e)</entry>
+                </row>
+            </thead>
+
+            <tbody>
+        #foreach($component in $components)
+            #set($groups=$inventory.evaluateComponent($component))
+            #foreach($name in $groups)
+                #set($hasNotice=$inventory.hasNotice($component))
+                <row>
+                #if($hasNotice)
+                    <entry>
+                        <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)" type="topic">
+                            $report.xmlEscapeComponentName($component.getOriginalComponentName())
+                        </xref>
+                    </entry>
+                #else
+                    <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
+                #end
+                    #set($addParagraph=false)
+                    <entry>#foreach($artifact in $name)#if($artifact.getGroupId())
+                        <lines>#if($addParagraph)<line>
+                        </line>#end<line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                            <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>#else
+                        <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
+                        #set($addParagraph=true)#end
+                    </entry>
+                </row>
+            #end
+        #end
+            </tbody>
+        </tgroup>
+    </table>
+#else
+    <p>
+        Es wurden keine Komponenten ohne Lizenzbezug festgestellt.
+    </p>
+#end
+</body>
+</topic>

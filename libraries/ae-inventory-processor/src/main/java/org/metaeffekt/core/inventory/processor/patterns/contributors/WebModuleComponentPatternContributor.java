@@ -18,20 +18,22 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
+import org.metaeffekt.core.inventory.processor.adapter.YarnLockAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class WebModuleComponentPatternContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(WebModuleComponentPatternContributor.class);
@@ -143,10 +145,27 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json, **/apps/**/**/*.json");
 
+        // check whether alternatively a yarn.lock file is available
+        File yarnLock = new File(anchorParentDir, "yarn.lock");
+
+        Inventory inventoryFromYarnLock = null;
+        if (anchorFile.exists()) {
+            inventoryFromYarnLock = new YarnLockAdapter().extractInventory(yarnLock, relativeAnchorPath);
+        }
+
         if (inventoryFromPackageLock != null) {
             final Inventory expansionInventory = inventoryFromPackageLock;
             componentPatternData.setExpansionInventorySupplier(() -> expansionInventory);
+
+            // FIXME: consolidate with yarnLock
+        } else {
+            if (inventoryFromYarnLock != null) {
+                final Inventory expansionInventory = inventoryFromYarnLock;
+                // FIXME: consolidate with package.json (dev/prod)
+                componentPatternData.setExpansionInventorySupplier(() -> expansionInventory);
+            }
         }
+
 
         return Collections.singletonList(componentPatternData);
     }
@@ -181,6 +200,8 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         File anchor;
         String anchorChecksum;
 
+        String url;
+
         @Override
         public int compareTo(WebModule o) {
             return path.compareToIgnoreCase(o.path);
@@ -195,80 +216,19 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                     ", license='" + license + '\'' +
                     ", path='" + path + '\'' +
                     ", anchor='" + anchor + '\'' +
+                    ", url='" + url + '\'' +
                     '}';
         }
 
         public boolean hasData() {
             if (StringUtils.isBlank(name)) return false;
             if (StringUtils.isBlank(version)) return false;
-            if (anchor == null) return false;
-
-            return true;
+            return anchor != null;
         }
 
         File packageLockJsonFile;
         File packageJsonFile;
-    }
-
-    public void createInventory(File scanDir) throws IOException {
-        final Map<String, WebModule> pathModuleMap = new HashMap<>();
-
-        // FIXME:
-        // - ues derived inventories instead (all files unfiltered, with proper project path)
-        // - do for all inventories in a project context
-
-        scanWebComponents(scanDir, pathModuleMap, scanDir);
-
-        Inventory webComponentInventory = new Inventory();
-
-        Set<String> uniqueAnchors = pathModuleMap.values().stream().map(wm -> wm.anchor != null ? wm.anchorChecksum : null).filter(Objects::nonNull).collect(Collectors.toSet());
-
-        for (String anchorChecksum : uniqueAnchors) {
-            WebModule webModule = null;
-            for (WebModule candidate : pathModuleMap.values()) {
-                if (anchorChecksum.equals(candidate.anchorChecksum)) {
-                    webModule = candidate;
-                }
-            }
-
-            ComponentPatternData cpd = new ComponentPatternData();
-            cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, webModule.name);
-            cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, webModule.name + "-" + webModule.version);
-            cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, webModule.version);
-
-            cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/" + webModule.folder + "/**/*");
-            String versionAnchorPath = webModule.anchor.getAbsolutePath();
-            versionAnchorPath = versionAnchorPath.substring(versionAnchorPath.indexOf(webModule.folder));
-            cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, versionAnchorPath);
-            cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, webModule.anchorChecksum);
-
-            cpd.set("TMP-LICENSE", webModule.license);
-            cpd.set("TMP-PATH", webModule.path);
-
-            webComponentInventory.getComponentPatternData().add(cpd);
-        }
-
-        // NOTE: we drop modules, which we do not have sufficient information for using only modules with anchors
-
-        // derive artifacts of type web component for component patterns
-        for (ComponentPatternData cpd : webComponentInventory.getComponentPatternData()) {
-            String artifactId = cpd.get(ComponentPatternData.Attribute.COMPONENT_PART);
-            String component = cpd.get(ComponentPatternData.Attribute.COMPONENT_NAME);
-            String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
-            Artifact queryArtifact = new Artifact();
-            queryArtifact.setId(artifactId);
-            queryArtifact.setVersion(version);
-            queryArtifact.setComponent(component);
-            // FIXME-Core: use type as attribute constant; rename nodejs to webmodule (as there are different types)
-            queryArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
-            Artifact artifact = webComponentInventory.findArtifact(queryArtifact);
-            if (artifact == null) {
-                artifact = queryArtifact;
-                webComponentInventory.getArtifacts().add(artifact);
-            }
-        }
-
-        new InventoryWriter().writeInventory(webComponentInventory, new File("target/web.xls"));
+        File yarnLockFile;
     }
 
     protected void scanWebComponents(File inventoryFile, Map<String, WebModule> pathModuleMap, File baseDir) throws IOException {
@@ -328,10 +288,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         if (artifactPath.endsWith(Constants.COMPOSER_JSON)) {
             return true;
         }
-        if (artifactPath.endsWith(Constants.DOT_BOWER_JSON)) {
-            return true;
-        }
-        return false;
+        return artifactPath.endsWith(Constants.DOT_BOWER_JSON);
     }
 
     protected WebModule getOrInitWebModule(String path, Map<String, WebModule> pathModuleMap) {

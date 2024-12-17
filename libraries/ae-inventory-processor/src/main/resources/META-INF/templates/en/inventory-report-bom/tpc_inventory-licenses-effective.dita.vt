@@ -21,11 +21,8 @@
         for each effective license.
     </p>
     <p>
-        Please note the following aspects:
-        <ul>
-            <li>a component may be subject to several licenses in effect.</li>
-            <li>individual parts of a license options are also listed as effective license.</li>
-        </ul>
+        A component may be subject to several licenses in effect. The individual parts of a license option are also
+        listed as effective license.
     </p>
 
     #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))

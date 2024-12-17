@@ -1,0 +1,34 @@
+#parse("META-INF/templates/de/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_license-usage-$reportContext.id">
+    <title>$reportContext.combinedTitle("Lizenznutzung", true)</title>
+#set($effectiveLicenses=$inventory.evaluateLicenses(false))
+#set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+<body>
+    <p>
+        Lizenzen werden von einzelnen oder mehreren Komponenten genutzt werden. Im Folgenden werden die Komponenten
+        in Bezug zur Lizenz aufgef&#252;hrt.
+    </p>
+</body>
+
+#foreach($license in $effectiveLicensesRepresented)
+    #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
+        #insertLicenseArtifactTopic($license)
+    #else
+        <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
+            <title>$report.xmlEscapeLicense($license) Variants</title>
+            <body>
+                <p>
+                    $license wird als Repr&#258;sentant f&#252;r alle &#258;hnlichen Lizenzen mit Variationen oder Modifikationen
+                    aufgef&#252;hrt. Im entsprechenden Unterkapitel werden die unterschiedlichen Auspr&#258;gungen von $license
+                    separat dargestellt.
+                </p>
+                #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))
+                #insertLicenseArtifactTopic($effLicense)
+                #end
+            </body>
+        </topic>
+    #end
+#end
+</topic>

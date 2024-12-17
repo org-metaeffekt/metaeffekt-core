@@ -35,24 +35,22 @@ public abstract class AbstractTestSetup implements TestSetup {
 
     String name;
     private Inventory inventory;
-    private String myDir = "";
+    private String localDir = "";
 
     private String referenceInventory = "";
 
-    private File aggregationDir;
-
     public String getDownloadFolder() {
-        return TestConfig.getDownloadFolder() + myDir;
+        return TestConfig.getDownloadFolder() + localDir;
     }
 
     @Override
     public String getScanFolder() {
-        return TestConfig.getScanFolder() + myDir;
+        return TestConfig.getScanFolder() + localDir;
     }
 
     @Override
     public String getInventoryFolder() {
-        return TestConfig.getInventoryFolder() + myDir;
+        return TestConfig.getInventoryFolder() + localDir;
     }
 
     public TestSetup setSource(String url) {
@@ -63,7 +61,7 @@ public abstract class AbstractTestSetup implements TestSetup {
     @Override
     public TestSetup setName(String testName) {
         this.name = testName.replace("org.metaeffekt.core.itest.", "");
-        this.myDir = name.replace(".", "/") + "/";
+        this.localDir = name.replace(".", "/") + "/";
         return this;
     }
 
@@ -72,6 +70,7 @@ public abstract class AbstractTestSetup implements TestSetup {
         FileUtils.deleteDirectory(new File(getInventoryFolder()));
         FileUtils.deleteDirectory(new File(getDownloadFolder()));
         FileUtils.deleteDirectory(new File(getScanFolder()));
+        FileUtils.deleteDirectory(new File(getAggregationDir()));
         return true;
     }
 
@@ -129,13 +128,8 @@ public abstract class AbstractTestSetup implements TestSetup {
     }
 
     @Override
-    public File getAggregationDir() {
-        return aggregationDir;
+    public String getAggregationDir() {
+        return TestConfig.getAggregationFolder() + localDir;
     }
 
-    // NOTE: this is used by artifact-analysis, please don't remove
-    @Override
-    public void setAggregationDir(File aggregationDir) {
-        this.aggregationDir = aggregationDir;
-    }
 }

@@ -242,7 +242,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     /**
      * @parameter
      */
-    private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
+    private CentralSecurityPolicyConfiguration securityPolicy;
 
     /**
      * If set, will overwrite the {@link #securityPolicy} with the contents of this file.<br>
@@ -290,7 +290,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      *
      * @parameter
      */
-    private String generateOverviewTablesForAdvisories = "[]";
+    private final String generateOverviewTablesForAdvisories = "[]";
 
     // other template parameters
 

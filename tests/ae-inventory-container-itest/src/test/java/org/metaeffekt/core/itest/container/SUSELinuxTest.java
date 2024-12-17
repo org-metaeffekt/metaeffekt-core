@@ -21,32 +21,48 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
+import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
-import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
+import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
-import static org.metaeffekt.core.itest.container.ContainerDumpSetup.exportContainerFromRegistryByRepositoryAndTag;
+import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
 public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
 
+    public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
+        @Override
+        public Predicate<AssetMetaData> getPredicate() {
+            return a -> "container".equals(a.get(TYPE));
+        }
+
+        @Override
+        public String getDescription() {
+            return "Asset of type container";
+        }
+    };
+
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        String path = exportContainerFromRegistryByRepositoryAndTag("registry.suse.com", "bci/bci-base", null, SUSELinuxTest.class.getName());
-        String sha256Hash = FileUtils.computeSHA256Hash(new File(path));
-        AbstractCompositionAnalysisTest.testSetup = new UrlBasedTestSetup()
-                .setSource("file://" + path)
+        final File baseDir = saveContainerFromRegistryByRepositoryAndTag("registry.suse.com", "bci/bci-base", "15.5", SUSELinuxTest.class.getName());
+        String sha256Hash = FileUtils.computeSHA256Hash(baseDir);
+        AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
+                .setSource("file://" + baseDir.getAbsolutePath())
                 .setSha256Hash(sha256Hash)
                 .setName(SUSELinuxTest.class.getName());
     }
@@ -69,9 +85,9 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.detectDuplicateComponentPatternMatches(referenceInventory, inventory, baseDir);
+        List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
-        duplicateList.identifyRemainingDuplicatesWithoutArtifact();
+        duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
         Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
@@ -80,11 +96,14 @@ public class SUSELinuxTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
-        // FIXME: in ci numbers are toggling between 137 and 143; what is the difference (maybe platform/executor)
-        // CI-16.09.2024: 143
-        // CI-17.09.2024: 137
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(137);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(270);
 
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "Packages.db")).hasSizeGreaterThan(1);
+
+        // there must be only once container asset
+        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
+
+        // we expect the container being only represented as asset; no artifacts with type container
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 }

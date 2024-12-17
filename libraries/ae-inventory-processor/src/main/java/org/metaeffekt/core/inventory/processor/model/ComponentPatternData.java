@@ -77,10 +77,16 @@ public class ComponentPatternData extends AbstractModelBase {
         VERSION_ANCHOR_CHECKSUM("Version Anchor Checksum"),
         TYPE("Type"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
+
+        // files covered by a component pattern may be shared with other component patterns; this attribute allows
+        // to specify files which are known to be shared, but should remain included, when the files are collected
         SHARED_INCLUDE_PATTERN("Shared Include Pattern"),
+
+        // files covered by a component pattern may be shared with other component patterns; this attribute allows
+        // to specify files which are known to be shared, and should not be collected for the component
         SHARED_EXCLUDE_PATTERN("Shared Exclude Pattern");
 
-        private String key;
+        private final String key;
 
         Attribute(String key) {
             this.key = key;
@@ -110,29 +116,26 @@ public class ComponentPatternData extends AbstractModelBase {
      * @return Boolean whether the {@link ComponentPatternData} instance is valid.
      */
     public boolean isValid() {
-        if (StringUtils.isEmpty(get(Attribute.INCLUDE_PATTERN))) return false;
-        return true;
+        return !StringUtils.isEmpty(get(Attribute.INCLUDE_PATTERN));
     }
 
     /**
      * @return The derived string qualifier for this instance.
      */
     public String deriveQualifier() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(get(Attribute.INCLUDE_PATTERN)).append("-");
-        sb.append(get(Attribute.VERSION_ANCHOR)).append("-");
-        sb.append(get(Attribute.VERSION_ANCHOR_CHECKSUM));
-        return sb.toString();
+        String sb = get(Attribute.INCLUDE_PATTERN) + "-" +
+                get(Attribute.VERSION_ANCHOR) + "-" +
+                get(Attribute.VERSION_ANCHOR_CHECKSUM);
+        return sb;
     }
 
     /**
      * @return The derived simple qualifier for this instance.
      */
     public String deriveSimpleQualifier() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(get(Attribute.VERSION_ANCHOR)).append("-");
-        sb.append(get(Attribute.VERSION_ANCHOR_CHECKSUM));
-        return sb.toString();
+        String sb = get(Attribute.VERSION_ANCHOR) + "-" +
+                get(Attribute.VERSION_ANCHOR_CHECKSUM);
+        return sb;
     }
 
     /**

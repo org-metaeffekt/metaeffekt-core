@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.*;
@@ -44,6 +43,7 @@ public class ReportUtils {
         return String.format(Locale.GERMANY, "%.1f %%", (100d * part) / total);
     }
 
+    // FIXME: move to new InventoryReportAdapter
     /**
      * Returns a list of assets for which the give artifacts are contained in. If there is a primary asset in the list,
      * only the primary is returned. If there is no primary, all related assets are returned.

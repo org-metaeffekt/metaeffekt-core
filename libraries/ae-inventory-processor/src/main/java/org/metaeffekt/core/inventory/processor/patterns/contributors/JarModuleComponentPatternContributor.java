@@ -162,6 +162,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 "**/*.xar" + ", " +
                 "**/*.xed" + ", " +
                 "**/*.so*" + ", " +
+                "**/*.exe" + ", " +
                 (isManifestAnchor ? "**/maven/**/*" + ", " : "") +
                 "**/*.dll");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);

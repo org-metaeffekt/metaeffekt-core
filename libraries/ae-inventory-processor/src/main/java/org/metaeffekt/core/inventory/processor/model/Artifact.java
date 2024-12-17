@@ -353,7 +353,6 @@ public class Artifact extends AbstractModelBase {
         return null;
     }
 
-
     public String createStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
         if (getGroupId() != null) {

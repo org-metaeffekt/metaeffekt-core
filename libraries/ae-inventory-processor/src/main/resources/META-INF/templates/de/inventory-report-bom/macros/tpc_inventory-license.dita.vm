@@ -1,0 +1,67 @@
+#macro (insertLicenseArtifactTopic $license)
+    #set($folder=$inventory.getLicenseFolder($license))
+    #set($licenseDataList=$inventory.evaluateComponents($license))
+    #if(!$licenseDataList.isEmpty())
+    <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
+        <title>$report.xmlEscapeLicense($license)</title>
+        <body>
+            <p>
+                Nachfolgende Tabelle listet alle Komponenten auf, die oder deren Subkomponenten unter der Lizenz
+                $license stehen.
+                #if($folder)
+                    Details zur Lizenzierung k&#246;nnen unter
+                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
+                        [external]</xref> eingesehen werden.
+                #end
+            </p>
+            <p>
+                <table otherprops="wide">
+                    <title>Komponenten unter $license.trim()$reportContext.inContextOf()</title>
+                    <tgroup cols="3">
+                        <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
+                        <colspec colname="COLSPEC1" colnum="2" colwidth="60*"/>
+                        <colspec colname="COLSPEC2" colnum="3" colwidth="20*"/>
+                        <thead>
+                            <row>
+                                <entry colname="COLSPEC0" valign="top">Komponente</entry>
+                                <entry colname="COLSPEC1" valign="top">Artefakt / Paket / Webmodule</entry>
+                                <entry colname="COLSPEC2" valign="top">Version</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            #foreach($licenseData in $licenseDataList)
+                                #set($hasNotice=$inventory.hasNotice($licenseData))
+                                #foreach($artifact in $licenseData.getArtifacts())
+                                    #set($rows=$licenseData.getArtifacts().size())
+                                    #set($rows=$rows - 1)
+                                    <row>
+                                        <entry>
+                                            #if($hasNotice)
+                                                <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($artifact.getComponent())" type="topic">
+                                                    $report.xmlEscapeString($artifact.getComponent())
+                                                </xref>
+                                            #else
+                                                $report.xmlEscapeString($artifact.getComponent())
+                                            #end
+                                        </entry>
+                                        <entry>
+                                            #if($artifact.getGroupId())<lines><line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                                                <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>
+                                            #else
+                                                <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+                                            #end
+                                        </entry>
+                                        <entry>
+                                            <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
+                                        </entry>
+                                    </row>
+                                #end
+                            #end
+                        </tbody>
+                    </tgroup>
+                </table>
+            </p>
+        </body>
+    </topic>
+    #end
+#end

@@ -27,7 +27,7 @@ import java.util.List;
 
 public class ContainerInspectAssetContributor extends ComponentPatternContributor {
 
-    private static List<String> SUFFIX_LIST = Collections.singletonList(".json");
+    private static final List<String> SUFFIX_LIST = Collections.singletonList(".json");
 
     @Override
     public boolean applies(String pathInContext) {
@@ -57,13 +57,23 @@ public class ContainerInspectAssetContributor extends ComponentPatternContributo
 
                 if (assetMetaData != null) {
 
+                    final String name = assetMetaData.get(AssetMetaData.Attribute.NAME);
+                    final String version = assetMetaData.get(AssetMetaData.Attribute.VERSION);
+
                     final ComponentPatternData cpd = new ComponentPatternData();
-                    cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, assetMetaData.get(AssetMetaData.Attribute.NAME));
-                    cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, assetMetaData.get(AssetMetaData.Attribute.VERSION));
-                    cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, assetMetaData.get("Repository") + "-" + assetMetaData.get(AssetMetaData.Attribute.VERSION));
-                    cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
+                    cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
+                    cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
+
+                    final String repository = assetMetaData.get("Repository");
+                    if (repository != null && version != null) {
+                        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, repository + "-" + version);
+                    } else {
+                        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, inspectFile.getName());
+                    }
+
+                    cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, inspectFile.getName());
                     cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, new File(relativeAnchorPath).getName());
+                    cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, inspectFile.getName());
                     cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_CONTAINER);
 
                     cpd.set(assetMetaData.get(AssetMetaData.Attribute.ASSET_ID), Constants.MARKER_CROSS);
