@@ -204,8 +204,13 @@ public abstract class CvssVector {
 
     public int applyVector(String vector) {
         if (vector == null) return 0;
-
         final String normalizedVector = normalizeVector(vector);
+        return applyNormalizedVector(normalizedVector);
+    }
+
+    public int applyNormalizedVector(String normalizedVector) {
+        if (normalizedVector == null) return 0;
+
         if (normalizedVector.isEmpty()) return 0;
 
         final String[] arguments = normalizedVector.split("/");
@@ -315,8 +320,11 @@ public abstract class CvssVector {
 
     public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
         final T cvssVector = constructor.get();
-        final int unknownAttributes = cvssVector.applyVector(vector);
-        return unknownAttributes > 0 ? null : cvssVector;
+        final String normalizedVector = normalizeVector(vector);
+        final int knownAttributes = cvssVector.applyNormalizedVector(normalizedVector);
+        final int allAttributes = normalizedVector.split("/").length;
+
+        return allAttributes - knownAttributes > 0 ? null : cvssVector;
     }
 
     public static <T extends CvssVector> String getVersionName(Class<T> clazz) {
