@@ -14,7 +14,7 @@
 #set ($assetGroupDisplayName = $group.assetGroupDisplayName)
 #set ($assetGroupAsXmlId = $group.assetGroupAsXmlId)
 <table id="${id}-${assetGroupAsXmlId}">
-    <title>Asset Group <i>$assetGroupDisplayName</i></title>
+    <title>$utils.getText("general.short.asset-group") <i>$assetGroupDisplayName</i></title>
     <tgroup cols="8">
         <colspec colname="COLSPEC0" colnum="1" colwidth="27*"/>
         <colspec colname="COLSPEC1" colnum="2" colwidth="11*"/>

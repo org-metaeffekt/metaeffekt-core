@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_asset-no-license-summary-$reportContext.id">
-    <title>$reportContext.combinedTitle("Artefakte ohne Lizenz", true)</title>
+    <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.artifact-without-license"), true)</title>
     #set($assetData=$report.getAssetData($inventory))
     #set($artifactsWithoutLicense=$assetData.getArtifactsWithoutLicense())
 
@@ -12,15 +12,15 @@
     <p>$utils.getText("asset-report-bom.artifacts-without-license")</p>
 
     <table otherprops="wide" id="table_artifacts">
-        <title>Artefakte$reportContext.inContextOf()</title>
+        <title>$utils.getText("general.short.artifacts") $reportContext.inContextOf()</title>
 
         <tgroup cols="2">
             <colspec colname="COLSPEC0" colnum="1" colwidth="45*" />
             <colspec colname="COLSPEC1" colnum="2" colwidth="55*" />
             <thead>
                 <row>
-                    <entry colname="COLSPEC0" valign="top">Artefakt</entry>
-                    <entry colname="COLSPEC1" valign="top">Softwarebestand</entry>
+                    <entry colname="COLSPEC0" valign="top"> $utils.getText("general.short.artifacts") </entry>
+                    <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.asset")</entry>
                 </row>
             </thead>
 

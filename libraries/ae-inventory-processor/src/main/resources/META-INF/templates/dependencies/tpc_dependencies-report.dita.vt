@@ -14,11 +14,11 @@
                         </row>
 #end
 
-   <title>Dependencies</title>
+   <title>$utils.getText("dependencies.short.dependencies")</title>
    <body>
 #if(!$internalDependencies.dependencies.isEmpty())
       <section>
-         <title>Internal Dependencies $projectName</title>
+         <title>$utils.getTexT("dependencies.short.internal-dependencies") $projectName</title>
          <p>
             $utils.getText("dependencies.artifact-dependencies")
          </p>
@@ -45,7 +45,7 @@
 #end
 #if(!$externalDependencies.dependencies.isEmpty())
       <section>
-         <title>Dependencies $projectName</title>
+         <title>$utils.getText("dependencies.short.dependencies") $projectName</title>
          <p>
              $utils.getText("dependencies.third-party-artifact-dependencies")
          </p>
@@ -56,8 +56,8 @@
                     <colspec colname="COLSPEC1" colnum="2" colwidth="0.6*" />
                     <thead>
                         <row>
-                            <entry colname="COLSPEC0" valign="top">Component</entry>
-                            <entry colname="COLSPEC1" valign="top">Group Id / Artifact Id</entry>
+                            <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>
+                            <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.group-id") / $utils.getText("general.short.artifact-id")</entry>
                         </row>
                     </thead>
                     <tbody>
