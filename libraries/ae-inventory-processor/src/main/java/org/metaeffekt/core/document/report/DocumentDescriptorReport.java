@@ -69,6 +69,8 @@ public class DocumentDescriptorReport {
 
     public static final String TEMPLATE_GROUP_ANNEX_BOOKMAP = "annex-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP = "vulnerability-report-bookmap";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-report-bookmap";
+    public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-report-bookmap";
 
     private String templateLanguageSelector = "en";
 
@@ -85,6 +87,12 @@ public class DocumentDescriptorReport {
         }
         if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
             writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
+        }
+        if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT) {
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
+        }
+        if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
         }
     }
 
@@ -119,6 +127,14 @@ public class DocumentDescriptorReport {
             }
             if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT){
                 Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT){
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-statistics-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT){
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-summary-report.properties"));
                 adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
             }
         }
