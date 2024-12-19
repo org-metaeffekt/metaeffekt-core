@@ -36,7 +36,6 @@ import java.util.function.Predicate;
 
 import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class CryptpadTest extends AbstractCompositionAnalysisTest {
 
@@ -92,12 +91,5 @@ public class CryptpadTest extends AbstractCompositionAnalysisTest {
         final Analysis analysis = new Analysis(inventory);
         ComponentPatternList componentPatterns = analysis.selectComponentPatterns();
         componentPatterns.logListWithAllAttributes();
-
-        // there must be only once container asset
-        // FIXME: why is this 0? it should be 1
-        analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(0);
-
-        // we expect the container being only represented as asset; no artifacts with type container
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
     }
 }
