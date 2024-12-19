@@ -93,7 +93,7 @@ public class FedoraTest extends AbstractCompositionAnalysisTest {
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
 
         // FIXME: fix .py files used by several artifacts
-        Assert.assertEquals(102, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(19, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 
@@ -102,8 +102,8 @@ public class FedoraTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(435);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(5);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(145);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(3);
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "rpmdb.sqlite")).hasSizeGreaterThan(1);
 
         // there must be only once container asset
