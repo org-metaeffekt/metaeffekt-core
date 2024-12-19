@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_artifacts-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Artefakte", true)</title>
@@ -12,7 +12,7 @@
 #else
         <p>
             Die nachfolgende Tabelle f&#252;hrt alle in der Software beinhalteten <abbreviated-form keyref="artifact"/> auf.
-            Die Tabelle ist nach Komponenten organisiert um die Artefakte zu gruppieren.
+            Die Tabelle ist nach Komponenten geordnet, um die Artefakte zu gruppieren.
         </p>
         <p>
             <table otherprops="wide" id="table_artifacts">

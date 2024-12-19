@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_notices-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Lizenzhinweise", true)</title>
@@ -19,18 +19,18 @@
                         #if(!$assets.isEmpty())
                         ## Assets Table start
                         <section>
-                            <title>Assets covering $report.xmlEscapeString($componentNotice.getComponentName())</title>
+                            <title>Softwarebestand mit $report.xmlEscapeString($componentNotice.getComponentName())</title>
                             <table otherprops="wide">
-                                <title>Assets of Component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
+                                <title>Softwarebestand $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
                                 <tgroup cols="3">
                                     <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
                                     <colspec colname="COLSPEC1" colnum="2" colwidth="25*"/>
                                     <colspec colname="COLSPEC2" colnum="3" colwidth="25*"/>
                                     <thead>
                                     <row>
-                                        <entry colname="COLSPEC0" valign="top">Asset Name</entry>
-                                        <entry colname="COLSPEC1" valign="top">Asset Type</entry>
-                                        <entry colname="COLSPEC1" valign="top">Asset Version</entry>
+                                        <entry colname="COLSPEC0" valign="top">Softwarebestand Name</entry>
+                                        <entry colname="COLSPEC1" valign="top">Softwarebestand Typ</entry>
+                                        <entry colname="COLSPEC1" valign="top">Softwarebestand Version</entry>
                                     </row>
                                     </thead>
                                     <tbody>
@@ -107,17 +107,16 @@
 
                         ## insert notice
                         <section>
-                        <title>License Notices</title>
+                        <title>Lizenzhinweise</title>
                         #set($notice=$artifactNotice.getNotice())
                         #if($notice.isEmpty())
                             <p>
-                                Die hier detaillierte Software beinhaltet
-                                <b>$componentNotice.getComponentName()</b>.
+                                Die hier detaillierte Software beinhaltet <b>$componentNotice.getComponentName()</b>.
                             </p>
                             #if($componentNotice.getLicense())
                                 <p>
-                                    Die vorliegenden Version von $report.xmlEscapeString($componentNotice.getComponentName()) unterliegen den
-                                    Bestimmungen der $componentNotice.getLicense().
+                                    Die vorliegenden Version von $report.xmlEscapeString($componentNotice.getComponentName())
+                                    unterliegen den Bestimmungen der $componentNotice.getLicense().
                                 </p>
                             #end
                         #else

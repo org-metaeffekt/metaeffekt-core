@@ -6,24 +6,25 @@
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
             <p>
-                The following table lists all components that are licensed or contains subcomponents under $license.
+                Nachfolgende Tabelle listet alle Komponenten auf, die oder deren Subkomponenten unter der Lizenz
+                $license stehen.
                 #if($folder)
-                    Information with respect to the license or contract can be found in
+                    Details zur Lizenzierung k&#246;nnen unter
                     <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
-                        [external]</xref>.
+                        [external]</xref> eingesehen werden.
                 #end
             </p>
             <p>
                 <table otherprops="wide">
-                    <title>Components under $license.trim()$reportContext.inContextOf()</title>
+                    <title>Komponenten unter $license.trim()$reportContext.inContextOf()</title>
                     <tgroup cols="3">
                         <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
                         <colspec colname="COLSPEC1" colnum="2" colwidth="60*"/>
                         <colspec colname="COLSPEC2" colnum="3" colwidth="20*"/>
                         <thead>
                             <row>
-                                <entry colname="COLSPEC0" valign="top">Component</entry>
-                                <entry colname="COLSPEC1" valign="top">Artifact / Package / Web Module</entry>
+                                <entry colname="COLSPEC0" valign="top">Komponente</entry>
+                                <entry colname="COLSPEC1" valign="top">Artefakt / Paket / Webmodule</entry>
                                 <entry colname="COLSPEC2" valign="top">Version</entry>
                             </row>
                         </thead>

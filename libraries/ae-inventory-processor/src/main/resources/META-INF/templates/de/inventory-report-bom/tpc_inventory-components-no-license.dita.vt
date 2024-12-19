@@ -1,5 +1,5 @@
 #parse("META-INF/templates/de/asset-report-bom/macros/tpc_inventory-license.dita.vm")
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_component-no-license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle("Komponenten ohne Lizenz", true)</title>
@@ -8,8 +8,8 @@
 <body>
 #if (!$components.isEmpty())
     <p>
-        Several components have no license information associated. These components and the identified artifacts are
-        listed in the following table.
+        F&#252;r einige Komponenten konnten kein Bezug zur Lizenzierung hergestellt werden. Diese Komponenten werden
+        nachfolgend aufgelistet.
     </p>
 
     <table otherprops="wide" id="table_artifacts">
@@ -20,8 +20,8 @@
             <colspec colname="COLSPEC1" colnum="2" colwidth="65*" />
             <thead>
                 <row>
-                    <entry colname="COLSPEC0" valign="top">Component</entry>
-                    <entry colname="COLSPEC1" valign="top">Artifact(s)</entry>
+                    <entry colname="COLSPEC0" valign="top">Komponente</entry>
+                    <entry colname="COLSPEC1" valign="top">Artefakt(e)</entry>
                 </row>
             </thead>
 
@@ -56,7 +56,7 @@
     </table>
 #else
     <p>
-        No components without license detected.
+        Es wurden keine Komponenten ohne Lizenzbezug festgestellt.
     </p>
 #end
 </body>
