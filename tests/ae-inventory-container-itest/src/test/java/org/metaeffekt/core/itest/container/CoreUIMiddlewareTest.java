@@ -95,7 +95,7 @@ public class CoreUIMiddlewareTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts().hasSizeGreaterThan(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg-distroless")).hasSizeOf(9);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "node-runtime")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(782);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(787);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(0);

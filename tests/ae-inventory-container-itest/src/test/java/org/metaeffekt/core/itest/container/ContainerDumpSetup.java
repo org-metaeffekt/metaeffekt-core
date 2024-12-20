@@ -24,11 +24,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.itest.common.setup.TestConfig.getDownloadFolder;
-import static org.metaeffekt.core.itest.common.setup.TestConfig.getScanFolder;
 
 // FIXME; integrate with TestSetup check hash
 public class ContainerDumpSetup {
@@ -36,6 +33,10 @@ public class ContainerDumpSetup {
     private static final Logger LOG = LoggerFactory.getLogger(ContainerDumpSetup.class);
 
     public static File saveContainerFromRegistryByRepositoryAndTag(String registryUrl, String repository, String tag, String scanSubFolder) {
+        return saveContainerFromRegistryByRepositoryAndTag(registryUrl, repository, tag, null, scanSubFolder);
+    }
+
+    public static File saveContainerFromRegistryByRepositoryAndTag(String registryUrl, String repository, String tag, String digest, String scanSubFolder) {
         if (tag == null || tag.isEmpty()) {
             tag = "latest";
         }
@@ -63,7 +64,13 @@ public class ContainerDumpSetup {
             registryUrl = "docker.io";
         }
 
-        String imageName = registryUrl + "/" + repository + ":" + tag;
+        String imageName;
+
+        if (digest != null && !digest.isEmpty()) {
+            imageName = registryUrl + "/" + repository + "@" + digest;
+        } else {
+            imageName = registryUrl + "/" + repository + ":" + tag;
+        }
 
         // pull and save image if required
         if (!outputFile.exists()) {
@@ -115,7 +122,7 @@ public class ContainerDumpSetup {
             }
         }
 
-        final int exitValue = ExecUtils.waitForProcessToTerminate(process, Arrays.stream(commands).collect(Collectors.joining(" ")));
+        final int exitValue = ExecUtils.waitForProcessToTerminate(process, String.join(" ", commands));
         if (exitValue != 0) {
             // Handle the case where the process did not complete successfully.
             throw new IOException("Command execution failed with exit code " + exitValue);

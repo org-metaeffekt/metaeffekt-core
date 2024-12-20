@@ -61,6 +61,7 @@ public class MatrixElementTest extends AbstractCompositionAnalysisTest {
                 null,
                 "avhost/docker-matrix-element",
                 "v1.11",
+                "sha256:63af8b15cfe466ea3a1ef833cc5d27251dda9eb82cad0cfcb8b7abcf5a9dd11e",
                 MatrixElementTest.class.getName());
 
         AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
@@ -107,6 +108,6 @@ public class MatrixElementTest extends AbstractCompositionAnalysisTest {
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
     }
 }
