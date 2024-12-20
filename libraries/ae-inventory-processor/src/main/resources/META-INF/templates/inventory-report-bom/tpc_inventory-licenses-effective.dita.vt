@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-summary-$reportContext.id">
-    <title>$reportContext.combinedTitle("Licenses in Effect", true)</title>
+    <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.licenses-in-effect"), true)</title>
     #set($effectiveLicenses=$inventory.evaluateLicenses(false))
     #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
     #set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
@@ -20,14 +20,14 @@
 ## License Options (not necessarily expressions)
     #if (!$termsWithOptions.isEmpty())
         <table id="LicenseOptions" otherprops="wide">
-            <title>License Options$reportContext.inContextOf()</title>
+            <title>$utils.getText("general.short.license-options") $reportContext.inContextOf()</title>
             <tgroup cols="2">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="88*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="12*" />
                 <thead>
                     <row>
-                        <entry colname="COLSPEC0" valign="top">License Option</entry>
-                        <entry colname="COLSPEC1" valign="top">Number of Components</entry>
+                        <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.license-options")</entry>
+                        <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.number-of-component")</entry>
                     </row>
                 </thead>
                 <tbody>
@@ -61,7 +61,7 @@
     #end
 
     <table id="LicensesInEffect" otherprops="wide">
-        <title>Licenses in Effect$reportContext.inContextOf()</title>
+        <title>$utils.getText("inventory-report-bom.short.licenses-in-effect") $reportContext.inContextOf()</title>
         <tgroup cols="4">
             <colspec colname="COLSPEC0" colnum="1" colwidth="53*" />
             <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
@@ -69,10 +69,10 @@
             <colspec colname="COLSPEC3" colnum="4" colwidth="12*" />
             <thead>
                 <row>
-                    <entry colname="COLSPEC0" valign="top">License in Effect</entry>
+                    <entry colname="COLSPEC0" valign="top">$utils.getText("inventory-report-bom.short.licenses-in-effect")</entry>
                     <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
                     <entry colname="COLSPEC2" valign="top">OSI Status</entry>
-                    <entry colname="COLSPEC3" valign="top">Number of Components</entry>
+                    <entry colname="COLSPEC3" valign="top">$utils.getText("general.short.number-of-component")</entry>
                 </row>
             </thead>
             <tbody>

@@ -23,8 +23,8 @@
                     <colspec colname="COLSPEC1" colnum="2" colwidth="80*" />
                     <thead>
                         <row>
-                            <entry colname="COLSPEC0" valign="top">Attribute</entry>
-                            <entry colname="COLSPEC1" valign="top">Value</entry>
+                            <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.attributes")</entry>
+                            <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.values")</entry>
                         </row>
                     </thead>
                     <tbody>
