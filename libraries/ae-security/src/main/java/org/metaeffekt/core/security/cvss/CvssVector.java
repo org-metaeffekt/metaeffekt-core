@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.processor.UniversalCvssCalculatorLinkGenerator;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P0;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
@@ -208,7 +209,7 @@ public abstract class CvssVector {
         return applyNormalizedVector(normalizedVector);
     }
 
-    public int applyNormalizedVector(String normalizedVector) {
+    protected int applyNormalizedVector(String normalizedVector) {
         if (normalizedVector == null) return 0;
 
         if (normalizedVector.isEmpty()) return 0;
@@ -372,7 +373,9 @@ public abstract class CvssVector {
 
         if (vector.startsWith("CVSS:2.0")) {
             return new Cvss2(vector);
-        } else if (vector.startsWith("CVSS:3.1") || vector.startsWith("CVSS:3.0")) {
+        } else if (vector.startsWith("CVSS:3.0")) {
+            return new Cvss3P0(vector);
+        } else if (vector.startsWith("CVSS:3.1")) {
             return new Cvss3P1(vector);
         } else if (vector.startsWith("CVSS:4.0")) {
             return new Cvss4P0(vector);
