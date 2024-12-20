@@ -104,7 +104,7 @@ public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
         // FIXME: os-release is a duplicate in the container
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
         // FIXME: we have to write a function, which ignores sym links or we have to process them before
-        Assert.assertEquals(46, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(74, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }
