@@ -127,7 +127,17 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
      */
     @Override
     public String getUrl() {
-        return String.format("https://osv.dev/vulnerability/%s", getId());
+        if (super.getUrl() != null) {
+            return super.getUrl();
+        }
+        return constructUrlFromId(super.getId(), super.getSourceIdentifier());
+    }
+
+    private static String constructUrlFromId(String id, AeaaAdvisoryTypeIdentifier<?> sourceIdentifier) {
+        if (sourceIdentifier != null && sourceIdentifier.getName().equals("GHSA")) {
+            return String.format("https://github.com/advisories/%s", id);
+        }
+        return String.format("https://osv.dev/vulnerability/%s", id);
     }
 
     @Override
@@ -165,6 +175,16 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
     @Override
     public void appendToBaseModel(AdvisoryMetaData amd) {
         super.appendToBaseModel(amd);
+    }
+
+    @Override
+    public void appendFromDataClass(AeaaAdvisoryEntry dataClass) {
+        super.appendFromDataClass(dataClass);
+
+        final AeaaOsvAdvisorEntry osvAdvisorEntry = (AeaaOsvAdvisorEntry) dataClass;
+
+        this.setGithubReviewed(osvAdvisorEntry.isGithubReviewed());
+        this.setWellformedId(osvAdvisorEntry.getWellformedId());
     }
 
     /**
