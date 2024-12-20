@@ -16,7 +16,6 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.metaeffekt.core.util.ExecUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,6 +110,8 @@ public class ContainerDumpSetup {
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
 
+        int exitValue = process.waitFor();
+
         StringBuilder output = new StringBuilder();
 
         try (InputStream is = process.getInputStream()) {
@@ -122,7 +123,6 @@ public class ContainerDumpSetup {
             }
         }
 
-        final int exitValue = ExecUtils.waitForProcessToTerminate(process, String.join(" ", commands));
         if (exitValue != 0) {
             // Handle the case where the process did not complete successfully.
             throw new IOException("Command execution failed with exit code " + exitValue);
