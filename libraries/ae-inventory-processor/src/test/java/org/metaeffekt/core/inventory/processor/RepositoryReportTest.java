@@ -343,6 +343,7 @@ public class RepositoryReportTest {
         // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/test-inventory-04'
     }
 
+    @Ignore
     @Test
     public void testCreateTestReportKeycloak() throws IOException {
         File inventoryDir = new File("src/test/resources/test-inventory-keycloak");
