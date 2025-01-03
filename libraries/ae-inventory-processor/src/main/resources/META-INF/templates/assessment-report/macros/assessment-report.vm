@@ -26,14 +26,14 @@
         <colspec colname="COLSPEC7" colnum="8" colwidth="9*"/>
         <thead>
         <row>
-            <entry colname="COLSPEC0" valign="middle"><p>Asset Name</p></entry>
+            <entry colname="COLSPEC0" valign="middle"><p>$utils.getText("general.short.asset-name")</p></entry>
             <entry colname="COLSPEC1" valign="middle">#labelRef("Critical")</entry>
             <entry colname="COLSPEC2" valign="middle">#labelRef("High")</entry>
             <entry colname="COLSPEC3" valign="middle">#labelRef("Medium")</entry>
             <entry colname="COLSPEC4" valign="middle">#labelRef("Low")</entry>
             <entry colname="COLSPEC5" valign="middle">#labelRef("None")</entry>
-            <entry colname="COLSPEC6" valign="middle"><p>Total</p></entry>
-            <entry colname="COLSPEC7" valign="middle"><p>Assessed</p></entry>
+            <entry colname="COLSPEC6" valign="middle"><p>$utils.getText("general.short.total")</p></entry>
+            <entry colname="COLSPEC7" valign="middle"><p>$utils.getText("general.short.assessed")</p></entry>
         </row>
         </thead>
 
