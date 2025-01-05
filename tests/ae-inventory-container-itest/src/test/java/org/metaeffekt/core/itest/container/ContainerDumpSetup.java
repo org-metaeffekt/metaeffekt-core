@@ -52,7 +52,7 @@ public class ContainerDumpSetup {
         String folder = myDir.replace(".", "/") + "/";
         String downloadFolder = getDownloadFolder() + folder;
         if (new File(downloadFolder).mkdirs()) {
-            LOG.info("Created download folder {}", downloadFolder);
+            LOG.info("Created download folder: {}", downloadFolder);
         }
 
         String outputFilePath = downloadFolder + filename;
@@ -68,29 +68,29 @@ public class ContainerDumpSetup {
         // pull and save image if required
         if (!outputFile.exists()) {
             try {
-                LOG.info("Downloading image {} from registry", imageName);
+                LOG.info("Downloading image [{}] from registry...", imageName);
                 executeCommand(new String[]{"docker", "pull", imageName});
-                LOG.info("Downloaded image {} from registry", imageName);
+                LOG.info("Downloading image [{}] from registry completed.", imageName);
             } catch (IOException | InterruptedException e) {
-                throw new RuntimeException("Failed to pull image from registry", e);
+                throw new RuntimeException("Failed to pull image from registry.", e);
             }
 
             try {
-                executeCommand(new String[]{"docker", "save", imageName, "-o", outputFilePath});
-                LOG.info("Saved container {} to file {}", imageName, outputFilePath);
+                executeCommand(new String[] {"docker", "save", imageName, "-o", outputFilePath});
+                LOG.info("Saved container [{}] to file [{}].", imageName, outputFilePath);
             } catch (IOException | InterruptedException e) {
-                throw new RuntimeException("Failed to save container filesystem", e);
+                throw new RuntimeException("Failed to save container filesystem.", e);
             }
         }
 
         // run inspect if required
         if (!outputInspectFile.exists()) {
             try {
-                String content = executeCommand(new String[]{"docker", "inspect", imageName});
+                String content = executeCommand(new String[] {"docker", "inspect", imageName});
                 FileUtils.write(outputInspectFile, content, FileUtils.ENCODING_UTF_8);
-                LOG.info("Inspected container image {}", imageName);
+                LOG.info("Inspected container image [{}].", imageName);
             } catch (IOException | InterruptedException e) {
-                throw new RuntimeException("Failed to inspect container", e);
+                throw new RuntimeException("Failed to inspect container.", e);
             }
         }
 
@@ -98,29 +98,14 @@ public class ContainerDumpSetup {
         return outputFile.getParentFile();
     }
 
-    // FIXME: check whether this can be replaced with / moved into ExecUtils
     private static String executeCommand(String[] commands) throws IOException, InterruptedException {
-        ProcessBuilder processBuilder = new ProcessBuilder(commands);
-        processBuilder.redirectErrorStream(true);
-        Process process = processBuilder.start();
+        final ExecUtils.ExecParam execParam = new ExecUtils.ExecParam(commands);
+        execParam.retainErrorOutputs();
+        execParam.retainOutputs();
 
-        StringBuilder output = new StringBuilder();
+        ExecUtils.ExecMonitor execMonitor = ExecUtils.executeCommandAndWaitForProcessToTerminate(execParam);
 
-        try (InputStream is = process.getInputStream()) {
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                String part = new String(buffer, 0, bytesRead);
-                output.append(part);
-            }
-        }
-
-        final int exitValue = ExecUtils.waitForProcessToTerminate(process, Arrays.stream(commands).collect(Collectors.joining(" ")));
-        if (exitValue != 0) {
-            // Handle the case where the process did not complete successfully.
-            throw new IOException("Command execution failed with exit code " + exitValue);
-        }
-
-        return output.toString().trim(); // Return the accumulated output, which includes the container ID at the end.
+        // return the accumulated output
+        return execMonitor.getOutput().orElseThrow(IOException::new).trim();
     }
 }
