@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_asset-license-summary-$reportContext.id">
-    <title>$reportContext.combinedTitle("Asset Licenses", true)</title>
+    <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-licenses"), true)</title>
     #set($assetData=$report.getAssetData($inventory))
     #set($singleLicenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
     #set($licenseExpressions=$assetData.getRepresentedAssociatedLicensesWithOption())
@@ -23,7 +23,7 @@
 
     #if (!$licenseExpressions.isEmpty())
         <table id="AssociatedLicenseExpressions" otherprops="wide">
-            <title>Asset License Expressions$reportContext.inContextOf()</title>
+            <title>$utils.getText("asset-report-bom.short.asset-license-expressions") $reportContext.inContextOf()</title>
             <tgroup cols="2">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="90*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="10*" />
@@ -77,7 +77,7 @@
                     $utils.getText("asset-report-bom.license-detail-notice")
                 </p>
                 <p>
-                    #insertLicenseTable($license, "Lizenzenvarianten", $licenseList, false)
+                    #insertLicenseTable($license, $utils.getText("general.short.license-variants"), $licenseList, false)
                 </p>
 
                 #foreach($associatedLicense in $assetData.getLicensesForRepresentedLicense($license))

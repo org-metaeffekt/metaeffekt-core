@@ -4,9 +4,7 @@
 #macro(containedComponentsTable $artifacts)
     #if ($artifacts.size() > 0)
 
-    <p>
-        Listed below are all components containing vulnerabilities which are associated with this asset.
-    </p>
+    <p>$utils.getText("asset-report-bom.contained-components-table")</p>
 
         <table>
         <tgroup cols="3">
@@ -45,6 +43,6 @@
         </tgroup>
     </table>
     #else
-        There are no components contained in this asset.
+        $utils.getText("general.no-affected-components")
     #end
 #end

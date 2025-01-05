@@ -16,7 +16,7 @@
         #insertLicenseArtifactTopic($license)
     #else
         <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
-            <title>$report.xmlEscapeLicense($license) Variants</title>
+            <title>$report.xmlEscapeLicense($license) $utils.getText("general.short.variants")</title>
             <body>
                 <p>$utils.getText("inventory-report-bom.license-variations")</p>
                     #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))

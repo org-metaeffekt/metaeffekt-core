@@ -6,9 +6,9 @@
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
         <p>
-            The following table lists all assets that are licensed under $report.xmlEscapeString($license).
+            $utils.getText("asset-report-bom.license-asset-topic")
             #if($folder)
-                Information with respect to the license or contract can be found in
+                $utils.getText("asset-report-bom.license-asset-topic-location")
                 <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
                       scope="external">$report.xmlEscapeString($license)
                     [external]

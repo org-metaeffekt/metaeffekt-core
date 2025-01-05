@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_assets-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>$reportContext.combinedTitle("Asset List", true)</title>
+    <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-list"), true)</title>
     <body>
     #set($assets=$assetAdapter.listAssets())
 
@@ -23,8 +23,8 @@
                     <colspec colname="COLSPEC1" colnum="2" colwidth="80*" />
                     <thead>
                         <row>
-                            <entry colname="COLSPEC0" valign="top">Attribute</entry>
-                            <entry colname="COLSPEC1" valign="top">Value</entry>
+                            <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.attributes")</entry>
+                            <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.values")</entry>
                         </row>
                     </thead>
                     <tbody>
