@@ -80,8 +80,11 @@ public class ArchiveUtilsTest {
             commandParts.add("-y");
             final String command = commandParts.stream().collect(Collectors.joining(" "));
 
-            final Process exec = Runtime.getRuntime().exec(commandParts.toArray(new String[0]));
-            final int execCode = ExecUtils.waitForProcessToTerminate(exec, command);
+            ExecUtils.ExecParam execParam = new ExecUtils.ExecParam(commandParts);
+            execParam.retainErrorOutputs();
+            execParam.setWorkingDir(targetFolder);
+
+            ExecUtils.executeAndThrowIOExceptionOnFailure(execParam);
 
             if (targetFolder.listFiles().length == 0) {
                 FileUtils.deleteDirectoryQuietly(targetFolder);

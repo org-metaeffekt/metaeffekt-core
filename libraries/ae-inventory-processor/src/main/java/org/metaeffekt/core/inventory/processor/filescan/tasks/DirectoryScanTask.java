@@ -60,7 +60,7 @@ public class DirectoryScanTask extends ScanTask {
         final FileSystemScanParam scanParam = scanContext.getScanParam();
 
         if (files == null) {
-            LOG.error("Should not happen: listFiles of (supposed) directory came back null.");
+            LOG.warn("List of files unexpectedly empty for folder: " + dirRef.getFile().getAbsolutePath());
         }
 
         for (File file : files) {
