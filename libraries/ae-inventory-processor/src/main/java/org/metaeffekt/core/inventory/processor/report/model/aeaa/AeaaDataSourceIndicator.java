@@ -211,6 +211,10 @@ public class AeaaDataSourceIndicator {
             this.coordinates = coordinates;
         }
 
+        public String getCoordinates() {
+            return coordinates;
+        }
+
         protected ArtifactOsvReason(JSONObject artifactData, String coordinates) {
             super(TYPE, artifactData);
             this.coordinates = coordinates;
