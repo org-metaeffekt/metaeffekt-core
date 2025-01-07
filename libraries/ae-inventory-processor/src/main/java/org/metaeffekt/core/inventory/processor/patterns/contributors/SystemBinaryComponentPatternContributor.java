@@ -92,6 +92,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
     public static String executeCommand(String[] commands) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> future = executor.submit(() -> {
+            // FIXME: replace with ExecUtils / ExecParam
             ProcessBuilder processBuilder = new ProcessBuilder(commands);
             processBuilder.redirectErrorStream(true);
             StringBuilder output = new StringBuilder();
@@ -188,6 +189,7 @@ public class SystemBinaryComponentPatternContributor extends ComponentPatternCon
     }
 
     private static String getFileDetails(String filePath) throws IOException, InterruptedException {
+        // FIXME: replace with ExecUtils / ExecParam
         ProcessBuilder processBuilder = new ProcessBuilder("file", filePath);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
