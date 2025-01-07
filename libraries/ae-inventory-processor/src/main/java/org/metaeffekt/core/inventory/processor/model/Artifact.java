@@ -59,6 +59,7 @@ public class Artifact extends AbstractModelBase {
 
         // url of the project pages
         URL("URL"),
+        SOURCE_CODE_URL("Source Code URL"),
 
         // indicates whether the artifact is security relevant and needs to be upgraded asap
         SECURITY_RELEVANT("Security Relevance"),
@@ -83,11 +84,15 @@ public class Artifact extends AbstractModelBase {
         PURL("PURL"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
 
-        // FIXME: consolidate
         SOURCE("Source"),
+        ORGANIZATION("Organization"),
+        SUPPLIER("Supplier"),
 
-        // FIXME: consolidate
-        ORGANIZATION("Organization");
+        ARCHIVE("Archive"),
+        STRUCTURED("Structured"),
+        EXECUTABLE("Executable");
+
+
 
         private String key;
 
