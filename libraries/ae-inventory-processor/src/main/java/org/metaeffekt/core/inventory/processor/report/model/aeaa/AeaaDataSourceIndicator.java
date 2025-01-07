@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
-import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -202,7 +201,6 @@ public class AeaaDataSourceIndicator {
         }
     }
 
-    @Getter
     public static class ArtifactOsvReason extends ArtifactReason {
         public final static String TYPE = "artifact-osv";
 

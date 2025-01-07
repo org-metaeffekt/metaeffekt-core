@@ -36,44 +36,63 @@
     "url": "https://www.elastic.co/security",
     "country": "US"
   },
-  "OSV_ANDROID": {
+  "ANDROID": {
     "name": "Android",
     "description": "Android Security Bulletin",
     "email": "security@android.com",
     "url": "https://source.android.com/security/bulletin",
     "country": "US"
   },
-  "OSV_ALMA": {
+  "ALMA": {
     "name": "AlmaLinux",
     "description": "AlmaLinux Security Advisory",
     "email": "packager@almalinux.org",
     "url": "https://errata.almalinux.org/",
     "country": "US"
   },
-  "OSV_OSS-FUZZ": {
+  "OSV": {
+    "name": "OSV",
+    "description": "A distributed vulnerability database for Open Source",
+    "url": "https://osv.dev/",
+    "country": "US"
+  },
+  "OSS-FUZZ": {
     "name": "OSV-Fuzz",
     "description": "Advisories allocated by OSV.dev (currently only from OSS-Fuzz)",
     "url": "https://osv.dev/",
     "country": "US"
   },
-  "OSV_DEBIAN": {
+  "DEBIAN": {
     "name": "Debian",
     "description": "Debian Security Advisory Database",
     "email": "security@debian.org",
     "url": "https://www.debian.org/security/",
     "country": "US"
   },
-  "OSV_ROCKY": {
+  "ROCKY": {
     "name": "Rocky Linux",
     "description": "Rocky Linux Security Advisory Database",
     "email": "security@rockylinux.org",
     "url": "https://errata.rockylinux.org/"
   },
-  "OSV_SUSE": {
+  "SUSE": {
     "name": "SUSE / openSUSE",
     "description": "SUSE Security Landing page",
     "url": "https://www.suse.com/support/security/",
     "country" : "LUX"
+  },
+  "RHEL": {
+    "name": "Red Hat",
+    "description": "Red Hat Security Data",
+    "email": "secalert@redhat.com",
+    "url": "https://access.redhat.com/security/",
+    "country": "US"
+  },
+  "PSF": {
+    "name": "Python Software Foundation",
+    "description": "Python Software Foundation Vulnerability Database",
+    "url": "https://github.com/psf/advisory-database/",
+    "country": "US"
   },
   "OSV_BIT": {
     "name": "Bitnami",
@@ -133,23 +152,10 @@
     "url": "https://openssf.org/",
     "country": "US"
   },
-  "OSV_PSF": {
-    "name": "Python Software Foundation",
-    "description": "Python Software Foundation Vulnerability Database",
-    "url": "https://github.com/psf/advisory-database/",
-    "country": "US"
-  },
   "OSV_PYSEC": {
     "name": "PyPi",
     "description": "PyPI Vulnerability Database",
     "url": "https://github.com/pypa/advisory-database/",
-    "country": "US"
-  },
-  "OSV_RHEL": {
-    "name": "Red Hat",
-    "description": "Red Hat Security Data",
-    "email": "secalert@redhat.com",
-    "url": "https://access.redhat.com/security/",
     "country": "US"
   },
   "OSV_RSEC": {
@@ -171,7 +177,7 @@
     "country": "UK"
   },
   "OSV_USN" : {
-    "name": "Ubuntu Security Notice",
+    "name": "USN",
     "description": "Ubuntu Security Notice",
     "email": "security@ubuntu.com",
     "url": "https://ubuntu.com/security/notices",
