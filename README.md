@@ -4,6 +4,8 @@
 
 Core project with fundamental runtime and build support.
 
+## Features
+
 The project features:
 * Building of dedicated API (application programming interface) jars. API jars contain only those published 
   classes that are required at compile time. The full runtime support
@@ -13,7 +15,9 @@ The project features:
 * General inventory management support that can be used for dependency
   governance, software composition analysis, and license compliance management. See
   [Software Composition Analysis Support](docs/software-composition-analysis.md).
-  
+
+## Misc
+
 Please note that metaeffekt-core represents a general baseline support for the metaeffekt 
 continuous license compliance and vulnerability monitoring support.
 
@@ -26,3 +30,12 @@ Check out also the following projects:
   preview versions are available on Maven Central. The project supports artifact and source
   code scanning for license terms and features the metaeffekt vulnerability dashboard for
   vulnerability assessments and vulnerability monitoring.
+
+## Contribution
+
+Contributions to metaeffekt Github repositories require your a Contributor License Agreement. Please carefully read the 
+[CLA](CLA.md) and send a signed copy to contact@metaeffekt.com. In case you are contributing as employee, please ensure 
+that the CLA and your contribution is in alignment with your company policies and is approved by your employer.
+
+With any contribution the contributor must adhere to and understand the [DCO](DCO.txt). See also
+https://developercertificate.org/.

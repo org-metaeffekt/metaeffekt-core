@@ -31,6 +31,10 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+/**
+ * Unifies handling with java.lang.Process class on a common abstraction-level. Supports dealing with the involved
+ * streams and timeout handling.
+ */
 @Slf4j
 public abstract class ExecUtils {
 
@@ -42,27 +46,11 @@ public abstract class ExecUtils {
     }
 
     @Deprecated // use ExecParam variant instead
-    public static int executeCommandAndWaitForProcessToTerminate(List<String> commandParts, String[] penv, File dir) throws IOException {
-        final String[] commandPartsArray = commandParts.toArray(new String[commandParts.size()]);
-        return executeCommandAndWaitForProcessToTerminate(commandPartsArray, penv, dir);
-    }
-
-    @Deprecated // use ExecParam variant instead
-    public static int executeCommandAndWaitForProcessToTerminate(String[] commandParts, String[] penv, File dir) throws IOException {
-        final String commandAsString = Arrays.stream(commandParts).collect(Collectors.joining(" "));
-        final Process exec = Runtime.getRuntime().exec(commandParts, penv, dir);
-        return waitForProcessToTerminate(exec, commandAsString);
-    }
-
-    @Deprecated // use ExecParam variant instead
     public static int waitForProcessToTerminate(Process exec, String execCommand) throws IOException {
         while (exec.isAlive()) {
             IOUtils.copy(exec.getInputStream(), System.out);
             IOUtils.copy(exec.getErrorStream(), System.out);
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-            }
+            waitIncrementForProcess(exec);
         }
         final int exitCode = exec.exitValue();
 
@@ -70,36 +58,34 @@ public abstract class ExecUtils {
         return exitCode;
     }
 
-    public static ExecMonitor executeCommandAndWaitForProcessToTerminate(ExecParam execParam) throws IOException, InterruptedException {
+    public static ExecMonitor executeCommand(ExecParam execParam) throws IOException {
         final Process execProcess = Runtime.getRuntime().exec(execParam.getCommandParts(), execParam.getPenv(), execParam.getWorkingDir());
-        return waitForProcessToTerminate(new ExecMonitor(execProcess, execParam));
+        return new ExecMonitor(execProcess, execParam);
     }
 
-    public static ExecMonitor waitForProcessToTerminate(ExecMonitor execMonitor) throws IOException, InterruptedException {
+    public static ExecMonitor executeCommandAndWaitForProcessToTerminate(ExecParam execParam) throws IOException, InterruptedException {
+        final ExecMonitor execMonitor = executeCommand(execParam);
+        return waitForProcessToTerminate(execMonitor);
+    }
+
+    public static ExecMonitor waitForProcessToTerminate(ExecMonitor execMonitor) throws InterruptedException {
         long maxMillis = execMonitor.computeTimeoutMillis();
 
         final Process process = execMonitor.getProcess();
-
         final ExecParam execParam = execMonitor.getExecParam();
+
         do {
-            // NOTE: process.getInputStream() is an input stream connected to the output stream of the subprocess; see javadoc
-            IOUtils.copy(process.getInputStream(), execMonitor.getOutputStreamSink());
-
-            // NOTE: process.getErrorStream() is an input stream connected to the error stream of the subprocess; see javadoc
-            IOUtils.copy(process.getErrorStream(), execMonitor.getErrorStreamSink());
-
-            // NOTE: only an extension proposal; may provide the option to interact interactively with the executed command
-            // IOUtils.copy(process.getOutputStream(), execParam.getInputStreamDrain());
+            manageStreams(execMonitor, process);
 
             if (process.isAlive()) {
-                waitForProcess(process);
+                waitIncrementForProcess(process);
             }
 
             // check timout condition
             if (maxMillis != TIMEOUT_NEVER) {
                 if (System.currentTimeMillis() > maxMillis) {
                     // wait another iteration
-                    waitForProcess(process);
+                    waitIncrementForProcess(process);
 
                     // in case the process is still running
                     if (process.isAlive()) {
@@ -123,6 +109,25 @@ public abstract class ExecUtils {
         return execMonitor;
     }
 
+    private static void manageStreams(ExecMonitor execMonitor, Process process) {
+        try {
+            // NOTE: process.getInputStream() is an input stream connected to the output stream of the subprocess; see javadoc
+            IOUtils.copy(process.getInputStream(), execMonitor.getOutputStreamSink());
+        } catch (IOException e) {
+            log.warn("Exception draining process output stream.", e);
+        }
+
+        try {
+            // NOTE: process.getErrorStream() is an input stream connected to the error stream of the subprocess; see javadoc
+            IOUtils.copy(process.getErrorStream(), execMonitor.getErrorStreamSink());
+        } catch (IOException e) {
+            log.warn("Exception draining error output stream.", e);
+        }
+
+        // NOTE: only an extension proposal; may provide the option to interact interactively with the executed command
+        // IOUtils.copy(process.getOutputStream(), execParam.getInputStreamDrain());
+    }
+
     private static void destroyProcess(ExecMonitor execMonitor) throws InterruptedException {
         log.debug("Destroying process for command: {}.", execMonitor.getExecParam().getCommandString());
 
@@ -132,10 +137,12 @@ public abstract class ExecUtils {
         // in case the process is still running after graceful destroy
         if (process.isAlive()) {
             // wait another iteration
-            waitForProcess(process);
+            waitIncrementForProcess(process);
             process.destroyForcibly();
-
         }
+
+        // manage streams (capturing further information)
+        manageStreams(execMonitor, process);
 
         // mark monitor
         execMonitor.status = ExecStatus.DESTROYED;
@@ -144,7 +151,7 @@ public abstract class ExecUtils {
         throw new InterruptedException("Command [%s] timed out.");
     }
 
-    private static void waitForProcess(Process exec) {
+    private static void waitIncrementForProcess(Process exec) {
         try {
             exec.waitFor(2, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -197,7 +204,7 @@ public abstract class ExecUtils {
             this.errorStreamSink = new ByteArrayOutputStream();
         }
 
-        public void doNotRetainOutputs() {
+        public void ignoreOutputs() {
             this.outputStreamSink = STREAM_DEV_NULL;
             this.errorStreamSink = STREAM_DEV_NULL;
         }
@@ -269,8 +276,19 @@ public abstract class ExecUtils {
     }
 
     public enum ExecStatus {
+        /**
+         * The real process status is only known to the process. We do not claim to know anything more.
+         */
         UNDETERMINED,
+
+        /**
+         * The process has been terminated. Success or failure is indicated by the exit code.
+         */
         TERMINATED,
+
+        /**
+         * The process has been actively destroyed.
+         */
         DESTROYED;
     }
 
@@ -280,11 +298,11 @@ public abstract class ExecUtils {
      *
      * @param execParam Parameter for execution of command.
      *
-     * @return Returns the exit code of the process.
+     * @return Returns the ExecMonitor conveying more details on the execution.
      *
      * @throws IOException An IOException is thrown in case of failure or timeout.
      */
-    public static int executeAndThrowIOExceptionOnFailure(ExecParam execParam) throws IOException {
+    public static ExecMonitor executeAndThrowIOExceptionOnFailure(ExecParam execParam) throws IOException {
         try {
             final ExecMonitor execMonitor = executeCommandAndWaitForProcessToTerminate(execParam);
             if (execMonitor.getExitCode().isPresent()) {
@@ -296,8 +314,10 @@ public abstract class ExecUtils {
                         Arrays.stream(execMonitor.getErrorOutput().get().split("\\n")).forEach(log::debug);
                     }
                     throw new IOException(String.format("Execution failed with exit code [%s] for command: %s", exitCode, execParam.getCommandString()));
+                } else {
+                    // exitCode == 0; all fine; do nothing
                 }
-                return exitCode;
+                return execMonitor;
             } else {
                 throw new IOException(String.format("Execution in undetermined state for command: %s", execParam.getCommandString()));
             }
