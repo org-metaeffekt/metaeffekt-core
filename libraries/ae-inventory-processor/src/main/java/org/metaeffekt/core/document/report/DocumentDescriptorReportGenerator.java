@@ -15,11 +15,13 @@
  */
 package org.metaeffekt.core.document.report;
 
+import org.json.JSONArray;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -100,22 +102,51 @@ public class DocumentDescriptorReportGenerator {
             InventoryReport report = new InventoryReport();
             report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
-            // check pre-requisites dependent on DocumentType
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                report.setInventoryVulnerabilityReportSummaryEnabled(true);
+            }
             if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
+                setPolicy(params, report);
+
                 report.setInventoryBomReportEnabled(true);
             }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT) {
+                report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+            }
+            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
+                report.setInventoryVulnerabilityReportSummaryEnabled(true);
+            }
             if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
+                setPolicy(params, report);
+
                 report.setInventoryVulnerabilityReportEnabled(true);
+                report.setInventoryVulnerabilityReportEnabled(true);
+
+                String generateOverviewTablesForAdvisories = params.get("generateOverviewTablesForAdvisories");
+
+                try {
+                    report.addGenerateOverviewTablesForAdvisoriesByMap(new JSONArray(generateOverviewTablesForAdvisories));
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
+                }
             }
 
             report.setReferenceInventory(inventoryContext.getReferenceInventory());
             report.setInventory(inventoryContext.getInventory());
 
-            //FIXME-REVIEW: maybe pass these fields through the asset descriptor yaml file
+            report.setFailOnDevelopment(false);
+            report.setFailOnError(false);
+            report.setFailOnBanned(false);
+            report.setFailOnDowngrade(false);
+            report.setFailOnInternal(false);
             report.setFailOnUnknown(false);
             report.setFailOnUnknownVersion(false);
+            report.setFailOnUpgrade(false);
             report.setFailOnMissingLicense(false);
             report.setFailOnMissingLicenseFile(false);
+            report.setFailOnMissingComponentFiles(false);
+            report.setFailOnMissingNotice(false);
+
 
             // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
             // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
@@ -136,6 +167,29 @@ public class DocumentDescriptorReportGenerator {
             } else {
                 throw new RuntimeException("Report creation failed for " + report);
             }
+        }
+    }
+
+    private static void setPolicy(Map<String, String> params, InventoryReport report) throws IOException {
+        if (params != null && (params.containsKey("securityPolicyFile") || params.containsKey("securityPolicyOverwriteJson"))) {
+            String securityPolicyFilePath = params.get("securityPolicyFile");
+            File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
+
+            String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
+
+            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(
+                    params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")
+            );
+
+            CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
+            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(
+                    securityPolicy,
+                    securityPolicyFile,
+                    securityPolicyOverwriteJson
+            );
+
+            report.setSecurityPolicy(securityPolicy);
+            report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         }
     }
 }
