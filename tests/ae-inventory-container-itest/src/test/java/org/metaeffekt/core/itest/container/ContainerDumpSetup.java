@@ -15,18 +15,15 @@
  */
 package org.metaeffekt.core.itest.container;
 
-import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.ExecUtils;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.itest.common.setup.TestConfig.getDownloadFolder;
-import static org.metaeffekt.core.itest.common.setup.TestConfig.getScanFolder;
 
 // FIXME; integrate with TestSetup check hash
 public class ContainerDumpSetup {
