@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.util;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
@@ -24,15 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -316,35 +312,6 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static String normalizePathToLinux(File file) {
         if (file == null) return null;
         return normalizePathToLinux(file.getPath());
-    }
-
-    public static void waitForProcess(Process p) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            waitForProcess(p, baos);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void waitForProcess(Process p, OutputStream out) {
-        try {
-            copyStream(p, out);
-            while (p.isAlive()) {
-                p.waitFor(1000, TimeUnit.MILLISECONDS);
-                copyStream(p, out);
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        copyStream(p, out);
-    }
-
-    private static void copyStream(Process p, OutputStream out) {
-        try {
-            IOUtils.copy(p.getInputStream(), out);
-        } catch (IOException e) {
-            LOG.error("Unable to copy input stream into output stream.", e);
-        }
     }
 
     public static void deleteDirectoryQuietly(File directory) {

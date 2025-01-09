@@ -48,8 +48,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
-                .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.426.2/jenkins.war")
-                .setSha256Hash("3731b9f44973fbbf3e535f98a80c21aad9719cb4eea8a1e59e974c11fe846848")
+                .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.479.2/jenkins.war")
+                .setSha256Hash("177c2c033f0d3ae4148e601d0fdada60112d83f250521f3a0a0fd97cbb138dbd")
                 .setName(JenkinsWarTest.class.getName());
     }
 

@@ -33,10 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -47,6 +44,9 @@ import static java.lang.String.format;
 public class ArchiveUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ArchiveUtils.class);
+
+    private static final long EXTRACT_DURATION = 1;
+    private static final TimeUnit EXTRACT_DURATION_TIMEOUT_UNIT = TimeUnit.HOURS;
 
     private static final Set<String> zipExtensions = new HashSet<>();
     private static final Set<String> gzipExtensions = new HashSet<>();
@@ -449,8 +449,8 @@ public class ArchiveUtils {
 
         final File jmodExecutable = new File(jdkPath, "bin/jmod");
         if (jmodExecutable.exists()) {
-            Process exec = Runtime.getRuntime().exec(jmodExecutable.getAbsolutePath() + " extract " + file.getAbsolutePath(), null, targetFile);
-            FileUtils.waitForProcess(exec);
+            final String[] commandParts = new String[] { jmodExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
+            executeExtraction(commandParts, file, targetFile);
         } else {
             LOG.error("Cannot unpack jmod executable: " + jmodExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
@@ -469,12 +469,12 @@ public class ArchiveUtils {
         // this requires a jdk to perform the extraction
         final String jdkPath = getJdkPath();
 
-        final File jmodExecutable = new File(jdkPath, "bin/jimage");
-        if (jmodExecutable.exists()) {
-            Process exec = Runtime.getRuntime().exec(jmodExecutable.getAbsolutePath() + " extract " + file.getAbsolutePath(), null, targetFile);
-            FileUtils.waitForProcess(exec);
+        final File jImageExecutable = new File(jdkPath, "bin/jimage");
+        if (jImageExecutable.exists()) {
+            final String[] commandParts = new String[] { jImageExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
+            executeExtraction(commandParts, file, targetFile);
         } else {
-            LOG.error("Cannot unpack jimage executable: " + jmodExecutable +
+            LOG.error("Cannot unpack jimage executable: " + jImageExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
         }
     }
@@ -483,23 +483,9 @@ public class ArchiveUtils {
         // this requires 7zip to perform the extraction
         final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
         if (sevenZipBinaryFile.exists()) {
-            final String[] command = {sevenZipBinaryFile.getAbsolutePath(), "x",
+            final String[] commandParts = {sevenZipBinaryFile.getAbsolutePath(), "x",
                     file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath()};
-            final Process exec = Runtime.getRuntime().exec(command);
-
-            try {
-                if (!exec.waitFor(4, TimeUnit.HOURS)) {
-                    LOG.error("Could not unpack [{}] within time limit.", file.getAbsolutePath());
-                    throw new IOException("Failed to execute unpack within time limit.");
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
-            if (exec.exitValue() != 0) {
-                LOG.error("Command execution failed with exit value [{}]: [{}]", exec.exitValue(), command);
-                throw new IOException("Command execution gave nonzero exit code.");
-            }
+            executeExtraction(commandParts, file, targetFile);
         } else {
             LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
             throw new IOException("Could not execute command due to missing binary.");
@@ -524,49 +510,28 @@ public class ArchiveUtils {
         zip.execute();
     }
 
-    private static final long UNTAR_TIMEOUT_NUMBER = 1;
-    private static final TimeUnit UNTAR_TIMEOUT_UNIT = TimeUnit.HOURS;
-
     public static void nativeUntar(File file, File targetFile) throws IOException {
-
         // FIXME: this fallback doesn't adjust file permissions, leading to "Permission denied" while scanning.
         //  this also means that prepareScanDirectory may fail on rescan.
         //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
         //  this last-ditch efford to give good support.
-        // fallback to native support on command line
+        String[] commandParts = new String[] {
+                "tar", "-x", "-f", file.getAbsolutePath(),
+                "--no-same-permissions", "-C", targetFile.getAbsolutePath() };
+        executeExtraction(commandParts, file, targetFile);
+    }
 
-        Process tarExtract = new ProcessBuilder().command(
-                        "tar", "-x",
-                        "-f", file.getAbsolutePath(),
-                        "--no-same-permissions",
-                        "-C", targetFile.getAbsolutePath())
-                .redirectErrorStream(true)
-                .redirectOutput(ProcessBuilder.Redirect.INHERIT)
-                .start();
+    private static void executeExtraction(String[] commandParts, File file, File targetFile) throws IOException {
 
-        // wait for untar. if our untar takes more than one hour, we can be pretty sure that something is broken
-        try {
-            if (!tarExtract.waitFor(UNTAR_TIMEOUT_NUMBER, UNTAR_TIMEOUT_UNIT)) {
-                // timeout
-                LOG.error("Failed to untar [{}].", file.getAbsolutePath());
+        final ExecUtils.ExecParam execParam = new ExecUtils.ExecParam(commandParts);
 
-                LOG.error("Killing untar process...");
-                tarExtract.destroyForcibly();
-                if (!tarExtract.waitFor(1, TimeUnit.MINUTES)) {
-                    // once we are in Java 9 or newer, we should output PID in this case
-                    LOG.error("Failed to kill untar! This will leave a tar process with unknown state!");
-                }
+        // apply standard configuration
+        execParam.destroyOnTimeout(true);
+        execParam.retainErrorOutputs();
+        execParam.setWorkingDir(targetFile);
+        execParam.timeoutAfter(EXTRACT_DURATION, EXTRACT_DURATION_TIMEOUT_UNIT);
 
-                throw new IOException("Untar failed: timed out.");
-            }
-        } catch (InterruptedException e) {
-            throw new IOException("Untar thread was interrupted.", e);
-        }
-
-        if (tarExtract.exitValue() != 0) {
-            LOG.error("Untar of [{}] failed with exit value [{}].", file.getAbsolutePath(), tarExtract.exitValue());
-            throw new IOException("Failed to untar requested file.");
-        }
+        ExecUtils.executeAndThrowIOExceptionOnFailure(execParam);
     }
 
 }

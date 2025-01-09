@@ -214,7 +214,7 @@ public class ComponentPatternProducer {
                 fileSystemScanContext.getInventory(), componentPatternSourceInventory, fileSystemScanContext, applyDeferred);
 
         if (!matchedComponentPatterns.isEmpty()) {
-            LOG.info("Matching component patterns resulted in {} anchor matches.", matchedComponentPatterns.size());
+            LOG.info("Matching component patterns resulted in [{}] anchor matches.", matchedComponentPatterns.size());
         }
 
         final ArrayList<MatchResult> matchResultsWithoutFileMatches = new ArrayList<>();
