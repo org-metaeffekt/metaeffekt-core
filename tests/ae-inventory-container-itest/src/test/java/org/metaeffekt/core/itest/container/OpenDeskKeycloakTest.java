@@ -83,7 +83,7 @@ public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(121);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(416);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(453);
         analysis.selectArtifacts(containsToken(PURL, "pkg:maven/org.jboss.resteasy/resteasy-client@6.2.5.Final?type=jar")).assertNotEmpty();
 
         // there must be only once container asset

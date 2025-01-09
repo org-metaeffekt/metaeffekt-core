@@ -691,7 +691,7 @@ public class JarInspector extends AbstractJarInspector {
             assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, JarInspector.class.getName());
             inventory.getAssetMetaData().add(assetMetaData);
 
-            for (final Artifact embeddedArtifact : embeddedArtifacts) {
+            for (final Artifact embeddedArtifact : new HashSet<>(embeddedArtifacts)) {
                 // supplement default id; FIXME: move to identification code; here only consumer
                 if (StringUtils.isBlank(embeddedArtifact.getId())) {
                     embeddedArtifact.setId(embeddedArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" +

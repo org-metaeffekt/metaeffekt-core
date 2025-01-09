@@ -286,6 +286,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         modulateAssetPath(inventory);
 
+        // FIXME-KKL: this is only a symptom
+
         final Map<String, List<Artifact>> stringListMap = buildQualifierArtifactMap(inventory);
 
         for (List<Artifact> list : stringListMap.values()) {
@@ -298,11 +300,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 inventory.getArtifacts().remove(a);
                 artifact.merge(a);
                 addPath(a, paths);
-            }
-
-            // FIXME-KKL: this is only a symptom
-            if (!inventory.getArtifacts().contains(artifact)) {
-                inventory.getArtifacts().add(artifact);
             }
 
             if (!paths.isEmpty()) {

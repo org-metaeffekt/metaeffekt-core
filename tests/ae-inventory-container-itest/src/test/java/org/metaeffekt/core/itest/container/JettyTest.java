@@ -101,7 +101,7 @@ public class JettyTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(135);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(68);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(71);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "java-runtime")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jetty-runtime")).hasSizeOf(1);
 
