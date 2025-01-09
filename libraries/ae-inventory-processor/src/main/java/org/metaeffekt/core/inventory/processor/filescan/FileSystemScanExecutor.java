@@ -300,6 +300,11 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                 addPath(a, paths);
             }
 
+            // FIXME-KKL: this is only a symptom
+            if (!inventory.getArtifacts().contains(artifact)) {
+                inventory.getArtifacts().add(artifact);
+            }
+
             if (!paths.isEmpty()) {
                 artifact.setProjects(paths);
                 artifact.set(KEY_PATH_IN_ASSET, paths.stream().sorted(String::compareToIgnoreCase).collect(Collectors.joining("|\n")));
