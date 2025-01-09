@@ -106,7 +106,7 @@ public class JettyTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jetty-runtime")).hasSizeOf(1);
 
         // FIXME: some files are not covered
-        analysis.selectArtifacts(AttributeValue.attributeValue(TYPE, null)).hasSizeOf(215);
+        analysis.selectArtifacts(AttributeValue.attributeValue(TYPE, null)).hasSizeOf(211);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);

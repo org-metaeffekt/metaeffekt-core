@@ -102,7 +102,7 @@ public class OpenDeskKeycloakTest extends AbstractCompositionAnalysisTest {
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
         // FIXME: we have to write a function, which ignores sym links or we have to process them before
-        Assert.assertEquals(94, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(98, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

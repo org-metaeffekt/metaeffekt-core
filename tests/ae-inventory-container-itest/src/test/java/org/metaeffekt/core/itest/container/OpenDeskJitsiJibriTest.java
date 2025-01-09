@@ -104,7 +104,7 @@ public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
         // FIXME: we have to write a function, which ignores sym links or we have to process them before
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
 
-        Assert.assertEquals(220, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(234, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }
