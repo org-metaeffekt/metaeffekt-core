@@ -286,8 +286,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         modulateAssetPath(inventory);
 
-        // FIXME-KKL: this is only a symptom
-
         final Map<String, List<Artifact>> stringListMap = buildQualifierArtifactMap(inventory);
 
         for (List<Artifact> list : stringListMap.values()) {

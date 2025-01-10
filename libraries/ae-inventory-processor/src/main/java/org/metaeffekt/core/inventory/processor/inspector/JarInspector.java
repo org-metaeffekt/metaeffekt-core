@@ -691,6 +691,7 @@ public class JarInspector extends AbstractJarInspector {
             assetMetaData.set(ATTRIBUTE_KEY_INSPECTION_SOURCE, JarInspector.class.getName());
             inventory.getAssetMetaData().add(assetMetaData);
 
+            // FIXME-KKL: this is only a symptom
             for (final Artifact embeddedArtifact : new HashSet<>(embeddedArtifacts)) {
                 // supplement default id; FIXME: move to identification code; here only consumer
                 if (StringUtils.isBlank(embeddedArtifact.getId())) {
