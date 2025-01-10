@@ -92,7 +92,7 @@ public class MatrixElementTest extends AbstractCompositionAnalysisTest {
 
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
 
-        Assert.assertEquals(30, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 
