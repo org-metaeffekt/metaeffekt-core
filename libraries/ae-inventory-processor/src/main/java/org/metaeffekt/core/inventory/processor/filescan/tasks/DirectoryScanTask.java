@@ -19,6 +19,7 @@ import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
 import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +68,11 @@ public class DirectoryScanTask extends ScanTask {
             final FileRef fileRef = new FileRef(file);
 
             if (scanParam.collects(fileRef.getPath())) {
-
+                if (FileUtils.isSymlink(file)) {
+                    // we skip symlinks
+                    LOG.debug("Ignoring symlink: [{}]",file.getAbsolutePath());
+                    continue;
+                }
                 // dispatch depending on type (file or folder)
                 if (file.isFile()) {
                     scanContext.push(new FileCollectTask(fileRef, virtualContext, getAssetIdChain()));

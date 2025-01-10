@@ -91,7 +91,7 @@ public class NextcloudTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "generic-version")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).hasSizeOf(4);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).hasSizeOf(0);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "nextcloud-app")).hasSizeOf(52);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(276);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "php-composer")).hasSizeOf(91);

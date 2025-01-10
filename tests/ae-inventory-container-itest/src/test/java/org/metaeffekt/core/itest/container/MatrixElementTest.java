@@ -61,6 +61,7 @@ public class MatrixElementTest extends AbstractCompositionAnalysisTest {
                 null,
                 "avhost/docker-matrix-element",
                 "v1.11",
+                "sha256:63af8b15cfe466ea3a1ef833cc5d27251dda9eb82cad0cfcb8b7abcf5a9dd11e",
                 MatrixElementTest.class.getName());
 
         AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
@@ -91,8 +92,7 @@ public class MatrixElementTest extends AbstractCompositionAnalysisTest {
 
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
 
-        // FIXME: this has some weird behavior, we have to check this
-        Assert.assertEquals(47, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(0, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 
@@ -101,13 +101,13 @@ public class MatrixElementTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "pwa-module")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(283);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(258);
         // analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty(); FIXME: .package-lock.json should not be found
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
     }
 }

@@ -227,13 +227,33 @@ public class DirectoryInventoryScanTest {
 
         final List<FilePatternQualifierMapper> filePatternQualifierMappers =
                 directoryScanAggregatorConfiguration.mapArtifactsToCoveredFiles();
-        // FIXME-AOE: add assertions
+
+        // pick random qualifier from list and check if it is in the aggregated inventory
+        final FilePatternQualifierMapper filePatternQualifierMapper = filePatternQualifierMappers.get(0);
+        final FilePatternQualifierMapper filePatternQualifierMapperEOL = filePatternQualifierMappers.get(filePatternQualifierMappers.size() - 1);
+        final FilePatternQualifierMapper filePatternQualifierMapperHalf = filePatternQualifierMappers.get(filePatternQualifierMappers.size() / 2);
+        final String qualifier = filePatternQualifierMapper.getQualifier();
+        final String finalQualifier = filePatternQualifierMapperEOL.getQualifier();
+        final String halfQualifier = filePatternQualifierMapperHalf.getQualifier();
+        final Artifact artifact = inventory.findArtifact(qualifier);
+        final Artifact lastArtifact = inventory.findArtifact(finalQualifier);
+        final Artifact halfArtifact = inventory.findArtifact(halfQualifier);
+        Assert.assertNotNull(artifact);
+        Assert.assertNotNull(lastArtifact);
+        Assert.assertNotNull(halfArtifact);
 
         directoryScanAggregatorConfiguration.aggregateFiles(new File("target/aggregation"));
-        // FIXME-AOE: add assertions
 
         new InventoryWriter().writeInventory(inventory, new File("target/aggregated-inventory.xlsx"));
 
+        // add assertions by getting random qualifiers/artifacts of the test inventory and check if they are in the aggregated inventory
+        Inventory aggregatedInventory = new InventoryReader().readInventory(new File("target/aggregated-inventory.xlsx"));
+        final Artifact aggregatedArtifact = aggregatedInventory.findArtifact(qualifier);
+        final Artifact aggregatedLastArtifact = aggregatedInventory.findArtifact(finalQualifier);
+        final Artifact aggregatedHalfArtifact = aggregatedInventory.findArtifact(halfQualifier);
+        Assert.assertNotNull(aggregatedArtifact);
+        Assert.assertNotNull(aggregatedLastArtifact);
+        Assert.assertNotNull(aggregatedHalfArtifact);
     }
 
     private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir) throws IOException {
