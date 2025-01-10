@@ -102,7 +102,7 @@ public class KeycloakTest_25_0_4 extends AbstractCompositionAnalysisTest {
 
         final Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "generic-version")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(404);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(379);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(43);
         // FIXME: the linux distro gets detected 8 times
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "linux-distro")).hasSizeOf(8);

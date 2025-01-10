@@ -22,7 +22,10 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
-import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
+import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
@@ -130,7 +133,9 @@ public class AlpineTest extends AbstractCompositionAnalysisTest {
 
         final List<Artifact> apk = testSetup.getInventory().getArtifacts();
 
-        final List<Artifact> collect = apk.stream().filter(a -> a.get(Constants.KEY_ARCHIVE_PATH) != null).collect(Collectors.toList());
+        final List<Artifact> collect = apk.stream().filter(a -> a.get(COMPONENT_SOURCE_TYPE) != null
+                && a.get(COMPONENT_SOURCE_TYPE).contains("apk"))
+                .collect(Collectors.toList());
 
         Assertions.assertThat(collect.size()).isEqualTo(15);
 

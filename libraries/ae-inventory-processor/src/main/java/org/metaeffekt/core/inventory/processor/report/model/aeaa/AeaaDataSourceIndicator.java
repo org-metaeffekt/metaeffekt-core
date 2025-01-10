@@ -201,6 +201,32 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    public static class ArtifactOsvReason extends ArtifactReason {
+        public final static String TYPE = "artifact-osv";
+
+        private final String coordinates;
+
+        public ArtifactOsvReason(Artifact artifact, String coordinates) {
+            super(TYPE, artifact);
+            this.coordinates = coordinates;
+        }
+
+        public String getCoordinates() {
+            return coordinates;
+        }
+
+        protected ArtifactOsvReason(JSONObject artifactData, String coordinates) {
+            super(TYPE, artifactData);
+            this.coordinates = coordinates;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            return super.toJson()
+                    .put("coordinates", coordinates);
+        }
+    }
+
     public static class ArtifactCpeReason extends ArtifactReason {
         public final static String TYPE = "artifact-cpe";
 
@@ -472,6 +498,11 @@ public class AeaaDataSourceIndicator {
                     );
                 case ArtifactGhsaReason.TYPE:
                     return new ArtifactGhsaReason(
+                            json,
+                            json.optString("coordinates", null)
+                    );
+                case ArtifactOsvReason.TYPE:
+                    return new ArtifactOsvReason(
                             json,
                             json.optString("coordinates", null)
                     );

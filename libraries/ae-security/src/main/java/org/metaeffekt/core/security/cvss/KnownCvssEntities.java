@@ -75,6 +75,18 @@ public abstract class KnownCvssEntities {
 
     public final static CvssEntity NVD = ENTITIES_BY_KEYNAME.get("NIST_NVD");
     public final static CvssEntity GHSA = ObjectUtils.firstNonNull(ENTITIES_BY_KEYNAME.get("CVE_CNA_GITHUB_M"), ENTITIES_BY_NAME.get("GitHub, Inc."));
+
+    // CVSS Entities coming from the OSV ecosystem
+    public final static CvssEntity OSV = ENTITIES_BY_KEYNAME.get("OSV");
+    public final static CvssEntity ANDROID = ENTITIES_BY_KEYNAME.get("ANDROID");
+    public final static CvssEntity ALMA = ENTITIES_BY_KEYNAME.get("ALMA");
+    public final static CvssEntity OSS_FUZZ = ENTITIES_BY_KEYNAME.get("OSS-FUZZ");
+    public final static CvssEntity DEBIAN = ENTITIES_BY_KEYNAME.get("DEBIAN");
+    public final static CvssEntity ROCKY = ENTITIES_BY_KEYNAME.get("ROCKY");
+    public final static CvssEntity SUSE = ENTITIES_BY_KEYNAME.get("SUSE");
+    public final static CvssEntity PSF = ENTITIES_BY_KEYNAME.get("PSF");
+    public final static CvssEntity RHEL = ENTITIES_BY_KEYNAME.get("RHEL");
+
     public final static CvssEntity CERT_SEI = ENTITIES_BY_KEYNAME.get("CERT_SEI");
     public final static CvssEntity MSRC = ENTITIES_BY_KEYNAME.get("CVE_CNA_MICROSOFT");
 

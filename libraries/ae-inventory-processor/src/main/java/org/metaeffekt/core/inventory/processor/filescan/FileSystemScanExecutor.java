@@ -431,6 +431,16 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             qualifiers.add("i:[" + id + "]-p:[" + pathInAsset + "]");
         }
 
+        // id + version + purl
+        if (StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isNotBlank(artifact.get(Artifact.Attribute.PURL))) {
+            qualifiers.add("i:[" + id + "]-v:[" + artifact.getVersion() + "]-purl:[" + artifact.get(Artifact.Attribute.PURL) + "]");
+        }
+
+        // id + component + version + type
+        if (StringUtils.isNotBlank(artifact.getComponent()) && StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isNotBlank(artifact.getType())) {
+            qualifiers.add("i:[" + id + "]-c:[" + artifact.getComponent() + "]-v:[" + artifact.getVersion() + "]-t:[" + artifact.getType() + "]");
+        }
+
         return qualifiers;
     }
 

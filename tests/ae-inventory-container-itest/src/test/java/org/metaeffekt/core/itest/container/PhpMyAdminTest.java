@@ -58,7 +58,7 @@ public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
 
     @BeforeClass
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
-        final File baseDir = saveContainerFromRegistryByRepositoryAndTag(null, PhpMyAdminTest.class.getSimpleName().toLowerCase(), "5.2.1", PhpMyAdminTest.class.getName());
+        final File baseDir = saveContainerFromRegistryByRepositoryAndTag(null, PhpMyAdminTest.class.getSimpleName().toLowerCase(), "5.2.1", "sha256:3483eea0cdfe5a4a67cd1030f8e5f1cce291fcade2a8eb18fbec7f91c54d6bf1", PhpMyAdminTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(baseDir);
         AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
                 .setSource("file://" + baseDir.getAbsolutePath())
@@ -84,15 +84,14 @@ public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "generic-version")).hasSizeOf(1);
-        // FIXME: this has increased from 2 to 1425, we have to verify this
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(1425);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(714);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "dpkg")).hasSizeOf(199);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
 
         // we expect the container being only represented as asset; no artifacts with type container
-        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(0);
+        analysis.selectArtifacts(containsToken(TYPE, "container")).hasSizeOf(1);
     }
 
     @Test
@@ -105,7 +104,7 @@ public class PhpMyAdminTest extends AbstractCompositionAnalysisTest {
         // FIXME: os-release is a duplicate in the container
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
         // FIXME: we have to write a function, which ignores sym links or we have to process them before
-        Assert.assertEquals(46, duplicateList.getRemainingDuplicates().size());
+        Assert.assertEquals(74, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

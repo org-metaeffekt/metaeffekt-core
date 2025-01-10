@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory;
 
+import lombok.Setter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
@@ -89,6 +90,9 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
 
     protected String summary;
     protected final List<AeaaDescriptionParagraph> description = new ArrayList<>();
+
+    @Setter
+    protected String url;
 
     protected String threat;
     protected String recommendations;
@@ -379,13 +383,12 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
     }
 
     public String getUrl() {
-        throw new UnsupportedOperationException("getUrl() not implemented for " + this.getClass().getSimpleName());
+        return url;
     }
 
     public String getType() {
         throw new UnsupportedOperationException("getType() not implemented for " + this.getClass().getSimpleName());
     }
-
     /* CVSS */
 
     public CvssVectorSet getCvssVectors() {
