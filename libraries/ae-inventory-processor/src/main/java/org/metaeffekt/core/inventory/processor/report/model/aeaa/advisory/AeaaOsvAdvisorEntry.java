@@ -65,10 +65,6 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
 
     @Getter
     @Setter
-    private String wellformedId;
-
-    @Getter
-    @Setter
     private String originEcosystem;
 
     @Getter
@@ -99,7 +95,6 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
 
     protected static final Set<String> CONVERSION_KEYS_MAP = Collections.unmodifiableSet(
             new HashSet<String>(AeaaAdvisoryEntry.CONVERSION_KEYS_MAP) {{
-                add("wellformedId");
                 add("ecosystem");
                 add("affectedEcosystems");
                 add("severity");
@@ -184,7 +179,6 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
         final AeaaOsvAdvisorEntry osvAdvisorEntry = (AeaaOsvAdvisorEntry) dataClass;
 
         this.setGithubReviewed(osvAdvisorEntry.isGithubReviewed());
-        this.setWellformedId(osvAdvisorEntry.getWellformedId());
     }
 
     /**
@@ -196,7 +190,6 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
     public void appendFromMap(Map<String, Object> map) {
         super.appendFromMap(map);
 
-        this.setWellformedId((String) map.get("wellformedId"));
         this.setOriginEcosystem((String) map.getOrDefault("ecosystem", null));
         this.setAffectedEcosystems((Set<String>) map.getOrDefault("affectedEcosystems",null));
         this.setSeverity((String) map.getOrDefault("severity", null));
@@ -218,7 +211,6 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
     public void appendToJson(JSONObject json) {
         super.appendToJson(json);
 
-        json.put("wellformedId", getWellformedId());
         json.put("ecosystem", getOriginEcosystem());
         json.put("affectedEcosystems", getAffectedEcosystems());
         json.put("severity", getSeverity());
