@@ -26,6 +26,8 @@ import java.util.Map;
  */
 public class CargoMetadata extends AbstractMapAccess<String, Object> {
 
+    // compare: https://doc.rust-lang.org/cargo/commands/cargo-metadata.html
+
     public static class Package extends AbstractMapAccess<String, Object> {
         public Package(Map<String, Object> map) {
             super(map);
