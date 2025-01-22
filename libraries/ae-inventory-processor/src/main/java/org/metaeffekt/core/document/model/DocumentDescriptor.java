@@ -97,10 +97,7 @@ public class DocumentDescriptor {
         if (targetReportDir.exists() && !targetReportDir.isDirectory()) {
             throw new IllegalStateException("The target report directory must be a directory.");
         }
-        // check if the targetReportDir exists
-      /*  if(!targetReportDir.exists()) {
-            throw new IllegalStateException("The target report directory does not exist.");
-        }*/
+        //TODO: revise validation of targetReportDir, what do we anticipate of the targetReportDir?
 
         // validate each inventoryContext
         Set<String> identifiers = new HashSet<>();
