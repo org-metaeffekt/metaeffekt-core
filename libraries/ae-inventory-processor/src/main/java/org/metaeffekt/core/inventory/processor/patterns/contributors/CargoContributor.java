@@ -33,6 +33,8 @@ import java.util.*;
 import java.util.function.Supplier;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
+import static org.metaeffekt.core.util.FileUtils.asRelativePath;
+import static org.metaeffekt.core.util.FileUtils.findSingleFile;
 
 public class CargoContributor extends ComponentPatternContributor {
 
@@ -55,25 +57,21 @@ public class CargoContributor extends ComponentPatternContributor {
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File contextBaseDir = anchorFile.getParentFile();
-
-        final String anchorRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile);
+        final String anchorRelPath = asRelativePath(contextBaseDir, anchorFile);
 
         try {
             final List<ComponentPatternData> list = new ArrayList<>();
 
-            File tomlFile;
-            File cargoLockFile;
-
             if (relativeAnchorPath.endsWith("toml")) {
-                tomlFile = new File(baseDir, relativeAnchorPath);
-                cargoLockFile = new File(tomlFile.getParent(), "Cargo.lock");
+                final File cargoTomlFile = new File(baseDir, relativeAnchorPath);
+                final File cargoLockFile = findSingleFile(cargoTomlFile.getParentFile(), "Cargo.lock", "cargo.lock");
 
                 // handle basic toml file content (CPD)
-                final CargoMetadata cargoMetadata = new CargoMetadata(tomlFile);
+                final CargoMetadata cargoMetadata = new CargoMetadata(cargoTomlFile);
 
-                final CargoMetadata.Package packageMap = cargoMetadata.getPackage();
-                final String name = packageMap.stringOf("name");
-                final String version = packageMap.stringOf("version");
+                final CargoMetadata.Package cargoMetadataPackage = cargoMetadata.getPackage();
+                final String name = cargoMetadataPackage.getName();
+                final String version = cargoMetadataPackage.getVersion();
 
                 final ComponentPatternData componentPatternData = new ComponentPatternData();
 
@@ -81,10 +79,6 @@ public class CargoContributor extends ComponentPatternContributor {
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
-
-                // FIXME: check whether this is intended
-                componentPatternData.set(Artifact.Attribute.PURL, buildPurl(name, version, null));
-
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
 
@@ -92,22 +86,26 @@ public class CargoContributor extends ComponentPatternContributor {
                 componentPatternData.set(ComponentPatternData.Attribute.TYPE, ARTIFACT_TYPE_MODULE);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, TYPE_CARGO_APP);
 
+                // FIXME: check whether this is intended
+                componentPatternData.set(Artifact.Attribute.PURL, buildPurl(name, version, null));
+
+                // manage cargoLockFile file
                 if (cargoLockFile.exists()) {
                     final CargoLock cargoLock = new CargoLock(cargoLockFile);
-                    final String relativeLockFilePath = FileUtils.asRelativePath(baseDir, cargoLockFile);
+                    final String relativeLockFilePath = asRelativePath(baseDir, cargoLockFile);
 
                     // only add dependencies as included in the lock file; ignore toml dependencies
                     componentPatternData.setExpansionInventorySupplier(cargoLockSupplier(cargoLock, relativeLockFilePath));
                 } else {
                     // FIXME: add toml file dependencies as seeds
-                    LOG.warn("Incomplete contributor implementation. No Cargo.lock file available for [{}].", tomlFile.getAbsolutePath());
+                    LOG.warn("Incomplete contributor implementation. No Cargo.lock file available for [{}].", cargoTomlFile.getAbsolutePath());
                 }
 
                 list.add(componentPatternData);
             } else {
-                cargoLockFile = new File(baseDir, relativeAnchorPath);
-                tomlFile = new File(cargoLockFile.getParent(), "Cargo.toml");
-                if (tomlFile.exists()) {
+                final File cargoLockFile = new File(baseDir, relativeAnchorPath);
+                final File cargoTomlFile = findSingleFile(cargoLockFile.getParentFile(), "Cargo.toml", "cargo.toml");
+                if (cargoTomlFile.exists()) {
                     // skip this evaluation; toml file is detected separately
                 }
                 // FIXME: no toml file; handle lock file individually

@@ -30,6 +30,14 @@ public class CargoMetadata extends AbstractMapAccess<String, Object> {
         public Package(Map<String, Object> map) {
             super(map);
         }
+
+        public String getName() {
+            return stringOf("name");
+        }
+
+        public String getVersion() {
+            return stringOf("version");
+        }
     }
 
     public CargoMetadata(final File cargoTomlFile) throws IOException {
