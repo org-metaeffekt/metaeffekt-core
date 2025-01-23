@@ -150,8 +150,8 @@ public class DirectoryScanAggregatorConfiguration {
 
                 // in case the plain component base dir is not a directory, attempt to unwrap
                 if (componentBaseDir.exists() && !componentBaseDir.isDirectory()) {
-                    // this may be a unpacked artifact; if not existing we need to unpack the file again
-                    if (!componentBaseDir.exists()) {
+                    // this may be an unpacked artifact; if not existing we need to unpack the file again
+                    if (!unpackedComponentBaseDir.exists()) {
                         ArchiveUtils.unpackIfPossible(componentBaseDir, unpackedComponentBaseDir, new ArrayList<>());
                     }
                 }

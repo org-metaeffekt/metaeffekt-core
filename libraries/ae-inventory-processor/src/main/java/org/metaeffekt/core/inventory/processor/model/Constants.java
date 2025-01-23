@@ -133,6 +133,7 @@ public final class Constants {
     public static final String DOT_BOWER_JSON = DOT + BOWER_JSON;
     public static final String DOT_PACKAGE_LOCK_JSON = DOT + PACKAGE_LOCK_JSON;
 
+    public static final String KEY_CARGO_SOURCE_ID = "Cargo Source Id";
 
     private Constants() {
     }

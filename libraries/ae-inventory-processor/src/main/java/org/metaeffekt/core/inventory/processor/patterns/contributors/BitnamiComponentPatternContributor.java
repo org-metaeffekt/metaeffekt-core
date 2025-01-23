@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import com.github.packageurl.PackageURL;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -64,6 +65,10 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
             return parseSpdxFile(rootNode, bitnamiPackagesDir, packagesDir, relativePathForAnchor, anchorChecksum);
         } catch (IOException e) {
             LOG.error("Error reading SPDX file", e);
+            return Collections.emptyList();
+        } catch (JSONException e) {
+            // ignore JSONExceptions; the detected file may not be an SPDX-json file
+            LOG.debug("Ignoring format issues. Not an SPDX JSON file: " + spdxFile.toPath());
             return Collections.emptyList();
         }
     }

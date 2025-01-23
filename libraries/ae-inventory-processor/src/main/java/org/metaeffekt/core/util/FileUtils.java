@@ -343,8 +343,8 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return scanner.getIncludedDirectories();
     }
 
-    public static File findSingleFile(File baseFile, String pattern) {
-        final String[] files = FileUtils.scanDirectoryForFiles(baseFile, pattern);
+    public static File findSingleFile(File baseFile, String... patterns) {
+        final String[] files = FileUtils.scanDirectoryForFiles(baseFile, patterns);
         if (files.length == 1) {
             return new File(baseFile, files[0]);
         }

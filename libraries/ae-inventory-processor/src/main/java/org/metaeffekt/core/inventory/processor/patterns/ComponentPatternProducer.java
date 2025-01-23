@@ -629,6 +629,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new GenericVersionFileComponentPatternContributor());
         contributorRunnerBuilder.add(new MavenProjectSourcesComponentPatternContributor());
         contributorRunnerBuilder.add(new LinuxDistributionAssetContributor());
+        contributorRunnerBuilder.add(new CargoContributor());
 
         return contributorRunnerBuilder.build();
     }

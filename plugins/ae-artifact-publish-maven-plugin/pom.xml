@@ -75,12 +75,10 @@
                 <artifactId>maven-invoker-plugin</artifactId>
             </plugin>
 
-            <!--
             <plugin>
                 <groupId>org.metaeffekt.core</groupId>
                 <artifactId>ae-inventory-maven-plugin</artifactId>
             </plugin>
-            -->
         </plugins>
     </build>
 </project>

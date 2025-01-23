@@ -15,7 +15,6 @@
     <artifactId>ae-api-compile-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
 
-    <!--
     <build>
         <plugins>
             <plugin>
@@ -24,7 +23,6 @@
             </plugin>
         </plugins>
     </build>
--->
 
     <dependencies>
         <dependency>
