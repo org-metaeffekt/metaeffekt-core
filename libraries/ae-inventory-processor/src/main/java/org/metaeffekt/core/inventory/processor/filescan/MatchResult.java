@@ -26,7 +26,8 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.util.Set;
 
-import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
+import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
@@ -59,12 +60,22 @@ public class MatchResult {
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
 
         final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
+        if (".".equals(relativePath)) {
+            String newRelativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(anchorFile));
+            if (StringUtils.isNotBlank(newRelativePath)) {
+                derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, newRelativePath);
+            } else {
+                derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
+            }
+        } else {
+            derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
+        }
         derivedArtifact.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
 
         // FIXME: this attribute is of no use for component patterns; consider removing this line
         derivedArtifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
-        derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
+        // derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
 
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));

@@ -46,6 +46,8 @@ public class DirectoryInventoryScan {
 
     private final String[] scanExcludes;
 
+    private final String[] postScanExcludes;
+
     private final String[] unwrapIncludes;
 
     private final String[] unwrapExcludes;
@@ -70,20 +72,27 @@ public class DirectoryInventoryScan {
                       String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
         this (inputDirectory, scanDirectory,
                 scanIncludes, scanExcludes, new String[] { "**/*" },
-                new String[0], referenceInventory, null);
+                new String[0], referenceInventory, null, null);
+    }
+
+    public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
+                                  String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory, String[] postScanExcludes) {
+        this (inputDirectory, scanDirectory,
+                scanIncludes, scanExcludes, new String[] { "**/*" },
+                new String[0], referenceInventory, null, postScanExcludes);
     }
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
                                   String[] scanIncludes, String[] scanExcludes,
                                   String[] unwrapIncludes, String[] unwrapExcludes,
                                   Inventory referenceInventory) {
-        this(inputDirectory, scanDirectory, scanIncludes, scanExcludes, unwrapIncludes, unwrapExcludes, referenceInventory, null);
+        this(inputDirectory, scanDirectory, scanIncludes, scanExcludes, unwrapIncludes, unwrapExcludes, referenceInventory, null, null);
     }
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
                                   String[] scanIncludes, String[] scanExcludes,
                                   String[] unwrapIncludes, String[] unwrapExcludes,
-                                  Inventory referenceInventory, File aggregationDir) {
+                                  Inventory referenceInventory, File aggregationDir, String[] postScanExcludes) {
         this.inputDirectory = inputDirectory;
 
         this.scanDirectory = scanDirectory;
@@ -95,6 +104,7 @@ public class DirectoryInventoryScan {
 
         this.referenceInventory = referenceInventory;
         this.aggregationDir = aggregationDir;
+        this.postScanExcludes = postScanExcludes;
     }
 
     public Inventory createScanInventory() {
@@ -136,6 +146,19 @@ public class DirectoryInventoryScan {
 
         // post-process inventory; merge asset groups
         mergeAssetGroups(fileSystemScan.getInventory());
+
+        // post-process inventory; remove post scan excludes
+        if (postScanExcludes != null) {
+            for (String postScanExclude : postScanExcludes) {
+                List<Artifact> artifacts = fileSystemScan.getInventory().getArtifacts();
+                for (Artifact artifact : artifacts) {
+                    if (artifact.getPathInAsset().contains(postScanExclude)) {
+                        LOG.info("Removing artifact [{}] due to post scan exclude [{}].", artifact.getId(), postScanExclude);
+                        artifacts.remove(artifact);
+                    }
+                }
+            }
+        }
 
         return fileSystemScan.getInventory();
     }

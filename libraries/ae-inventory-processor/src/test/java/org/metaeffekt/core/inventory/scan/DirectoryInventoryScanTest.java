@@ -256,7 +256,7 @@ public class DirectoryInventoryScanTest {
         Assert.assertNotNull(aggregatedHalfArtifact);
     }
 
-    private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir) throws IOException {
+    private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir, String... postScanExcludes) throws IOException {
         String[] scanIncludes = new String[] {
                 "**/*"
         };
@@ -294,7 +294,7 @@ public class DirectoryInventoryScanTest {
                 scanInputDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
-                referenceInventory);
+                referenceInventory, null, postScanExcludes);
 
         scan.setIncludeEmbedded(true);
         scan.setEnableImplicitUnpack(true);
@@ -322,6 +322,22 @@ public class DirectoryInventoryScanTest {
         final Inventory resultInventory = scan.createScanInventory();
 
         new InventoryWriter().writeInventory(resultInventory, outputInventory);
+    }
+
+    @Test
+    public void testScan_PostScanExcludes() throws IOException {
+
+        final File scanInputDir = new File("src/test/resources/component-pattern-contributor/linux-distro-001");
+        final File scanDir = new File("target/scan/linux-distro-001");
+
+        final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
+
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir, "etc/issue.net");
+
+        Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(4);
+
+        new InventoryWriter().writeInventory(inventory, new File("target/linux-distro-001.xls"));
+
     }
 
 }

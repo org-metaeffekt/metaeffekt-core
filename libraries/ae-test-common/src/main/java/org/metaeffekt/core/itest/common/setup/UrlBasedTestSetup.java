@@ -65,7 +65,7 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
                 scanInputDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
-                referenceInventory, aggregationDir);
+                referenceInventory, aggregationDir, null);
 
         scan.setIncludeEmbedded(true);
         scan.setEnableImplicitUnpack(true);

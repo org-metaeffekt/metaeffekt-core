@@ -69,7 +69,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
                 cpd.set(COMPONENT_NAME, linuxDistro.issue);
                 cpd.set(COMPONENT_VERSION, linuxDistro.versionId);
 
-                if (linuxDistro != null && linuxDistro.versionId != null) {
+                if (linuxDistro.versionId != null) {
                     cpd.set(COMPONENT_PART, linuxDistro.id + "-" + linuxDistro.versionId);
                 } else {
                     // in case the distro instance does not convey sufficient information we fallback to the anchor name
