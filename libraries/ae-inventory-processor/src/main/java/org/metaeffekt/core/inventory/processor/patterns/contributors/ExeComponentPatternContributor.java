@@ -52,73 +52,33 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+        final File detectedFile = new File(baseDir, relativeAnchorPath);
         File virtualRoot = new File(baseDir, virtualRootPath);
         File versionFile = FileUtils.findSingleFile(virtualRoot, ".rsrc/**/version.txt", ".rsrc/version.txt");
-        List<ComponentPatternData> components = new ArrayList<>();
+        final List<ComponentPatternData> components = new ArrayList<>();
 
-        if (versionFile == null || !versionFile.exists()) {
-            LOG.warn("MSI version file does not exist for anchor: {}", relativeAnchorPath);
-            return Collections.emptyList();
+        File unpackedExeDir = detectedFile.getParentFile();
+        while (!unpackedExeDir.getName().toLowerCase(Locale.ROOT).endsWith(".exe]")) {
+            unpackedExeDir = unpackedExeDir.getParentFile();
         }
 
-        File parentDir = versionFile.getParentFile();
-        while (!parentDir.getName().toLowerCase(Locale.ROOT).endsWith(".exe]")) {
-            parentDir = parentDir.getParentFile();
-        }
-
-        try (Stream<String> lines = Files.lines(versionFile.toPath(), StandardCharsets.UTF_16LE)) {
-            String productName = null;
-            String productVersion = null;
-            String originalFilename = null;
-
-            Pattern productNamePattern = Pattern.compile("VALUE\\s+\"ProductName\"\\s*,\\s*\"([^\"]*)\"");
-            Pattern originalFilenamePattern = Pattern.compile("VALUE\\s+\"OriginalFilename\"\\s*,\\s*\"([^\"]*)\"");
-            Pattern productVersionPattern = Pattern.compile("VALUE\\s+\"ProductVersion\"\\s*,\\s*\"([^\"]*)\"");
-
-            for (String line : lines.collect(Collectors.toList())) {
-                Matcher nameMatcher = productNamePattern.matcher(line);
-                if (nameMatcher.find()) {
-                    productName = nameMatcher.group(1).replace("\0", "").trim();
-                }
-
-                Matcher originalFilenameMatcher = originalFilenamePattern.matcher(line);
-                if (originalFilenameMatcher.find()) {
-                    originalFilename = originalFilenameMatcher.group(1).replace("\0", "").trim();
-                }
-
-                Matcher versionMatcher = productVersionPattern.matcher(line);
-                if (versionMatcher.find()) {
-                    productVersion = versionMatcher.group(1).replace("\0", "").trim();
-                }
-
-                // if both values are found, we can stop processing further lines
-                if (originalFilename != null && productVersion != null) {
-                    break;
-                }
-            }
-
-            if (originalFilename != null && productVersion != null) {
-                addComponent(parentDir, components, productName, productVersion, relativeAnchorPath, anchorChecksum);
-            } else {
-                LOG.warn("Could not find ProductName or ProductVersion in MSI version file: {}", versionFile.getAbsolutePath());
-                return Collections.emptyList();
-            }
-            return components;
-        } catch (Exception e) {
-            LOG.warn("Error reading MSI version file: {}", versionFile.getAbsolutePath(), e);
-            return Collections.emptyList();
-        }
+        checkForVersionFile(versionFile, unpackedExeDir, components, relativeAnchorPath, anchorChecksum);
+        return components;
     }
 
     private void addComponent(File parentDir, List<ComponentPatternData> components, String productName, String productVersion, String relativeAnchorPath, String anchorChecksum) {
         ComponentPatternData cpd = new ComponentPatternData();
-        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, productName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, productVersion);
         final String name = parentDir.getName();
         String exeName = name.substring(1, name.length() - 1);
         String exeNameWithoutExtension = exeName.replace(".exe", "");
-        if (exeNameWithoutExtension.contains(productVersion)) {
+        if (productVersion != null && exeNameWithoutExtension.contains(productVersion)) {
             exeNameWithoutExtension = exeNameWithoutExtension.replace(productVersion, "");
+        }
+        if (productName != null) {
+            cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, productName);
+        } else {
+            cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, exeNameWithoutExtension);
         }
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, exeName);
 
@@ -151,7 +111,60 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
     }
 
     private String buildPurl(String productName, String productVersion, String exeName) {
+        if (productName == null && productVersion == null) {
+            return "pkg:generic/" + exeName;
+        } else if (productVersion == null) {
+            return "pkg:generic/" + productName +  "/" + exeName;
+        } else if (productName == null) {
+            return "pkg:generic/" + exeName + "@" + productVersion;
+        }
         return "pkg:generic/" + productName +  "/" + exeName + "@" + productVersion;
+    }
+
+    private void checkForVersionFile(File versionFile, File unpackedExeDir, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum) {
+        if (versionFile != null && versionFile.exists()) {
+            try (Stream<String> lines = Files.lines(versionFile.toPath(), StandardCharsets.UTF_16LE)) {
+                String productName = null;
+                String productVersion = null;
+                String originalFilename = null;
+
+                Pattern productNamePattern = Pattern.compile("VALUE\\s+\"ProductName\"\\s*,\\s*\"([^\"]*)\"");
+                Pattern originalFilenamePattern = Pattern.compile("VALUE\\s+\"OriginalFilename\"\\s*,\\s*\"([^\"]*)\"");
+                Pattern productVersionPattern = Pattern.compile("VALUE\\s+\"ProductVersion\"\\s*,\\s*\"([^\"]*)\"");
+
+                for (String line : lines.collect(Collectors.toList())) {
+                    Matcher nameMatcher = productNamePattern.matcher(line);
+                    if (nameMatcher.find()) {
+                        productName = nameMatcher.group(1).replace("\0", "").trim();
+                    }
+
+                    Matcher originalFilenameMatcher = originalFilenamePattern.matcher(line);
+                    if (originalFilenameMatcher.find()) {
+                        originalFilename = originalFilenameMatcher.group(1).replace("\0", "").trim();
+                    }
+
+                    Matcher versionMatcher = productVersionPattern.matcher(line);
+                    if (versionMatcher.find()) {
+                        productVersion = versionMatcher.group(1).replace("\0", "").trim();
+                    }
+
+                    // if both values are found, we can stop processing further lines
+                    if (originalFilename != null && productVersion != null) {
+                        break;
+                    }
+                }
+
+                if (originalFilename != null && productVersion != null) {
+                    addComponent(unpackedExeDir, components, productName, productVersion, relativeAnchorPath, anchorChecksum);
+                } else {
+                    LOG.warn("Could not find ProductName or ProductVersion in MSI version file: {}", versionFile.getAbsolutePath());
+                }
+            } catch (Exception e) {
+                LOG.warn("Error reading MSI version file: {}", versionFile.getAbsolutePath(), e);
+            }
+        } else {
+            addComponent(unpackedExeDir, components, null, null, relativeAnchorPath, anchorChecksum);
+        }
     }
 }
 
