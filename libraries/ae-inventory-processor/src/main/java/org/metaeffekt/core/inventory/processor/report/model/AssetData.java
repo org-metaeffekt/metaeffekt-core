@@ -56,7 +56,7 @@ public class AssetData {
     public static AssetData fromInventory(Inventory filteredInventory) {
         AssetData assetData = new AssetData();
 
-        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = assetData.buildAssetToArtifactMap(filteredInventory);
+        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = InventoryUtils.buildAssetToArtifactMap(filteredInventory);
 
         assetData.insertData(filteredInventory, assetMetaDataToArtifactsMap);
 
@@ -146,34 +146,6 @@ public class AssetData {
             representedAs = associatedLicense;
         }
         return representedAs;
-    }
-
-    private Map<AssetMetaData, Set<Artifact>> buildAssetToArtifactMap(Inventory filteredInventory) {
-        final Map<AssetMetaData, Set<Artifact>> assetMetaDataToArtifactsMap = new HashMap<>();
-
-        // the report only operates on the specified assets (these may be filtered for the use case)
-        for (AssetMetaData assetMetaData : filteredInventory.getAssetMetaData()) {
-
-            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
-
-            if (!StringUtils.isNotBlank(assetId)) continue;
-
-            // derive licenses from artifacts
-            for (Artifact artifact : filteredInventory.getArtifacts()) {
-                // skip all artifacts that do not belong to an asset
-                final boolean containedInAsset = StringUtils.isNotBlank(artifact.get(assetId));
-                if (containedInAsset) {
-                    assetMetaDataToArtifactsMap.computeIfAbsent(assetMetaData, c -> new HashSet<>()).add(artifact);
-                } else {
-                    // check via asset id; if artifact id matches asset id; add
-                    final String artifactAssetId = InventoryUtils.deriveAssetIdFromArtifact(artifact);
-                    if (assetId.equals(artifactAssetId)) {
-                        assetMetaDataToArtifactsMap.computeIfAbsent(assetMetaData, c -> new HashSet<>()).add(artifact);
-                    }
-                }
-            }
-        }
-        return assetMetaDataToArtifactsMap;
     }
 
     private AssetLicenseData createAssetLicenseData(AssetMetaData assetMetaData, Set<String> assetAssociatedLicenses) {

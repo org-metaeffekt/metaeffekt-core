@@ -1,0 +1,117 @@
+#parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_license-summary-$reportContext.id">
+    <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.licenses-in-effect"), true)</title>
+    #set($effectiveLicenses=$inventory.evaluateLicenses(false))
+    #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+    #set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
+    #set($termsWithOptions=$termsCategorization.getTermsWithOptions())
+    #set($termsNoOptions=$termsCategorization.getTermsNoOptions())
+    #set($atomicTerms=$termsCategorization.getAtomicTerms())
+
+<body>
+    <p>$utils.getText("inventory-report-bom.different-effective-licenses")</p>
+
+    #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
+        $utils.getText("inventory-report-bom.different-effective-licenses-footnote")
+    #end
+
+## License Options (not necessarily expressions)
+    #if (!$termsWithOptions.isEmpty())
+        <table id="LicenseOptions" otherprops="wide">
+            <title>$utils.getText("general.short.license-options") $reportContext.inContextOf()</title>
+            <tgroup cols="2">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="88*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="12*" />
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.license-options")</entry>
+                        <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.number-of-component")</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    #foreach($licenseData in $termsWithOptions)
+                        #set($license=$licenseData.get("Canonical Name"))
+                        #set($componentCount=$inventory.countComponents($license))
+                        <row>
+                            #if ($inventory.isLicenseSubstructureRequired($license, $effectiveLicensesRepresented))
+                                <entry>
+                                    <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                        $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                    </xref>
+                                </entry>
+                            #else
+                                <entry>
+                                    <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                        $report.xmlEscapeLicense($license)
+                                    </xref>
+                                </entry>
+                            #end
+                            <entry>
+                                <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                    <codeph>$componentCount</codeph>
+                                </xref>
+                            </entry>
+                        </row>
+                    #end
+                </tbody>
+            </tgroup>
+        </table>
+    #end
+
+    <table id="LicensesInEffect" otherprops="wide">
+        <title>$utils.getText("inventory-report-bom.short.licenses-in-effect") $reportContext.inContextOf()</title>
+        <tgroup cols="4">
+            <colspec colname="COLSPEC0" colnum="1" colwidth="53*" />
+            <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
+            <colspec colname="COLSPEC2" colnum="3" colwidth="10*" />
+            <colspec colname="COLSPEC3" colnum="4" colwidth="12*" />
+            <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">$utils.getText("inventory-report-bom.short.licenses-in-effect")</entry>
+                    <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+                    <entry colname="COLSPEC2" valign="top">OSI Status</entry>
+                    <entry colname="COLSPEC3" valign="top">$utils.getText("general.short.number-of-component")</entry>
+                </row>
+            </thead>
+            <tbody>
+#foreach($licenseData in $atomicTerms)
+#set($license=$licenseData.get("Canonical Name"))
+#set($folder=$inventory.getLicenseFolder($license))
+#set($componentCount=$inventory.countComponents($license))
+#set($licenseData=$inventory.findMatchingLicenseData($license))
+                <row>
+#if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
+                    <entry>
+                        <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                            $report.xmlEscapeLicense($license)<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
+                        </xref>
+                    </entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>
+                        #if ($licenseData)#if ($licenseData.get("OSI Status"))$licenseData.get("OSI Status")<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                    </entry>
+#else
+                    <entry>
+                        <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                            $report.xmlEscapeLicense($license)
+                        </xref>
+                    </entry>
+                    <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
+                    <entry>
+                        #if($licenseData)#if($licenseData.get("OSI Status"))$licenseData.get("OSI Status")#else&nbsp;#end#else&nbsp;#end
+                    </entry>
+#end
+                    <entry>
+                         <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                            <codeph>$componentCount</codeph>
+                        </xref>
+                    </entry>
+                </row>
+#end
+            </tbody>
+        </tgroup>
+    </table>
+</body>
+</topic>
