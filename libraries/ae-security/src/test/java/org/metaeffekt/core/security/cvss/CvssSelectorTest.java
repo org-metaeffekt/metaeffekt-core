@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;
@@ -27,6 +28,69 @@ import static org.junit.Assert.*;
 import static org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
 
 public class CvssSelectorTest {
+
+    private final static CvssSelector CVSS_SELECTOR_INITIAL = new CvssSelector(Collections.singletonList(
+            new CvssRule(CvssSelector.MergingMethod.ALL,
+                    // NIST NVD
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // MSRC
+                    new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MSRC),
+                    // GHSA
+                    new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
+                    // other NVD
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    // CERT-SEI
+                    new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    // any other, but not assessment
+                    new SourceSelectorEntry(
+                            Arrays.asList(new SourceSelectorEntryEntry<>(KnownCvssEntities.ASSESSMENT, true)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ROLE)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ENTITY))
+                    )
+            )
+    ));
+
+    private final static CvssSelector CVSS_SELECTOR_CONTEXT = new CvssSelector(Arrays.asList(
+            new CvssRule(CvssSelector.MergingMethod.ALL,
+                    // NIST NVD
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+                    // MSRC
+                    new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MSRC),
+                    // GHSA
+                    new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
+                    // other NVD
+                    new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    // CERT-SEI
+                    new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+                    // any other, but not assessment
+                    new SourceSelectorEntry(
+                            Arrays.asList(new SourceSelectorEntryEntry<>(KnownCvssEntities.ASSESSMENT, true)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ROLE)),
+                            Arrays.asList(new SourceSelectorEntryEntry<>(SourceSelectorEntry.ANY_ENTITY))
+                    )
+            ),
+            // assessment
+            new CvssRule(CvssSelector.MergingMethod.ALL,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
+                    Collections.emptyList(),
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_ALL)),
+            new CvssRule(CvssSelector.MergingMethod.LOWER,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
+                    Collections.emptyList(),
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_LOWER)),
+            new CvssRule(CvssSelector.MergingMethod.HIGHER,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
+                    Collections.emptyList(),
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER))
+    ), Collections.singletonList(
+            new SelectorStatsEvaluator("assessment", CvssSelector.StatsEvaluatorOperation.EQUAL, CvssSelector.EvaluatorAction.RETURN_NULL, 0)
+    ), Collections.singletonList(
+            new SelectorVectorEvaluator(CvssSelector.VectorEvaluatorOperation.IS_BASE_FULLY_DEFINED, true, CvssSelector.EvaluatorAction.RETURN_NULL)
+    ));
 
     @Test
     public void overwritePreviousVectorTest() {
@@ -96,6 +160,7 @@ public class CvssSelectorTest {
                         new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.EMPTY_ROLE, SourceSelectorEntry.EMPTY_ENTITY),
                         new SourceSelectorEntry(SourceSelectorEntry.ANY_ENTITY, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY))
         ));
+        CvssSelector reParsedSelector = fromJson(selector.toJson());
 
         Cvss3P1 nvdEmptyVector = new Cvss3P1("CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, null, null, Cvss3P1.class));
         Cvss3P1 nvdNvdVector = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
@@ -104,12 +169,15 @@ public class CvssSelectorTest {
 
         // picks nvdEmptyVector
         assertEquals(nvdEmptyVector.toString(), selector.selectVector(Arrays.asList(nvdEmptyVector, nvdNvdVector, msrcEmptyVector)).toString());
+        assertEquals(nvdEmptyVector.toString(), reParsedSelector.selectVector(Arrays.asList(nvdEmptyVector, nvdNvdVector, msrcEmptyVector)).toString());
 
         // picks msrcEmptyVector
         assertEquals(msrcEmptyVector.toString(), selector.selectVector(Arrays.asList(nvdNvdVector, msrcEmptyVector)).toString());
+        assertEquals(msrcEmptyVector.toString(), reParsedSelector.selectVector(Arrays.asList(nvdNvdVector, msrcEmptyVector)).toString());
 
         // picks nvdNvdVector
         assertEquals(nvdNvdVector.toString(), selector.selectVector(Collections.singletonList(nvdNvdVector)).toString());
+        assertEquals(nvdNvdVector.toString(), reParsedSelector.selectVector(Collections.singletonList(nvdNvdVector)).toString());
     }
 
     @Test
@@ -364,5 +432,14 @@ public class CvssSelectorTest {
 
         // the resulting vector is not lower, so the later check will return null
         assertNull(selector.selectVector(Arrays.asList(nvdVector, assessmentLowerPartsMavVector)));
+    }
+
+    @Test
+    public void defaultCvssSelectorTest() {
+        final Cvss3P1 vector1 = new Cvss3P1("CVSS:3.1/MAV:A/MC:N/MI:N", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_ALL, Cvss3P1.class));
+        final Cvss3P1 vector2 = new Cvss3P1("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss3P1.class));
+
+        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H", CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(vector1, vector2)).toString());
+        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H/MAV:A/MC:N/MI:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(vector1, vector2)).toString());
     }
 }

@@ -16,11 +16,16 @@
 package org.metaeffekt.core.inventory.processor.report;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 
 public class AssessmentInventoryMergerTest {
@@ -142,5 +147,21 @@ public class AssessmentInventoryMergerTest {
     public void normalizeNameTest() {
         final AssessmentInventoryMerger merger = new AssessmentInventoryMerger();
         Assertions.assertThat(merger.formatNormalizedAssessmentContextName("Test-Name-longer-than-25-chars")).isEqualTo("TEST-NAME-LONG");
+    }
+
+    @Test
+    @Ignore
+    public void customMergeTest() throws IOException {
+        final File inputDirectory = new File("/Users/ywittmann/workspace/ref/issues/2024-10-25-counting/ex-004/archive");
+
+        final AssessmentInventoryMerger merger = new AssessmentInventoryMerger();
+        for (File file : FileUtils.listFiles(inputDirectory, new String[]{"xls", "xlsx"}, true)) {
+            final Inventory inventory = new InventoryReader().readInventory(file);
+            merger.addInputInventory(inventory);
+        }
+
+        final Inventory merged = merger.mergeInventories();
+
+        new InventoryWriter().writeInventory(merged, new File(inputDirectory.getParentFile(), "report/output.xlsx"));
     }
 }

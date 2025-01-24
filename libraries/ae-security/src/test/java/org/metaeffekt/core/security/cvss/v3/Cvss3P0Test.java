@@ -27,7 +27,6 @@ import java.util.List;
 public class Cvss3P0Test {
     private final static Logger LOG = LoggerFactory.getLogger(Cvss3P0Test.class);
 
-
     //CVSS 3.0 specific edgecases, the rest of tests in Cvss3P1Test should still apply for Cvss3P0
     @Test
     public void evaluateCvssVectorsTest() {
@@ -164,9 +163,6 @@ public class Cvss3P0Test {
             Assert.assertEquals(cvss3P0.getBaseScore(), base, 0.01);
             Assert.assertEquals(cvss3P0.getTemporalScore(), temporal, 0.01);
             Assert.assertEquals(cvss3P0.getEnvironmentalScore(), enviromental, 0.01);
-
-
         }
     }
-
 }
