@@ -98,7 +98,7 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
         final int size = analysis.selectArtifacts().getItemList().size();
 
-        Assertions.assertThat(size).isEqualTo(38);
+        Assertions.assertThat(size).isEqualTo(73);
     }
 
 }
