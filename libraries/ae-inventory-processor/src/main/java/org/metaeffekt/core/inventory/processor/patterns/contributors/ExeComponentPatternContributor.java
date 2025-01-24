@@ -15,17 +15,28 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ExeComponentPatternContributor extends ComponentPatternContributor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ExeComponentPatternContributor.class);
 
     private static final String EXE_SOURCE_TYPE = "exe";
 
@@ -41,37 +52,90 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
 
     @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        final File detectedFile = new File(baseDir, relativeAnchorPath);
-        final List<ComponentPatternData> components = new ArrayList<>();
+        File virtualRoot = new File(baseDir, virtualRootPath);
+        File versionFile = FileUtils.findSingleFile(virtualRoot, ".rsrc/**/version.txt", ".rsrc/version.txt");
+        List<ComponentPatternData> components = new ArrayList<>();
 
-        File unpackedExeDir = detectedFile.getParentFile();
-        while (!unpackedExeDir.getName().toLowerCase(Locale.ROOT).endsWith(".exe]")) {
-            unpackedExeDir = unpackedExeDir.getParentFile();
+        if (versionFile == null || !versionFile.exists()) {
+            LOG.warn("MSI version file does not exist for anchor: {}", relativeAnchorPath);
+            return Collections.emptyList();
         }
 
-        String relativePath = FileUtils.asRelativePath(unpackedExeDir, detectedFile);
+        File parentDir = versionFile.getParentFile();
+        while (!parentDir.getName().toLowerCase(Locale.ROOT).endsWith(".exe]")) {
+            parentDir = parentDir.getParentFile();
+        }
 
-        addComponent(unpackedExeDir, components, relativePath, anchorChecksum, relativeAnchorPath);
+        try (Stream<String> lines = Files.lines(versionFile.toPath(), StandardCharsets.UTF_16LE)) {
+            String productName = null;
+            String productVersion = null;
+            String originalFilename = null;
 
-        return components;
+            Pattern productNamePattern = Pattern.compile("VALUE\\s+\"ProductName\"\\s*,\\s*\"([^\"]*)\"");
+            Pattern originalFilenamePattern = Pattern.compile("VALUE\\s+\"OriginalFilename\"\\s*,\\s*\"([^\"]*)\"");
+            Pattern productVersionPattern = Pattern.compile("VALUE\\s+\"ProductVersion\"\\s*,\\s*\"([^\"]*)\"");
+
+            for (String line : lines.collect(Collectors.toList())) {
+                Matcher nameMatcher = productNamePattern.matcher(line);
+                if (nameMatcher.find()) {
+                    productName = nameMatcher.group(1).replace("\0", "").trim();
+                }
+
+                Matcher originalFilenameMatcher = originalFilenamePattern.matcher(line);
+                if (originalFilenameMatcher.find()) {
+                    originalFilename = originalFilenameMatcher.group(1).replace("\0", "").trim();
+                }
+
+                Matcher versionMatcher = productVersionPattern.matcher(line);
+                if (versionMatcher.find()) {
+                    productVersion = versionMatcher.group(1).replace("\0", "").trim();
+                }
+
+                // if both values are found, we can stop processing further lines
+                if (originalFilename != null && productVersion != null) {
+                    break;
+                }
+            }
+
+            if (originalFilename != null && productVersion != null) {
+                addComponent(parentDir, components, productName, productVersion, relativeAnchorPath, anchorChecksum);
+            } else {
+                LOG.warn("Could not find ProductName or ProductVersion in MSI version file: {}", versionFile.getAbsolutePath());
+                return Collections.emptyList();
+            }
+            return components;
+        } catch (Exception e) {
+            LOG.warn("Error reading MSI version file: {}", versionFile.getAbsolutePath(), e);
+            return Collections.emptyList();
+        }
     }
 
-    private void addComponent(File unpackedExeDir, List<ComponentPatternData> components, String relativeAnchorPath, String anchorChecksum, String fullRelativeAnchorPath) {
-        final String unpackedExeDirName = unpackedExeDir.getName();
-        final String exeName = unpackedExeDirName.substring(1, unpackedExeDirName.length() - 1);
-
-        final ComponentPatternData cpd = new ComponentPatternData();
+    private void addComponent(File parentDir, List<ComponentPatternData> components, String productName, String productVersion, String relativeAnchorPath, String anchorChecksum) {
+        ComponentPatternData cpd = new ComponentPatternData();
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, productName);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, productVersion);
+        final String name = parentDir.getName();
+        String exeName = name.substring(1, name.length() - 1);
+        String exeNameWithoutExtension = exeName.replace(".exe", "");
+        if (exeNameWithoutExtension.contains(productVersion)) {
+            exeNameWithoutExtension = exeNameWithoutExtension.replace(productVersion, "");
+        }
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, exeName);
+
+
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-        final File fullRelativeAnchorFile = new File(fullRelativeAnchorPath).getParentFile();
+        final File fullRelativeAnchorFile = new File(relativeAnchorPath).getParentFile();
 
         cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "/" + fullRelativeAnchorFile.getPath() + "/**/*");
         cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.exe");
 
+
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, EXE_SOURCE_TYPE);
+        cpd.set(Artifact.Attribute.PURL, buildPurl(productName, productVersion, exeNameWithoutExtension));
 
         components.add(cpd);
     }
@@ -86,8 +150,8 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
         return 1;
     }
 
-    private String buildPurl(String productName, String productVersion) {
-        return "pkg:generic/" + productName + "@" + productVersion;
+    private String buildPurl(String productName, String productVersion, String exeName) {
+        return "pkg:generic/" + productName +  "/" + exeName + "@" + productVersion;
     }
 }
 
