@@ -69,19 +69,11 @@ public class FileSystemScanContext {
 
     private volatile boolean acceptingNewTasks = true;
 
-    @Getter
-    private final File aggregationDir;
-
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
-        this(baseDir, scanParam, null);
-    }
-
-    public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam, File aggregationDir) {
         this.baseDir = baseDir;
         this.scanParam = scanParam;
         this.virtualContext = new VirtualContext(baseDir);
         this.inventory = new Inventory();
-        this.aggregationDir = aggregationDir;
     }
 
     public synchronized void push(ScanTask scanTask) {

@@ -102,7 +102,7 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
                     inputDirectory, scanDirectory,
                     scanIncludes, scanExcludes,
                     unwrapIncludes, unwrapExcludes,
-                    sourceInventory, null, postScanExcludes);
+                    postScanExcludes, sourceInventory);
 
             // transfer configuration
             scan.setIncludeEmbedded(includeEmbedded);

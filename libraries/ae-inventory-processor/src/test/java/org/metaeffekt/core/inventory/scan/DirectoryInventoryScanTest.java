@@ -294,7 +294,8 @@ public class DirectoryInventoryScanTest {
                 scanInputDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
-                referenceInventory, null, postScanExcludes);
+                postScanExcludes,
+                referenceInventory);
 
         scan.setIncludeEmbedded(true);
         scan.setEnableImplicitUnpack(true);
