@@ -55,99 +55,89 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();
+
+        // this is the root of the component
         final File contextBaseDir = anchorParentDir.getParentFile();
+        final String anchorPathInContext = FileUtils.asRelativePath(contextBaseDir, anchorFile);
 
-        // this one doesn't seem to be doing anything
-        String includePattern = relativeAnchorPath.replace("/" + anchorFile.getName(), "") + "/**/*";
-
-        // TODO: something is definitely wrong here, some NOOP include patterns and some weird-looking ones
-        // TODO: include binary libraries or not?
-
-        includePattern += ", " + anchorFile.getParentFile().getName() + "/**/*";
-
-        Artifact artifact = new Artifact();
+        String distInfoFolderName = anchorFile.getParentFile().getName();
 
         // unclean id first, better than nothing
-        artifact.setId(relativeAnchorPath.replace(".dist-info/"+ anchorFile.getName(), ""));
+        String componentPart = relativeAnchorPath.replace(".dist-info/" + anchorFile.getName(), "");
+        String componentName = null;
+        String componentVersion = null;
+
+        // not yet propagated details
+        String homepage = null;
+        String summary = null;
+        String licenseExpression = null;
 
         if (anchorFile.getName().equals("METADATA") && anchorFile.exists()) {
             try {
                 List<String> fileContentLines = FileUtils.readLines(anchorFile, FileUtils.ENCODING_UTF_8);
 
-                String version = ParsingUtils.getValue(fileContentLines, "Version:");
-                String name = ParsingUtils.getValue(fileContentLines, "Name:");
-                String summary = ParsingUtils.getValue(fileContentLines, "Summary:");
-                String homepage = ParsingUtils.getValue(fileContentLines, "Home-page:");
-                String licenseExpression = ParsingUtils.getValue(fileContentLines, "License:");
+                componentVersion = ParsingUtils.getValue(fileContentLines, "Version:");
+                componentName = ParsingUtils.getValue(fileContentLines, "Name:");
+                summary = ParsingUtils.getValue(fileContentLines, "Summary:");
+                homepage = ParsingUtils.getValue(fileContentLines, "Home-page:");
+                licenseExpression = ParsingUtils.getValue(fileContentLines, "License:");
 
                 // update id with better data
-                artifact.setId(name + "-" + version);
-
-                artifact.setVersion(version);
-                artifact.setComponent(name);
-                artifact.set(Constants.KEY_SUMMARY, summary);
-                artifact.setUrl(homepage);
-                artifact.set("Package Specified Licenses", licenseExpression);
-
+                componentPart = componentName + "-" + componentVersion;
             } catch (IOException e) {
                 LOG.debug("IOException while trying to parse a METADATA file at [{}].", anchorFile);
             }
         } else {
             // in case it is not a METADATA file we extract name and version from the path
+            String pDistInfoFolderName = distInfoFolderName.replace(".dist-info", "");
 
-            String distInfoFolderName = anchorFile.getParentFile().getName();
-            distInfoFolderName = distInfoFolderName.replace(".dist-info", "");
-
-            int lastDash = distInfoFolderName.lastIndexOf("-");
+            int lastDash = pDistInfoFolderName.lastIndexOf("-");
             if (lastDash != -1) {
-                String name = distInfoFolderName.substring(0, lastDash);
-                String version = distInfoFolderName.substring(lastDash + 1);
-
-                artifact.setVersion(version);
-                artifact.setComponent(name);
-                artifact.setId(name + "-" + version);
+                componentName = pDistInfoFolderName.substring(0, lastDash);
+                componentVersion = pDistInfoFolderName.substring(lastDash + 1);
+                componentPart = componentName + "-" + componentVersion;
             }
         }
+
+        // this one doesn't seem to be doing anything
+        String includePattern = distInfoFolderName + "/**/*";
 
         final File topLevelInfo = new File(anchorFile.getParentFile(), "top_level.txt");
         if (topLevelInfo.exists()) {
             try {
                 final List<String> topLevelNames = FileUtils.readLines(topLevelInfo, FileUtils.ENCODING_UTF_8);
-                includePattern += ", " + topLevelNames.stream()
-                        .map(String::trim).filter(s -> !StringUtils.isEmpty(s))
-                        .map(s -> FileUtils.asRelativePath(contextBaseDir, new File(anchorFile.getParentFile().getParentFile(), s)) + "/**/*")
-                        .collect(Collectors.joining(", "));
+                for (String line : topLevelNames) {
+                    line = line.trim();
+                    if (StringUtils.isBlank(line)) continue;
+                    includePattern += "," + line + "/**/*";
+                }
             } catch (IOException e) {
                 LOG.debug("IOException while trying to parse top_level.txt at [{}]." , topLevelInfo);
             }
         } else {
             // FIXME: this creates VERY inclusive paths like "numpy/**/*" which didn't even do anything in testing
             // in case no top_level.txt exists we use the current component name
-            includePattern += ", " + artifact.getComponent() + "/**/*";
+            includePattern += ", " + componentName + "/**/*";
         }
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
-        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR,
-                FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
+        componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, anchorPathInContext);
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
-        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
-        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, componentName);
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, componentVersion);
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, componentPart);
 
-        componentPatternData.set(
-                ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                anchorParentDir.getName() + "/**/node_modules/**/*,"
-                        + anchorParentDir.getName() + "/**/bower_components/**/*, **/__pycache__/**/*"
-        );
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                "**/node_modules/**/*" + ",**/bower_components/**/*" + ",**/__pycache__/**/*");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/*.exe");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "python-library");
 
-        String purl = buildPurl(artifact.getComponent(), artifact.getVersion());
+        String purl = buildPurl(componentName, componentVersion);
         componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
 
         return Collections.singletonList(componentPatternData);
@@ -169,4 +159,5 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         name = name.toLowerCase(Locale.ENGLISH).replace("_", "-");
         return "pkg:pypi/" + name + "@" + version;
     }
+
 }

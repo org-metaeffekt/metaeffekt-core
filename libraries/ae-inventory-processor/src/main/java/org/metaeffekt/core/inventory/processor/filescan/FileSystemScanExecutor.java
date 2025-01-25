@@ -425,8 +425,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         // id + PATH_IN_ASSET
         final String pathInAsset = artifact.get(KEY_PATH_IN_ASSET);
-        // FIXME: pathInAsset.contains(id) must not be true; PIA must not contain filename
-        if (StringUtils.isNotBlank(pathInAsset) && pathInAsset.contains(id)) {
+        if (StringUtils.isNotBlank(pathInAsset)) {
             // create qualifier
             qualifiers.add("i:[" + id + "]-p:[" + pathInAsset + "]");
         }

@@ -125,7 +125,8 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             componentPatternData.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, license);
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
-            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/node_modules/**/*," + "**/node_modules/*");
+            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                    "**/node_modules/**/*" + ",**/node_modules/*");
 
             componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_PWA);

@@ -82,8 +82,9 @@ public class ContainerDumpSetup {
 
             try {
                 executeCommand(new String[] {"docker", "save", imageName, "-o", outputFilePath});
+                FileUtils.validateExists(outputFile);
                 LOG.info("Saved container [{}] to file [{}].", imageName, outputFilePath);
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException | IllegalStateException | InterruptedException e) {
                 throw new RuntimeException("Failed to save container filesystem.", e);
             }
         }

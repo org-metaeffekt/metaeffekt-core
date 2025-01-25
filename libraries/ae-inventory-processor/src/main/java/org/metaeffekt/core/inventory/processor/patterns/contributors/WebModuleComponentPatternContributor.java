@@ -149,7 +149,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         File yarnLock = new File(anchorParentDir, "yarn.lock");
 
         Inventory inventoryFromYarnLock = null;
-        if (anchorFile.exists()) {
+        if (yarnLock.exists()) {
             inventoryFromYarnLock = new YarnLockAdapter().extractInventory(yarnLock, relativeAnchorPath);
         }
 

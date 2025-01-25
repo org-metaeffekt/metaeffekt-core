@@ -60,22 +60,13 @@ public class MatchResult {
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
 
         final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
-        if (".".equals(relativePath)) {
-            String newRelativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(anchorFile));
-            if (StringUtils.isNotBlank(newRelativePath)) {
-                derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, newRelativePath);
-            } else {
-                derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
-            }
-        } else {
-            derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
-        }
+        final String virtualRootPath = asRelativePath(scanRootDir.getPath(), virtualRootDir.getPath());
+
         derivedArtifact.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
 
-        // FIXME: this attribute is of no use for component patterns; consider removing this line
         derivedArtifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
-        // derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, relativePath);
+        derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, virtualRootPath);
 
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));
@@ -92,8 +83,6 @@ public class MatchResult {
         derivedArtifact.setChecksum(componentPatternData.get("Component Checksum"));
 
         derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, Constants.MARKER_CROSS);
-
-        derivedArtifact.set(VIRTUAL_ROOT_PATH, asRelativePath(scanRootDir.getPath(), virtualRootDir.getPath()));
 
         // take over assetId association
         final Set<String> assetIds = InventoryUtils.collectAssetIdFromGenericElement(componentPatternData);
