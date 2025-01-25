@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.scan;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -35,6 +36,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+@Slf4j
 public class DirectoryInventoryScanTest {
 
     @Test
@@ -61,20 +65,21 @@ public class DirectoryInventoryScanTest {
             System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getProjects());
         }
 
-        Assertions.assertThat(resultInventory.findAllWithId("file.txt").size()).isEqualTo(2);
-        Assertions.assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e")).isNotNull();
-        Assertions.assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "8dc71de3cc97ca6d4cd8c9b876252823")).isNotNull();
+        assertThat(resultInventory.findAllWithId("file.txt").size()).isEqualTo(2);
+        assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e")).isNotNull();
+        assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "8dc71de3cc97ca6d4cd8c9b876252823")).isNotNull();
 
         // these are covered by component patterns
-        Assertions.assertThat(resultInventory.findArtifact("a.txt")).isNull();
-        Assertions.assertThat(resultInventory.findArtifact("A Files")).isNotNull();
-        Assertions.assertThat(resultInventory.findArtifact("b.txt")).isNull();
-        Assertions.assertThat(resultInventory.findArtifact("B Files")).isNotNull();
-        Assertions.assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").getProjects()).hasSize(1);
+        assertThat(resultInventory.findArtifact("a.txt")).isNull();
+        assertThat(resultInventory.findArtifact("A Files")).isNotNull();
+        assertThat(resultInventory.findArtifact("b.txt")).isNull();
+        assertThat(resultInventory.findArtifact("B Files")).isNotNull();
+        assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").
+                getArtifactRootPaths()).hasSize(1);
 
-        Assertions.assertThat(resultInventory.findArtifact("Please not")).isNull();
+        assertThat(resultInventory.findArtifact("Please not")).isNull();
 
-        Assertions.assertThat(resultInventory.findArtifact("test-alpha-1.0.0.jar")).isNotNull();
+        assertThat(resultInventory.findArtifact("test-alpha-1.0.0.jar")).isNotNull();
 
         // most primitive test on DirectoryScanAggregatorConfiguration
         DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
@@ -87,7 +92,7 @@ public class DirectoryInventoryScanTest {
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             qualifiers.add(mapper.getQualifier());
         }
-        Assertions.assertThat(qualifiers.contains("test-alpha-1.0.0.jar")).isTrue();
+        assertThat(qualifiers.contains("test-alpha-1.0.0.jar")).isTrue();
 
     }
 
@@ -195,7 +200,7 @@ public class DirectoryInventoryScanTest {
 
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
 
-        Assertions.assertThat(inventory.getAssetMetaData().size()).isEqualTo(1);
+        assertThat(inventory.getAssetMetaData().size()).isEqualTo(1);
 
         new InventoryWriter().writeInventory(inventory, new File("target/linux-distro-001.xls"));
 
@@ -294,7 +299,8 @@ public class DirectoryInventoryScanTest {
                 scanInputDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
-                referenceInventory, null, postScanExcludes);
+                postScanExcludes,
+                referenceInventory);
 
         scan.setIncludeEmbedded(true);
         scan.setEnableImplicitUnpack(true);
@@ -324,20 +330,19 @@ public class DirectoryInventoryScanTest {
         new InventoryWriter().writeInventory(resultInventory, outputInventory);
     }
 
+    // FIXME: this test is very specific; we need to further extend postExcludes tests in other areas
     @Test
     public void testScan_PostScanExcludes() throws IOException {
-
         final File scanInputDir = new File("src/test/resources/component-pattern-contributor/linux-distro-001");
         final File scanDir = new File("target/scan/linux-distro-001");
 
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
-        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir, "etc/issue.net");
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir, "rhel-9.4", "**/rhel-9.4");
 
-        Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(4);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(0);
 
         new InventoryWriter().writeInventory(inventory, new File("target/linux-distro-001.xls"));
-
     }
 
 }

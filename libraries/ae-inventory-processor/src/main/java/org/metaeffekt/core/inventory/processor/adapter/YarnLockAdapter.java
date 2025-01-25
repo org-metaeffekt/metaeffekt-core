@@ -93,9 +93,8 @@ public class YarnLockAdapter {
             return createInventory(webModuleMap, relativePath);
 
         } catch (Exception e) {
-            LOG.warn("Cannot read / parse [{}].", yarnLock.getAbsoluteFile());
+            LOG.warn("Cannot read / parse [{}]: {}", yarnLock.getAbsoluteFile(), e.getMessage());
         }
-
         return null;
     }
 

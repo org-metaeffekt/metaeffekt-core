@@ -48,13 +48,15 @@ public class ApkPackageContributor extends ComponentPatternContributor {
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File apkDbFile = new File(baseDir, relativeAnchorPath);
 
         if (!apkDbFile.exists()) {
             LOG.warn("APK database file does not exist: [{}]", apkDbFile.getAbsolutePath());
             return Collections.emptyList();
         }
+
+        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, suffixes);
 
         try (Stream<String> lineStream = Files.lines(apkDbFile.toPath(), StandardCharsets.UTF_8)) {
 

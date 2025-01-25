@@ -213,23 +213,6 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      *
      * @return <code>true</code> in case the pattern matches the path.
      */
-    private static boolean xinternalMatching(String normalizedPath, String normalizedPattern) {
-        if (normalizedPattern.startsWith(SEPARATOR_SLASH)) {
-            // NOTE: many patterns are in the shape **/*.<suffix> and **/<sub-path>/**/*; these could be optimized
-            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
-                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
-            } else {
-                return ANT_PATH_MATCHER.match(normalizedPattern.substring(1), normalizedPath);
-            }
-        } else {
-            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
-                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath.substring(1));
-            } else {
-                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
-            }
-        }
-    }
-
     private static boolean internalMatching(final String normalizedPath, final String normalizedPattern) {
 
         // match on string equals level when no wildcard is contained

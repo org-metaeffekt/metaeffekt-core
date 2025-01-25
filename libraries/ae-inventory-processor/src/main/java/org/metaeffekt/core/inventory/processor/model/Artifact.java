@@ -32,7 +32,7 @@ public class Artifact extends AbstractModelBase {
     private static final String DELIMITER_UNDERSCORE = "_";
 
     // FIXME: revise attribute name projects; should be paths (in asset)
-    public static final String PROJECT_DELIMITER_REGEXP = "\\|\n";
+    public static final String PATH_DELIMITER_REGEXP = "\\|\n";
 
     public static final String PROJECT_DELIMITER = "|\n";
 
@@ -77,7 +77,17 @@ public class Artifact extends AbstractModelBase {
         ERRORS("Errors"),
         HASH_SHA256("Hash (SHA-256)"),
         PATH_IN_ASSET("Path in Asset"),
-        VIRTUAL_ROOT_PATH("Virtual Root Path"),
+
+        /**
+         * A Artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated. In this
+         * case the path points to a folder. In  case of an artifact being represented by a single file. The Artifact
+         * Root Path points to the file (and in this case is redundant with “Evidence” as long as Evidence is present).
+         * Multiple values are supported (to enable multiple contributors / representations).
+         *
+         * Evidence is current named Projects and will be changed asap.
+         */
+        ARTIFACT_ROOT_PATHS("Artifact Root Paths"),
+
         PURL("PURL"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
 
@@ -134,12 +144,25 @@ public class Artifact extends AbstractModelBase {
         if (StringUtils.isEmpty(projectsString)) {
             return Collections.emptySet();
         }
-        return Arrays.stream(projectsString.split(PROJECT_DELIMITER_REGEXP)).
+        return Arrays.stream(projectsString.split(PATH_DELIMITER_REGEXP)).
+                map(String::trim).collect(Collectors.toSet());
+    }
+
+    public Set<String> getArtifactRootPaths() {
+        final String pathsString = get(Attribute.ARTIFACT_ROOT_PATHS);
+        if (StringUtils.isEmpty(pathsString)) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(pathsString.split(PATH_DELIMITER_REGEXP)).
                 map(String::trim).collect(Collectors.toSet());
     }
 
     public void setProjects(Set<String> project) {
         set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(PROJECT_DELIMITER)));
+    }
+
+    public void setArtifactRootPaths(Set<String> paths) {
+        set(Attribute.ARTIFACT_ROOT_PATHS, paths.stream().collect(Collectors.joining(PROJECT_DELIMITER)));
     }
 
     public String getComponent() {
@@ -258,6 +281,9 @@ public class Artifact extends AbstractModelBase {
         // projects merge differently
         mergeProjects(a);
 
+        // artifact root paths merge differently
+        mergeArtifactRootPaths(a);
+
         // merge attributes
         super.merge(a);
 
@@ -265,9 +291,15 @@ public class Artifact extends AbstractModelBase {
     }
 
     private void mergeProjects(Artifact a) {
-        Set<String> projects = new HashSet<>(getProjects());
+        final Set<String> projects = new HashSet<>(getProjects());
         projects.addAll(a.getProjects());
         setProjects(projects);
+    }
+
+    private void mergeArtifactRootPaths(Artifact a) {
+        final Set<String> paths = new HashSet<>(getArtifactRootPaths());
+        paths.addAll(a.getArtifactRootPaths());
+        setArtifactRootPaths(paths);
     }
 
     /**

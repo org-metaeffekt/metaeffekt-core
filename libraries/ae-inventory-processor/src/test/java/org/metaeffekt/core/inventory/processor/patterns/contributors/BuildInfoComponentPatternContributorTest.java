@@ -39,8 +39,7 @@ public class BuildInfoComponentPatternContributorTest {
         if (!file.exists()) throw new IllegalStateException(String.format("File must exist: [%s]", file.getAbsolutePath()));
 
         final List<ComponentPatternData> cpdList = contributor.
-                contribute(baseDir, baseDir.getAbsolutePath(), relativeAnchorPath,
-                        FileUtils.computeMD5Checksum(file));
+                contribute(baseDir, relativeAnchorPath, FileUtils.computeMD5Checksum(file));
         assertThat(cpdList.size()).isEqualTo(1);
 
         final ComponentPatternData cpd = cpdList.get(0);

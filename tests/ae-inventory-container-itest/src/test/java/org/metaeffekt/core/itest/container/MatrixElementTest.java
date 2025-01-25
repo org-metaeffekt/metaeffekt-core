@@ -36,8 +36,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
@@ -100,9 +99,14 @@ public class MatrixElementTest extends AbstractCompositionAnalysisTest {
     public void testContainerStructure() throws Exception {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
+
+        analysis.selectArtifacts().logListWithAllAttributes();
+
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "pwa-module")).hasSizeOf(1);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "npm-module")).hasSizeOf(258);
-        // analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty(); FIXME: .package-lock.json should not be found
+
+        // package-lock.json must not be found (consumed by npm contributor)
+        // analysis.selectArtifacts(containsToken(ID, "package-lock.json")).assertEmpty();
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);

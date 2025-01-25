@@ -47,7 +47,7 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File spdxFile = new File(baseDir, relativeAnchorPath);
 
         String relativePathForAnchor = FileUtils.asRelativePath(spdxFile.getParentFile().getParentFile(), spdxFile);

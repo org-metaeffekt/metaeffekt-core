@@ -33,7 +33,7 @@ public class LinuxDistroComponentPatternContributorTest {
     public void testVariant001() {
         File file = new File("src/test/resources/component-pattern-contributor/linux-distro-001");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file, ".", "etc/issue", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file, "etc/issue", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -47,7 +47,7 @@ public class LinuxDistroComponentPatternContributorTest {
     public void testVariant002() {
         File file = new File("src/test/resources/component-pattern-contributor/linux-distro-002");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file, ".", "etc/issue", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file, "etc/issue", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -61,7 +61,7 @@ public class LinuxDistroComponentPatternContributorTest {
     public void testVariant003() {
         File file = new File("src/test/resources/component-pattern-contributor/linux-distro-003");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file, ".", "etc/issue", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file, "etc/issue", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 
@@ -75,7 +75,7 @@ public class LinuxDistroComponentPatternContributorTest {
     public void testVariant004() {
         File file = new File("src/test/resources/component-pattern-contributor/linux-distro-004");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file, ".", "os-01/etc/issue", FileUtils.computeMD5Checksum(file));
+        final List<ComponentPatternData> cpdList = contributor.contribute(file, "os-01/etc/issue", FileUtils.computeMD5Checksum(file));
 
         Assertions.assertThat(cpdList.size()).isEqualTo(1);
 

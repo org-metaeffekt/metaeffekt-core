@@ -52,7 +52,7 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File detectedFile = new File(baseDir, relativeAnchorPath);
 
         // step up path until we match the exe pattern
@@ -63,11 +63,13 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
 
         final File versionFile = FileUtils.findSingleFile(unpackedExeDir, ".rsrc/**/version.txt", ".rsrc/version.txt");
 
-        return deriveComponents(versionFile, unpackedExeDir, relativeAnchorPath, anchorChecksum);
+        return deriveComponents(baseDir, versionFile, unpackedExeDir, relativeAnchorPath, anchorChecksum);
     }
 
-    private ComponentPatternData deriveComponentPatternData(File unpackedExeDir, VersionFileData versionFileData, String relativeAnchorPath, String anchorChecksum) {
+    private ComponentPatternData deriveComponentPatternData(File baseDir, File unpackedExeDir, VersionFileData versionFileData, String relativeAnchorPath, String anchorChecksum) {
         final ComponentPatternData cpd = new ComponentPatternData();
+
+        final String unpackedExeDirAnchorPath = FileUtils.asRelativePath(unpackedExeDir.getParentFile(), new File(baseDir, relativeAnchorPath));
 
         // version is only provided via version file
         final String version = versionFileData.getProductVersion();
@@ -86,15 +88,16 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
 
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, exeName);
-        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, exeName);
+        cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, unpackedExeDirAnchorPath);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_EXECUTABLE);
         cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, EXE_SOURCE_TYPE);
         cpd.set(Artifact.Attribute.PURL, buildPurl(versionFileData, exeNameWithoutExtensionAndVersion));
 
         // include all in dir except for embedded exe files; identified separately
-        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "/**/*");
-        cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.exe");
+        cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, name + "/**/*");
+        cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, name + "/**/*.exe");
 
         return cpd;
     }
@@ -125,7 +128,8 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
 
     private String buildPurl(VersionFileData versionFileData, String exeNameWithoutExtensionAndVersion) {
         final String version = versionFileData.getProductVersion();
-        final String componentName = versionFileData.getProductName();
+        final String componentName = versionFileData.getProductName() == null ? null :
+                versionFileData.getProductName().toLowerCase(Locale.US).replace(" ", "-");
         if (componentName == null && version == null) {
             return "pkg:generic/" + exeNameWithoutExtensionAndVersion;
         } else if (version == null) {
@@ -136,11 +140,11 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
         return "pkg:generic/" + componentName +  "/" + exeNameWithoutExtensionAndVersion + "@" + version;
     }
 
-    private List<ComponentPatternData> deriveComponents(File versionFile, File unpackedExeDir, String relativeAnchorPath, String anchorChecksum) {
+    private List<ComponentPatternData> deriveComponents(File baseDir, File versionFile, File unpackedExeDir, String relativeAnchorPath, String anchorChecksum) {
         final List<ComponentPatternData> components = new ArrayList<>();
 
         final VersionFileData versionFileData = parseVersionFileIfExists(versionFile);
-        components.add(deriveComponentPatternData(unpackedExeDir, versionFileData, relativeAnchorPath, anchorChecksum));
+        components.add(deriveComponentPatternData(baseDir, unpackedExeDir, versionFileData, relativeAnchorPath, anchorChecksum));
 
         return components;
     }

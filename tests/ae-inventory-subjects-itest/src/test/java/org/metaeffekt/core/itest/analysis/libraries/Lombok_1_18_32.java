@@ -80,7 +80,7 @@ public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
 
         // it is important, that the classification is not overwritten with 'scan'
         Assertions.assertThat(artifact.getClassification()).isEqualTo(HINT_ATOMIC);
-        Assertions.assertThat(artifact.get("Virtual Root Path")).isEqualTo(".");
+        Assertions.assertThat(artifact.get(ARTIFACT_ROOT_PATHS)).isEqualTo(".");
     }
 
 }

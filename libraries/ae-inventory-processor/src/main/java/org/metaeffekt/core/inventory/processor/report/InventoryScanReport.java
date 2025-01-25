@@ -47,10 +47,10 @@ public class InventoryScanReport extends InventoryReport {
 
     @Override
     public boolean createReport() throws IOException {
-        Inventory globalInventory = readGlobalInventory();
+        final Inventory globalInventory = readGlobalInventory();
 
-        DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
-                inputDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory, postScanExcludes);
+        final DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
+                inputDirectory, scanDirectory, scanIncludes, scanExcludes, postScanExcludes, globalInventory);
         directoryScan.setEnableImplicitUnpack(isEnableImplicitUnpack());
         directoryScan.setIncludeEmbedded(isIncludeEmbedded());
         directoryScan.setEnableDetectComponentPatterns(isEnableDetectComponentPatterns());

@@ -42,7 +42,6 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         new File(getScanFolder()).mkdirs();
         final File scanInputDir = new File(getDownloadFolder());
         final File scanDir = new File(getScanFolder());
-        final File aggregationDir = new File(getAggregationDir());
 
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{
@@ -65,7 +64,7 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
                 scanInputDir, scanDir,
                 scanIncludes, scanExcludes,
                 unwrapIncludes, unwrapExcludes,
-                referenceInventory, aggregationDir, null);
+                referenceInventory);
 
         scan.setIncludeEmbedded(true);
         scan.setEnableImplicitUnpack(true);
