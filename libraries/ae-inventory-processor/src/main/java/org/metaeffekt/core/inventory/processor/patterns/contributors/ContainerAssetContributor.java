@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -125,6 +126,8 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
                     return Collections.singletonList(cpd);
                 }
             }
+        } catch (JSONException e) {
+            // ignore parsing errors; file not matching contribute expectations
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

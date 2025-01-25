@@ -154,6 +154,8 @@ public class ComponentPatternProducer {
         // record component pattern qualifiers for deduplication purposes
         final Set<String> deduplicationQualifierSet = new HashSet<>();
 
+        final EvaluationContext evaluationContext = new EvaluationContext();
+
         // for each include pattern (by priority) try to identify a component pattern
         for (String pathInContext : filesByPathLength) {
             final Artifact artifact = pathToArtifactMap.get(pathInContext);
@@ -164,7 +166,7 @@ public class ComponentPatternProducer {
                 final String virtualRootPath = artifact.get(VIRTUAL_ROOT_PATH);
 
                 final List<ComponentPatternData> componentPatternDataList =
-                        runner.collectApplicable(baseDir, virtualRootPath, pathInContext, checksum);
+                        runner.collectApplicable(baseDir, virtualRootPath, pathInContext, checksum, evaluationContext);
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {

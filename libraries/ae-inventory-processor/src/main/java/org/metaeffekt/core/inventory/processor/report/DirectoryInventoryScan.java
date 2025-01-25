@@ -29,6 +29,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,20 +155,33 @@ public class DirectoryInventoryScan {
         // post-process inventory; merge asset groups
         mergeAssetGroups(fileSystemScan.getInventory());
 
-        // FIXME
         // post-process inventory; remove post scan excludes
         if (postScanExcludes != null) {
-            for (String postScanExclude : postScanExcludes) {
-                List<Artifact> artifacts = fileSystemScan.getInventory().getArtifacts();
-                for (Artifact artifact : artifacts) {
-                    if (artifact.getPathInAsset().contains(postScanExclude)) {
-                        LOG.info("Removing artifact [{}] due to post scan exclude [{}].", artifact.getId(), postScanExclude);
-                        artifacts.remove(artifact);
+            final String[] normalizedExcludePatterns = FileUtils.normalizePatterns(postScanExcludes);
+            final List<Artifact> artifacts = fileSystemScan.getInventory().getArtifacts();
+            artifacts.removeIf(a -> {
+                String pathInAsset = a.getPathInAsset();
+
+                // filename with fallback to id
+                if (!pathInAsset.endsWith(a.getId())) {
+                    if (pathInAsset.equals(".")) {
+                        pathInAsset = a.getId();
+                    } else {
+                        pathInAsset += "/" + a.getId();
                     }
                 }
-            }
+
+                final String normalizedPath = FileUtils.normalizePathToLinux(pathInAsset);
+
+                for (String postScanExclude : normalizedExcludePatterns) {
+                    if (FileUtils.matches(postScanExclude, normalizedPath)) {
+                        LOG.info("Removing artifact [{}] due to post scan exclude [{}].", a.getId(), postScanExclude);
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
-        // FIXME-END
 
         return fileSystemScan.getInventory();
     }

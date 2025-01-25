@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.patterns;
 
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.ComponentPatternContributor;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.EvaluationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,10 +91,11 @@ public class ComponentPatternContributorRunner {
      * @param virtualRootPath The virtual root path. Currently only to be regarded a proposal with context change.
      * @param relativeAnchorFilePath relative path to the file to check. Relative to baseDir (not virtualRootPath).
      * @param checksum the checksum of the anchor file.
+     * @param context {@link EvaluationContext} for collecting.
      *
      * @return returns a list of generated component patterns
      */
-    public List<ComponentPatternData> collectApplicable(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
+    public List<ComponentPatternData> collectApplicable(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum, EvaluationContext context) {
         final List<ComponentPatternData> results = new ArrayList<>();
         final String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE);
 
@@ -113,7 +115,7 @@ public class ComponentPatternContributorRunner {
                         for (ComponentPatternContributor contributor : collect) {
                             try {
                                 List<ComponentPatternData> componentPatterns = contributor.contribute(
-                                        baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+                                        baseDir, virtualRootPath, relativeAnchorFilePath, checksum, context);
 
                                 componentPatterns.forEach(cpd -> cpd.setContext(contributor.getClass().getName()));
 
