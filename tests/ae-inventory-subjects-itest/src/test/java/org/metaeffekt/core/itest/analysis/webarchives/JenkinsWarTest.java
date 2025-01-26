@@ -146,7 +146,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
 
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(4);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5);
 
         analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
         analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
@@ -166,7 +166,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = testSetup.getInventory();
 
         Analysis analysis = new Analysis(inventory);
-        analysis.selectComponentPatterns().hasSizeOf(1);
+        analysis.selectComponentPatterns().hasSizeOf(2);
         ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
         componentPatternList.logListWithAllAttributes();
     }

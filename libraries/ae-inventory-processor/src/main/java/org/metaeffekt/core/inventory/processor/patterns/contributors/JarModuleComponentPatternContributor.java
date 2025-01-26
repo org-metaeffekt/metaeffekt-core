@@ -58,6 +58,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         return (pathInContext.contains("/meta-inf/maven/") && pathInContext.endsWith("/pom.xml"));
     }
 
+    @Override
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         return contribute(baseDir, relativeAnchorPath, anchorChecksum, new EvaluationContext());
     }

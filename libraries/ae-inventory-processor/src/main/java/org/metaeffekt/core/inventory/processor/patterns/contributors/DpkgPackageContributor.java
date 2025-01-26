@@ -540,7 +540,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
      * @return same as {@link ComponentPatternContributor#contribute(File, String, String)}
      */
     public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
-                 String virtualRootPath, String relativeAnchorFilePath,String checksum) {
+                 String virtualRootPath, String relativeAnchorFilePath, String checksum) {
 
         final File md5sumsFile = new File(baseDir, relativeAnchorFilePath);
 
@@ -607,7 +607,9 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return createdComponentPatterns;
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
+    @Override
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorFilePath, String checksum) {
+        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
         if (relativeAnchorFilePath.endsWith("status")) {
             return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
         } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
