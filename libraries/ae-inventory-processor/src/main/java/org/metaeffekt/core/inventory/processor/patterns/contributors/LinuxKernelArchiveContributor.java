@@ -46,7 +46,7 @@ public class LinuxKernelArchiveContributor extends ComponentPatternContributor {
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File kernelFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();
 

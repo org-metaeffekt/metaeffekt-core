@@ -130,7 +130,7 @@ public class DirectoryScanAggregatorConfiguration {
             filePatternQualifierMapper.getComponentPatternDataList().add(cpd);
 
             // use artifact data to pre-select the folder to be scanned; can be multiple
-            final Set<String> componentBaseDirs = getRelativePaths(artifact);
+            final Set<String> componentBaseDirs = artifact.getArtifactRootPaths();
 
             for (final String baseDir : componentBaseDirs) {
 
@@ -274,21 +274,6 @@ public class DirectoryScanAggregatorConfiguration {
             }
             list.add(cpd);
         }
-    }
-
-    // FIXME: this is bridle; we need to consolidate this
-    private static Set<String> getRelativePaths(Artifact artifact) {
-        // use information from projects (relative to original scanBaseDir)
-        final Set<String> componentBaseDirs = new HashSet<>(artifact.getProjects());
-
-        // in case information is not available fall back to PATH_IN_ASSET (also relative to original scanBaseDir)
-        if (componentBaseDirs.isEmpty()) {
-            final String artifactPath = artifact.get(Artifact.Attribute.PATH_IN_ASSET);
-            if (!StringUtils.isBlank(artifactPath)) {
-                componentBaseDirs.add(artifactPath);
-            }
-        }
-        return componentBaseDirs;
     }
 
     private File getExtractedFilesBaseDir() {

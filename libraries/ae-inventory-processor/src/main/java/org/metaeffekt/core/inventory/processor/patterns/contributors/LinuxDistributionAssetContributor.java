@@ -52,10 +52,20 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+        return contribute(baseDir, relativeAnchorPath, anchorChecksum, new EvaluationContext());
+    }
+
+    @Override
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum, EvaluationContext context) {
 
         try {
-            virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, SUFFIX_LIST);
+            String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, SUFFIX_LIST);
+
+            final String contextSemaphore = getClass().getCanonicalName() + "-" + virtualRootPath ;
+
+            // skip if context is already processed
+            if (context.isProcessed(contextSemaphore)) return Collections.emptyList();
 
             final File distroBaseDir = ".".equals(virtualRootPath) ? baseDir : new File(baseDir, virtualRootPath);
             final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistro(distroBaseDir);
@@ -69,7 +79,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
                 cpd.set(COMPONENT_NAME, linuxDistro.issue);
                 cpd.set(COMPONENT_VERSION, linuxDistro.versionId);
 
-                if (linuxDistro != null && linuxDistro.versionId != null) {
+                if (linuxDistro.versionId != null) {
                     cpd.set(COMPONENT_PART, linuxDistro.id + "-" + linuxDistro.versionId);
                 } else {
                     // in case the distro instance does not convey sufficient information we fallback to the anchor name
@@ -89,6 +99,8 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
                 cpd.set(KEY_COMPONENT_SOURCE_TYPE, "linux-distro");
 
                 cpd.setExpansionInventorySupplier(() -> createAssetInventory(baseDir, distroBaseDir, linuxDistro));
+
+                context.registerProcessed(contextSemaphore);
 
                 return Collections.singletonList(cpd);
             }

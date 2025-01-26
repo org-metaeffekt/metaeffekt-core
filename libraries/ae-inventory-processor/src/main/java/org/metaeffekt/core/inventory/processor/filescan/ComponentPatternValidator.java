@@ -225,16 +225,25 @@ public class ComponentPatternValidator {
     }
 
     private static void removeAllFilesFromParent(String parentQualifier, String childQualifier,
-                                                 Map<String, Set<File>> qualifierToComponentPatternFilesMap,
-                                                 List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
-        FilePatternQualifierMapper parentMapper = findMapperForQualifier(parentQualifier, filePatternQualifierMapperList);
-        FilePatternQualifierMapper childMapper = findMapperForQualifier(childQualifier, filePatternQualifierMapperList);
-        Map<String, List<File>> subsetMap = new HashMap<>();
+             Map<String, Set<File>> qualifierToComponentPatternFilesMap,
+             List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
+
+        final FilePatternQualifierMapper parentMapper = findMapperForQualifier(parentQualifier, filePatternQualifierMapperList);
+        final FilePatternQualifierMapper childMapper = findMapperForQualifier(childQualifier, filePatternQualifierMapperList);
+        final Map<String, List<File>> subsetMap = new HashMap<>();
+
         if (parentMapper != null) {
             LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
-            subsetMap.put(childQualifier, new ArrayList<>(qualifierToComponentPatternFilesMap.get(childQualifier)));
-            qualifierToComponentPatternFilesMap.get(parentQualifier).removeAll(qualifierToComponentPatternFilesMap.get(childQualifier));
-            parentMapper.getFileMap().get(false).removeAll(qualifierToComponentPatternFilesMap.get(childQualifier));
+
+            final Set<File> childFileSet = qualifierToComponentPatternFilesMap.get(childQualifier);
+            subsetMap.put(childQualifier, new ArrayList<>(childFileSet));
+
+            final Set<File> parentQualifierFileSet = qualifierToComponentPatternFilesMap.get(parentQualifier);
+            parentQualifierFileSet.removeAll(childFileSet);
+
+            final List<File> parentMapperFileList_false = parentMapper.getFileMap().get(false);
+            parentMapperFileList_false.removeAll(childFileSet);
+
             parentMapper.setSubSetMap(subsetMap);
             if (childMapper != null) {
                 final String assetId = "AID-" + parentMapper.getArtifact().getId() + "-" + parentMapper.getArtifact().getChecksum();

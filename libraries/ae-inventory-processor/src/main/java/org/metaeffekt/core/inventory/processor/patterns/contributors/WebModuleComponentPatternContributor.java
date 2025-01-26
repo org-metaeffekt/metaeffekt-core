@@ -55,7 +55,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();
         final File parentDir = anchorParentDir.getParentFile();
@@ -149,7 +149,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         File yarnLock = new File(anchorParentDir, "yarn.lock");
 
         Inventory inventoryFromYarnLock = null;
-        if (anchorFile.exists()) {
+        if (yarnLock.exists()) {
             inventoryFromYarnLock = new YarnLockAdapter().extractInventory(yarnLock, relativeAnchorPath);
         }
 

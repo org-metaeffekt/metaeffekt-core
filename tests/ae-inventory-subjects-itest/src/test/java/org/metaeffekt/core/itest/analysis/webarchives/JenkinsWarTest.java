@@ -90,7 +90,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
          getAnalysis()
                 .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
-                .logList()
+                .logListWithAllAttributes()
                 .assertEmpty(idMismatchesVersion());
     }
 
@@ -146,8 +146,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
 
-        // FIXME: a jar is created from the war; this needs to be resolved
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5 + 1);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5);
 
         analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
         analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
@@ -167,7 +166,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = testSetup.getInventory();
 
         Analysis analysis = new Analysis(inventory);
-        analysis.selectComponentPatterns().hasSizeGreaterThan(1);
+        analysis.selectComponentPatterns().hasSizeOf(2);
         ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
         componentPatternList.logListWithAllAttributes();
     }

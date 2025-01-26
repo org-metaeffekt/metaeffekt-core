@@ -45,7 +45,7 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File pluginFile = new File(baseDir, relativeAnchorPath);
         List<ComponentPatternData> components = new ArrayList<>();
 
@@ -62,10 +62,10 @@ public class JenkinsPluginsComponentPatternContributor extends ComponentPatternC
                 if (pluginName != null && pluginVersion != null) {
                     addComponent(components, pluginName, pluginVersion, relativeAnchorPath, anchorChecksum);
                 } else {
-                    LOG.warn("Missing Extension-Name or Plugin-Version in manifest for plugin file: {}", pluginFile.getAbsolutePath());
+                    LOG.debug("Missing Extension-Name or Plugin-Version in manifest for plugin file: {}", pluginFile.getAbsolutePath());
                 }
             } else {
-                LOG.warn("Manifest not found in plugin file: {}", pluginFile.getAbsolutePath());
+                LOG.debug("Manifest not found in plugin file: {}", pluginFile.getAbsolutePath());
             }
             return components;
         } catch (Exception e) {

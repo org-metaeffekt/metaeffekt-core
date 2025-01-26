@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
-import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.util.FileUtils;
@@ -31,7 +30,7 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ARTIFACT_ROOT_PATHS;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
@@ -48,11 +47,8 @@ public class FileCollectTask extends ScanTask {
 
     private FileRef fileRef;
 
-    private final VirtualContext virtualContext;
-
-    public FileCollectTask(FileRef fileRef, VirtualContext virtualContext, List<String> assetIdChain) {
+    public FileCollectTask(FileRef fileRef, List<String> assetIdChain) {
         super(assetIdChain);
-        this.virtualContext = virtualContext;
         this.fileRef = fileRef;
     }
 
@@ -107,9 +103,7 @@ public class FileCollectTask extends ScanTask {
 
         attachEmbeddedPath(artifact, relativePath);
 
-        final String virtualRelativePath = asRelativePath(fileSystemScanContext.getBaseDir().getPath(),
-                virtualContext.getVirtualBaseDirRef().getPath());
-        artifact.set(VIRTUAL_ROOT_PATH, virtualRelativePath);
+        artifact.set(ARTIFACT_ROOT_PATHS, relativePath);
 
         fileSystemScanContext.contribute(artifact);
     }

@@ -18,7 +18,6 @@ package org.metaeffekt.core.inventory.processor.filescan.tasks;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanParam;
-import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +34,8 @@ public class DirectoryScanTask extends ScanTask {
 
     private final FileRef dirRef;
 
-    private final VirtualContext virtualContext;
-
-    public DirectoryScanTask(FileRef dirRef, VirtualContext virtualContext, List<String> assetIdChain) {
+    public DirectoryScanTask(FileRef dirRef, List<String> assetIdChain) {
         super(assetIdChain);
-        this.virtualContext = virtualContext;
         if (!dirRef.getFile().isDirectory()) {
             LOG.error(
                     "Passed dirRef does not contain a directory: [{}].",
@@ -75,20 +71,20 @@ public class DirectoryScanTask extends ScanTask {
                 }
                 // dispatch depending on type (file or folder)
                 if (file.isFile()) {
-                    scanContext.push(new FileCollectTask(fileRef, virtualContext, getAssetIdChain()));
+                    scanContext.push(new FileCollectTask(fileRef, getAssetIdChain()));
                 } else if (file.isDirectory()) {
                     final String folderName = file.getName();
                     final boolean implicitFolder = folderName.startsWith("[") && folderName.endsWith("]");
                     if (!implicitFolder) {
                         // implicit folders are collected when processing the archives subtree
-                        scanContext.push(new DirectoryScanTask(fileRef, virtualContext, getAssetIdChain()));
+                        scanContext.push(new DirectoryScanTask(fileRef, getAssetIdChain()));
                     } else {
                         // check whether folder is originating from an archive
                         final String expectedName = folderName.substring(1, folderName.length() - 1);
                         final File expectedFile = new File(file.getParentFile(), expectedName);
                         if (!expectedFile.exists()) {
                             // archive does not exist; scan
-                            scanContext.push(new DirectoryScanTask(fileRef, virtualContext, getAssetIdChain()));
+                            scanContext.push(new DirectoryScanTask(fileRef, getAssetIdChain()));
                         }
                     }
                 }

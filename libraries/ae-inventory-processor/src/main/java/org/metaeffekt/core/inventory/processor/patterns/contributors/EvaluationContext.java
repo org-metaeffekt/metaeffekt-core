@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-package org.metaeffekt.core.inventory.processor.filescan;
+import java.util.HashSet;
+import java.util.Set;
 
-public class VirtualContext {
+public class EvaluationContext {
 
-    private FileRef virtualBaseDirRef;
+    private Set<Object> set = new HashSet<>();
 
-    public VirtualContext(FileRef virtualBaseDirRef) {
-        this.virtualBaseDirRef = virtualBaseDirRef;
+    public void registerProcessed(Object semaphore) {
+        set.add(semaphore);
     }
 
-    public FileRef getVirtualBaseDirRef() {
-        return virtualBaseDirRef;
+    public boolean isProcessed(Object semaphore) {
+        return set.contains(semaphore);
     }
 
-    public void setVirtualBaseDirRef(FileRef virtualBaseDirRef) {
-        this.virtualBaseDirRef = virtualBaseDirRef;
-    }
+
 }

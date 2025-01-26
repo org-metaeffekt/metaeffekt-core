@@ -695,8 +695,9 @@ public class JarInspector extends AbstractJarInspector {
             for (final Artifact embeddedArtifact : new HashSet<>(embeddedArtifacts)) {
                 // supplement default id; FIXME: move to identification code; here only consumer
                 if (StringUtils.isBlank(embeddedArtifact.getId())) {
+                    final String packaging = embeddedArtifact.get("Packaging");
                     embeddedArtifact.setId(embeddedArtifact.get(ATTRIBUTE_KEY_ARTIFACT_ID) + "-" +
-                            embeddedArtifact.getVersion() + "." + "jar");
+                            embeddedArtifact.getVersion() + "." + deriveSuffix(packaging));
                 }
 
                 // remove artifacts that cannot be fully identified
@@ -752,5 +753,15 @@ public class JarInspector extends AbstractJarInspector {
         }
         return null;
     }
+
+    public static String deriveSuffix(String packaging) {
+        if (packaging == null) return "jar";
+        if (packaging.equalsIgnoreCase("pom")) return "pom";
+        if (packaging.equalsIgnoreCase("war")) return "war";
+
+        // FIXME: support other mappings
+        return "jar";
+    }
+
 
 }

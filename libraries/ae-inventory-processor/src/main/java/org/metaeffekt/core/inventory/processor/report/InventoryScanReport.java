@@ -15,11 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.io.File;
 import java.io.IOException;
 
+@Getter
+@Setter
 public class InventoryScanReport extends InventoryReport {
 
     private File inputDirectory;
@@ -29,6 +33,8 @@ public class InventoryScanReport extends InventoryReport {
     private String[] scanIncludes = new String[]{"**/*"};
 
     private String[] scanExcludes;
+
+    private String[] postScanExcludes;
 
     private boolean enableImplicitUnpack = true;
 
@@ -41,10 +47,10 @@ public class InventoryScanReport extends InventoryReport {
 
     @Override
     public boolean createReport() throws IOException {
-        Inventory globalInventory = readGlobalInventory();
+        final Inventory globalInventory = readGlobalInventory();
 
-        DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
-                inputDirectory, scanDirectory, scanIncludes, scanExcludes, globalInventory);
+        final DirectoryInventoryScan directoryScan = new DirectoryInventoryScan(
+                inputDirectory, scanDirectory, scanIncludes, scanExcludes, postScanExcludes, globalInventory);
         directoryScan.setEnableImplicitUnpack(isEnableImplicitUnpack());
         directoryScan.setIncludeEmbedded(isIncludeEmbedded());
         directoryScan.setEnableDetectComponentPatterns(isEnableDetectComponentPatterns());
@@ -68,61 +74,4 @@ public class InventoryScanReport extends InventoryReport {
         // produce reports and write files to disk
         return super.createReport(globalInventory, scanInventory);
     }
-
-    public void setScanDirectory(File scanDirectory) {
-        this.scanDirectory = scanDirectory;
-    }
-
-    public void setInputDirectory(File inputDirectory) {
-        this.inputDirectory = inputDirectory;
-    }
-
-    public void setScanIncludes(String[] scanIncludes) {
-        this.scanIncludes = scanIncludes;
-    }
-
-    public void setScanExcludes(String[] scanExcludes) {
-        this.scanExcludes = scanExcludes;
-    }
-
-    public void setEnableImplicitUnpack(boolean enableImplicitUnpack) {
-        this.enableImplicitUnpack = enableImplicitUnpack;
-    }
-
-    public void setIncludeEmbedded(boolean includeEmbedded) {
-        this.includeEmbedded = includeEmbedded;
-    }
-
-    public void setEnableDetectComponentPatterns(boolean enableDetectComponentPatterns) {
-        this.enableDetectComponentPatterns = enableDetectComponentPatterns;
-    }
-
-    public boolean isEnableDetectComponentPatterns() {
-        return enableDetectComponentPatterns;
-    }
-
-    public boolean isEnableImplicitUnpack() {
-        return enableImplicitUnpack;
-    }
-
-    public String[] getScanExcludes() {
-        return scanExcludes;
-    }
-
-    public String[] getScanIncludes() {
-        return scanIncludes;
-    }
-
-    public File getScanDirectory() {
-        return scanDirectory;
-    }
-
-    public File getInputDirectory() {
-        return inputDirectory;
-    }
-
-    public boolean isIncludeEmbedded() {
-        return includeEmbedded;
-    }
-
 }
