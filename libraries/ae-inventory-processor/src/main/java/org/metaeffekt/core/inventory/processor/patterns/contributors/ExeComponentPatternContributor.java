@@ -88,6 +88,7 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
 
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, exeName);
+        cpd.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, exeName);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, unpackedExeDirAnchorPath);
         cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
         cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_EXECUTABLE);

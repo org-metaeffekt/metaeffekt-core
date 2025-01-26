@@ -67,7 +67,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         final ArrayList<String> assetIdChain = new ArrayList<>();
 
         // trigger an initial scan from basedir
-        fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), fileSystemScanContext.getVirtualContext(), assetIdChain));
+        fileSystemScanContext.push(new DirectoryScanTask(fileSystemScanContext.getBaseDir(), assetIdChain));
 
         awaitTasks();
 
@@ -284,25 +284,17 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
     public void mergeDuplicates(Inventory inventory) {
 
-        modulateAssetPath(inventory);
+        modulateArtifactRootPaths(inventory);
 
         final Map<String, List<Artifact>> stringListMap = buildQualifierArtifactMap(inventory);
 
         for (List<Artifact> list : stringListMap.values()) {
             Artifact artifact = list.get(0);
 
-            Set<String> paths = ConcurrentHashMap.newKeySet();
-            addPath(artifact, paths);
             for (int i = 1; i < list.size(); i++) {
                 final Artifact a = list.get(i);
                 inventory.getArtifacts().remove(a);
                 artifact.merge(a);
-                addPath(a, paths);
-            }
-
-            if (!paths.isEmpty()) {
-                artifact.setProjects(paths);
-                artifact.set(KEY_PATH_IN_ASSET, paths.stream().sorted(String::compareToIgnoreCase).collect(Collectors.joining("|\n")));
             }
         }
 
@@ -315,15 +307,19 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
      * Normalize PATH_IN_ASSET. Only strips-off square brackets from last element. Does not introduce
      * anything new.
      *
-     * @param inventory The inventory with artiacts to normalize.
+     * @param inventory The inventory with artifacts to normalize.
      */
-    private static void modulateAssetPath(Inventory inventory) {
+    private static void modulateArtifactRootPaths(Inventory inventory) {
         for (Artifact artifact : inventory.getArtifacts()) {
-            final String relativePath = artifact.get(KEY_PATH_IN_ASSET);
-            if (!StringUtils.isBlank(relativePath)) {
-                final String modulatedRelativePath = stripSquareBraketsFromLastElement(relativePath);
-                artifact.set(KEY_PATH_IN_ASSET, modulatedRelativePath);
+            Set<String> modulatedSet = new HashSet<>();
+            final Set<String> relativePaths = artifact.getArtifactRootPaths();
+            for (String path : relativePaths) {
+                if (!StringUtils.isBlank(path)) {
+                    final String modulatedRelativePath = stripSquareBraketsFromLastElement(path);
+                    modulatedSet.add(modulatedRelativePath);
+                }
             }
+            artifact.setArtifactRootPaths(modulatedSet);
         }
     }
 
@@ -380,13 +376,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         return a.getId() + "/" + a.get(Artifact.Attribute.PATH_IN_ASSET);
     }
 
-    private static void addPath(Artifact a, Set<String> paths) {
-        String path = a.get(KEY_PATH_IN_ASSET);
-        if (StringUtils.isNotBlank(path)) {
-            paths.add(path);
-        }
-    }
-
     public Map<String, List<Artifact>> buildQualifierArtifactMap(Inventory inventory) {
         final Map<String, List<Artifact>> qualifierArtifactMap = new LinkedHashMap<>();
 
@@ -405,7 +394,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
      *
      * @param artifact The artifact to produce the qualifiers for.
      *
-     * @return Set of qalifiers for the given artifact.
+     * @return Set of qualifiers for the given artifact.
      */
     public Set<String> qualifiersOf(Artifact artifact) {
         final Set<String> qualifiers = new HashSet<>();

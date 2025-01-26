@@ -28,7 +28,7 @@ import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VIRTUAL_ROOT_PATH;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ARTIFACT_ROOT_PATHS;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
@@ -38,16 +38,14 @@ public class MatchResult {
 
     public final File anchorFile;
     public final File scanRootDir;
-    public final File virtualRootDir;
     public final File versionAnchorRootDir;
 
     public String assetIdChain;
 
-    public MatchResult(ComponentPatternData componentPatternData, File anchorFile, File scanRootDir, File virtualRootDir, File versionAnchorRootDir, String assetIdChain) {
+    public MatchResult(ComponentPatternData componentPatternData, File anchorFile, File scanRootDir, File versionAnchorRootDir, String assetIdChain) {
         this.componentPatternData = componentPatternData;
         this.anchorFile = anchorFile;
         this.scanRootDir = scanRootDir;
-        this.virtualRootDir = virtualRootDir;
         this.versionAnchorRootDir = versionAnchorRootDir;
         this.assetIdChain = assetIdChain;
     }
@@ -60,13 +58,21 @@ public class MatchResult {
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
 
         final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
-        final String virtualRootPath = asRelativePath(scanRootDir.getPath(), virtualRootDir.getPath());
+        final String virtualRootPath = asRelativePath(scanRootDir.getPath(), versionAnchorRootDir.getPath());
 
         derivedArtifact.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), relativePath);
         derivedArtifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, assetIdChain);
 
         derivedArtifact.set(ATTRIBUTE_KEY_ARTIFACT_PATH, relativePath);
-        derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, virtualRootPath);
+
+        String pathInAsset = relativePath;
+        final String componentPartPath = componentPatternData.get(COMPONENT_PART_PATH);
+        if (!StringUtils.isBlank(componentPartPath)) {
+            pathInAsset += "/" + componentPartPath;
+        }
+        derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, pathInAsset);
+
+        derivedArtifact.set(ARTIFACT_ROOT_PATHS, virtualRootPath);
 
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));

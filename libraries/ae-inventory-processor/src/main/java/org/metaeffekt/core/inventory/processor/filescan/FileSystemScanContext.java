@@ -58,12 +58,6 @@ public class FileSystemScanContext {
     @Setter
     private FileSystemScanTaskListener scanTaskListener;
 
-    /**
-     * Virtual contexts are used to get the virtual root path of a file.
-     */
-    @Getter
-    private final VirtualContext virtualContext;
-
     @Getter
     private final Map<String, String> pathToAssetIdMap = new ConcurrentHashMap<>();
 
@@ -72,7 +66,6 @@ public class FileSystemScanContext {
     public FileSystemScanContext(FileRef baseDir, FileSystemScanParam scanParam) {
         this.baseDir = baseDir;
         this.scanParam = scanParam;
-        this.virtualContext = new VirtualContext(baseDir);
         this.inventory = new Inventory();
     }
 
