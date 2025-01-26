@@ -35,38 +35,9 @@ public class IdMismatchesVersion implements NamedBasePredicate<Artifact> {
     public static boolean evaluate(Artifact artifact) {
         final String version = artifact.get(Artifact.Attribute.VERSION);
         final String id = artifact.get(Artifact.Attribute.ID);
-        if (!id.toLowerCase().endsWith(".jar")) return false;
-        LOG.info("matching id: " + id + " with version: " + version);
-        String basename = id.substring(0, id.length() - 4);
-        Matcher m = PATTERN.matcher(basename);
-        if (m.find()) {
-            String[] partsOfId = m.group(0).split("\\.");
-            String[] partsOfVersion = version.split("\\.");
-            return compare(partsOfId, partsOfVersion);
-        }
-        return false;
-    }
 
-    private static boolean compare(String[] partsOfId, String[] partsOfVersion) {
-        if (partsOfId.length != partsOfVersion.length) {
-            LOG.error("Length of version / id parts not equal");
-            return true;
-        }
-        for (int i = 0; i < partsOfId.length; i++) {
-            if (compare(partsOfId[i], partsOfVersion[i])) return true;
-        }
-        return false;
-    }
-
-    private static boolean compare(String idString, String versionString) {
-        // TODO: This is a verbose version of idString==versionString. But it should show the concept for complex comparison (e.g. v1 at least v2)
-        if (StringUtils.isNumeric(idString) && StringUtils.isNumeric(versionString)) {
-            int id = Integer.parseInt(idString);
-            int version = Integer.parseInt(versionString);
-            return !(id == version);
-        } else {
-            return !idString.equalsIgnoreCase(versionString);
-        }
+        // the check here is quite simple; generous
+        return !id.contains(version);
     }
 
     @Override
