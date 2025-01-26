@@ -48,7 +48,7 @@ public class ContainerAssetContributor extends ComponentPatternContributor {
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
 
         try {
             final File manifestFile = new File(baseDir, relativeAnchorPath);

@@ -74,7 +74,8 @@ public class DirectoryInventoryScanTest {
         assertThat(resultInventory.findArtifact("A Files")).isNotNull();
         assertThat(resultInventory.findArtifact("b.txt")).isNull();
         assertThat(resultInventory.findArtifact("B Files")).isNotNull();
-        assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").getProjects()).hasSize(1);
+        assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").
+                getArtifactRootPaths()).hasSize(1);
 
         assertThat(resultInventory.findArtifact("Please not")).isNull();
 

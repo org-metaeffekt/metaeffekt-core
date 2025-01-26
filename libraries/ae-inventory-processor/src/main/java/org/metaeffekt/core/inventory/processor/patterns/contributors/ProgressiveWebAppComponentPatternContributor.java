@@ -47,7 +47,7 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
 
         try {

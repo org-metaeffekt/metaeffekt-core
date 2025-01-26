@@ -52,15 +52,15 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        return contribute(baseDir, virtualRootPath, relativeAnchorPath, anchorChecksum, new EvaluationContext());
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+        return contribute(baseDir, relativeAnchorPath, anchorChecksum, new EvaluationContext());
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum, EvaluationContext context) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum, EvaluationContext context) {
 
         try {
-            virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, SUFFIX_LIST);
+            String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, SUFFIX_LIST);
 
             final String contextSemaphore = getClass().getCanonicalName() + "-" + virtualRootPath ;
 

@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.metaeffekt.core.inventory.processor.linux.LinuxDistributionUtil;
@@ -27,11 +26,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -307,27 +304,6 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return entries;
     }
 
-    public boolean hasFileChanged(String virtualRootPath, String relativeFilePath, String md5Checksum) {
-        File toCheck = new File(virtualRootPath, relativeFilePath);
-
-        return hasFileChangedMd5(toCheck, md5Checksum);
-    }
-
-    public boolean hasFileChangedMd5(File toCheck, String knownChecksum) {
-        if (toCheck.exists()) {
-            final Path path = toCheck.toPath();
-            try (InputStream inputStream = Files.newInputStream(path)) {
-                final String calculatedDigest = DigestUtils.md5Hex(inputStream);
-                return knownChecksum.equals(calculatedDigest);
-            } catch (IOException e) {
-                LOG.debug("Could not check digest for supposed package file at [{}]. Assuming changed.", toCheck.getPath());
-            }
-        }
-
-        // true in case the file does not exist (deleted) or does not match the expected checkum.
-        return true;
-    }
-
     public ComponentPatternData createComponentPattern(String versionAnchor,
                                                        DpkgStatusFileEntry entry,
                                                        String checksum,
@@ -368,14 +344,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     /**
      * Reads list of files that were in this package and tries to create an include pattern.
      *
-     * @param virtualRootPath the virtual "root" that pseudo-absolute paths will be based on
-     * @param checksum the checksum of the anchor
      * @param entry the entry in the corresponding status file
      * @param correspondingMd5sumsFile the corresponding md5sums file
      *
      * @return a joiner with resulting include patterns or null on failure
      */
-    public StringJoiner createIncludePatternsFromHashFile(String virtualRootPath, String checksum,
+    public StringJoiner createIncludePatternsFromHashFile(
               DpkgStatusFileEntry entry, File correspondingMd5sumsFile) {
 
         // prepare file list
@@ -384,7 +358,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         if (correspondingMd5sumsFile.exists()) {
             try (Stream<String> lineStream = Files.lines(correspondingMd5sumsFile.toPath(), StandardCharsets.UTF_8)) {
                 // streamlines so we don't need to preload to memory
-                lineStream.forEachOrdered(line -> append(virtualRootPath, checksum, correspondingMd5sumsFile, line, fileJoiner));
+                lineStream.forEachOrdered(line -> append(correspondingMd5sumsFile, line, fileJoiner));
             } catch (Exception e) {
                 LOG.info("Could not read file list for entry with name [{}]: {}", entry.packageName, e.getMessage());
             }
@@ -408,7 +382,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         return fileJoiner;
     }
 
-    private void append(String virtualRootPath, String checksum, File correspondingMd5sumsFile, String line, StringJoiner fileJoiner) {
+    private void append(File correspondingMd5sumsFile, String line, StringJoiner fileJoiner) {
         try {
             // definitely cut off the hash before adding...
             int spaceSeparatorIndex = line.indexOf("  ");
@@ -472,12 +446,11 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     }
 
     public List<ComponentPatternData> contributeStatusFileBased(File baseDir,
-                                                                String virtualRootPath,
                                                                 String relativeAnchorFilePath,
                                                                 String checksum) {
         final File anchorFile = new File(baseDir, relativeAnchorFilePath);
 
-        virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
+        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorFilePath, PATH_FRAGMENTS);
 
         List<DpkgStatusFileEntry> entries;
         try {
@@ -534,8 +507,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             }
 
             // create patterns
-            StringJoiner includePatternsJoiner = createIncludePatternsFromHashFile(
-                    virtualRootPath, checksum, entry, correspondingMd5sumsFile);
+            StringJoiner includePatternsJoiner = createIncludePatternsFromHashFile(entry, correspondingMd5sumsFile);
 
             if (includePatternsJoiner == null) {
                 // something went wrong. skip without adding.
@@ -560,12 +532,12 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
     /**
      * Tries to get metadata from dpkg status.d. Useful for "distroless" images.<br>
      * Hacked together to support a system that didn't have a status file but only a status.d.
-     * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
-     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
-     * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
-     * @param virtualRootPath same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @param baseDir same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param relativeAnchorFilePath same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param checksum same as {@link ComponentPatternContributor#contribute(File, String, String)}
+     * @param virtualRootPath same as {@link ComponentPatternContributor#contribute(File, String, String)}
      *
-     * @return same as {@link ComponentPatternContributor#contribute(File, String, String, String)}
+     * @return same as {@link ComponentPatternContributor#contribute(File, String, String)}
      */
     public List<ComponentPatternData> contributeStatusDirectoryBased(File baseDir,
                  String virtualRootPath, String relativeAnchorFilePath,String checksum) {
@@ -619,7 +591,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
             return Collections.emptyList();
         }
 
-        StringJoiner includesJoiner = createIncludePatternsFromHashFile(virtualRootPath, checksum, entry, md5sumsFile);
+        StringJoiner includesJoiner = createIncludePatternsFromHashFile(entry, md5sumsFile);
 
         ComponentPatternData cpd = createComponentPattern(
                 org.metaeffekt.core.util.FileUtils.asRelativePath(virtualRoot, md5sumsFile),
@@ -637,7 +609,7 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorFilePath, String checksum) {
         if (relativeAnchorFilePath.endsWith("status")) {
-            return contributeStatusFileBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
+            return contributeStatusFileBased(baseDir, relativeAnchorFilePath, checksum);
         } else if (relativeAnchorFilePath.endsWith(".md5sums")) {
             return contributeStatusDirectoryBased(baseDir, virtualRootPath, relativeAnchorFilePath, checksum);
         } else {

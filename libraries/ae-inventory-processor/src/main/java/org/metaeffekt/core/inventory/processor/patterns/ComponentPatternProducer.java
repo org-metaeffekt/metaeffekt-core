@@ -163,10 +163,8 @@ public class ComponentPatternProducer {
 
             try {
                 // try to apply contributors
-                final String virtualRootPath = artifact.get(ARTIFACT_ROOT_PATHS);
-
                 final List<ComponentPatternData> componentPatternDataList =
-                        runner.collectApplicable(baseDir, virtualRootPath, pathInContext, checksum, evaluationContext);
+                        runner.collectApplicable(baseDir, pathInContext, checksum, evaluationContext);
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {

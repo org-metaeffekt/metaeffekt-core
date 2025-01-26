@@ -52,7 +52,7 @@ public class ExeComponentPatternContributor extends ComponentPatternContributor 
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File detectedFile = new File(baseDir, relativeAnchorPath);
 
         // step up path until we match the exe pattern

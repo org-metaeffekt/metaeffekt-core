@@ -43,7 +43,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
 
         if (!packageDir.exists() || !packageDir.isDirectory()) {
@@ -53,6 +53,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
         try {
             final List<ComponentPatternData> components = new ArrayList<>();
+            final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, suffixes);
 
             Path virtualRoot = new File(virtualRootPath).toPath();
             Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
