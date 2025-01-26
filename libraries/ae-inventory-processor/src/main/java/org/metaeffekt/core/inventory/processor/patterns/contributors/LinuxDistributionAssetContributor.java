@@ -52,15 +52,20 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
     }
 
     @Override
+    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+        return contribute(baseDir, virtualRootPath, relativeAnchorPath, anchorChecksum, new EvaluationContext());
+    }
+
+    @Override
     public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum, EvaluationContext context) {
 
         try {
             virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, SUFFIX_LIST);
 
-            final String contextSemapshore = getClass().getCanonicalName() + "-" + virtualRootPath ;
+            final String contextSemaphore = getClass().getCanonicalName() + "-" + virtualRootPath ;
 
             // skip if context is already processed
-            if (context.isProcessed(contextSemapshore)) return Collections.emptyList();
+            if (context.isProcessed(contextSemaphore)) return Collections.emptyList();
 
             final File distroBaseDir = ".".equals(virtualRootPath) ? baseDir : new File(baseDir, virtualRootPath);
             final LinuxDistributionUtil.LinuxDistro linuxDistro = LinuxDistributionUtil.parseDistro(distroBaseDir);
@@ -95,7 +100,7 @@ public class LinuxDistributionAssetContributor extends ComponentPatternContribut
 
                 cpd.setExpansionInventorySupplier(() -> createAssetInventory(baseDir, distroBaseDir, linuxDistro));
 
-                context.registerProcessed(contextSemapshore);
+                context.registerProcessed(contextSemaphore);
 
                 return Collections.singletonList(cpd);
             }
