@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>test-pom-report</artifactId>
-    <version>0.135-SNAPSHOT</version>
+    <version>0.135.1</version>
     <packaging>jar</packaging>
     <name>ae-test-pom-report</name>
 
     <properties>
-        <ae.core.version>0.135-SNAPSHOT</ae.core.version>
+        <ae.core.version>0.135.1</ae.core.version>
     </properties>
 
     <build>
