@@ -83,16 +83,16 @@ public class DocumentDescriptorReport {
      */
     protected void createReport(DocumentDescriptor documentDescriptor) throws IOException {
         if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
         }
         if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
         }
         if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
         }
         if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), deriveTemplateBaseDir(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
+            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
         }
     }
 
@@ -147,25 +147,23 @@ public class DocumentDescriptorReport {
      *
      * @param documentDescriptor the document descriptor containing the metadata for report generation
      * @param adapters the adapters holding additional properties to be used in the templates
-     * @param templateBaseDir the base directory for loading the template files
      * @param templateGroup the group of templates to be applied for report generation
      * @throws IOException if there is an error reading templates or writing reports
      */
-    protected void writeReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
-                    String templateBaseDir, String templateGroup) throws IOException {
+    protected void writeReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters, String templateGroup) throws IOException {
 
         addPropertiesToAdapter(documentDescriptor, adapters);
 
         final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        final String vtClasspathResourcePattern = templateBaseDir + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
+        final String vtClasspathResourcePattern = TEMPLATES_BASE_DIR + SEPARATOR_SLASH + templateGroup + SEPARATOR_SLASH + PATTERN_ANY_VT;
         final Resource[] resources = resolver.getResources(vtClasspathResourcePattern);
-        final Resource parentResource = resolver.getResource(templateBaseDir);
+        final Resource parentResource = resolver.getResource(TEMPLATES_BASE_DIR);
         final String parentPath = parentResource.getURI().toASCIIString();
 
         for (Resource r : resources) {
             String filePath = r.getURI().toASCIIString();
             String path = filePath.replace(parentPath, "");
-            filePath = templateBaseDir + path;
+            filePath = TEMPLATES_BASE_DIR + path;
             String targetFileName = r.getFilename().replace(".vt", "");
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
