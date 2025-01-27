@@ -15,17 +15,17 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,10 +50,11 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
     public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
 
+        // FIXME-AOE: revise exception handling; deviations from JSON syntax should only be logged on DEBUG level
         try {
             // construct component pattern
             final ComponentPatternData componentPatternData = new ComponentPatternData();
-            final String manifestContent = new String(Files.readAllBytes(Paths.get(anchorFile.getPath())), StandardCharsets.UTF_8);
+            final String manifestContent = FileUtils.readFileToString(anchorFile, FileUtils.ENCODING_UTF_8);
 
             Path parentPath = anchorFile.getParentFile().toPath();
             File contributeFile = new File(parentPath.toFile(), "contribute.json");
@@ -64,17 +65,12 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             String license = null;
             try {
                 name = jsonObject.getString("name");
-            } catch (Exception e) {
+            } catch (JSONException e) {
                 LOG.info("Could not find name in manifest.json. Trying to find name in contribute.json file: [{}]", contributeFile.getAbsolutePath());
                 if (contributeFile.exists()) {
-                    final String contributeContent = new String(Files.readAllBytes(Paths.get(contributeFile.getPath())), StandardCharsets.UTF_8);
+                    final String contributeContent = FileUtils.readFileToString(contributeFile, FileUtils.ENCODING_UTF_8);
                     final JSONObject contributeJsonObject = new JSONObject(contributeContent);
-                    try {
-                        name = contributeJsonObject.getString("name");
-                    } catch (Exception e2) {
-                        LOG.warn("Unable to parse progressive web application name [{}]: {}", anchorFile.getAbsolutePath(), e2.getMessage());
-                        return Collections.emptyList();
-                    }
+                    name = contributeJsonObject.getString("name");
                 }
             }
 
@@ -84,16 +80,12 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
                 File versionFile = new File(parentPath.toFile(), "version");
                 LOG.info("Could not find version in manifest.json. Trying to find version in version file: [{}]", versionFile.getAbsolutePath());
                 if (versionFile.exists() && versionFile.isFile()) {
-                    try (Stream<String> lines = Files.lines(versionFile.toPath())) {
-                        for (String line : lines.collect(Collectors.toList())) {
-                            if (!line.isEmpty()) {
-                                version = line;
-                                break;
-                            }
+                    Stream<String> lines = Files.lines(versionFile.toPath());
+                    for (String line : lines.collect(Collectors.toList())) {
+                        if (!line.isEmpty()) {
+                            version = line;
+                            break;
                         }
-                    } catch (Exception e2) {
-                        LOG.warn("Unable to parse progressive web application version [{}]: {}", versionFile.getAbsolutePath(), e2.getMessage());
-                        return Collections.emptyList();
                     }
                 } else {
                     LOG.warn("Unable to parse progressive web application version [{}]: {}", anchorFile.getAbsolutePath(), e.getMessage());
@@ -106,14 +98,9 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             } catch (Exception e) {
                 LOG.info("Could not find license in manifest.json. Trying to find license in contribute.json file: [{}]", contributeFile.getAbsolutePath());
                 if (contributeFile.exists()) {
-                    final String contributeContent = new String(Files.readAllBytes(Paths.get(contributeFile.getPath())), StandardCharsets.UTF_8);
+                    final String contributeContent = FileUtils.readFileToString(contributeFile, FileUtils.ENCODING_UTF_8);
                     final JSONObject contributeJsonObject = new JSONObject(contributeContent);
-                    try {
-                        license = contributeJsonObject.getJSONObject("repository").getString("license");
-                    } catch (Exception e2) {
-                        LOG.warn("Unable to parse progressive web application license [{}]: {}", anchorFile.getAbsolutePath(), e2.getMessage());
-                        return Collections.emptyList();
-                    }
+                    license = contributeJsonObject.getJSONObject("repository").getString("license");
                 }
             }
 
@@ -132,6 +119,9 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, TYPE_VALUE_PWA);
 
             return Collections.singletonList(componentPatternData);
+        } catch (JSONException e) {
+            LOG.debug("Unable to parse progressive web application [{}]: {}", anchorFile.getAbsolutePath(), e.getMessage());
+            return Collections.emptyList();
         } catch (Exception e) {
             LOG.warn("Unable to parse progressive web application [{}]: {}", anchorFile.getAbsolutePath(), e.getMessage());
             return Collections.emptyList();

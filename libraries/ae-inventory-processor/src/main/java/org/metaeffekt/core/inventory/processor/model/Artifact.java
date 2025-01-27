@@ -34,7 +34,10 @@ public class Artifact extends AbstractModelBase {
     // FIXME: revise attribute name projects; should be paths (in asset)
     public static final String PATH_DELIMITER_REGEXP = "\\|\n";
 
+    @Deprecated // use PATH_DELIMITER
     public static final String PROJECT_DELIMITER = "|\n";
+
+    public static final String PATH_DELIMITER = "|\n";
 
     /**
      * Core attributes to support component patterns.
@@ -79,12 +82,23 @@ public class Artifact extends AbstractModelBase {
         PATH_IN_ASSET("Path in Asset"),
 
         /**
-         * A Artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated. In this
-         * case the path points to a folder. In  case of an artifact being represented by a single file. The Artifact
+         * An Artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated.  In this
+         * case the path points to a folder. In case of an artifact being represented by a single file. The Artifact
          * Root Path points to the file (and in this case is redundant with “Evidence” as long as Evidence is present).
          * Multiple values are supported (to enable multiple contributors / representations).
          *
-         * Evidence is current named Projects and will be changed asap.
+         * Evidence is currently named Projects and will be changed asap.
+         *
+         * FIXME: may require a complex structure to be able to manage multiple contributors on the same artifact;
+         *   we could store the the version anchor and the matched root path for multiple identifications to differentiate
+         *   different pattern sets
+         *
+         * NOTE: We require to distinguih three cases here:
+         * 1: component-pattern-based identification (group of files; differentiates by anchorFile)
+         * 2: file-based identification (single file; differentiated by path)
+         * 3: logical-artifact identification (dependency in a descriptor or lock file); no value; not differentiated
+         *
+         * In the case of 3 PATH_IN_ASSET and/or EVIDENCES will provide further details for identification.
          */
         ARTIFACT_ROOT_PATHS("Artifact Root Paths"),
 
@@ -162,7 +176,7 @@ public class Artifact extends AbstractModelBase {
     }
 
     public void setArtifactRootPaths(Set<String> paths) {
-        set(Attribute.ARTIFACT_ROOT_PATHS, paths.stream().collect(Collectors.joining(PROJECT_DELIMITER)));
+        set(Attribute.ARTIFACT_ROOT_PATHS, paths.stream().collect(Collectors.joining(PATH_DELIMITER)));
     }
 
     public String getComponent() {
