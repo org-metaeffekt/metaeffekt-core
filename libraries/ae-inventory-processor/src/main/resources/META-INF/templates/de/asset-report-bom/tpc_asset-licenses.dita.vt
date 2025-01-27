@@ -27,9 +27,9 @@
     #end
     #if ($assetData.isIncludesOpenCoDESimilarLicense())
         <fn id="id-opencode-similar">
-            Open CoDE erm&#246;glicht eine abgeleitete Freigabe bei Lizenz-&#196;hnlichkeit. Siehe
-            <xref href="https://opencode.de/de/wissen/rahmenbedingungen/standardisierte-open-source-lizenzen" type="html" scope="external">
-                https://opencode.de/de/wissen/rahmenbedingungen/standardisierte-open-source-lizenzen</xref> Hinweise zu Lizenz-&#196;hnlichkeit, Unterpunkt L&#196;.4.
+            Open CoDE erm&#246;glicht eine abgeleitete Freigabe bei Lizenz-&#196;hnlichkeit.
+            Siehe <xref href="https://opencode.de/wissen/rahmenbedingungen/standardisierte-open-source-lizenzen#1.-Freigabemethodik-und-Beschreibung-zur-Nutzung-der-Lizenzliste" type="html"
+                scope="external">https://opencode.de/de/wissen/rahmenbedingungen/standardisierte-open-source-lizenzen</xref>, Abschnitt "Hinweise zu Lizenz-&#196;hnlichkeit", Unterpunkt L&#196;.4.
         </fn>
     #end
 
