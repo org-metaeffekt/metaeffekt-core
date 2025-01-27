@@ -100,9 +100,8 @@ public class DirectoryScanAggregatorConfiguration {
 
                 filePatternQualifierMapper.setFiles(componentPatternFiles);
             } else {
-                // handle artifacts that cannot be mapped to files by component patterns;
-                // we need that the inventory is completely represented even in case no files are directly or indirectly
-                // associated
+                // handle artifacts that cannot be mapped to files by component patterns; we need that the inventory is
+                // completely represented even in case no files are directly or indirectly associated
                 filePatternQualifierMapper.setFileMap(Collections.emptyMap());
                 filePatternQualifierMapper.setFiles(Collections.emptyList());
             }

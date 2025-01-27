@@ -42,7 +42,7 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
         add("/web-inf/web.xml");
     }});
 
-        @Override
+    @Override
     public boolean applies(String pathInContext) {
         return pathInContext.toLowerCase(PATH_LOCALE).endsWith("/web-inf/web.xml");
     }

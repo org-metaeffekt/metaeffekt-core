@@ -143,7 +143,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
         }
         componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json, **/apps/**/**/*.json");
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json");
 
         // check whether alternatively a yarn.lock file is available
         File yarnLock = new File(anchorParentDir, "yarn.lock");

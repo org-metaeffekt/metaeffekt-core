@@ -71,6 +71,8 @@ public class ComponentPatternValidator {
     private static void detectDuplicateFiles(Map<String, Set<File>> qualifierToFilesMap,
              List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
 
+        // FIXME-AOE: revise; this (at least the intersection computation) can be optimized to consume half the
+        //  processing time; we are checking n against m and m against n
         for (String parentQualifier : qualifierToFilesMap.keySet()) {
             final Set<File> parentFiles = qualifierToFilesMap.get(parentQualifier);
 
@@ -85,19 +87,20 @@ public class ComponentPatternValidator {
         }
     }
 
-    private static Set<File> computeIntersection(Set<File> leftSet, Set<File> set2) {
+    private static Set<File> computeIntersection(Set<File> leftSet, Set<File> rightSet) {
         final Set<File> intersection = new HashSet<>(leftSet);
-        intersection.retainAll(set2);
+        intersection.retainAll(rightSet);
         return intersection;
     }
 
     private static void identifyAndLogSubsets(String parentQualifier, String childQualifier,
-                                              Map<String, Set<File>> qualifierToComponentPatternFilesMap,
-                                              List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
-        Map<File, String[]> filesToRemoveFromParent = new HashMap<>();
-        Set<File> duplicateAllowedFiles = new HashSet<>();
-        Set<File> removedParentFiles = new HashSet<>(qualifierToComponentPatternFilesMap.get(childQualifier));
-        Set<File> sharedExcludedFiles = new HashSet<>();
+          Map<String, Set<File>> qualifierToComponentPatternFilesMap, List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
+
+        final Map<File, String[]> filesToRemoveFromParent = new HashMap<>();
+        final Set<File> duplicateAllowedFiles = new HashSet<>();
+        final Set<File> removedParentFiles = new HashSet<>(qualifierToComponentPatternFilesMap.get(childQualifier));
+        final Set<File> sharedExcludedFiles = new HashSet<>();
+
         removedParentFiles.removeAll(qualifierToComponentPatternFilesMap.get(parentQualifier));
 
         // process removedParentFiles for exclude patterns
@@ -120,20 +123,16 @@ public class ComponentPatternValidator {
         }
     }
 
-    private static void moveFilesToDuplicateAllowed(String qualifier,
-                                                    List<FilePatternQualifierMapper> filePatternQualifierMapperList,
-                                                    Set<File> duplicateAllowedFiles) {
-        for (File file : duplicateAllowedFiles) {
-            for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
-                if (filePatternQualifierMapper.getQualifier().equals(qualifier)) {
-                    final Map<Boolean, List<File>> fileMap = filePatternQualifierMapper.getFileMap();
-                    fileMap.get(false).remove(file);
-                    if (fileMap.get(true) == null) {
-                        fileMap.put(true, new ArrayList<>(Collections.singletonList(file)));
-                    } else if (!fileMap.get(true).contains(file)) {
-                        fileMap.get(true).add(file);
-                    }
+    private static void moveFilesToDuplicateAllowed(
+            String qualifier, List<FilePatternQualifierMapper> filePatternQualifierMapperList, Set<File> duplicateAllowedFiles) {
+
+        for (final FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
+            if (filePatternQualifierMapper.getQualifier().equals(qualifier)) {
+                final Map<Boolean, List<File>> fileMap = filePatternQualifierMapper.getFileMap();
+                for (final File file : duplicateAllowedFiles) {
                     LOG.info("Moving file [{}] to allowed duplicates for qualifier [{}].", file, qualifier);
+                    fileMap.get(false).remove(file);
+                    fileMap.computeIfAbsent(true, a -> new ArrayList<>()).add(file);
                 }
             }
         }
