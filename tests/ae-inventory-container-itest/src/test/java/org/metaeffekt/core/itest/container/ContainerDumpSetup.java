@@ -111,6 +111,12 @@ public class ContainerDumpSetup {
 
         ExecUtils.ExecMonitor execMonitor = ExecUtils.executeCommandAndWaitForProcessToTerminate(execParam);
 
+        final Integer exitCode = execMonitor.getExitCode().orElse(0);
+        if (exitCode != 0) {
+            final String output = execMonitor.getErrorOutput().orElse("<no output>");
+            throw new IOException(String.format("Command not successful; error code=%s: %s", exitCode, output));
+        }
+
         // return the accumulated output
         return execMonitor.getOutput().orElseThrow(IOException::new).trim();
     }
