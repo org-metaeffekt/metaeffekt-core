@@ -36,12 +36,12 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-public class KeycloakTest_22_0_4 extends AbstractCompositionAnalysisTest {
+public class KeycloakTest_25_0_4Test extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
         @Override
@@ -60,19 +60,18 @@ public class KeycloakTest_22_0_4 extends AbstractCompositionAnalysisTest {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
                 "quay.io/keycloak",
                 "keycloak",
-                "22.0.4",
-                KeycloakTest_22_0_4.class.getName());
+                "25.0.4",
+                KeycloakTest_25_0_4Test.class.getName());
 
         AbstractCompositionAnalysisTest.testSetup = new FolderBasedTestSetup()
                 .setSource("file://" + baseDir.getAbsolutePath())
-                .setName(KeycloakTest_22_0_4.class.getName());
+                .setName(KeycloakTest_25_0_4Test.class.getName());
     }
 
     @Ignore
     @Test
     public void clear() throws Exception {
         Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
-
     }
 
     @Ignore
@@ -83,17 +82,17 @@ public class KeycloakTest_22_0_4 extends AbstractCompositionAnalysisTest {
 
     @Test
     public void testComponentPatterns() throws Exception {
-        final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
-        final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
-        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList =
+        final Inventory inventory = testSetup.getInventory();
+        final Inventory referenceInventory = testSetup.readReferenceInventory();
+        final File baseDir = new File(testSetup.getScanFolder());
+        final List<FilePatternQualifierMapper> filePatternQualifierMapperList =
                 evaluateComponentPatterns(referenceInventory, inventory, baseDir);
-        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+        final DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
 
-        // FIXME: symlinks and .md files are now used by several artifacts
-        Assert.assertEquals(93, duplicateList.getRemainingDuplicates().size());
+        // FIXME: cfg, md, so files are being used by several artifacts
+        Assert.assertEquals(97, duplicateList.getRemainingDuplicates().size());
         Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 
@@ -103,8 +102,12 @@ public class KeycloakTest_22_0_4 extends AbstractCompositionAnalysisTest {
 
         final Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "generic-version")).hasSizeOf(1);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(408);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(42);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(404);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "rpm")).hasSizeOf(43);
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "linux-distro")).hasSizeOf(1);
+
+        // check how many artifacts have no version (harness unmapped files)
+        analysis.selectArtifacts(attributeValue(VERSION, null)).hasSizeOf(51);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
