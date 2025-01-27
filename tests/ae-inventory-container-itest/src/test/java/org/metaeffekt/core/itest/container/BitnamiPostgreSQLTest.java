@@ -101,7 +101,10 @@ public class BitnamiPostgreSQLTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
 
         final Analysis analysis = new Analysis(inventory);
-        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(19);
+
+        // FIXME-AOE: review; recently with was 19; there is one component "jar" without a PURL in the spdx file. This
+        //   component also does not make any sense
+        analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "bitnami-module")).hasSizeOf(18);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);

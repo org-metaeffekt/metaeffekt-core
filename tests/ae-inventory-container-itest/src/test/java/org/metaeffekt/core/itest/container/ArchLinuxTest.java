@@ -40,6 +40,7 @@ import java.util.function.Predicate;
 import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
+import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
@@ -102,8 +103,8 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
 
         final Analysis analysis = new Analysis(inventory);
 
-        // count artifacts without version
-        analysis.selectArtifacts(new AttributeValue(VERSION, null)).hasSizeOf(5);
+        // check how many artifacts have no version (harness unmapped files)
+        analysis.selectArtifacts(attributeValue(VERSION, null)).hasSizeOf(5);
 
         // count identified alpm packages
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "alpm")).hasSizeOf(119);
