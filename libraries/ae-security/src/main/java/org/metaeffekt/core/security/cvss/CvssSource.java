@@ -24,17 +24,17 @@ import java.util.*;
 /**
  * <h2>Background</h2>
  * <p>
- *     The new vulnerabilities and security advisories management system requires allowing any number of CVSS vectors to be stored for vulnerabilities and security advisories.
- *     These vectors are aggregated by different enrichment steps, each with different sources and potential conditions attached.
+ * The new vulnerabilities and security advisories management system requires allowing any number of CVSS vectors to be stored for vulnerabilities and security advisories.
+ * These vectors are aggregated by different enrichment steps, each with different sources and potential conditions attached.
  * </p>
  * <p>
- *     The reason behind this deferred effective CVSS vector selection process is simple: during the enrichment process, one does not yet know what vectors will be found in further steps.
- *     It is therefore impossible to decide during the process, what CVSS vectors should be used as effective vectors for a vulnerability while the process is still running.
- *     Merging them all into a single vector, as done previously, is not only incorrect, but also dangerous, since simply merging all vectors on top of each other does not allow for a conscious decision to be made by either automated rules or a human being.
+ * The reason behind this deferred effective CVSS vector selection process is simple: during the enrichment process, one does not yet know what vectors will be found in further steps.
+ * It is therefore impossible to decide during the process, what CVSS vectors should be used as effective vectors for a vulnerability while the process is still running.
+ * Merging them all into a single vector, as done previously, is not only incorrect, but also dangerous, since simply merging all vectors on top of each other does not allow for a conscious decision to be made by either automated rules or a human being.
  * </p>
  * <p>
- *     In the new system, only when a CVSS score needs to be calculated will the selection and merging actually take place using a ruleset that allows for specifying an order of preference and merging methods for certain sources.
- *     An example of this will be shown below, after the individual components have been explained.
+ * In the new system, only when a CVSS score needs to be calculated will the selection and merging actually take place using a ruleset that allows for specifying an order of preference and merging methods for certain sources.
+ * An example of this will be shown below, after the individual components have been explained.
  * </p>
  *
  * <hr>
@@ -376,20 +376,41 @@ public class CvssSource {
                     .replaceAll("(?<!\\\\)_", "-")
                     .replace("\\_", "_");
         }
+
+        default String optionalEscapedName(boolean escape) {
+            return escape ? getEscapedName() : getName();
+        }
     }
 
     public String toColumnHeaderString() {
-        final String vectorVersion;
-        try {
-            vectorVersion = CvssVector.getVersionName(vectorClass);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Unsupported CVSS version [" + vectorClass + "] in CVSS source: " + this);
+        return toColumnHeaderString(true, true);
+    }
+
+    public String toColumnHeaderString(boolean includeVersion, boolean escapeNames) {
+        final StringBuilder builder = new StringBuilder();
+
+        if (includeVersion) {
+            try {
+                final String vectorVersion = CvssVector.getVersionName(vectorClass);
+                builder.append(vectorVersion).append(" ");
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Unsupported CVSS version [" + vectorClass + "] in CVSS source: " + this);
+            }
         }
+
         if (hostingEntity == null) {
             throw new IllegalStateException("No hosting entity specified for CVSS source: " + this);
         }
 
-        return vectorVersion + " " + hostingEntity.getEscapedName() + (issuingEntityRole != null ? "-" + issuingEntityRole.getEscapedName() : "") + (issuingEntity != null ? "-" + issuingEntity.getEscapedName() : "");
+        builder.append(hostingEntity.optionalEscapedName(escapeNames));
+        if (issuingEntityRole != null) {
+            builder.append("-").append(issuingEntityRole.optionalEscapedName(escapeNames));
+        }
+        if (issuingEntity != null) {
+            builder.append("-").append(issuingEntity.optionalEscapedName(escapeNames));
+        }
+
+        return builder.toString();
     }
 
     public static String toCombinedColumnHeaderString(Collection<CvssSource> sources) {
@@ -397,6 +418,10 @@ public class CvssSource {
     }
 
     public static String toCombinedColumnHeaderString(Collection<CvssSource> sources, boolean includeVersion) {
+        return toCombinedColumnHeaderString(sources, includeVersion, true);
+    }
+
+    public static String toCombinedColumnHeaderString(Collection<CvssSource> sources, boolean includeVersion, boolean escapeNames) {
         if (sources.isEmpty()) return "";
 
         final String vectorVersion;
@@ -413,7 +438,7 @@ public class CvssSource {
 
         final StringJoiner joiner = new StringJoiner(" + ", vectorVersion, "");
         for (CvssSource source : sources) {
-            joiner.add(source.getHostingEntity().getEscapedName() + (source.getIssuingEntityRole() != null ? "-" + source.getIssuingEntityRole().getEscapedName() : "") + (source.getIssuingEntity() != null ? "-" + source.getIssuingEntity().getEscapedName() : ""));
+            joiner.add(source.getHostingEntity().optionalEscapedName(escapeNames) + (source.getIssuingEntityRole() != null ? "-" + source.getIssuingEntityRole().optionalEscapedName(escapeNames) : "") + (source.getIssuingEntity() != null ? "-" + source.getIssuingEntity().optionalEscapedName(escapeNames) : ""));
         }
         return joiner.toString();
     }
