@@ -26,6 +26,7 @@ import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
+import org.metaeffekt.core.itest.common.predicates.AttributeValue;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
@@ -37,8 +38,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT_SOURCE_TYPE;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.TYPE;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.VERSION_ANCHOR;
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
@@ -101,8 +101,15 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
 
         final Analysis analysis = new Analysis(inventory);
+
+        // count artifacts without version
+        analysis.selectArtifacts(new AttributeValue(VERSION, null)).hasSizeOf(5);
+
+        // count identified alpm packages
         analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "alpm")).hasSizeOf(119);
-        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/desc")).hasSizeGreaterThan(1);
+
+        // check that component patters with desc anchors have been identified
+        analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "desc")).hasSizeGreaterThan(1);
 
         // there must be only once container asset
         analysis.selectAssets(CONTAINER_ASSET_PREDICATE).hasSizeOf(1);
