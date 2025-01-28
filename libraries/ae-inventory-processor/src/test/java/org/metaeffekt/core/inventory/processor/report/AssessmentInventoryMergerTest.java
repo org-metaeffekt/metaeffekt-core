@@ -152,7 +152,7 @@ public class AssessmentInventoryMergerTest {
     @Test
     @Ignore
     public void customMergeTest() throws IOException {
-        final File inputDirectory = new File("/Users/ywittmann/workspace/ref/issues/2024-10-25-counting/ex-004/archive");
+        final File inputDirectory = new File("{local path required}");
 
         final AssessmentInventoryMerger merger = new AssessmentInventoryMerger();
         for (File file : FileUtils.listFiles(inputDirectory, new String[]{"xls", "xlsx"}, true)) {
