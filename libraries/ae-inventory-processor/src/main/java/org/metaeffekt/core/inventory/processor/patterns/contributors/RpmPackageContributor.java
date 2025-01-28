@@ -61,7 +61,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         File packagesFile = new File(baseDir, relativeAnchorPath);
 
         if (!packagesFile.exists()) {
@@ -69,7 +69,7 @@ public class RpmPackageContributor extends ComponentPatternContributor {
             return Collections.emptyList();
         }
 
-        virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, PATH_FRAGMENTS);
+        String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, PATH_FRAGMENTS);
 
         try {
             BlockingQueue<Entry> entries = getEntries(packagesFile);

@@ -82,8 +82,9 @@ public class ContainerDumpSetup {
 
             try {
                 executeCommand(new String[] {"docker", "save", imageName, "-o", outputFilePath});
+                FileUtils.validateExists(outputFile);
                 LOG.info("Saved container [{}] to file [{}].", imageName, outputFilePath);
-            } catch (IOException | InterruptedException e) {
+            } catch (IOException | IllegalStateException | InterruptedException e) {
                 throw new RuntimeException("Failed to save container filesystem.", e);
             }
         }
@@ -109,6 +110,12 @@ public class ContainerDumpSetup {
         execParam.retainOutputs();
 
         ExecUtils.ExecMonitor execMonitor = ExecUtils.executeCommandAndWaitForProcessToTerminate(execParam);
+
+        final Integer exitCode = execMonitor.getExitCode().orElse(0);
+        if (exitCode != 0) {
+            final String output = execMonitor.getErrorOutput().orElse("<no output>");
+            throw new IOException(String.format("Command not successful; error code=%s: %s", exitCode, output));
+        }
 
         // return the accumulated output
         return execMonitor.getOutput().orElseThrow(IOException::new).trim();

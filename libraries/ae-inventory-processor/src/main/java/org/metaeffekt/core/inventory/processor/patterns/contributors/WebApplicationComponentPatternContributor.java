@@ -42,12 +42,13 @@ public class WebApplicationComponentPatternContributor extends ComponentPatternC
         add("/web-inf/web.xml");
     }});
 
-        @Override
+    @Override
     public boolean applies(String pathInContext) {
         return pathInContext.toLowerCase(PATH_LOCALE).endsWith("/web-inf/web.xml");
     }
 
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    @Override
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         try {
             final File anchorFile = new File(baseDir, relativeAnchorPath);
             final File contextBaseDir = anchorFile.getParentFile().getParentFile();

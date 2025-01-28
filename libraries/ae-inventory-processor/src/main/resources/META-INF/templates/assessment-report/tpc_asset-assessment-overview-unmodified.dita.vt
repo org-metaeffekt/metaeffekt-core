@@ -1,0 +1,24 @@
+## load macros from other files
+#parse("META-INF/templates/labels-vulnerability-assessment/macros/labels.vm")
+#parse("META-INF/templates/assessment-report/macros/assessment-report.vm")
+##
+## main template content
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_asset-assessment-overview-$reportContext.id">
+    <title>$reportContext.combinedTitle($utils.getText("assessment-report.short.associated-vuln-by-asset"), true)</title>
+##
+    #set($assets = $assessmentReportAdapter.getAssets())
+
+
+    ##
+    <body>
+        #if ($assets.isEmpty)
+            $utils.getText("general.assets-empty")
+        #else
+        <p>$utils.getText("assessment-report.vuln-table-descr")</p>
+        <p>$utils.getText("assessment-report.vuln-table-descr-unmodified")</p>
+            #assetAssessmentSummary("asset-assessment-summary-associated", $assets, false)
+        #end
+    </body>
+</topic>

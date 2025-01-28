@@ -68,9 +68,16 @@ public class ComponentPatternData extends AbstractModelBase {
     public enum Attribute implements AbstractModelBase.Attribute {
         INCLUDE_PATTERN("Include Pattern"),
         EXCLUDE_PATTERN("Exclude Pattern"),
+
         COMPONENT_NAME("Component Name"),
         COMPONENT_PART("Component Part"),
         COMPONENT_VERSION("Component Version"),
+
+        /**
+         * The version anchor may be relative to an upper folder to better capture the component part. When composing
+         * the Artifact.PATH_IN_ASSET the path us supplemented to the version anchor root.
+         */
+        COMPONENT_PART_PATH("Component Part Path"),
 
         // version anchors must not be null; these are primarily for matching
         VERSION_ANCHOR("Version Anchor"),

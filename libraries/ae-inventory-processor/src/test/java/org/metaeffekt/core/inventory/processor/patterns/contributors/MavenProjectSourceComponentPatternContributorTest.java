@@ -33,7 +33,7 @@ public class MavenProjectSourceComponentPatternContributorTest {
     public void testVariant001() {
         File file = new File("src/test/resources/component-pattern-contributor/maven-001/pom.xml");
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(), file.getParent(),
+        final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(),
                 "pom.xml", FileUtils.computeMD5Checksum(file));
 
         assertThat(cpdList.size()).isEqualTo(2);

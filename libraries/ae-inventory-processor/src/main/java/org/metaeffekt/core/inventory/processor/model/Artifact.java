@@ -32,9 +32,12 @@ public class Artifact extends AbstractModelBase {
     private static final String DELIMITER_UNDERSCORE = "_";
 
     // FIXME: revise attribute name projects; should be paths (in asset)
-    public static final String PROJECT_DELIMITER_REGEXP = "\\|\n";
+    public static final String PATH_DELIMITER_REGEXP = "\\|\n";
 
+    @Deprecated // use PATH_DELIMITER
     public static final String PROJECT_DELIMITER = "|\n";
+
+    public static final String PATH_DELIMITER = "|\n";
 
     /**
      * Core attributes to support component patterns.
@@ -59,6 +62,7 @@ public class Artifact extends AbstractModelBase {
 
         // url of the project pages
         URL("URL"),
+        SOURCE_CODE_URL("Source Code URL"),
 
         // indicates whether the artifact is security relevant and needs to be upgraded asap
         SECURITY_RELEVANT("Security Relevance"),
@@ -76,16 +80,43 @@ public class Artifact extends AbstractModelBase {
         VERIFIED("Verified"),
         ERRORS("Errors"),
         HASH_SHA256("Hash (SHA-256)"),
+        HASH_SHA1("Hash (SHA1)"),
+        HASH_SHA512("Hash (SHA-512)"),
         PATH_IN_ASSET("Path in Asset"),
-        VIRTUAL_ROOT_PATH("Virtual Root Path"),
+
+        /**
+         * An Artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated.  In this
+         * case the path points to a folder. In case of an artifact being represented by a single file. The Artifact
+         * Root Path points to the file (and in this case is redundant with “Evidence” as long as Evidence is present).
+         * Multiple values are supported (to enable multiple contributors / representations).
+         *
+         * Evidence is currently named Projects and will be changed asap.
+         *
+         * FIXME: may require a complex structure to be able to manage multiple contributors on the same artifact;
+         *   we could store the the version anchor and the matched root path for multiple identifications to differentiate
+         *   different pattern sets
+         *
+         * NOTE: We require to distinguih three cases here:
+         * 1: component-pattern-based identification (group of files; differentiates by anchorFile)
+         * 2: file-based identification (single file; differentiated by path)
+         * 3: logical-artifact identification (dependency in a descriptor or lock file); no value; not differentiated
+         *
+         * In the case of 3 PATH_IN_ASSET and/or EVIDENCES will provide further details for identification.
+         */
+        ARTIFACT_ROOT_PATHS("Artifact Root Paths"),
+
         PURL("PURL"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
 
-        // FIXME: consolidate
         SOURCE("Source"),
+        ORGANIZATION("Organization"),
+        SUPPLIER("Supplier"),
 
-        // FIXME: consolidate
-        ORGANIZATION("Organization");
+        ARCHIVE("Archive"),
+        STRUCTURED("Structured"),
+        EXECUTABLE("Executable");
+
+
 
         private String key;
 
@@ -134,12 +165,25 @@ public class Artifact extends AbstractModelBase {
         if (StringUtils.isEmpty(projectsString)) {
             return Collections.emptySet();
         }
-        return Arrays.stream(projectsString.split(PROJECT_DELIMITER_REGEXP)).
+        return Arrays.stream(projectsString.split(PATH_DELIMITER_REGEXP)).
+                map(String::trim).collect(Collectors.toSet());
+    }
+
+    public Set<String> getArtifactRootPaths() {
+        final String pathsString = get(Attribute.ARTIFACT_ROOT_PATHS);
+        if (StringUtils.isEmpty(pathsString)) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(pathsString.split(PATH_DELIMITER_REGEXP)).
                 map(String::trim).collect(Collectors.toSet());
     }
 
     public void setProjects(Set<String> project) {
         set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(PROJECT_DELIMITER)));
+    }
+
+    public void setArtifactRootPaths(Set<String> paths) {
+        set(Attribute.ARTIFACT_ROOT_PATHS, paths.stream().collect(Collectors.joining(PATH_DELIMITER)));
     }
 
     public String getComponent() {
@@ -258,6 +302,9 @@ public class Artifact extends AbstractModelBase {
         // projects merge differently
         mergeProjects(a);
 
+        // artifact root paths merge differently
+        mergeArtifactRootPaths(a);
+
         // merge attributes
         super.merge(a);
 
@@ -265,9 +312,15 @@ public class Artifact extends AbstractModelBase {
     }
 
     private void mergeProjects(Artifact a) {
-        Set<String> projects = new HashSet<>(getProjects());
+        final Set<String> projects = new HashSet<>(getProjects());
         projects.addAll(a.getProjects());
         setProjects(projects);
+    }
+
+    private void mergeArtifactRootPaths(Artifact a) {
+        final Set<String> paths = new HashSet<>(getArtifactRootPaths());
+        paths.addAll(a.getArtifactRootPaths());
+        setArtifactRootPaths(paths);
     }
 
     /**

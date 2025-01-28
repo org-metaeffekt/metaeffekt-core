@@ -32,13 +32,19 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer.LocaleConstants.PATH_LOCALE;
+import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 public class JarModuleComponentPatternContributor extends ComponentPatternContributor {
 
-    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
+    private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>() {{
         add("/pom.xml");
         add("/meta-inf/manifest.mf");
         add("/meta-inf/build-info.properties");
+    }});
+
+    private static final List<String> ROOT_SUFFIXES = Collections.unmodifiableList(new ArrayList<String>() {{
+        add("/meta-inf/");
+        add("/META-INF/");
     }});
 
     @Override
@@ -53,14 +59,36 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
-        JarInspector jarInspector = new JarInspector();
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+        return contribute(baseDir, relativeAnchorPath, anchorChecksum, new EvaluationContext());
+    }
+
+    @Override
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum, EvaluationContext context) {
+
+        final JarInspector jarInspector = new JarInspector();
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();
 
-        final File pomXmlFile = FileUtils.findSingleFile(anchorParentDir, "pom.xml");
-        final File pomPropertiesFile = FileUtils.findSingleFile(anchorParentDir, "pom.properties");
+        final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, ROOT_SUFFIXES);
+        final File contextBaseDir = new File(baseDir, virtualRootPath);
+        final String folderName = contextBaseDir.getName();
+
+        String contextSemaphore = getClass().getCanonicalName() + "-" + virtualRootPath;
+
+        if (context.isProcessed(contextSemaphore)) {
+            return Collections.emptyList();
+        }
+
+        File pomXmlFile = FileUtils.findSingleFile(anchorParentDir, "pom.xml");
+        if (pomXmlFile == null) {
+            pomXmlFile = FileUtils.findSingleFile(contextBaseDir, "**/pom.xml");
+        }
+        File pomPropertiesFile = FileUtils.findSingleFile(anchorParentDir, "pom.properties");
+        if (pomPropertiesFile == null) {
+            pomPropertiesFile = FileUtils.findSingleFile(contextBaseDir, "**/pom.properties");
+        }
         final File manifestFile = FileUtils.findSingleFile(anchorParentDir, "MANIFEST.MF");
         final File buildPropertiesInfoFile = FileUtils.findSingleFile(anchorParentDir, "build-info.properties");
 
@@ -85,7 +113,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         Artifact fromManifest = null;
         if (manifestFile != null) {
             try (InputStream in = Files.newInputStream(manifestFile.toPath())) {
-                fromProperties = jarInspector.getArtifactFromManifest(artifact, in, relativeAnchorPath);
+                fromManifest = jarInspector.getArtifactFromManifest(artifact, in, relativeAnchorPath);
             } catch (IOException ignored) {
             }
         }
@@ -105,24 +133,25 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
 
         mergeArtifact(artifact, fromBuildInfoProperties);
 
-        final boolean isManifestAnchor = (virtualRootPath + "/META-INF/MANIFEST.MF").equalsIgnoreCase(relativeAnchorPath);
-        final boolean isBuildInfoAnchor = (relativeAnchorPath.toLowerCase(PATH_LOCALE).endsWith("/meta-inf/build-info.properties"));
+        final boolean isManifestAnchor = (folderName + "/META-INF/MANIFEST.MF").equalsIgnoreCase(relativeAnchorPath);
 
         final String artifactId = artifact.get(JarInspector.ATTRIBUTE_KEY_ARTIFACT_ID);
 
+        // FIXME: revise
         if (StringUtils.isEmpty(artifact.getId())) {
             String id = null;
             if (artifactId == null && isManifestAnchor) {
-                id = new File(virtualRootPath).getName();
+                id = folderName;
                 if (id.startsWith("[")) {
                     id = id.substring(1, id.length() - 1);
                 }
             } else {
                 if (artifactId != null) {
-                    if (artifact.get("Packaging") == null) {
+                    final String packaging = artifact.get("Packaging");
+                    if (packaging == null) {
                         id = artifactId + "-" + artifact.getVersion();
                     } else {
-                        id = artifactId + "-" + artifact.getVersion() + "." + deriveSuffix(artifact.get("Packaging"));
+                        id = artifactId + "-" + artifact.getVersion() + "." + JarInspector.deriveSuffix(packaging);
                     }
                 }
             }
@@ -133,15 +162,9 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
             return Collections.emptyList();
         }
 
-        final File contextBaseDir = new File(baseDir, relativeAnchorPath.substring(0, relativeAnchorPath.indexOf("/META-INF/")));
-
-        final String[] pomFiles = FileUtils.scanForFiles(contextBaseDir, "META-INF/maven/**/pom.xml,WEB-INF/maven/**/pom.xml", null);
-
         // NOTE:  in case of a single pom the whole content is used; in case of multiple poms the include covers only
         // the groupid-covered content
-        final String includePattern = (pomFiles.length == 1) || isManifestAnchor || isBuildInfoAnchor ?
-                "**/*" :
-                "**/" + artifact.getGroupId() + "/**/*,**/" + artifactId + "/**/*";
+        String includePattern = "**/*";
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
@@ -163,7 +186,6 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 "**/*.xed" + ", " +
                 "**/*.so*" + ", " +
                 "**/*.exe" + ", " +
-                (isManifestAnchor ? "**/maven/**/*" + ", " : "") +
                 "**/*.dll");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
 
@@ -173,17 +195,10 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
 
+        context.registerProcessed(contextSemaphore);
         return Collections.singletonList(componentPatternData);
     }
 
-    private String deriveSuffix(String packaging) {
-        if (packaging == null) return "jar";
-        if (packaging.equalsIgnoreCase("pom")) return "pom";
-        if (packaging.equalsIgnoreCase("war")) return "war";
-
-        // FIXME: support other mappings
-        return "jar";
-    }
 
     private Artifact getArtifactFromBuildInfoProperties(Artifact artifact, InputStream in) throws IOException {
         final Properties p = new Properties();

@@ -34,7 +34,9 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
     private static final String ALPM_PACKAGE_TYPE = "alpm";
 
-    private static final List<String> suffixes = Collections.singletonList("/desc");
+    private static final List<String> SUFFIXES = Collections.singletonList("/desc");
+
+    private static final List<String> PATHS = Collections.singletonList("var/lib");
 
     @Override
     public boolean applies(String pathInContext) {
@@ -43,7 +45,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File packageDir = new File(baseDir, relativeAnchorPath).getParentFile();
 
         if (!packageDir.exists() || !packageDir.isDirectory()) {
@@ -53,6 +55,8 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
         try {
             final List<ComponentPatternData> components = new ArrayList<>();
+            final String virtualRootPath = modulateVirtualRootPath(baseDir, relativeAnchorPath, PATHS);
+            final File distroBaseDir = new File(baseDir, virtualRootPath);
 
             Path virtualRoot = new File(virtualRootPath).toPath();
             Path relativeAnchorFile = new File(relativeAnchorPath).toPath();
@@ -64,7 +68,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
             // add the parent directory of the package directory to the include patterns
             Path relativeParentPath = virtualRoot.relativize(new File(relativeAnchorPath).getParentFile().toPath());
-            includePatterns.add(relativeParentPath + "/**/*");
+            includePatterns.add("**/*");
 
             // read the desc file
             File descFile = new File(packageDir, "desc");
@@ -128,7 +132,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
                     // Include specificPaths in includePatterns
                     for (String specificPath : specificPaths) {
-                        File specificFile = new File(new File(baseDir, virtualRootPath), specificPath);
+                        File specificFile = new File(distroBaseDir, specificPath);
                         // check if the specific file exists and is not a symlink
                         if (specificFile.exists() && specificFile.isFile() && !FileUtils.isSymlink(specificFile)) {
                             includePatterns.add(specificPath);
@@ -153,7 +157,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
     }
 
     private void processCollectedData(List<ComponentPatternData> components, String packageName, String version, String architecture, String includePatterns, String path, String checksum) {
-        ComponentPatternData cpd = new ComponentPatternData();
+        final ComponentPatternData cpd = new ComponentPatternData();
         cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, packageName);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
         cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, packageName + "-" + version);
@@ -172,7 +176,7 @@ public class AlpmPackageContributor extends ComponentPatternContributor {
 
     @Override
     public List<String> getSuffixes() {
-        return suffixes;
+        return SUFFIXES;
     }
 
     @Override

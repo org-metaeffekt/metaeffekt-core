@@ -113,6 +113,7 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_FILE = "file";
     public static final String ARTIFACT_TYPE_ARCHIVE = "archive";
     public static final String ARTIFACT_TYPE_COMPOSITE = "composite";
+    public static final String ARTIFACT_TYPE_EXECUTABLE = "executable" ;
 
     public static final String KEY_AGGREGATE_DIRECTIVE = "Aggregate Directive";
     public static final String AGGREGATE_DIRECTIVE_SKIP = "skip";

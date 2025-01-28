@@ -40,7 +40,7 @@ public class NpmComponentPatternContributorTest {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir, baseDir.getAbsolutePath(),
+        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);
@@ -66,7 +66,7 @@ public class NpmComponentPatternContributorTest {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir, baseDir.getAbsolutePath(),
+        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);
@@ -92,7 +92,7 @@ public class NpmComponentPatternContributorTest {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir, baseDir.getAbsolutePath(),
+        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);
@@ -118,7 +118,7 @@ public class NpmComponentPatternContributorTest {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir, baseDir.getAbsolutePath(),
+        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);

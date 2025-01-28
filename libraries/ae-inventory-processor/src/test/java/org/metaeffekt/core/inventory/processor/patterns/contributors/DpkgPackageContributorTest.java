@@ -45,8 +45,8 @@ public class DpkgPackageContributorTest {
 
         if (isWindows()) return;
 
-        List<ComponentPatternData> list =
-                cpc.contribute(cpcTestBaseDir, cpcTestBaseDir.getParent(), "var/lib/dpkg/status", "6f72a28d5456b9a7f1af6f25f029afe9");
+        List<ComponentPatternData> list = cpc.contribute(cpcTestBaseDir,
+                "var/lib/dpkg/status", "6f72a28d5456b9a7f1af6f25f029afe9");
 
         boolean foundArchlessPackage = false;
         boolean foundArchPackage = false;
@@ -75,7 +75,7 @@ public class DpkgPackageContributorTest {
     @Ignore("Requires special resources and inspection.")
     public void contributeTestOnFileSystemDump() {
         List<ComponentPatternData> list = cpc.contribute(
-                new File("/tmp/youthful_williamson"), "/",
+                new File("/tmp/youthful_williamson"),
                 "var/lib/dpkg/status", "dummy"
         );
 

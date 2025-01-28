@@ -81,11 +81,9 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
     @Test
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
-        Analysis analysis = new Analysis(inventory);
+        final Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logList();
-
-        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
+        analysis.selectArtifacts().logListWithAllAttributes();
 
         analysis.selectArtifacts(attributeValue(ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2.v20220201-1208")).hasSizeOf(1);
@@ -99,6 +97,10 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
         final int size = analysis.selectArtifacts().getItemList().size();
 
         Assertions.assertThat(size).isEqualTo(38);
+
+        // FIXME-KKL: with the current process we loose the checksums on the exe files.
+        // FIXME-KKL: verify projects are set correctly after merging PR-188
+
     }
 
 }

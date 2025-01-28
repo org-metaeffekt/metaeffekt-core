@@ -21,7 +21,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.filescan.FileSystemScanContext;
-import org.metaeffekt.core.inventory.processor.filescan.VirtualContext;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -158,8 +157,7 @@ public class ArtifactUnwrapTask extends ScanTask {
                 final FileRef dirRef = new FileRef(targetFolder);
 
                 // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)
-                final VirtualContext virtualContext = new VirtualContext(dirRef);
-                fileSystemScanContext.push(new DirectoryScanTask(dirRef, virtualContext,
+                fileSystemScanContext.push(new DirectoryScanTask(dirRef,
                         rebuildAndExtendAssetIdChain(fileSystemScanContext.getBaseDir(), artifact, fileRef, fileSystemScanContext, markForDelete)));
             }
         }

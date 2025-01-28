@@ -163,7 +163,9 @@ public class NpmPackageLockAdapter {
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
             artifact.set("Source Archive - URL", module.getUrl());
             artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getId() + "]");
-            artifact.set(Artifact.Attribute.VIRTUAL_ROOT_PATH, path);
+
+            // NOTE: do not populate ARTIFACT_ROOT_PATHS; a rrot path is not known in this case
+
             String purl = buildPurl(module.getName(), module.getVersion());
             artifact.set(Artifact.Attribute.PURL, purl);
 
@@ -224,7 +226,9 @@ public class NpmPackageLockAdapter {
                     artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
                     artifact.setUrl(url);
                     artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
-                    artifact.set(Artifact.Attribute.VIRTUAL_ROOT_PATH, path);
+
+                    // NOTE: do not populate ARTIFACT_ROOT_PATHS; a rrot path is not known in this case
+
                     String purl = buildPurl(module, version);
                     artifact.set(Artifact.Attribute.PURL, purl);
 

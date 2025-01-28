@@ -55,7 +55,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String virtualRootPath, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();
         final File parentDir = anchorParentDir.getParentFile();
@@ -143,13 +143,13 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
         }
         componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json, **/apps/**/**/*.json");
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json");
 
         // check whether alternatively a yarn.lock file is available
         File yarnLock = new File(anchorParentDir, "yarn.lock");
 
         Inventory inventoryFromYarnLock = null;
-        if (anchorFile.exists()) {
+        if (yarnLock.exists()) {
             inventoryFromYarnLock = new YarnLockAdapter().extractInventory(yarnLock, relativeAnchorPath);
         }
 

@@ -88,6 +88,9 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
     @Parameter(defaultValue = "false")
     private boolean enableDetectComponentPatterns = false;
 
+    @Parameter
+    private String[] postScanExcludes;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -99,7 +102,7 @@ public class DirectoryScanInventoryExtractionMojo extends AbstractInventoryExtra
                     inputDirectory, scanDirectory,
                     scanIncludes, scanExcludes,
                     unwrapIncludes, unwrapExcludes,
-                    sourceInventory);
+                    postScanExcludes, sourceInventory);
 
             // transfer configuration
             scan.setIncludeEmbedded(includeEmbedded);

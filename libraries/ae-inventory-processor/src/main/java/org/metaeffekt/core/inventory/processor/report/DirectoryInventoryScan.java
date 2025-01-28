@@ -29,6 +29,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,12 +40,15 @@ import java.util.stream.Collectors;
 public class DirectoryInventoryScan {
 
     private static final Logger LOG = LoggerFactory.getLogger(DirectoryInventoryScan.class);
+    public static final String[] PATTERN_ARRAY_ALL = {"**/*"};
 
     private final Inventory referenceInventory;
 
     private final String[] scanIncludes;
 
     private final String[] scanExcludes;
+
+    private final String[] postScanExcludes;
 
     private final String[] unwrapIncludes;
 
@@ -63,27 +67,41 @@ public class DirectoryInventoryScan {
     @Setter
     private boolean enableDetectComponentPatterns = false;
 
-    @Getter
-    private final File aggregationDir;
-
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
-                      String[] scanIncludes, String[] scanExcludes, Inventory referenceInventory) {
+          String[] scanIncludes, String[] scanExcludes,
+          Inventory referenceInventory) {
+
         this (inputDirectory, scanDirectory,
-                scanIncludes, scanExcludes, new String[] { "**/*" },
-                new String[0], referenceInventory, null);
+            scanIncludes, scanExcludes, PATTERN_ARRAY_ALL, null, null,
+            referenceInventory);
     }
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
-                                  String[] scanIncludes, String[] scanExcludes,
-                                  String[] unwrapIncludes, String[] unwrapExcludes,
-                                  Inventory referenceInventory) {
-        this(inputDirectory, scanDirectory, scanIncludes, scanExcludes, unwrapIncludes, unwrapExcludes, referenceInventory, null);
+          String[] scanIncludes, String[] scanExcludes,
+          String[] postScanExcludes,
+          Inventory referenceInventory) {
+
+        this (inputDirectory, scanDirectory,
+            scanIncludes, scanExcludes, PATTERN_ARRAY_ALL, null, postScanExcludes,
+            referenceInventory);
     }
 
     public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
-                                  String[] scanIncludes, String[] scanExcludes,
-                                  String[] unwrapIncludes, String[] unwrapExcludes,
-                                  Inventory referenceInventory, File aggregationDir) {
+          String[] scanIncludes, String[] scanExcludes,
+          String[] unwrapIncludes, String[] unwrapExcludes,
+          Inventory referenceInventory) {
+
+        this(inputDirectory, scanDirectory,
+            scanIncludes, scanExcludes, unwrapIncludes, unwrapExcludes, null,
+            referenceInventory);
+    }
+
+    public DirectoryInventoryScan(File inputDirectory, File scanDirectory,
+          String[] scanIncludes, String[] scanExcludes,
+          String[] unwrapIncludes, String[] unwrapExcludes,
+          String[] postScanExcludes,
+          Inventory referenceInventory) {
+
         this.inputDirectory = inputDirectory;
 
         this.scanDirectory = scanDirectory;
@@ -94,7 +112,7 @@ public class DirectoryInventoryScan {
         this.unwrapExcludes = unwrapExcludes;
 
         this.referenceInventory = referenceInventory;
-        this.aggregationDir = aggregationDir;
+        this.postScanExcludes = postScanExcludes;
     }
 
     public Inventory createScanInventory() {
@@ -124,7 +142,7 @@ public class DirectoryInventoryScan {
 
         LOG.info("Scanning directory [{}]...", directoryToScan.getAbsolutePath());
 
-        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam, aggregationDir);
+        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
         final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
 
         fileSystemScanExecutor.execute();
@@ -136,6 +154,34 @@ public class DirectoryInventoryScan {
 
         // post-process inventory; merge asset groups
         mergeAssetGroups(fileSystemScan.getInventory());
+
+        // post-process inventory; remove post scan excludes
+        if (postScanExcludes != null) {
+            final String[] normalizedExcludePatterns = FileUtils.normalizePatterns(postScanExcludes);
+            final List<Artifact> artifacts = fileSystemScan.getInventory().getArtifacts();
+            artifacts.removeIf(a -> {
+                String pathInAsset = a.getPathInAsset();
+
+                // filename with fallback to id
+                if (!pathInAsset.endsWith(a.getId())) {
+                    if (pathInAsset.equals(".")) {
+                        pathInAsset = a.getId();
+                    } else {
+                        pathInAsset += "/" + a.getId();
+                    }
+                }
+
+                final String normalizedPath = FileUtils.normalizePathToLinux(pathInAsset);
+
+                for (String postScanExclude : normalizedExcludePatterns) {
+                    if (FileUtils.matches(postScanExclude, normalizedPath)) {
+                        LOG.info("Removing artifact [{}] due to post scan exclude [{}].", a.getId(), postScanExclude);
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
 
         return fileSystemScan.getInventory();
     }
