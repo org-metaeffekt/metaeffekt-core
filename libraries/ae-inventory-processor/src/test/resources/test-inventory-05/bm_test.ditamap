@@ -16,12 +16,13 @@
 <chapter href="report/tpc_inventory-license-usage.dita" />
 <chapter href="report/tpc_inventory-licenses-effective.dita" />
 <chapter href="report/tpc_inventory-package-report-effective.dita" />
+<chapter href="report/tpc_inventory-webmodule-report-effective.dita" />
+<chapter href="report/tpc_inventory-artifact-diff.dita" />
 <chapter href="report/tpc_inventory-vulnerability-assets.dita" />
 <chapter href="report/tpc_inventory-vulnerability-components.dita" />
 <chapter href="report/tpc_inventory-vulnerability-details.dita" />
 <chapter href="report/tpc_inventory-vulnerability-notice.dita" />
 <chapter href="report/tpc_inventory-vulnerability-report.dita" />
 <chapter href="report/tpc_inventory-vulnerability-statistics.dita" />
-<chapter href="report/tpc_inventory-webmodule-report-effective.dita" />
 
 </bookmap>
