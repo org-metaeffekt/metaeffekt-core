@@ -19,7 +19,7 @@
         #end
 
 #if (!$singleLicenses.isEmpty())
-    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true, false)
+    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true, true, true)
 #end
 
     #if (!$licenseExpressions.isEmpty())
@@ -78,7 +78,7 @@
                     $utils.getText("asset-report-bom.license-detail-notice")
                 </p>
                 <p>
-                    #insertLicenseTable($license, $utils.getText("general.short.license-variants"), $licenseList, false)
+                    #insertLicenseTable($license, $utils.getText("general.short.license-variants"), $licenseList, true, true, true )
                 </p>
 
                 #foreach($associatedLicense in $assetData.getLicensesForRepresentedLicense($license))
