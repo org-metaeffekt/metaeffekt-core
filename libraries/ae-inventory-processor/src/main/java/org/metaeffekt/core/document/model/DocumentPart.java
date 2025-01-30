@@ -38,7 +38,6 @@ public class DocumentPart {
     public void validate() {
 
         // validate each inventoryContext
-        Set<String> identifiers = new HashSet<>();
         for (InventoryContext context : inventoryContexts) {
             // check if each inventoryContext references an inventory
             if (context.getInventory() == null) {

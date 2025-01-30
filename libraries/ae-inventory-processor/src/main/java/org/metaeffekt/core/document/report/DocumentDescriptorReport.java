@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -122,7 +123,7 @@ public class DocumentDescriptorReport {
     @Setter
     @Getter
     public static class DocumentDescriptorReportAdapters {
-            Map<String, Properties> propertiesMap = new HashMap<String, Properties>();
+            Map<String, Properties> propertiesMap = new HashMap<>();
 
         private DocumentDescriptorReportAdapters() {
         }
@@ -135,7 +136,6 @@ public class DocumentDescriptorReport {
      *
      * @param documentDescriptor the document descriptor used to extract inventory contexts
      * @param adapters the adapters object to which the properties will be added
-     * @throws IOException if there is an error loading the properties file
      */
     private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
@@ -184,7 +184,7 @@ public class DocumentDescriptorReport {
             String filePath = r.getURI().toASCIIString();
             String path = filePath.replace(parentPath, "");
             filePath = TEMPLATES_BASE_DIR + path;
-            String targetFileName = r.getFilename().replace(".vt", "");
+            String targetFileName = Objects.requireNonNull(r.getFilename()).replace(".vt", "");
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
             final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
