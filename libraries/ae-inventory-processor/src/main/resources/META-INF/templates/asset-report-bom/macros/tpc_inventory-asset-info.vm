@@ -1,12 +1,12 @@
 ##
 ## Lists all components which are contained in an asset to improve tracking of asset -> component relationships.
 ##
-#macro(containedComponentsTable $artifacts)
+#macro(containedComponentsTable $id $artifacts)
     #if ($artifacts.size() > 0)
 
     <p>$utils.getText("asset-report-bom.contained-components-table")</p>
 
-        <table>
+        <table id="$id">
         <tgroup cols="3">
             <colspec colname="COLSPEC0" colnum="1" colwidth="25*"/>
             <colspec colname="COLSPEC1" colnum="2" colwidth="60*"/>

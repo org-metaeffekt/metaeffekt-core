@@ -1,44 +1,57 @@
-/*
- * Copyright 2009-2024 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.metaeffekt.core.inventory.processor.report.registry;
 
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
+@Slf4j
 public class ReportRegistry {
 
-    private Map<String, TemplateRegistration> registry = new HashMap<>();
+    private Set<Target> registry = new HashSet<>();
 
-    public TemplateRegistration registerTemplate(String sectionId, String templateId) {
-        String key = sectionId + ":" + templateId;
-        if (!registry.containsKey(key)) {
-            registry.put(key, new TemplateRegistration(sectionId, templateId));
-        }
-        return registry.get(key);
+    public Target register(String sectionId, String templateId) {
+        Target target = new Target(sectionId, templateId);
+        registry.add(target);
+        return target;
     }
 
     public String resolve(String elementId) {
-        for (TemplateRegistration registration : registry.values()) {
-            String link = registration.resolve(elementId);
-            if (link != null) {
-                return link;
+        for (Target target : registry) {
+            if (target.containsElement(elementId)) {
+                return target.getResolvedKey(elementId);
             }
         }
+        log.warn("Element with ID: [{}] was not found in registry.", elementId);
         return null;
     }
 
+    private static class Target {
+
+        private final String sectionId;
+        private final String templateId;
+        private final Set<String> elementIds;
+
+        private Target(String sectionId, String templateId) {
+            this.sectionId = sectionId;
+            this.templateId = templateId;
+            this.elementIds = new HashSet<>();
+        }
+
+        public String registerElement(String elementId) {
+            if (elementIds.add(elementId)) {
+                return sectionId + ":" + templateId + ":" + elementId;
+            } else {
+                log.warn("Duplicate element ID: [{}] in template [{}]", elementId, templateId);
+                return null;
+            }
+        }
+
+        public boolean containsElement(String elementId) {
+            return elementIds.contains(elementId);
+        }
+
+        public String getResolvedKey(String elementId) {
+            return sectionId + ":" + templateId + ":" + elementId;
+        }
+    }
 }

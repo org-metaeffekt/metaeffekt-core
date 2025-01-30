@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_assets-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+  #set($templateRegistry = $registry.register("asset-report-bom", "tpc_asset-report"))
     <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-list"), true)</title>
     <body>
     #set($assets=$assetAdapter.listAssets())
