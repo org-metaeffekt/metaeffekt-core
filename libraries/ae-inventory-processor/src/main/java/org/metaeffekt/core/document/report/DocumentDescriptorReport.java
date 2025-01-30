@@ -24,6 +24,8 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
+import org.metaeffekt.core.document.model.DocumentPart;
+import org.metaeffekt.core.document.model.DocumentPartType;
 import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.ReportUtils;
@@ -67,12 +69,11 @@ public class DocumentDescriptorReport {
     private static final String PATTERN_ANY_VT = "**/*.vt";
     private static final String TEMPLATES_BASE_DIR = "/META-INF/templates";
 
+    // FIXME-RTU: divide into documentType based template groups and documentPartType based template groups
     public static final String TEMPLATE_GROUP_ANNEX_BOOKMAP = "annex-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP = "vulnerability-report-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-report-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-report-bookmap";
-
-    private String templateLanguageSelector = "en";
 
     /**
      * Creates a report based on the given DocumentDescriptor. This method will generate a DITA BookMap and other reports
@@ -81,7 +82,24 @@ public class DocumentDescriptorReport {
      * @param documentDescriptor the descriptor containing document-specific information for the report generation
      * @throws IOException if there is an error reading or writing report files
      */
-    protected void createReport(DocumentDescriptor documentDescriptor) throws IOException {
+    protected void createPartBookMap(DocumentDescriptor documentDescriptor) throws IOException {
+        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
+                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
+                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
+                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
+                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
+            }
+        }
+    }
+
+    protected void createDocumentBookMap (DocumentDescriptor documentDescriptor) throws IOException {
         if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
             writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
         }
@@ -120,22 +138,24 @@ public class DocumentDescriptorReport {
      * @throws IOException if there is an error loading the properties file
      */
     private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
-        for (InventoryContext inventoryContext : documentDescriptor.getInventoryContexts()) {
-            if (documentDescriptor.getDocumentType() == DocumentType.ANNEX){
-                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
-                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-            }
-            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT){
-                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-report.properties"));
-                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-            }
-            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT){
-                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-statistics-report.properties"));
-                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-            }
-            if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT){
-                Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-summary-report.properties"));
-                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
+                if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX){
+                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
+                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                }
+                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT){
+                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-report.properties"));
+                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                }
+                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT){
+                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-statistics-report.properties"));
+                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                }
+                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT){
+                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-summary-report.properties"));
+                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                }
             }
         }
     }
@@ -215,11 +235,6 @@ public class DocumentDescriptorReport {
 
         FileUtils.write(target, sw.toString(), "UTF-8");
     }
-
-    private String deriveTemplateBaseDir() {
-        return TEMPLATES_BASE_DIR + SEPARATOR_SLASH + getTemplateLanguageSelector();
-    }
-
 }
 
 

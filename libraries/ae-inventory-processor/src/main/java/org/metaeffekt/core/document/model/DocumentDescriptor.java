@@ -26,17 +26,9 @@ import java.util.*;
 
 /**
  * Represents the descriptor for a document, encapsulating all the information necessary for generating a document report.
- * The `DocumentDescriptor` contains metadata about the document, such as inventory contexts, document type, parameters,
+ * The `DocumentDescriptor` contains metadata about the document, such as document parts, document type, parameters,
  * and the target directory for report output. This descriptor can be passed to the {@link DocumentDescriptorReportGenerator}
  * to initiate the document generation process.
- * <p>
- * A `DocumentDescriptor` contains:
- * <ul>
- *   <li>Inventory contexts that define the data to be included in the report.</li>
- *   <li>A document type to control the generation process based on specific pre-requisites.</li>
- *   <li>Parameters for customizing the document's structure, content, and placeholders.</li>
- *   <li>The target directory where the generated report will be saved.</li>
- * </ul>
  *
  * @see DocumentDescriptorReportGenerator
  * @see InventoryContext
@@ -54,6 +46,12 @@ public class DocumentDescriptor {
     private List<InventoryContext> inventoryContexts;
 
     /**
+     * List containing the documentParts with which we construct the final document. Each document is made up of
+     * documentParts that define its structure and content.
+     */
+    private List<DocumentPart> documentParts;
+
+    /**
      * Representation of each document type that we can report on, depending on the set documentType, different
      * pre-requisites are checked.
      */
@@ -68,7 +66,7 @@ public class DocumentDescriptor {
     /**
      * The language in which the document should be produced.
      */
-    private String templateLanguageSelector = "en";
+    private String language = "en";
 
     /**
      * The target directory for the report.
@@ -99,21 +97,6 @@ public class DocumentDescriptor {
             throw new IllegalStateException("The target report directory must be a directory.");
         }
 
-        // validate each inventoryContext
-        Set<String> identifiers = new HashSet<>();
-        for (InventoryContext context : inventoryContexts) {
-            // check if each inventoryContext references an inventory
-            if (context.getInventory() == null) {
-                throw new IllegalStateException("The inventory must be specified.");
-            }
-            // check if each inventoryContext has an identifier
-            if (context.getIdentifier() == null){
-                throw new IllegalStateException("The identifier must be specified.");
-            }
-            // check if each inventoryContext has an identifier
-            if (context.getIdentifier().isEmpty()){
-                throw new IllegalStateException("The identifier must not be empty.");
-            }
-        }
+        // TODO-RTU: Add documentPart validation
     }
 }
