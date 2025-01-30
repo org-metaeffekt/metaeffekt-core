@@ -35,6 +35,13 @@ public class DocumentPart {
      */
     private Map<String, String> params;
 
+    public DocumentPart(List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params) {
+        this.inventoryContexts = inventoryContexts;
+        this.documentPartType = documentPartType;
+        this.params = params;
+
+    }
+
     public void validate() {
 
         // validate each inventoryContext
