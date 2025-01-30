@@ -956,7 +956,22 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public Cvss2 clone() {
-        return new Cvss2(toString(), super.sources, super.applicabilityCondition);
+        final Cvss2 clone = super.cloneInternal(new Cvss2());
+        clone.accessVector = accessVector;
+        clone.accessComplexity = accessComplexity;
+        clone.authentication = authentication;
+        clone.confidentialityImpact = confidentialityImpact;
+        clone.integrityImpact = integrityImpact;
+        clone.availabilityImpact = availabilityImpact;
+        clone.exploitability = exploitability;
+        clone.remediationLevel = remediationLevel;
+        clone.reportConfidence = reportConfidence;
+        clone.collateralDamagePotential = collateralDamagePotential;
+        clone.targetDistribution = targetDistribution;
+        clone.confidentialityRequirement = confidentialityRequirement;
+        clone.integrityRequirement = integrityRequirement;
+        clone.availabilityRequirement = availabilityRequirement;
+        return clone;
     }
 
     @Override
