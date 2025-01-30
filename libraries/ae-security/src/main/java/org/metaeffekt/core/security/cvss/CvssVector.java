@@ -453,6 +453,14 @@ public abstract class CvssVector {
         return vectorsList;
     }
 
+    protected <T extends CvssVector> T cloneInternal(T clone) {
+        clone.sources.addAll(sources);
+        for (String key : applicabilityCondition.keySet()) {
+            clone.applicabilityCondition.put(key, applicabilityCondition.get(key));
+        }
+        return clone;
+    }
+
     public interface CvssVectorAttribute {
         String getIdentifier();
 

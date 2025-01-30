@@ -61,11 +61,11 @@ public class Cvss3P0 extends Cvss3 {
 
     @Override
     public Cvss3P0 clone() {
-        return new Cvss3P0(toString(), super.sources, super.applicabilityCondition);
+        return super.cloneInternal(new Cvss3P0());
     }
 
     @Override
-    public Optional<Cvss3P0> optionalParse(String vector){
+    public Optional<Cvss3P0> optionalParse(String vector) {
         if (vector == null || StringUtils.isEmpty(MultiScoreCvssVector.normalizeVector(vector))) {
             return Optional.empty();
         }
