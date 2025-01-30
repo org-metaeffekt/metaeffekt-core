@@ -1,6 +1,5 @@
-### This table is used in the asset-report-bom and inventory-report-bom to list a number of licenses
-### with their correlating information.
-
+## This table is used in the asset-report-bom and inventory-report-bom to list a number of licenses
+## with their correlating information.
 #macro (insertLicenseTable $id $title $licenseList $handleSubstructure $includeOpenCoDE)
 <table id="$id"><title>$title$reportContext.inContextOf()</title>
     <tgroup cols="#if($includeOpenCoDE)5#else4#end">
@@ -14,7 +13,7 @@
 
         <thead>
         <row>
-            <entry colname="COLSPEC0" valign="top">$utils.getText()</entry>
+            <entry colname="COLSPEC0" valign="top">$utils.getText("gemeral.short.license")</entry>
             <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
             <entry colname="COLSPEC2" valign="top">OSI Status</entry>
             #if($includeOpenCoDE)
@@ -103,7 +102,7 @@
               #end
                 <entry>
                     <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                        <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, $handleSubstructure)</codeph>
+                        <codeph>$inventory.countComponents($license)</codeph>
                     </xref>
                 </entry>
             </row>

@@ -1,4 +1,5 @@
 #parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+#parse("META-INF/templates/shared/macros/tpc_license-tables.diita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-summary-$reportContext.id">
@@ -65,8 +66,8 @@
       #end
 
       #if(!$atomicTerms.isEmpty())
-        #insertLicenseTable("LicensesInEffect", $utils.getText("inventory-report-bom.short.licenses-in-effect"))
-       ,$atomicTerms, $inventory.isSubstructureRequired($license, $effectiveLicensesRepresented), true)
+        #insertLicenseTable("LicensesInEffect", $utils.getText("inventory-report-bom.short.licenses-in-effect")
+        ,$inventoryReportAdapter.getCanonicalNames($atomicTerms), $inventory.isSubstructureRequired($license, $effectiveLicensesRepresented), true)
       #end
     </body>
 </topic>
