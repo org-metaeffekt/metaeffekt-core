@@ -768,6 +768,9 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.GHSA),
                     new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
 
+                    // CSAF
+                    new SourceSelectorEntry(KnownCvssEntities.CSAF, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     // CERT-SEI
@@ -795,6 +798,9 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     // OSV
                     new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.GHSA),
                     new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
+                    // CSAF
+                    new SourceSelectorEntry(KnownCvssEntities.CSAF, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
 
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
