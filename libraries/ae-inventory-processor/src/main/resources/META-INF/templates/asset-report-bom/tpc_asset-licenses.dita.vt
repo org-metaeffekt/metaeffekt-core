@@ -18,7 +18,7 @@
         #end
 
 #if (!$singleLicenses.isEmpty())
-    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true)
+    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true, true)
 #end
 
     #if (!$licenseExpressions.isEmpty())

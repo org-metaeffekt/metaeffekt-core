@@ -1,0 +1,115 @@
+### This table is used in the asset-report-bom and inventory-report-bom to list a number of licenses
+### with their correlating information.
+
+#macro (insertLicenseTable $id $title $licenseList $handleSubstructure $includeOpenCoDE)
+<table id="$id"><title>$title$reportContext.inContextOf()</title>
+    <tgroup cols="#if($includeOpenCoDE)5#else4#end">
+        <colspec colname="COLSPEC0" colnum="1" colwidth="#if($includeOpenCoDE)50*#else61*#end"/>
+        <colspec colname="COLSPEC1" colnum="2" colwidth="18*"/>
+        <colspec colname="COLSPEC2" colnum="3" colwidth="13*"/>
+        #if($includeOpenCoDE)
+            <colspec colname="COLSPEC3" colnum="4" colwidth="11*"/>
+        #end
+        <colspec colname="COLSPEC4" colnum="#if($includeOpenCoDE)5#else4#end" colwidth="8*"/>
+
+        <thead>
+        <row>
+            <entry colname="COLSPEC0" valign="top">$utils.getText()</entry>
+            <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+            <entry colname="COLSPEC2" valign="top">OSI Status</entry>
+            #if($includeOpenCoDE)
+                <entry colname="COLSPEC3" valign="top">Open CoDE Approval</entry>
+            #end
+            <entry colname="#if($includeOpenCoDE)COLSPEC4#elseCOLSPEC3#end" valign="top">Count</entry>
+        </row>
+        </thead>
+
+      #set($osiStatusMap = $assetAdapter.getOsiStatusMap($report))
+      #set($openCoDEStatusMap = {
+        "approved" : "yes",
+        "(approved)" : "(yes)",
+        "not approved" : "no"
+      })
+
+        <tbody>
+          #foreach($license in $licenseList)
+            #if (!$license.contains(" + "))
+              #set($licenseData=$inventory.findMatchingLicenseData($license))
+            <row>
+              #if ($handleSubstructure && $assetData.isLicenseSubstructureRequired($license))
+                  <entry>
+                      <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic"/>
+                    $report.xmlEscapeLicense($license)
+                      <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                  </entry>
+                  <entry>
+                    #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
+                      $report.xmlEscapeString($licenseData.get('SPDX Id'))
+                    #else
+                        &nbsp;
+                    #end
+                  </entry>
+                  <entry>
+                    #if ($licenseData)
+                      #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
+                      #if ($mappedStatus)
+                        $mappedStatus
+                          <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                      #end
+                    #else
+                        &nbsp;
+                    #end
+                  </entry>
+                  #if($includeOpenCoDE)
+                      <entry>
+                        #if ($licenseData)
+                          #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                          #if ($mappedStatus)
+                            $mappedStatus
+                              <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                          #end
+                        #else
+                            &nbsp;
+                        #end
+                      </entry>
+                  #end
+              #else
+                  <entry>
+                      <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                        $report.xmlEscapeLicense($license)
+                      </xref>
+                  </entry>
+                  <entry>
+                    #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
+                      $report.xmlEscapeString($licenseData.get('SPDX Id'))
+                    #else
+                        &nbsp;
+                    #end
+                  </entry>
+                  <entry>
+                    #if ($licenseData)
+                      $reportContext.map($licenseData.get("OSI Status"), $osiStatusMap,"&nbsp;")
+                    #else
+                        &nbsp;
+                    #end
+                  </entry>
+                  #if($includeOpenCoDE)
+                      <entry>
+                        #if ($licenseData)
+                          $reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap, "&nbsp;")
+                        #end
+                      </entry>
+                  #end
+              #end
+                <entry>
+                    <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                        <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, $handleSubstructure)</codeph>
+                    </xref>
+                </entry>
+            </row>
+            #end
+          #end
+        </tbody>
+    </tgroup>
+</table>
+#end
