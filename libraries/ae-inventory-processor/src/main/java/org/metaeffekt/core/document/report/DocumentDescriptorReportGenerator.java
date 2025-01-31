@@ -29,6 +29,7 @@ import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecur
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,12 +104,13 @@ public class DocumentDescriptorReportGenerator {
                 // validate each inventoryContext before processing
                 inventoryContext.validate();
 
-                Map<String, String> params = documentPart.getParams();
+                Map<String, String> mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
+
                 InventoryReport report = new InventoryReport();
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
                 if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                    setPolicy(params, report);
+                    setPolicy(mergedParams, report);
                     report.setInventoryBomReportEnabled(true);
                 }
                 if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
@@ -118,11 +120,11 @@ public class DocumentDescriptorReportGenerator {
                     report.setInventoryVulnerabilityReportSummaryEnabled(true);
                 }
                 if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                    setPolicy(params, report);
+                    setPolicy(mergedParams, report);
 
                     report.setInventoryVulnerabilityReportEnabled(true);
 
-                    String generateOverviewTablesForAdvisories = params.get("generateOverviewTablesForAdvisories");
+                    String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
 
                     try {
                         // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
@@ -155,8 +157,8 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
-                report.setTargetLicenseDir(new File(documentDescriptor.getParams().get("targetLicensesDir")));
-                report.setTargetComponentDir(new File(documentDescriptor.getParams().get("targetComponentDir")));
+                report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
+                report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
                 report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
@@ -211,5 +213,12 @@ public class DocumentDescriptorReportGenerator {
             report.setSecurityPolicy(securityPolicy);
             report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         }
+    }
+
+    private static Map<String, String> mergeParams(Map<String, String> globalParams, Map<String, String> partParams) {
+        Map<String, String> mergedParams = new HashMap<>(globalParams);
+        mergedParams.putAll(partParams);
+
+        return mergedParams;
     }
 }
