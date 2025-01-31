@@ -83,10 +83,6 @@ public class DocumentDescriptor {
         if (documentType == null) {
             throw new IllegalStateException("The document type must be specified.");
         }
-        // check if there are inventoryContexts set
-        if (inventoryContexts.isEmpty()) {
-            throw new IllegalStateException("No inventory contexts specified.");
-        }
         // check if the targetReportDir is set
         if (targetReportDir == null) {
             throw new IllegalStateException("The target report directory must be specified.");
