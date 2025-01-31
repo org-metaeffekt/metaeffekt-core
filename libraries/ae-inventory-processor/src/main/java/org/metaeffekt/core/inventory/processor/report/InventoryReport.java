@@ -36,6 +36,7 @@ import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter
 import org.metaeffekt.core.inventory.processor.report.adapter.InventoryReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
@@ -230,6 +231,19 @@ public class InventoryReport {
     private ReportContext reportContext = new ReportContext("default", null, null);
 
     private String templateLanguageSelector = "en";
+
+    private final ReportConfigurationParameters reportConfigurationParameters;
+
+    /**
+     * Initializes ReportConfigurationParameters with default values.
+     */
+    public InventoryReport() {
+        this.reportConfigurationParameters = ReportConfigurationParameters.builder().build();
+    }
+
+    public InventoryReport(ReportConfigurationParameters reportConfigurationParameters) {
+        this.reportConfigurationParameters = reportConfigurationParameters;
+    }
 
     public boolean createReport() throws IOException {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
@@ -768,7 +782,7 @@ public class InventoryReport {
         context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
-
+        context.put("configParams", this.reportConfigurationParameters);
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString(), "UTF-8");

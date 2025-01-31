@@ -823,7 +823,40 @@ public class Cvss4P0 extends CvssVector {
 
     @Override
     public Cvss4P0 clone() {
-        return new Cvss4P0(this.toString(), super.sources, super.applicabilityCondition);
+        final Cvss4P0 clone = super.cloneInternal(new Cvss4P0());
+        clone.attackVector = this.attackVector;
+        clone.attackComplexity = this.attackComplexity;
+        clone.attackRequirements = this.attackRequirements;
+        clone.privilegesRequired = this.privilegesRequired;
+        clone.userInteraction = this.userInteraction;
+        clone.vulnConfidentialityImpact = this.vulnConfidentialityImpact;
+        clone.vulnIntegrityImpact = this.vulnIntegrityImpact;
+        clone.vulnAvailabilityImpact = this.vulnAvailabilityImpact;
+        clone.subConfidentialityImpact = this.subConfidentialityImpact;
+        clone.subIntegrityImpact = this.subIntegrityImpact;
+        clone.subAvailabilityImpact = this.subAvailabilityImpact;
+        clone.exploitMaturity = this.exploitMaturity;
+        clone.confidentialityRequirement = this.confidentialityRequirement;
+        clone.integrityRequirement = this.integrityRequirement;
+        clone.availabilityRequirement = this.availabilityRequirement;
+        clone.modifiedAttackVector = this.modifiedAttackVector;
+        clone.modifiedAttackComplexity = this.modifiedAttackComplexity;
+        clone.modifiedAttackRequirements = this.modifiedAttackRequirements;
+        clone.modifiedPrivilegesRequired = this.modifiedPrivilegesRequired;
+        clone.modifiedUserInteraction = this.modifiedUserInteraction;
+        clone.modifiedVulnConfidentialityImpact = this.modifiedVulnConfidentialityImpact;
+        clone.modifiedVulnIntegrityImpact = this.modifiedVulnIntegrityImpact;
+        clone.modifiedVulnAvailabilityImpact = this.modifiedVulnAvailabilityImpact;
+        clone.modifiedSubConfidentialityImpact = this.modifiedSubConfidentialityImpact;
+        clone.modifiedSubIntegrityImpact = this.modifiedSubIntegrityImpact;
+        clone.modifiedSubAvailabilityImpact = this.modifiedSubAvailabilityImpact;
+        clone.safety = this.safety;
+        clone.automatable = this.automatable;
+        clone.recovery = this.recovery;
+        clone.valueDensity = this.valueDensity;
+        clone.vulnerabilityResponseEffort = this.vulnerabilityResponseEffort;
+        clone.providerUrgency = this.providerUrgency;
+        return clone;
     }
 
     public static String getVersionName() {
