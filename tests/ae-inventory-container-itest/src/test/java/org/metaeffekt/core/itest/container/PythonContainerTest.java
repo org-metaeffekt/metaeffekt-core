@@ -115,7 +115,7 @@ public class PythonContainerTest extends AbstractCompositionAnalysisTest {
         analysis.selectComponentPatterns(containsToken(VERSION_ANCHOR, "/installed")).hasSizeGreaterThan(1);
 
         // check how many artifacts have no version (harness unmapped files)
-        // FIXME-AOE: something is wrong eith the extraction from this container; too many unmapped filed
+        // FIXME-AOE: something is wrong with the extraction from this container; too many unmapped filed
         analysis.selectArtifacts(attributeValue(VERSION, null)).hasSizeOf(1038);
 
         // there must be only once container asset
