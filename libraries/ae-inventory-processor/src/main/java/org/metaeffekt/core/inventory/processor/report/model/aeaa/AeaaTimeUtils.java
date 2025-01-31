@@ -18,15 +18,25 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * Mirrors structure of <code>com.metaeffekt.artifact.analysis.utils.TimeUtils</code> 
+ * Mirrors structure of <code>com.metaeffekt.artifact.analysis.utils.TimeUtils</code>
  * until separation of inventory report generation from ae core inventory processor.
  */
 public abstract class AeaaTimeUtils {
 
+    public static final DateTimeFormatter HUMAN_READABLE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd@HH'h'mm'm'ss's'");
+
     public static long parseHumanFormatTime(String time) {
+        if (time == null) return -1;
+        if (time.isEmpty() || time.equals("now")) {
+            return AeaaTimeUtils.utcNow();
+        }
+
         String[] parts = time.replace("ago", "").replace("last", "").split("(,|and)");
         long value = 0;
         boolean hadValidPart = false;
@@ -87,9 +97,13 @@ public abstract class AeaaTimeUtils {
             return Long.parseLong(input);
         }
 
+        if (input.equals("now")) {
+            return AeaaTimeUtils.utcNow();
+        }
+
         long humanTime = AeaaTimeUtils.parseHumanFormatTime(input);
         if (humanTime != -1) {
-            return System.currentTimeMillis() - humanTime;
+            return AeaaTimeUtils.utcNow() - humanTime;
         }
 
         return AeaaTimeUtils.timestampFromNormalizedDate(AeaaTimeUtils.normalizeDate(input));
@@ -127,51 +141,50 @@ public abstract class AeaaTimeUtils {
     }
 
     private final static List<SimpleDateFormat> DATE_FORMATS = Arrays.asList(
-            createUtcSimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("yyyy-MM-dd HH:mm:ss"),
             createUtcSimpleDateFormat("dd MMMMM yyyy", Locale.GERMAN), // cert-fr
             createUtcSimpleDateFormat("dd MMMMM yyyy", Locale.FRANCE),
             createUtcSimpleDateFormat("dd MMMMM yyyy", Locale.ENGLISH),
-            createUtcSimpleDateFormat("dd MMMMM yyyy"),
-            createUtcSimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ"),
-            createUtcSimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy"), // java Date#toString() format
+            nonLenientUtcSimpleDateFormat("dd MMMMM yyyy"),
+            nonLenientUtcSimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ"),
 
-            createUtcSimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"),
-            createUtcSimpleDateFormat("yyyy-MM-dd'T'HH:mm"),
-            createUtcSimpleDateFormat("yyyy-MM-dd HH:mm"),
+            nonLenientUtcSimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("yyyy-MM-dd'T'HH:mm"),
+            nonLenientUtcSimpleDateFormat("yyyy-MM-dd HH:mm"),
 
-            createUtcSimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss"),
-            createUtcSimpleDateFormat("dd-MM-yyyy'T'HH:mm"),
-            createUtcSimpleDateFormat("dd-MM-yyyy HH:mm:ss"),
-            createUtcSimpleDateFormat("dd-MM-yyyy HH:mm"),
+            nonLenientUtcSimpleDateFormat("dd-MM-yyyy'T'HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("dd-MM-yyyy'T'HH:mm"),
+            nonLenientUtcSimpleDateFormat("dd-MM-yyyy HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("dd-MM-yyyy HH:mm"),
 
-            createUtcSimpleDateFormat("MM-dd-yyyy'T'HH:mm:ss"),
-            createUtcSimpleDateFormat("MM-dd-yyyy'T'HH:mm"),
-            createUtcSimpleDateFormat("MM-dd-yyyy HH:mm:ss"),
-            createUtcSimpleDateFormat("MM-dd-yyyy HH:mm"),
+            nonLenientUtcSimpleDateFormat("MM-dd-yyyy'T'HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("MM-dd-yyyy'T'HH:mm"),
+            nonLenientUtcSimpleDateFormat("MM-dd-yyyy HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("MM-dd-yyyy HH:mm"),
 
-            createUtcSimpleDateFormat("MM/dd/yyyy'T'HH:mm:ss"),
-            createUtcSimpleDateFormat("MM/dd/yyyy'T'HH:mm"),
-            createUtcSimpleDateFormat("MM/dd/yyyy HH:mm:ss"),
-            createUtcSimpleDateFormat("MM/dd/yyyy HH:mm"),
+            nonLenientUtcSimpleDateFormat("MM/dd/yyyy'T'HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("MM/dd/yyyy'T'HH:mm"),
+            nonLenientUtcSimpleDateFormat("MM/dd/yyyy HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("MM/dd/yyyy HH:mm"),
 
-            createUtcSimpleDateFormat("dd/MM/yyyy'T'HH:mm:ss"),
-            createUtcSimpleDateFormat("dd/MM/yyyy'T'HH:mm"),
-            createUtcSimpleDateFormat("dd/MM/yyyy HH:mm:ss"),
-            createUtcSimpleDateFormat("dd/MM/yyyy HH:mm"),
+            nonLenientUtcSimpleDateFormat("dd/MM/yyyy'T'HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("dd/MM/yyyy'T'HH:mm"),
+            nonLenientUtcSimpleDateFormat("dd/MM/yyyy HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("dd/MM/yyyy HH:mm"),
 
-            createUtcSimpleDateFormat("yyyy/MM/dd'T'HH:mm:ss"),
-            createUtcSimpleDateFormat("yyyy/MM/dd'T'HH:mm"),
-            createUtcSimpleDateFormat("yyyy/MM/dd HH:mm:ss"),
-            createUtcSimpleDateFormat("yyyy/MM/dd HH:mm"),
+            nonLenientUtcSimpleDateFormat("yyyy/MM/dd'T'HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("yyyy/MM/dd'T'HH:mm"),
+            nonLenientUtcSimpleDateFormat("yyyy/MM/dd HH:mm:ss"),
+            nonLenientUtcSimpleDateFormat("yyyy/MM/dd HH:mm"),
 
-            createUtcSimpleDateFormat("yyyy-MM-dd"),
-            createUtcSimpleDateFormat("yyyy-MM"),
+            nonLenientUtcSimpleDateFormat("yyyy-MM-dd"),
+            nonLenientUtcSimpleDateFormat("yyyy-MM"),
 
-            createUtcSimpleDateFormat("dd-MM-yyyy"),
-            createUtcSimpleDateFormat("MM-dd-yyyy"),
+            nonLenientUtcSimpleDateFormat("dd-MM-yyyy"),
+            nonLenientUtcSimpleDateFormat("MM-dd-yyyy"),
 
-            createUtcSimpleDateFormat("MM/dd/yyyy"),
-            createUtcSimpleDateFormat("dd/MM/yyyy"),
+            nonLenientUtcSimpleDateFormat("MM/dd/yyyy"),
+            nonLenientUtcSimpleDateFormat("dd/MM/yyyy"),
             createUtcSimpleDateFormat("yyyy/MM/dd"),
 
             nonLenientUtcSimpleDateFormat("yyyy.MM.dd"),
@@ -183,8 +196,73 @@ public abstract class AeaaTimeUtils {
             createUtcSimpleDateFormat("dd.MM.yyyy HH:mm:ss"),
             createUtcSimpleDateFormat("dd.MM.yyyy HH:mm"),
 
-            createUtcSimpleDateFormat("yyyy")
+            nonLenientUtcSimpleDateFormat("yyyy")
     );
+
+    private static final List<SimpleDateFormat> FORMATS_WITH_T = new ArrayList<>();
+    private static final List<SimpleDateFormat> FORMATS_WITH_SLASH = new ArrayList<>();
+    private static final List<SimpleDateFormat> FORMATS_WITH_DASH = new ArrayList<>();
+    private static final List<SimpleDateFormat> FORMATS_TEXT = new ArrayList<>();
+    private static final List<SimpleDateFormat> FORMATS_GENERIC = new ArrayList<>();
+
+    static {
+        for (SimpleDateFormat sdf : DATE_FORMATS) {
+            String pattern = sdf.toPattern();
+            if (pattern.contains("'T'")) {
+                FORMATS_WITH_T.add(sdf);
+            } else if (pattern.contains("/")) {
+                FORMATS_WITH_SLASH.add(sdf);
+            } else if (pattern.contains("-")) {
+                FORMATS_WITH_DASH.add(sdf);
+            } else if (pattern.contains("MMM") || pattern.contains("EEE")) {
+                FORMATS_TEXT.add(sdf);
+            } else {
+                FORMATS_GENERIC.add(sdf);
+            }
+        }
+        sortFormatsByPriority(FORMATS_WITH_T);
+        sortFormatsByPriority(FORMATS_WITH_SLASH);
+        sortFormatsByPriority(FORMATS_WITH_DASH);
+        sortFormatsByPriority(FORMATS_TEXT);
+        sortFormatsByPriority(FORMATS_GENERIC);
+    }
+
+    private static void sortFormatsByPriority(List<SimpleDateFormat> formats) {
+        formats.sort((a, b) -> Integer.compare(b.toPattern().length(), a.toPattern().length()));
+    }
+
+    public static Date tryParse(String dateString) {
+        if (dateString == null) return null;
+
+        if (dateString.matches("\\d{5,}")) {
+            return new Date(Long.parseLong(dateString));
+        }
+
+        List<SimpleDateFormat> candidates = new ArrayList<>(8);
+
+        if (dateString.contains("T")) {
+            candidates.addAll(FORMATS_WITH_T);
+        } else if (dateString.contains("/")) {
+            candidates.addAll(FORMATS_WITH_SLASH);
+        } else if (dateString.contains("-")) {
+            candidates.addAll(FORMATS_WITH_DASH);
+        } else if (dateString.matches(".*[a-zA-Z].*")) {
+            candidates.addAll(FORMATS_TEXT);
+        } else {
+            candidates.addAll(FORMATS_GENERIC);
+        }
+
+        synchronized (DATE_FORMATS) {
+            for (SimpleDateFormat formatter : candidates) {
+                try {
+                    return formatter.parse(dateString);
+                } catch (ParseException ignored) {
+                }
+            }
+        }
+
+        return null;
+    }
 
     private static SimpleDateFormat nonLenientSimpleDateFormat(String pattern) {
         SimpleDateFormat sdf = new SimpleDateFormat(pattern);
@@ -195,7 +273,7 @@ public abstract class AeaaTimeUtils {
     public static String normalizeDate(String string) {
         if (string == null) return "n.a.";
 
-        Date parsedDate = tryParse(string);
+        Date parsedDate = AeaaTimeUtils.tryParse(string);
 
         if (parsedDate != null) {
             return formatNormalizedDate(parsedDate);
@@ -215,6 +293,7 @@ public abstract class AeaaTimeUtils {
     }
 
     public static String formatNormalizedDate(Date date) {
+        if (date == null) return "n.a.";
         return NORMALIZED_DATE_PATTERN
                 .format(date)
                 .replace(" 00:00:00", "")
@@ -248,32 +327,13 @@ public abstract class AeaaTimeUtils {
         }
     }
 
-    public static Date tryParse(String dateString) {
-        if (dateString == null) return null;
-
-        if (dateString.matches("\\d+")) {
-            return new Date(Long.parseLong(dateString));
-        }
-
-        synchronized (DATE_FORMATS) {
-            for (SimpleDateFormat formatter : DATE_FORMATS) {
-                try {
-                    return formatter.parse(dateString);
-                } catch (ParseException ignored) {
-                }
-            }
-        }
-
-        return null;
-    }
-
     public static Date tryParse(Object date) {
         if (date instanceof Date) {
             return (Date) date;
         } else if (date instanceof Number) {
             return new Date(((Number) date).longValue());
         } else if (date instanceof String) {
-            return tryParse((String) date);
+            return AeaaTimeUtils.tryParse((String) date);
         } else {
             return null;
         }
@@ -281,6 +341,16 @@ public abstract class AeaaTimeUtils {
 
     public static long utcNow() {
         return Instant.now().toEpochMilli();
+    }
+
+
+    public static String formatTimeUntilOrAgoDefault(long timeUntil) {
+        return AeaaTimeUtils.formatTimeUntilOrAgo(timeUntil, "", "in", "ago", "", " and ", "no date provided");
+    }
+
+
+    public static String formatTimeNoSuffixPrefix(long timeUntil) {
+        return AeaaTimeUtils.formatTimeUntilOrAgo(timeUntil, "", "", "", "", " and ", "no date provided");
     }
 
     public static String formatTimeUntilOrAgo(
@@ -343,6 +413,10 @@ public abstract class AeaaTimeUtils {
         } else {
             return String.format(formatZero, seconds, "seconds");
         }
+    }
+
+    public static String createHumanReadableTimestamp() {
+        return ZonedDateTime.now(ZoneOffset.UTC).format(HUMAN_READABLE_TIMESTAMP_FORMATTER);
     }
 
     private static SimpleDateFormat createUtcSimpleDateFormat(String pattern) {
