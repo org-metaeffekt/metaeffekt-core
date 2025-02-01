@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.security.cvss.processor;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,8 +35,8 @@ import java.util.stream.Collectors;
 /**
  * <h2>Effective CVSS Selection</h2>
  * <p>
- *     This documentation entry aims to explain how the selection process of effective CVSS vectors for vulnerabilities using the central security policy configuration (may) take place, and how the effective scores and severities are calculated.<br>
- *     For this, the <code>initialCvssSelector</code>, <code>contextCvssSelector</code>, <code>cvssVersionSelectionPolicy</code> and the <code>cvssSeverityRanges</code> properties of the security policy are used.
+ * This documentation entry aims to explain how the selection process of effective CVSS vectors for vulnerabilities using the central security policy configuration (may) take place, and how the effective scores and severities are calculated.<br>
+ * For this, the <code>initialCvssSelector</code>, <code>contextCvssSelector</code>, <code>cvssVersionSelectionPolicy</code> and the <code>cvssSeverityRanges</code> properties of the security policy are used.
  * </p>
  * <p>The selection process happens in three steps, with another one added for calculating the CVSS scores:</p>
  * <ol>
@@ -823,12 +824,16 @@ public class CvssSelector implements Cloneable {
                 statsCollectors = Collections.emptyList();
             }
 
-            return new CvssRule(
-                    MergingMethod.valueOf(json.getString("method")),
-                    statsCollectors,
-                    SelectorVectorEvaluator.fromParentJson(json),
-                    SourceSelector.fromJson(json.getJSONArray("selector"))
-            );
+            try {
+                return new CvssRule(
+                        MergingMethod.valueOf(ObjectUtils.firstNonNull(json.optString("method", null), json.optString("mergingMethod", null))),
+                        statsCollectors,
+                        SelectorVectorEvaluator.fromParentJson(json),
+                        SourceSelector.fromJson(ObjectUtils.firstNonNull(json.opt("selector"), json.opt("sourceSelector")))
+                );
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Failed to parse CvssRule from json with keys " + json.keySet() + ": " + json, e);
+            }
         }
 
         public SourceSelector getSourceSelector() {
@@ -904,12 +909,33 @@ public class CvssSelector implements Cloneable {
             return preferredSources;
         }
 
+        public static SourceSelector fromJson(Object json) {
+            if (json instanceof JSONArray) {
+                return fromJson((JSONArray) json);
+            } else if (json instanceof JSONObject) {
+                return fromJson((JSONObject) json);
+            } else {
+                throw new IllegalArgumentException(SourceSelector.class.getSimpleName() + ": json must be either a JSONArray or JSONObject");
+            }
+        }
+
         public static SourceSelector fromJson(JSONArray json) {
+            if (json == null) {
+                throw new IllegalArgumentException(SourceSelector.class.getSimpleName() + ": json must not be null when creating from json");
+            }
             final List<SourceSelectorEntry> entries = new ArrayList<>();
             for (int i = 0; i < json.length(); i++) {
                 entries.add(SourceSelectorEntry.fromJson(json.getJSONObject(i)));
             }
             return new SourceSelector(entries);
+        }
+
+        public static SourceSelector fromJson(JSONObject json) {
+            final JSONArray preferredSources = json.optJSONArray("preferredSources");
+            if (preferredSources == null) {
+                throw new IllegalArgumentException(SourceSelector.class.getSimpleName() + ": json must contain a 'preferredSources' array");
+            }
+            return fromJson(preferredSources);
         }
 
         public List<SourceSelectorEntry> getPreferredSources() {
@@ -988,24 +1014,30 @@ public class CvssSelector implements Cloneable {
         }
 
         public static SourceSelectorEntry fromJson(JSONObject json) {
-            final List<SourceSelectorEntryEntry<CvssEntity>> hostingEntities = new ArrayList<>();
-            final List<SourceSelectorEntryEntry<CvssIssuingEntityRole>> issuingEntityRoles = new ArrayList<>();
-            final List<SourceSelectorEntryEntry<CvssEntity>> issuingEntities = new ArrayList<>();
+            try {
+                final List<SourceSelectorEntryEntry<CvssEntity>> hostingEntities = new ArrayList<>();
+                final List<SourceSelectorEntryEntry<CvssIssuingEntityRole>> issuingEntityRoles = new ArrayList<>();
+                final List<SourceSelectorEntryEntry<CvssEntity>> issuingEntities = new ArrayList<>();
 
-            final JSONArray host = json.getJSONArray("host");
-            for (int i = 0; i < host.length(); i++) {
-                hostingEntities.add(SourceSelectorEntryEntry.fromString(host.getString(i), CvssEntity::new));
-            }
-            final JSONArray issuerRole = json.getJSONArray("issuerRole");
-            for (int i = 0; i < issuerRole.length(); i++) {
-                issuingEntityRoles.add(SourceSelectorEntryEntry.fromString(issuerRole.getString(i), CvssIssuingEntityRole::new));
-            }
-            final JSONArray issuer = json.getJSONArray("issuer");
-            for (int i = 0; i < issuer.length(); i++) {
-                issuingEntities.add(SourceSelectorEntryEntry.fromString(issuer.getString(i), CvssEntity::new));
-            }
+                // {"hostingEntities":[{"inverted":false,"value":{"organizationTypes":[],"reportSteps":[],"name":"NVD"}}],"issuingEntityRoles":[{"inverted":false,"value":{"name":"CNA"}}],"issuingEntities":[{"inverted":false,"value":{"organizationTypes":[],"reportSteps":[],"name":"NVD"}}]}
 
-            return new SourceSelectorEntry(hostingEntities, issuingEntityRoles, issuingEntities);
+                final JSONArray host = ObjectUtils.firstNonNull(json.optJSONArray("host"), json.optJSONArray("hostingEntities"));
+                for (int i = 0; i < host.length(); i++) {
+                    hostingEntities.add(SourceSelectorEntryEntry.from(host.get(i), CvssEntity::new));
+                }
+                final JSONArray issuerRole = ObjectUtils.firstNonNull(json.optJSONArray("issuerRole"), json.optJSONArray("issuingEntityRoles"));
+                for (int i = 0; i < issuerRole.length(); i++) {
+                    issuingEntityRoles.add(SourceSelectorEntryEntry.from(issuerRole.get(i), CvssIssuingEntityRole::new));
+                }
+                final JSONArray issuer = ObjectUtils.firstNonNull(json.optJSONArray("issuer"), json.optJSONArray("issuingEntities"));
+                for (int i = 0; i < issuer.length(); i++) {
+                    issuingEntities.add(SourceSelectorEntryEntry.from(issuer.get(i), CvssEntity::new));
+                }
+
+                return new SourceSelectorEntry(hostingEntities, issuingEntityRoles, issuingEntities);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Failed to parse SourceSelectorEntry from json: " + json, e);
+            }
         }
 
         private static String getPotentiallyInvertedOrNullName(CvssSource.EntityNameProvider nameProvider, boolean inverted) {
@@ -1111,7 +1143,18 @@ public class CvssSelector implements Cloneable {
             return (inverted ? "not:" : "") + (value == null ? "" : value.getName());
         }
 
-        public static <T extends CvssSource.EntityNameProvider> SourceSelectorEntryEntry<T> fromString(String value, Function<String, T> extractor) {
+        public static <T extends CvssSource.EntityNameProvider> SourceSelectorEntryEntry<T> from(Object value, Function<String, T> extractor) {
+            if (value == null) return null;
+            if (value instanceof String) {
+                return fromString((String) value, extractor);
+            } else if (value instanceof JSONObject) {
+                return fromJson((JSONObject) value, extractor);
+            } else {
+                throw new IllegalArgumentException("Cannot create SourceSelectorEntryEntry from " + value);
+            }
+        }
+
+        protected static <T extends CvssSource.EntityNameProvider> SourceSelectorEntryEntry<T> fromString(String value, Function<String, T> extractor) {
             if (value == null) return null;
             if (value.startsWith("not:")) {
                 final String param = value.substring(4);
@@ -1119,6 +1162,15 @@ public class CvssSelector implements Cloneable {
             } else {
                 return new SourceSelectorEntryEntry<>(extractor.apply(value.isEmpty() ? null : value), false);
             }
+        }
+
+        protected static <T extends CvssSource.EntityNameProvider> SourceSelectorEntryEntry<T> fromJson(JSONObject json, Function<String, T> extractor) {
+            final boolean inverted = json.optBoolean("inverted", false);
+            final JSONObject valueJson = json.optJSONObject("value");
+            if (valueJson == null) {
+                throw new IllegalArgumentException("SourceSelectorEntryEntry 'value' must be a JSONObject: " + json);
+            }
+            return new SourceSelectorEntryEntry<>(extractor.apply(valueJson.optString("name", null)), inverted);
         }
 
         @Override

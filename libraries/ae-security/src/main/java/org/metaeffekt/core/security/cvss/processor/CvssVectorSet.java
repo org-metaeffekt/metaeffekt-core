@@ -55,11 +55,9 @@ public class CvssVectorSet implements Cloneable {
         this.cvssVectors.removeIf(sourcedCvssVector -> Objects.equals(sourcedCvssVector.getCvssSource(), source) && Objects.equals(sourcedCvssVector.getApplicabilityCondition(), condition));
     }
 
-    public void removeForNonMatchingVulnSpecificCondition(JSONObject condition) {
-        this.cvssVectors.removeIf(sourcedCvssVector -> !Objects.equals(sourcedCvssVector.getApplicabilityCondition().toString(), condition.toString()));
+    public void removeForNonMatchingConditionAttribute(String attribute, Object value) {
+        this.cvssVectors.removeIf(sourcedCvssVector -> !Objects.equals(sourcedCvssVector.getApplicabilityCondition().opt(attribute), value));
     }
-
-
 
     public void addCvssVector(CvssSource source, String cvssVector) {
         final CvssVector vector = source.parseVector(cvssVector).deriveAddSource(source);

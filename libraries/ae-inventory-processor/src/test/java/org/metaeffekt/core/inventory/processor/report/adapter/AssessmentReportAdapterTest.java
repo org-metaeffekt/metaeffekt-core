@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report.adapter;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -24,6 +25,7 @@ import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecur
 
 import java.util.List;
 
+@Slf4j
 public class AssessmentReportAdapterTest {
     @Test
     public void vulnerabilityAssetGroupVulnerabilityCountTest() {

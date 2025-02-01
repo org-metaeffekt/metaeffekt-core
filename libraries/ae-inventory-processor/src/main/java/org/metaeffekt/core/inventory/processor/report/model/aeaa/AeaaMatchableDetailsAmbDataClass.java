@@ -340,14 +340,18 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     public void appendFromBaseModel(AMB amb) {
         super.appendFromBaseModel(amb);
 
+        boolean foundNewReferenceFormat = false;
+
         final String referencedVulnerabilities = amb.get(AdvisoryMetaData.Attribute.REFERENCED_VULNERABILITIES);
         if (referencedVulnerabilities != null) {
             this.addReferencedVulnerabilities(AeaaVulnerabilityTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedVulnerabilities)));
+            foundNewReferenceFormat = true;
         }
 
         final String referencedSecurityAdvisories = amb.get(AdvisoryMetaData.Attribute.REFERENCED_SECURITY_ADVISORIES);
         if (referencedSecurityAdvisories != null) {
             this.addReferencedSecurityAdvisories(AeaaAdvisoryTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedSecurityAdvisories)));
+            foundNewReferenceFormat = true;
         }
 
         final String referencedOtherIds = amb.get(AdvisoryMetaData.Attribute.REFERENCED_OTHER);
@@ -355,10 +359,18 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
             this.addOtherReferencedIds(AeaaOtherTypeStore.get().fromJsonMultipleReferencedIds(new JSONArray(referencedOtherIds)));
         }
 
-        {
-            final String legacyReferencedIds = amb.get(AdvisoryMetaData.Attribute.REFERENCED_IDS);
-            if (legacyReferencedIds != null) {
-                appendLegacyReferencedIds(AeaaVulnerabilityTypeStore.parseLegacyJsonReferencedIds(new JSONObject(legacyReferencedIds)));
+        if (!foundNewReferenceFormat) {
+            {
+                final String legacyReferencedIds = amb.get(AdvisoryMetaData.Attribute.REFERENCED_IDS);
+                if (legacyReferencedIds != null) {
+                    appendLegacyReferencedIds(AeaaVulnerabilityTypeStore.parseLegacyJsonReferencedIds(new JSONObject(legacyReferencedIds)));
+                }
+            }
+            {
+                final String legacyReferencedIds = amb.get(AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
+                if (legacyReferencedIds != null) {
+                    appendLegacyReferencedIds(AeaaVulnerabilityTypeStore.parseLegacyJsonReferencedIds(new JSONObject(legacyReferencedIds)));
+                }
             }
         }
 
