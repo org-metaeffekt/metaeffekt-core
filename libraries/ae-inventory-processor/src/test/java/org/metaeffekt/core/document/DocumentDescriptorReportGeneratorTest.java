@@ -57,7 +57,7 @@ public class DocumentDescriptorReportGeneratorTest {
         inventoryContexts.add(inventoryContext);
         documentDescriptor.setInventoryContexts(inventoryContexts);
         documentDescriptor.setParams(params);
-        documentDescriptor.setTemplateLanguageSelector(templatelanguageSelector);
+        documentDescriptor.setLanguage(templatelanguageSelector);
 
     }
 
