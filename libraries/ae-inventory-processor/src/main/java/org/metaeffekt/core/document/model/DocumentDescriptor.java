@@ -40,12 +40,6 @@ import java.util.*;
 public class DocumentDescriptor {
 
     /**
-     * List containing the inventoryContexts for each inventory we want to add to a report. The information from
-     * inventoryContext is used to control execution of report generation.
-     */
-    private List<InventoryContext> inventoryContexts;
-
-    /**
      * List containing the documentParts with which we construct the final document. Each document is made up of
      * documentParts that define its structure and content.
      */

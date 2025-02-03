@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
+import org.metaeffekt.core.document.model.DocumentPart;
+import org.metaeffekt.core.document.model.DocumentPartType;
 import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.document.report.DocumentDescriptorReportGenerator;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -39,6 +41,9 @@ public class DocumentDescriptorReportGeneratorTest {
         DocumentDescriptor documentDescriptor = new DocumentDescriptor();
         DocumentDescriptorReportGenerator documentDescriptorReportGenerator = new DocumentDescriptorReportGenerator();
 
+        List<InventoryContext> inventoryContexts = new ArrayList<>();
+        List<DocumentPart> documentParts = new ArrayList<>();
+
         File targetTestDir = new File("target/test-document-descriptor-report-generator");
     @Before
     public void setup() throws IOException {
@@ -46,18 +51,15 @@ public class DocumentDescriptorReportGeneratorTest {
 
         Inventory inventory = new Inventory();
         InventoryContext inventoryContext = new InventoryContext(inventory, inventory, "test", "testReportContextTitle", "testReportContext", "testVersion");
-        List<InventoryContext> inventoryContexts = new ArrayList<>();
 
-        Map<String, String> params = new HashMap<>();
-        params.put("targetLicensesDir", "");
-        params.put("targetComponentDir", "");
-        params.put("generateOverviewTablesForAdvisories", "[ {\"name\":\"CERT_EU\"} ]");
-        String templatelanguageSelector = "en";
+        Map<String, String> documentParams = new HashMap<>();
+        documentParams.put("targetLicensesDir", "");
+        documentParams.put("targetComponentDir", "");
+        String language = "en";
 
         inventoryContexts.add(inventoryContext);
-        documentDescriptor.setInventoryContexts(inventoryContexts);
-        documentDescriptor.setParams(params);
-        documentDescriptor.setLanguage(templatelanguageSelector);
+        documentDescriptor.setParams(documentParams);
+        documentDescriptor.setLanguage(language);
 
     }
 
@@ -65,6 +67,13 @@ public class DocumentDescriptorReportGeneratorTest {
     public void testAnnexTemplates () throws IOException {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/annex");
 
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("", "");
+        DocumentPartType partType = DocumentPartType.ANNEX;
+        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
         documentDescriptor.setTargetReportDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.ANNEX);
 
@@ -78,6 +87,14 @@ public class DocumentDescriptorReportGeneratorTest {
     public void testVulnerabilityReportTemplates () throws IOException {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-report");
 
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("securityPolicyFile", "security-policy-report.json");
+        partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
+        DocumentPartType partType = DocumentPartType.VULNERABILITY_REPORT;
+        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
         documentDescriptor.setTargetReportDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_REPORT);
 
@@ -91,6 +108,14 @@ public class DocumentDescriptorReportGeneratorTest {
     public void testVulnerabilityStatisticsReportTemplates () throws IOException {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-statistics-report");
 
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("securityPolicyFile", "security-policy-report.json");
+        partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
+        DocumentPartType partType = DocumentPartType.VULNERABILITY_STATISTICS_REPORT;
+        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
         documentDescriptor.setTargetReportDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_STATISTICS_REPORT);
 
@@ -104,6 +129,14 @@ public class DocumentDescriptorReportGeneratorTest {
     public void testVulnerabilitySummaryReportTemplates () throws IOException {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-summary-report");
 
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("securityPolicyFile", "security-policy-report.json");
+        partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
+        DocumentPartType partType = DocumentPartType.VULNERABILITY_SUMMARY_REPORT;
+        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
         documentDescriptor.setTargetReportDir(targetReportDir);
         documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_SUMMARY_REPORT);
 
