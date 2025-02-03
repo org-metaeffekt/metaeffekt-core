@@ -98,6 +98,9 @@ public class DocumentDescriptorReportGenerator {
         List<InventoryReport> inventoryReports = new ArrayList<InventoryReport>();
 
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+
+            documentPart.validate();
+
             // for each inventory trigger according InventoryReport instances to produce
             for(InventoryContext inventoryContext: documentPart.getInventoryContexts()) {
 
