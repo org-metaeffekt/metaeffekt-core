@@ -1,8 +1,8 @@
 #parse("META-INF/templates/asset-report-bom/macros/tpc_inventory-license.dita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_asset-no-license-summary-$reportContext.id">
     #set($templateRegistry = $registry.register("asset-report-bom", "tpc_asset-no-license"))
+<topic id="$templateRegistry.registerElement($reportContext.id)">
     <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.artifact-without-license"), true)</title>
     #set($assetData=$report.getAssetData($inventory))
     #set($artifactsWithoutLicense=$assetData.getArtifactsWithoutLicense())
@@ -12,7 +12,7 @@
 #if (!$artifactsWithoutLicense.isEmpty())
     <p>$utils.getText("asset-report-bom.artifacts-without-license")</p>
 
-    <table otherprops="wide" id="table_artifacts">
+    <table otherprops="wide" id=$templateRegistry.registerElement("table_artifacts")>
         <title>$utils.getText("general.short.artifacts") $reportContext.inContextOf()</title>
 
         <tgroup cols="2">

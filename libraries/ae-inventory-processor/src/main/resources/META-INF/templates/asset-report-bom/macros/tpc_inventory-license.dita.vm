@@ -1,4 +1,4 @@
-#macro (insertLicenseAssetTopic $license)
+#macro (insertLicenseAssetTopic $id $license)
     #set($folder=$inventory.getLicenseFolder($license))
     #set($assetLicenseDataList=$assetData.evaluateAssets($license))
     #if(!$assetLicenseDataList.isEmpty())

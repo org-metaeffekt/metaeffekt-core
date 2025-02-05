@@ -5,7 +5,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
     #set($templateRegistry = $registry.register("asset-report-bom", "tpc_asset-contained-components"))
-<topic id=$templateRegistry.registerElement("asset-contained-components-topic")>
+<topic id="$templateRegistry.registerElement('asset-contained-components-topic')">
     <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.contained-components"), true)</title>
 ##
     #set($assets = $assetAdapter.listAssets())
@@ -16,7 +16,7 @@
 
     #foreach($asset in $assets)
 
-        #set($assetEscapedId = $report.xmlEscapeStringAttribute($asset))
+        #set($assetEscapedId = "asset-" + $report.xmlEscapeStringAttribute($asset))
         #set($assetName = $asset.get("Name"))
         #set($title = "${assetName}: " + $utils.getText("general.short.components"))
         #set($artifacts = $assetAdapter.getRelatedArtifacts($asset))
@@ -34,7 +34,7 @@
 
         #if(!$artifacts.isEmpty())
         <body>
-        <topic id=$templateRegistry.registerElement("asset-$assetEscapedId")>
+        <topic id="$templateRegistry.registerElement('$assetEscapedId')">
                 <body>
                     <section>
                         <title>$title</title>

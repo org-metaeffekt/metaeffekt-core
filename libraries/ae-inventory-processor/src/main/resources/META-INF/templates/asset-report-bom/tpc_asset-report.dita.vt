@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_assets-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
   #set($templateRegistry = $registry.register("asset-report-bom", "tpc_asset-report"))
+
+<topic id="$templateRegistry.registerElement($reportContext.id)" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-list"), true)</title>
     <body>
     #set($assets=$assetAdapter.listAssets())
@@ -13,11 +14,12 @@
         <p>$utils.getText("asset-report-bom.product-contained-assets")</p>
     </body>
 #foreach($asset in $assets)
-    <topic id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">
+    #set($assetId = $asset.get("Asset Id"))
+        <topic id=$templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)")>
         <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
         <body>
             <p>
-                <table id="asset-$inventory.deriveLicenseId($asset.get("Asset Id"))">
+                <table id=$templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)")>
                 <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
                 <tgroup cols="2">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
