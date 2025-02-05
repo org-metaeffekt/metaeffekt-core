@@ -95,7 +95,7 @@ public class DocumentDescriptorReportGenerator {
      * @throws IOException if there is an error accessing inventory files or generating reports
      */
     private static void generateInventoryReports(DocumentDescriptor documentDescriptor) throws IOException {
-        List<InventoryReport> inventoryReports = new ArrayList<InventoryReport>();
+        List<InventoryReport> inventoryReports = new ArrayList<>();
 
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
 
@@ -107,7 +107,13 @@ public class DocumentDescriptorReportGenerator {
                 // validate each inventoryContext before processing
                 inventoryContext.validate();
 
-                Map<String, String> mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
+                Map<String, String> mergedParams;
+
+                if (documentPart.getParams() != null) {
+                    mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
+                } else {
+                    mergedParams = documentDescriptor.getParams();
+                }
 
                 InventoryReport report = new InventoryReport();
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
