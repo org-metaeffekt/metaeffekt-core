@@ -26,7 +26,6 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentPartType;
-import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.ReportUtils;
 import org.metaeffekt.core.util.FileUtils;
@@ -38,10 +37,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Class responsible for generating reports for document descriptors. It facilitates the creation of a DITA BookMap
@@ -100,19 +96,42 @@ public class DocumentDescriptorReport {
         }
     }
 
-    protected void createDocumentBookMap (DocumentDescriptor documentDescriptor) throws IOException {
-        if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
-            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
+    protected void createDocumentBookMap(DocumentDescriptor documentDescriptor) throws IOException {
+        // Collect the file names of the generated part bookmaps.
+        List<String> partBookMaps = new ArrayList<>();
+        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            String bookMapFilename = null;
+            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
+                bookMapFilename = "map_annex.ditamap";
+            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
+                bookMapFilename = "map_vulnerability-report.ditamap";
+            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
+                bookMapFilename = "map_vulnerability-statistics-report.ditamap";
+            } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
+                bookMapFilename = "map_vulnerability-summary-report.ditamap";
+            }
+            if (bookMapFilename != null) {
+                partBookMaps.add(bookMapFilename);
+            }
         }
-        if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
-            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
-        }
-        if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT) {
-            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
-        }
-        if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
-            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
-        }
+
+        // Specify the overall document bookmap template and target file.
+        String templateResourcePath = TEMPLATES_BASE_DIR + "/document-bookmap/map_document.ditamap.vt";
+        File targetFile = new File(this.targetReportDir, "map_document.ditamap");
+
+        log.info("Producing Dita for template [{}]", templateResourcePath);
+
+        // Build extra context with the list of part bookmaps.
+        Map<String, Object> extraContext = new HashMap<>();
+        extraContext.put("partBookMaps", partBookMaps);
+
+        // Call the unified produceBookMapDita() method.
+        produceBookMapDita(documentDescriptor,
+                null,
+                new DocumentDescriptorReportAdapters(),
+                templateResourcePath,
+                targetFile,
+                extraContext);
     }
 
     /**
@@ -202,10 +221,14 @@ public class DocumentDescriptorReport {
      * @param target the file where the generated report will be saved
      * @throws IOException if there is an error during the report generation process
      */
-    private void produceBookMapDita(DocumentDescriptor documentDescriptor, DocumentPart documentPart, DocumentDescriptorReportAdapters adapters,
-                                    String templateResourcePath, File target) throws IOException {
+    private void produceBookMapDita(DocumentDescriptor documentDescriptor,
+                                    DocumentPart documentPart,
+                                    DocumentDescriptorReportAdapters adapters,
+                                    String templateResourcePath,
+                                    File target,
+                                    Map<String, Object> extraContext) throws IOException {
 
-        log.info("Producing BookMap for template [{}]", templateResourcePath);
+        log.info("Producing Dita for template [{}]", templateResourcePath);
         final Properties properties = new Properties();
         properties.put(Velocity.RESOURCE_LOADER, "class, file");
         properties.put("class.resource.loader.class", ClasspathResourceLoader.class.getName());
@@ -218,25 +241,42 @@ public class DocumentDescriptorReport {
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
 
+        // Add common context entries.
         context.put("targetReportDir", this.targetReportDir);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", new ReportUtils());
-
         context.put("Double", Double.class);
         context.put("Float", Float.class);
         context.put("String", String.class);
 
-        // regarding the report we only use the filtered inventory for the time being
         context.put("documentDescriptor", documentDescriptor);
-        if (documentPart != null){
+        if (documentPart != null) {
             context.put("documentPart", documentPart);
         }
         context.put("documentDescriptorReportAdapters", adapters);
 
+        // Add any additional context provided.
+        if (extraContext != null) {
+            for (Map.Entry<String, Object> entry : extraContext.entrySet()) {
+                context.put(entry.getKey(), entry.getValue());
+            }
+        }
+
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString(), "UTF-8");
+    }
+
+    /**
+     * Overloaded produceBookMapDita() for cases where no extra context is required.
+     */
+    private void produceBookMapDita(DocumentDescriptor documentDescriptor,
+                                    DocumentPart documentPart,
+                                    DocumentDescriptorReportAdapters adapters,
+                                    String templateResourcePath,
+                                    File target) throws IOException {
+        produceBookMapDita(documentDescriptor, documentPart, adapters, templateResourcePath, target, Collections.emptyMap());
     }
 }
 

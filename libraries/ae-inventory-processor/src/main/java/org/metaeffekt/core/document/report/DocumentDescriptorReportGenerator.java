@@ -77,8 +77,7 @@ public class DocumentDescriptorReportGenerator {
 
         documentDescriptorReport.createPartBookMap(documentDescriptor);
 
-        //FIXME-RTU: call documentDescriptorReport.createDocumentBookMap() after creating velocity template and revision of result directory structure
-        // documentDescriptorReport.createDocumentBookMap(documentDescriptor);
+        documentDescriptorReport.createDocumentBookMap(documentDescriptor);
     }
 
     /**
