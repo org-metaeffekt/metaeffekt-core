@@ -86,32 +86,32 @@ public class DocumentDescriptorReport {
     protected void createPartBookMap(DocumentDescriptor documentDescriptor) throws IOException {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
-                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
             }
             if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
-                writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
             }
         }
     }
 
     protected void createDocumentBookMap (DocumentDescriptor documentDescriptor) throws IOException {
         if (documentDescriptor.getDocumentType() == DocumentType.ANNEX) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
+            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_ANNEX_BOOKMAP);
         }
         if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_REPORT) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
+            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_REPORT_BOOKMAP);
         }
         if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_STATISTICS_REPORT) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
+            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP);
         }
         if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
-            writeReports(documentDescriptor, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
+            writeReports(documentDescriptor, null, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP);
         }
     }
 
@@ -170,7 +170,7 @@ public class DocumentDescriptorReport {
      * @param templateGroup the group of templates to be applied for report generation
      * @throws IOException if there is an error reading templates or writing reports
      */
-    protected void writeReports(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters, String templateGroup) throws IOException {
+    protected void writeReports(DocumentDescriptor documentDescriptor, DocumentPart documentPart, DocumentDescriptorReportAdapters adapters, String templateGroup) throws IOException {
 
         addPropertiesToAdapter(documentDescriptor, adapters);
 
@@ -189,7 +189,7 @@ public class DocumentDescriptorReport {
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
             final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
 
-            produceBookMapDita(documentDescriptor, adapters, filePath, targetReportPath);
+            produceBookMapDita(documentDescriptor, documentPart, adapters, filePath, targetReportPath);
         }
     }
 
@@ -202,7 +202,7 @@ public class DocumentDescriptorReport {
      * @param target the file where the generated report will be saved
      * @throws IOException if there is an error during the report generation process
      */
-    private void produceBookMapDita(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters,
+    private void produceBookMapDita(DocumentDescriptor documentDescriptor, DocumentPart documentPart, DocumentDescriptorReportAdapters adapters,
                                     String templateResourcePath, File target) throws IOException {
 
         log.info("Producing BookMap for template [{}]", templateResourcePath);
@@ -229,6 +229,9 @@ public class DocumentDescriptorReport {
 
         // regarding the report we only use the filtered inventory for the time being
         context.put("documentDescriptor", documentDescriptor);
+        if (documentPart != null){
+            context.put("documentPart", documentPart);
+        }
         context.put("documentDescriptorReportAdapters", adapters);
 
         template.merge(context, sw);
