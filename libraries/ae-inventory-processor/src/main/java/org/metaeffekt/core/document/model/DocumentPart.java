@@ -31,6 +31,8 @@ import java.util.Map;
 @Setter
 public class DocumentPart {
 
+    String identifier;
+
     /**
      * List containing the inventoryContexts for each inventory we want to add to a report. Each inventoryContext contains
      * an inventory and other data needed for the report.
@@ -48,10 +50,11 @@ public class DocumentPart {
      */
     private Map<String, String> params;
 
-    public DocumentPart(List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params) {
+    public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params) {
         this.inventoryContexts = inventoryContexts;
         this.documentPartType = documentPartType;
         this.params = params;
+        this.identifier = identifier;
 
     }
 
