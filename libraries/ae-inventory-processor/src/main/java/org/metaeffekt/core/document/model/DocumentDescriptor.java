@@ -46,6 +46,11 @@ public class DocumentDescriptor {
     private List<DocumentPart> documentParts;
 
     /**
+     * This identifier is used to distinguish between multiple documents when creating bookMaps in the targetReportDir.
+     */
+    private String identifier;
+
+    /**
      * Representation of each document type that we can report on, depending on the set documentType, different
      * pre-requisites are checked.
      */
@@ -73,6 +78,14 @@ public class DocumentDescriptor {
      */
     public void validate() {
 
+        // check if the identifier is set
+        if (identifier == null || identifier.isEmpty()) {
+            throw new IllegalStateException("The identifier of a document must be specified.");
+        }
+        // check if parts are set
+        if (documentParts == null) {
+            throw new IllegalStateException("The parts of a document must be specified.");
+        }
         // check if document type is set
         if (documentType == null) {
             throw new IllegalStateException("The document type must be specified.");
