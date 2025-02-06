@@ -507,7 +507,7 @@ public class RepositoryReportTest {
         report.setInventoryBomReportEnabled(false);
         report.setInventoryPomEnabled(false);
         report.setInventoryDiffReportEnabled(false);
-        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(true);
         report.setInventoryVulnerabilityReportSummaryEnabled(false);
         report.setInventoryVulnerabilityStatisticsReportEnabled(false);
 
