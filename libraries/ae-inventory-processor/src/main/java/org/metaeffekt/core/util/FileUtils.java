@@ -26,6 +26,8 @@ import org.springframework.util.AntPathMatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -401,6 +403,19 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
         tmpFolder.mkdirs();
         return tmpFolder;
+    }
+
+    public static Path toAbsolutePath(String target, File reference) {
+        Path targetPath = Paths.get(target);
+        if (targetPath.isAbsolute()) {
+            return targetPath;
+        }
+        Path baseDir = reference.toPath().getParent().normalize();
+        return baseDir.resolve(targetPath).normalize().toAbsolutePath();
+    }
+
+    public static String toAbsolutePathString(String target, File reference) {
+        return toAbsolutePath(target, reference).toString();
     }
 
 }
