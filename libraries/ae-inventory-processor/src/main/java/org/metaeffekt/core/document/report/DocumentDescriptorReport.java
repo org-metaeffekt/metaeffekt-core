@@ -102,13 +102,13 @@ public class DocumentDescriptorReport {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             String bookMapFilename = null;
             if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                bookMapFilename = "map_annex.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "_annex.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                bookMapFilename = "map_vulnerability-report.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "vulnerability-report.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
-                bookMapFilename = "map_vulnerability-statistics-report.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "vulnerability-statistics-report.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
-                bookMapFilename = "map_vulnerability-summary-report.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "-summary-report.ditamap";
             }
             if (bookMapFilename != null) {
                 partBookMaps.add(bookMapFilename);
@@ -117,7 +117,7 @@ public class DocumentDescriptorReport {
 
         // Specify the overall document bookmap template and target file.
         String templateResourcePath = TEMPLATES_BASE_DIR + "/document-bookmap/map_document.ditamap.vt";
-        File targetFile = new File(this.targetReportDir, "map_document.ditamap");
+        File targetFile = new File(this.targetReportDir, "map_" + documentDescriptor.getIdentifier() + "-document.ditamap");
 
         log.info("Producing Dita for template [{}]", templateResourcePath);
 
@@ -187,9 +187,12 @@ public class DocumentDescriptorReport {
      * @param documentDescriptor the document descriptor containing the metadata for report generation
      * @param adapters the adapters holding additional properties to be used in the templates
      * @param templateGroup the group of templates to be applied for report generation
+     * @param documentPart the part of a document for which the report will be written
      * @throws IOException if there is an error reading templates or writing reports
      */
-    protected void writeReports(DocumentDescriptor documentDescriptor, DocumentPart documentPart, DocumentDescriptorReportAdapters adapters, String templateGroup) throws IOException {
+    protected void writeReports(DocumentDescriptor documentDescriptor, DocumentPart documentPart,
+                                DocumentDescriptorReportAdapters adapters, String templateGroup)
+            throws IOException {
 
         addPropertiesToAdapter(documentDescriptor, adapters);
 
@@ -203,7 +206,16 @@ public class DocumentDescriptorReport {
             String filePath = r.getURI().toASCIIString();
             String path = filePath.replace(parentPath, "");
             filePath = TEMPLATES_BASE_DIR + path;
-            String targetFileName = Objects.requireNonNull(r.getFilename()).replace(".vt", "");
+            String originalFileName = Objects.requireNonNull(r.getFilename()).replace(".vt", "");
+
+            // Modify filename only if it starts with "map_"
+            String targetFileName;
+            if (originalFileName.startsWith("map_")) {
+                int splitIndex = originalFileName.indexOf("_") + 1; // Position after "map_"
+                targetFileName = "map_" + documentPart.getIdentifier() + "-" + originalFileName.substring(splitIndex);
+            } else {
+                targetFileName = originalFileName;
+            }
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
             final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
@@ -219,6 +231,7 @@ public class DocumentDescriptorReport {
      * @param adapters the adapters containing properties to be used in the report
      * @param templateResourcePath the path to the Velocity template resource
      * @param target the file where the generated report will be saved
+     * @param documentPart the part of the document for which the bookMap will be generated
      * @throws IOException if there is an error during the report generation process
      */
     private void produceBookMapDita(DocumentDescriptor documentDescriptor,
