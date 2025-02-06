@@ -65,7 +65,7 @@ public class Cvss3P1 extends Cvss3 {
 
     @Override
     public Cvss3P1 clone() {
-        return new Cvss3P1(toString(), super.sources, super.applicabilityCondition);
+        return super.cloneInternal(new Cvss3P1());
     }
 
     @Override

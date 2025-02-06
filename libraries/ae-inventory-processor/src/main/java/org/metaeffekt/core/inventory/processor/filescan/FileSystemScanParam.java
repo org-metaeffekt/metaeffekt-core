@@ -100,14 +100,18 @@ public class FileSystemScanParam {
     }
 
     private boolean matches(String path, String[] includePatterns, String[] excludePatterns) {
-        for (String exclude : excludePatterns) {
-            if (FileUtils.matches(exclude, path)) {
-                return false;
+        if (excludePatterns != null) {
+            for (final String exclude : excludePatterns) {
+                if (FileUtils.matches(exclude, path)) {
+                    return false;
+                }
             }
         }
-        for (String include : includePatterns) {
-            if (FileUtils.matches(include, path)) {
-                return true;
+        if (includePatterns != null) {
+            for (final String include : includePatterns) {
+                if (FileUtils.matches(include, path)) {
+                    return true;
+                }
             }
         }
         return false;

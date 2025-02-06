@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import com.fasterxml.jackson.dataformat.toml.TomlMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -23,7 +22,6 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.cargo.CargoLock;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.cargo.CargoMetadata;
-import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +88,7 @@ public class CargoContributor extends ComponentPatternContributor {
                 componentPatternData.set(Artifact.Attribute.PURL, buildPurl(name, version, null));
 
                 // manage cargoLockFile file
-                if (cargoLockFile.exists()) {
+                if (cargoLockFile != null && cargoLockFile.exists()) {
                     final CargoLock cargoLock = new CargoLock(cargoLockFile);
                     final String relativeLockFilePath = asRelativePath(baseDir, cargoLockFile);
 
@@ -105,7 +103,7 @@ public class CargoContributor extends ComponentPatternContributor {
             } else {
                 final File cargoLockFile = new File(baseDir, relativeAnchorPath);
                 final File cargoTomlFile = findSingleFile(cargoLockFile.getParentFile(), "Cargo.toml", "cargo.toml");
-                if (cargoTomlFile.exists()) {
+                if (cargoTomlFile != null && cargoTomlFile.exists()) {
                     // skip this evaluation; toml file is detected separately
                 }
                 // FIXME: no toml file; handle lock file individually
