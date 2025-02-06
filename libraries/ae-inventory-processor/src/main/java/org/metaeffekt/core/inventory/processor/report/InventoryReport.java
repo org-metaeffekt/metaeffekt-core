@@ -230,6 +230,8 @@ public class InventoryReport {
      */
     private ReportContext reportContext = new ReportContext("default", null, null);
 
+    private ReportRegistry registry = new ReportRegistry();
+
     private String templateLanguageSelector = "en";
 
     public boolean createReport() throws IOException {
@@ -656,6 +658,8 @@ public class InventoryReport {
             LOG.info("No findings!");
         }
 
+        registry.populateUnresolvedReferences(targetReportDir);
+
         if (error && failOnError) {
             return false;
         }
@@ -760,7 +764,7 @@ public class InventoryReport {
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
-        context.put("registry", new ReportRegistry());
+        context.put("registry", registry);
 
         context.put("Double", Double.class);
         context.put("Float", Float.class);

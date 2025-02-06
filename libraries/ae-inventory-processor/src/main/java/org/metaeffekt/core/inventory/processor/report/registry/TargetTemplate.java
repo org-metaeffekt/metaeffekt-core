@@ -18,7 +18,9 @@ package org.metaeffekt.core.inventory.processor.report.registry;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -30,12 +32,16 @@ public class TargetTemplate {
     @Getter
     private final String templateId;
 
+    @Getter
+    private final Map<String, String> unresolvedPlaceholders;
+
     private final Set<String> elementIds;
 
     public TargetTemplate(String sectionId, String templateId) {
         this.sectionId = sectionId;
         this.templateId = templateId;
         this.elementIds = new HashSet<>();
+        this.unresolvedPlaceholders = new HashMap<>();
     }
 
     public String registerElement(String elementId) {
@@ -53,5 +59,9 @@ public class TargetTemplate {
 
     public String getResolvedKey(String elementId) {
         return sectionId + ":" + templateId + ":" + elementId;
+    }
+
+    public void addUnresolvedPlaceholder(String placeholder, String elementId) {
+        unresolvedPlaceholders.put(placeholder, elementId);
     }
 }

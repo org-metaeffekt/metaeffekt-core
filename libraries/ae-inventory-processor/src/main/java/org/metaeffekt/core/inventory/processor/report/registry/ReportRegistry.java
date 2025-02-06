@@ -16,7 +16,13 @@
 package org.metaeffekt.core.inventory.processor.report.registry;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 
 @Slf4j
@@ -24,21 +30,30 @@ public class ReportRegistry {
 
     private final Set<TargetTemplate> registry = new HashSet<>();
 
+    /**
+     * Templates register themselves when they are called. They must register themselves with their section id
+     * which is equal to the directory name, as well as the templateId which has to be the template name without
+     * the file extensions.
+     *
+     * @param sectionId The directory name in which the template resides.
+     * @param templateId The file name without extensions of the template.
+     * @return A TargetTemplate object used to register and store all element ids present in the template.
+     */
     public TargetTemplate register(String sectionId, String templateId) {
         TargetTemplate targetTemplate = new TargetTemplate(sectionId, templateId);
         registry.add(targetTemplate);
         return targetTemplate;
     }
 
-    public String resolve(TargetTemplate target, String elementId) {
+    public String resolve(TargetTemplate template, String elementId) {
         // first search for the ID in the same template.
-        if (registry.contains(target) && target.containsElement(elementId)) {
-            return target.getResolvedKey(elementId);
+        if (registry.contains(template) && template.containsElement(elementId)) {
+            return template.getResolvedKey(elementId);
         }
 
         // second search for the ID in the same section.
         Optional<TargetTemplate> sectionTarget = registry.stream()
-                .filter(t -> t.getSectionId().equals(target.getSectionId()) && t.containsElement(elementId))
+                .filter(t -> t.getSectionId().equals(template.getSectionId()) && t.containsElement(elementId))
                 .findFirst();
 
         if (sectionTarget.isPresent()) {
@@ -54,7 +69,37 @@ public class ReportRegistry {
             return anyTarget.get().getResolvedKey(elementId);
         }
 
-        log.warn("Element with ID: [{}] was not found in registry.", elementId);
+        // Adds the unresolved reference to the map for replacement in a later pass
+        try {
+            UUID.fromString(elementId);
+        } catch (IllegalArgumentException e) {
+            String placeholderUUID = UUID.randomUUID().toString();
+            template.addUnresolvedPlaceholder(placeholderUUID, elementId);
+            return placeholderUUID;
+        }
+
         return null;
+    }
+
+    public void populateUnresolvedReferences(File targetDirectory) {
+        for (TargetTemplate template : registry) {
+            if (!template.getUnresolvedPlaceholders().isEmpty()) {
+                File templateFile = new File(targetDirectory, template.getTemplateId() + ".dita");
+                try {
+                    String fileString = FileUtils.readFileToString(templateFile, StandardCharsets.UTF_8);
+                    for (Map.Entry<String, String> entry : template.getUnresolvedPlaceholders().entrySet()) {
+                        String resolved = resolve(template, entry.getValue());
+
+                        if (resolved != null) {
+                            fileString = fileString.replace(entry.getKey(), resolved);
+                        } else {
+                            log.error("No registry entry for unresolved element [{}]", entry.getValue());
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }
