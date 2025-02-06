@@ -56,10 +56,12 @@ public class DocumentDescriptorReportGeneratorTest {
         documentParams.put("targetLicensesDir", "");
         documentParams.put("targetComponentDir", "");
         String language = "en";
+        String identifier = "test";
 
         inventoryContexts.add(inventoryContext);
         documentDescriptor.setParams(documentParams);
         documentDescriptor.setLanguage(language);
+        documentDescriptor.setIdentifier(identifier);
 
     }
 
@@ -70,7 +72,7 @@ public class DocumentDescriptorReportGeneratorTest {
         Map<String, String> partParams = new HashMap<>();
         partParams.put("", "");
         DocumentPartType partType = DocumentPartType.ANNEX;
-        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -79,8 +81,10 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile = new File(targetReportDir, "map_annex-bookmap.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile.getAbsolutePath(), expectedFile.exists());
+        File expectedFile01 = new File(targetReportDir, "map_test-annex.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
     }
 
     @Test
@@ -91,7 +95,7 @@ public class DocumentDescriptorReportGeneratorTest {
         partParams.put("securityPolicyFile", "security-policy-report.json");
         partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_REPORT;
-        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -100,8 +104,10 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile = new File(targetReportDir, "map_vulnerability-report-bookmap.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile.getAbsolutePath(), expectedFile.exists());
+        File expectedFile01 = new File(targetReportDir, "map_test-vulnerability-report.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
     }
 
     @Test
@@ -112,7 +118,7 @@ public class DocumentDescriptorReportGeneratorTest {
         partParams.put("securityPolicyFile", "security-policy-report.json");
         partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_STATISTICS_REPORT;
-        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -121,8 +127,10 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile = new File(targetReportDir, "map_vulnerability-statistics-report-bookmap.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile.getAbsolutePath(), expectedFile.exists());
+        File expectedFile01 = new File(targetReportDir, "map_test-vulnerability-statistics-report.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
     }
 
     @Test
@@ -133,7 +141,7 @@ public class DocumentDescriptorReportGeneratorTest {
         partParams.put("securityPolicyFile", "security-policy-report.json");
         partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_SUMMARY_REPORT;
-        DocumentPart documentPart = new DocumentPart(inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -142,8 +150,10 @@ public class DocumentDescriptorReportGeneratorTest {
 
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
-        File expectedFile = new File(targetReportDir, "map_vulnerability-summary-report-bookmap.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile.getAbsolutePath(), expectedFile.exists());
+        File expectedFile01 = new File(targetReportDir, "map_test-vulnerability-summary-report.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
     }
 
     public void cleanUpTargetTestDir() throws IOException {

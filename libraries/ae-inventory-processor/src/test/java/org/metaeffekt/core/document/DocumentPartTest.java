@@ -54,8 +54,8 @@ public class DocumentPartTest {
 
         List<DocumentPart> parts = new ArrayList<>();
 
-        DocumentPart vulnerabilityReportPart = new DocumentPart(contexts, DocumentPartType.VULNERABILITY_REPORT, partParams);
-        DocumentPart annexPart = new DocumentPart(contexts, DocumentPartType.ANNEX, partParams);
+        DocumentPart vulnerabilityReportPart = new DocumentPart("test", contexts, DocumentPartType.VULNERABILITY_REPORT, partParams);
+        DocumentPart annexPart = new DocumentPart("test", contexts, DocumentPartType.ANNEX, partParams);
         parts.add(vulnerabilityReportPart);
         parts.add(annexPart);
 
@@ -67,6 +67,7 @@ public class DocumentPartTest {
         documentDescriptor.setDocumentType(DocumentType.ANNEX);
         documentDescriptor.setTargetReportDir(targetReportDir);
         documentDescriptor.setParams(documentParams);
+        documentDescriptor.setIdentifier("annex");
 
         DocumentDescriptorReportGenerator documentDescriptorReportGenerator = new DocumentDescriptorReportGenerator();
         documentDescriptorReportGenerator.generate(documentDescriptor);
