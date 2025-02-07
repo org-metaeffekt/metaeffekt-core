@@ -68,8 +68,7 @@
       #end
 
       #if(!$atomicTerms.isEmpty())
-        #insertLicenseTable($templateRegistry.register("LicensesInEffect"), $utils.getText("inventory-report-bom.short.licenses-in-effect")
-        ,$inventoryReportAdapter.getCanonicalNames($atomicTerms), $inventory.isSubstructureRequired($license, $effectiveLicensesRepresented), false, false)
+        #insertLicenseTable($templateRegistry.register("LicensesInEffect"), $utils.getText("inventory-report-bom.short.licenses-in-effect"),$inventoryReportAdapter.getCanonicalNames($atomicTerms), $inventory.isSubstructureRequired($license, $effectiveLicensesRepresented), false, false)
       #end
     </body>
 </topic>

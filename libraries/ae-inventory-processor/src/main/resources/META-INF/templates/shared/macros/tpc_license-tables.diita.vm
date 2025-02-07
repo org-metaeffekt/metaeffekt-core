@@ -58,7 +58,7 @@
               </entry>
               <entry>
                 #if ($licenseData)
-                  #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
+                  #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;"))
                   #if ($mappedStatus)
                     $mappedStatus
                       <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
@@ -75,7 +75,7 @@
               })
                 <entry>
                   #if ($licenseData)
-                    #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                    #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap, "&nbsp;"))
                     #if ($mappedStatus)
                       $mappedStatus
                         <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
