@@ -58,7 +58,7 @@ public class TargetTemplate {
     }
 
     public String getResolvedKey(String elementId) {
-        return sectionId + ":" + templateId + ":" + elementId;
+        return templateId + ".dita#" + sectionId + ":" + templateId + ":" + elementId;
     }
 
     public void addUnresolvedPlaceholder(String placeholder, String elementId) {

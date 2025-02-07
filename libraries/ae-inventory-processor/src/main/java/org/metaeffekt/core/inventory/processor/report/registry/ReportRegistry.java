@@ -78,6 +78,7 @@ public class ReportRegistry {
             return placeholderUUID;
         }
 
+        log.error("Could not resolve placeholder link for element [{}]", elementId);
         return null;
     }
 
@@ -88,7 +89,7 @@ public class ReportRegistry {
                 try {
                     String fileString = FileUtils.readFileToString(templateFile, StandardCharsets.UTF_8);
                     for (Map.Entry<String, String> entry : template.getUnresolvedPlaceholders().entrySet()) {
-                        String resolved = resolve(template, entry.getValue());
+                        String resolved = transformToRefLink(resolve(template, entry.getValue()));
 
                         if (resolved != null) {
                             fileString = fileString.replace(entry.getKey(), resolved);
@@ -100,6 +101,16 @@ public class ReportRegistry {
                     throw new RuntimeException(e);
                 }
             }
+        }
+    }
+
+    private String transformToRefLink(String resolvedId) {
+        String[] parts = resolvedId.split(":");
+        if (parts.length == 2) {
+            return parts[1] + ".dita#" + resolvedId;
+        } else {
+            log.warn("Found an invalid element id [{}]", resolvedId);
+            return null;
         }
     }
 }
