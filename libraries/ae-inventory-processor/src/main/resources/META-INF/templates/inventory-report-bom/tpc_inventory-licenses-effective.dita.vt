@@ -2,7 +2,9 @@
 #parse("META-INF/templates/shared/macros/tpc_license-tables.diita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_license-summary-$reportContext.id">
+  #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-licenses-effective"))
+#set($topicId = "license-summary-$reportContext.id")
+<topic id="$templateRegistry.registerElement($topicId)">
     <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.licenses-in-effect"), true)</title>
   #set($effectiveLicenses=$inventory.evaluateLicenses(false))
   #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
@@ -20,7 +22,7 @@
 
       ## License Options (not necessarily expressions)
       #if (!$termsWithOptions.isEmpty())
-      <table id="LicenseOptions" otherprops="wide">
+      <table id="$templateRegistry.registerElement('LicenseOptions')" otherprops="wide">
           <title>$utils.getText("general.short.license-options") $reportContext.inContextOf()</title>
           <tgroup cols="2">
               <colspec colname="COLSPEC0" colnum="1" colwidth="88*"/>

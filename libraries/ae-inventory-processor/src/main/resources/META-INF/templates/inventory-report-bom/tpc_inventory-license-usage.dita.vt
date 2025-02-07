@@ -1,7 +1,9 @@
 #parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_license-usage-$reportContext.id">
+    #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-license-usage"))
+    #set($topicId = "license-usage-$reportContext.id")
+<topic id="$templateRegistry.registerElement($topicId)">
     <title>$reportContext.combinedTitle("License Usage", true)</title>
     #set($effectiveLicenses=$inventory.evaluateLicenses(false))
     #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
@@ -15,7 +17,8 @@
     #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
         #insertLicenseArtifactTopic($license)
     #else
-        <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
+        #set($topicId = "effective-license-$inventory.deriveLicenseId($license)")
+        <topic id="$templateRegistry.registerElement($topicId)">
             <title>$report.xmlEscapeLicense($license) $utils.getText("general.short.variants")</title>
             <body>
                 <p>$utils.getText("inventory-report-bom.license-variations")</p>

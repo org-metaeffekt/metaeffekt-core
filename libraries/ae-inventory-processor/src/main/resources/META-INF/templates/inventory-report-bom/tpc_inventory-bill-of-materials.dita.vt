@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_bom-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-bill-of-materials"))
+    #set($topicId = "bom-$reportContext.id")
+<topic id="$templateRegistry.registerElement($topicId)" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
 
     <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.bill-of-materials"), true) - $reportContext.getReportInventoryVersion()</title>
     <body>

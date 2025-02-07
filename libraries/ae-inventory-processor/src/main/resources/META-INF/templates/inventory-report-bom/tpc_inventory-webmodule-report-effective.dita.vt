@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_webmodules-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-webmodule-report-effective"))
+    #set($topicId = "webmodule-$reportContext.id")
+<topic id="$templateRegistry.registerElement($topicId)" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Web Modules", true)</title>
     <body>
         #set($components=$inventory.evaluateComponentsInContext("web-module"))
@@ -12,7 +14,7 @@
 #else
         <p>$utils.getText("inventory-report-bom.web-module-table-descr")</p>
         <p>
-            <table otherprops="wide" id="table_web_modules">
+            <table otherprops="wide" id="$templateRegistry.registerElement('table_web_modules')">
                 <title>$utils.getText("general.short.web-modules") $reportContext.inContextOf()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
