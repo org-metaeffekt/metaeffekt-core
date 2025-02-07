@@ -203,25 +203,36 @@ public abstract class CvssVector {
     /* APPLYING VECTORS */
 
     public int applyVector(String vector) {
-        if (vector == null) return 0;
+        if (vector == null || vector.isEmpty()) return 0;
 
         final String normalizedVector = normalizeVector(vector);
         if (normalizedVector.isEmpty()) return 0;
 
-        final String[] arguments = normalizedVector.split("/");
-
         int appliedCount = 0;
-        for (String argument : arguments) {
-            if (StringUtils.isEmpty(argument)) continue;
-            final String[] parts = argument.split(":", 2);
+        int start = 0;
+        final int length = normalizedVector.length();
 
-            if (parts.length == 2) {
-                if (applyVectorArgument(parts[0], parts[1])) {
+        while (start < length) {
+            while (start < length && normalizedVector.charAt(start) == '/') start++;
+            if (start >= length) break;
+
+            int mid = start;
+            while (mid < length && normalizedVector.charAt(mid) != ':' && normalizedVector.charAt(mid) != '/') mid++;
+
+            int end;
+            if (mid < length && normalizedVector.charAt(mid) == ':') {
+                end = mid + 1;
+                while (end < length && normalizedVector.charAt(end) != '/') end++;
+
+                if (applyVectorArgument(normalizedVector.substring(start, mid), normalizedVector.substring(mid + 1, end))) {
                     appliedCount++;
                 }
             } else {
-                LOG.debug("Unknown vector argument: [{}]", argument);
+                end = mid;
+                while (end < length && normalizedVector.charAt(end) != '/') end++;
+                LOG.debug("Unknown vector argument: [{}]", normalizedVector.substring(start, end));
             }
+            start = end;
         }
 
         completeVector();

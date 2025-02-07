@@ -28,6 +28,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -566,11 +568,11 @@ public class Cvss4P0 extends CvssVector {
             LOG.warn("CVSS 4.0: Joint Eq3 and Eq6 level [{}] does not match Eq3 [{}] and Eq6 [{}]", thisMacroVector.getJointEq3AndEq6().getLevel(), thisMacroVector.getEq3().getLevel(), thisMacroVector.getEq6().getLevel());
         }
 
-        final String[][] allHighestSeverityVectors = Arrays.stream(eqOperations)
-                .map(eqOp -> eqOp.getHighestSeverityVectors(thisMacroVector))
-                .toArray(String[][]::new);
+        final List<List<Consumer<Cvss4P0>>> allHighestSeverityVectors = Arrays.stream(eqOperations)
+                .map(eqOp -> eqOp.getHighestSeverityVectorsFn(thisMacroVector))
+                .collect(Collectors.toList());
 
-        final List<Cvss4P0> highestSeverityVectorCombinations = generateCvssPermutations(allHighestSeverityVectors[0], allHighestSeverityVectors[1], allHighestSeverityVectors[2], allHighestSeverityVectors[3], allHighestSeverityVectors[4]);
+        final List<Cvss4P0> highestSeverityVectorCombinations = generateCvssPermutationsFn(allHighestSeverityVectors.get(0), allHighestSeverityVectors.get(1), allHighestSeverityVectors.get(2), allHighestSeverityVectors.get(3), allHighestSeverityVectors.get(4));
 
         if (highestSeverityVectorCombinations.isEmpty()) {
             LOG.warn("No max vectors found for {}", thisMacroVector);
@@ -711,22 +713,27 @@ public class Cvss4P0 extends CvssVector {
         return severityDistances;
     }
 
-    private List<Cvss4P0> generateCvssPermutations(String[] eq1_max_vectors, String[] eq2_max_vectors, String[] eq3_eq6_max_vectors, String[] eq4_max_vectors, String[] eq5_max_vectors) {
-        final List<Cvss4P0> HighestSeverityVectors = new ArrayList<>();
+    private List<Cvss4P0> generateCvssPermutationsFn(List<Consumer<Cvss4P0>> eq1_max_vectors, List<Consumer<Cvss4P0>> eq2_max_vectors, List<Consumer<Cvss4P0>> eq3_eq6_max_vectors, List<Consumer<Cvss4P0>> eq4_max_vectors, List<Consumer<Cvss4P0>> eq5_max_vectors) {
+        final List<Cvss4P0> highestSeverityVectors = new ArrayList<>();
 
-        for (String eq1Max : eq1_max_vectors) {
-            for (String eq2Max : eq2_max_vectors) {
-                for (String eq3Eq6Max : eq3_eq6_max_vectors) {
-                    for (String eq4Max : eq4_max_vectors) {
-                        for (String eq5Max : eq5_max_vectors) {
-                            final String combinedVector = eq1Max + "/" + eq2Max + "/" + eq3Eq6Max + "/" + eq4Max + "/" + eq5Max;
-                            HighestSeverityVectors.add(new Cvss4P0(combinedVector));
+        for (Consumer<Cvss4P0> eq1Max : eq1_max_vectors) {
+            for (Consumer<Cvss4P0> eq2Max : eq2_max_vectors) {
+                for (Consumer<Cvss4P0> eq3Eq6Max : eq3_eq6_max_vectors) {
+                    for (Consumer<Cvss4P0> eq4Max : eq4_max_vectors) {
+                        for (Consumer<Cvss4P0> eq5Max : eq5_max_vectors) {
+                            final Cvss4P0 vector = new Cvss4P0();
+                            eq1Max.accept(vector);
+                            eq2Max.accept(vector);
+                            eq3Eq6Max.accept(vector);
+                            eq4Max.accept(vector);
+                            eq5Max.accept(vector);
+                            highestSeverityVectors.add(vector);
                         }
                     }
                 }
             }
         }
-        return HighestSeverityVectors;
+        return highestSeverityVectors;
     }
 
     public static int severityDistance(Cvss4P0Attribute part1, Cvss4P0Attribute part2) {
@@ -1021,7 +1028,7 @@ public class Cvss4P0 extends CvssVector {
 
     @Override
     public BakedCvssVectorScores bakeScores() {
-        return new BakedCvssVectorScores(this);
+        return BakedCvssVectorScores.fromNullableCvss(this);
     }
 
     @Override
@@ -1871,11 +1878,34 @@ public class Cvss4P0 extends CvssVector {
         }
     }
 
+    private final static Map<Class<?>, Map<String, Object>> ATTRIBUTE_CACHE = new HashMap<>();
+
     public interface Cvss4P0Attribute extends CvssVectorAttribute {
         Cvss4P0Attribute getWorseCase();
 
         static <T extends Cvss4P0Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
-            return Arrays.stream(clazz.getEnumConstants()).filter(value -> value.getShortIdentifier().equalsIgnoreCase(part)).findFirst().orElse(defaultValue);
+            final Map<String, Object> cache;
+            if (ATTRIBUTE_CACHE.containsKey(clazz)) {
+                cache = ATTRIBUTE_CACHE.get(clazz);
+            } else {
+                cache = new HashMap<>();
+                ATTRIBUTE_CACHE.put(clazz, cache);
+            }
+            if (cache.containsKey(part)) {
+                return (T) cache.get(part);
+            } else {
+                for (T value : clazz.getEnumConstants()) {
+                    if (value.getShortIdentifier().equalsIgnoreCase(part)) {
+                        cache.put(part, value);
+                        return value;
+                    } else if (value.getIdentifier().equalsIgnoreCase(part)) {
+                        cache.put(part, value);
+                        return value;
+                    }
+                }
+                cache.put(part, defaultValue);
+                return defaultValue;
+            }
         }
     }
 
