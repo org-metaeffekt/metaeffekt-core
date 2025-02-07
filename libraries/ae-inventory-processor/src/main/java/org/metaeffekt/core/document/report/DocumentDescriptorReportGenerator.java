@@ -22,6 +22,7 @@ import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -99,7 +100,7 @@ public class DocumentDescriptorReportGenerator {
             inventoryContext.validate();
 
             Map<String, String> params = documentDescriptor.getParams();
-            InventoryReport report = new InventoryReport();
+            InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
             report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
             if (documentDescriptor.getDocumentType() == DocumentType.VULNERABILITY_SUMMARY_REPORT) {
