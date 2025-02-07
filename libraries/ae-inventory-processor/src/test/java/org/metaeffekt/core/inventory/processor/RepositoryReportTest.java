@@ -502,14 +502,14 @@ public class RepositoryReportTest {
         report.setTargetComponentDir(new File("components"));
         report.setTargetReportDir(targetReportPath);
 
-        report.setAssessmentReportEnabled(false);
+        report.setAssessmentReportEnabled(true);
         report.setAssetBomReportEnabled(true);
-        report.setInventoryBomReportEnabled(false);
-        report.setInventoryPomEnabled(false);
-        report.setInventoryDiffReportEnabled(false);
+        report.setInventoryBomReportEnabled(true);
+        report.setInventoryPomEnabled(true);
+        report.setInventoryDiffReportEnabled(true);
         report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(false);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
+        report.setInventoryVulnerabilityReportSummaryEnabled(true);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
         final boolean valid = report.createReport();
 
