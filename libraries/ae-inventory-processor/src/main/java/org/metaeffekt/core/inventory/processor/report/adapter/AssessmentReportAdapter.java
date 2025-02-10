@@ -25,8 +25,11 @@ import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerabilityContextInventory;
+import org.metaeffekt.core.security.cvss.processor.LruLinkedHashMap;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,8 @@ import static org.metaeffekt.core.inventory.processor.report.StatisticsOverviewT
 
 @Slf4j
 public class AssessmentReportAdapter {
+
+    private final LruLinkedHashMap<AssetMetaData, AeaaVulnerabilityContextInventory> vContextInventoryCache = new LruLinkedHashMap<>(200);
 
     private final Inventory inventory;
     private final CentralSecurityPolicyConfiguration securityPolicy;
@@ -102,9 +107,14 @@ public class AssessmentReportAdapter {
     }
 
     public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useEffectiveSeverity) {
-        final AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
-        vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
-        vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
+        AeaaVulnerabilityContextInventory vAssetInventory = vContextInventoryCache.get(assetMetaData);
+
+        if (vAssetInventory == null) {
+            vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
+            vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
+            vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
+            vContextInventoryCache.put(assetMetaData, vAssetInventory);
+        }
 
         final Set<AeaaVulnerability> vulnerabilities = vAssetInventory.getShallowCopyVulnerabilities();
 
