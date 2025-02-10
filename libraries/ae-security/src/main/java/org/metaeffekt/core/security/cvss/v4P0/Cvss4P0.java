@@ -29,6 +29,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -661,7 +662,7 @@ public final class Cvss4P0 extends CvssVector {
      * @return A map containing the severity distances for each attribute. If no suitable highest severity vector
      * is found, the map will be empty. A warning will be logged in this case.
      */
-    protected static Map<String, Integer> calculateSeverityDistancesByComparingToHighestSeverityVectors(Cvss4P0 comparisonVector, List<Cvss4P0> highestSeverityVectors) {
+    private static Map<String, Integer> calculateSeverityDistancesByComparingToHighestSeverityVectors(Cvss4P0 comparisonVector, List<Cvss4P0> highestSeverityVectors) {
         final Map<String, Integer> severityDistances = new LinkedHashMap<>();
 
         for (Cvss4P0 maxVector : highestSeverityVectors) {
@@ -956,8 +957,10 @@ public final class Cvss4P0 extends CvssVector {
         appendIfNotDefault(vector, "RE", vulnerabilityResponseEffort, VulnerabilityResponseEffort.NOT_DEFINED);
         appendIfNotDefault(vector, "U", providerUrgency, ProviderUrgency.NOT_DEFINED);
 
-        return vector.toString().replaceAll("/$", "");
+        return TRAILING_SLASH_PATTERN.matcher(vector.toString()).replaceAll("");
     }
+
+    private static final Pattern TRAILING_SLASH_PATTERN = Pattern.compile("/$");
 
     @Override
     public int size() {
@@ -1007,7 +1010,7 @@ public final class Cvss4P0 extends CvssVector {
             vector.append(attribute).append(":").append(getVectorArgument(attribute).getShortIdentifier()).append("/");
         }
 
-        return vector.toString().replaceAll("/$", "");
+        return TRAILING_SLASH_PATTERN.matcher(vector.toString()).replaceAll("");
     }
 
     public static String toString(Cvss4P0[] vector, String... attributes) {

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * Base class for modeling CVSS Vectors.
@@ -315,13 +316,20 @@ public abstract class CvssVector {
         return applyVectorPartsIf(vector, scoreType, false);
     }
 
+    private static final Pattern PARENTHESIS_PATTERN = Pattern.compile("[()]");
+    private static final Pattern CVSS_PATTERN = Pattern.compile("CVSS:\\d+\\.?\\d?");
+
     protected static String normalizeVector(String vector) {
-        return vector.toUpperCase()
-                .replace("(", "")
-                .replace(")", "")
-                .replaceAll("CVSS:\\d+\\.?\\d?", "")
-                .replaceAll("^/", "")
-                .trim();
+        String result = vector.toUpperCase();
+        // remove all parentheses
+        result = PARENTHESIS_PATTERN.matcher(result).replaceAll("");
+        // remove CVSS version vector
+        result = CVSS_PATTERN.matcher(result).replaceAll("");
+        // remove leading slash
+        if (!result.isEmpty() && result.charAt(0) == '/') {
+            result = result.substring(1);
+        }
+        return result.trim();
     }
 
     public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
