@@ -39,7 +39,7 @@ import java.util.*;
  * </ul>
  * See the definitions of the individual scoring methods for the equations used for the scores.
  */
-public class Cvss2 extends MultiScoreCvssVector {
+public final class Cvss2 extends MultiScoreCvssVector {
 
     // base
     private AccessVector accessVector = AccessVector.NULL;

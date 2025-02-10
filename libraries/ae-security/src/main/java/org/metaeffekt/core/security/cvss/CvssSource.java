@@ -17,6 +17,7 @@ package org.metaeffekt.core.security.cvss;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.metaeffekt.core.security.cvss.processor.LruLinkedHashMap;
 
 import java.net.URL;
 import java.util.*;
@@ -118,13 +119,23 @@ public class CvssSource {
         return vectorClass;
     }
 
+    private final LruLinkedHashMap<String, CvssVector> prototypeMap = new LruLinkedHashMap<>(2000);
+
     public CvssVector parseVector(String vector) {
         if (vectorClass == null) {
             throw new IllegalStateException("No vector class specified for CVSS source: " + this);
         }
 
+        // FIXME-KKL: evaluate option to cache prototype CvssVectors
+        final CvssVector cvssVector = prototypeMap.get(vector);
+        if (cvssVector != null) {
+            return cvssVector.clone();
+        }
+
         try {
-            return vectorClass.getConstructor(String.class).newInstance(vector);
+            final CvssVector newCvssVector = vectorClass.getConstructor(String.class).newInstance(vector);
+            prototypeMap.put(vector, newCvssVector.clone());
+            return newCvssVector;
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse vector [" + vector + "] for CVSS source: " + this, e);
         }

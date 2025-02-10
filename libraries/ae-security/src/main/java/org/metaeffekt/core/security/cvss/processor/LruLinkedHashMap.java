@@ -17,7 +17,7 @@ package org.metaeffekt.core.security.cvss.processor;
 
 import java.util.LinkedHashMap;
 
-class LruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
+public class LruLinkedHashMap<K, V> extends LinkedHashMap<K, V> {
 
     private final int maxEntries;
 

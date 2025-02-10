@@ -104,7 +104,7 @@ import java.util.stream.Stream;
  *     </li>
  * </ul>
  */
-public class Cvss4P0 extends CvssVector {
+public final class Cvss4P0 extends CvssVector {
 
     private final static Logger LOG = LoggerFactory.getLogger(Cvss4P0.class);
 
