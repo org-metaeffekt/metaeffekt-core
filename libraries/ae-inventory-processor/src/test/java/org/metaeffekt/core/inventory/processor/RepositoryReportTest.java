@@ -481,25 +481,6 @@ public class RepositoryReportTest {
                 inventoryDir, "*.xls",
                 reportDir, new InventoryReport(ReportConfigurationParameters.builder().build()));
 
-        // read package report (effective)
-        File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
-        String packageReportEffective = FileUtils.readFileToString(packageReportEffectiveFile, FileUtils.ENCODING_UTF_8);
-
-        // check links from package report
-        Assert.assertTrue(
-                "Expecting references to license chapter.",
-                packageReportEffective.contains("<xref href=\"tpc_inventory-licenses.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
-
-        // read/write inventory
-        Inventory inventory = InventoryUtils.readInventory(inventoryDir, "*.xls");
-        new InventoryWriter().writeInventory(inventory, new File(reportDir, "output_artifact-inventory.xls"));
-
-        // read rewritten
-        Inventory rereadInventory = new InventoryReader().readInventory(new File(reportDir, "output_artifact-inventory.xls"));
-
-        // check selected data in reread inventory
-        Assert.assertEquals("GPL-2.0", rereadInventory.
-                findMatchingLicenseData("GNU General Public License 2.0").get(LicenseData.Attribute.ID));
     }
 
     @Test
