@@ -96,6 +96,12 @@ public class DocumentDescriptorReport {
         }
     }
 
+    /**
+     * Method for creating the bookMap for the final document. This bookMap contains references to each part bookMap.
+     *
+     * @param documentDescriptor the descriptor containing document-specific information for the report generation
+     * @throws IOException if there is an error reading or writing report files
+     */
     protected void createDocumentBookMap(DocumentDescriptor documentDescriptor) throws IOException {
         // Collect the file names of the generated part bookmaps.
         List<String> partBookMaps = new ArrayList<>();
@@ -283,6 +289,12 @@ public class DocumentDescriptorReport {
 
     /**
      * Overloaded produceBookMapDita() for cases where no extra context is required.
+     *
+     * @param documentDescriptor the document descriptor containing the metadata for report generation
+     * @param documentPart the part of the document for which the bookMap will be generated
+     * @param adapters the adapters containing properties to be used in the report
+     * @param templateResourcePath the path to the Velocity template resource
+     * @param target the file where the generated report will be saved
      */
     private void produceBookMapDita(DocumentDescriptor documentDescriptor,
                                     DocumentPart documentPart,
