@@ -114,7 +114,7 @@ public class DocumentDescriptorReport {
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
                 bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-statistics-report.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "-summary-report.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-summary-report.ditamap";
             }
             if (bookMapFilename != null) {
                 partBookMaps.add(bookMapFilename);

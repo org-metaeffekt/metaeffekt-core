@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/map.dtd">
-<map id="map_annex">
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/bookmap.dtd">
+<bookmap id="map_annex">
 #foreach($inventoryContext in $documentPart.getInventoryContexts())
     <chapter href="$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita">
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
@@ -17,4 +17,4 @@
         #end
     </chapter>
 #end
-</map>
+</bookmap>
