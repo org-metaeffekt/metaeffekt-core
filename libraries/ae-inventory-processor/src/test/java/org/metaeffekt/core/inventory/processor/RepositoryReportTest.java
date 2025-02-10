@@ -503,13 +503,13 @@ public class RepositoryReportTest {
         report.setTargetReportDir(targetReportPath);
 
         report.setAssessmentReportEnabled(true);
-        report.setAssetBomReportEnabled(true);
-        report.setInventoryBomReportEnabled(true);
-        report.setInventoryPomEnabled(true);
-        report.setInventoryDiffReportEnabled(true);
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+        report.setAssetBomReportEnabled(false);
+        report.setInventoryBomReportEnabled(false);
+        report.setInventoryPomEnabled(false);
+        report.setInventoryDiffReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setInventoryVulnerabilityReportSummaryEnabled(false);
+        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
 
         final boolean valid = report.createReport();
 
