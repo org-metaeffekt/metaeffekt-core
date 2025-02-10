@@ -102,11 +102,11 @@ public class DocumentDescriptorReport {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             String bookMapFilename = null;
             if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "_annex.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "-annex.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "vulnerability-report.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-report.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
-                bookMapFilename = "map_" + documentPart.getIdentifier() + "vulnerability-statistics-report.ditamap";
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-statistics-report.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
                 bookMapFilename = "map_" + documentPart.getIdentifier() + "-summary-report.ditamap";
             }
