@@ -25,11 +25,8 @@ import org.metaeffekt.core.inventory.processor.report.StatisticsOverviewTable;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerabilityContextInventory;
-import org.metaeffekt.core.security.cvss.processor.LruLinkedHashMap;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -38,10 +35,11 @@ import static org.metaeffekt.core.inventory.processor.report.StatisticsOverviewT
 @Slf4j
 public class AssessmentReportAdapter {
 
-    private final LruLinkedHashMap<AssetMetaData, AeaaVulnerabilityContextInventory> vContextInventoryCache = new LruLinkedHashMap<>(200);
-
     private final Inventory inventory;
     private final CentralSecurityPolicyConfiguration securityPolicy;
+
+    private final Map<AssetMetaData, VulnerabilityCounts> initialCountsCache = new HashMap<>();
+    private final Map<AssetMetaData, VulnerabilityCounts> effectiveCountsCache = new HashMap<>();
 
     public AssessmentReportAdapter(Inventory inventory, CentralSecurityPolicyConfiguration securityPolicy) {
         this.inventory = inventory;
@@ -107,19 +105,30 @@ public class AssessmentReportAdapter {
     }
 
     public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useEffectiveSeverity) {
-        AeaaVulnerabilityContextInventory vAssetInventory = vContextInventoryCache.get(assetMetaData);
+        final Map<AssetMetaData, VulnerabilityCounts> cache = useEffectiveSeverity ? effectiveCountsCache : initialCountsCache;
 
-        if (vAssetInventory == null) {
-            vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
-            vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
-            vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
-            vContextInventoryCache.put(assetMetaData, vAssetInventory);
-        }
+        final VulnerabilityCounts counts = cache.get(assetMetaData);
 
-        final Set<AeaaVulnerability> vulnerabilities = vAssetInventory.getShallowCopyVulnerabilities();
+        if (counts != null) return counts;
 
+        AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
+        vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
+        vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
+
+        // compute both effective and initial counts
+        final VulnerabilityCounts effectiveCounts = computeCounts(true, vAssetInventory);
+        final VulnerabilityCounts initialCounts = computeCounts(false, vAssetInventory);
+
+        // and cache the information in case needed again
+        effectiveCountsCache.put(assetMetaData, effectiveCounts);
+        initialCountsCache.put(assetMetaData, initialCounts);
+
+        return useEffectiveSeverity ? effectiveCounts : initialCounts;
+    }
+
+    private VulnerabilityCounts computeCounts(boolean useEffectiveSeverity, AeaaVulnerabilityContextInventory vAssetInventory) {
         final VulnerabilityCounts counts = new VulnerabilityCounts();
-
+        final Set<AeaaVulnerability> vulnerabilities = vAssetInventory.getShallowCopyVulnerabilities();
         if (vulnerabilities != null && !vulnerabilities.isEmpty()) {
             final StatisticsOverviewTable statisticsOverviewTable = StatisticsOverviewTable.buildTable(this.securityPolicy, vulnerabilities, null, useEffectiveSeverity);
 
@@ -136,7 +145,6 @@ public class AssessmentReportAdapter {
             VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("low"), counts::setLowCounter);
             VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("none"), counts::setNoneCounter);
         }
-
         return counts;
     }
 

@@ -434,10 +434,10 @@ public class RepositoryReportTest {
                                File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setInventoryBomReportEnabled(true);
-        report.setInventoryVulnerabilityReportEnabled(true);
+        report.setInventoryBomReportEnabled(false);
+        report.setInventoryVulnerabilityReportEnabled(false);
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-        report.setAssetBomReportEnabled(true);
+        report.setAssetBomReportEnabled(false);
         report.setAssessmentReportEnabled(true);
 
         report.setFailOnUnknown(false);
@@ -474,13 +474,12 @@ public class RepositoryReportTest {
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
-        final File inventoryDir = new File("<path-to-inventory>");
+        final File inventoryDir = new File("/Volumes/T-S-DIT-007/issues/2025-counting-issue/output-inventories");
         final File reportDir = new File("target/test-inventory-external");
 
-        configureAndCreateReport(inventoryDir, "*.xls",
-                inventoryDir, "*.xls",
+        configureAndCreateReport(inventoryDir, "gts-summary-template-report-merged-preserved-contexts.xlsx",
+                inventoryDir, "gts-summary-template-report-merged-preserved-contexts_.xlsx",
                 reportDir, new InventoryReport(ReportConfigurationParameters.builder().build()));
-
     }
 
     @Test

@@ -25,17 +25,22 @@ import java.util.*;
 /**
  * <h2>Background</h2>
  * <p>
- * The new vulnerabilities and security advisories management system requires allowing any number of CVSS vectors to be stored for vulnerabilities and security advisories.
- * These vectors are aggregated by different enrichment steps, each with different sources and potential conditions attached.
+ * The new vulnerabilities and security advisories management system requires allowing any number of CVSS vectors to be
+ * stored for vulnerabilities and security advisories. These vectors are aggregated by different enrichment steps, each
+ * with different sources and potential conditions attached.
  * </p>
  * <p>
- * The reason behind this deferred effective CVSS vector selection process is simple: during the enrichment process, one does not yet know what vectors will be found in further steps.
- * It is therefore impossible to decide during the process, what CVSS vectors should be used as effective vectors for a vulnerability while the process is still running.
- * Merging them all into a single vector, as done previously, is not only incorrect, but also dangerous, since simply merging all vectors on top of each other does not allow for a conscious decision to be made by either automated rules or a human being.
+ * The reason behind this deferred effective CVSS vector selection process is simple: during the enrichment process, one
+ * does not yet know what vectors will be found in further steps. It is therefore impossible to decide during the
+ * process, what CVSS vectors should be used as effective vectors for a vulnerability while the process is still running.
+ * Merging them all into a single vector, as done previously, is not only incorrect, but also dangerous, since simply
+ * merging all vectors on top of each other does not allow for a conscious decision to be made by either automated rules
+ * or a human being.
  * </p>
  * <p>
- * In the new system, only when a CVSS score needs to be calculated will the selection and merging actually take place using a ruleset that allows for specifying an order of preference and merging methods for certain sources.
- * An example of this will be shown below, after the individual components have been explained.
+ * In the new system, only when a CVSS score needs to be calculated will the selection and merging actually take place
+ * using a ruleset that allows for specifying an order of preference and merging methods for certain sources. An example
+ * of this will be shown below, after the individual components have been explained.
  * </p>
  *
  * <hr>
@@ -56,11 +61,17 @@ import java.util.*;
  * </pre>
  * <p>Where (CvssVersion, HostingEntity) are mandatory and (IssuerRole, IssuingEntity) are optional.</p>
  * <ul>
- *     <li><strong>HostingEntity:</strong> This represents the platform, or more commonly the provider type of the CVSS vector.</li>
- *     <li><strong>IssuingEntity:</strong> Is the entity that provided the CVSS vector on the HostingEntity platform. In some cases, this is the same as the HostingEntity and can be left away, but if it differs, it must be listed.</li>
- *     <li><strong>IssuerRole:</strong> The role of the IssuingEntity on the HostingEntity platform. Must not be filled if no IssuingEntity is provided. Currently, the only role in use is the CNA role from the NVD.</li>
+ *     <li>
+ *         <strong>HostingEntity:</strong> This represents the platform, or more commonly the provider type of the CVSS
+ *     vector.</li>
+ *     <li><strong>IssuingEntity:</strong> Is the entity that provided the CVSS vector on the HostingEntity platform.
+ *     In some cases, this is the same as the HostingEntity and can be left away, but if it differs, it must be listed.</li>
+ *     <li><strong>IssuerRole:</strong> The role of the IssuingEntity on the HostingEntity platform. Must not be filled
+ *     if no IssuingEntity is provided. Currently, the only role in use is the CNA role from the NVD.</li>
  * </ul>
- * <p>Combining sources: Merged sources (more than one source) are not meant to be written back to the vulnerability inventory sheet, but are allowed in the security advisories. If multiple sources are combined, they are split using <code> + </code>:</p>
+ * <p>Combining sources: Merged sources (more than one source) are not meant to be written back to the vulnerability
+ * inventory sheet, but are allowed in the security advisories. If multiple sources are combined, they are split using
+ * <code> + </code>:</p>
  * <pre>
  * CvssVersion HostingEntity1-IssuerRole1-IssuingEntity1 + HostingEntity2-IssuerRole2-IssuingEntity2 + ...
  * </pre>
@@ -119,23 +130,13 @@ public class CvssSource {
         return vectorClass;
     }
 
-    private final LruLinkedHashMap<String, CvssVector> prototypeMap = new LruLinkedHashMap<>(2000);
-
     public CvssVector parseVector(String vector) {
         if (vectorClass == null) {
             throw new IllegalStateException("No vector class specified for CVSS source: " + this);
         }
 
-        // FIXME-KKL: evaluate option to cache prototype CvssVectors
-        final CvssVector cvssVector = prototypeMap.get(vector);
-        if (cvssVector != null) {
-            return cvssVector.clone();
-        }
-
         try {
-            final CvssVector newCvssVector = vectorClass.getConstructor(String.class).newInstance(vector);
-            prototypeMap.put(vector, newCvssVector.clone());
-            return newCvssVector;
+            return vectorClass.getConstructor(String.class).newInstance(vector);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to parse vector [" + vector + "] for CVSS source: " + this, e);
         }

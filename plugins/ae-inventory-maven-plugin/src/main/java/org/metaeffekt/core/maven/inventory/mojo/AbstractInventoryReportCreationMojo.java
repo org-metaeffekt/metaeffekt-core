@@ -37,19 +37,9 @@ import java.util.Map;
 public abstract class AbstractInventoryReportCreationMojo extends AbstractProjectAwareConfiguredMojo {
 
     /**
-     * Local Maven repository where artifacts are cached during the build process.
-     *
-     * @parameter default-value="${localRepository}"
-     * @required
-     * @readonly
-     */
-    private ArtifactRepository localRepository;
-
-    /**
      * The root inventory dir.
      *
      * @parameter
-     * @required
      */
     private File sourceInventoryDir;
 
@@ -57,7 +47,6 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * Includes of the source inventory; relative to the sourceInventoryDir.
      *
      * @parameter default-value="*.xls*"
-     * @required
      */
     private String sourceInventoryIncludes;
 
