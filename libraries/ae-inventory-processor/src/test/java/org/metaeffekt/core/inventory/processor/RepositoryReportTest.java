@@ -474,11 +474,11 @@ public class RepositoryReportTest {
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
-        final File inventoryDir = new File("/Volumes/T-S-DIT-007/issues/2025-counting-issue/output-inventories");
-        final File reportDir = new File("target/test-inventory-external");
+        final File inventoryDir = new File("<path>");
+        final File reportDir = new File("<path>");
 
-        configureAndCreateReport(inventoryDir, "gts-summary-template-report-merged-preserved-contexts.xlsx",
-                inventoryDir, "gts-summary-template-report-merged-preserved-contexts_.xlsx",
+        configureAndCreateReport(inventoryDir, "<file>",
+                null, null,
                 reportDir, new InventoryReport(ReportConfigurationParameters.builder().build()));
     }
 
