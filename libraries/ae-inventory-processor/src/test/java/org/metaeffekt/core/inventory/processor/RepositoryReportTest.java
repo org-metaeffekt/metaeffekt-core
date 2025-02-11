@@ -434,10 +434,10 @@ public class RepositoryReportTest {
                                File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setInventoryBomReportEnabled(false);
-        report.setInventoryVulnerabilityReportEnabled(false);
+        report.setInventoryBomReportEnabled(true);
+        report.setInventoryVulnerabilityReportEnabled(true);
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-        report.setAssetBomReportEnabled(false);
+        report.setAssetBomReportEnabled(true);
         report.setAssessmentReportEnabled(true);
 
         report.setFailOnUnknown(false);
