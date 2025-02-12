@@ -1142,7 +1142,12 @@ public class InventoryReport {
     }
 
     public String xmlEscapeSvgId(String text) {
-        if (text == null) return "";
+        if (StringUtils.isBlank(text)) {
+            return "";
+
+            // FIXME-KKL: post 0.135.x; throw exception to catch missing references early
+            // throw new IllegalStateException("Label for SVG must be set.");
+        }
         return text.trim().toLowerCase().replace(" ", "-");
     }
 
