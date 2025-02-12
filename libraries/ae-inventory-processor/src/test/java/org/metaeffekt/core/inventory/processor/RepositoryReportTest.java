@@ -38,7 +38,6 @@ import org.springframework.util.AntPathMatcher;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -345,12 +344,12 @@ public class RepositoryReportTest {
     }
 
     @Test
-    public void testCreateTestReport05() throws IOException {
+    public void testCreateTestReport005() throws IOException {
         File inventoryDir = new File("src/test/resources/test-inventory-05/");
         String inventoryIncludes = INVENTORY_INCLUDES;
 
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
-                .hidePriorityInformation(false)
+                .hidePriorityInformation(true)
                 .build());
 
         report.setTemplateLanguageSelector("en");

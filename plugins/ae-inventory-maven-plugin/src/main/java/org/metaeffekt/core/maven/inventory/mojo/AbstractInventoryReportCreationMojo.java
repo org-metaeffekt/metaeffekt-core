@@ -25,6 +25,7 @@ import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -281,6 +282,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      */
     private final String generateOverviewTablesForAdvisories = "[]";
 
+    /**
+     * @parameter default-value="false"
+     */
+    private boolean hidePriorityScoreInformation = false;
+
     // other template parameters
 
     /**
@@ -309,7 +315,8 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean includeInofficialOsiStatus;
 
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
-        InventoryReport report = new InventoryReport();
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().
+                hidePriorityInformation(isHidePriorityScoreInformation()).build());
         configureInventoryReport(report);
         return report;
     }
@@ -441,4 +448,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         }
     }
 
+    public boolean isHidePriorityScoreInformation() {
+        return hidePriorityScoreInformation;
+    }
 }
