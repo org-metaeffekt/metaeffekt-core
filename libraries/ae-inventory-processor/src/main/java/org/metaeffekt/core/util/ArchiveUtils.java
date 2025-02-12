@@ -86,7 +86,7 @@ public class ArchiveUtils {
         tarExtensions.add("tar");
         // bz2: bzip2 format compressed files
         tarExtensions.add("bz2");
-        // zstd: Z compression standard
+        // zstd: z compression standard https://github.com/facebook/zstd
         tarExtensions.add("zst");
         // xz: compression format xz(see also "lzma")
         tarExtensions.add("xz");
