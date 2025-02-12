@@ -1143,10 +1143,9 @@ public class InventoryReport {
 
     public String xmlEscapeSvgId(String text) {
         if (StringUtils.isBlank(text)) {
-            return "";
-
-            // FIXME-KKL: post 0.135.x; throw exception to catch missing references early
-            // throw new IllegalStateException("Label for SVG must be set.");
+            // NOTE: fail early, fail fast; not resolvable SVG links will be reported when generating the document;
+            //  this prevents that these links are generated in the first place
+            throw new IllegalStateException("Label for SVG must be set.");
         }
         return text.trim().toLowerCase().replace(" ", "-");
     }
