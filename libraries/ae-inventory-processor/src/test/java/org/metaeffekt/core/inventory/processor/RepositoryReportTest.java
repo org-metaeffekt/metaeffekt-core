@@ -349,7 +349,7 @@ public class RepositoryReportTest {
         String inventoryIncludes = INVENTORY_INCLUDES;
 
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
-                .hidePriorityInformation(false)
+                .hidePriorityInformation(true)
                 .build());
 
         report.setTemplateLanguageSelector("en");
