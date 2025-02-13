@@ -20,6 +20,8 @@ import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 
+import java.util.Objects;
+
 /**
  * Pre-calculated scores for all available scores calculated from a {@link CvssVector} instance.<br>
  * Either call the constructor of this class, passing a vector, or use the {@link CvssVector#getBakedScores()} method to
@@ -253,5 +255,17 @@ public class BakedCvssVectorScores {
     private double round(double value, int precision) {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        BakedCvssVectorScores that = (BakedCvssVectorScores) o;
+        return Double.compare(base, that.base) == 0 && Double.compare(impact, that.impact) == 0 && Double.compare(exploitability, that.exploitability) == 0 && Double.compare(temporal, that.temporal) == 0 && Double.compare(environmental, that.environmental) == 0 && Double.compare(adjustedImpact, that.adjustedImpact) == 0 && Double.compare(overall, that.overall) == 0 && Objects.equals(vector != null ? vector.toString() : null, that.vector != null ? that.vector.toString() : null);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(vector != null ? vector.toString() : null, base, impact, exploitability, temporal, environmental, adjustedImpact, overall);
     }
 }

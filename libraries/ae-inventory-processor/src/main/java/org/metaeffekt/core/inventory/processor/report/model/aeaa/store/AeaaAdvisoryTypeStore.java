@@ -21,10 +21,12 @@ import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.*;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.csaf.AeaaCsafAdvisoryEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -59,8 +61,8 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             "GHSA", "GHSA", "",
             Pattern.compile("GHSA(-[23456789cfghjmpqrvwx]{4}){3}"),
             AeaaGhsaAdvisorEntry.class, AeaaGhsaAdvisorEntry::new);
-// OSV DATA SOURCES
 
+// OSV DATA SOURCES
     /**
      * Generic OSV-Type Identifier will be used if no other known Identifier matches is matched.
      */
@@ -381,12 +383,60 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_RHEA =
             createOsvIdentifier("RHEA", "Red Hat Enhancement Advisory",
                     Pattern.compile("RHEA-\\d{4}:\\d{3,5}", Pattern.CASE_INSENSITIVE));
+    
+    // CSAF
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_GENERIC_IDENTIFIER = new AeaaAdvisoryTypeIdentifier<>(
+            "CSAF", "CSAF", "CSAF",
+            Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("CSAF", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_BSI = new AeaaAdvisoryTypeIdentifier<>(
+            "https://www.bsi.bund.de", "BSI", "CSAF",
+            Pattern.compile("((?:WID-SEC-W)|(?:BSI))-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("BSI", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_REDHAT = new AeaaAdvisoryTypeIdentifier<>(
+            "https://www.redhat.com", "Red Hat", "CSAF",
+            Pattern.compile("(?:CVE-\\d{4}-\\d{4,5})|RHSA-\\d{4}:\\d{3,5}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("REDHAT", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_SIEMENS = new AeaaAdvisoryTypeIdentifier<>(
+            "https://www.siemens.com", "Siemens", "CSAF",
+            Pattern.compile("((?:WID-SEC-W)|(?:BSI))-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("SIEMENS", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_CISA = new AeaaAdvisoryTypeIdentifier<>(
+            "https://www.cisa.gov/", "CISA", "CSAF",
+            Pattern.compile("ICSM?A-\\d{2}-\\d{3}-\\d{2}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("CISA", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_INTEVATION = new AeaaAdvisoryTypeIdentifier<>(
+            "https://intevation.de", "Intevation", "CSAF",
+            Pattern.compile("intevation-os-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("INTEVATION", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_NOZOMI = new AeaaAdvisoryTypeIdentifier<>(
+            "https://security.nozominetworks.com/psirt", "Nozomi Networks", "CSAF",
+            Pattern.compile("NN-\\d{4}:\\d{1,2}-\\d{2}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("NOZOMI", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_SICK = new AeaaAdvisoryTypeIdentifier<>(
+            "https://sick.com/psirt", "SICK", "CSAF",
+            Pattern.compile("SCA-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("SICK", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_OPEN_XCHANGE = new AeaaAdvisoryTypeIdentifier<>(
+            "https://open-xchange.com/", "Open-Exchange", "CSAF",
+            Pattern.compile("OXAS-ADV-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("OPEN_XCHANGE", "CSAF")));
 
     // ANY IDENTIFIER
     public final static AeaaAdvisoryTypeIdentifier<AeaaGeneralAdvisorEntry> ANY_ADVISORY_FILTER_WILDCARD = new AeaaAdvisoryTypeIdentifier<>(
             "any", "any", "any",
             Pattern.compile("(any|all)", Pattern.CASE_INSENSITIVE),
             AeaaGeneralAdvisorEntry.class, AeaaGeneralAdvisorEntry::new);
+
+    private final static Pattern HTTP_MATCHING_PATTERN = Pattern.compile("^(?:https?://)?(?:www\\.)?([^:/\\.\\n]+)\\.(?:(?:[^:/\\.\\n]+)\\.?)+(/(?:[^:/\\.\\n]+)?)?$");
 
     private final static AeaaAdvisoryTypeStore INSTANCE = new AeaaAdvisoryTypeStore();
 
@@ -400,7 +450,14 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     @Override
     protected AeaaAdvisoryTypeIdentifier<?> createIdentifier(String name, String implementation) {
         if (implementation.equals("CSAF")) {
-            throw new UnsupportedOperationException("CSAF is not yet supported, but will be in the future.");
+            final Matcher m = HTTP_MATCHING_PATTERN.matcher(name);
+            final String finalNameCsaf = m.matches() ? m.group(1) : name;
+            return new AeaaAdvisoryTypeIdentifier<>(
+                    name, finalNameCsaf,
+                    implementation,
+                    Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE),
+                    AeaaCsafAdvisoryEntry.class,
+                    () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation(finalNameCsaf, implementation)));
 
         } else if (implementation.equals("OSV")) {
             return new AeaaAdvisoryTypeIdentifier<>(
@@ -434,6 +491,9 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                 OSV_HSEC, OSV_RLSA, OSV_RXSA, OSV_CURL_CVE, OSV_PSF, OSV_PSF_CVE,
                 OSV_SUSE_SU, OSV_SUSE_RU, OSV_SUSE_FU, OSV_SUSE_OU, OSV_OPENSUSE_SU,
                 OSV_RHBA, OSV_RHEA, OSV_RHSA,
+                // CSAF
+                CSAF_GENERIC_IDENTIFIER, CSAF_BSI, CSAF_REDHAT, CSAF_SIEMENS, CSAF_CISA, CSAF_INTEVATION, CSAF_NOZOMI,
+                CSAF_SICK, CSAF_OPEN_XCHANGE,
                 // OTHER
                 ANY_ADVISORY_FILTER_WILDCARD
         );

@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.security.cvss.v3;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssSource;
+import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 
@@ -1175,6 +1175,38 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         public String getIdentifier() {
             return identifier;
         }
+    }
+
+    @Override
+    protected <T extends CvssVector> T cloneInternal(T clone) {
+        super.cloneInternal(clone);
+        if (!(clone instanceof Cvss3)) return clone;
+        final Cvss3 clone3 = (Cvss3) clone;
+
+        clone3.attackVector = attackVector;
+        clone3.attackComplexity = attackComplexity;
+        clone3.privilegesRequired = privilegesRequired;
+        clone3.userInteraction = userInteraction;
+        clone3.scope = scope;
+        clone3.confidentialityImpact = confidentialityImpact;
+        clone3.integrityImpact = integrityImpact;
+        clone3.availabilityImpact = availabilityImpact;
+        clone3.exploitCodeMaturity = exploitCodeMaturity;
+        clone3.remediationLevel = remediationLevel;
+        clone3.reportConfidence = reportConfidence;
+        clone3.modifiedAttackVector = modifiedAttackVector;
+        clone3.modifiedAttackComplexity = modifiedAttackComplexity;
+        clone3.modifiedPrivilegesRequired = modifiedPrivilegesRequired;
+        clone3.modifiedUserInteraction = modifiedUserInteraction;
+        clone3.modifiedScope = modifiedScope;
+        clone3.modifiedConfidentialityImpact = modifiedConfidentialityImpact;
+        clone3.modifiedIntegrityImpact = modifiedIntegrityImpact;
+        clone3.modifiedAvailabilityImpact = modifiedAvailabilityImpact;
+        clone3.confidentialityRequirement = confidentialityRequirement;
+        clone3.integrityRequirement = integrityRequirement;
+        clone3.availabilityRequirement = availabilityRequirement;
+
+        return clone;
     }
 
     @Override

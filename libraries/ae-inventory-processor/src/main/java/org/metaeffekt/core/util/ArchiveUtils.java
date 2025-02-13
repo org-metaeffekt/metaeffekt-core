@@ -19,6 +19,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
+import org.apache.commons.compress.compressors.zstandard.ZstdCompressorInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -85,6 +86,8 @@ public class ArchiveUtils {
         tarExtensions.add("tar");
         // bz2: bzip2 format compressed files
         tarExtensions.add("bz2");
+        // zstd: z compression standard https://github.com/facebook/zstd
+        tarExtensions.add("zst");
         // xz: compression format xz(see also "lzma")
         tarExtensions.add("xz");
         // tgz: sometimes used as a shorthand for ".tar.gz"
@@ -192,6 +195,16 @@ public class ArchiveUtils {
                 expandBzip2(file, target);
                 file = target;
             }
+
+            if(fileName.endsWith(".zst")) {
+                String targetName = file.getName();
+                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".zst"));
+                intermediateFiles.add(target);
+
+                expandZstd(file, target);
+                file = target;
+            }
+
         } catch (Exception e) {
             LOG.warn(e.getMessage());
             for (File intermediateFile : intermediateFiles) {
@@ -244,6 +257,14 @@ public class ArchiveUtils {
         final BZip2CompressorInputStream bzIn = new BZip2CompressorInputStream(in);
 
         unpackAndClose(bzIn, Files.newOutputStream(targetFile.toPath()));
+    }
+
+    private static void expandZstd(File file, File targetFile) throws IOException {
+        final InputStream fin = Files.newInputStream(file.toPath());
+        final BufferedInputStream in = new BufferedInputStream(fin);
+        final ZstdCompressorInputStream zIn = new ZstdCompressorInputStream(in);
+
+        unpackAndClose(zIn, Files.newOutputStream(targetFile.toPath()));
     }
 
     private static void untarInternal(File file, File targetFile) throws IOException {
@@ -316,6 +337,7 @@ public class ArchiveUtils {
                             LOG.warn("Symbolic links not supported or insufficient permissions. Skipping symbolic link creation.");
                         }
                     } else {
+                        targetFile.getParentFile().mkdirs();
                         try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
                             IOUtils.copy(in, out);
                         }

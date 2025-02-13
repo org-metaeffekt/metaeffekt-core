@@ -388,8 +388,11 @@ public class DirectoryScanAggregatorConfiguration {
                 // loop over each entry in the file map
                 for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
                     final List<File> files = entry.getValue();
-                    if (files.isEmpty()) {
-                        continue;
+                    if (foundArtifact != null) {
+                        String noFileMatchAttribute = foundArtifact.get(KEY_NO_FILE_MATCH_REQUIRED);
+                        if (files.isEmpty() && noFileMatchAttribute == null) {
+                            continue;
+                        }
                     }
 
                     coveredArtifacts.add(mapper.getArtifact());
@@ -400,7 +403,9 @@ public class DirectoryScanAggregatorConfiguration {
                     for (File file : files) {
                         // copy the file to the tmp folder; use full path from scan
                         final String relativePath = FileUtils.asRelativePath(commonRootDir, file);
-                        FileUtils.copyFile(file, new File(tmpFolder, relativePath));
+                        if (file.exists()) {
+                            FileUtils.copyFile(file, new File(tmpFolder, relativePath));
+                        }
                     }
 
                     final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
@@ -442,7 +447,7 @@ public class DirectoryScanAggregatorConfiguration {
 
                 for (String project : artifact.getProjects()) {
                     File file = new File(scanBaseDir, project);
-                    if (file.exists()) {
+                    if (file.exists() && !FileUtils.isSymlink(file) && file.isFile()) {
                         final String relativePath = FileUtils.asRelativePath(scanBaseDir, file);
                         try {
                             final File targetFile = new File(targetDir, relativePath);

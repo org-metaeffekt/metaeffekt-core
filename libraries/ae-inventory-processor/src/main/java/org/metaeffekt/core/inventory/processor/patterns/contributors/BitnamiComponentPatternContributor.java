@@ -104,9 +104,9 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
                     }
                 }
                 // FIXME-AOE: the original include was way to eager; checkout bitnami discourse container
-                // cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, packageFolder + "/**/*," + "scripts/" + packageFolder + "/**/*," + String.join(", ", includePatterns));
-                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, String.join(", ", includePatterns));
-                cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*");
+                cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, packageFolder + "/**/*," + "scripts/" + packageFolder + "/**/*," + String.join(", ", includePatterns));
+                // cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, String.join(", ", includePatterns));
+                cpd.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN, "**/*.jar, **/node_modules/**/*, **/Gemfile.*, **/package.json");
                 cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
                 cpd.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, getDeclaredLicense(packageNode));
                 cpd.set(Constants.KEY_SPECIFIED_PACKAGE_CONCLUDED_LICENSE, getConcludedLicense(packageNode));
@@ -174,18 +174,21 @@ public class BitnamiComponentPatternContributor extends ComponentPatternContribu
     private List<String> getPackageNameCandidates(JSONObject currentPackageNode) {
         List<String> packageNameCandidates = new ArrayList<>();
         String currentPackageNodePurl = getPurl(currentPackageNode);
+        String packageName;
+        String packagePurlName = "";
         try {
             if (currentPackageNodePurl != null) {
                 PackageURL currentPackagePurl = new PackageURL(currentPackageNodePurl);
-                packageNameCandidates.add(currentPackagePurl.getName());
+                packagePurlName = currentPackagePurl.getName().toLowerCase();
+                packageNameCandidates.add(packagePurlName);
             }
         } catch (Exception e) {
             LOG.warn("Could not parse purl [{}].", currentPackageNodePurl);
         }
 
-        String packageName = currentPackageNode.optString("name");
-        if (!packageName.isEmpty()) {
-            packageNameCandidates.add(packageName);
+        packageName = currentPackageNode.optString("name");
+        if (!packageName.isEmpty() && !packageName.toLowerCase().equals(packagePurlName)) {
+            packageNameCandidates.add(packageName.toLowerCase());
         }
 
         return packageNameCandidates;
