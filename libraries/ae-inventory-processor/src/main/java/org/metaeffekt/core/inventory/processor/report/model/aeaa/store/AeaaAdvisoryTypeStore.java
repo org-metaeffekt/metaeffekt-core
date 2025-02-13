@@ -383,6 +383,15 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_RHEA =
             createOsvIdentifier("RHEA", "Red Hat Enhancement Advisory",
                     Pattern.compile("RHEA-\\d{4}:\\d{3,5}", Pattern.CASE_INSENSITIVE));
+
+    /**
+     * Advisory IDs from the <b>Mageia Security Advisory</b>.
+     * Official security advisories for Mageia Linux.
+     * <a href="https://advisories.mageia.org/">Mageia Security Advisories</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_MGASA =
+            createOsvIdentifier("MGASA", "Mageia Security Advisory",
+                    Pattern.compile("(MGASA|MGAA)-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
     
     // CSAF
     public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_GENERIC_IDENTIFIER = new AeaaAdvisoryTypeIdentifier<>(
@@ -490,7 +499,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                 OSV_DTSA, OSV_RUSTSEC, OSV_CGA, OSV_BIT, OSV_UVI, OSV_CAN, OSV_RSEC, OSV_GSD, OSV_USN, OSV_PUB_A, OSV_ASB_A,
                 OSV_HSEC, OSV_RLSA, OSV_RXSA, OSV_CURL_CVE, OSV_PSF, OSV_PSF_CVE,
                 OSV_SUSE_SU, OSV_SUSE_RU, OSV_SUSE_FU, OSV_SUSE_OU, OSV_OPENSUSE_SU,
-                OSV_RHBA, OSV_RHEA, OSV_RHSA,
+                OSV_RHBA, OSV_RHEA, OSV_RHSA, OSV_MGASA,
                 // CSAF
                 CSAF_GENERIC_IDENTIFIER, CSAF_BSI, CSAF_REDHAT, CSAF_SIEMENS, CSAF_CISA, CSAF_INTEVATION, CSAF_NOZOMI,
                 CSAF_SICK, CSAF_OPEN_XCHANGE,
