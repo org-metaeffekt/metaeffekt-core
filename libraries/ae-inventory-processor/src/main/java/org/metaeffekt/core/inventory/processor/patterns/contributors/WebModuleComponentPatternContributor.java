@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
@@ -39,11 +40,8 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     private static final Logger LOG = LoggerFactory.getLogger(WebModuleComponentPatternContributor.class);
 
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
-        // TODO: perhaps canonicalize these as the specs in "applies" and the suffixes are not the same
         add(".bower.json");
         add("/bower.json");
-        add("/package-lock.json");
-        add(".package-lock.json");
         add("/package.json");
         add("/composer.json");
         add(".composer.json");
@@ -63,12 +61,13 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
         final Artifact artifact = new Artifact();
 
-        Inventory inventoryFromPackageLock = null;
+        Inventory inventoryFromLockFile = null;
 
         // attempt reading web modules metadata
         try {
             WebModule webModule = new WebModule();
-            parseDetails(anchorFile, webModule);
+            processAnchorFile(anchorFile, webModule);
+
 
             if (!webModule.hasData()) {
                 return Collections.emptyList();
@@ -91,12 +90,19 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                 }
             }
 
-            // FIXME: use both package.json and package-lock.json to produce a consolidated outcome
             if (webModule.packageLockJsonFile != null) {
-                inventoryFromPackageLock = new NpmPackageLockAdapter().
-                        createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath, webModule.name);
+                inventoryFromLockFile = new NpmPackageLockAdapter().
+                        createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath, webModule.name, webModule.dependencies);
+            } else if (webModule.yarnLockFile != null) {
+                // TODO-AOE: take already collected dependency information into account
+                inventoryFromLockFile = new YarnLockAdapter().extractInventory(webModule.yarnLockFile, relativeAnchorPath);
+            } else if (webModule.bowerJsonFile != null) {
+                // TODO-AOE: maybe we can use the npm adapter here (to be evaluated)
+            } else if (webModule.composerJsonFile != null) {
+                // TODO-AOE: move composer contributor logic here
             } else {
-                artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
+                // TODO-AOE: add purl support for several package managers
+                // artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
             }
         } catch (IOException e) {
             // it was an attempts
@@ -139,33 +145,19 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
         if (anchorFile.getName().endsWith(Constants.BOWER_JSON) || anchorFile.getName().endsWith(Constants.DOT_BOWER_JSON)) {
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "bower-module");
+        } else if (anchorFile.getName().endsWith(Constants.COMPOSER_JSON)) {
+            componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "composer-module");
         } else {
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
         }
-        componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
+        // TODO-AOE: add support for several package managers
+        // componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json");
 
-        // check whether alternatively a yarn.lock file is available
-        File yarnLock = new File(anchorParentDir, "yarn.lock");
-
-        Inventory inventoryFromYarnLock = null;
-        if (yarnLock.exists()) {
-            inventoryFromYarnLock = new YarnLockAdapter().extractInventory(yarnLock, relativeAnchorPath);
-        }
-
-        if (inventoryFromPackageLock != null) {
-            final Inventory expansionInventory = inventoryFromPackageLock;
+        if (inventoryFromLockFile != null) {
+            final Inventory expansionInventory = inventoryFromLockFile;
             componentPatternData.setExpansionInventorySupplier(() -> expansionInventory);
-
-            // FIXME: consolidate with yarnLock
-        } else {
-            if (inventoryFromYarnLock != null) {
-                final Inventory expansionInventory = inventoryFromYarnLock;
-                // FIXME: consolidate with package.json (dev/prod)
-                componentPatternData.setExpansionInventorySupplier(() -> expansionInventory);
-            }
         }
-
 
         return Collections.singletonList(componentPatternData);
     }
@@ -229,6 +221,18 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         File packageLockJsonFile;
         File packageJsonFile;
         File yarnLockFile;
+        File bowerJsonFile;
+        File composerJsonFile;
+        File composerLockFile;
+        List<WebModuleDependency> dependencies = new ArrayList<>();
+    }
+
+    @Data
+    public static class WebModuleDependency {
+        String name;
+        String version;
+        boolean isDevDependency;
+        String versionRange;
     }
 
     protected void scanWebComponents(File inventoryFile, Map<String, WebModule> pathModuleMap, File baseDir) throws IOException {
@@ -261,8 +265,6 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
 
     protected void parseModuleDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
         switch(artifact.getId()) {
-            case "package-lock.json":
-            case ".package-lock.json":
             case "composer.json":
             case ".composer.json":
             case "package.json":
@@ -277,12 +279,6 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             return true;
         }
         if (artifactPath.endsWith(Constants.BOWER_JSON)) {
-            return true;
-        }
-        if (artifactPath.endsWith(Constants.PACKAGE_LOCK_JSON)) {
-            return true;
-        }
-        if (artifactPath.endsWith(Constants.DOT_PACKAGE_LOCK_JSON)) {
             return true;
         }
         if (artifactPath.endsWith(Constants.COMPOSER_JSON)) {
@@ -301,57 +297,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         return webModule;
     }
 
-    protected void parseDetails(File packageJsonFile, WebModule webModule) throws IOException {
-        if (packageJsonFile.exists()) {
-            final String json = FileUtils.readFileToString(packageJsonFile, "UTF-8");
-            try {
-                final JSONObject obj = new JSONObject(json);
-
-                if (StringUtils.isEmpty(webModule.version)) {
-                    webModule.version = getString(obj, "version", webModule.version);
-                    webModule.anchor = packageJsonFile;
-                }
-                if (StringUtils.isEmpty(webModule.version)) {
-                    webModule.version = getString(obj, "_version", webModule.version);
-                    webModule.anchor = packageJsonFile;
-                }
-                if (StringUtils.isEmpty(webModule.version)) {
-                    webModule.version = getString(obj, "_release", webModule.version);
-                    webModule.anchor = packageJsonFile;
-                }
-
-                webModule.name = getString(obj, "name", webModule.name);
-
-                if (webModule.anchor != null) {
-                    webModule.anchorChecksum = FileUtils.computeChecksum(webModule.anchor);
-                }
-
-                if (webModule.version != null && webModule.version.matches("v[0-9].*")) {
-                    webModule.version = webModule.version.substring(1);
-                }
-
-                webModule.license = getString(obj, "license", webModule.license);
-            } catch (Exception e) {
-                LOG.warn("Cannot parse web module information: [{}]", packageJsonFile);
-            }
-
-            // in case of a package-lock.json / package.json or pairs; keep the references
-            if (packageJsonFile.getName().endsWith("package-lock.json")) {
-                webModule.packageLockJsonFile = packageJsonFile;
-                // check for adjacent package.json
-                final File file = new File(packageJsonFile.getParentFile(), "package.json");
-                if (file.exists()) {
-                    webModule.packageJsonFile = file;
-                }
-            } else {
-                final File file = new File(packageJsonFile.getParentFile(), "package-lock.json");
-                if (file.exists()) {
-                     webModule.packageLockJsonFile = file;
-                }
-            }
-        }
-    }
-
+    // NOTE: do we still need this?
     protected void parseDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
         final File projectDir = new File(baseDir, project);
         final File packageJsonFile = new File(projectDir, artifact.getId());
@@ -388,7 +334,114 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         return obj.has(key) ? obj.getString(key) : defaultValue;
     }
 
-    public static String buildPurl(String name, String version) {
-        return String.format("pkg:npm/%s@%s", name.toLowerCase(), version);
+    public static String buildPurl(String packageManager, String name, String version) {
+        return String.format("pkg:%s/%s@%s", packageManager.toLowerCase(), name.toLowerCase(), version);
+    }
+
+    private void processAnchorFile(File anchorFile, WebModule webModule) {
+        try {
+            final String json = FileUtils.readFileToString(anchorFile, "UTF-8");
+            final JSONObject obj = new JSONObject(json);
+
+            webModule.name = getString(obj, "name", webModule.name);
+            webModule.license = getString(obj, "license", webModule.license);
+            webModule.version = getVersion(obj);
+            webModule.anchor = anchorFile;
+            if (webModule.version != null) {
+                webModule.anchorChecksum = FileUtils.computeChecksum(webModule.anchor);
+            }
+            if (webModule.version != null && webModule.version.matches("v[0-9].*")) {
+                webModule.version = webModule.version.substring(1);
+            }
+
+            if (anchorFile.getName().endsWith("package.json") || anchorFile.getName().endsWith("bower.json")) {
+                JSONObject dependencies = obj.getJSONObject("dependencies");
+                for (String key : dependencies.keySet()) {
+                    WebModuleDependency dependency = new WebModuleDependency();
+                    dependency.name = key;
+                    dependency.version = dependencies.getString(key);
+                    dependency.isDevDependency = false;
+                    webModule.dependencies.add(dependency);
+                }
+                if (obj.has("devDependencies")) {
+                    dependencies = obj.getJSONObject("devDependencies");
+                    for (String key : dependencies.keySet()) {
+                        WebModuleDependency dependency = new WebModuleDependency();
+                        dependency.name = key;
+                        dependency.version = dependencies.getString(key);
+                        dependency.isDevDependency = true;
+                        webModule.dependencies.add(dependency);
+                    }
+                }
+                if (anchorFile.getName().endsWith("package.json")) {
+                    webModule.packageJsonFile = anchorFile;
+                    // check for adjacent package-lock.json
+                    final File file = new File(anchorFile.getParentFile(), "package-lock.json");
+                    if (file.exists()) {
+                        webModule.packageLockJsonFile = file;
+                    } else {
+                        // check for adjacent yarn.lock
+                        final File yarnLockFile = new File(anchorFile.getParentFile(), "yarn.lock");
+                        if (yarnLockFile.exists()) {
+                            webModule.yarnLockFile = yarnLockFile;
+                        }
+                    }
+                } else if (anchorFile.getName().endsWith("bower.json")) {
+                    webModule.bowerJsonFile = anchorFile;
+                }
+            }
+
+            if (anchorFile.getName().endsWith("composer.json")) {
+                JSONObject dependencies = obj.getJSONObject("require");
+                for (String key : dependencies.keySet()) {
+                    WebModuleDependency dependency = new WebModuleDependency();
+                    dependency.name = key;
+                    String version = dependencies.getString(key);
+                    if (version.contains("||")) {
+                        dependency.versionRange = version;
+                    } else {
+                        dependency.version = version;
+                    }
+                    dependency.isDevDependency = false;
+                    webModule.dependencies.add(dependency);
+                }
+                if (obj.has("require-dev")) {
+                    dependencies = obj.getJSONObject("require-dev");
+                    for (String key : dependencies.keySet()) {
+                        WebModuleDependency dependency = new WebModuleDependency();
+                        dependency.name = key;
+                        String version = dependencies.getString(key);
+                        if (version.contains("||")) {
+                            dependency.versionRange = version;
+                        } else {
+                            dependency.version = version;
+                        }
+                        dependency.isDevDependency = true;
+                        webModule.dependencies.add(dependency);
+                    }
+                }
+                webModule.composerJsonFile = anchorFile;
+                // check for adjacent composer.lock
+                final File file = new File(anchorFile.getParentFile(), "composer.lock");
+                if (file.exists()) {
+                    webModule.composerLockFile = file;
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Cannot parse web module information: [{}]", anchorFile);
+        }
+    }
+
+    private String getVersion(JSONObject obj) {
+        if (obj.has("version")) {
+            return obj.getString("version");
+        }
+        if (obj.has("_version")) {
+            return obj.getString("_version");
+        }
+        if (obj.has("_release")) {
+            return obj.getString("_release");
+        }
+        return null;
     }
 }

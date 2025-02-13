@@ -23,16 +23,14 @@ import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.WebModuleComponentPatternContributor;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Extracts an inventory for production npm modules based on a package-lock.json file.
@@ -50,10 +48,10 @@ public class NpmPackageLockAdapter {
      *
      * @throws IOException May throw {@link IOException} when accessing and parsing the packageLockJsonFile.
      */
-    public Inventory createInventoryFromPackageLock(File packageLockJsonFile, String relPath, String projectName) throws IOException {
+    public Inventory createInventoryFromPackageLock(File packageLockJsonFile, String relPath, String projectName, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) throws IOException {
         final Inventory inventory = new Inventory();
 
-        populateInventory(packageLockJsonFile, inventory, relPath, projectName);
+        populateInventory(packageLockJsonFile, inventory, relPath, projectName, dependencies);
 
         return inventory;
     }
@@ -87,16 +85,16 @@ public class NpmPackageLockAdapter {
         }
     }
 
-    private void populateInventory(File packageLockJsonFile, Inventory inventory, String path, String name) throws IOException {
+    private void populateInventory(File packageLockJsonFile, Inventory inventory, String path, String name, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) throws IOException {
         final String json = FileUtils.readFileToString(packageLockJsonFile, FileUtils.ENCODING_UTF_8);
         final JSONObject obj = new JSONObject(json);
 
         // support old versions, where the dependencies were listed top-level.
-        addDependencies(packageLockJsonFile, obj, inventory, path, "dependencies");
+        addDependencies(packageLockJsonFile, obj, inventory, path, "dependencies", dependencies);
 
         // in case a name is not provided, take all packages into account
         if (name == null) {
-            addDependencies(packageLockJsonFile, obj, inventory, path, "packages");
+            addDependencies(packageLockJsonFile, obj, inventory, path, "packages", dependencies);
         } else {
             // name provided
             final JSONObject packages = obj.optJSONObject("packages");
@@ -105,7 +103,7 @@ public class NpmPackageLockAdapter {
 
                 // if project with the given name was not found; fallback to all packages
                 if (project == null) {
-                    addDependencies(packageLockJsonFile, obj, inventory, path, "packages");
+                    addDependencies(packageLockJsonFile, obj, inventory, path, "packages", dependencies);
                 } else {
                     // otherwise parse project dependencies, only
                     parseProjectDependencies(inventory, path, project, packages);
@@ -116,6 +114,7 @@ public class NpmPackageLockAdapter {
 
     private static void parseProjectDependencies(Inventory inventory, String path, JSONObject project, JSONObject packages) {
         // NOTE: we ignore the devDependencies
+        // TODO-AOE: we should consider the devDependencies as well :)
         final Set<NpmModule> modules = collectModules(project.optJSONObject("dependencies"), "node_modules/");
 
         boolean changed;
@@ -198,18 +197,14 @@ public class NpmPackageLockAdapter {
         return modules;
     }
 
-    private void addDependencies(File file, JSONObject obj, Inventory inventory, String path, String dependencyTag) {
+    private void addDependencies(File file, JSONObject obj, Inventory inventory, String path, String dependencyTag, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) {
         final String prefix = "node_modules/";
 
         if (obj.has(dependencyTag)) {
-            final JSONObject dependencies = obj.getJSONObject(dependencyTag);
-            for (String key : dependencies.keySet()) {
+            final JSONObject dependenciesObject = obj.getJSONObject(dependencyTag);
+            for (String key : dependenciesObject.keySet()) {
                 if (StringUtils.isBlank(key)) continue;
-
-                final JSONObject dep = dependencies.getJSONObject(key);
-
-                String version = dep.optString("version");
-                String url = dep.optString("resolved");
+                final JSONObject dep = dependenciesObject.getJSONObject(key);
 
                 String module = key;
                 int index = module.lastIndexOf(prefix);
@@ -217,31 +212,37 @@ public class NpmPackageLockAdapter {
                     module = module.substring(index + prefix.length());
                 }
 
-                if (version != null) {
-                    Artifact artifact = new Artifact();
-                    artifact.setId(module + "-" + version);
-                    artifact.setComponent(module);
-                    artifact.setVersion(version);
-                    artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
-                    artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
-                    artifact.setUrl(url);
-                    artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
+                String version = dep.optString("version");
+                String url = dep.optString("resolved");
+                boolean production = !dep.has("dev") || !dep.getBoolean("dev");
+                for (WebModuleComponentPatternContributor.WebModuleDependency dependency : dependencies) {
+                    if (module.equals(dependency.getName())) {
+                        Artifact artifact = new Artifact();
+                        if (version == null) {
+                            version = dependency.getVersion();
+                        }
+                        artifact.setId(dependency.getName() + "-" + version);
+                        artifact.setComponent(dependency.getName());
+                        artifact.setVersion(dependency.getVersion());
+                        artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+                        artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
+                        artifact.setUrl(url);
+                        artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
 
-                    // NOTE: do not populate ARTIFACT_ROOT_PATHS; a rrot path is not known in this case
+                        // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
+                        if (dependency.isDevDependency() == !production) {
+                            // TODO-AOE: we have to check what we want to do with this information
+                        }
 
-                    String purl = buildPurl(module, version);
-                    artifact.set(Artifact.Attribute.PURL, purl);
+                        String purl = buildPurl(dependency.getName(), dependency.getVersion());
+                        artifact.set(Artifact.Attribute.PURL, purl);
 
-                    boolean production = !dep.has("dev") || !dep.getBoolean("dev");
-
-                    // only consider production artifacts
-                    if (production) {
                         inventory.getArtifacts().add(artifact);
-
-                        // validate whether this is still required
-                        addDependencies(file, dep, inventory, path, dependencyTag);
+                        addDependencies(file, dep, inventory, path, dependencyTag, dependencies);
                     }
-                } else {
+                }
+
+                if (version == null) {
                     LOG.warn("Missing version information in [{}] parse package-lock.json file as expected: {}", key, file.getAbsolutePath());
                 }
             }
