@@ -128,7 +128,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_CVE =
             createOsvIdentifier("OSV-CVE", "National Vulnerability Database",
-                    Pattern.compile("CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
+                    Pattern.compile("(OSV-)?CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
      * Advisory IDs from the <b>Debian Security Advisories</b>.
