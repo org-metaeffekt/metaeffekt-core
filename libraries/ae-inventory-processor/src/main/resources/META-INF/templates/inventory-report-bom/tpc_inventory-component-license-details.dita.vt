@@ -12,8 +12,7 @@
         <body>$utils.getText("inventory-report-bom.no-component-licenses")</body>
     #else
         #foreach($componentNotice in $componentNoticeList)
-            #set($topicId = "component_notice_$inventory.deriveLicenseId($componentNotice.getComponentName())")
-            <topic id="$templateRegistry.registerElement($topicId)">
+            <topic id="$templateRegistry.registerElement("component-notice-$inventory.deriveLicenseId($componentNotice.getComponentName())")">
                 <title>$report.xmlEscapeString($componentNotice.getComponentName())</title>
                 <body>
 
@@ -26,7 +25,7 @@
                         #end
 
                         <section>
-                            #artifactsTable($componentNotice $artifactNotice)
+                            #artifactsTable($templateRegistry $componentNotice $artifactNotice)
                         </section>
 
                         ## insert notice

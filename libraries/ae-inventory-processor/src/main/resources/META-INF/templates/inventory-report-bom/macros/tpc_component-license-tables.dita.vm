@@ -1,4 +1,4 @@
-#macro(assetTable $componentNotice $artifactNotice $assets)
+#macro(assetTable $templateRegistry $componentNotice $artifactNotice $assets)
 <title>$utils.getText(
   "inventory-report-bom.short.assets-covering") $report.xmlEscapeString($componentNotice.getComponentName())</title>
 <table otherprops="wide">
@@ -20,8 +20,7 @@
           <row>
               <entry>
                 #if($report.isAssetBomReportEnabled())
-                    <xref href="tpc_asset-contained-components.dita#asset-$report.xmlEscapeStringAttribute($asset)"
-                          type="topic">
+                    <xref href="$registry.resolve($templateRegistry, "asset-$report.xmlEscapeStringAttribute($asset)")" type="topic">
                       $report.xmlEscapeString($asset.get("Name"))
                     </xref>
                 #else
@@ -38,7 +37,7 @@
     </tgroup>
 </table>
 #end
-#macro(artifactsTable $componentNotice $artifactNotice)
+#macro(artifactsTable $templateRegistry $componentNotice $artifactNotice)
 <title>$utils.getText(
   "inventory-report-bom.short.artifacts-of-component") $report.xmlEscapeString($componentNotice.getComponentName())</title>
 <table otherprops="wide">
@@ -79,7 +78,7 @@
             #else
                 <entry>
                   ## preserve formating to achive proper line-breaks
-                    <lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                    <lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="$registry.resolve($templateRegistry, "effective-license-$inventory.deriveLicenseId($license)")" type="topic">$report.xmlEscapeLicense($license)</xref>
                     #else$report.xmlEscapeLicense($license)
                     #end#end</lines>
                 </entry>

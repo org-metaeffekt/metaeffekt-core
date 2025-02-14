@@ -1,7 +1,7 @@
 ##
 ## Lists all components which are contained in an asset to improve tracking of asset -> component relationships.
 ##
-#macro(containedComponentsTable $id $artifacts)
+#macro(containedComponentsTable $templateRegistry $id $artifacts)
     #if ($artifacts.size() > 0)
 
     <p>$utils.getText("asset-report-bom.contained-components-table")</p>
@@ -25,8 +25,7 @@
                 <row>
                     <entry>
                         #if($report.isInventoryVulnerabilityReportEnabled())
-                            <xref href="tpc_inventory-vulnerability-components.dita#component-$report
-                              .xmlEscapeStringAttribute($artifact.getComponent())" type="topic">
+                            <xref href="$registry.resolve($templateRegistry, "component-$report.xmlEscapeStringAttribute($artifact.getComponent())")" type="topic">
                                 $report.xmlEscapeString($artifact.getComponent())
                             </xref>
                         #else

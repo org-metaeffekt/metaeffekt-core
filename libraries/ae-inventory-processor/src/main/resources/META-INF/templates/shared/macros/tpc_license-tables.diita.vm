@@ -1,6 +1,6 @@
 ## This table is used in the asset-report-bom and inventory-report-bom to list a number of licenses
 ## with their correlating information.
-#macro (insertLicenseTable $id $title $licenseList $handleSubstructure $includeOpenCoDE $forAssets)
+#macro (insertLicenseTable $templateRegistry $id $title $licenseList $handleSubstructure $includeOpenCoDE $forAssets)
 <table id="$id"><title>$title$reportContext.inContextOf()</title>
   #if($includeOpenCoDE)
   <tgroup cols="5">
@@ -45,9 +45,9 @@
         <row>
           #if ($handleSubstructure && $assetData.isLicenseSubstructureRequired($license))
               <entry>
-                  <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic"/>
+                  <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic"/>
                 $report.xmlEscapeLicense($license)
-                  <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                  <xref href="$registry.resolve($templateRegistry, "$reportContext.id/id-footnote")" type="fn"/>
               </entry>
               <entry>
                 #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
@@ -61,7 +61,7 @@
                   #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;"))
                   #if ($mappedStatus)
                     $mappedStatus
-                      <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                      <xref href="$registry.resolve($templateRegistry, "$reportContext.id/id-footnote")" type="fn"/>
                   #end
                 #else
                     &nbsp;
@@ -78,7 +78,7 @@
                     #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap, "&nbsp;"))
                     #if ($mappedStatus)
                       $mappedStatus
-                        <xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                        <xref href="$registry.resolve($templateRegistry, "$reportContext.id/id-footnote")" type="fn"/>
                     #end
                   #else
                       &nbsp;
@@ -87,7 +87,7 @@
             #end
           #else
               <entry>
-                  <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                  <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic">
                     $report.xmlEscapeLicense($license)
                   </xref>
               </entry>
@@ -116,7 +116,7 @@
             #end
           #end
             <entry>
-                <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic">
                   #if($forAssets)
                       <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, $handleSubstructure)</codeph>
                   #else

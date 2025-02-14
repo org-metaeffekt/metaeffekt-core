@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.report.registry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +47,21 @@ public class ReportRegistry {
     }
 
     public String resolve(TargetTemplate template, String elementId) {
+        String foundElement = findElement(template, elementId);
+
+        // Adds the unresolved reference to the map for replacement in a later pass
+        if (foundElement == null) {
+            String placeholderUUID = UUID.randomUUID().toString();
+            template.addUnresolvedPlaceholder(placeholderUUID, elementId);
+            return placeholderUUID;
+        }
+
+        // FIXME: REMOVE
+        log.debug("Element [{}] resolved.", foundElement);
+        return foundElement;
+    }
+
+    private String findElement(TargetTemplate template, String elementId) {
         // first search for the ID in the same template.
         if (registry.contains(template) && template.containsElement(elementId)) {
             return template.getResolvedKey(elementId);
@@ -69,48 +85,37 @@ public class ReportRegistry {
             return anyTarget.get().getResolvedKey(elementId);
         }
 
-        // Adds the unresolved reference to the map for replacement in a later pass
-        try {
-            UUID.fromString(elementId);
-        } catch (IllegalArgumentException e) {
-            String placeholderUUID = UUID.randomUUID().toString();
-            template.addUnresolvedPlaceholder(placeholderUUID, elementId);
-            return placeholderUUID;
-        }
-
-        log.error("Could not resolve placeholder link for element [{}]", elementId);
         return null;
     }
 
+    /**
+     * This method collects all placeholder entries across all template entries in the registry. Based on which templates contain
+     * placeholders the method reads those template files as strings and attempts to replace the placeholders with their correct ids.
+     *
+     * @param targetDirectory  The directory in which the report templates were generated in.
+     */
     public void populateUnresolvedReferences(File targetDirectory) {
         for (TargetTemplate template : registry) {
             if (!template.getUnresolvedPlaceholders().isEmpty()) {
                 File templateFile = new File(targetDirectory, template.getTemplateId() + ".dita");
                 try {
                     String fileString = FileUtils.readFileToString(templateFile, StandardCharsets.UTF_8);
+
                     for (Map.Entry<String, String> entry : template.getUnresolvedPlaceholders().entrySet()) {
-                        String resolved = transformToRefLink(resolve(template, entry.getValue()));
+                        String resolved =  findElement(template, entry.getValue());
 
                         if (resolved != null) {
                             fileString = fileString.replace(entry.getKey(), resolved);
+                            FileUtils.writeStringToFile(templateFile, fileString, StandardCharsets.UTF_8);
                         } else {
-                            log.error("No registry entry for unresolved element [{}]", entry.getValue());
+                            // If this is thrown check whether the searched for id was actually registered somewhere.
+                            log.error("Reference to element id [{}] from template [{}] was unsuccessfull.", entry.getValue(), template.getTemplateId());
                         }
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
-        }
-    }
-
-    private String transformToRefLink(String resolvedId) {
-        String[] parts = resolvedId.split(":");
-        if (parts.length == 2) {
-            return parts[1] + ".dita#" + resolvedId;
-        } else {
-            log.warn("Found an invalid element id [{}]", resolvedId);
-            return null;
         }
     }
 }

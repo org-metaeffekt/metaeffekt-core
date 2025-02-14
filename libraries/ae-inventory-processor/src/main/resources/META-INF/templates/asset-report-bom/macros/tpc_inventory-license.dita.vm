@@ -1,15 +1,16 @@
-#macro (insertLicenseAssetTopic $id $license)
+#macro (insertLicenseAssetTopic $templateRegistry $id $license)
     #set($folder=$inventory.getLicenseFolder($license))
     #set($assetLicenseDataList=$assetData.evaluateAssets($license))
     #if(!$assetLicenseDataList.isEmpty())
-    <topic id="tpc_associated_license_details_$inventory.deriveLicenseId($license)">
+    <topic id="$templateRegistry.registerEtpc_associated_license_details_$inventory.deriveLicenseId($license)">
+        <topic id="$id">
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
         <p>
             $utils.getText("asset-report-bom.license-asset-topic")
             #if($folder)
                 $utils.getText("asset-report-bom.license-asset-topic-location")
-                <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
+                <xref href="$registry.resolve($templateRegistry, "$report.getRelativeLicensePath()/$folder/")" type="html"
                       scope="external">$report.xmlEscapeString($license)
                     [external]
                 </xref>

@@ -1,14 +1,13 @@
-#macro (insertLicenseArtifactTopic $license)
+#macro (insertLicenseArtifactTopic $templateRegistry $license)
     #set($folder=$inventory.getLicenseFolder($license))
     #set($licenseDataList=$inventory.evaluateComponents($license))
     #if(!$licenseDataList.isEmpty())
-    <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
-        <title>$report.xmlEscapeLicense($license)</title>
         <body>
             <p>
                 $utils.getText("inventory-report-bom.license-artifact-topic")
                 #if($folder)
                     $utils.getText("inventory-report-bom.license-artifact-topic-location")
+                    ## FIXME JFU: This ref is intentionally not resolved, check if this is correct.
                     <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
                         [external]</xref>.
                 #end
@@ -36,7 +35,8 @@
                                     <row>
                                         <entry>
                                             #if($hasNotice)
-                                                <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($artifact.getComponent())" type="topic">
+                                                #set($licenseId = $inventory.deriveLicenseId($artifact.getComponent()))
+                                                <xref href="$registry.resolve($templateRegistry, "component-notice-$licenseId")" type="topic">
                                                     $report.xmlEscapeString($artifact.getComponent())
                                                 </xref>
                                             #else
@@ -61,6 +61,5 @@
                 </table>
             </p>
         </body>
-    </topic>
     #end
 #end

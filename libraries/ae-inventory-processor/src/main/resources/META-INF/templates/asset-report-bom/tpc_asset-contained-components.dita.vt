@@ -39,7 +39,7 @@
                     <section>
                         <title>$title</title>
                             <body>
-                                #containedComponentsTable($templateRegistry.registerElement("contained-components-table") $artifacts)
+                                #containedComponentsTable($templateRegistry, $templateRegistry.registerElement("contained-components-table") $artifacts)
                             </body>
                     </section>
                 </body>
