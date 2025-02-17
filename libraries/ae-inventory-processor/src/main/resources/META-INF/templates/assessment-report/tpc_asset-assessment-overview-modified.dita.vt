@@ -5,7 +5,9 @@
 ## main template content
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_asset-assessment-overview-modified-$reportContext.id">
+#set($templateRegistry = $registry.register("assessment-report", "tpc_asset-assessment-overview-modified"))
+#set($topicId = $reportContext.id)
+<topic id="$templateRegistry.registerElement($topicId)">
     <title>$reportContext.combinedTitle($utils.getText("assessment-report.short.effective-vuln-by-asset"), true)</title>
 ##
     #set($assets = $assessmentReportAdapter.getAssets())
@@ -18,7 +20,12 @@
         #else
             <p>$utils.getText("assessment-report.vuln-table-descr")</p>
             <p>$utils.getText("assessment-report.vuln-table-descr-modified")</p>
-            #assetAssessmentSummary("asset-assessment-summary-effective", $assets, true)
+            #set ($assetGroups = $assessmentReportAdapter.groupAssetsByAssetGroup($assets, true))
+            #foreach ($group in $assetGroups)
+                #set ($assetGroupAsXmlId = $group.assetGroupAsXmlId)
+                #set ($tabledId = "asset-assessment-summary-effective-${assetGroupAsXmlId}")
+                #assetAssessmentSummaryTable($templateRegistry.registerElement($tabledId) $group)
+            #end
         #end
     </body>
 </topic>

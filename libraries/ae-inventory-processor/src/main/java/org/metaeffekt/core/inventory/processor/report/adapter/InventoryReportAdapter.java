@@ -103,4 +103,12 @@ public class InventoryReportAdapter {
         return termsCategorization;
     }
 
+    public List<String> getCanonicalNames(List<LicenseData> licenses) {
+        List<String>licenseCanoncialNames = new ArrayList<>();
+        for (LicenseData license : licenses) {
+            licenseCanoncialNames.add(license.get("Canonical Name"));
+        }
+        return licenseCanoncialNames;
+    }
+
 }

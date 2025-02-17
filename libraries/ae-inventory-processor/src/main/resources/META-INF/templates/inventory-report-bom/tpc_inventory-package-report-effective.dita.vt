@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_packages-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-package-report-effective"))
+#set($topicId = "packages-$reportContext.id")
+<topic id="$templateRegistry.registerElement($topicId)" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Packages", true)</title>
     <body>
         #set($components=$inventory.evaluateComponentsInContext("package"))
@@ -12,7 +14,7 @@
 #else
         <p>$utils.getText("inventory-report-bom.package-table-descr")</p>
         <p>
-            <table otherprops="wide" id="table_packages">
+            <table otherprops="wide" id="$templateRegistry.registerElement('table_packages')">
                 <title>$utils.getText("general.short.packages") $reportContext.inContextOf()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
@@ -35,7 +37,8 @@
                 <row>
                     #if($hasNotice)
                         <entry>
-                            <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)" type="topic">
+
+                            <xref href="$registry.resolve($templateRegistry, "component-notice-$inventory.deriveLicenseId($component.name)")" type="topic">
                                 $report.xmlEscapeComponentName($component.getOriginalComponentName())
                             </xref>
                         </entry>
@@ -57,7 +60,7 @@
                     #else
                     <entry>
 ## preserve formating to achive proper line-breaks
-<lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+<lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="$registry.resolve($templateRegistry, "effective-license-$inventory.deriveLicenseId($license)")" type="topic">$report.xmlEscapeLicense($license)</xref>
 #else$report.xmlEscapeLicense($license)
 #end#end</lines>
                     </entry>

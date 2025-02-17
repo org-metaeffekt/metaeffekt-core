@@ -40,6 +40,7 @@ import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
+import org.metaeffekt.core.inventory.processor.report.registry.ReportRegistry;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
@@ -228,6 +229,8 @@ public class InventoryReport {
      * Default {@link ReportContext}.
      */
     private ReportContext reportContext = new ReportContext("default", null, null);
+
+    private ReportRegistry registry = new ReportRegistry();
 
     private String templateLanguageSelector = "en";
 
@@ -655,6 +658,8 @@ public class InventoryReport {
             LOG.info("No findings!");
         }
 
+        registry.populateUnresolvedReferences(targetReportDir);
+
         if (error && failOnError) {
             return false;
         }
@@ -759,6 +764,7 @@ public class InventoryReport {
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
+        context.put("registry", registry);
 
         context.put("Double", Double.class);
         context.put("Float", Float.class);
