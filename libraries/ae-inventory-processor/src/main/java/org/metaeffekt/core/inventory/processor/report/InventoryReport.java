@@ -36,6 +36,7 @@ import org.metaeffekt.core.inventory.processor.report.adapter.AssetReportAdapter
 import org.metaeffekt.core.inventory.processor.report.adapter.InventoryReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
@@ -211,7 +212,7 @@ public class InventoryReport {
 
     private List<Artifact> addOnArtifacts;
 
-    // FIXME: do we want to support this? This is for aggregating information in a reactor project.
+    // FIXME: do we want to further support this? This is for aggregating information in a reactor project.
     private transient Inventory lastProjectInventory;
 
     /**
@@ -230,6 +231,19 @@ public class InventoryReport {
     private ReportContext reportContext = new ReportContext("default", null, null);
 
     private String templateLanguageSelector = "en";
+
+    private final ReportConfigurationParameters reportConfigurationParameters;
+
+    /**
+     * Initializes ReportConfigurationParameters with default values.
+     */
+    public InventoryReport() {
+        this.reportConfigurationParameters = ReportConfigurationParameters.builder().build();
+    }
+
+    public InventoryReport(ReportConfigurationParameters reportConfigurationParameters) {
+        this.reportConfigurationParameters = reportConfigurationParameters;
+    }
 
     public boolean createReport() throws IOException {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
@@ -270,7 +284,11 @@ public class InventoryReport {
         if (referenceInventory != null) {
             return referenceInventory;
         }
-        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}", referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
+        if (referenceInventoryDir == null || referenceInventoryIncludes == null) {
+            return new Inventory();
+        }
+        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}",
+                referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
 
@@ -293,6 +311,7 @@ public class InventoryReport {
 
         LOG.debug("Constructing project inventory from local inventory {} and global inventory {}", globalInventory.getInventorySizePrintString(), localInventory.getInventorySizePrintString());
 
+        // FIXME-KKL: why don't we simply use the local inventory
         final Inventory projectInventory = new Inventory();
         this.lastProjectInventory = projectInventory;
 
@@ -301,6 +320,15 @@ public class InventoryReport {
 
         // transfer identified assets from scan
         projectInventory.inheritAssetMetaData(localInventory, false);
+
+        // transfer license data
+        projectInventory.inheritLicenseData(localInventory, false);
+
+        // transfer available vulnerability information
+        projectInventory.inheritVulnerabilityMetaData(localInventory, false);
+
+        // transfer available cert information
+        projectInventory.inheritCertMetaData(localInventory, false);
 
         // transfer inventory info
         projectInventory.inheritInventoryInfo(localInventory, false);
@@ -551,6 +579,7 @@ public class InventoryReport {
         projectInventory.inheritLicenseMetaData(globalInventory, false);
         projectInventory.filterLicenseMetaData();
 
+        // transfer license data
         projectInventory.inheritLicenseData(globalInventory, false);
 
         // transfer available vulnerability information
@@ -767,7 +796,7 @@ public class InventoryReport {
         context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
-
+        context.put("configParams", this.reportConfigurationParameters);
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString(), "UTF-8");
@@ -945,6 +974,7 @@ public class InventoryReport {
                     // in any case copy the license license folder
                     missingFiles |= checkAndCopyLicenseFolder(effectiveLicenseFolderName,
                             new File(targetLicenseDir, effectiveLicenseFolderName), reportedSourceFolders);
+
 
                     // copy the component folder into the effective license folder
                     final File licenseTargetDir = new File(targetLicenseDir, effectiveLicenseFolderName);
