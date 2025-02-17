@@ -100,6 +100,5 @@ public class DocumentDescriptor {
             throw new IllegalStateException("The target report directory must be a directory.");
         }
 
-        // TODO-RTU: Add documentPart validation
     }
 }
