@@ -65,7 +65,7 @@ public class DocumentDescriptor {
     /**
      * The language in which the document should be produced.
      */
-    private String language = "en";
+    private Locale language = Locale.ENGLISH;
 
     /**
      * The target directory for the report.

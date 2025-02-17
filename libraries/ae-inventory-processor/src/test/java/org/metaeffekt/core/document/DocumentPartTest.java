@@ -28,10 +28,7 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 public class DocumentPartTest {
@@ -63,7 +60,7 @@ public class DocumentPartTest {
         documentParams.put("targetLicensesDir", "test");
         documentParams.put("targetComponentDir", "test");
         documentDescriptor.setDocumentParts(parts);
-        documentDescriptor.setLanguage("en");
+        documentDescriptor.setLanguage(Locale.ENGLISH);
         documentDescriptor.setDocumentType(DocumentType.ANNEX);
         documentDescriptor.setTargetReportDir(targetReportDir);
         documentDescriptor.setParams(documentParams);
