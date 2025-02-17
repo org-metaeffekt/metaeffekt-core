@@ -44,8 +44,8 @@ public class ReportUtils {
      */
     private String lang;
 
-    public void setLang(String lang) {
-        this.lang = lang;
+    public void setLang(Locale locale) {
+        this.lang = locale.getLanguage();
         Properties props = new Properties();
         InputStream inputStream = this.getClass()
                 .getClassLoader()

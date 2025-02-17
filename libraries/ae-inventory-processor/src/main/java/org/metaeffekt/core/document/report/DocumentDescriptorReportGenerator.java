@@ -25,13 +25,11 @@ import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class is responsible for orchestrating the generation of reports for a given {@link DocumentDescriptor}.
@@ -114,51 +112,51 @@ public class DocumentDescriptorReportGenerator {
                     mergedParams = documentDescriptor.getParams();
                 }
 
-                InventoryReport report = new InventoryReport();
+                ReportConfigurationParameters.ReportConfigurationParametersBuilder builder = ReportConfigurationParameters.builder();
+
+                switch (documentPart.getDocumentPartType()) {
+                    case ANNEX:
+                        builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
+                        builder.inventoryBomReportEnabled(true);
+                        break;
+                    case VULNERABILITY_STATISTICS_REPORT:
+                        builder.inventoryVulnerabilityStatisticsReportEnabled(true);
+                        break;
+                    case VULNERABILITY_SUMMARY_REPORT:
+                        builder.inventoryVulnerabilityReportSummaryEnabled(true);
+                        break;
+                    case VULNERABILITY_REPORT:
+                        builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
+                        builder.inventoryVulnerabilityReportEnabled(true);
+                        break;
+                }
+                builder.reportLanguage(documentDescriptor.getLanguage());
+                ReportConfigurationParameters configParams = builder.build();
+
+                // FIXME-KKL: revise if we want different pre-requisites for the different document types, currently we handle all the same way
+                configParams.setAllFailConditions(false);
+
+                InventoryReport report = new InventoryReport(configParams);
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
-                if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                    setPolicy(mergedParams, report);
-                    report.setInventoryBomReportEnabled(true);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
-                    report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
-                    report.setInventoryVulnerabilityReportSummaryEnabled(true);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                    setPolicy(mergedParams, report);
-
-                    report.setInventoryVulnerabilityReportEnabled(true);
-
-                    String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
-
-                    try {
-                        // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
-                        report.addGenerateOverviewTablesForAdvisoriesByMap(convertToJSONArray(generateOverviewTablesForAdvisories));
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
-                    }
+                switch (documentPart.getDocumentPartType()) {
+                    case ANNEX:
+                        setPolicy(mergedParams, report);
+                        break;
+                    case VULNERABILITY_REPORT:
+                        setPolicy(mergedParams, report);
+                        String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
+                        try {
+                            // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
+                            report.addGenerateOverviewTablesForAdvisoriesByMap(convertToJSONArray(generateOverviewTablesForAdvisories));
+                        } catch (Exception e) {
+                            throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
+                        }
+                        break;
                 }
 
                 report.setReferenceInventory(inventoryContext.getReferenceInventory());
                 report.setInventory(inventoryContext.getInventory());
-
-                // FIXME-KKL: revise if we want different pre-requisites for the different document types, currently we handle all the same way
-                report.setFailOnDevelopment(false);
-                report.setFailOnError(false);
-                report.setFailOnBanned(false);
-                report.setFailOnDowngrade(false);
-                report.setFailOnInternal(false);
-                report.setFailOnUnknown(false);
-                report.setFailOnUnknownVersion(false);
-                report.setFailOnUpgrade(false);
-                report.setFailOnMissingLicense(false);
-                report.setFailOnMissingLicenseFile(false);
-                report.setFailOnMissingComponentFiles(false);
-                report.setFailOnMissingNotice(false);
-
 
                 // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
                 // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
@@ -171,8 +169,6 @@ public class DocumentDescriptorReportGenerator {
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getInventoryVersion());
-
-                report.setTemplateLanguageSelector(documentDescriptor.getLanguage());
 
                 if (report.createReport()) {
                     inventoryReports.add(report);
@@ -207,10 +203,6 @@ public class DocumentDescriptorReportGenerator {
 
             String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
 
-            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(
-                    params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")
-            );
-
             CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
             securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(
                     securityPolicy,
@@ -219,7 +211,6 @@ public class DocumentDescriptorReportGenerator {
             );
 
             report.setSecurityPolicy(securityPolicy);
-            report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         }
     }
 

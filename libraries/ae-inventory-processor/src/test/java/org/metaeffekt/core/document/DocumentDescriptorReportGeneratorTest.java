@@ -29,10 +29,7 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
@@ -55,12 +52,11 @@ public class DocumentDescriptorReportGeneratorTest {
         Map<String, String> documentParams = new HashMap<>();
         documentParams.put("targetLicensesDir", "");
         documentParams.put("targetComponentDir", "");
-        String language = "en";
         String identifier = "test";
 
         inventoryContexts.add(inventoryContext);
         documentDescriptor.setParams(documentParams);
-        documentDescriptor.setLanguage(language);
+        documentDescriptor.setLanguage(Locale.ENGLISH);
         documentDescriptor.setIdentifier(identifier);
 
     }
