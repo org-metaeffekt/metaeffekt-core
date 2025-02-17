@@ -46,6 +46,13 @@ public class ReportRegistry {
         return targetTemplate;
     }
 
+    /**
+     * Resolves full id from the element id by calling findElement(). If no element is found, usually because the element
+     * has not been registered yet, returns a placeholder to be resolved later.
+     * @param template The template from which the method is called.
+     * @param elementId The template from which the method is called.
+     * @return Either the fully resolved if key or a placeholder UUID.
+     */
     public String resolve(TargetTemplate template, String elementId) {
         String foundElement = findElement(template, elementId);
 
@@ -61,6 +68,13 @@ public class ReportRegistry {
         return foundElement;
     }
 
+    /**
+     * Attempts to find an element by its id. First checks the template from which the reference is called, then searches
+     * the same section and finally searches all templates for the id.
+     * @param template The template from which the method is called.
+     * @param elementId The template from which the method is called.
+     * @return Either the full id key or null if the element was not found.
+     */
     private String findElement(TargetTemplate template, String elementId) {
         // first search for the ID in the same template.
         if (registry.contains(template) && template.containsElement(elementId)) {
@@ -108,8 +122,7 @@ public class ReportRegistry {
                             fileString = fileString.replace(entry.getKey(), resolved);
                             FileUtils.writeStringToFile(templateFile, fileString, StandardCharsets.UTF_8);
                         } else {
-                            // If this is thrown check whether the searched for id was actually registered somewhere.
-                            log.error("Reference to element id [{}] from template [{}] was unsuccessfull.", entry.getValue(), template.getTemplateId());
+                            log.debug("Reference to element id [{}] from template [{}] was unsuccessfull.", entry.getValue(), template.getTemplateId());
                         }
                     }
                 } catch (IOException e) {
