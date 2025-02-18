@@ -18,3 +18,11 @@ ae.inventory.component.license.details.switch=$noticesSwitch
 
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 ae.inventory.report.bom.count.artifacts.nolicense=$artifactsWithoutLicense.size()
+
+# Switch for displaying web modules if there are any present
+#set($components=$inventory.evaluateComponentsInContext("web-module"))
+#set($webModulesSwitch = true)
+#if($components.isEmpty())
+    #set($webModulesSwitch = false)
+#end
+ae.inventory.web.module.effective.switch=$webModulesSwitch

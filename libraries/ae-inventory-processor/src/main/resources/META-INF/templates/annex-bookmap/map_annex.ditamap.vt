@@ -2,17 +2,19 @@
 <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/bookmap.dtd">
 <bookmap id="map_annex">
 #foreach($inventoryContext in $documentPart.getInventoryContexts())
+    #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
     <chapter href="$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita">
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
-#set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
-#if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" keys="license-notices" />
-#end
+    #end
     </chapter>
 #end
 </bookmap>
