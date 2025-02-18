@@ -6,15 +6,13 @@
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
-
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
-
-        #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
-        #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" />
-        #end
+#set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
+#if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" keys="license-notices" />
+#end
     </chapter>
 #end
 </bookmap>
