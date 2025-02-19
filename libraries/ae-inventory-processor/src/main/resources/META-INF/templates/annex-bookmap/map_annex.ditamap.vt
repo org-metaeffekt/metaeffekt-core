@@ -8,7 +8,9 @@
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
     #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.package.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
