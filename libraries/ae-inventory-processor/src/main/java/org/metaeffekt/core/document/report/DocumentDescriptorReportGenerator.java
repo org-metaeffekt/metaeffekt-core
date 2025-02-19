@@ -25,6 +25,8 @@ import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +51,8 @@ import java.util.Map;
  * @see InventoryContext
  */
 public class DocumentDescriptorReportGenerator {
+
+    private static final Logger log = LoggerFactory.getLogger(DocumentDescriptorReportGenerator.class);
 
     /**
      * Generates the complete set of reports for the given {@link DocumentDescriptor}.
@@ -108,11 +112,13 @@ public class DocumentDescriptorReportGenerator {
 
                 Map<String, String> mergedParams;
 
-                if (documentPart.getParams() != null) {
+                if (documentPart.getParams() != null && documentDescriptor.getParams() != null) {
                     mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
-                } else {
+                } else if (documentPart.getParams() != null) {
+                    mergedParams = documentPart.getParams();
+                } else if (documentDescriptor.getParams() != null) {
                     mergedParams = documentDescriptor.getParams();
-                }
+                } else mergedParams = new HashMap<>();
 
                 InventoryReport report = new InventoryReport();
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
@@ -165,10 +171,20 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
-                report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
-                report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
-                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
+                if (mergedParams.get("LicensesDir") == null) {
+                    report.setTargetLicenseDir(new File("license"));
+                    log.info("used default targetLicensesDir as 'license'");
+                } else {
+                    report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
+                }
+                if (mergedParams.get("targetComponentDir") == null) {
+                    report.setTargetLicenseDir(new File("component"));
+                    log.info("used default targetComponentDir as 'component'");
+                } else {
+                    report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
+                }
 
+                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getInventoryVersion());
 
@@ -221,6 +237,7 @@ public class DocumentDescriptorReportGenerator {
             report.setSecurityPolicy(securityPolicy);
             report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         }
+        log.info("no securityPolicyFile provided");
     }
 
     private static Map<String, String> mergeParams(Map<String, String> globalParams, Map<String, String> partParams) {
