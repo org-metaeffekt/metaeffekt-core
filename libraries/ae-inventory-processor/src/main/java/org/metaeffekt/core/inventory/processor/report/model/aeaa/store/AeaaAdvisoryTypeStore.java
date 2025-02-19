@@ -62,7 +62,8 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             Pattern.compile("GHSA(-[23456789cfghjmpqrvwx]{4}){3}"),
             AeaaGhsaAdvisorEntry.class, AeaaGhsaAdvisorEntry::new);
 
-// OSV DATA SOURCES
+    // OSV DATA SOURCES
+
     /**
      * Generic OSV-Type Identifier will be used if no other known Identifier matches is matched.
      */

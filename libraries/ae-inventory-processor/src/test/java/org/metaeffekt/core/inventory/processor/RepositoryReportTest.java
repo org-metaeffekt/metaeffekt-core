@@ -27,6 +27,7 @@ import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
@@ -59,7 +60,7 @@ public class RepositoryReportTest {
         File inventoryDir = INVENTORY_DIR;
         String inventoryIncludes = INVENTORY_INCLUDES;
 
-        InventoryReport report = new InventoryReport();
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
@@ -162,7 +163,7 @@ public class RepositoryReportTest {
     @Test
     public void testStringEscaping() {
 
-        InventoryReport inventoryReport = new InventoryReport();
+        InventoryReport inventoryReport = new InventoryReport(ReportConfigurationParameters.builder().build());
 
         Assert.assertEquals("this&amp;that.&#8203;those-&#8203;these_&#8203;which",
                 inventoryReport.xmlEscapeArtifactId("this&that.those-these_which"));
@@ -202,7 +203,7 @@ public class RepositoryReportTest {
 
         configureAndCreateReport(inventoryDir, "*.xls",
                 inventoryDir, "*.xls",
-                reportDir, new InventoryReport());
+                reportDir, new InventoryReport(ReportConfigurationParameters.builder().build()));
 
         // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
@@ -236,7 +237,7 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-02");
         final File reportDir = new File("target/test-inventory-02_ILD_DE");
 
-        final InventoryReport report = new InventoryReport();
+        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
 
         prepareReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir, report);
 
@@ -268,7 +269,7 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-03");
         final File reportDir = new File("target/test-inventory-03");
 
-        final InventoryReport report = new InventoryReport();
+        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
         report.setFailOnMissingLicense(false);
         report.setFailOnMissingLicenseFile(false);
 
@@ -300,7 +301,7 @@ public class RepositoryReportTest {
         File inventoryDir = new File("src/test/resources/test-inventory-04");
         String inventoryIncludes = INVENTORY_INCLUDES;
 
-        InventoryReport report = new InventoryReport();
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
@@ -342,13 +343,15 @@ public class RepositoryReportTest {
         // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/test-inventory-04'
     }
 
-    @Ignore
     @Test
-    public void testCreateTestReportKeycloak() throws IOException {
-        File inventoryDir = new File("src/test/resources/test-inventory-keycloak");
+    public void testCreateTestReport005() throws IOException {
+        File inventoryDir = new File("src/test/resources/test-inventory-05/");
         String inventoryIncludes = INVENTORY_INCLUDES;
 
-        InventoryReport report = new InventoryReport();
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .hidePriorityInformation(true)
+                .build());
+
         report.setTemplateLanguageSelector("en");
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
@@ -365,7 +368,7 @@ public class RepositoryReportTest {
         artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
         report.setArtifactFilter(artifactFilter);
 
-        File target = new File("target/test-inventory-keycloak");
+        File target = new File("target/test-inventory-05");
         target.mkdirs();
 
         File  targetReportPath = new File(target, "report");
@@ -392,9 +395,10 @@ public class RepositoryReportTest {
         final boolean valid = report.createReport();
 
         // copy bookmap
-        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-keycloak/bm_test.ditamap"), target);
+        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-05/bm_test.ditamap"), target);
 
-        // generate PDF using 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISBALED -Ddita.source.dir=target/test-inventory-keycloak' from terminal
+        // generate PDF using the following command from terminal:
+        // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/test-inventory-05'
     }
 
     @Test
@@ -402,10 +406,11 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-cert");
         final File reportDir = new File("target/test-inventory-cert");
 
-        final InventoryReport report = new InventoryReport();
+        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
         report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
-        configureAndCreateReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir, new InventoryReport());
+        configureAndCreateReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir,
+                new InventoryReport(ReportConfigurationParameters.builder().build()));
 
         // put asserts here
 

@@ -36,7 +36,7 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
 
     private static final Logger LOG = LoggerFactory.getLogger(ProgressiveWebAppComponentPatternContributor.class);
     private static final List<String> suffixes = Collections.unmodifiableList(new ArrayList<String>(){{
-        add("manifest.json");
+        add("/manifest.json");
     }});
 
     public static final String TYPE_VALUE_PWA = "pwa-module";
