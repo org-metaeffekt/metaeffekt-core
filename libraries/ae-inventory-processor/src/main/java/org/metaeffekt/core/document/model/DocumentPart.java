@@ -60,6 +60,14 @@ public class DocumentPart {
 
     public void validate() {
 
+        // check if the identifier is set
+        if (identifier == null || identifier.isEmpty()) {
+            throw new IllegalStateException("The identifier of a part must be specified.");
+        }
+        // check if document type is set
+        if (documentPartType == null) {
+            throw new IllegalStateException("The part type must be specified.");
+        }
         // validate each inventoryContext
         for (InventoryContext context : inventoryContexts) {
             // check if each inventoryContext references an inventory
