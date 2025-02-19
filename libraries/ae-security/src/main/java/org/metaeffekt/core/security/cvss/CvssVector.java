@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.processor.UniversalCvssCalculatorLinkGenerator;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P0;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
@@ -204,8 +205,13 @@ public abstract class CvssVector {
 
     public int applyVector(String vector) {
         if (vector == null) return 0;
-
         final String normalizedVector = normalizeVector(vector);
+        return applyNormalizedVector(normalizedVector);
+    }
+
+    protected int applyNormalizedVector(String normalizedVector) {
+        if (normalizedVector == null) return 0;
+
         if (normalizedVector.isEmpty()) return 0;
 
         final String[] arguments = normalizedVector.split("/");
@@ -315,8 +321,11 @@ public abstract class CvssVector {
 
     public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
         final T cvssVector = constructor.get();
-        final int unknownAttributes = cvssVector.applyVector(vector);
-        return unknownAttributes > 0 ? null : cvssVector;
+        final String normalizedVector = normalizeVector(vector);
+        final int knownAttributes = cvssVector.applyNormalizedVector(normalizedVector);
+        final int allAttributes = normalizedVector.split("/").length;
+
+        return allAttributes - knownAttributes > 0 ? null : cvssVector;
     }
 
     public static <T extends CvssVector> String getVersionName(Class<T> clazz) {
@@ -364,7 +373,9 @@ public abstract class CvssVector {
 
         if (vector.startsWith("CVSS:2.0")) {
             return new Cvss2(vector);
-        } else if (vector.startsWith("CVSS:3.1") || vector.startsWith("CVSS:3.0")) {
+        } else if (vector.startsWith("CVSS:3.0")) {
+            return new Cvss3P0(vector);
+        } else if (vector.startsWith("CVSS:3.1")) {
             return new Cvss3P1(vector);
         } else if (vector.startsWith("CVSS:4.0")) {
             return new Cvss4P0(vector);
