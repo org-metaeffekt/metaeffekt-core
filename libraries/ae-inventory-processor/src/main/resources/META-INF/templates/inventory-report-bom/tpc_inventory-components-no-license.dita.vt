@@ -2,10 +2,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_component-no-license-summary-$reportContext.id">
-    <title>$reportContext.combinedTitle("Components without License", true)</title>
-#set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
-#set($components=$inventory.evaluateComponents($artifactsWithoutLicense))
-    <title>$reportContext.combinedTitle("Artifacts without License", true)</title>
+    #set($titleString = $utils.getText("inventory-report-bom.short.artifact-title"))
+    <title>$reportContext.combinedTitle("$titleString", true)</title>
     #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
     #set($components=$inventory.evaluateComponents($artifactsWithoutLicense))
 
