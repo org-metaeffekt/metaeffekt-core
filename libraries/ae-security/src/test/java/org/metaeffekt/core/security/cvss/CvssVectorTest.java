@@ -43,4 +43,21 @@ public class CvssVectorTest {
         Assert.assertNotSame(cvss, clone);
         Assert.assertEquals(cvss.getBakedScores(), clone.getBakedScores());
     }
+
+    @Test
+    public void normalizeVectorTest() {
+        Assert.assertEquals("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", CvssVector.normalizeVector("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"));
+        Assert.assertEquals("AV:L/AC:H/PR:H/UI:R/S:C/C:N/I:L/A:N", CvssVector.normalizeVector("(AV:L/AC:H/PR:H/UI:R/S:C/C:N/I:L/A:N)"));
+        Assert.assertEquals("AV:A/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H", CvssVector.normalizeVector("/AV:A/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"));
+        Assert.assertEquals("AV:P/AC:M/PR:L/UI:R/S:U/C:L/I:L/A:L", CvssVector.normalizeVector("CVSS:3.1/AV:P/AC:M/PR:L/UI:R/S:U/C:L/I:L/A:L"));
+        Assert.assertEquals("AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H", CvssVector.normalizeVector("(CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H)"));
+        Assert.assertEquals("AV:L/AC:H/PR:H/UI:R/S:C/C:N/I:L/A:N", CvssVector.normalizeVector("CVSS:4/AV:L/AC:H/PR:H/UI:R/S:C/C:N/I:L/A:N"));
+        Assert.assertEquals("AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", CvssVector.normalizeVector("cvss:2/AV:A/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"));
+        Assert.assertEquals("AV:P/AC:M/PR:L/UI:R/S:U/C:L/I:L/A:L", CvssVector.normalizeVector("(cvss:3.1/AV:P/AC:M/PR:L/UI:R/S:U/C:L/I:L/A:L)"));
+        Assert.assertEquals("AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", CvssVector.normalizeVector("CVSS:3.1/(AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H)"));
+        Assert.assertEquals("AV:L/AC:H/PR:H/UI:R/S:C/C:N/I:L/A:N", CvssVector.normalizeVector("CVSS:3.1/AV:L/AC:H/PR:H/UI:R/S:C/C:N/I:L/A:N)"));
+        Assert.assertEquals("AV:A/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H", CvssVector.normalizeVector("(CVSS:3.0)/AV:A/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"));
+        Assert.assertEquals("AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H", CvssVector.normalizeVector("cvss:3.1AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H"));
+        Assert.assertEquals("AV:L/AC:H/PR:H/UI:R/S:C/C:N/I:L/A:N", CvssVector.normalizeVector("av:l/ac:h/pr:h/ui:r/s:c/c:n/i:l/a:n"));
+    }
 }

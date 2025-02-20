@@ -19,6 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -157,7 +160,7 @@ public class Cvss4P0MacroVector {
         return value.equals(comparisonValue);
     }
 
-    public static final EQ EQ_ERROR_DEFINITION = new EQ("9", -1, new String[]{}, vector -> true);
+    public static final EQ EQ_ERROR_DEFINITION = new EQ("9", -1, new String[]{}, Collections.emptyList(), vector -> true);
 
     /**
      * <table>
@@ -188,20 +191,51 @@ public class Cvss4P0MacroVector {
             new EQ("0",
                     1,
                     new String[]{"AV:N/PR:N/UI:N"},
-                    vector -> is(vector, "AV", "N") && is(vector, "PR", "N") && is(vector, "UI", "N")
-            ),
+                    Collections.singletonList(vector -> {
+                        vector.setAttackVector(Cvss4P0.AttackVector.NETWORK);
+                        vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.NONE);
+                        vector.setUserInteraction(Cvss4P0.UserInteraction.NONE);
+                    }),
+                    vector -> is(vector, "AV", "N") && is(vector, "PR", "N") && is(vector, "UI", "N")),
             new EQ("1",
                     4,
                     new String[]{"AV:A/PR:N/UI:N", "AV:N/PR:L/UI:N", "AV:N/PR:N/UI:P"},
+                    Arrays.asList(
+                            vector -> {
+                                vector.setAttackVector(Cvss4P0.AttackVector.ADJACENT_NETWORK);
+                                vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.NONE);
+                                vector.setUserInteraction(Cvss4P0.UserInteraction.NONE);
+                            },
+                            vector -> {
+                                vector.setAttackVector(Cvss4P0.AttackVector.NETWORK);
+                                vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.LOW);
+                                vector.setUserInteraction(Cvss4P0.UserInteraction.NONE);
+                            },
+                            vector -> {
+                                vector.setAttackVector(Cvss4P0.AttackVector.NETWORK);
+                                vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.NONE);
+                                vector.setUserInteraction(Cvss4P0.UserInteraction.PASSIVE);
+                            }
+                    ),
                     vector -> (is(vector, "AV", "N") || is(vector, "PR", "N") || is(vector, "UI", "N")) &&
                             !(is(vector, "AV", "N") && is(vector, "PR", "N") && is(vector, "UI", "N")) &&
-                            !is(vector, "AV", "P")
-            ),
+                            !is(vector, "AV", "P")),
             new EQ("2",
                     5,
                     new String[]{"AV:P/PR:N/UI:N", "AV:A/PR:L/UI:P"},
-                    vector -> is(vector, "AV", "P") || !(is(vector, "AV", "N") || is(vector, "PR", "N") || is(vector, "UI", "N"))
-            )
+                    Arrays.asList(
+                            vector -> {
+                                vector.setAttackVector(Cvss4P0.AttackVector.PHYSICAL);
+                                vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.NONE);
+                                vector.setUserInteraction(Cvss4P0.UserInteraction.NONE);
+                            },
+                            vector -> {
+                                vector.setAttackVector(Cvss4P0.AttackVector.ADJACENT_NETWORK);
+                                vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.LOW);
+                                vector.setUserInteraction(Cvss4P0.UserInteraction.PASSIVE);
+                            }
+                    ),
+                    vector -> is(vector, "AV", "P") || !(is(vector, "AV", "N") || is(vector, "PR", "N") || is(vector, "UI", "N")))
     };
 
     /**
@@ -228,10 +262,24 @@ public class Cvss4P0MacroVector {
             new EQ("0",
                     1,
                     new String[]{"AC:L/AT:N"},
+                    Collections.singletonList(vector -> {
+                        vector.setAttackComplexity(Cvss4P0.AttackComplexity.LOW);
+                        vector.setAttackRequirements(Cvss4P0.AttackRequirements.NONE);
+                    }),
                     vector -> is(vector, "AC", "L") && is(vector, "AT", "N")),
             new EQ("1",
                     2,
                     new String[]{"AC:H/AT:N", "AC:L/AT:P"},
+                    Arrays.asList(
+                            vector -> {
+                                vector.setAttackComplexity(Cvss4P0.AttackComplexity.HIGH);
+                                vector.setAttackRequirements(Cvss4P0.AttackRequirements.NONE);
+                            },
+                            vector -> {
+                                vector.setAttackComplexity(Cvss4P0.AttackComplexity.LOW);
+                                vector.setAttackRequirements(Cvss4P0.AttackRequirements.PRESENT);
+                            }
+                    ),
                     vector -> !(is(vector, "AC", "L") && is(vector, "AT", "N")))
     };
 
@@ -264,18 +312,37 @@ public class Cvss4P0MacroVector {
             new EQ("0",
                     -1,
                     new String[]{"VC:H/VI:H/VA:H"},
-                    vector -> is(vector, "VC", "H") && is(vector, "VI", "H")
-            ),
+                    Collections.singletonList(vector -> {
+                        vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                        vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                        vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                    }),
+                    vector -> is(vector, "VC", "H") && is(vector, "VI", "H")),
             new EQ("1",
                     -1,
                     new String[]{"VC:L/VI:H/VA:H", "VC:H/VI:L/VA:H"},
-                    vector -> !(is(vector, "VC", "H") && is(vector, "VI", "H")) && (is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H"))
-            ),
+                    Arrays.asList(
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                            }
+                    ),
+                    vector -> !(is(vector, "VC", "H") && is(vector, "VI", "H")) && (is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H"))),
             new EQ("2",
                     -1,
                     new String[]{"VC:L/VI:L/VA:L"},
-                    vector -> !(is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H"))
-            )
+                    Collections.singletonList(vector -> {
+                        vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                        vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                        vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                    }),
+                    vector -> !(is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H")))
     };
 
     /**
@@ -307,18 +374,30 @@ public class Cvss4P0MacroVector {
             new EQ("0",
                     6,
                     new String[]{"SC:H/SI:S/SA:S"},
-                    vector -> is(vector, "MSI", "S") || is(vector, "MSA", "S")
-            ),
+                    Collections.singletonList(vector -> {
+                        vector.setSubConfidentialityImpact(Cvss4P0.SubsequentCia.HIGH);
+                        vector.setSubIntegrityImpact(Cvss4P0.SubsequentCia.SAFETY);
+                        vector.setSubAvailabilityImpact(Cvss4P0.SubsequentCia.SAFETY);
+                    }),
+                    vector -> is(vector, "MSI", "S") || is(vector, "MSA", "S")),
             new EQ("1",
                     5,
                     new String[]{"SC:H/SI:H/SA:H"},
-                    vector -> !(is(vector, "MSI", "S") && is(vector, "MSA", "S")) && (is(vector, "SC", "H") || is(vector, "SI", "H") || is(vector, "SA", "H"))
-            ),
+                    Collections.singletonList(vector -> {
+                        vector.setSubConfidentialityImpact(Cvss4P0.SubsequentCia.HIGH);
+                        vector.setSubIntegrityImpact(Cvss4P0.SubsequentCia.HIGH);
+                        vector.setSubAvailabilityImpact(Cvss4P0.SubsequentCia.HIGH);
+                    }),
+                    vector -> !(is(vector, "MSI", "S") && is(vector, "MSA", "S")) && (is(vector, "SC", "H") || is(vector, "SI", "H") || is(vector, "SA", "H"))),
             new EQ("2",
                     4,
                     new String[]{"SC:L/SI:L/SA:L"},
-                    vector -> !(is(vector, "MSI", "S") && is(vector, "MSA", "S")) && !(is(vector, "SC", "H") || is(vector, "SI", "H") || is(vector, "SA", "H"))
-            )
+                    Collections.singletonList(vector -> {
+                        vector.setSubConfidentialityImpact(Cvss4P0.SubsequentCia.LOW);
+                        vector.setSubIntegrityImpact(Cvss4P0.SubsequentCia.LOW);
+                        vector.setSubAvailabilityImpact(Cvss4P0.SubsequentCia.LOW);
+                    }),
+                    vector -> !(is(vector, "MSI", "S") && is(vector, "MSA", "S")) && !(is(vector, "SC", "H") || is(vector, "SI", "H") || is(vector, "SA", "H")))
     };
 
     /**
@@ -350,18 +429,18 @@ public class Cvss4P0MacroVector {
             new EQ("0",
                     1,
                     new String[]{"E:A"},
-                    vector -> is(vector, "E", "A")
-            ),
+                    Collections.singletonList(vector -> vector.setExploitMaturity(Cvss4P0.ExploitMaturity.ATTACKED)),
+                    vector -> is(vector, "E", "A")),
             new EQ("1",
                     1,
                     new String[]{"E:P"},
-                    vector -> is(vector, "E", "P")
-            ),
+                    Collections.singletonList(vector -> vector.setExploitMaturity(Cvss4P0.ExploitMaturity.POC)),
+                    vector -> is(vector, "E", "P")),
             new EQ("2",
                     1,
                     new String[]{"E:U"},
-                    vector -> is(vector, "E", "U")
-            )
+                    Collections.singletonList(vector -> vector.setExploitMaturity(Cvss4P0.ExploitMaturity.UNREPORTED)),
+                    vector -> is(vector, "E", "U"))
     };
 
     /**
@@ -390,8 +469,12 @@ public class Cvss4P0MacroVector {
             new EQ("0",
                     -1,
                     new String[]{"AV:N/PR:N/UI:N"},
-                    vector -> is(vector, "AV", "N") && is(vector, "PR", "N") && is(vector, "UI", "N")
-            ),
+                    Collections.singletonList(vector -> {
+                        vector.setAttackVector(Cvss4P0.AttackVector.NETWORK);
+                        vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.NONE);
+                        vector.setUserInteraction(Cvss4P0.UserInteraction.NONE);
+                    }),
+                    vector -> is(vector, "AV", "N") && is(vector, "PR", "N") && is(vector, "UI", "N")),
             new EQ("1",
                     -1,
                     new String[]{
@@ -404,10 +487,75 @@ public class Cvss4P0MacroVector {
                             "VC:L/VI:L/VA:H/CR:H/IR:H/AR:M",
                             "VC:L/VI:L/VA:L/CR:H/IR:H/AR:H"
                     },
+                    Arrays.asList(
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            }
+                    ),
                     vector -> (is(vector, "CR", "H") && is(vector, "VC", "H")) ||
                             (is(vector, "IR", "H") && is(vector, "VI", "H")) ||
-                            (is(vector, "AR", "H") && is(vector, "VA", "H"))
-            )
+                            (is(vector, "AR", "H") && is(vector, "VA", "H")))
     };
 
     /**
@@ -434,10 +582,14 @@ public class Cvss4P0MacroVector {
             new EQ("0",
                     -1,
                     new String[]{"AV:N/PR:N/UI:N"},
+                    Collections.singletonList(vector -> {
+                        vector.setAttackVector(Cvss4P0.AttackVector.NETWORK);
+                        vector.setPrivilegesRequired(Cvss4P0.PrivilegesRequired.NONE);
+                        vector.setUserInteraction(Cvss4P0.UserInteraction.NONE);
+                    }),
                     vector -> (is(vector, "CR", "H") && is(vector, "VC", "H")) ||
                             (is(vector, "IR", "H") && is(vector, "VI", "H")) ||
-                            (is(vector, "AR", "H") && is(vector, "VA", "H"))
-            ),
+                            (is(vector, "AR", "H") && is(vector, "VA", "H"))),
             new EQ("1",
                     -1,
                     new String[]{
@@ -450,10 +602,75 @@ public class Cvss4P0MacroVector {
                             "VC:L/VI:L/VA:H/CR:H/IR:H/AR:M",
                             "VC:L/VI:L/VA:L/CR:H/IR:H/AR:H"
                     },
+                    Arrays.asList(
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            }
+                    ),
                     vector -> !((is(vector, "CR", "H") && is(vector, "VC", "H")) ||
                             (is(vector, "IR", "H") && is(vector, "VI", "H")) ||
-                            (is(vector, "AR", "H") && is(vector, "VA", "H")))
-            )
+                            (is(vector, "AR", "H") && is(vector, "VA", "H"))))
     };
 
 
@@ -501,33 +718,123 @@ public class Cvss4P0MacroVector {
             new EQ("00",
                     7,
                     new String[]{"VC:H/VI:H/VA:H/CR:H/IR:H/AR:H"},
-                    vector -> is(vector, "VC", "H") && is(vector, "VI", "H") && (is(vector, "CR", "H") || is(vector, "IR", "H") || (is(vector, "AR", "H") && is(vector, "VA", "H")))
-            ),
+                    Collections.singletonList(vector -> {
+                        vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                        vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                        vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                        vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                        vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                        vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                    }),
+                    vector -> is(vector, "VC", "H") && is(vector, "VI", "H") && (is(vector, "CR", "H") || is(vector, "IR", "H") || (is(vector, "AR", "H") && is(vector, "VA", "H")))),
             new EQ("01",
                     6,
                     new String[]{"VC:H/VI:H/VA:L/CR:M/IR:M/AR:H", "VC:H/VI:H/VA:H/CR:M/IR:M/AR:M"},
-                    vector -> is(vector, "VC", "H") && is(vector, "VI", "H") && !(is(vector, "CR", "H") || is(vector, "IR", "H")) && !(is(vector, "AR", "H") && is(vector, "VA", "H"))
-            ),
+                    Arrays.asList(
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            }
+                    ),
+                    vector -> is(vector, "VC", "H") && is(vector, "VI", "H") && !(is(vector, "CR", "H") || is(vector, "IR", "H")) && !(is(vector, "AR", "H") && is(vector, "VA", "H"))),
             new EQ("10",
                     8,
                     new String[]{"VC:L/VI:H/VA:H/CR:H/IR:H/AR:H", "VC:H/VI:L/VA:H/CR:H/IR:H/AR:H"},
-                    vector -> !(is(vector, "VC", "H") && is(vector, "VI", "H")) && (is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H")) && ((is(vector, "CR", "H") && is(vector, "VC", "H")) || (is(vector, "IR", "H") && is(vector, "VI", "H")) || (is(vector, "AR", "H") && is(vector, "VA", "H")))
-            ),
+                    Arrays.asList(
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            }
+                    ),
+                    vector -> !(is(vector, "VC", "H") && is(vector, "VI", "H")) && (is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H")) && ((is(vector, "CR", "H") && is(vector, "VC", "H")) || (is(vector, "IR", "H") && is(vector, "VI", "H")) || (is(vector, "AR", "H") && is(vector, "VA", "H")))),
             new EQ("11",
                     8,
                     new String[]{"VC:L/VI:H/VA:L/CR:H/IR:M/AR:H", "VC:L/VI:H/VA:H/CR:H/IR:M/AR:M", "VC:H/VI:L/VA:H/CR:M/IR:H/AR:M", "VC:H/VI:L/VA:L/CR:M/IR:H/AR:H", "VC:L/VI:L/VA:H/CR:H/IR:H/AR:M"},
-                    vector -> !(is(vector, "VC", "H") && is(vector, "VI", "H")) && (is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H")) && !(is(vector, "CR", "H") && is(vector, "VC", "H")) && !(is(vector, "IR", "H") && is(vector, "VI", "H")) && !(is(vector, "AR", "H") && is(vector, "VA", "H"))
-            ),
+                    Arrays.asList(
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                            },
+                            vector -> {
+                                vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                                vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.HIGH);
+                                vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                                vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.MEDIUM);
+                            }
+                    ),
+                    vector -> !(is(vector, "VC", "H") && is(vector, "VI", "H")) && (is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H")) && !(is(vector, "CR", "H") && is(vector, "VC", "H")) && !(is(vector, "IR", "H") && is(vector, "VI", "H")) && !(is(vector, "AR", "H") && is(vector, "VA", "H"))),
             new EQ("20",
                     0,
                     new String[]{},
-                    vector -> false // Cannot exist
-            ),
+                    Collections.emptyList(),
+                    // Cannot exist
+                    vector -> false),
             new EQ("21",
                     10,
                     new String[]{"VC:L/VI:L/VA:L/CR:H/IR:H/AR:H"},
-                    vector -> !(is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H")) && !(is(vector, "CR", "H") && is(vector, "VC", "H")) && !(is(vector, "IR", "H") && is(vector, "VI", "H")) && !(is(vector, "AR", "H") && is(vector, "VA", "H"))
-            )
+                    Collections.singletonList(vector -> {
+                        vector.setVulnConfidentialityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                        vector.setVulnIntegrityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                        vector.setVulnAvailabilityImpact(Cvss4P0.VulnerabilityCia.LOW);
+                        vector.setConfidentialityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                        vector.setIntegrityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                        vector.setAvailabilityRequirement(Cvss4P0.RequirementsCia.HIGH);
+                    }),
+                    vector -> !(is(vector, "VC", "H") || is(vector, "VI", "H") || is(vector, "VA", "H")) && !(is(vector, "CR", "H") && is(vector, "VC", "H")) && !(is(vector, "IR", "H") && is(vector, "VI", "H")) && !(is(vector, "AR", "H") && is(vector, "VA", "H")))
     };
 
     private static Cvss4P0 v(String vector) {
@@ -588,14 +895,16 @@ public class Cvss4P0MacroVector {
         private final int vectorDepth;
         private final String[] highestSeverityVectorsUnparsed;
         private final Cvss4P0[] highestSeverityVectors;
+        private final List<Consumer<Cvss4P0>> applyHighestSeverityVectors;
         private final Predicate<Cvss4P0> predicate;
 
         public EQ(String level, int vectorDepth,
-                  String[] highestSeverityVectors, Predicate<Cvss4P0> predicate) {
+                  String[] highestSeverityVectors, List<Consumer<Cvss4P0>> applyHighestSeverityVectors, Predicate<Cvss4P0> predicate) {
             this.level = level;
             this.vectorDepth = vectorDepth;
             this.highestSeverityVectorsUnparsed = highestSeverityVectors;
             this.highestSeverityVectors = Arrays.stream(highestSeverityVectors).map(Cvss4P0::new).toArray(Cvss4P0[]::new);
+            this.applyHighestSeverityVectors = applyHighestSeverityVectors;
             this.predicate = predicate;
         }
 
@@ -617,6 +926,10 @@ public class Cvss4P0MacroVector {
 
         public String[] getHighestSeverityVectorsUnparsed() {
             return highestSeverityVectorsUnparsed;
+        }
+
+        public List<Consumer<Cvss4P0>> getApplyHighestSeverityVectors() {
+            return applyHighestSeverityVectors;
         }
 
         public boolean matchesConstraints(Cvss4P0 vector) {
