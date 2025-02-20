@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.json.JSONArray;
@@ -25,6 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
@@ -37,19 +37,9 @@ import java.util.Map;
 public abstract class AbstractInventoryReportCreationMojo extends AbstractProjectAwareConfiguredMojo {
 
     /**
-     * Local Maven repository where artifacts are cached during the build process.
-     *
-     * @parameter default-value="${localRepository}"
-     * @required
-     * @readonly
-     */
-    private ArtifactRepository localRepository;
-
-    /**
      * The root inventory dir.
      *
      * @parameter
-     * @required
      */
     private File sourceInventoryDir;
 
@@ -57,7 +47,6 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * Includes of the source inventory; relative to the sourceInventoryDir.
      *
      * @parameter default-value="*.xls*"
-     * @required
      */
     private String sourceInventoryIncludes;
 
@@ -292,6 +281,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      */
     private final String generateOverviewTablesForAdvisories = "[]";
 
+    /**
+     * @parameter default-value="false"
+     */
+    private boolean hidePriorityScoreInformation = false;
+
     // other template parameters
 
     /**
@@ -320,7 +314,8 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean includeInofficialOsiStatus;
 
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
-        InventoryReport report = new InventoryReport();
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().
+                hidePriorityInformation(isHidePriorityScoreInformation()).build());
         configureInventoryReport(report);
         return report;
     }
@@ -452,4 +447,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         }
     }
 
+    public boolean isHidePriorityScoreInformation() {
+        return hidePriorityScoreInformation;
+    }
 }
