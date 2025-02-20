@@ -83,7 +83,7 @@ public class YarnLockAdapter {
 
                 // FIXME-KKL: we used to use relativePath here; that however produced duplication within
                 //  the path; explicit tests required.
-                NpmPackageLockAdapter.NpmModule webModule =
+                final NpmPackageLockAdapter.NpmModule webModule =
                         new NpmPackageLockAdapter.NpmModule(nameVersionPair.getKey(), "/");
 
                 final String webModuleId = line;

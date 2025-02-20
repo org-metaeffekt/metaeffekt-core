@@ -70,7 +70,6 @@ public class ReportUtils {
             }
         }
 
-        // return empty set
         return Collections.emptySet();
     }
 

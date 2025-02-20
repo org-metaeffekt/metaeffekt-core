@@ -36,6 +36,7 @@ import java.util.Objects;
  */
 public class BakedCvssVectorScores {
 
+    // FIXME-KKL: consider replacing implementation
     private final static LruLinkedHashMap<String, BakedCvssVectorScores> cache = new LruLinkedHashMap<>(5000);
 
     private final Class<? extends CvssVector> cvssVersion;
