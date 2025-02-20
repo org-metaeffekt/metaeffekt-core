@@ -11,7 +11,9 @@
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.package.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
     #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.components.no.license-switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
