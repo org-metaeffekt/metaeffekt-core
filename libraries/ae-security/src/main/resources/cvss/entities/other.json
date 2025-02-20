@@ -79,7 +79,7 @@
     "name": "SUSE / openSUSE",
     "description": "SUSE Security Landing page",
     "url": "https://www.suse.com/support/security/",
-    "country" : "LUX"
+    "country": "LUX"
   },
   "RHEL": {
     "name": "Red Hat",
@@ -129,7 +129,7 @@
   "OSV_HSEC": {
     "name": "Haskell",
     "description": "Haskell Security Advisory Database",
-    "email": " security-advisories@haskell.org",
+    "email": "security-advisories@haskell.org",
     "url": "https://github.com/haskell/security-advisories",
     "country": "US"
   },
@@ -176,7 +176,7 @@
     "url": "https://ubuntu.com/security/cves",
     "country": "UK"
   },
-  "OSV_USN" : {
+  "OSV_USN": {
     "name": "USN",
     "description": "Ubuntu Security Notice",
     "email": "security@ubuntu.com",
