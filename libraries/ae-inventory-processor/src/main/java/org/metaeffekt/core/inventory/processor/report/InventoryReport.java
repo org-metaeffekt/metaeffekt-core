@@ -212,7 +212,7 @@ public class InventoryReport {
 
     private List<Artifact> addOnArtifacts;
 
-    // FIXME: do we want to support this? This is for aggregating information in a reactor project.
+    // FIXME: do we want to further support this? This is for aggregating information in a reactor project.
     private transient Inventory lastProjectInventory;
 
     /**
@@ -284,7 +284,11 @@ public class InventoryReport {
         if (referenceInventory != null) {
             return referenceInventory;
         }
-        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}", referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
+        if (referenceInventoryDir == null || referenceInventoryIncludes == null) {
+            return new Inventory();
+        }
+        LOG.info("Creating global inventory for inventory report by combining inventories from {}: file://{}",
+                referenceInventoryDir.isDirectory() ? "directory" : "file", referenceInventoryDir.getAbsolutePath());
         return InventoryUtils.readInventory(referenceInventoryDir, referenceInventoryIncludes);
     }
 
@@ -307,6 +311,7 @@ public class InventoryReport {
 
         LOG.debug("Constructing project inventory from local inventory {} and global inventory {}", globalInventory.getInventorySizePrintString(), localInventory.getInventorySizePrintString());
 
+        // FIXME-KKL: why don't we simply use the local inventory
         final Inventory projectInventory = new Inventory();
         this.lastProjectInventory = projectInventory;
 
@@ -315,6 +320,15 @@ public class InventoryReport {
 
         // transfer identified assets from scan
         projectInventory.inheritAssetMetaData(localInventory, false);
+
+        // transfer license data
+        projectInventory.inheritLicenseData(localInventory, false);
+
+        // transfer available vulnerability information
+        projectInventory.inheritVulnerabilityMetaData(localInventory, false);
+
+        // transfer available cert information
+        projectInventory.inheritCertMetaData(localInventory, false);
 
         // transfer inventory info
         projectInventory.inheritInventoryInfo(localInventory, false);
@@ -565,6 +579,7 @@ public class InventoryReport {
         projectInventory.inheritLicenseMetaData(globalInventory, false);
         projectInventory.filterLicenseMetaData();
 
+        // transfer license data
         projectInventory.inheritLicenseData(globalInventory, false);
 
         // transfer available vulnerability information
@@ -1127,7 +1142,11 @@ public class InventoryReport {
     }
 
     public String xmlEscapeSvgId(String text) {
-        if (text == null) return "";
+        if (StringUtils.isBlank(text)) {
+            // NOTE: fail early, fail fast; not resolvable SVG links will be reported when generating the document;
+            //  this prevents that these links are generated in the first place
+            throw new IllegalStateException("Label for SVG must be set.");
+        }
         return text.trim().toLowerCase().replace(" ", "-");
     }
 
