@@ -70,6 +70,14 @@ public class ReportContext {
         }
     }
 
+    public String withTitle() {
+        if (title == null || StringUtils.isEmpty(title)) {
+            return "";
+        } else {
+            return " (" + title + ")";
+        }
+    }
+
     public String inContextOf() {
         if (context == null || StringUtils.isEmpty(context)) {
             return "";
