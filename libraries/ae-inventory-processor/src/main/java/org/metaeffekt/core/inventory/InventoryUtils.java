@@ -372,9 +372,9 @@ public abstract class InventoryUtils {
                 final String artifactAssetIdMarker = artifact.get(assetId);
                 if (Constants.MARKER_CONTAINS.equals(artifactAssetIdMarker) ||
                      Constants.MARKER_CROSS.equals(artifactAssetIdMarker)) {
-					setOfAssets.add(assetMetaData);
-				}
-			}
+                    setOfAssets.add(assetMetaData);
+                }
+            }
         }
         return setOfAssets;
     }
