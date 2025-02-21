@@ -19,6 +19,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -48,9 +49,15 @@ public class CombinedInventoryReportCreationMojo extends AbstractInventoryReport
 
     @Override
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
-        final InventoryReport report = super.initializeInventoryReport();
-
         try {
+            // use this to modify the config parameters specific to this mojo
+            ReportConfigurationParameters.ReportConfigurationParametersBuilder configParams = configureParameters();
+
+            InventoryReport report = new InventoryReport(configParams.build());
+
+            // apply standard configuration (parent class)
+            configureInventoryReport(report);
+
             Inventory inventory = new Inventory();
 
             String[] files = FileUtils.scanForFiles(inventoryDir, inventoryIncludes, "--nothing--");

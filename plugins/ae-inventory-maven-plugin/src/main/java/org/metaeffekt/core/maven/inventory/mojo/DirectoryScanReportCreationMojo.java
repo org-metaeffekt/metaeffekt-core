@@ -18,6 +18,7 @@ package org.metaeffekt.core.maven.inventory.mojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 
 import java.io.File;
 
@@ -71,8 +72,13 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
     @Override
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
 
-        // FIXME-JFU: this implementation does currently not receive the required configuration
-        InventoryScanReport report = new InventoryScanReport();
+        // use this to modify the config parameters specific to this mojo
+        ReportConfigurationParameters.ReportConfigurationParametersBuilder configParams = configureParameters();
+
+        InventoryScanReport report = new InventoryScanReport(configParams.build());
+
+        // apply standard configuration (parent class)
+        configureInventoryReport(report);
 
         report.setInputDirectory(inputDirectory);
         report.setScanDirectory(scanDirectory);
