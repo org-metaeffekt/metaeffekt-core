@@ -53,7 +53,7 @@
 #end
 #macro (insertLicenseTable $id $title $licenseList $handleSubstructure)
 <table id="$id">
-    <title>$title$reportContext.inContextOf()</title>
+    <title>$title$reportContext.withTitle()</title>
     <tgroup cols="5">
         <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
         <colspec colname="COLSPEC1" colnum="2" colwidth="18*"/>

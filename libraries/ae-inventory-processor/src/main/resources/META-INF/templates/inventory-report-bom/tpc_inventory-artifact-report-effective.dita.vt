@@ -12,7 +12,7 @@
         <p>$utils.getText("inventory-report-bom.artifact-table-descr")</p>
         <p>
             <table otherprops="wide" id="table_artifacts">
-                <title>$utils.getText("general.short.artifacts") $reportContext.inContextOf()</title>
+                <title>$utils.getText("general.short.artifacts") $reportContext.withTitle()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="45*" />
