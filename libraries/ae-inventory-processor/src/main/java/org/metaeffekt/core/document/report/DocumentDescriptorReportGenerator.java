@@ -105,7 +105,7 @@ public class DocumentDescriptorReportGenerator {
             documentPart.validate();
 
             // for each inventory trigger according InventoryReport instances to produce
-            for(InventoryContext inventoryContext: documentPart.getInventoryContexts()) {
+            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
 
                 // validate each inventoryContext before processing
                 inventoryContext.validate();
@@ -121,7 +121,6 @@ public class DocumentDescriptorReportGenerator {
                 } else mergedParams = new HashMap<>();
 
                 InventoryReport report = new InventoryReport();
-                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
                 if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
                     setPolicy(mergedParams, report);
@@ -184,8 +183,22 @@ public class DocumentDescriptorReportGenerator {
                     report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
                 }
 
-                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
+                boolean omitAssetPrefix = Boolean.parseBoolean(mergedParams.get("omitAssetPrefix"));
+                String title = null;
+
+                if (mergedParams.get("omitAssetPrefix") != null) {
+                    if (!omitAssetPrefix) {
+                        title = inventoryContext.getReportContextTitle();
+                    }
+                } else {
+                    title = inventoryContext.getReportContextTitle();
+                }
+
+                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), title, inventoryContext.getReportContext()));
+
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
+
+                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getInventoryVersion());
 
                 report.setTemplateLanguageSelector(documentDescriptor.getLanguage());
@@ -223,16 +236,10 @@ public class DocumentDescriptorReportGenerator {
 
             String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
 
-            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(
-                    params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")
-            );
+            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false"));
 
             CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
-            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(
-                    securityPolicy,
-                    securityPolicyFile,
-                    securityPolicyOverwriteJson
-            );
+            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
 
             report.setSecurityPolicy(securityPolicy);
             report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
