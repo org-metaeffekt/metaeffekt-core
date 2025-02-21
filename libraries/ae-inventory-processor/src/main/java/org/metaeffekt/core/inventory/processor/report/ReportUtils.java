@@ -127,4 +127,8 @@ public class ReportUtils {
         }
         return writer.toString();
     }
+
+    public void debug(Object o) {
+        System.out.println(o);
+    }
 }

@@ -70,7 +70,7 @@
         </row>
         </thead>
 
-        #set($osiStatusMap = $assetAdapter.getOsiStatusMap($report))
+        #set($osiStatusMap = $assetAdapter.getOsiStatusMap($configParams))
         #set($openCoDEStatusMap = {
             "approved" : "yes",
             "(approved)" : "(yes)",
@@ -104,10 +104,7 @@
                         #else&nbsp;#end</entry>
                     #else
                         <entry>
-                            <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)"
-                                  type="topic">
-                                $report.xmlEscapeLicense($license)
-                            </xref>
+                            <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
                         </entry>
                         <entry>#if ($licenseData && $utils.notEmpty($licenseData.get(
                             'SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
