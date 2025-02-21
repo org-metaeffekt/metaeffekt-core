@@ -26,7 +26,7 @@ ae.inventory.package.effective.switch=$packagesSwitch
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))
 #set($componentsNoLicenseSwitch = true)
-#if (!$componentsNoLicense.isEmpty())
+#if ($componentsNoLicense.isEmpty())
     #set($componentsNoLicenseSwitch = false)
 #end
 ae.inventory.components.no.license-switch=$componentsNoLicenseSwitch
