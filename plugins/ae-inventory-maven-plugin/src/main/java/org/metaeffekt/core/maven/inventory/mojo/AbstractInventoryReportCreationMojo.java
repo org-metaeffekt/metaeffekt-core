@@ -314,37 +314,39 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean includeInofficialOsiStatus;
 
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
-        InventoryReport report = new InventoryReport(
-                ReportConfigurationParameters.builder()
-                        .hidePriorityInformation(hidePriorityScoreInformation)
-                        .reportLanguage(templateLanguageSelector)
-                        .includeInofficialOsiStatus(includeInofficialOsiStatus)
-                        .filterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts)
-                        .filterAdvisorySummary(filterAdvisorySummary)
-                        .failOnDevelopment(failOnDevelopment)
-                        .failOnDevelopment(failOnDevelopment)
-                        .failOnError(failOnError)
-                        .failOnBanned(failOnBanned)
-                        .failOnDowngrade(failOnDowngrade)
-                        .failOnInternal(failOnInternal)
-                        .failOnUnknown(failOnUnknown)
-                        .failOnUnknownVersion(failOnUnknownVersion)
-                        .failOnUpgrade(failOnUpgrade)
-                        .failOnMissingLicense(failOnMissingLicense)
-                        .failOnMissingLicenseFile(failOnMissingLicenseFile)
-                        .failOnMissingComponentFiles(failOnMissingComponentFiles)
-                        .failOnMissingNotice(failOnMissingNotice)
-                        .assetBomReportEnabled(enableAssetReport)
-                        .assessmentReportEnabled(enableAssessmentReport)
-                        .inventoryPomEnabled(enablePomReport)
-                        .inventoryDiffReportEnabled(enableDiffReport)
-                        .inventoryBomReportEnabled(enableBomReport)
-                        .inventoryVulnerabilityReportEnabled(enableVulnerabilityReport)
-                        .inventoryVulnerabilityReportSummaryEnabled(enableVulnerabilityReportSummary)
-                        .inventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport)
-                        .build());
+        InventoryReport report = new InventoryReport(configureParameters().build());
         configureInventoryReport(report);
         return report;
+    }
+
+    protected ReportConfigurationParameters.ReportConfigurationParametersBuilder configureParameters() {
+        return ReportConfigurationParameters.builder()
+                .hidePriorityInformation(hidePriorityScoreInformation)
+                .reportLanguage(templateLanguageSelector)
+                .includeInofficialOsiStatus(includeInofficialOsiStatus)
+                .filterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts)
+                .filterAdvisorySummary(filterAdvisorySummary)
+                .failOnDevelopment(failOnDevelopment)
+                .failOnDevelopment(failOnDevelopment)
+                .failOnError(failOnError)
+                .failOnBanned(failOnBanned)
+                .failOnDowngrade(failOnDowngrade)
+                .failOnInternal(failOnInternal)
+                .failOnUnknown(failOnUnknown)
+                .failOnUnknownVersion(failOnUnknownVersion)
+                .failOnUpgrade(failOnUpgrade)
+                .failOnMissingLicense(failOnMissingLicense)
+                .failOnMissingLicenseFile(failOnMissingLicenseFile)
+                .failOnMissingComponentFiles(failOnMissingComponentFiles)
+                .failOnMissingNotice(failOnMissingNotice)
+                .assetBomReportEnabled(enableAssetReport)
+                .assessmentReportEnabled(enableAssessmentReport)
+                .inventoryPomEnabled(enablePomReport)
+                .inventoryDiffReportEnabled(enableDiffReport)
+                .inventoryBomReportEnabled(enableBomReport)
+                .inventoryVulnerabilityReportEnabled(enableVulnerabilityReport)
+                .inventoryVulnerabilityReportSummaryEnabled(enableVulnerabilityReportSummary)
+                .inventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport);
     }
 
     protected void configureInventoryReport(InventoryReport report) {
