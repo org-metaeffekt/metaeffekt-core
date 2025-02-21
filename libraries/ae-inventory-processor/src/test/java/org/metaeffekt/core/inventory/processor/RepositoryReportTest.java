@@ -60,12 +60,13 @@ public class RepositoryReportTest {
         File inventoryDir = INVENTORY_DIR;
         String inventoryIncludes = INVENTORY_INCLUDES;
 
-        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .failOnUnknown(false)
+                .failOnUnknownVersion(false)
+                .build());
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setFailOnUnknown(false);
-        report.setFailOnUnknownVersion(false);
         report.setReferenceInventoryDir(inventoryDir);
         report.setReferenceInventoryIncludes(inventoryIncludes);
         report.setReferenceLicensePath(LICENSES_PATH);
@@ -93,15 +94,6 @@ public class RepositoryReportTest {
         report.setTargetLicenseDir(targetLicensesDir);
         report.setTargetComponentDir(targetComponentDir);
         report.setTargetReportDir(targetReportPath);
-
-        report.setAssessmentReportEnabled(true);
-        report.setAssetBomReportEnabled(true);
-        report.setInventoryBomReportEnabled(true);
-        report.setInventoryPomEnabled(true);
-        report.setInventoryDiffReportEnabled(false);
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
         final boolean valid = report.createReport();
 
@@ -163,7 +155,7 @@ public class RepositoryReportTest {
     @Test
     public void testStringEscaping() {
 
-        InventoryReport inventoryReport = new InventoryReport(ReportConfigurationParameters.builder().build());
+        InventoryReport inventoryReport = new InventoryReport();
 
         Assert.assertEquals("this&amp;that.&#8203;those-&#8203;these_&#8203;which",
                 inventoryReport.xmlEscapeArtifactId("this&that.those-these_which"));
@@ -203,7 +195,7 @@ public class RepositoryReportTest {
 
         configureAndCreateReport(inventoryDir, "*.xls",
                 inventoryDir, "*.xls",
-                reportDir, new InventoryReport(ReportConfigurationParameters.builder().build()));
+                reportDir, new InventoryReport());
 
         // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
@@ -237,18 +229,19 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-02");
         final File reportDir = new File("target/test-inventory-02_ILD_DE");
 
-        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
+        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .assessmentReportEnabled(false)
+                .inventoryBomReportEnabled(false)
+                .inventoryDiffReportEnabled(false)
+                .inventoryVulnerabilityReportEnabled(false)
+                .inventoryVulnerabilityStatisticsReportEnabled(false)
+                .inventoryVulnerabilityReportSummaryEnabled(false)
+                .reportLanguage("de")
+                .failOnUnknown(false)
+                .failOnUnknownVersion(false)
+                .build());
 
         prepareReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir, report);
-
-        report.setAssessmentReportEnabled(false);
-        report.setInventoryBomReportEnabled(false);
-        report.setInventoryDiffReportEnabled(false);
-        report.setInventoryVulnerabilityReportEnabled(false);
-        report.setInventoryVulnerabilityReportSummaryEnabled(false);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(false);
-
-        report.setTemplateLanguageSelector("de");
 
         report.createReport();
 
@@ -269,18 +262,20 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-03");
         final File reportDir = new File("target/test-inventory-03");
 
-        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
-        report.setFailOnMissingLicense(false);
-        report.setFailOnMissingLicenseFile(false);
+        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .failOnMissingLicense(false)
+                .failOnMissingLicenseFile(false)
+                .assessmentReportEnabled(false)
+                .inventoryBomReportEnabled(false)
+                .inventoryDiffReportEnabled(false)
+                .inventoryVulnerabilityReportEnabled(false)
+                .build());
 
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
 
         report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.ANY_ADVISORY_FILTER_WILDCARD);
         report.getSecurityPolicy()
                 // .setIncludeVulnerabilitiesWithAdvisoryProviders(Collections.singletonList("GHSA"))
                 .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
-
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
 
         configureAndCreateReport(inventoryDir, "*.xls",
                 inventoryDir, "*.xls",
@@ -301,12 +296,14 @@ public class RepositoryReportTest {
         File inventoryDir = new File("src/test/resources/test-inventory-04");
         String inventoryIncludes = INVENTORY_INCLUDES;
 
-        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .failOnUnknown(false)
+                .failOnUnknownVersion(false)
+                .failOnMissingLicenseFile(false)
+                .build());
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setFailOnUnknown(false);
-        report.setFailOnUnknownVersion(false);
         report.setReferenceInventoryDir(inventoryDir);
         report.setReferenceInventoryIncludes(inventoryIncludes);
         report.setReferenceLicensePath(LICENSES_PATH);
@@ -327,15 +324,6 @@ public class RepositoryReportTest {
         report.setTargetComponentDir(targetComponentDir);
         report.setTargetReportDir(targetReportPath);
 
-        report.setAssetBomReportEnabled(true);
-        report.setInventoryBomReportEnabled(true);
-        report.setInventoryPomEnabled(true);
-        report.setInventoryDiffReportEnabled(false);
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
-
-        report.setFailOnMissingLicenseFile(false);
-
         final boolean valid = report.createReport();
         assertTrue(valid);
 
@@ -349,15 +337,14 @@ public class RepositoryReportTest {
         String inventoryIncludes = INVENTORY_INCLUDES;
 
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
-                .hidePriorityInformation(true)
+                .reportLanguage("en")
+                .failOnMissingLicense(false)
+                .failOnUnknown(false)
+                .failOnUnknownVersion(false)
                 .build());
-
-        report.setTemplateLanguageSelector("en");
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
-        report.setFailOnUnknown(false);
-        report.setFailOnUnknownVersion(false);
         report.setReferenceInventoryDir(inventoryDir);
         report.setReferenceInventoryIncludes(inventoryIncludes);
         report.setReferenceLicensePath(LICENSES_PATH);
@@ -383,15 +370,6 @@ public class RepositoryReportTest {
         report.setTargetComponentDir(new File("components"));
         report.setTargetReportDir(targetReportPath);
 
-        report.setAssessmentReportEnabled(true);
-        report.setAssetBomReportEnabled(true);
-        report.setInventoryBomReportEnabled(true);
-        report.setInventoryPomEnabled(true);
-        report.setInventoryDiffReportEnabled(true);
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-
         final boolean valid = report.createReport();
 
         // copy bookmap
@@ -406,11 +384,16 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-cert");
         final File reportDir = new File("target/test-inventory-cert");
 
-        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
+        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .assessmentReportEnabled(false)
+                .inventoryBomReportEnabled(false)
+                .inventoryDiffReportEnabled(false)
+                .inventoryVulnerabilityReportEnabled(false)
+                .inventoryVulnerabilityReportSummaryEnabled(false)
+                .assetBomReportEnabled(false)
+                .build());
 
-        configureAndCreateReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir,
-                new InventoryReport(ReportConfigurationParameters.builder().build()));
+        configureAndCreateReport(inventoryDir, "*.xls", inventoryDir, "*.xls", reportDir, new InventoryReport());
 
         // put asserts here
 
@@ -432,15 +415,6 @@ public class RepositoryReportTest {
                                File referenceInventoryDir, String referenceInventoryIncludes,
                                File reportTarget, InventoryReport report) throws IOException {
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
-
-        report.setInventoryBomReportEnabled(true);
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-        report.setAssetBomReportEnabled(true);
-        report.setAssessmentReportEnabled(true);
-
-        report.setFailOnUnknown(false);
-        report.setFailOnUnknownVersion(false);
 
         report.setReferenceInventoryDir(referenceInventoryDir);
         report.setReferenceInventoryIncludes(referenceInventoryIncludes);
@@ -470,59 +444,6 @@ public class RepositoryReportTest {
         report.setTargetInventoryPath("result.xls");
     }
 
-    @Test
-    public void testCreateTestReport05() throws IOException {
-        File inventoryDir = new File("src/test/resources/test-inventory-05/");
-        String inventoryIncludes = INVENTORY_INCLUDES;
-
-        InventoryReport report = new InventoryReport();
-        report.setTemplateLanguageSelector("en");
-
-        report.setReportContext(new ReportContext("test", "Test", "Test Context"));
-
-        report.setFailOnUnknown(false);
-        report.setFailOnUnknownVersion(false);
-        report.setReferenceInventoryDir(inventoryDir);
-        report.setReferenceInventoryIncludes(inventoryIncludes);
-        report.setReferenceLicensePath(LICENSES_PATH);
-        report.setReferenceComponentPath(COMPONENTS_PATH);
-        report.setInventory(InventoryUtils.readInventory(inventoryDir, inventoryIncludes));
-
-        PatternArtifactFilter artifactFilter = new PatternArtifactFilter();
-        artifactFilter.addIncludePattern("^org\\.metaeffekt\\..*$:*");
-        report.setArtifactFilter(artifactFilter);
-
-        File target = new File("target/test-inventory-05");
-        target.mkdirs();
-
-        File  targetReportPath = new File(target, "report");
-        targetReportPath.mkdirs();
-
-        File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
-        File componentReport = new File(targetReportPath, "tpc_inventory-component-report.dita");
-        File noticeReport = new File(targetReportPath, "tpc_inventory-component-license-details.dita");
-        File artifactReport = new File(targetReportPath, "tpc_inventory-artifact-report.dita");
-
-        report.setTargetLicenseDir(new File("licenses"));
-        report.setTargetComponentDir(new File("components"));
-        report.setTargetReportDir(targetReportPath);
-
-        report.setAssessmentReportEnabled(true);
-        report.setAssetBomReportEnabled(true);
-        report.setInventoryBomReportEnabled(true);
-        report.setInventoryPomEnabled(true);
-        report.setInventoryDiffReportEnabled(true);
-        report.setInventoryVulnerabilityReportEnabled(true);
-        report.setInventoryVulnerabilityReportSummaryEnabled(true);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-
-        final boolean valid = report.createReport();
-
-        // copy bookmap
-        FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-05/bm_test.ditamap"), target);
-
-    }
-
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
@@ -531,12 +452,12 @@ public class RepositoryReportTest {
 
         configureAndCreateReport(inventoryDir, "<file>",
                 null, null,
-                reportDir, new InventoryReport(ReportConfigurationParameters.builder().build()));
+                reportDir, new InventoryReport());
     }
 
     @Test
     public void xmlEscapeDateStringTest() {
-        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().build());
+        final InventoryReport report = new InventoryReport();
         Assert.assertEquals("2020-20-20", report.xmlEscapeDate("2020-20-20"));
     }
 

@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
+import org.apache.maven.plugin.MojoExecutionException;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
 
@@ -68,11 +69,10 @@ public class DirectoryScanReportCreationMojo extends AbstractInventoryReportCrea
     private boolean enableDetectComponentPatterns = false;
 
     @Override
-    protected InventoryReport initializeInventoryReport() {
-        InventoryScanReport report = new InventoryScanReport();
+    protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
 
-        // apply standard configuration (parent class)
-        configureInventoryReport(report);
+        // FIXME-JFU: this implementation does currently not receive the required configuration
+        InventoryScanReport report = new InventoryScanReport();
 
         report.setInputDirectory(inputDirectory);
         report.setScanDirectory(scanDirectory);

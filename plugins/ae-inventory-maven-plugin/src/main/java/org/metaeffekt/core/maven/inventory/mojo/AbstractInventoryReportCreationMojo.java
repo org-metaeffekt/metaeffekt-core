@@ -314,28 +314,41 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     private boolean includeInofficialOsiStatus;
 
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
-        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().
-                hidePriorityInformation(isHidePriorityScoreInformation()).build());
+        InventoryReport report = new InventoryReport(
+                ReportConfigurationParameters.builder()
+                        .hidePriorityInformation(hidePriorityScoreInformation)
+                        .reportLanguage(templateLanguageSelector)
+                        .includeInofficialOsiStatus(includeInofficialOsiStatus)
+                        .filterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts)
+                        .filterAdvisorySummary(filterAdvisorySummary)
+                        .failOnDevelopment(failOnDevelopment)
+                        .failOnDevelopment(failOnDevelopment)
+                        .failOnError(failOnError)
+                        .failOnBanned(failOnBanned)
+                        .failOnDowngrade(failOnDowngrade)
+                        .failOnInternal(failOnInternal)
+                        .failOnUnknown(failOnUnknown)
+                        .failOnUnknownVersion(failOnUnknownVersion)
+                        .failOnUpgrade(failOnUpgrade)
+                        .failOnMissingLicense(failOnMissingLicense)
+                        .failOnMissingLicenseFile(failOnMissingLicenseFile)
+                        .failOnMissingComponentFiles(failOnMissingComponentFiles)
+                        .failOnMissingNotice(failOnMissingNotice)
+                        .assetBomReportEnabled(enableAssetReport)
+                        .assessmentReportEnabled(enableAssessmentReport)
+                        .inventoryPomEnabled(enablePomReport)
+                        .inventoryDiffReportEnabled(enableDiffReport)
+                        .inventoryBomReportEnabled(enableBomReport)
+                        .inventoryVulnerabilityReportEnabled(enableVulnerabilityReport)
+                        .inventoryVulnerabilityReportSummaryEnabled(enableVulnerabilityReportSummary)
+                        .inventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport)
+                        .build());
         configureInventoryReport(report);
         return report;
     }
 
     protected void configureInventoryReport(InventoryReport report) {
         report.setProjectName(projectName);
-
-        // report control
-        report.setFailOnDevelopment(failOnDevelopment);
-        report.setFailOnError(failOnError);
-        report.setFailOnBanned(failOnBanned);
-        report.setFailOnDowngrade(failOnDowngrade);
-        report.setFailOnInternal(failOnInternal);
-        report.setFailOnUnknown(failOnUnknown);
-        report.setFailOnUnknownVersion(failOnUnknownVersion);
-        report.setFailOnUpgrade(failOnUpgrade);
-        report.setFailOnMissingLicense(failOnMissingLicense);
-        report.setFailOnMissingLicenseFile(failOnMissingLicenseFile);
-        report.setFailOnMissingComponentFiles(failOnMissingComponentFiles);
-        report.setFailOnMissingNotice(failOnMissingNotice);
 
         // source inventory settings
         report.setReferenceInventoryDir(sourceInventoryDir);
@@ -371,8 +384,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         }
 
         report.setSecurityPolicy(securityPolicy);
-        report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
-        report.setFilterAdvisorySummary(filterAdvisorySummary);
+
         try {
             report.addGenerateOverviewTablesForAdvisoriesByMap(new JSONArray(generateOverviewTablesForAdvisories));
         } catch (Exception e) {
@@ -382,25 +394,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
 
-        report.setAssetBomReportEnabled(enableAssetReport);
-        report.setAssessmentReportEnabled(enableAssessmentReport);
-        report.setInventoryPomEnabled(enablePomReport);
-        report.setInventoryDiffReportEnabled(enableDiffReport);
-        report.setInventoryBomReportEnabled(enableBomReport);
-        report.setInventoryVulnerabilityReportEnabled(enableVulnerabilityReport);
-        report.setInventoryVulnerabilityReportSummaryEnabled(enableVulnerabilityReportSummary);
-        report.setInventoryVulnerabilityStatisticsReportEnabled(enableVulnerabilityStatisticsReport);
-
-        report.setIncludeInofficialOsiStatus(includeInofficialOsiStatus);
-
         report.setTargetReportDir(targetReportDir);
 
         report.setRelativeLicensePath(relativeLicensePath);
 
         report.setAddOnArtifacts(addOnArtifacts);
-
-        // enable to select language
-        report.setTemplateLanguageSelector(templateLanguageSelector);
 
         // configure report context
         report.setReportContext(new ReportContext(reportContextId, reportContextTitle, reportContextGroup));
@@ -447,7 +445,4 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         }
     }
 
-    public boolean isHidePriorityScoreInformation() {
-        return hidePriorityScoreInformation;
-    }
 }

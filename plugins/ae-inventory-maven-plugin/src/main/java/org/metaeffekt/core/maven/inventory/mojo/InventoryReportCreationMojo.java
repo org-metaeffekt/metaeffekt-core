@@ -40,11 +40,7 @@ public class InventoryReportCreationMojo extends AbstractInventoryReportCreation
     @Override
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         // FIXME: revise inventory report; asset descriptor; parameterization/configuration
-        final InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().
-                hidePriorityInformation(isHidePriorityScoreInformation()).build());
-
-        // apply standard configuration (parent class)
-        configureInventoryReport(report);
+        final InventoryReport report = super.initializeInventoryReport();
 
         try {
             getLog().info("Starting inventory report creation for " + inventory.getAbsolutePath());

@@ -145,26 +145,6 @@ public class InventoryReport {
     private String projectName = "local project";
 
     /**
-     * Fields to control the report for inventory governance.
-     */
-    private boolean failOnError = true;
-    private boolean failOnBanned = true;
-    private boolean failOnDowngrade = true;
-    private boolean failOnUnknown = true;
-    private boolean failOnUnknownVersion = true;
-    private boolean failOnDevelopment = true;
-    private boolean failOnInternal = true;
-    private boolean failOnUpgrade = true;
-    private boolean failOnMissingLicense = true;
-    private boolean failOnMissingLicenseFile = true;
-    private boolean failOnMissingNotice = true;
-
-    /**
-     * Default to false for compatibility reasons
-     */
-    private boolean failOnMissingComponentFiles = false;
-
-    /**
      * For which advisory providers to generate additional tables in the overview section containing statistic data on
      * which vulnerabilities have already been reviewed.
      */
@@ -173,36 +153,6 @@ public class InventoryReport {
     private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
     private ArtifactFilter artifactFilter;
-
-    /**
-     * Some report use cases do not require/desire the vulnerabilities in the inventory to be filtered. Adversely to
-     * previous handling (all inventories were filtered) the default is here <code>false</code>. The relevance of the
-     * vulnerability is determined by the use case of the inventory and not structural. Also, some inventories may not
-     * detail the artifacts-level information and only provide assets and asset-level assessment information.
-     */
-    private boolean filterVulnerabilitiesNotCoveredByArtifacts = false;
-
-    /**
-     * Whether to hide the periodic status "unclassified" in the vulnerability report. If set to <code>true</code>, the
-     * section will simply not be generated.<br>
-     * Defaults to <code>false</code>.
-     */
-    private boolean filterAdvisorySummary = false;
-
-    private boolean inventoryBomReportEnabled = false;
-    private boolean inventoryDiffReportEnabled = false;
-    private boolean inventoryPomEnabled = false;
-    private boolean inventoryVulnerabilityReportEnabled = false;
-    private boolean inventoryVulnerabilityReportSummaryEnabled = false;
-    private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
-    private boolean assetBomReportEnabled = false;
-    private boolean assessmentReportEnabled = false;
-
-    /**
-     * Flag indicating whether to include inofficial OSI status information, when detailing license characteristics.
-     * Defaults to <code>false</code> due to backward expectation management.
-     */
-    private boolean includeInofficialOsiStatus = false;
 
     /**
      * This is the relative path as it will be used in the resulting dita templates. This needs
@@ -230,19 +180,17 @@ public class InventoryReport {
      */
     private ReportContext reportContext = new ReportContext("default", null, null);
 
-    private String templateLanguageSelector = "en";
-
-    private final ReportConfigurationParameters reportConfigurationParameters;
+    private final ReportConfigurationParameters configParams;
 
     /**
      * Initializes ReportConfigurationParameters with default values.
      */
     public InventoryReport() {
-        this.reportConfigurationParameters = ReportConfigurationParameters.builder().build();
+        this.configParams = ReportConfigurationParameters.builder().build();
     }
 
-    public InventoryReport(ReportConfigurationParameters reportConfigurationParameters) {
-        this.reportConfigurationParameters = reportConfigurationParameters;
+    public InventoryReport(ReportConfigurationParameters configParams) {
+        this.configParams = configParams;
     }
 
     public boolean createReport() throws IOException {
@@ -395,14 +343,14 @@ public class InventoryReport {
                     if (classification.contains("upgrade")) {
                         classifier += "[upgrade]";
                         localUpgrade = true;
-                        if (failOnUpgrade) {
+                        if (configParams.isFailOnUpgrade()) {
                             localError = true;
                         }
                     }
                     if (classification.contains("downgrade")) {
                         classifier += "[downgrade]";
                         localDowngrade = true;
-                        if (failOnDowngrade) {
+                        if (configParams.isFailOnDowngrade()) {
                             localError = true;
                         }
                     }
@@ -410,28 +358,28 @@ public class InventoryReport {
                         classifier += "[development]";
                         localDevelopment = true;
                         localWarn = false;
-                        if (failOnDevelopment) {
+                        if (configParams.isFailOnDevelopment()) {
                             localError = true;
                         }
                     }
                     if (classification.contains("internal")) {
                         classifier += "[internal]";
                         localInternal = true;
-                        if (failOnInternal) {
+                        if (configParams.isFailOnInternal()) {
                             localError = true;
                         }
                     }
                     if (classification.contains("banned")) {
                         classifier += "[banned]";
                         localBanned = true;
-                        if (failOnBanned) {
+                        if (configParams.isFailOnBanned()) {
                             localError = true;
                         }
                     }
                     if (classification.contains("unknown")) {
                         classifier += "[unknown]";
                         localUnknown = true;
-                        if (failOnUnknown) {
+                        if (configParams.isFailOnUnknown()) {
                             localError = true;
                         }
                     }
@@ -443,14 +391,14 @@ public class InventoryReport {
                 if (!StringUtils.isNotBlank(matchedReferenceArtifact.getLicense())) {
                     classifier += "[no license]";
                     localMissingLicense = true;
-                    if (failOnMissingLicense) {
+                    if (configParams.isFailOnMissingLicense()) {
                         localError = true;
                     }
                 }
             } else {
                 classifier += "[unknown]";
                 localUnknown = true;
-                if (failOnUnknown) {
+                if (configParams.isFailOnUnknown()) {
                     localError = true;
                 }
             }
@@ -595,7 +543,7 @@ public class InventoryReport {
         this.checkReportInventory(projectInventory);
 
         // filter the vulnerability metadata to only cover the items remaining in the inventory
-        if (filterVulnerabilitiesNotCoveredByArtifacts) {
+        if (configParams.isFilterVulnerabilitiesNotCoveredByArtifacts()) {
             projectInventory.filterVulnerabilityMetaData();
             LOG.debug("Project inventory after filtering using [filterVulnerabilitiesNotCoveredByArtifacts]: {}", projectInventory.getInventorySizePrintString());
         }
@@ -611,47 +559,47 @@ public class InventoryReport {
                 new InventoryReportAdapter(filteredInventory));
 
         // write reports
-        if (inventoryBomReportEnabled) {
+        if (configParams.isInventoryBomReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_BOM, reportContext);
         }
 
-        if (inventoryDiffReportEnabled) {
+        if (configParams.isInventoryDiffReportEnabled()) {
             writeDiffReport(diffInventory, projectInventory, reportContext);
         }
 
-        if (inventoryVulnerabilityReportEnabled) {
+        if (configParams.isInventoryVulnerabilityReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY, reportContext);
         }
 
-        if (inventoryVulnerabilityReportSummaryEnabled) {
+        if (configParams.isInventoryVulnerabilityReportSummaryEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_REPORT_VULNERABILITY_SUMMARY, reportContext);
         }
 
-        if (inventoryVulnerabilityStatisticsReportEnabled) {
+        if (configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_INVENTORY_STATISTICS_VULNERABILITY, reportContext);
         }
 
         // all vulnerability-related templates require to generate labels
-        if (inventoryVulnerabilityReportEnabled || inventoryVulnerabilityStatisticsReportEnabled) {
+        if (configParams.isInventoryVulnerabilityReportEnabled() || configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT, reportContext);
         }
 
-        if (inventoryPomEnabled) {
+        if (configParams.isInventoryPomEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_TECHNICAL_BASE_DIR, TEMPLATE_GROUP_INVENTORY_POM, reportContext);
         }
 
-        if (assetBomReportEnabled) {
+        if (configParams.isAssetBomReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSET_REPORT_BOM, reportContext);
         }
 
-        if (assessmentReportEnabled) {
+        if (configParams.isAssessmentReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_ASSESSMENT_REPORT, reportContext);
         }
@@ -684,37 +632,37 @@ public class InventoryReport {
             LOG.info("No findings!");
         }
 
-        if (error && failOnError) {
+        if (error && configParams.isFailOnError()) {
             return false;
         }
-        if (banned && failOnBanned) {
+        if (banned && configParams.isFailOnBanned()) {
             return false;
         }
-        if (unknown && failOnUnknown) {
+        if (unknown && configParams.isFailOnUnknown()) {
             return false;
         }
-        if (unknownVersion && failOnUnknownVersion) { // is always false
+        if (unknownVersion && configParams.isFailOnUnknownVersion()) { // is always false
             return false;
         }
-        if (downgrade && failOnDowngrade) {
+        if (downgrade && configParams.isFailOnDowngrade()) {
             return false;
         }
-        if (development && failOnDevelopment) {
+        if (development && configParams.isFailOnDevelopment()) {
             return false;
         }
-        if (internal && failOnInternal) {
+        if (internal && configParams.isFailOnInternal()) {
             return false;
         }
-        if (upgrade && failOnUpgrade) {
+        if (upgrade && configParams.isFailOnUpgrade()) {
             return false;
         }
-        if (missingLicense && failOnMissingLicense) {
+        if (missingLicense && configParams.isFailOnMissingLicense()) {
             return false;
         }
-        if (missingLicenseFile && failOnMissingLicenseFile) {
+        if (missingLicenseFile && configParams.isFailOnMissingLicenseFile()) {
             return false;
         }
-        if (missingNotice && failOnMissingNotice) {
+        if (missingNotice && configParams.isFailOnMissingNotice()) {
             return false;
         }
         return true;
@@ -775,7 +723,7 @@ public class InventoryReport {
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
         final ReportUtils reportUtils = new ReportUtils();
-        reportUtils.setLang(templateLanguageSelector);
+        reportUtils.setLang(configParams.getReportLanguage());
         reportUtils.setContext(context);
 
         // regarding the report we only use the filtered inventory for the time being
@@ -796,7 +744,7 @@ public class InventoryReport {
         context.put("targetReportDir", this.targetReportDir);
 
         context.put("reportContext", reportContext);
-        context.put("configParams", this.reportConfigurationParameters);
+        context.put("configParams", this.configParams);
         template.merge(context, sw);
 
         FileUtils.write(target, sw.toString(), "UTF-8");
@@ -823,7 +771,7 @@ public class InventoryReport {
                     LicenseMetaData licenseMetaData = projectInventory.findMatchingLicenseMetaData(artifact);
                     if (licenseMetaData == null) {
                         final String messagePattern = "No notice for artifact '{}' with license '{}'.";
-                        if (failOnMissingNotice) {
+                        if (configParams.isFailOnMissingNotice()) {
                             LOG.error(messagePattern, artifact.createStringRepresentation(), license);
                             return true;
                         } else {
@@ -855,7 +803,7 @@ public class InventoryReport {
             copyFolderContent(sourceLicenseRootDir, licenseFolderName, targetDir);
         } else {
             if (!reportedLicenseFolders.contains(licenseFolderName)) {
-                if (failOnMissingLicenseFile) {
+                if (configParams.isFailOnMissingLicenseFile()) {
                     LOG.error("[missing license file] in folder [{}]", licenseFolderName);
                 } else {
                     if (reportedLicenseFolders.size() <= 10) {
@@ -882,7 +830,7 @@ public class InventoryReport {
             copyFolderContent(sourceComponentRootDir, componentFolderName, targetDir);
         } else {
             if (!reportedLicenseFolders.contains(componentFolderName)) {
-                if (failOnMissingComponentFiles) {
+                if (configParams.isFailOnMissingComponentFiles()) {
                     LOG.error("[missing component specific license file] in folder '{}'", componentFolderName);
                 } else {
                     if (reportedLicenseFolders.size() <= 10) {
@@ -1074,19 +1022,19 @@ public class InventoryReport {
         logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
 
         LOG.info("- Validation fail flags:");
-        LOG.info(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", failOnError, failOnBanned, failOnDowngrade, failOnUnknown, failOnUnknownVersion, failOnDevelopment, failOnInternal);
-        LOG.info("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]", failOnUpgrade, failOnMissingLicense, failOnMissingLicenseFile, failOnMissingNotice, failOnMissingComponentFiles);
+        LOG.info(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(),  configParams.isFailOnBanned(),  configParams.isFailOnDowngrade(),  configParams.isFailOnUnknown(),  configParams.isFailOnUnknownVersion(),  configParams.isFailOnDevelopment(),  configParams.isFailOnInternal());
+        LOG.info("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
 
         LOG.info("- Data display settings:");
         LOG.info(" - generateOverviewTablesForAdvisories: {}", generateOverviewTablesForAdvisories.stream().map(AeaaContentIdentifierStore.AeaaContentIdentifier::toExtendedString).collect(Collectors.toList()));
         logConfigurationLogToString("artifactFilter", artifactFilter);
-        logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", filterVulnerabilitiesNotCoveredByArtifacts);
-        logConfigurationLogToString("filterAdvisorySummary", filterAdvisorySummary);
+        logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", configParams.isFilterVulnerabilitiesNotCoveredByArtifacts());
+        logConfigurationLogToString("filterAdvisorySummary", configParams.isFilterAdvisorySummary());
 
         LOG.info("- Template settings:");
-        LOG.info(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]", inventoryBomReportEnabled, inventoryDiffReportEnabled, inventoryPomEnabled, inventoryVulnerabilityReportEnabled);
-        LOG.info("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]", inventoryVulnerabilityReportSummaryEnabled, inventoryVulnerabilityStatisticsReportEnabled);
-        logConfigurationLogToString("templateLanguageSelector", templateLanguageSelector);
+        LOG.info(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]",  configParams.isInventoryBomReportEnabled(),  configParams.isInventoryDiffReportEnabled(),  configParams.isInventoryPomEnabled(),  configParams.isInventoryVulnerabilityReportEnabled());
+        LOG.info("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]",  configParams.isInventoryVulnerabilityReportSummaryEnabled(),  configParams.isInventoryVulnerabilityStatisticsReportEnabled());
+        logConfigurationLogToString("templateLanguageSelector", configParams.getReportLanguage());
 
         LOG.info("- Addon data:");
         if (addOnArtifacts == null) {

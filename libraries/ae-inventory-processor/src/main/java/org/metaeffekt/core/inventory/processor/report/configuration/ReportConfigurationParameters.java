@@ -28,4 +28,124 @@ public class ReportConfigurationParameters {
      */
     @Builder.Default
     private final boolean hidePriorityInformation = false;
+
+    /**
+     * Determines which language files are used in the report templates. Supports english and german.
+     */
+    @Builder.Default
+    private final String reportLanguage = "en";
+
+    /**
+     * Flag indicating whether to include inofficial OSI status information, when detailing license characteristics.
+     * Defaults to <code>false</code> due to backward expectation management.
+     */
+    @Builder.Default
+    private final boolean includeInofficialOsiStatus = false;
+
+    /**
+     * Some report use cases do not require/desire the vulnerabilities in the inventory to be filtered. Adversely to
+     * previous handling (all inventories were filtered) the default is here <code>false</code>. The relevance of the
+     * vulnerability is determined by the use case of the inventory and not structural. Also, some inventories may not
+     * detail the artifacts-level information and only provide assets and asset-level assessment information.
+     */
+    @Builder.Default
+    private boolean filterVulnerabilitiesNotCoveredByArtifacts = false;
+
+    /**
+     * Whether to hide the periodic status "unclassified" in the vulnerability report. If set to <code>true</code>, the
+     * section will simply not be generated.<br>
+     * Defaults to <code>false</code>.
+     */
+    @Builder.Default
+    private boolean filterAdvisorySummary = false;
+
+    // fail behaviour section
+
+    @Builder.Default
+    private boolean failOnError = true;
+
+    @Builder.Default
+    private boolean failOnBanned = true;
+
+    @Builder.Default
+    private boolean failOnDowngrade = true;
+
+    @Builder.Default
+    private boolean failOnUnknown = true;
+
+    @Builder.Default
+    private boolean failOnUnknownVersion = true;
+
+    @Builder.Default
+    private boolean failOnDevelopment = true;
+
+    @Builder.Default
+    private boolean failOnInternal = true;
+
+    @Builder.Default
+    private boolean failOnUpgrade = true;
+
+    @Builder.Default
+    private boolean failOnMissingLicense = true;
+
+    @Builder.Default
+    private boolean failOnMissingLicenseFile = true;
+
+    @Builder.Default
+    private boolean failOnMissingNotice = true;
+
+    @Builder.Default
+    private boolean failOnMissingComponentFiles = false;
+
+    // template inclusion section
+
+    @Builder.Default
+    private boolean inventoryBomReportEnabled = true;
+
+    @Builder.Default
+    private boolean inventoryDiffReportEnabled = true;
+
+    @Builder.Default
+    private boolean inventoryPomEnabled = true;
+
+    @Builder.Default
+    private boolean inventoryVulnerabilityReportEnabled = true;
+
+    @Builder.Default
+    private boolean inventoryVulnerabilityReportSummaryEnabled = true;
+
+    @Builder.Default
+    private boolean inventoryVulnerabilityStatisticsReportEnabled = true;
+
+    @Builder.Default
+    private boolean assetBomReportEnabled = true;
+
+    @Builder.Default
+    private boolean assessmentReportEnabled = true;
+
+    public void setAllFailConditions(boolean shouldFail) {
+        failOnError = shouldFail;
+        failOnBanned = shouldFail;
+        failOnDowngrade = shouldFail;
+        failOnUnknown = shouldFail;
+        failOnUnknownVersion = shouldFail;
+        failOnDevelopment = shouldFail;
+        failOnInternal = shouldFail;
+        failOnUpgrade = shouldFail;
+        failOnMissingLicense = shouldFail;
+        failOnMissingLicenseFile = shouldFail;
+        failOnMissingNotice = shouldFail;
+        failOnMissingComponentFiles = shouldFail;
+    }
+
+    public void setGenerationForAllTemplates(boolean shouldGenerate) {
+        inventoryBomReportEnabled = shouldGenerate;
+        inventoryDiffReportEnabled = shouldGenerate;
+        inventoryPomEnabled = shouldGenerate;
+        inventoryVulnerabilityReportEnabled = shouldGenerate;
+        inventoryVulnerabilityReportSummaryEnabled = shouldGenerate;
+        inventoryVulnerabilityStatisticsReportEnabled = shouldGenerate;
+        assetBomReportEnabled = shouldGenerate;
+        assessmentReportEnabled = shouldGenerate;
+    }
 }
