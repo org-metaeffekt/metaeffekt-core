@@ -411,18 +411,37 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return tmpFolder;
     }
 
-    public static FileRef toAbsoluteOrReferencePath(String filePath, File referenceDir) {
+    /**
+     * Creates a {@link FileRef} instance for the given filePath. If the filePath is an absolute path the methods uses
+     * the normalized and canonicalized version of the filePath. In case filePath is a relative path the baseDir path
+     * is used to compose a resulting path (which is not necessarily absolute).
+     *
+     * @param filePath The file path.
+     * @param baseDir The base dir to construct a composite path from, in case filePath is not absolute.
+     *
+     * @return The constructed PathRef instance.
+     */
+    public static FileRef toAbsoluteOrReferencePath(String filePath, File baseDir) {
         final String normalizePathToLinux = normalizePathToLinux(filePath);
-        final File file = new File(normalizePathToLinux);
         if (normalizePathToLinux.startsWith(SEPARATOR_SLASH)) {
-            return new FileRef(file);
+            return new FileRef(canonicalizeLinuxPath(normalizePathToLinux));
         }
-        final String referenceRelativePath = normalizePathToLinux(referenceDir) + "/" + normalizePathToLinux;
-        return new FileRef(canonicalizeLinuxPath(referenceRelativePath));
+        final String baseDirRelativePath = normalizePathToLinux(baseDir) + "/" + normalizePathToLinux;
+        return new FileRef(canonicalizeLinuxPath(baseDirRelativePath));
     }
 
-    public static FileRef toAbsoluteOrReferencePath(String target, String reference) {
-        return toAbsoluteOrReferencePath(target, new File(reference));
+    /**
+     * Creates a {@link FileRef} instance for the given filePath. If the filePath is an absolute path the methods uses
+     * the normalized and canonicalized version of the filePath. In case filePath is a relative path the baseDir path
+     * is used to compose a resulting path (which is not necessarily absolute).
+     *
+     * @param filePath The file path.
+     * @param baseDirPath The base dir path to construct a composite path from, in case filePath is not absolute.
+     *
+     * @return The constructed PathRef instance.
+     */
+    public static FileRef toAbsoluteOrReferencePath(String filePath, String baseDirPath) {
+        return toAbsoluteOrReferencePath(filePath, new File(baseDirPath));
     }
 
 }
