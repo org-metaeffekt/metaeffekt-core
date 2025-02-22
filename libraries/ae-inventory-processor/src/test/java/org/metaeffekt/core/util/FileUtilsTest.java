@@ -37,6 +37,11 @@ public class FileUtilsTest {
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
+
+        // edge cases that require a definition
+        Assert.assertEquals("test", FileUtils.canonicalizeLinuxPath("/../test"));
+        Assert.assertEquals("test", FileUtils.canonicalizeLinuxPath("/.././test"));
+        Assert.assertEquals("test", FileUtils.canonicalizeLinuxPath("/./../test"));
     }
 
     @Test
