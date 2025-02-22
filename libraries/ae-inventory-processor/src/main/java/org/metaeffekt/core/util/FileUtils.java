@@ -18,6 +18,7 @@ package org.metaeffekt.core.util;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +52,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static final char SEPARATOR_SLASH_CHAR = '/';
 
-    private static final Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
-    private static final Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
-    private static final Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
+    private static final Pattern SLASH_DOT_SLASH_PATTERN = Pattern.compile("/\\./");
+    private static final Pattern DOT_SLASH_PREFIX_PATTERN = Pattern.compile("^\\./");
+    private static final Pattern FOLDER_SLASH_DOTDOT_SLASH_PATTERN = Pattern.compile("[^/]*/\\.\\./");
+    private static final Pattern SLASH_SLASH_PATTERN = Pattern.compile("//");
 
     /**
      * Scans the given baseDir for files matching the includes and excludes.
@@ -305,15 +307,15 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
     }
 
+    public static String normalizeToLinuxPathAndCanonicalizePath(String path) {
+        return canonicalizeLinuxPath(normalizePathToLinux(path));
+    }
+
     public static String canonicalizeLinuxPath(String path) {
-        path = NORMALIZE_PATH_PATTERN_001.matcher(path).replaceAll(SEPARATOR_SLASH);
-        path = NORMALIZE_PATH_PATTERN_001.matcher(path).replaceAll(SEPARATOR_SLASH);
-        path = NORMALIZE_PATH_PATTERN_002.matcher(path).replaceAll("");
-
-        while (path.contains("/../")) {
-            path = NORMALIZE_PATH_PATTERN_003.matcher(path).replaceAll(SEPARATOR_SLASH);
-        }
-
+        path = RegExUtils.replaceAll(path, SLASH_DOT_SLASH_PATTERN, SEPARATOR_SLASH);
+        path = RegExUtils.replaceAll(path, SLASH_SLASH_PATTERN, SEPARATOR_SLASH);
+        path = RegExUtils.replaceAll(path, FOLDER_SLASH_DOTDOT_SLASH_PATTERN, "");
+        path = RegExUtils.replaceAll(path, DOT_SLASH_PREFIX_PATTERN, "");
         return path;
     }
 
@@ -401,6 +403,19 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
         tmpFolder.mkdirs();
         return tmpFolder;
+    }
+
+    public static FileRef toAbsoluteOrReferencePath(String filePath, File referenceDir) {
+        final File file = new File(filePath);
+        if (file.isAbsolute()) {
+            return new FileRef(file);
+        }
+        final String referenceRelativePath = normalizePathToLinux(referenceDir) + "/" + normalizePathToLinux(filePath);
+        return new FileRef(canonicalizeLinuxPath(referenceRelativePath));
+    }
+
+    public static FileRef toAbsoluteOrReferencePath(String target, String reference) {
+        return toAbsoluteOrReferencePath(target, new File(reference));
     }
 
 }
