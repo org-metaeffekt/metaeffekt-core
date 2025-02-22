@@ -17,6 +17,7 @@ package org.metaeffekt.core.util;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.nio.file.Paths;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,11 +51,11 @@ public class FileUtilsTest {
         assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/.././test"));
         assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/./././.././test"));
 
-        // these normalizations should throw an exception; illegal/undefined path
-        assertThat(Paths.get("/../test").normalize().toString()).isEqualTo("/test");
-        assertThat(Paths.get("/.././test").normalize().toString()).isEqualTo("/test");
-        assertThat(Paths.get("/./../test").normalize().toString()).isEqualTo("/test");
-        assertThat(Paths.get("/./././.././test").normalize().toString()).isEqualTo("/test");
+        // these normalizations should throw an exception; illegal/undefined path; please also not the OS-specific treatment
+        assertThat(Paths.get("/../test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/.././test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/./../test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/./././.././test").normalize().toString()).isEqualTo(File.separator + "test");
     }
 
     @Test
