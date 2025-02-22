@@ -312,10 +312,16 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String canonicalizeLinuxPath(String path) {
+        final String originalPath = path;
+
         path = RegExUtils.replaceAll(path, SLASH_DOT_SLASH_PATTERN, SEPARATOR_SLASH);
         path = RegExUtils.replaceAll(path, SLASH_SLASH_PATTERN, SEPARATOR_SLASH);
+
+        if (path.startsWith("/..")) throw new IllegalStateException("Illegal path detected: " + originalPath);
+
         path = RegExUtils.replaceAll(path, FOLDER_SLASH_DOTDOT_SLASH_PATTERN, "");
         path = RegExUtils.replaceAll(path, DOT_SLASH_PREFIX_PATTERN, "");
+
         return path;
     }
 
@@ -406,11 +412,12 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static FileRef toAbsoluteOrReferencePath(String filePath, File referenceDir) {
-        final File file = new File(filePath);
-        if (file.isAbsolute()) {
+        final String normalizePathToLinux = normalizePathToLinux(filePath);
+        final File file = new File(normalizePathToLinux);
+        if (normalizePathToLinux.startsWith(SEPARATOR_SLASH)) {
             return new FileRef(file);
         }
-        final String referenceRelativePath = normalizePathToLinux(referenceDir) + "/" + normalizePathToLinux(filePath);
+        final String referenceRelativePath = normalizePathToLinux(referenceDir) + "/" + normalizePathToLinux;
         return new FileRef(canonicalizeLinuxPath(referenceRelativePath));
     }
 
