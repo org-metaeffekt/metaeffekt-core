@@ -19,10 +19,12 @@ import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.metaeffekt.core.util.FileUtils.toAbsoluteOrReferencePath;
+
 public class FileUtilsTest {
 
     @Test
-    public void canoncializeLinuxPathTest() {
+    public void canonicializeLinuxPathTest() {
         Assert.assertEquals("test", FileUtils.canonicalizeLinuxPath("test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./test"));
@@ -31,21 +33,17 @@ public class FileUtilsTest {
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./././test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././test"));
         Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./////test/./test/../././test"));
-
         Assert.assertEquals("../test/test", FileUtils.canonicalizeLinuxPath("../test/./test"));
-
-        // not yet supported
-        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
-        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
-        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
+        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
+        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
+        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
     }
 
     @Test
     public void match() {
         String pattern = "**/md_to_pdf/**/*,/**/cache/**/md_to_pdf/**/*,/**/cache/**/md_to_pdf.*,**/md-to-pdf/**/*,**/md-to-pdf-*/**/*,/**/cache/**/md-to-pdf/**/*,/**/cache/**/md-to-pdf-*/**/*,/**/cache/**/md-to-pdf.*,**/md_to_pdf.gemspec";
         String path = "3.2.0/cache/bundler/git/md-to-pdf-db8a51cb2d2f39298e3259fa5c06fe96d67fec0b/objects/d4/4d0b959ab06938fe21bcb1150f5c2c2c05308a";
-        final boolean matches = FileUtils.matches(pattern, path);
-        System.out.println(matches);
+        Assertions.assertThat(FileUtils.matches(pattern, path)).isEqualTo(true);
     }
 
     @Test
@@ -65,6 +63,18 @@ public class FileUtilsTest {
 
         Assertions.assertThat(FileUtils.matches("**/a/b", "f/e/a/b")).isTrue();
         Assertions.assertThat(FileUtils.matches("**/a/b", "f/e/a/c")).isFalse();
+    }
+
+    @Test
+    public void testToAbsoluteOrExtendedFile() {
+        Assertions.assertThat(toAbsoluteOrReferencePath("/absolute/path","/test").getPath())
+                .isEqualTo("/absolute/path");
+
+        Assertions.assertThat(toAbsoluteOrReferencePath("relative/path","/test").getPath())
+                .isEqualTo("/test/relative/path");
+
+        Assertions.assertThat(toAbsoluteOrReferencePath("relative/path","test/x/..////").getPath())
+                .isEqualTo("test/relative/path");
     }
 
 }

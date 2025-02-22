@@ -17,6 +17,7 @@ package org.metaeffekt.core.util;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Common utils for dealing with regular expressions.
@@ -35,12 +36,26 @@ public class RegExUtils {
      * @return The replaced text. If the regular expression does not match
      */
     public static String replaceAll(String text, String regex, String replacement) {
+        return replaceAll(text, Pattern.compile(regex), replacement);
+    }
+
+    /**
+     * Replaces the given regular expression with in the text by the specified replacement.
+     *
+     * This implementation applies the regular expression / replacement as often as a change is observed.
+     *
+     * @param text The text to apply the regular expression to.
+     * @param pattern The regular expression pattern.
+     * @param replacement The replacement string.
+     *
+     * @return The replaced text. If the regular expression does not match
+     */
+    public static String replaceAll(String text, Pattern pattern, String replacement) {
         Set<String> previousVersions = new HashSet<>();
         do {
             previousVersions.add(text);
-            text = text.replaceAll(regex, replacement);
+            text = pattern.matcher(text).replaceAll(replacement);
         } while (!previousVersions.contains(text));
-
         return text;
     }
 
