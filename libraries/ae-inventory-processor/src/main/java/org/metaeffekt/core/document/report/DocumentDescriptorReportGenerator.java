@@ -149,6 +149,9 @@ public class DocumentDescriptorReportGenerator {
                 if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
                     report.setAssetBomReportEnabled(true);
                 }
+                if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
+                    report.setInventoryBomReportEnabled(true);
+                }
 
                 report.setReferenceInventory(inventoryContext.getReferenceInventory());
                 report.setInventory(inventoryContext.getInventory());

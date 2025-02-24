@@ -72,6 +72,7 @@ public class DocumentDescriptorReport {
     public static final String TEMPLATE_GROUP_VULNERABILITY_STATISTICS_REPORT_BOOKMAP = "vulnerability-statistics-report-bookmap";
     public static final String TEMPLATE_GROUP_VULNERABILITY_SUMMARY_REPORT_BOOKMAP = "vulnerability-summary-report-bookmap";
     public static final String TEMPLATE_GROUP_INITIAL_LICENSE_DOCUMENTATION_BOOKMAP = "initial-license-documentation-bookmap";
+    public static final String TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP = "license-documentation-bookmap";
 
     /**
      * Creates a report based on the given DocumentDescriptor. This method will generate a DITA BookMap and other reports
@@ -97,6 +98,9 @@ public class DocumentDescriptorReport {
             if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
                 writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_INITIAL_LICENSE_DOCUMENTATION_BOOKMAP);
             }
+            if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
+                writeReports(documentDescriptor, documentPart, new DocumentDescriptorReportAdapters(), TEMPLATE_GROUP_LICENSE_DOCUMENTATION_BOOKMAP);
+            }
         }
     }
 
@@ -121,6 +125,8 @@ public class DocumentDescriptorReport {
                 bookMapFilename = "map_" + documentPart.getIdentifier() + "-vulnerability-summary-report.ditamap";
             } else if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
                 bookMapFilename = "map_" + documentPart.getIdentifier() + "-initial-license-documentation.ditamap";
+            } else if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
+                bookMapFilename = "map_" + documentPart.getIdentifier() + "-license-documentation.ditamap";
             }
             if (bookMapFilename != null) {
                 partBookMaps.add(bookMapFilename);
@@ -188,6 +194,10 @@ public class DocumentDescriptorReport {
                     adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
                 }
                 if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION){
+                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
+                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                }
+                if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION){
                     Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
                     adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
                 }
