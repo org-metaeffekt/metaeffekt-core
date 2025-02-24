@@ -19,12 +19,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
-import org.metaeffekt.core.document.model.DocumentPartType;
 import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,56 +120,58 @@ public class DocumentDescriptorReportGenerator {
                     mergedParams = documentDescriptor.getParams();
                 } else mergedParams = new HashMap<>();
 
-                InventoryReport report = new InventoryReport();
+                ReportConfigurationParameters.ReportConfigurationParametersBuilder builder = ReportConfigurationParameters.builder();
 
-                setPolicy(mergedParams, report);
-
-                if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                    report.setInventoryBomReportEnabled(true);
+                switch (documentPart.getDocumentPartType()) {
+                    case ANNEX:
+                        builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
+                        builder.inventoryBomReportEnabled(true);
+                        break;
+                    case VULNERABILITY_STATISTICS_REPORT:
+                        builder.inventoryVulnerabilityStatisticsReportEnabled(true);
+                        break;
+                    case VULNERABILITY_SUMMARY_REPORT:
+                        builder.inventoryVulnerabilityReportSummaryEnabled(true);
+                        break;
+                    case VULNERABILITY_REPORT:
+                        builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
+                        builder.inventoryVulnerabilityReportEnabled(true);
+                        break;
+                    case INITIAL_LICENSE_DOCUMENTATION:
+                        builder.assetBomReportEnabled(true);
+                        break;
+                    case LICENSE_DOCUMENTATION:
+                        builder.inventoryBomReportEnabled(true);
                 }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
-                    report.setInventoryVulnerabilityStatisticsReportEnabled(true);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
-                    report.setInventoryVulnerabilityReportSummaryEnabled(true);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
+                builder.reportLanguage(documentDescriptor.getLanguage());
+                boolean includeInofficialOsiStatus = Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus"));
+                builder.includeInofficialOsiStatus(includeInofficialOsiStatus);
+                ReportConfigurationParameters configParams = builder.build();
 
-                    report.setInventoryVulnerabilityReportEnabled(true);
+                // FIXME-KKL: revise if we want different pre-requisites for the different document types, currently we handle all the same way
+                configParams.setAllFailConditions(false);
 
+                InventoryReport report = new InventoryReport(configParams);
+                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
+
+                switch (documentPart.getDocumentPartType()) {
+                    case ANNEX:
+                    setPolicy(mergedParams, report);
+                        break;
+                    case VULNERABILITY_REPORT:
+                    setPolicy(mergedParams, report);
                     String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
-
                     try {
                         // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
                         report.addGenerateOverviewTablesForAdvisoriesByMap(convertToJSONArray(generateOverviewTablesForAdvisories));
                     } catch (Exception e) {
                         throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
                     }
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
-                    report.setAssetBomReportEnabled(true);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
-                    report.setInventoryBomReportEnabled(true);
+                        break;
                 }
 
                 report.setReferenceInventory(inventoryContext.getReferenceInventory());
                 report.setInventory(inventoryContext.getInventory());
-
-                // FIXME-KKL: revise if we want different pre-requisites for the different document types, currently we handle all the same way
-                report.setFailOnDevelopment(false);
-                report.setFailOnError(false);
-                report.setFailOnBanned(false);
-                report.setFailOnDowngrade(false);
-                report.setFailOnInternal(false);
-                report.setFailOnUnknown(false);
-                report.setFailOnUnknownVersion(false);
-                report.setFailOnUpgrade(false);
-                report.setFailOnMissingLicense(false);
-                report.setFailOnMissingLicenseFile(false);
-                report.setFailOnMissingComponentFiles(false);
-                report.setFailOnMissingNotice(false);
-
 
                 // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
                 // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
@@ -200,17 +202,12 @@ public class DocumentDescriptorReportGenerator {
                     title = inventoryContext.getReportContextTitle();
                 }
 
-                boolean includeInofficialOsiStatus = Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus"));
-                report.setIncludeInofficialOsiStatus(includeInofficialOsiStatus);
-
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), title, inventoryContext.getReportContext()));
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
 
                 report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getInventoryVersion());
-
-                report.setTemplateLanguageSelector(documentDescriptor.getLanguage());
 
                 if (report.createReport()) {
                     inventoryReports.add(report);
@@ -251,7 +248,6 @@ public class DocumentDescriptorReportGenerator {
             securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
 
             report.setSecurityPolicy(securityPolicy);
-            report.setFilterVulnerabilitiesNotCoveredByArtifacts(filterVulnerabilitiesNotCoveredByArtifacts);
         }
         log.info("no securityPolicyFile provided");
     }

@@ -68,7 +68,11 @@ public class MatchResult {
         String pathInAsset = relativePath;
         final String componentPartPath = componentPatternData.get(COMPONENT_PART_PATH);
         if (!StringUtils.isBlank(componentPartPath)) {
-            pathInAsset += "/" + componentPartPath;
+            if (!pathInAsset.equals(".")) {
+                pathInAsset += "/" + componentPartPath;
+            } else {
+                pathInAsset = componentPartPath;
+            }
         }
         derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, pathInAsset);
 

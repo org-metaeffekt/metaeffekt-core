@@ -1473,36 +1473,34 @@ public class Inventory implements Serializable {
         }
     }
 
-    public void inheritLicenseData(Inventory inputInventory, boolean infoOnOverwrite) {
+    public void inheritLicenseData(Inventory inputInventory, boolean infoOnLocalOverwrite) {
         final Map<String, LicenseData> localLds = new HashMap<>();
         for (LicenseData ld : getLicenseData()) {
-            String artifactQualifier = ld.deriveQualifier();
+            final String artifactQualifier = ld.deriveQualifier();
             localLds.put(artifactQualifier, ld);
         }
         for (LicenseData ld : inputInventory.getLicenseData()) {
-            String qualifier = ld.deriveQualifier();
+            final String qualifier = ld.deriveQualifier();
             if (localLds.containsKey(qualifier)) {
-                // overwrite; the localLds inventory contains the artifact.
-                if (infoOnOverwrite) {
+                // overwrite in local inventory detected; the localLds inventory contains the license data already
+                if (infoOnLocalOverwrite) {
                     LicenseData localLd = localLds.get(qualifier);
-                    if (ld.createCompareStringRepresentation().equals(
-                            localLd.createCompareStringRepresentation())) {
+                    if (ld.createCompareStringRepresentation().equals(localLd.createCompareStringRepresentation())) {
                         LOG.info("License data {} overwritten. Relevant content nevertheless matches. " +
-                                "Consider removing the overwrite.", qualifier);
+                            "Consider removing the overwrite.", qualifier);
                     } else {
                         LOG.info(String.format("License data %s overwritten. %n  %s%n  %s", qualifier,
-                                ld.createCompareStringRepresentation(),
-                                localLd.createCompareStringRepresentation()));
+                            ld.createCompareStringRepresentation(), localLd.createCompareStringRepresentation()));
                     }
                 }
             } else {
-                // add the artifact
+                // add the license data item to the local inventory (inherit)
                 getLicenseData().add(ld);
             }
         }
     }
 
-    public void inheritVulnerabilityMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
+    public void inheritVulnerabilityMetaData(Inventory inputInventory, boolean infoOnLocalOverwrite) {
         for (String context : inputInventory.getVulnerabilityMetaDataContexts()) {
             final Map<String, VulnerabilityMetaData> localVmds = new HashMap<>();
 
@@ -1515,11 +1513,10 @@ public class Inventory implements Serializable {
                 final String qualifier = vmd.deriveQualifier();
 
                 if (localVmds.containsKey(qualifier)) {
-                    // overwrite; the localVmds inventory contains the artifact.
-                    if (infoOnOverwrite) {
+                    // local overwrite detected; the localVmds inventory contains the artifact.
+                    if (infoOnLocalOverwrite) {
                         VulnerabilityMetaData localVmd = localVmds.get(qualifier);
-                        if (vmd.createCompareStringRepresentation().equals(
-                                localVmd.createCompareStringRepresentation())) {
+                        if (vmd.createCompareStringRepresentation().equals(localVmd.createCompareStringRepresentation())) {
                             LOG.info("Vulnerability metadata {} overwritten. Relevant content nevertheless matches. " +
                                     "Consider removing the overwrite.", qualifier);
                         } else {
@@ -1537,7 +1534,7 @@ public class Inventory implements Serializable {
         }
     }
 
-    public void inheritCertMetaData(Inventory inputInventory, boolean infoOnOverwrite) {
+    public void inheritCertMetaData(Inventory inputInventory, boolean infoOnLocalOverwrite) {
         final Map<String, AdvisoryMetaData> localCerts = new HashMap<>();
         for (AdvisoryMetaData cert : getAdvisoryMetaData()) {
             String artifactQualifier = cert.deriveQualifier();
@@ -1547,16 +1544,14 @@ public class Inventory implements Serializable {
             String qualifier = cert.deriveQualifier();
             if (localCerts.containsKey(qualifier)) {
                 // overwrite; the localCerts inventory contains the artifact.
-                if (infoOnOverwrite) {
+                if (infoOnLocalOverwrite) {
                     AdvisoryMetaData localCert = localCerts.get(qualifier);
-                    if (cert.createCompareStringRepresentation().equals(
-                            localCert.createCompareStringRepresentation())) {
+                    if (cert.createCompareStringRepresentation().equals(localCert.createCompareStringRepresentation())) {
                         LOG.info("Cert metadata {} overwritten. Relevant content nevertheless matches. " +
-                                "Consider removing the overwrite.", qualifier);
+                            "Consider removing the overwrite.", qualifier);
                     } else {
                         LOG.info(String.format("Cert metadata %s overwritten. %n  %s%n  %s", qualifier,
-                                cert.createCompareStringRepresentation(),
-                                localCert.createCompareStringRepresentation()));
+                            cert.createCompareStringRepresentation(), localCert.createCompareStringRepresentation()));
                     }
                 }
             } else {
@@ -1593,7 +1588,7 @@ public class Inventory implements Serializable {
         }
     }
 
-    public void inheritInventoryInfo(Inventory inputInventory, boolean infoOnOverwrite) {
+    public void inheritInventoryInfo(Inventory inputInventory, boolean infoOnLocalOverwrite) {
         final Map<String, InventoryInfo> localInfo = new HashMap<>();
         for (InventoryInfo inventoryInfo : getInventoryInfo()) {
             localInfo.put(inventoryInfo.deriveQualifier(), inventoryInfo);
@@ -1601,17 +1596,17 @@ public class Inventory implements Serializable {
         for (InventoryInfo inventoryInfo : inputInventory.getInventoryInfo()) {
             final String qualifier = inventoryInfo.deriveQualifier();
             if (localInfo.containsKey(qualifier)) {
-                // overwrite; the localCerts inventory contains the artifact.
-                if (infoOnOverwrite) {
+                // local overwrite detected; the localCerts inventory contains the artifact.
+                if (infoOnLocalOverwrite) {
                     InventoryInfo localInventoryInfo = localInfo.get(qualifier);
                     if (inventoryInfo.createCompareStringRepresentation().equals(
                             localInventoryInfo.createCompareStringRepresentation())) {
                         LOG.info("Inventory info {} overwritten. Relevant content nevertheless matches. " +
-                                "Consider removing the overwrite.", qualifier);
+                            "Consider removing the overwrite.", qualifier);
                     } else {
                         LOG.info(String.format("Inventory info %s overwritten. %n  %s%n  %s", qualifier,
-                                inventoryInfo.createCompareStringRepresentation(),
-                                localInventoryInfo.createCompareStringRepresentation()));
+                            inventoryInfo.createCompareStringRepresentation(),
+                            localInventoryInfo.createCompareStringRepresentation()));
                     }
                 }
             } else {

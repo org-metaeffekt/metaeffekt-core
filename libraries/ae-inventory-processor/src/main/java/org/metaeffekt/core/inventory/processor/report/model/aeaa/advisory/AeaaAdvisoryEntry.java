@@ -404,8 +404,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
 
     public static <T extends AeaaAdvisoryEntry> T fromAdvisoryMetaData(AdvisoryMetaData amd, Supplier<T> constructor) {
         if (amd == null) return null;
-        return constructor.get()
-                .performAction(v -> v.appendFromBaseModel(amd));
+        return constructor.get().performAction(v -> v.appendFromBaseModel(amd));
     }
 
     public static AeaaAdvisoryEntry fromAdvisoryMetaData(AdvisoryMetaData amd) {

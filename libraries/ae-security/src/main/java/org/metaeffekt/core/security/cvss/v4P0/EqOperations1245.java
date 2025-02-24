@@ -15,6 +15,9 @@
  */
 package org.metaeffekt.core.security.cvss.v4P0;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 public abstract class EqOperations1245 implements EqOperations {
 
     @Override
@@ -37,6 +40,11 @@ public abstract class EqOperations1245 implements EqOperations {
     @Override
     public String[] getHighestSeverityVectors(Cvss4P0MacroVector thisMacroVector) {
         return getEq(thisMacroVector).getHighestSeverityVectorsUnparsed();
+    }
+
+    @Override
+    public List<Consumer<Cvss4P0>> getHighestSeverityVectorsFn(Cvss4P0MacroVector thisMacroVector) {
+        return getEq(thisMacroVector).getApplyHighestSeverityVectors();
     }
 
     @Override

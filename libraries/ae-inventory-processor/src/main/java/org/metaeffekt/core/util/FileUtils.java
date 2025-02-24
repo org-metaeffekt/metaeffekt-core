@@ -18,6 +18,7 @@ package org.metaeffekt.core.util;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Checksum;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,9 +52,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static final char SEPARATOR_SLASH_CHAR = '/';
 
-    private static final Pattern NORMALIZE_PATH_PATTERN_001 = Pattern.compile("/./");
-    private static final Pattern NORMALIZE_PATH_PATTERN_002 = Pattern.compile("^\\./");
-    private static final Pattern NORMALIZE_PATH_PATTERN_003 = Pattern.compile("/[^/]*/\\.\\./");
+    private static final Pattern SLASH_DOT_SLASH_PATTERN = Pattern.compile("/\\./");
+    private static final Pattern DOT_SLASH_PREFIX_PATTERN = Pattern.compile("^\\./");
+    private static final Pattern FOLDER_SLASH_DOTDOT_SLASH_PATTERN = Pattern.compile("[^/]*/\\.\\./");
+    private static final Pattern SLASH_SLASH_PATTERN = Pattern.compile("//");
 
     /**
      * Scans the given baseDir for files matching the includes and excludes.
@@ -305,14 +307,20 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
     }
 
-    public static String canonicalizeLinuxPath(String path) {
-        path = NORMALIZE_PATH_PATTERN_001.matcher(path).replaceAll(SEPARATOR_SLASH);
-        path = NORMALIZE_PATH_PATTERN_001.matcher(path).replaceAll(SEPARATOR_SLASH);
-        path = NORMALIZE_PATH_PATTERN_002.matcher(path).replaceAll("");
+    public static String normalizeToLinuxPathAndCanonicalizePath(String path) {
+        return canonicalizeLinuxPath(normalizePathToLinux(path));
+    }
 
-        while (path.contains("/../")) {
-            path = NORMALIZE_PATH_PATTERN_003.matcher(path).replaceAll(SEPARATOR_SLASH);
-        }
+    public static String canonicalizeLinuxPath(String path) {
+        final String originalPath = path;
+
+        path = RegExUtils.replaceAll(path, SLASH_DOT_SLASH_PATTERN, SEPARATOR_SLASH);
+        path = RegExUtils.replaceAll(path, SLASH_SLASH_PATTERN, SEPARATOR_SLASH);
+
+        if (path.startsWith("/..")) throw new IllegalStateException("Illegal path detected: " + originalPath);
+
+        path = RegExUtils.replaceAll(path, FOLDER_SLASH_DOTDOT_SLASH_PATTERN, "");
+        path = RegExUtils.replaceAll(path, DOT_SLASH_PREFIX_PATTERN, "");
 
         return path;
     }
@@ -401,6 +409,39 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
         tmpFolder.mkdirs();
         return tmpFolder;
+    }
+
+    /**
+     * Creates a {@link FileRef} instance for the given filePath. If the filePath is an absolute path the methods uses
+     * the normalized and canonicalized version of the filePath. In case filePath is a relative path the baseDir path
+     * is used to compose a resulting path (which is not necessarily absolute).
+     *
+     * @param filePath The file path.
+     * @param baseDir The base dir to construct a composite path from, in case filePath is not absolute.
+     *
+     * @return The constructed PathRef instance.
+     */
+    public static FileRef toAbsoluteOrReferencePath(String filePath, File baseDir) {
+        final String normalizePathToLinux = normalizePathToLinux(filePath);
+        if (normalizePathToLinux.startsWith(SEPARATOR_SLASH)) {
+            return new FileRef(canonicalizeLinuxPath(normalizePathToLinux));
+        }
+        final String baseDirRelativePath = normalizePathToLinux(baseDir) + "/" + normalizePathToLinux;
+        return new FileRef(canonicalizeLinuxPath(baseDirRelativePath));
+    }
+
+    /**
+     * Creates a {@link FileRef} instance for the given filePath. If the filePath is an absolute path the methods uses
+     * the normalized and canonicalized version of the filePath. In case filePath is a relative path the baseDir path
+     * is used to compose a resulting path (which is not necessarily absolute).
+     *
+     * @param filePath The file path.
+     * @param baseDirPath The base dir path to construct a composite path from, in case filePath is not absolute.
+     *
+     * @return The constructed PathRef instance.
+     */
+    public static FileRef toAbsoluteOrReferencePath(String filePath, String baseDirPath) {
+        return toAbsoluteOrReferencePath(filePath, new File(baseDirPath));
     }
 
 }

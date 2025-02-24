@@ -38,6 +38,9 @@ public class AssessmentReportAdapter {
     private final Inventory inventory;
     private final CentralSecurityPolicyConfiguration securityPolicy;
 
+    private final Map<AssetMetaData, VulnerabilityCounts> initialCountsCache = new HashMap<>();
+    private final Map<AssetMetaData, VulnerabilityCounts> effectiveCountsCache = new HashMap<>();
+
     public AssessmentReportAdapter(Inventory inventory, CentralSecurityPolicyConfiguration securityPolicy) {
         this.inventory = inventory;
         this.securityPolicy = securityPolicy;
@@ -102,14 +105,30 @@ public class AssessmentReportAdapter {
     }
 
     public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useEffectiveSeverity) {
-        final AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
+        final Map<AssetMetaData, VulnerabilityCounts> cache = useEffectiveSeverity ? effectiveCountsCache : initialCountsCache;
+
+        final VulnerabilityCounts counts = cache.get(assetMetaData);
+
+        if (counts != null) return counts;
+
+        AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
         vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
         vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
 
-        final Set<AeaaVulnerability> vulnerabilities = vAssetInventory.getShallowCopyVulnerabilities();
+        // compute both effective and initial counts
+        final VulnerabilityCounts effectiveCounts = computeCounts(true, vAssetInventory);
+        final VulnerabilityCounts initialCounts = computeCounts(false, vAssetInventory);
 
+        // and cache the information in case needed again
+        effectiveCountsCache.put(assetMetaData, effectiveCounts);
+        initialCountsCache.put(assetMetaData, initialCounts);
+
+        return useEffectiveSeverity ? effectiveCounts : initialCounts;
+    }
+
+    private VulnerabilityCounts computeCounts(boolean useEffectiveSeverity, AeaaVulnerabilityContextInventory vAssetInventory) {
         final VulnerabilityCounts counts = new VulnerabilityCounts();
-
+        final Set<AeaaVulnerability> vulnerabilities = vAssetInventory.getShallowCopyVulnerabilities();
         if (vulnerabilities != null && !vulnerabilities.isEmpty()) {
             final StatisticsOverviewTable statisticsOverviewTable = StatisticsOverviewTable.buildTable(this.securityPolicy, vulnerabilities, null, useEffectiveSeverity);
 
@@ -126,7 +145,6 @@ public class AssessmentReportAdapter {
             VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("low"), counts::setLowCounter);
             VulnerabilityCounts.applyTotalCountIfNotNull(statisticsOverviewTable.findRowBySeverity("none"), counts::setNoneCounter);
         }
-
         return counts;
     }
 

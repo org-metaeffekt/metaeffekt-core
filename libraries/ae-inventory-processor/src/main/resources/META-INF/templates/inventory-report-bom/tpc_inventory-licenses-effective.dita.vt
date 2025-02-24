@@ -12,8 +12,9 @@
 
 <body>
     <p>$utils.getText("inventory-report-bom.different-effective-licenses")</p>
+    <p>$utils.getText("inventory-report-bom.different-effective-licenses-2")</p>
 
-    #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
+        #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
         $utils.getText("inventory-report-bom.different-effective-licenses-footnote")
     #end
 
