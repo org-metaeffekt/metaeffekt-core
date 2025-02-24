@@ -13,7 +13,6 @@
                       scope="external">$report.xmlEscapeString($license)
                     [external]
                 </xref>
-                .
             #end
         </p>
         <p>
@@ -70,7 +69,7 @@
         </row>
         </thead>
 
-        #set($osiStatusMap = $assetAdapter.getOsiStatusMap($report))
+        #set($osiStatusMap = $assetAdapter.getOsiStatusMap($configParams))
         #set($openCoDEStatusMap = {
             "approved" : "yes",
             "(approved)" : "(yes)",
