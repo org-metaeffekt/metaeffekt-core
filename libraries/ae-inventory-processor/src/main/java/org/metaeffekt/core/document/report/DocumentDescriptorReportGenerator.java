@@ -122,8 +122,9 @@ public class DocumentDescriptorReportGenerator {
 
                 InventoryReport report = new InventoryReport();
 
+                setPolicy(mergedParams, report);
+
                 if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
-                    setPolicy(mergedParams, report);
                     report.setInventoryBomReportEnabled(true);
                 }
                 if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
@@ -133,7 +134,6 @@ public class DocumentDescriptorReportGenerator {
                     report.setInventoryVulnerabilityReportSummaryEnabled(true);
                 }
                 if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
-                    setPolicy(mergedParams, report);
 
                     report.setInventoryVulnerabilityReportEnabled(true);
 
@@ -145,6 +145,9 @@ public class DocumentDescriptorReportGenerator {
                     } catch (Exception e) {
                         throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
                     }
+                }
+                if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
+                    report.setAssetBomReportEnabled(true);
                 }
 
                 report.setReferenceInventory(inventoryContext.getReferenceInventory());
@@ -193,6 +196,9 @@ public class DocumentDescriptorReportGenerator {
                 } else {
                     title = inventoryContext.getReportContextTitle();
                 }
+
+                boolean includeInofficialOsiStatus = Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus"));
+                report.setIncludeInofficialOsiStatus(includeInofficialOsiStatus);
 
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), title, inventoryContext.getReportContext()));
 
