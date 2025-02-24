@@ -21,7 +21,6 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryScanReport;
-import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 
 import java.io.File;
 import java.util.ArrayList;
