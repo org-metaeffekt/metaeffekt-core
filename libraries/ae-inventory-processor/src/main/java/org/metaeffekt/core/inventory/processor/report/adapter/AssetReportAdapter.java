@@ -23,6 +23,8 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -96,5 +98,22 @@ public class AssetReportAdapter {
             }
         }
         return defaultKeyList;
+    }
+
+    public Map<String, String> getOsiStatusMap(ReportConfigurationParameters configParams) {
+        Map<String, String> osiStatusMap = new HashMap<>();
+        if (configParams.isIncludeInofficialOsiStatus()) {
+            osiStatusMap.put("approved", "approved");
+            osiStatusMap.put("submitted", "submitted");
+            osiStatusMap.put("not submitted", "not submitted");
+            osiStatusMap.put("pending", "pending");
+            osiStatusMap.put("withdrawn", "withdrawn");
+            osiStatusMap.put("rejected", "rejected");
+            osiStatusMap.put("ineligible", "ineligible");
+            osiStatusMap.put("unclear", "unclear");
+        } else {
+            osiStatusMap.put("approved", "approved");
+        }
+        return osiStatusMap;
     }
 }

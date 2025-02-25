@@ -12,15 +12,16 @@
 
 <body>
     <p>$utils.getText("inventory-report-bom.different-effective-licenses")</p>
+    <p>$utils.getText("inventory-report-bom.different-effective-licenses-2")</p>
 
-    #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
+        #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
         $utils.getText("inventory-report-bom.different-effective-licenses-footnote")
     #end
 
 ## License Options (not necessarily expressions)
     #if (!$termsWithOptions.isEmpty())
         <table id="LicenseOptions" otherprops="wide">
-            <title>$utils.getText("general.short.license-options") $reportContext.inContextOf()</title>
+            <title>$utils.getText("general.short.license-options") $reportContext.withTitle()</title>
             <tgroup cols="2">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="88*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="12*" />
@@ -61,7 +62,7 @@
     #end
 
     <table id="LicensesInEffect" otherprops="wide">
-        <title>$utils.getText("inventory-report-bom.short.licenses-in-effect") $reportContext.inContextOf()</title>
+        <title>$utils.getText("inventory-report-bom.short.licenses-in-effect") $reportContext.withTitle()</title>
         <tgroup cols="4">
             <colspec colname="COLSPEC0" colnum="1" colwidth="53*" />
             <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />

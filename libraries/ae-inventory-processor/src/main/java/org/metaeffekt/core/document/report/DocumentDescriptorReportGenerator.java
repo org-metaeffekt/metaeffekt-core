@@ -25,6 +25,8 @@ import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +51,8 @@ import java.util.Map;
  * @see InventoryContext
  */
 public class DocumentDescriptorReportGenerator {
+
+    private static final Logger log = LoggerFactory.getLogger(DocumentDescriptorReportGenerator.class);
 
     /**
      * Generates the complete set of reports for the given {@link DocumentDescriptor}.
@@ -101,18 +105,20 @@ public class DocumentDescriptorReportGenerator {
             documentPart.validate();
 
             // for each inventory trigger according InventoryReport instances to produce
-            for(InventoryContext inventoryContext: documentPart.getInventoryContexts()) {
+            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
 
                 // validate each inventoryContext before processing
                 inventoryContext.validate();
 
                 Map<String, String> mergedParams;
 
-                if (documentPart.getParams() != null) {
+                if (documentPart.getParams() != null && documentDescriptor.getParams() != null) {
                     mergedParams = mergeParams(documentDescriptor.getParams(), documentPart.getParams());
-                } else {
+                } else if (documentPart.getParams() != null) {
+                    mergedParams = documentPart.getParams();
+                } else if (documentDescriptor.getParams() != null) {
                     mergedParams = documentDescriptor.getParams();
-                }
+                } else mergedParams = new HashMap<>();
 
                 ReportConfigurationParameters.ReportConfigurationParametersBuilder builder = ReportConfigurationParameters.builder();
 
@@ -131,8 +137,15 @@ public class DocumentDescriptorReportGenerator {
                         builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
                         builder.inventoryVulnerabilityReportEnabled(true);
                         break;
+                    case INITIAL_LICENSE_DOCUMENTATION:
+                        builder.assetBomReportEnabled(true);
+                        break;
+                    case LICENSE_DOCUMENTATION:
+                        builder.inventoryBomReportEnabled(true);
                 }
                 builder.reportLanguage(documentDescriptor.getLanguage());
+                boolean includeInofficialOsiStatus = Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus"));
+                builder.includeInofficialOsiStatus(includeInofficialOsiStatus);
                 ReportConfigurationParameters configParams = builder.build();
 
                 // FIXME-KKL: revise if we want different pre-requisites for the different document types, currently we handle all the same way
@@ -165,11 +178,35 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
-                report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
-                report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
-                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
+                if (mergedParams.get("LicensesDir") == null) {
+                    report.setTargetLicenseDir(new File("license"));
+                    log.info("used default targetLicensesDir as 'license'");
+                } else {
+                    report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
+                }
+                if (mergedParams.get("targetComponentDir") == null) {
+                    report.setTargetLicenseDir(new File("component"));
+                    log.info("used default targetComponentDir as 'component'");
+                } else {
+                    report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
+                }
+
+                boolean omitAssetPrefix = Boolean.parseBoolean(mergedParams.get("omitAssetPrefix"));
+                String title = null;
+
+                if (mergedParams.get("omitAssetPrefix") != null) {
+                    if (!omitAssetPrefix) {
+                        title = inventoryContext.getReportContextTitle();
+                    }
+                } else {
+                    title = inventoryContext.getReportContextTitle();
+                }
+
+                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), title, inventoryContext.getReportContext()));
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
+
+                report.setTargetReportDir(new File(documentDescriptor.getTargetReportDir(), inventoryContext.getIdentifier()));
                 report.getReportContext().setReportInventoryVersion(inventoryContext.getInventoryVersion());
 
                 if (report.createReport()) {
@@ -205,15 +242,14 @@ public class DocumentDescriptorReportGenerator {
 
             String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
 
+            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false"));
+
             CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
-            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(
-                    securityPolicy,
-                    securityPolicyFile,
-                    securityPolicyOverwriteJson
-            );
+            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
 
             report.setSecurityPolicy(securityPolicy);
         }
+        log.info("no securityPolicyFile provided");
     }
 
     private static Map<String, String> mergeParams(Map<String, String> globalParams, Map<String, String> partParams) {

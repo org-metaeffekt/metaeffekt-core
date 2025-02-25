@@ -20,7 +20,7 @@
                         <section>
                             <title>$utils.getText("inventory-report-bom.short.assets-covering") $report.xmlEscapeString($componentNotice.getComponentName())</title>
                             <table otherprops="wide">
-                                <title>$utils.getText("inventory-report-bom.short.assets-of-component") $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
+                                <title>$utils.getText("inventory-report-bom.short.assets-of-component") $componentNotice.getComponentName()$reportContext.withTitle()$artifactNotice.getDiscriminator()</title>
                                 <tgroup cols="3">
                                     <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
                                     <colspec colname="COLSPEC1" colnum="2" colwidth="25*"/>
@@ -61,7 +61,7 @@
                         <section>
                         <title>$utils.getText("inventory-report-bom.short.artifacts-of-component") $report.xmlEscapeString($componentNotice.getComponentName())</title>
                         <table otherprops="wide">
-                            <title>$utils.getText("inventory-report-bom.short.artifacts-of-component") $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
+                            <title>$utils.getText("inventory-report-bom.short.artifacts-of-component") $componentNotice.getComponentName()$reportContext.withTitle()$artifactNotice.getDiscriminator()</title>
                             <tgroup cols="3">
                                 <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
                                 <colspec colname="COLSPEC1" colnum="2" colwidth="15*"/>
