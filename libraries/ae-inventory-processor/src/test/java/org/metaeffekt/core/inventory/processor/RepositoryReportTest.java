@@ -447,8 +447,8 @@ public class RepositoryReportTest {
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
-        final File inventoryDir = new File("/Users/jfuegen/IdeaProjects/h-ham-005-workbench/opt.metaeffekt/workbench/workbench-executor/templates/re32-document-generator/documentation/initial-license-documentation_de/inventories");
-        final File reportDir = new File("/tmp/target");
+        final File inventoryDir = new File("<path>");
+        final File reportDir = new File("<path>");
 
         configureAndCreateReport(inventoryDir, "*.xlsx",
                 null, null,

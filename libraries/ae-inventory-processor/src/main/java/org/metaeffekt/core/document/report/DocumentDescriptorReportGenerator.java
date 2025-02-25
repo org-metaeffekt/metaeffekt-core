@@ -118,7 +118,9 @@ public class DocumentDescriptorReportGenerator {
                     mergedParams = documentPart.getParams();
                 } else if (documentDescriptor.getParams() != null) {
                     mergedParams = documentDescriptor.getParams();
-                } else mergedParams = new HashMap<>();
+                } else {
+                    mergedParams = new HashMap<>();
+                }
 
                 ReportConfigurationParameters.ReportConfigurationParametersBuilder builder = ReportConfigurationParameters.builder();
 
