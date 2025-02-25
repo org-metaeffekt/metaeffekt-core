@@ -178,6 +178,28 @@ public class DocumentDescriptorReportGeneratorTest {
         assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
     }
 
+    @Test
+    public void testlicenseDocumentationTemplates () throws IOException {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/license-documentation");
+
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("", "");
+        DocumentPartType partType = DocumentPartType.LICENSE_DOCUMENTATION;
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.LICENSE_DOCUMENTATION);
+
+        documentDescriptorReportGenerator.generate(documentDescriptor);
+
+        File expectedFile01 = new File(targetReportDir, "map_test-license-documentation.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+    }
+
     public void cleanUpTargetTestDir() throws IOException {
         if (targetTestDir.exists()) {
             FileUtils.deleteDirectory(targetTestDir);
