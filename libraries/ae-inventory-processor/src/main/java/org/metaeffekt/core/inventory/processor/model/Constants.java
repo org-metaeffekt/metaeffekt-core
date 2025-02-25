@@ -125,6 +125,7 @@ public final class Constants {
 
     public static final String MARKER_CROSS = "x";
     public static final String MARKER_CONTAINS = "c";
+    public static final String MARKER_DEVELOPMENT = "d";
 
     public static final String PACKAGE_JSON = "package.json";
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
