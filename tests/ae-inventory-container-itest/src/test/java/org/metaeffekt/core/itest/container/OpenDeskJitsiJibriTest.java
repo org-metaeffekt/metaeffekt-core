@@ -38,6 +38,7 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
+@Ignore // container no longer publicly available
 public class OpenDeskJitsiJibriTest extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
