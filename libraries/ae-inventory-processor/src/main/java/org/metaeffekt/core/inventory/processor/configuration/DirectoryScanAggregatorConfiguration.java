@@ -385,6 +385,8 @@ public class DirectoryScanAggregatorConfiguration {
                     .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
                     .findFirst().orElse(null);
             try {
+                boolean contentDetected = false;
+
                 // loop over each entry in the file map
                 for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
                     final List<File> files = entry.getValue();
@@ -406,8 +408,15 @@ public class DirectoryScanAggregatorConfiguration {
                         if (file.exists()) {
                             FileUtils.copyFile(file, new File(tmpFolder, relativePath));
                         }
-                    }
 
+                        contentDetected = true;
+                    }
+                }
+
+                // FIXME-AOE: please review structural change
+
+                // in case content was detected we create the content checksum and pack the files into a zip
+                if (contentDetected) {
                     final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
                     FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
 
