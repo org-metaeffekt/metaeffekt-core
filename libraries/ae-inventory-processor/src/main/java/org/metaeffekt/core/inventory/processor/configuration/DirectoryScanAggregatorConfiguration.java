@@ -129,7 +129,7 @@ public class DirectoryScanAggregatorConfiguration {
             filePatternQualifierMapper.getComponentPatternDataList().add(cpd);
 
             // use artifact data to pre-select the folder to be scanned; can be multiple
-            final Set<String> componentBaseDirs = artifact.getArtifactRootPaths();
+            final Set<String> componentBaseDirs = artifact.getRootPaths();
 
             for (final String baseDir : componentBaseDirs) {
 
@@ -445,7 +445,7 @@ public class DirectoryScanAggregatorConfiguration {
                 // evaluate directive
                 if (hasSkipAggregationDirective(artifact)) continue;
 
-                for (String project : artifact.getProjects()) {
+                for (String project : artifact.getRootPaths()) {
                     File file = new File(scanBaseDir, project);
                     if (file.exists() && !FileUtils.isSymlink(file) && file.isFile()) {
                         final String relativePath = FileUtils.asRelativePath(scanBaseDir, file);

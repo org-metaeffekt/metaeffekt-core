@@ -24,8 +24,6 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.AbstractInventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.InventorySheetCellStyler;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.XlsxXSSFInventorySheetCellStylers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -54,7 +52,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             Artifact.Attribute.COMMENT,
             Artifact.Attribute.URL,
             Artifact.Attribute.PURL,
-            Artifact.Attribute.PROJECTS,
+            Artifact.Attribute.ROOT_PATHS,
             Artifact.Attribute.VERIFIED
     };
 
@@ -412,6 +410,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         final List<String> finalOrder = deriveOrder(attributes, AssetMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
+                stylers.headerStyleColumnNameAssetId,
                 stylers.headerStyleColumnNameSrcAssetSource,
                 stylers.headerStyleColumnNameAssetConfig,
                 stylers.headerStyleDefault,

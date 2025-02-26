@@ -66,7 +66,7 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
         artifactList.with(attributeValue(ID, "bcprov-jdk18on-1.77.jar"),
                         attributeValue(VERSION, "1.77"),
                         attributeValue(CHECKSUM, "ca01387064e08db12e1345b474521ff1"),
-                        attributeValue(ARTIFACT_ROOT_PATHS, "bcprov-jdk18on-1.77.jar"),
+                        attributeValue(ROOT_PATHS, "bcprov-jdk18on-1.77.jar"),
                         attributeValue(PATH_IN_ASSET, "bcprov-jdk18on-1.77.jar"))
                 .assertNotEmpty();
     }

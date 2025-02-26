@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -58,7 +59,7 @@ public class SystemRuntimeCompilerservicesUnsafe_6_0_0 extends AbstractCompositi
 
         artifactList.with(attributeValue(ID, "System.Runtime.CompilerServices.Unsafe-6.0.0"),
                         attributeValue(VERSION, "6.0.0"),
-                        attributeValue(PROJECTS, "system.runtime.compilerservices.unsafe.6.0.0.nupkg"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "system.runtime.compilerservices.unsafe.6.0.0.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.Runtime.CompilerServices.Unsafe@6.0.0"),
                         attributeValue(PATH_IN_ASSET, "system.runtime.compilerservices.unsafe.6.0.0.nupkg"))
                 .assertNotEmpty();

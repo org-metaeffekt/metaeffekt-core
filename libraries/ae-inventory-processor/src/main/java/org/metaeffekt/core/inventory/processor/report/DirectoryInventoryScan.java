@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
-import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
@@ -36,6 +35,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.metaeffekt.core.util.FileUtils.normalizeToLinuxPathAndCanonicalizePath;
 
 public class DirectoryInventoryScan {
 
@@ -140,9 +141,12 @@ public class DirectoryInventoryScan {
                 detectComponentPatterns(enableDetectComponentPatterns).
                 withReferenceInventory(referenceInventory);
 
-        LOG.info("Scanning directory [{}]...", directoryToScan.getAbsolutePath());
+        // use absolute, normalized and canonicalized path
+        final String canonicalScanDirPath = normalizeToLinuxPathAndCanonicalizePath(directoryToScan.getAbsolutePath());
+        final FileRef scanDirectoryRef = new FileRef(canonicalScanDirPath);
+        LOG.info("Scanning directory [{}]...", scanDirectoryRef.getPath());
 
-        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(new FileRef(directoryToScan), scanParam);
+        final FileSystemScanContext fileSystemScan = new FileSystemScanContext(scanDirectoryRef, scanParam);
         final FileSystemScanExecutor fileSystemScanExecutor = new FileSystemScanExecutor(fileSystemScan);
 
         fileSystemScanExecutor.execute();

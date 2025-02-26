@@ -17,7 +17,6 @@ package org.metaeffekt.core.inventory.scan;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -62,7 +61,7 @@ public class DirectoryInventoryScanTest {
         new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory-01.xls"));
 
         for (Artifact a : resultInventory.getArtifacts()) {
-            System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getProjects());
+            System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getRootPaths());
         }
 
         assertThat(resultInventory.findAllWithId("file.txt").size()).isEqualTo(2);
@@ -75,7 +74,7 @@ public class DirectoryInventoryScanTest {
         assertThat(resultInventory.findArtifact("b.txt")).isNull();
         assertThat(resultInventory.findArtifact("B Files")).isNotNull();
         assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").
-                getArtifactRootPaths()).hasSize(1);
+                getRootPaths()).hasSize(1);
 
         assertThat(resultInventory.findArtifact("Please not")).isNull();
 
@@ -173,21 +172,23 @@ public class DirectoryInventoryScanTest {
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{"--none--"};
         File inventoryFile = new File("<project.baseDir>/inventory/src/main/resources/inventory/artifact-inventory.xls");
-        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
+        Inventory referenceInventory = new InventoryReader().readInventory(inventoryFile);
 
-        final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, referenceInventory);
 
         scan.setEnableImplicitUnpack(true);
         scan.setIncludeEmbedded(true);
         scan.setEnableDetectComponentPatterns(true);
 
         final Inventory resultInventory = scan.createScanInventory();
-
-        for (Artifact a : resultInventory.getArtifacts()) {
-            System.out.println(a.getId() + " - " + a.getVersion() + " - " + a.getProjects());
-        }
-
         new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
+
+        final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
+                new DirectoryScanAggregatorConfiguration(referenceInventory, resultInventory, scanDir);
+
+
+        directoryScanAggregatorConfiguration.contribute(new File("target/aggregate"), resultInventory);
+        new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory_aggregate.xls"));
     }
 
     @Test

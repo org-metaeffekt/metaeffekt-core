@@ -60,35 +60,35 @@ public class Flutter_1_16_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "snippets-0.1.0"),
                     attributeValue(VERSION, "0.1.0"),
-                    attributeValue(PROJECTS, "[v1.16.3.zip]/flutter-1.16.3/dev/snippets"),
+                    attributeValue(ROOT_PATHS, "[v1.16.3.zip]/flutter-1.16.3/dev/snippets"),
                     attributeValue(PATH_IN_ASSET, "[v1.16.3.zip]/flutter-1.16.3/dev/snippets"),
                     attributeValue(PURL, "pkg:pub/snippets@0.1.0"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "ios_add2app_flutter-1.0.0+1"),
                     attributeValue(VERSION, "1.0.0+1"),
-                    attributeValue(PROJECTS, "[v1.16.3.zip]/flutter-1.16.3/dev/integration_tests/ios_add2app/flutterapp"),
+                    attributeValue(ROOT_PATHS, "[v1.16.3.zip]/flutter-1.16.3/dev/integration_tests/ios_add2app/flutterapp"),
                     attributeValue(PATH_IN_ASSET, "[v1.16.3.zip]/flutter-1.16.3/dev/integration_tests/ios_add2app/flutterapp"),
                     attributeValue(PURL, "pkg:pub/ios_add2app_flutter@1.0.0+1"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "splash_screen_load_rotate-1.0.0+1"),
                     attributeValue(VERSION, "1.0.0+1"),
-                    attributeValue(PROJECTS, "[v1.16.3.zip]/flutter-1.16.3/dev/integration_tests/android_splash_screens/splash_screen_load_rotate"),
+                    attributeValue(ROOT_PATHS, "[v1.16.3.zip]/flutter-1.16.3/dev/integration_tests/android_splash_screens/splash_screen_load_rotate"),
                     attributeValue(PATH_IN_ASSET, "[v1.16.3.zip]/flutter-1.16.3/dev/integration_tests/android_splash_screens/splash_screen_load_rotate"),
                     attributeValue(PURL, "pkg:pub/splash_screen_load_rotate@1.0.0+1"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "vitool-0.0.1"),
                     attributeValue(VERSION, "0.0.1"),
-                    attributeValue(PROJECTS, "[v1.16.3.zip]/flutter-1.16.3/dev/tools/vitool"),
+                    attributeValue(ROOT_PATHS, "[v1.16.3.zip]/flutter-1.16.3/dev/tools/vitool"),
                     attributeValue(PATH_IN_ASSET, "[v1.16.3.zip]/flutter-1.16.3/dev/tools/vitool"),
                     attributeValue(PURL, "pkg:pub/vitool@0.0.1"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "image_list-1.0.0+1"),
                     attributeValue(VERSION, "1.0.0+1"),
-                    attributeValue(PROJECTS, "[v1.16.3.zip]/flutter-1.16.3/examples/image_list"),
+                    attributeValue(ROOT_PATHS, "[v1.16.3.zip]/flutter-1.16.3/examples/image_list"),
                     attributeValue(PATH_IN_ASSET, "[v1.16.3.zip]/flutter-1.16.3/examples/image_list"),
                     attributeValue(PURL, "pkg:pub/image_list@1.0.0+1"))
                 .assertNotEmpty();

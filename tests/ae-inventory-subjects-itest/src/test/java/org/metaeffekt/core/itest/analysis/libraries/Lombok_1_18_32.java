@@ -65,7 +65,7 @@ public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
                 .with(attributeValue(ID, "lombok-1.18.32.jar"),
                         attributeValue(CHECKSUM, "56e9be7b9a26802ac0c784ad824f3a29"),
                         attributeValue(HASH_SHA256, "97574674e2a25f567a313736ace00df8787d443de316407d57fc877d9f19a65d"),
-                        attributeValue(PROJECTS, "lombok-1.18.32.jar"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "lombok-1.18.32.jar"),
                         attributeValue(PATH_IN_ASSET, "lombok-1.18.32.jar"))
                 .assertNotEmpty();
     }
@@ -80,7 +80,7 @@ public class Lombok_1_18_32 extends AbstractCompositionAnalysisTest {
 
         // it is important, that the classification is not overwritten with 'scan'
         Assertions.assertThat(artifact.getClassification()).isEqualTo(HINT_ATOMIC);
-        Assertions.assertThat(artifact.get(ARTIFACT_ROOT_PATHS)).isEqualTo(".");
+        Assertions.assertThat(artifact.get(ROOT_PATHS)).isEqualTo(".");
     }
 
 }
