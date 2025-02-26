@@ -13,50 +13,9 @@
             <topic id="tpc_component_notice_$inventory.deriveLicenseId($componentNotice.getComponentName())">
                 <title>$report.xmlEscapeString($componentNotice.getComponentName())</title>
                 <body>
-
                     #foreach($artifactNotice in $componentNotice.getArtifactNotices())
-                        #set($assets=$utils.getAssetsForArtifacts($artifactNotice.getArtifacts(), $inventory))
-                        #if(!$assets.isEmpty())
-                        ## Assets Table start
-                        <section>
-                            <title>Assets covering $report.xmlEscapeString($componentNotice.getComponentName())</title>
-                            <table otherprops="wide">
-                                <title>Assets of Component $componentNotice.getComponentName()$reportContext.inContextOf()$artifactNotice.getDiscriminator()</title>
-                                <tgroup cols="3">
-                                    <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
-                                    <colspec colname="COLSPEC1" colnum="2" colwidth="25*"/>
-                                    <colspec colname="COLSPEC2" colnum="3" colwidth="25*"/>
-                                    <thead>
-                                    <row>
-                                        <entry colname="COLSPEC0" valign="top">Asset Name</entry>
-                                        <entry colname="COLSPEC1" valign="top">Asset Type</entry>
-                                        <entry colname="COLSPEC1" valign="top">Asset Version</entry>
-                                    </row>
-                                    </thead>
-                                    <tbody>
-                        #foreach($asset in $assets)
-                                    <row>
-                                        <entry>
-                                            #if($report.isAssetBomReportEnabled())
-                                                <xref href="tpc_asset-contained-components.dita#asset-$report.xmlEscapeStringAttribute($asset)" type="topic">
-                                                    $report.xmlEscapeString($asset.get("Name"))
-                                                </xref>
-                                            #else
-                                                $report.xmlEscapeString($asset.get("Name"))
-                                            #end
-                                        </entry>
-                                        <entry>$report.xmlEscapeString($asset.get("Type"))</entry>
-                                        <entry>
-                                            <codeph>$report.xmlEscapeGAV($asset.get("Version"))</codeph>
-                                        </entry>
-                                    </row>
-                        #end
-                                    </tbody>
-                                </tgroup>
-                            </table>
-                        </section>
-                        #end
-                        ## Assets Table end
+
+                        ## HINT: no assets required here; the content is presented per asset anyways
 
                         ## Artifacts Table start
                         <section>
