@@ -23,11 +23,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaTimeUtils;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 
@@ -165,11 +167,21 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
     @Override
     public void appendFromBaseModel(AdvisoryMetaData amd) {
         super.appendFromBaseModel(amd);
-    }
 
+        if (StringUtils.hasText(amd.get(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_STATE.getKey()))) {
+            this.setGithubReviewed(Boolean.parseBoolean(amd.get(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_STATE.getKey())));
+        }
+        if (StringUtils.hasText(amd.get(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_DATE.getKey()))) {
+            this.setGithubReviewedAt(AeaaTimeUtils.tryParse(amd.get(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_DATE.getKey())));
+        }
+    }
     @Override
     public void appendToBaseModel(AdvisoryMetaData amd) {
         super.appendToBaseModel(amd);
+        super.appendToBaseModel(amd);
+
+        amd.set(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_STATE.getKey(), String.valueOf(isGithubReviewed()));
+        amd.set(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_DATE.getKey(), githubReviewedAt == null ? null : String.valueOf(githubReviewedAt.getTime()));
     }
 
     @Override
@@ -178,7 +190,12 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
 
         final AeaaOsvAdvisorEntry osvAdvisorEntry = (AeaaOsvAdvisorEntry) dataClass;
 
+        this.setOriginEcosystem(osvAdvisorEntry.getOriginEcosystem());
+        this.setAffectedEcosystems(osvAdvisorEntry.getAffectedEcosystems());
+        this.setSeverity(osvAdvisorEntry.getSeverity());
         this.setGithubReviewed(osvAdvisorEntry.isGithubReviewed());
+        this.setGithubReviewedAt(osvAdvisorEntry.getGithubReviewedAt());
+        this.packageUrls.addAll(osvAdvisorEntry.getPackageUrls());
     }
 
     /**
