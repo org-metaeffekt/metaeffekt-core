@@ -1410,7 +1410,7 @@ public class CvssSelector implements Cloneable {
         }),
         /**
          * Represents a merging method that selectively includes attributes.
-         * Apply all parts of the newCvssVector to the base CvssVector if it results in a lower/equal overall score.
+         * Apply all parts of the newVector to the base CvssVector if it results in a lower/equal overall score.
          */
         LOWER((base, newVector) -> {
             final CvssVector clone = base.clone();
@@ -1419,7 +1419,7 @@ public class CvssSelector implements Cloneable {
         }),
         /**
          * Represents a merging method that selectively includes attributes.
-         * Apply all parts of the newCvssVector to the base CvssVector if it results in a higher/equal overall score.
+         * Apply all parts of the newVector to the base CvssVector if it results in a higher/equal overall score.
          */
         HIGHER((base, newVector) -> {
             final CvssVector clone = base.clone();
@@ -1427,7 +1427,25 @@ public class CvssSelector implements Cloneable {
             return Pair.of(clone, parts);
         }),
         /**
-         * Represents a merging method that overwrites the full base CvssVector with the newCvssVector.
+         * Represents a merging method that selectively includes attributes.
+         * Apply all parts of the newVector to the base CvssVector if the metric is ranked as less/equal severe.
+         */
+        LOWER_METRIC((base, newVector) -> {
+            final CvssVector clone = base.clone();
+            final int parts = clone.applyVectorPartsIfMetricsLower(newVector.toString());
+            return Pair.of(clone, parts);
+        }),
+        /**
+         * Represents a merging method that selectively includes attributes.
+         * Apply all parts of the newVector to the base CvssVector if the metric is ranked as more/equal severe.
+         */
+        HIGHER_METRIC((base, newVector) -> {
+            final CvssVector clone = base.clone();
+            final int parts = clone.applyVectorPartsIfMetricsHigher(newVector.toString());
+            return Pair.of(clone, parts);
+        }),
+        /**
+         * Represents a merging method that overwrites the full base CvssVector with the newVector.
          */
         OVERWRITE((base, newVector) -> Pair.of(newVector.clone(), 0));
 

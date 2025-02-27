@@ -754,7 +754,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     }
 
     public final static CvssSelector CVSS_SELECTOR_INITIAL = new CvssSelector(Collections.singletonList(
-            new CvssRule(CvssSelector.MergingMethod.ALL,
+            new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
                     // MSRC
@@ -785,7 +785,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     ));
 
     public final static CvssSelector CVSS_SELECTOR_CONTEXT = new CvssSelector(Arrays.asList(
-            new CvssRule(CvssSelector.MergingMethod.ALL,
+            new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
                     // MSRC
@@ -814,18 +814,26 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     )
             ),
             // assessment
-            new CvssRule(CvssSelector.MergingMethod.ALL,
+            new CvssRule(MergingMethod.ALL,
                     Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
                     new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_ALL)),
-            new CvssRule(CvssSelector.MergingMethod.LOWER,
+            new CvssRule(MergingMethod.LOWER,
                     Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
                     new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_LOWER)),
-            new CvssRule(CvssSelector.MergingMethod.HIGHER,
+            new CvssRule(MergingMethod.HIGHER,
                     Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
-                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER))
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER)),
+            new CvssRule(MergingMethod.LOWER_METRIC,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
+                    Collections.emptyList(),
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_LOWER_METRIC)),
+            new CvssRule(MergingMethod.HIGHER_METRIC,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
+                    Collections.emptyList(),
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER_METRIC))
     ), Collections.singletonList(
             new SelectorStatsEvaluator("assessment", CvssSelector.StatsEvaluatorOperation.EQUAL, CvssSelector.EvaluatorAction.RETURN_NULL, 0)
     ), Collections.singletonList(

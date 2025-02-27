@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole;
 import org.metaeffekt.core.security.cvss.processor.CvssSelector;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
+import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,8 +30,8 @@ import static org.metaeffekt.core.security.cvss.processor.CvssSelector.*;
 
 public class CvssSelectorTest {
 
-    private final static CvssSelector CVSS_SELECTOR_INITIAL = new CvssSelector(Collections.singletonList(
-            new CvssRule(CvssSelector.MergingMethod.ALL,
+    public final static CvssSelector CVSS_SELECTOR_INITIAL = new CvssSelector(Collections.singletonList(
+            new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
                     // MSRC
@@ -39,6 +40,14 @@ public class CvssSelectorTest {
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
+
+                    // OSV
+                    new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.GHSA),
+                    new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
+                    // CSAF
+                    new SourceSelectorEntry(KnownCvssEntities.CSAF, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     // CERT-SEI
@@ -52,8 +61,8 @@ public class CvssSelectorTest {
             )
     ));
 
-    private final static CvssSelector CVSS_SELECTOR_CONTEXT = new CvssSelector(Arrays.asList(
-            new CvssRule(CvssSelector.MergingMethod.ALL,
+    public final static CvssSelector CVSS_SELECTOR_CONTEXT = new CvssSelector(Arrays.asList(
+            new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
                     // MSRC
@@ -62,6 +71,14 @@ public class CvssSelectorTest {
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
+
+                    // OSV
+                    new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.GHSA),
+                    new SourceSelectorEntry(KnownCvssEntities.OSV, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
+                    // CSAF
+                    new SourceSelectorEntry(KnownCvssEntities.CSAF, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     // CERT-SEI
@@ -74,18 +91,26 @@ public class CvssSelectorTest {
                     )
             ),
             // assessment
-            new CvssRule(CvssSelector.MergingMethod.ALL,
+            new CvssRule(MergingMethod.ALL,
                     Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
                     new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_ALL)),
-            new CvssRule(CvssSelector.MergingMethod.LOWER,
+            new CvssRule(MergingMethod.LOWER,
                     Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
                     new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_LOWER)),
-            new CvssRule(CvssSelector.MergingMethod.HIGHER,
+            new CvssRule(MergingMethod.HIGHER,
                     Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
                     Collections.emptyList(),
-                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER))
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER)),
+            new CvssRule(MergingMethod.LOWER_METRIC,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
+                    Collections.emptyList(),
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_LOWER_METRIC)),
+            new CvssRule(MergingMethod.HIGHER_METRIC,
+                    Collections.singletonList(new SelectorStatsCollector("assessment", CvssSelector.StatsCollectorProvider.PRESENCE, CvssSelector.StatsCollectorSetType.ADD)),
+                    Collections.emptyList(),
+                    new SourceSelectorEntry(KnownCvssEntities.ASSESSMENT, SourceSelectorEntry.ANY_ROLE, KnownCvssEntities.ASSESSMENT_HIGHER_METRIC))
     ), Collections.singletonList(
             new SelectorStatsEvaluator("assessment", CvssSelector.StatsEvaluatorOperation.EQUAL, CvssSelector.EvaluatorAction.RETURN_NULL, 0)
     ), Collections.singletonList(
@@ -441,5 +466,15 @@ public class CvssSelectorTest {
 
         Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H", CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(vector1, vector2)).toString());
         Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H/MAV:A/MC:N/MI:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(vector1, vector2)).toString());
+    }
+
+    @Test
+    public void applyMetricLowerHigherSelectorTest() {
+        final Cvss4P0 input = new Cvss4P0("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L", new CvssSource(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD, Cvss4P0.class));
+        final Cvss4P0 modificationLower = new Cvss4P0("CVSS:4.0/MAV:A/MAC:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N/MSI:X/MSA:S", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER_METRIC, Cvss4P0.class));
+        final Cvss4P0 modificationHigher = new Cvss4P0("CVSS:4.0/MAV:A/MAC:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N/MSI:X/MSA:S", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER_METRIC, Cvss4P0.class));
+
+        Assert.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAT:P/MPR:L/MVA:N/MSC:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationLower)).toString());
+        Assert.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAV:A/MAC:L/MUI:N/MVC:N/MVI:L/MSA:S", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationHigher)).toString());
     }
 }

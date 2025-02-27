@@ -93,7 +93,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
     }
 
     @Override
-    protected boolean applyVectorArgument(String identifier, String value) {
+    public boolean applyVectorArgument(String identifier, String value) {
         switch (identifier) {
             case "AV": // base
                 attackVector = AttackVector.fromString(value);
@@ -1270,5 +1270,62 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
     public abstract <T extends Cvss3> Optional<T> optionalParse(String vector);
 
     public interface Cvss3Attribute extends CvssVectorAttribute {
+        default boolean isSet() {
+            return !getIdentifier().equals("NOT_DEFINED") && !getIdentifier().equals("NULL");
+        }
     }
+
+    public final static List<Cvss3Attribute> ATTRIBUTE_SEVERITY_ORDER = Arrays.asList(
+            // 0.0
+            AttackVector.NULL,
+            AttackComplexity.NULL,
+            PrivilegesRequired.NULL,
+            UserInteraction.NULL,
+            Scope.NULL,
+            Scope.UNCHANGED,
+            CIAImpact.NULL,
+            CIAImpact.NONE,
+            ExploitCodeMaturity.NULL,
+            RemediationLevel.NULL,
+            ReportConfidence.NULL,
+
+            AttackVector.PHYSICAL,
+            CIAImpact.LOW,
+            PrivilegesRequired.HIGH,
+            AttackComplexity.HIGH,
+            CIARequirement.LOW,
+            AttackVector.LOCAL,
+            CIAImpact.HIGH,
+            AttackVector.ADJACENT_NETWORK,
+            UserInteraction.REQUIRED,
+            PrivilegesRequired.LOW,
+            AttackComplexity.LOW,
+            AttackVector.NETWORK,
+            PrivilegesRequired.NONE,
+            UserInteraction.NONE,
+            ExploitCodeMaturity.UNPROVEN,
+            ReportConfidence.UNKNOWN,
+            ExploitCodeMaturity.PROOF_OF_CONCEPT,
+            RemediationLevel.OFFICIAL_FIX,
+            RemediationLevel.TEMPORARY_FIX,
+            ReportConfidence.REASONABLE,
+            ExploitCodeMaturity.FUNCTIONAL,
+            RemediationLevel.WORKAROUND,
+            AttackVector.NOT_DEFINED,
+            AttackComplexity.NOT_DEFINED,
+            PrivilegesRequired.NOT_DEFINED,
+            UserInteraction.NOT_DEFINED,
+            Scope.NOT_DEFINED,
+            CIAImpact.NOT_DEFINED,
+            ExploitCodeMaturity.HIGH,
+            ExploitCodeMaturity.NOT_DEFINED,
+            RemediationLevel.UNAVAILABLE,
+            RemediationLevel.NOT_DEFINED,
+            ReportConfidence.CONFIRMED,
+            ReportConfidence.NOT_DEFINED,
+            CIARequirement.MEDIUM,
+            CIARequirement.NULL,
+            CIARequirement.NOT_DEFINED,
+            CIARequirement.HIGH
+    );
 }

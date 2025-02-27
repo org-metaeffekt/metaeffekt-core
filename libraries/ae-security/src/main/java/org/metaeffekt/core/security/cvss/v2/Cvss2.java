@@ -85,7 +85,7 @@ public class Cvss2 extends MultiScoreCvssVector {
     }
 
     @Override
-    protected boolean applyVectorArgument(String identifier, String value) {
+    public boolean applyVectorArgument(String identifier, String value) {
         switch (identifier) {
             case "AV": // base
                 accessVector = AccessVector.fromString(value);
@@ -93,8 +93,8 @@ public class Cvss2 extends MultiScoreCvssVector {
             case "AC":
                 accessComplexity = AccessComplexity.fromString(value);
                 break;
-            case "AU":
             case "Au":
+            case "AU":
                 authentication = Authentication.fromString(value);
                 break;
             case "C":
@@ -146,6 +146,7 @@ public class Cvss2 extends MultiScoreCvssVector {
             case "AC":
                 return accessComplexity;
             case "Au":
+            case "AU":
                 return authentication;
             case "C":
                 return confidentialityImpact;
@@ -1029,5 +1030,60 @@ public class Cvss2 extends MultiScoreCvssVector {
     }
 
     public interface Cvss2Attribute extends CvssVectorAttribute {
+        default boolean isSet() {
+            return !getIdentifier().equals("NOT_DEFINED") && !getIdentifier().equals("NULL");
+        }
     }
+
+    public final static List<Cvss2Attribute> ATTRIBUTE_SEVERITY_ORDER = Arrays.asList(
+            AccessVector.NULL,
+            AccessComplexity.NULL,
+            Authentication.NULL,
+            CIAImpact.NULL,
+            CIAImpact.NONE,
+            Exploitability.NULL,
+            RemediationLevel.NULL,
+            ReportConfidence.NULL,
+            CollateralDamagePotential.NULL,
+            CollateralDamagePotential.NONE,
+            CollateralDamagePotential.NOT_DEFINED,
+            TargetDistribution.NULL,
+            TargetDistribution.NONE,
+            CIARequirement.NULL,
+
+            CollateralDamagePotential.LOW,
+            TargetDistribution.LOW,
+            CIAImpact.PARTIAL,
+            CollateralDamagePotential.LOW_MEDIUM,
+            AccessComplexity.HIGH,
+            AccessVector.LOCAL,
+            CollateralDamagePotential.MEDIUM_HIGH,
+            Authentication.MULTIPLE,
+            CollateralDamagePotential.HIGH,
+            Authentication.SINGLE,
+            AccessComplexity.MEDIUM,
+            AccessVector.ADJACENT_NETWORK,
+            CIAImpact.COMPLETE,
+            Authentication.NONE,
+            AccessComplexity.LOW,
+            TargetDistribution.MEDIUM,
+            Exploitability.UNPROVEN,
+            RemediationLevel.OFFICIAL,
+            Exploitability.PROOF_OF_CONCEPT,
+            RemediationLevel.TEMPORARY,
+            RemediationLevel.WORKAROUND,
+            ReportConfidence.UNCORROBORATED,
+            AccessVector.NETWORK,
+            Exploitability.HIGH,
+            Exploitability.NOT_DEFINED,
+            RemediationLevel.UNAVAILABLE,
+            RemediationLevel.NOT_DEFINED,
+            ReportConfidence.CONFIRMED,
+            ReportConfidence.NOT_DEFINED,
+            TargetDistribution.HIGH,
+            TargetDistribution.NOT_DEFINED,
+            CIARequirement.MEDIUM,
+            CIARequirement.NOT_DEFINED,
+            CIARequirement.HIGH
+    );
 }

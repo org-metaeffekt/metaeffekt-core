@@ -1877,6 +1877,10 @@ public class Cvss4P0 extends CvssVector {
         static <T extends Cvss4P0Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
             return Arrays.stream(clazz.getEnumConstants()).filter(value -> value.getShortIdentifier().equalsIgnoreCase(part)).findFirst().orElse(defaultValue);
         }
+
+        default boolean isSet() {
+            return !getIdentifier().equals("NOT_DEFINED") && !getIdentifier().equals("NULL");
+        }
     }
 
     // getters/setters
@@ -2146,4 +2150,111 @@ public class Cvss4P0 extends CvssVector {
 
         return Optional.of(new Cvss4P0(vector));
     }
+
+    public final static List<Cvss4P0Attribute> ATTRIBUTE_SEVERITY_ORDER = Arrays.asList(
+            AttackRequirements.PRESENT,
+            ModifiedAttackRequirements.PRESENT,
+            AttackRequirements.NONE,
+            ModifiedAttackRequirements.NONE,
+            AttackRequirements.NOT_DEFINED,
+            ModifiedAttackRequirements.NOT_DEFINED,
+
+            Safety.NOT_DEFINED,
+            Safety.NEGLIGIBLE,
+            Safety.PRESENT,
+
+            Automatable.NOT_DEFINED,
+            Automatable.NO,
+            Automatable.YES,
+
+            ValueDensity.NOT_DEFINED,
+            ValueDensity.DIFFUSE,
+            ValueDensity.CONCENTRATED,
+
+            AttackComplexity.HIGH,
+            ModifiedAttackComplexity.HIGH,
+            AttackComplexity.LOW,
+            ModifiedAttackComplexity.LOW,
+            AttackComplexity.NOT_DEFINED,
+            ModifiedAttackComplexity.NOT_DEFINED,
+
+            PrivilegesRequired.HIGH,
+            ModifiedPrivilegesRequired.HIGH,
+            PrivilegesRequired.LOW,
+            ModifiedPrivilegesRequired.LOW,
+            PrivilegesRequired.NONE,
+            ModifiedPrivilegesRequired.NONE,
+            PrivilegesRequired.NOT_DEFINED,
+            ModifiedPrivilegesRequired.NOT_DEFINED,
+
+            UserInteraction.ACTIVE,
+            ModifiedUserInteraction.ACTIVE,
+            UserInteraction.PASSIVE,
+            ModifiedUserInteraction.PASSIVE,
+            UserInteraction.NONE,
+            ModifiedUserInteraction.NONE,
+            UserInteraction.NOT_DEFINED,
+            ModifiedUserInteraction.NOT_DEFINED,
+
+            VulnerabilityCia.NOT_DEFINED,
+            ModifiedVulnerabilityCia.NOT_DEFINED,
+            VulnerabilityCia.NONE,
+            ModifiedVulnerabilityCia.NONE,
+            VulnerabilityCia.LOW,
+            ModifiedVulnerabilityCia.LOW,
+            VulnerabilityCia.HIGH,
+            ModifiedVulnerabilityCia.HIGH,
+
+            ModifiedSubsequentConfidentiality.NOT_DEFINED,
+            ModifiedSubsequentIntegrityAvailability.NOT_DEFINED,
+            SubsequentCia.NOT_DEFINED,
+            ModifiedSubsequentConfidentiality.NEGLIGIBLE,
+            ModifiedSubsequentIntegrityAvailability.NEGLIGIBLE,
+            SubsequentCia.NONE,
+            ModifiedSubsequentConfidentiality.LOW,
+            ModifiedSubsequentIntegrityAvailability.LOW,
+            SubsequentCia.LOW,
+            ModifiedSubsequentConfidentiality.HIGH,
+            ModifiedSubsequentIntegrityAvailability.HIGH,
+            SubsequentCia.HIGH,
+            ModifiedSubsequentIntegrityAvailability.SAFETY,
+            SubsequentCia.SAFETY,
+
+            RequirementsCia.LOW,
+            RequirementsCia.MEDIUM,
+            RequirementsCia.HIGH,
+            RequirementsCia.NOT_DEFINED,
+
+            ExploitMaturity.UNREPORTED,
+            ExploitMaturity.POC,
+            ExploitMaturity.ATTACKED,
+            ExploitMaturity.NOT_DEFINED,
+
+            Recovery.NOT_DEFINED,
+            Recovery.AUTOMATIC,
+            Recovery.USER,
+            Recovery.IRRECOVERABLE,
+
+            VulnerabilityResponseEffort.NOT_DEFINED,
+            VulnerabilityResponseEffort.LOW,
+            VulnerabilityResponseEffort.MODERATE,
+            VulnerabilityResponseEffort.HIGH,
+
+            ProviderUrgency.NOT_DEFINED,
+            ProviderUrgency.CLEAR,
+            ProviderUrgency.GREEN,
+            ProviderUrgency.AMBER,
+            ProviderUrgency.RED,
+
+            AttackVector.NOT_DEFINED,
+            ModifiedAttackVector.NOT_DEFINED,
+            AttackVector.PHYSICAL,
+            ModifiedAttackVector.PHYSICAL,
+            AttackVector.LOCAL,
+            ModifiedAttackVector.LOCAL,
+            AttackVector.ADJACENT_NETWORK,
+            ModifiedAttackVector.ADJACENT_NETWORK,
+            AttackVector.NETWORK,
+            ModifiedAttackVector.NETWORK
+    );
 }
