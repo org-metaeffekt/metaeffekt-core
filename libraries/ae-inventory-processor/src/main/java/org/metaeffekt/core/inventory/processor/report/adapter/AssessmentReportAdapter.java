@@ -104,7 +104,6 @@ public class AssessmentReportAdapter {
     public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useEffectiveSeverity) {
         final AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
         vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
-        vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
 
         final Set<AeaaVulnerability> vulnerabilities = vAssetInventory.getShallowCopyVulnerabilities();
 

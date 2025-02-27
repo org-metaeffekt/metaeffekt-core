@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,8 +26,11 @@ import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecur
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerabilityContextInventory;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaVulnerabilityAssessment;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaVulnerabilityAssessmentOperations;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatus;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatusHistoryEntry;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssSource;
@@ -39,6 +43,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class StatisticsOverviewTableTest {
 
     private final CentralSecurityPolicyConfiguration unmodifiedMapperSecurityPolicy = new CentralSecurityPolicyConfiguration()
@@ -56,7 +61,6 @@ public class StatisticsOverviewTableTest {
         final CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
         vInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
-        vInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
 
         System.out.println(StatisticsOverviewTable.buildTableStrFilterAdvisor(securityPolicy, vInventory.getVulnerabilities(), null, false));
         System.out.println(StatisticsOverviewTable.buildTableStrFilterAdvisor(securityPolicy, vInventory.getVulnerabilities(), null, true));
@@ -298,6 +302,10 @@ public class StatisticsOverviewTableTest {
                 vulnerability.addSecurityAdvisory(securityAdvisory);
             }
         }
+
+        final AeaaVulnerabilityStatus legacyAssessment = vulnerability.getOrCreateNewVulnerabilityStatus();
+        final AeaaVulnerabilityAssessment assessment = AeaaVulnerabilityAssessmentOperations.convertLegacyStatusToAssessment(legacyAssessment);
+        vulnerability.getAssessmentEvents().addAll(assessment.getEvents());
 
         return vulnerability;
     }
