@@ -38,33 +38,38 @@ public class ContainerImageInspectAdapter {
         try {
             final ImageInspectData imageInspectElements = ImageInspectReader.dataFromJson(containerInspectionFile);
             if (imageInspectElements.size() == 1) {
-                final AssetMetaData assetMetaData = new AssetMetaData();
-                assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_CONTAINER);
-
                 final ImageInspectElement element = imageInspectElements.get(0);
+                final String imageId = String.valueOf(element.getId());
 
-                extractCreatedTimestamp(element, assetMetaData);
+                if (imageId != null) {
+                   final AssetMetaData assetMetaData = new AssetMetaData();
+                    assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_CONTAINER);
 
-                assetMetaData.set("Size", String.valueOf(element.getSize()));
-                assetMetaData.set(KEY_IMAGE_ID, String.valueOf(element.getId()));
-                assetMetaData.set("Author", String.valueOf(element.getAuthor()));
-                assetMetaData.set(Constants.KEY_ARCHITECTURE, String.valueOf(element.getArchitecture()));
-                assetMetaData.set("Os", String.valueOf(element.getOs()));
+                    extractCreatedTimestamp(element, assetMetaData);
 
-                assetMetaData.set("Comment", element.getComment());
+                    assetMetaData.set("Size", String.valueOf(element.getSize()));
+                    assetMetaData.set(KEY_IMAGE_ID, imageId);
+                    assetMetaData.set("Author", String.valueOf(element.getAuthor()));
+                    assetMetaData.set(Constants.KEY_ARCHITECTURE, String.valueOf(element.getArchitecture()));
+                    assetMetaData.set("Os", String.valueOf(element.getOs()));
 
-                extractMetaEntries(element, assetMetaData);
-                extractPropData(element, assetMetaData);
-                extractConfigData(element, assetMetaData);
-                extractRepoDigest(element, assetMetaData);
+                    assetMetaData.set("Comment", element.getComment());
 
-                // by default containers are always primary assets
-                assetMetaData.set("Primary", Constants.MARKER_CROSS);
+                    extractMetaEntries(element, assetMetaData);
+                    extractPropData(element, assetMetaData);
+                    extractConfigData(element, assetMetaData);
+                    extractRepoDigest(element, assetMetaData);
 
-                // compute id from image id
-                assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "CID-" + getPlainImageId(assetMetaData));
+                    // by default containers are always primary assets
+                    assetMetaData.set("Primary", Constants.MARKER_CROSS);
 
-                return assetMetaData;
+                    // compute id from image id
+                    assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "CID-" + getPlainImageId(assetMetaData));
+
+                    return assetMetaData;
+                } else {
+                    LOG.info("Skipping asset identification on [{}]. Appears not to be a container manifest.", containerInspectionFile);
+                }
             } else {
                 LOG.warn("Container image inspect file at [{}] shows unexpected content.", containerInspectionFile);
             }
@@ -140,8 +145,11 @@ public class ContainerImageInspectAdapter {
     }
 
     private void extractMetaEntries(ImageInspectElement element, AssetMetaData assetMetaData) {
-        for (Map.Entry<String, String> entry : element.getMetadata().entrySet()) {
-            assetMetaData.set("meta_" + entry.getKey(), entry.getValue());
+        final Map<String, String> metadata = element.getMetadata();
+        if (metadata != null) {
+            for (Map.Entry<String, String> entry : metadata.entrySet()) {
+                assetMetaData.set("meta_" + entry.getKey(), entry.getValue());
+            }
         }
     }
 

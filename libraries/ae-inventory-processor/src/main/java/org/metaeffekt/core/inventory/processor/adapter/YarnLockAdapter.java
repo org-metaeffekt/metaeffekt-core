@@ -80,8 +80,11 @@ public class YarnLockAdapter {
 
                 final Pair<String, String> nameVersionPair = extractNameVersionPair(line);
                 if (nameVersionPair == null) continue;
-                NpmPackageLockAdapter.NpmModule webModule =
-                        new NpmPackageLockAdapter.NpmModule(nameVersionPair.getKey(), relativePath);
+
+                // FIXME-KKL: we used to use relativePath here; that however produced duplication within
+                //  the path; explicit tests required.
+                final NpmPackageLockAdapter.NpmModule webModule =
+                        new NpmPackageLockAdapter.NpmModule(nameVersionPair.getKey(), "/");
 
                 final String webModuleId = line;
                 webModuleMap.put(webModuleId, webModule);

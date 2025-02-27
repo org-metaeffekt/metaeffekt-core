@@ -8,6 +8,28 @@
 #foreach($notice in $artifactNoticeList)
     #set($unused = $notices.add($notice))
 #end
+# Switch for displaying web modules if there are any present
+#set($componentsWebModule=$inventory.evaluateComponentsInContext("web-module"))
+#set($webModulesSwitch = true)
+#if($componentsWebModule.isEmpty())
+    #set($webModulesSwitch = false)
+#end
+ae.inventory.web.module.effective.switch=$webModulesSwitch
+# Switch for displaying packages if there are any present
+#set($componentsPackage=$inventory.evaluateComponentsInContext("package"))
+#set($packagesSwitch = true)
+#if($componentsPackage.isEmpty())
+    #set($packagesSwitch = false)
+#end
+ae.inventory.package.effective.switch=$packagesSwitch
+# Switch for displaying components without license if there are any present
+#set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
+#set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))
+#set($componentsNoLicenseSwitch = true)
+#if ($componentsNoLicense.isEmpty())
+    #set($componentsNoLicenseSwitch = false)
+#end
+ae.inventory.components.no.license-switch=$componentsNoLicenseSwitch
 # Switch to be used on a license details level
 # If no notices are available across all components switch is 'false'; 'true' otherwise
 #set($noticesSwitch = true)
@@ -18,3 +40,4 @@ ae.inventory.component.license.details.switch=$noticesSwitch
 
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 ae.inventory.report.bom.count.artifacts.nolicense=$artifactsWithoutLicense.size()
+

@@ -286,15 +286,27 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         modulateArtifactRootPaths(inventory);
 
-        final Map<String, List<Artifact>> stringListMap = buildQualifierArtifactMap(inventory);
+        // NOTE: the list may contain duplicates by reference; these must be removed to not lose data
+        final List<Artifact> artifacts = inventory.getArtifacts();
+        final LinkedHashSet<Artifact> artifactSet = new LinkedHashSet<>(artifacts);
+        if (artifactSet.size() != artifacts.size()) {
+            LOG.warn("Detected duplicates by reference in inventory. Ensure analysis does not produce referential duplicates. Applying compensation.");
+            artifacts.clear();
+            artifacts.addAll(artifactSet);
+        }
 
-        for (List<Artifact> list : stringListMap.values()) {
-            Artifact artifact = list.get(0);
+        final Map<String, List<Artifact>> qualifierArtifactMap = buildQualifierArtifactMap(inventory);
+
+        for (List<Artifact> list : qualifierArtifactMap.values()) {
+            final Artifact representativeArtifact = list.get(0);
 
             for (int i = 1; i < list.size(); i++) {
-                final Artifact a = list.get(i);
-                inventory.getArtifacts().remove(a);
-                artifact.merge(a);
+                final Artifact duplicateArtifact = list.get(i);
+                if (representativeArtifact == duplicateArtifact) {
+                    throw new IllegalStateException("Unresolved referential duplicate detected.");
+                }
+                artifacts.remove(duplicateArtifact);
+                representativeArtifact.merge(duplicateArtifact);
             }
         }
 

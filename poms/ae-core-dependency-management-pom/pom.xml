@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-poms</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.135-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -62,6 +62,7 @@
         <xalan.version>2.7.2</xalan.version>
         <javassist.version>3.21.0-GA</javassist.version>
         <tukaani.xz.version>1.9</tukaani.xz.version>
+        <luben.zstd.version>1.5.5-11</luben.zstd.version>
 
         <minimal.maven.version>3.0.5</minimal.maven.version>
         <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
@@ -620,6 +621,13 @@
                 <groupId>org.tukaani</groupId>
                 <artifactId>xz</artifactId>
                 <version>${tukaani.xz.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.luben</groupId>
+                <artifactId>zstd-jni</artifactId>
+                <version>${luben.zstd.version}</version>
                 <scope>compile</scope>
             </dependency>
 

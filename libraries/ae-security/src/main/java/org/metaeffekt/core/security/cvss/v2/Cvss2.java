@@ -39,7 +39,7 @@ import java.util.*;
  * </ul>
  * See the definitions of the individual scoring methods for the equations used for the scores.
  */
-public class Cvss2 extends MultiScoreCvssVector {
+public final class Cvss2 extends MultiScoreCvssVector {
 
     // base
     private AccessVector accessVector = AccessVector.NULL;
@@ -546,7 +546,7 @@ public class Cvss2 extends MultiScoreCvssVector {
 
     @Override
     public BakedCvssVectorScores bakeScores() {
-        return new BakedCvssVectorScores(this);
+        return BakedCvssVectorScores.fromNullableCvss(this);
     }
 
     @Override
@@ -604,22 +604,35 @@ public class Cvss2 extends MultiScoreCvssVector {
     public String toString() {
         final StringBuilder vector = new StringBuilder();
 
-        vector.append("AV:").append(accessVector.shortIdentifier).append("/");
-        vector.append("AC:").append(accessComplexity.shortIdentifier).append("/");
-        vector.append("Au:").append(authentication.shortIdentifier).append("/");
-        vector.append("C:").append(confidentialityImpact.shortIdentifier).append("/");
-        vector.append("I:").append(integrityImpact.shortIdentifier).append("/");
-        vector.append("A:").append(availabilityImpact.shortIdentifier).append("/");
-        vector.append("E:").append(exploitability.shortIdentifier).append("/");
-        vector.append("RL:").append(remediationLevel.shortIdentifier).append("/");
-        vector.append("RC:").append(reportConfidence.shortIdentifier).append("/");
-        vector.append("CDP:").append(collateralDamagePotential.shortIdentifier).append("/");
-        vector.append("TD:").append(targetDistribution.shortIdentifier).append("/");
-        vector.append("CR:").append(confidentialityRequirement.shortIdentifier).append("/");
-        vector.append("IR:").append(integrityRequirement.shortIdentifier).append("/");
-        vector.append("AR:").append(availabilityRequirement.shortIdentifier);
+        appendIfValid(vector, "AV", accessVector.shortIdentifier);
+        appendIfValid(vector, "AC", accessComplexity.shortIdentifier);
+        appendIfValid(vector, "Au", authentication.shortIdentifier);
+        appendIfValid(vector, "C", confidentialityImpact.shortIdentifier);
+        appendIfValid(vector, "I", integrityImpact.shortIdentifier);
+        appendIfValid(vector, "A", availabilityImpact.shortIdentifier);
+        appendIfValid(vector, "E", exploitability.shortIdentifier);
+        appendIfValid(vector, "RL", remediationLevel.shortIdentifier);
+        appendIfValid(vector, "RC", reportConfidence.shortIdentifier);
+        appendIfValid(vector, "CDP", collateralDamagePotential.shortIdentifier);
+        appendIfValid(vector, "TD", targetDistribution.shortIdentifier);
+        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier);
+        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier);
+        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier);
 
-        return vector.toString().replaceAll("[^:/]+:X", "").replaceAll("/{2,}", "/").replaceAll("/$", "").replaceAll("^/", "");
+        if (vector.length() > 0 && vector.charAt(vector.length() - 1) == '/') {
+            vector.setLength(vector.length() - 1);
+        }
+
+        return vector.toString();
+    }
+
+    private void appendIfValid(StringBuilder builder, String prefix, String value) {
+        if (value != null && !value.equals("X")) {
+            if (builder.length() > 0) {
+                builder.append('/');
+            }
+            builder.append(prefix).append(':').append(value);
+        }
     }
 
     @Override
@@ -660,7 +673,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static AccessVector fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, AccessVector.class, NULL);
         }
 
         @Override
@@ -690,7 +703,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static AccessComplexity fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, AccessComplexity.class, NULL);
         }
 
         @Override
@@ -720,7 +733,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static Authentication fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, Authentication.class, NULL);
         }
 
         @Override
@@ -750,7 +763,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static CIAImpact fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, CIAImpact.class, NULL);
         }
 
         @Override
@@ -782,7 +795,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static Exploitability fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, Exploitability.class, NULL);
         }
 
         @Override
@@ -814,7 +827,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static RemediationLevel fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, RemediationLevel.class, NULL);
         }
 
         @Override
@@ -845,7 +858,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static ReportConfidence fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, ReportConfidence.class, NULL);
         }
 
         @Override
@@ -878,7 +891,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static CollateralDamagePotential fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, CollateralDamagePotential.class, NULL);
         }
 
         @Override
@@ -910,7 +923,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static TargetDistribution fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, TargetDistribution.class, NULL);
         }
 
         @Override
@@ -941,7 +954,7 @@ public class Cvss2 extends MultiScoreCvssVector {
         }
 
         public static CIARequirement fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss2Attribute.fromString(part, CIARequirement.class, NULL);
         }
 
         @Override
@@ -1029,9 +1042,36 @@ public class Cvss2 extends MultiScoreCvssVector {
         return Optional.of(new Cvss2(vector));
     }
 
+    private final static Map<Class<?>, Map<String, Object>> ATTRIBUTE_CACHE = new HashMap<>();
+
     public interface Cvss2Attribute extends CvssVectorAttribute {
         default boolean isSet() {
             return !getIdentifier().equals("NOT_DEFINED") && !getIdentifier().equals("NULL");
+        }
+
+        static <T extends Cvss2Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
+            final Map<String, Object> cache;
+            if (ATTRIBUTE_CACHE.containsKey(clazz)) {
+                cache = ATTRIBUTE_CACHE.get(clazz);
+            } else {
+                cache = new HashMap<>();
+                ATTRIBUTE_CACHE.put(clazz, cache);
+            }
+            if (cache.containsKey(part)) {
+                return (T) cache.get(part);
+            } else {
+                for (T value : clazz.getEnumConstants()) {
+                    if (value.getShortIdentifier().equalsIgnoreCase(part)) {
+                        cache.put(part, value);
+                        return value;
+                    } else if (value.getIdentifier().equalsIgnoreCase(part)) {
+                        cache.put(part, value);
+                        return value;
+                    }
+                }
+                cache.put(part, defaultValue);
+                return defaultValue;
+            }
         }
     }
 

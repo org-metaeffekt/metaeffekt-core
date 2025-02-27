@@ -532,7 +532,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
 
     @Override
     public BakedCvssVectorScores bakeScores() {
-        return new BakedCvssVectorScores(this);
+        return BakedCvssVectorScores.fromNullableCvss(this);
     }
 
     @Override
@@ -792,36 +792,45 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
     }
 
     public String toString(boolean filterUndefinedProperties) {
-        final StringBuilder vector = new StringBuilder();
-        vector.append(getName()).append("/");
+        StringBuilder vector = new StringBuilder();
+        vector.append(getName()).append('/');
 
-        vector.append("AV:").append(attackVector.shortIdentifier).append("/");
-        vector.append("AC:").append(attackComplexity.shortIdentifier).append("/");
-        vector.append("PR:").append(privilegesRequired.shortIdentifier).append("/");
-        vector.append("UI:").append(userInteraction.shortIdentifier).append("/");
-        vector.append("S:").append(scope.shortIdentifier).append("/");
-        vector.append("C:").append(confidentialityImpact.shortIdentifier).append("/");
-        vector.append("I:").append(integrityImpact.shortIdentifier).append("/");
-        vector.append("A:").append(availabilityImpact.shortIdentifier).append("/");
-        vector.append("E:").append(exploitCodeMaturity.shortIdentifier).append("/");
-        vector.append("RL:").append(remediationLevel.shortIdentifier).append("/");
-        vector.append("RC:").append(reportConfidence.shortIdentifier).append("/");
-        vector.append("MAV:").append(modifiedAttackVector.shortIdentifier).append("/");
-        vector.append("MAC:").append(modifiedAttackComplexity.shortIdentifier).append("/");
-        vector.append("MPR:").append(modifiedPrivilegesRequired.shortIdentifier).append("/");
-        vector.append("MUI:").append(modifiedUserInteraction.shortIdentifier).append("/");
-        vector.append("MS:").append(modifiedScope.shortIdentifier).append("/");
-        vector.append("MC:").append(modifiedConfidentialityImpact.shortIdentifier).append("/");
-        vector.append("MI:").append(modifiedIntegrityImpact.shortIdentifier).append("/");
-        vector.append("MA:").append(modifiedAvailabilityImpact.shortIdentifier).append("/");
-        vector.append("CR:").append(confidentialityRequirement.shortIdentifier).append("/");
-        vector.append("IR:").append(integrityRequirement.shortIdentifier).append("/");
-        vector.append("AR:").append(availabilityRequirement.shortIdentifier).append("/");
+        appendIfValid(vector, "AV", attackVector.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "AC", attackComplexity.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "PR", privilegesRequired.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "UI", userInteraction.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "S", scope.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "C", confidentialityImpact.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "I", integrityImpact.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "A", availabilityImpact.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "E", exploitCodeMaturity.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "RL", remediationLevel.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "RC", reportConfidence.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MAV", modifiedAttackVector.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MAC", modifiedAttackComplexity.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MPR", modifiedPrivilegesRequired.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MUI", modifiedUserInteraction.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MS", modifiedScope.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MC", modifiedConfidentialityImpact.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MI", modifiedIntegrityImpact.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "MA", modifiedAvailabilityImpact.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier, filterUndefinedProperties);
 
-        if (filterUndefinedProperties) {
-            return vector.toString().replaceAll("[^:/]+:X", "").replaceAll("/{2,}", "/").replaceAll("/$", "");
-        } else {
-            return vector.toString().replaceAll("/$", "");
+        if (vector.length() > 0 && vector.charAt(vector.length() - 1) == '/') {
+            vector.setLength(vector.length() - 1);
+        }
+
+        return vector.toString();
+    }
+
+    private void appendIfValid(StringBuilder builder, String prefix, String value, boolean filterUndefinedProperties) {
+        if (value != null && (!filterUndefinedProperties || !value.equals("X"))) {
+            if (builder.length() > 0 && builder.charAt(builder.length() - 1) != '/') {
+                builder.append('/');
+            }
+            builder.append(prefix).append(':').append(value);
         }
     }
 
@@ -831,34 +840,26 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
 
         if (attackVector != AttackVector.NOT_DEFINED && attackVector != AttackVector.NULL) size++;
         if (attackComplexity != AttackComplexity.NOT_DEFINED && attackComplexity != AttackComplexity.NULL) size++;
-        if (privilegesRequired != PrivilegesRequired.NOT_DEFINED && privilegesRequired != PrivilegesRequired.NULL)
-            size++;
+        if (privilegesRequired != PrivilegesRequired.NOT_DEFINED && privilegesRequired != PrivilegesRequired.NULL) size++;
         if (userInteraction != UserInteraction.NOT_DEFINED && userInteraction != UserInteraction.NULL) size++;
         if (scope != Scope.NOT_DEFINED && scope != Scope.NULL) size++;
         if (confidentialityImpact != CIAImpact.NOT_DEFINED && confidentialityImpact != CIAImpact.NULL) size++;
         if (integrityImpact != CIAImpact.NOT_DEFINED && integrityImpact != CIAImpact.NULL) size++;
         if (availabilityImpact != CIAImpact.NOT_DEFINED && availabilityImpact != CIAImpact.NULL) size++;
-        if (exploitCodeMaturity != ExploitCodeMaturity.NOT_DEFINED && exploitCodeMaturity != ExploitCodeMaturity.NULL)
-            size++;
+        if (exploitCodeMaturity != ExploitCodeMaturity.NOT_DEFINED && exploitCodeMaturity != ExploitCodeMaturity.NULL) size++;
         if (remediationLevel != RemediationLevel.NOT_DEFINED && remediationLevel != RemediationLevel.NULL) size++;
         if (reportConfidence != ReportConfidence.NOT_DEFINED && reportConfidence != ReportConfidence.NULL) size++;
         if (modifiedAttackVector != AttackVector.NOT_DEFINED && modifiedAttackVector != AttackVector.NULL) size++;
-        if (modifiedAttackComplexity != AttackComplexity.NOT_DEFINED && modifiedAttackComplexity != AttackComplexity.NULL)
-            size++;
-        if (modifiedPrivilegesRequired != PrivilegesRequired.NOT_DEFINED && modifiedPrivilegesRequired != PrivilegesRequired.NULL)
-            size++;
-        if (modifiedUserInteraction != UserInteraction.NOT_DEFINED && modifiedUserInteraction != UserInteraction.NULL)
-            size++;
+        if (modifiedAttackComplexity != AttackComplexity.NOT_DEFINED && modifiedAttackComplexity != AttackComplexity.NULL) size++;
+        if (modifiedPrivilegesRequired != PrivilegesRequired.NOT_DEFINED && modifiedPrivilegesRequired != PrivilegesRequired.NULL) size++;
+        if (modifiedUserInteraction != UserInteraction.NOT_DEFINED && modifiedUserInteraction != UserInteraction.NULL) size++;
         if (modifiedScope != Scope.NOT_DEFINED && modifiedScope != Scope.NULL) size++;
-        if (modifiedConfidentialityImpact != CIAImpact.NOT_DEFINED && modifiedConfidentialityImpact != CIAImpact.NULL)
-            size++;
+        if (modifiedConfidentialityImpact != CIAImpact.NOT_DEFINED && modifiedConfidentialityImpact != CIAImpact.NULL) size++;
         if (modifiedIntegrityImpact != CIAImpact.NOT_DEFINED && modifiedIntegrityImpact != CIAImpact.NULL) size++;
         if (modifiedAvailabilityImpact != CIAImpact.NOT_DEFINED && modifiedAvailabilityImpact != CIAImpact.NULL) size++;
-        if (confidentialityRequirement != CIARequirement.NOT_DEFINED && confidentialityRequirement != CIARequirement.NULL)
-            size++;
+        if (confidentialityRequirement != CIARequirement.NOT_DEFINED && confidentialityRequirement != CIARequirement.NULL) size++;
         if (integrityRequirement != CIARequirement.NOT_DEFINED && integrityRequirement != CIARequirement.NULL) size++;
-        if (availabilityRequirement != CIARequirement.NOT_DEFINED && availabilityRequirement != CIARequirement.NULL)
-            size++;
+        if (availabilityRequirement != CIARequirement.NOT_DEFINED && availabilityRequirement != CIARequirement.NULL) size++;
 
         return size;
     }
@@ -881,7 +882,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static AttackVector fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, AttackVector.class, NULL);
         }
 
         @Override
@@ -911,7 +912,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static AttackComplexity fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, AttackComplexity.class, NULL);
         }
 
         @Override
@@ -943,7 +944,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static PrivilegesRequired fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, PrivilegesRequired.class, NULL);
         }
 
         @Override
@@ -973,7 +974,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static UserInteraction fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, UserInteraction.class, NULL);
         }
 
         @Override
@@ -1003,7 +1004,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static Scope fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, Scope.class, NULL);
         }
 
         @Override
@@ -1037,7 +1038,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static CIAImpact fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, CIAImpact.class, NULL);
         }
 
         @Override
@@ -1069,7 +1070,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static ExploitCodeMaturity fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, ExploitCodeMaturity.class, NULL);
         }
 
         @Override
@@ -1101,7 +1102,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static RemediationLevel fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, RemediationLevel.class, NULL);
         }
 
         @Override
@@ -1132,7 +1133,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static ReportConfidence fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, ReportConfidence.class, NULL);
         }
 
         @Override
@@ -1163,7 +1164,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         }
 
         public static CIARequirement fromString(String part) {
-            return Arrays.stream(values()).filter(value -> value.identifier.equals(part) || value.shortIdentifier.equals(part)).findFirst().orElse(NULL);
+            return Cvss3Attribute.fromString(part, CIARequirement.class, NULL);
         }
 
         @Override
@@ -1269,9 +1270,36 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
 
     public abstract <T extends Cvss3> Optional<T> optionalParse(String vector);
 
+    private final static Map<Class<?>, Map<String, Object>> ATTRIBUTE_CACHE = new HashMap<>();
+
     public interface Cvss3Attribute extends CvssVectorAttribute {
         default boolean isSet() {
             return !getIdentifier().equals("NOT_DEFINED") && !getIdentifier().equals("NULL");
+        }
+
+        static <T extends Cvss3Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
+            final Map<String, Object> cache;
+            if (ATTRIBUTE_CACHE.containsKey(clazz)) {
+                cache = ATTRIBUTE_CACHE.get(clazz);
+            } else {
+                cache = new HashMap<>();
+                ATTRIBUTE_CACHE.put(clazz, cache);
+            }
+            if (cache.containsKey(part)) {
+                return (T) cache.get(part);
+            } else {
+                for (T value : clazz.getEnumConstants()) {
+                    if (value.getShortIdentifier().equalsIgnoreCase(part)) {
+                        cache.put(part, value);
+                        return value;
+                    } else if (value.getIdentifier().equalsIgnoreCase(part)) {
+                        cache.put(part, value);
+                        return value;
+                    }
+                }
+                cache.put(part, defaultValue);
+                return defaultValue;
+            }
         }
     }
 

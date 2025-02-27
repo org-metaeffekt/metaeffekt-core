@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.report;
 import lombok.Getter;
 import lombok.Setter;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +45,14 @@ public class InventoryScanReport extends InventoryReport {
      * Whether to include embedded POMs in the analysis. Defaults to false.
      */
     private boolean includeEmbedded = false;
+
+    public InventoryScanReport() {
+        super();
+    }
+
+    public InventoryScanReport(ReportConfigurationParameters configParams) {
+        super(configParams);
+    }
 
     @Override
     public boolean createReport() throws IOException {

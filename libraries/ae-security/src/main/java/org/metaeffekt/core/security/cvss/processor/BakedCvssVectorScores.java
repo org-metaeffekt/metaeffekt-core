@@ -18,7 +18,9 @@ package org.metaeffekt.core.security.cvss.processor;
 
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P0;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
+import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 
 import java.util.Objects;
 
@@ -34,7 +36,11 @@ import java.util.Objects;
  */
 public class BakedCvssVectorScores {
 
-    private final CvssVector vector;
+    // FIXME-KKL: consider replacing implementation
+    private final static LruLinkedHashMap<String, BakedCvssVectorScores> cache = new LruLinkedHashMap<>(5000);
+
+    private final Class<? extends CvssVector> cvssVersion;
+    private final String vector;
 
     private final double base;
     private final double impact;
@@ -44,11 +50,17 @@ public class BakedCvssVectorScores {
     private final double adjustedImpact;
     private final double overall;
 
-    public BakedCvssVectorScores(CvssVector vector) {
-        this.vector = vector;
+    protected BakedCvssVectorScores(CvssVector vector) {
+        this.cvssVersion = vector.getClass();
+        this.vector = vector.toString();
 
-        this.base = vector.getBaseScore();
-        this.overall = vector.getOverallScore();
+        if (this.cvssVersion == Cvss4P0.class) {
+            this.base = vector.getBaseScore();
+            this.overall = this.base;
+        } else {
+            this.base = vector.getBaseScore();
+            this.overall = vector.getOverallScore();
+        }
 
         if (vector instanceof MultiScoreCvssVector) {
             final MultiScoreCvssVector cast = ((MultiScoreCvssVector) vector);
@@ -70,7 +82,13 @@ public class BakedCvssVectorScores {
         if (cvss == null) {
             return null;
         }
-        return new BakedCvssVectorScores(cvss);
+        final String cvssString = cvss.toString();
+        if (cache.containsKey(cvssString)) {
+            return cache.get(cvssString);
+        }
+        final BakedCvssVectorScores scores = new BakedCvssVectorScores(cvss);
+        cache.put(cvssString, scores);
+        return scores;
     }
 
     public double getBaseScore() {
@@ -162,7 +180,7 @@ public class BakedCvssVectorScores {
     }
 
     public double getUnNormalizedImpactScoreMax() {
-        if (vector instanceof Cvss3P1) {
+        if (cvssVersion == Cvss3P1.class || cvssVersion == Cvss3P0.class) {
             return 6.0;
         } else {
             return 10.0;
@@ -170,7 +188,7 @@ public class BakedCvssVectorScores {
     }
 
     public double getUnNormalizedExploitabilityScoreMax() {
-        if (vector instanceof Cvss3P1) {
+        if (cvssVersion == Cvss3P1.class || cvssVersion == Cvss3P0.class) {
             return 3.9;
         } else {
             return 10.0;
@@ -186,7 +204,7 @@ public class BakedCvssVectorScores {
     }
 
     public double getUnNormalizedAdjustedImpactScoreMax() {
-        if (vector instanceof Cvss3P1) {
+        if (cvssVersion == Cvss3P1.class || cvssVersion == Cvss3P0.class) {
             return 6.1;
         } else {
             return 10.0;
@@ -227,7 +245,7 @@ public class BakedCvssVectorScores {
 
     @Override
     public String toString() {
-        return vector.toString();
+        return vector;
     }
 
     /**
@@ -261,11 +279,11 @@ public class BakedCvssVectorScores {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         BakedCvssVectorScores that = (BakedCvssVectorScores) o;
-        return Double.compare(base, that.base) == 0 && Double.compare(impact, that.impact) == 0 && Double.compare(exploitability, that.exploitability) == 0 && Double.compare(temporal, that.temporal) == 0 && Double.compare(environmental, that.environmental) == 0 && Double.compare(adjustedImpact, that.adjustedImpact) == 0 && Double.compare(overall, that.overall) == 0 && Objects.equals(vector != null ? vector.toString() : null, that.vector != null ? that.vector.toString() : null);
+        return Double.compare(base, that.base) == 0 && Double.compare(impact, that.impact) == 0 && Double.compare(exploitability, that.exploitability) == 0 && Double.compare(temporal, that.temporal) == 0 && Double.compare(environmental, that.environmental) == 0 && Double.compare(adjustedImpact, that.adjustedImpact) == 0 && Double.compare(overall, that.overall) == 0 && Objects.equals(vector, that.vector);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(vector != null ? vector.toString() : null, base, impact, exploitability, temporal, environmental, adjustedImpact, overall);
+        return Objects.hash(vector, base, impact, exploitability, temporal, environmental, adjustedImpact, overall);
     }
 }

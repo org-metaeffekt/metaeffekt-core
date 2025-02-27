@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_webmodules-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>$reportContext.combinedTitle("Web Modules", true)</title>
+    #set($title = $utils.getText("general.short.web-modules"))
+    <title>$reportContext.combinedTitle("$title", true)</title>
     <body>
         #set($components=$inventory.evaluateComponentsInContext("web-module"))
         #set($licensesInEffect=$inventory.evaluateLicenses(false))
@@ -13,7 +14,6 @@
         <p>$utils.getText("inventory-report-bom.web-module-table-descr")</p>
         <p>
             <table otherprops="wide" id="table_web_modules">
-                <title>$utils.getText("general.short.web-modules") $reportContext.inContextOf()</title>
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="45*" />
