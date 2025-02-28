@@ -16,6 +16,9 @@
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.device.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-device-report-effective.dita" />
     #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.part.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-part-report-effective.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
