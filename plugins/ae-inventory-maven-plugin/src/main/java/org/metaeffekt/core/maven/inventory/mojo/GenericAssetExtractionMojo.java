@@ -27,7 +27,9 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * Attaches generic asset metadata to an existing inventory.
+ * Attaches generic asset metadata to an existing inventory.<br>
+ * There are two operating modes: one for selecting / creating an asset using an Id, and one for picking the first asset
+ * in the inventory if only one asset is present, otherwise the operation will fail.
  */
 @Mojo(name = "attach-asset-metadata", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class GenericAssetExtractionMojo extends AbstractProjectAwareConfiguredMojo {
@@ -41,14 +43,18 @@ public class GenericAssetExtractionMojo extends AbstractProjectAwareConfiguredMo
     @Parameter(required = true)
     private Map<String, String> attributes;
 
-    @Parameter(required = true)
+    @Parameter
     private String assetId;
+
+    @Parameter
+    private boolean pickSingleAsset = false;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             GenericAssetInventoryProcessor processor = new GenericAssetInventoryProcessor()
                 .supply(assetId)
+                .pickSingleAsset(pickSingleAsset)
                 .withAttributes(attributes)
                 .augmenting(inventoryFile)
                 .writing(targetInventoryFile);

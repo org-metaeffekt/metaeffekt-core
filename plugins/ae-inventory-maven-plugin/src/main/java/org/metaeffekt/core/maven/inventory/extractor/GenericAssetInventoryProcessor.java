@@ -39,16 +39,48 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
 
     private String assetId;
 
+    private boolean pickSingleAsset = false;
+
     public GenericAssetInventoryProcessor augmenting(File inventoryFile) {
         super.augmenting(inventoryFile);
         return this;
     }
 
+    private AssetMetaData findOrCreateAsset(Inventory inventory) {
+        for (AssetMetaData asset : inventory.getAssetMetaData()) {
+            if (assetId.equals(asset.get(AssetMetaData.Attribute.ASSET_ID))) {
+                return asset;
+            }
+        }
+
+        // create and add new asset metadata
+        final AssetMetaData asset = new AssetMetaData();
+        asset.set(AssetMetaData.Attribute.ASSET_ID, assetId);
+        inventory.getAssetMetaData().add(asset);
+        return asset;
+    }
+
     public void process() throws IOException {
+        if (assetId != null && pickSingleAsset) {
+            throw new IllegalArgumentException("Either supply an asset id (assetId) or choose to pick a single asset (pickSingleAsset), but not both are allowed at the same time.");
+        } else if (assetId == null && !pickSingleAsset) {
+            throw new IllegalArgumentException("Either supply an asset id (assetId) or choose to pick a single asset (pickSingleAsset).");
+        }
+
         final Inventory inventory = new InventoryReader().readInventory(getInventoryFile());
 
-        // FIXME: currently we do not expect, that the asset metadata may already exists; create new instance and add
-        final AssetMetaData assetMetaData = new AssetMetaData();
+        // find asset or create new with id
+        final AssetMetaData assetMetaData;
+        if (assetId != null) {
+            assetMetaData = findOrCreateAsset(inventory);
+        } else if (pickSingleAsset) {
+            if (inventory.getAssetMetaData().size() != 1) {
+                throw new IllegalStateException("pickSingleAsset: Expected exactly one asset in the inventory, but found " + inventory.getAssetMetaData().size() + " assets.");
+            }
+            assetMetaData = inventory.getAssetMetaData().get(0);
+        } else {
+            throw new IllegalArgumentException("Either supply an asset id (assetId) or choose to pick a single asset (pickSingleAsset).");
+        }
 
         for (Map.Entry<String, String> attribute : attributes.entrySet()) {
 
@@ -59,15 +91,10 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
             assetMetaData.set(key, attribute.getValue());
         }
 
-        // overwrite asset id
-        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, assetId);
-
-        // add asset metadata
-        inventory.getAssetMetaData().add(assetMetaData);
-
         // add marker for artifacts
+        final String effectiveAssetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
         for (Artifact artifact : inventory.getArtifacts()) {
-            artifact.set(assetId, Constants.MARKER_CONTAINS);
+            artifact.set(effectiveAssetId, Constants.MARKER_CONTAINS);
         }
 
         File targetInventoryFile = getTargetInventoryFile();
@@ -86,12 +113,20 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
     }
 
     public GenericAssetInventoryProcessor writing(File targetInventoryFile) {
+        if (!targetInventoryFile.getParentFile().exists()) {
+            targetInventoryFile.getParentFile().mkdirs();
+        }
         super.writing(targetInventoryFile);
         return this;
     }
 
     public GenericAssetInventoryProcessor supply(String assetId) {
         this.assetId = assetId;
+        return this;
+    }
+
+    public GenericAssetInventoryProcessor pickSingleAsset(boolean pickSingleAsset) {
+        this.pickSingleAsset = pickSingleAsset;
         return this;
     }
 }

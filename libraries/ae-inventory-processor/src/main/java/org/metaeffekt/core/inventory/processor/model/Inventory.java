@@ -1520,9 +1520,7 @@ public class Inventory implements Serializable {
                             LOG.info("Vulnerability metadata {} overwritten. Relevant content nevertheless matches. " +
                                     "Consider removing the overwrite.", qualifier);
                         } else {
-                            LOG.info(String.format("Vulnerability metadata %s overwritten. %n  %s%n  %s", qualifier,
-                                    vmd.createCompareStringRepresentation(),
-                                    localVmd.createCompareStringRepresentation()));
+                            LOG.info("Vulnerability metadata {} overwritten. \n  {}\n  {}", qualifier, vmd.createCompareStringRepresentation(), localVmd.createCompareStringRepresentation());
                         }
                     }
 
