@@ -8,6 +8,7 @@
 #foreach($notice in $artifactNoticeList)
     #set($unused = $notices.add($notice))
 #end
+
 # Switch for displaying web modules if there are any present
 #set($componentsWebModule=$inventory.evaluateComponentsInContext("web-module"))
 #set($webModulesSwitch = true)
@@ -15,6 +16,7 @@
     #set($webModulesSwitch = false)
 #end
 ae.inventory.web.module.effective.switch=$webModulesSwitch
+
 # Switch for displaying packages if there are any present
 #set($componentsPackage=$inventory.evaluateComponentsInContext("package"))
 #set($packagesSwitch = true)
@@ -22,20 +24,31 @@ ae.inventory.web.module.effective.switch=$webModulesSwitch
     #set($packagesSwitch = false)
 #end
 ae.inventory.package.effective.switch=$packagesSwitch
-# Switch for displaying packages if there are any present
+
+# Switch for displaying applications if there are any present
 #set($componentsApplication=$inventory.evaluateComponentsInContext("application"))
 #set($applicationsSwitch = true)
 #if($componentsApplication.isEmpty())
     #set($applicationsSwitch = false)
 #end
 ae.inventory.application.effective.switch=$applicationsSwitch
-# Switch for displaying packages if there are any present
+
+# Switch for displaying appliances if there are any present
 #set($componentsAppliance=$inventory.evaluateComponentsInContext("appliance"))
 #set($appliancesSwitch = true)
 #if($componentsAppliance.isEmpty())
     #set($appliancesSwitch = false)
 #end
 ae.inventory.appliance.effective.switch=$appliancesSwitch
+
+# Switch for displaying containers if there are any present
+#set($componentsContainer=$inventory.evaluateComponentsInContext("container"))
+#set($containersSwitch = true)
+#if($componentsContainer.isEmpty())
+    #set($containersSwitch = false)
+#end
+ae.inventory.container.effective.switch=$containersSwitch
+
 # Switch for displaying components without license if there are any present
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))
@@ -44,6 +57,7 @@ ae.inventory.appliance.effective.switch=$appliancesSwitch
     #set($componentsNoLicenseSwitch = false)
 #end
 ae.inventory.components.no.license-switch=$componentsNoLicenseSwitch
+
 # Switch to be used on a license details level
 # If no notices are available across all components switch is 'false'; 'true' otherwise
 #set($noticesSwitch = true)
