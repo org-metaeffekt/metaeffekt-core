@@ -31,6 +31,9 @@
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.other.artifact.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-other-artifact-report-effective.dita" />
     #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.module.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-module-report-effective.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
