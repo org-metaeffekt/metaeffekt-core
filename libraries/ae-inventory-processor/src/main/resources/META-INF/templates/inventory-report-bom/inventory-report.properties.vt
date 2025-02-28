@@ -29,6 +29,13 @@ ae.inventory.package.effective.switch=$packagesSwitch
     #set($applicationsSwitch = false)
 #end
 ae.inventory.application.effective.switch=$applicationsSwitch
+# Switch for displaying packages if there are any present
+#set($componentsAppliance=$inventory.evaluateComponentsInContext("appliance"))
+#set($appliancesSwitch = true)
+#if($componentsAppliance.isEmpty())
+    #set($appliancesSwitch = false)
+#end
+ae.inventory.appliance.effective.switch=$appliancesSwitch
 # Switch for displaying components without license if there are any present
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))
