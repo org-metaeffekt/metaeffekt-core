@@ -68,10 +68,34 @@ ae.inventory.part.effective.switch=$partsSwitch
 # Switch for displaying drivers if there are any present
 #set($componentsDriver=$inventory.evaluateComponentsInContext("driver"))
 #set($driversSwitch = true)
-#if($componentsDrivers.isEmpty())
+#if($componentsDriver.isEmpty())
     #set($driversSwitch = false)
 #end
-ae.inventory.drivers.effective.switch=$driversSwitch
+ae.inventory.driver.effective.switch=$driversSwitch
+
+# Switch for displaying installation packages if there are any present
+#set($componentsInstallationPackage=$inventory.evaluateComponentsInContext("installation-package"))
+#set($installationPackagesSwitch = true)
+#if($componentsInstallationPackage.isEmpty())
+    #set($installationPackagesSwitch = false)
+#end
+ae.inventory.installation.package.effective.switch=$installationPackagesSwitch
+
+# Switch for displaying contents if there are any present
+#set($componentsContent=$inventory.evaluateComponentsInContext("content"))
+#set($contentsSwitch = true)
+#if($componentsContent.isEmpty())
+    #set($contentsSwitch = false)
+#end
+ae.inventory.content.effective.switch=$contentsSwitch
+
+# Switch for displaying other artifacts if there are any present
+#set($componentsOtherArtifact=$inventory.evaluateComponentsInContext("other-artifact"))
+#set($otherArtifactsSwitch = true)
+#if($componentsOtherArtifact.isEmpty())
+    #set($otherArtifactsSwitch = false)
+#end
+ae.inventory.other.artifact.effective.switch=$otherArtifactsSwitch
 
 # Switch for displaying components without license if there are any present
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())

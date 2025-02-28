@@ -22,6 +22,15 @@
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.driver.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-driver-report-effective.dita" />
     #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.installation.package.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-installation-package-report-effective.dita" />
+    #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.content.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-content-report-effective.dita" />
+    #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.other.artifact.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-other-artifact-report-effective.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
