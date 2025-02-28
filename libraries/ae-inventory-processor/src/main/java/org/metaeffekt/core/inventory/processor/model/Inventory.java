@@ -75,7 +75,37 @@ public class Inventory implements Serializable {
     public static final String COMPONENT_CONTEXT_ARTIFACT = "artifact";
 
     // Components are structured by context. This is the web module context.
-    public static final String COMPONENT_CONTEXT_WEBMODULE = "web-module";
+    public static final String COMPONENT_CONTEXT_WEB_MODULE = "web-module";
+
+    // Components are structured by context. This is the application context.
+    public static final String COMPONENT_CONTEXT_APPLICATION = "application";
+
+    // Components are structured by context. This is the appliance context.
+    public static final String COMPONENT_CONTEXT_APPLIANCE = "appliance";
+
+    // Components are structured by context. This is the module context.
+    public static final String COMPONENT_CONTEXT_MODULE = "module";
+
+    // Components are structured by context. This is the container context.
+    public static final String COMPONENT_CONTEXT_CONTAINER = "container";
+
+    // Components are structured by context. This is the device context.
+    public static final String COMPONENT_CONTEXT_DEVICE = "device";
+
+    // Components are structured by context. This is the part context.
+    public static final String COMPONENT_CONTEXT_PART = "part";
+
+    // Components are structured by context. This is the driver context.
+    public static final String COMPONENT_CONTEXT_DRIVER = "driver";
+
+    // Components are structured by context. This is the installation package context.
+    public static final String COMPONENT_CONTEXT_INSTALLATION_PACKAGE = "installation-package";
+
+    // Components are structured by context. This is the content context.
+    public static final String COMPONENT_CONTEXT_CONTENT = "content";
+
+    // Components are structured by context. This is the web module context.
+    public static final String COMPONENT_CONTEXT_OTHER_ARTIFACT = "other-artifact";
 
     private List<Artifact> artifacts = new CopyOnWriteArrayList<>();
 
@@ -387,14 +417,14 @@ public class Inventory implements Serializable {
     }
 
     public AssetMetaData findAssetMetaData(String id) {
-        return findAssetMetaData(id,false);
+        return findAssetMetaData(id, false);
     }
 
     public AssetMetaData findAssetMetaData(String id, boolean matchWildcards) {
         if (id == null) return null;
 
         for (AssetMetaData assetMetaData : getAssetMetaData()) {
-            if (id.equals(assetMetaData.get(KEY_ASSET_ID))){
+            if (id.equals(assetMetaData.get(KEY_ASSET_ID))) {
                 return assetMetaData;
             }
         }
@@ -578,7 +608,6 @@ public class Inventory implements Serializable {
      *
      * @param includeLicensesWithArtifactsOnly Result will cover licenses of artifacts without artifactId when true.
      * @param includeManagedArtifactsOnly      Results will only cover license of managed artifacts when true.
-     *
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
@@ -660,7 +689,6 @@ public class Inventory implements Serializable {
      * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
-     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
@@ -734,7 +762,6 @@ public class Inventory implements Serializable {
      * Collect ArtifactLicenseData aggregates artifacts that use the effective license given.
      *
      * @param effectiveLicense The effective license to evaluate the artifacts for.
-     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateComponents(String effectiveLicense) {
@@ -862,47 +889,147 @@ public class Inventory implements Serializable {
 
     public List<Artifact> getArtifacts(String context) {
         if (COMPONENT_CONTEXT_PACKAGE.equalsIgnoreCase(context)) {
-            return getArtifacts().stream().filter(a -> isPackageType(a))
+            return getArtifacts().stream().filter(
+                            this::isPackageType)
                     .collect(Collectors.toList());
         }
         if (COMPONENT_CONTEXT_ARTIFACT.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(
-                            a -> isArtifactType(a))
+                            this::isArtifactType)
                     .collect(Collectors.toList());
         }
-        if (COMPONENT_CONTEXT_WEBMODULE.equalsIgnoreCase(context)) {
+        if (COMPONENT_CONTEXT_WEB_MODULE.equalsIgnoreCase(context)) {
             return getArtifacts().stream().filter(
-                            a -> isWebModuleType(a))
+                            this::isWebModuleType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_APPLICATION.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isApplicationType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_APPLIANCE.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isApplianceType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_MODULE.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isModuleType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_CONTAINER.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isContainerType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_DEVICE.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isDeviceType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_PART.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isPartType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_DRIVER.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isDriverType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_INSTALLATION_PACKAGE.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isInstallationPackageType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_CONTENT.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isContentType)
+                    .collect(Collectors.toList());
+        }
+        if (COMPONENT_CONTEXT_OTHER_ARTIFACT.equalsIgnoreCase(context)) {
+            return getArtifacts().stream().filter(
+                            this::isOtherArtifactType)
                     .collect(Collectors.toList());
         }
         throw new IllegalStateException("Artifact context '" + context + "' not supported.");
     }
 
-    private boolean isPackageType(Artifact a) {
-        String type = a.get(KEY_TYPE);
-        return ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(type);
+    private boolean isApplicationType(Artifact artifact) {
+        return ARTIFACT_TYPE_APPLICATION.equalsIgnoreCase(artifact.get(KEY_TYPE));
     }
 
-    private boolean isArtifactType(Artifact a) {
-        String type = a.get(KEY_TYPE);
-        if (StringUtils.isEmpty(type)) return true;
-        if (ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(type)) return false;
-        if (ARTIFACT_TYPE_WEB_MODULE.equalsIgnoreCase(type)) return false;
-        // backward compatibility; constant about to be changes/consolidated
-        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return false;
-
-        return true;
+    private boolean isApplianceType(Artifact artifact) {
+        return ARTIFACT_TYPE_APPLIANCE.equalsIgnoreCase(artifact.get(KEY_TYPE));
     }
 
-    private boolean isWebModuleType(Artifact a) {
-        String type = a.get(KEY_TYPE);
+    private boolean isModuleType(Artifact artifact) {
+        return ARTIFACT_TYPE_MODULE.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isContainerType(Artifact artifact) {
+        return ARTIFACT_TYPE_CONTAINER.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isDeviceType(Artifact artifact) {
+        return ARTIFACT_TYPE_DEVICE.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isPartType(Artifact artifact) {
+        return ARTIFACT_TYPE_PART.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isDriverType(Artifact artifact) {
+        return ARTIFACT_TYPE_DRIVER.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isInstallationPackageType(Artifact artifact) {
+        return ARTIFACT_TYPE_INSTALLATION_PACKAGE.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isContentType(Artifact artifact) {
+        return ARTIFACT_TYPE_CONTENT.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isOtherArtifactType(Artifact artifact) {
+        return ARTIFACT_TYPE_OTHER_ARTIFACT.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isPackageType(Artifact artifact) {
+        return ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(artifact.get(KEY_TYPE));
+    }
+
+    private boolean isWebModuleType(Artifact artifact) {
+        String type = artifact.get(KEY_TYPE);
         if (StringUtils.isEmpty(type)) return false;
-        
+
         if (ARTIFACT_TYPE_WEB_MODULE.equalsIgnoreCase(type)) return true;
         // backward compatibility; constant about to be changes/consolidated
         if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return true;
 
         return false;
+    }
+
+    private boolean isArtifactType(Artifact artifact) {
+        String type = artifact.get(KEY_TYPE);
+        if (StringUtils.isEmpty(type)) return true;
+        if (ARTIFACT_TYPE_PACKAGE.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_WEB_MODULE.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_APPLICATION.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_APPLIANCE.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_MODULE.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_CONTAINER.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_DEVICE.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_PART.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_DRIVER.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_INSTALLATION_PACKAGE.equalsIgnoreCase(type)) return false;
+        if (ARTIFACT_TYPE_CONTENT.equalsIgnoreCase(type)) return false;
+
+        // backward compatibility; constant about to be changes/consolidated
+        if (ARTIFACT_TYPE_NODEJS_MODULE.equalsIgnoreCase(type)) return false;
+
+        return true;
     }
 
     public List<LicenseMetaData> getLicenseMetaData() {
@@ -1487,10 +1614,10 @@ public class Inventory implements Serializable {
                     LicenseData localLd = localLds.get(qualifier);
                     if (ld.createCompareStringRepresentation().equals(localLd.createCompareStringRepresentation())) {
                         LOG.info("License data {} overwritten. Relevant content nevertheless matches. " +
-                            "Consider removing the overwrite.", qualifier);
+                                "Consider removing the overwrite.", qualifier);
                     } else {
                         LOG.info(String.format("License data %s overwritten. %n  %s%n  %s", qualifier,
-                            ld.createCompareStringRepresentation(), localLd.createCompareStringRepresentation()));
+                                ld.createCompareStringRepresentation(), localLd.createCompareStringRepresentation()));
                     }
                 }
             } else {
@@ -1548,10 +1675,10 @@ public class Inventory implements Serializable {
                     AdvisoryMetaData localCert = localCerts.get(qualifier);
                     if (cert.createCompareStringRepresentation().equals(localCert.createCompareStringRepresentation())) {
                         LOG.info("Cert metadata {} overwritten. Relevant content nevertheless matches. " +
-                            "Consider removing the overwrite.", qualifier);
+                                "Consider removing the overwrite.", qualifier);
                     } else {
                         LOG.info(String.format("Cert metadata %s overwritten. %n  %s%n  %s", qualifier,
-                            cert.createCompareStringRepresentation(), localCert.createCompareStringRepresentation()));
+                                cert.createCompareStringRepresentation(), localCert.createCompareStringRepresentation()));
                     }
                 }
             } else {
@@ -1602,11 +1729,11 @@ public class Inventory implements Serializable {
                     if (inventoryInfo.createCompareStringRepresentation().equals(
                             localInventoryInfo.createCompareStringRepresentation())) {
                         LOG.info("Inventory info {} overwritten. Relevant content nevertheless matches. " +
-                            "Consider removing the overwrite.", qualifier);
+                                "Consider removing the overwrite.", qualifier);
                     } else {
                         LOG.info(String.format("Inventory info %s overwritten. %n  %s%n  %s", qualifier,
-                            inventoryInfo.createCompareStringRepresentation(),
-                            localInventoryInfo.createCompareStringRepresentation()));
+                                inventoryInfo.createCompareStringRepresentation(),
+                                localInventoryInfo.createCompareStringRepresentation()));
                     }
                 }
             } else {

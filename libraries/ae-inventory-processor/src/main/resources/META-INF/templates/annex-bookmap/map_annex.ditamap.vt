@@ -4,6 +4,9 @@
 #foreach($inventoryContext in $documentPart.getInventoryContexts())
     #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
     <chapter href="$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita">
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.application.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-application-report-effective.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
