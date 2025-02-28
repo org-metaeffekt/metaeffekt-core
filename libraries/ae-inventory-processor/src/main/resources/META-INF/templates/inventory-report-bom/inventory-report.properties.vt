@@ -65,6 +65,14 @@ ae.inventory.device.effective.switch=$devicesSwitch
 #end
 ae.inventory.part.effective.switch=$partsSwitch
 
+# Switch for displaying drivers if there are any present
+#set($componentsDriver=$inventory.evaluateComponentsInContext("driver"))
+#set($driversSwitch = true)
+#if($componentsDrivers.isEmpty())
+    #set($driversSwitch = false)
+#end
+ae.inventory.drivers.effective.switch=$driversSwitch
+
 # Switch for displaying components without license if there are any present
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))
