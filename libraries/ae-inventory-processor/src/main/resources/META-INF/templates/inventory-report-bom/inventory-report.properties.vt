@@ -49,6 +49,14 @@ ae.inventory.appliance.effective.switch=$appliancesSwitch
 #end
 ae.inventory.container.effective.switch=$containersSwitch
 
+# Switch for displaying devices if there are any present
+#set($componentsDevice=$inventory.evaluateComponentsInContext("device"))
+#set($devicesSwitch = true)
+#if($componentsDevice.isEmpty())
+    #set($devicesSwitch = false)
+#end
+ae.inventory.device.effective.switch=$devicesSwitch
+
 # Switch for displaying components without license if there are any present
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))

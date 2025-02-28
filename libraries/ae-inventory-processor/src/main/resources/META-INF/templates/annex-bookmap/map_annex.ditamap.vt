@@ -10,9 +10,12 @@
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.appliance.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-appliance-report-effective.dita" />
     #end
-        #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.container.effective.switch") == "true")
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-container-report-effective.dita" />
-        #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.container.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-container-report-effective.dita" />
+    #end
+    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.device.effective.switch") == "true")
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-device-report-effective.dita" />
+    #end
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
