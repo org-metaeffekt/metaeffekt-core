@@ -94,6 +94,8 @@ public abstract class KnownCvssEntities {
     public final static CvssEntity ASSESSMENT = ENTITIES_BY_KEYNAME.get("ASSESSMENT");
     public final static CvssEntity ASSESSMENT_LOWER = ENTITIES_BY_KEYNAME.get("ASSESSMENT_LOWER");
     public final static CvssEntity ASSESSMENT_HIGHER = ENTITIES_BY_KEYNAME.get("ASSESSMENT_HIGHER");
+    public final static CvssEntity ASSESSMENT_LOWER_METRIC = ENTITIES_BY_KEYNAME.get("ASSESSMENT_LOWER_METRIC");
+    public final static CvssEntity ASSESSMENT_HIGHER_METRIC = ENTITIES_BY_KEYNAME.get("ASSESSMENT_HIGHER_METRIC");
     public final static CvssEntity ASSESSMENT_ALL = ENTITIES_BY_KEYNAME.get("ASSESSMENT_ALL");
 
     public static List<CvssEntity> getEntities() {
