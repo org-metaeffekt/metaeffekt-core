@@ -19,9 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaEffectiveVulnerabilityAssessment;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatusHistoryEntry;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssVector;
 import org.slf4j.Logger;
@@ -123,14 +123,13 @@ public class StatisticsOverviewTable {
         for (AeaaVulnerability vulnerability : effectiveVulnerabilities) {
 
             // status in effectiveStatus
-            final AeaaVulnerabilityStatusHistoryEntry latestStatusEntry = vulnerability.getOrCreateNewVulnerabilityStatus().getLatestActiveStatusHistoryEntry();
-            final String baseStatus = latestStatusEntry != null && latestStatusEntry.getStatus() != null ? latestStatusEntry.getStatus() : "";
-            final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapper().getMapper().apply(baseStatus);
+            final AeaaEffectiveVulnerabilityAssessment assessment = vulnerability.getEffectiveDisplayVulnerabilityAssessment(securityPolicy);
+            final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapper().getMapper().apply(assessment.getStatus());
 
             // severity in effectiveSeverity
             final CvssVector vector = useEffectiveSeverity ? vulnerability.getCvssSelectionResult().getSelectedContextIfAvailableOtherwiseInitial() : vulnerability.getCvssSelectionResult().getSelectedInitialCvss();
             final String effectiveSeverity;
-            if (vector == null || (useEffectiveSeverity && (VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE.equals(baseStatus) || VulnerabilityMetaData.STATUS_VALUE_VOID.equals(baseStatus)))) {
+            if (vector == null || (useEffectiveSeverity && (VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE.equals(assessment.getStatus()) || VulnerabilityMetaData.STATUS_VALUE_VOID.equals(assessment.getStatus())))) {
                 effectiveSeverity = "none";
             } else {
                 final double overallScore = vector.getBakedScores().getOverallScore();
