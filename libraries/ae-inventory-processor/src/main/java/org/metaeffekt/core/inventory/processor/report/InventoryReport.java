@@ -41,6 +41,7 @@ import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
+import org.metaeffekt.core.inventory.processor.report.registry.ReportRegistry;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
@@ -192,6 +193,9 @@ public class InventoryReport {
     public InventoryReport(ReportConfigurationParameters configParams) {
         this.configParams = configParams;
     }
+    private ReportRegistry registry = new ReportRegistry();
+
+    private String templateLanguageSelector = "en";
 
     public boolean createReport() throws IOException {
         logHeaderBox("Creating Inventory Report for project [" + getProjectName() + "]");
@@ -631,6 +635,8 @@ public class InventoryReport {
                 !missingLicenseFile && !missingNotice) {
             LOG.info("No findings!");
         }
+
+        registry.populateUnresolvedReferences(targetReportDir);
 
         if (error && configParams.isFailOnError()) {
             return false;

@@ -1,28 +1,33 @@
 #parse("META-INF/templates/asset-report-bom/macros/tpc_inventory-license.dita.vm")
+#parse("META-INF/templates/shared/macros/tpc_license-tables.dita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_asset-license-summary-$reportContext.id">
+    #set($templateRegistry = $registry.register("asset-report-bom", "tpc_asset-licenses"))
+    #set($topicId = "asset-licenses-$reportContext.id")
+<topic id="$templateRegistry.registerElement($topicId)">
     <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-licenses"), true)</title>
     #set($assetData=$report.getAssetData($inventory))
     #set($singleLicenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
     #set($licenseExpressions=$assetData.getRepresentedAssociatedLicensesWithOption())
 
 <body>
+    #set($assocLicenses = $registry.resolve($templateRegistry, "$reportContext.id/AssociatedLicenses"))
+    #set($refElement = "<xref href='$assocLicenses' type='table'>Asset Licenses</xref>")
     <p>$utils.getText("asset-report-bom.asset-table-descr")</p>
     <p>$utils.getText("asset-report-bom.asset-table-note")</p>
         #if ($assetData.isLicenseSubstructureRequired())
             $utils.getText("asset-report-bom.asset-table-foot-note")
         #end
         #if ($assetData.isIncludesOpenCoDESimilarLicense())
-        <fn id="id-opencode-similar">$utils.getText("asset-report-bom.open-code-similar")</fn>
+        <fn id=$templateRegistry.registerElement("id-opencode-similar")>$utils.getText("asset-report-bom.open-code-similar")</fn>
         #end
 
 #if (!$singleLicenses.isEmpty())
-    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true)
+    #insertLicenseTable($templateRegistry, $templateRegistry.registerElement("${reportContext.id}/AssociatedLicenses"), "Asset Licenses", $singleLicenses, true, true, true)
 #end
 
     #if (!$licenseExpressions.isEmpty())
-        <table id="AssociatedLicenseExpressions" otherprops="wide">
+        <table id="$templateRegistry.registerElement("associated-license-expressions")" otherprops="wide">
             <title>$utils.getText("asset-report-bom.short.asset-license-expressions") $reportContext.withTitle()</title>
             <tgroup cols="2">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="90*" />
@@ -40,19 +45,20 @@
                             <row>
                                 #if ($assetData.isLicenseSubstructureRequired($license))
                                     <entry>
-                                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                        <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic">
+                                            $report.xmlEscapeLicense($license)
+                                            <xref href="$registry.resolve($templateRegistry, "${reportContext.id}/id-footnote")" type="fn"/>
                                         </xref>
                                     </entry>
                                 #else
                                     <entry>
-                                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                        <xref href="$registry.resolve($templateRegistry,$inventory.deriveLicenseId($license))" type="topic">
                                             $report.xmlEscapeLicense($license)
                                         </xref>
                                     </entry>
                                 #end
                                 <entry>
-                                    <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                    <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic">
                                         <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
                                     </xref>
                                 </entry>
@@ -68,20 +74,20 @@
 #foreach($license in $assetData.getRepresentedAssociatedLicenses())
     #set($licenseList=$assetData.getLicensesForRepresentedLicense($license))
     #if(!$assetData.isLicenseSubstructureRequired($license))
-        #insertLicenseAssetTopic($license)
+        #insertLicenseAssetTopic($templateRegistry $templateRegistry.registerElement($inventory.deriveLicenseId($license)) $license)
     #else
-        <topic id="tpc_associated_license_details_$inventory.deriveLicenseId($license)">
+        <topic id="$templateRegistry.registerElement($inventory.deriveLicenseId($license))">
             <title>$report.xmlEscapeLicense($license)</title>
             <body>
                 <p>
                     $utils.getText("asset-report-bom.license-detail-notice")
                 </p>
                 <p>
-                    #insertLicenseTable($license, $utils.getText("general.short.license-variants"), $licenseList, false)
+                    #insertLicenseTable($templateRegistry, $license, $utils.getText("general.short.license-variants"), $licenseList, true, true, true )
                 </p>
 
                 #foreach($associatedLicense in $assetData.getLicensesForRepresentedLicense($license))
-                   #insertLicenseAssetTopic($associatedLicense)
+                   #insertLicenseAssetTopic($templateRegistry $templateRegistry.registerElement($inventory.deriveLicenseId($license)) $associatedLicense)
                 #end
             </body>
         </topic>
