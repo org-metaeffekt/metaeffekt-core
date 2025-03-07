@@ -3,7 +3,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
     #set($templateRegistry = $registry.register("asset-report-bom", "tpc_asset-licenses"))
-#set($topicId = "asset-licenses-$reportContext.id")
+    #set($topicId = "asset-licenses-$reportContext.id")
 <topic id="$templateRegistry.registerElement($topicId)">
     <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-licenses"), true)</title>
     #set($assetData=$report.getAssetData($inventory))
@@ -45,7 +45,7 @@
                             <row>
                                 #if ($assetData.isLicenseSubstructureRequired($license))
                                     <entry>
-                                        <xref href="$registry.resolve($templateRegistry, beep)" type="topic">
+                                        <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic">
                                             $report.xmlEscapeLicense($license)
                                             <xref href="$registry.resolve($templateRegistry, "${reportContext.id}/id-footnote")" type="fn"/>
                                         </xref>

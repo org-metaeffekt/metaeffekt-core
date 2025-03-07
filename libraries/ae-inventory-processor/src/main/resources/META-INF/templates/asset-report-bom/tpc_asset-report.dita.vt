@@ -7,41 +7,42 @@
     <body>
     #set($assets=$assetAdapter.listAssets())
 
-#if($assets.isEmpty())
-        <p>$utils.getText("general.assets-empty")</p>
-    </body>
-#else
-        <p>$utils.getText("asset-report-bom.product-contained-assets")</p>
-    </body>
-#foreach($asset in $assets)
-    #set($assetId = $asset.get("Asset Id"))
-        <topic id=$templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)")>
-        <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
-        <body>
-            <p>
-            <table id=$templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)")>
-                <tgroup cols="2">
-                    <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
-                    <colspec colname="COLSPEC1" colnum="2" colwidth="80*" />
-                    <thead>
-                        <row>
-                            <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.attributes")</entry>
-                            <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.values")</entry>
-                        </row>
-                    </thead>
-                    <tbody>
-#foreach($pair in $assetAdapter.listKeys($asset))
-                        <row>
-                            <entry><codeph>$report.xmlEscapeString($pair.getLeft())</codeph></entry>
-                            <entry><codeph>$report.xmlEscapeString($asset.get($pair.getRight()))</codeph></entry>
-                        </row>
-#end
-                    </tbody>
-                </tgroup>
-                </table>
-            </p>
+    #if($assets.isEmpty())
+            <p>$utils.getText("general.assets-empty")</p>
         </body>
-    </topic>
-#end
-#end
+    #else
+            <p>$utils.getText("asset-report-bom.product-contained-assets")</p>
+        </body>
+        #foreach($asset in $assets)
+            #set($assetId = $asset.get("Asset Id"))
+            #set($topicId = $templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)"))
+            <topic id="$topicId">
+                <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
+                <body>
+                    <p>
+                    <table id="$templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)")">
+                        <tgroup cols="2">
+                            <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
+                            <colspec colname="COLSPEC1" colnum="2" colwidth="80*" />
+                            <thead>
+                                <row>
+                                    <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.attributes")</entry>
+                                    <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.values")</entry>
+                                </row>
+                            </thead>
+                            <tbody>
+                            #foreach($pair in $assetAdapter.listKeys($asset))
+                                <row>
+                                    <entry><codeph>$report.xmlEscapeString($pair.getLeft())</codeph></entry>
+                                    <entry><codeph>$report.xmlEscapeString($asset.get($pair.getRight()))</codeph></entry>
+                                </row>
+                            #end
+                            </tbody>
+                        </tgroup>
+                        </table>
+                    </p>
+                </body>
+            </topic>
+        #end
+    #end
 </topic>

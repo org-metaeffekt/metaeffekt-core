@@ -11,8 +11,8 @@
     <body>
 #if (!$artifactsWithoutLicense.isEmpty())
     <p>$utils.getText("asset-report-bom.artifacts-without-license")</p>
-
-    <table otherprops="wide" id=$templateRegistry.registerElement("table_artifacts")>
+    #set($tableId = $templateRegistry.registerElement("table_artifacts"))
+    <table otherprops="wide" id="$tableId">
         <title>$utils.getText("asset-report-bom.short.artifact-without-license") $reportContext.withTitle()</title>
         <tgroup cols="2">
             <colspec colname="COLSPEC0" colnum="1" colwidth="45*" />
