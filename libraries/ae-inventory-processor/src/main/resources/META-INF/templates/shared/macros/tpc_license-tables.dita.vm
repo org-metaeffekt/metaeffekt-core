@@ -1,7 +1,8 @@
 ## This table is used in the asset-report-bom and inventory-report-bom to list a number of licenses
 ## with their correlating information.
 #macro (insertLicenseTable $templateRegistry $id $title $licenseList $handleSubstructure $includeOpenCoDE $forAssets)
-<table id="$id"><title>$title$reportContext.inContextOf()</title>
+<table id="$id">
+    <title>$title$reportContext.inContextOf()</title>
   #if($includeOpenCoDE)
   <tgroup cols="5">
       <colspec colname="COLSPEC0" colnum="1" colwidth="50"/>
@@ -36,7 +37,7 @@
       </thead>
   #end
 
-  #set($osiStatusMap = $assetAdapter.getOsiStatusMap($report))
+  #set($osiStatusMap = $assetAdapter.getOsiStatusMap($configParams))
 
     <tbody>
       #foreach($license in $licenseList)

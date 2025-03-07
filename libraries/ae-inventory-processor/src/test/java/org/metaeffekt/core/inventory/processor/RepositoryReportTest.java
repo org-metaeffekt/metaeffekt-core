@@ -202,10 +202,12 @@ public class RepositoryReportTest {
         String packageReportEffective = FileUtils.readFileToString(packageReportEffectiveFile, FileUtils.ENCODING_UTF_8);
 
         // check links from package report
-        Assert.assertTrue(
-                "Expecting references to license chapter.",
-                packageReportEffective.contains
-                        ("<xref href=\"tpc_inventory-license-usage.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
+
+        // FIXME: Consider testing this differently as links are no longer in the templates in plain text.
+        //        Assert.assertTrue(
+        //                "Expecting references to license chapter.",
+        //                packageReportEffective.contains
+        //                        ("<xref href=\"tpc_inventory-license-usage.dita#tpc_effective_license_gnu-general-public-license-3.0\""));
 
         // read license overview
         File licenseOverviewFile = new File(reportDir, "report/tpc_inventory-licenses-effective.dita");
