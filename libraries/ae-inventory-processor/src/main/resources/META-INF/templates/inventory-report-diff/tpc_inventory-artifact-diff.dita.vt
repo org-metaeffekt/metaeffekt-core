@@ -5,9 +5,8 @@
 <topic id="$templateRegistry.registerElement($topicId)" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Version Upgrades", true)</title>
     <body>
-
-        <table otherprops="wide" id="$templateRegistry.registerElement('table_version-diff')">
-            <title>$utils.getText("inventory-report-diff.short.version-upgrades") $reportContext.inContextOf()</title>
+    <table otherprops="wide" id="$templateRegistry.registerElement('table_version-diff')">
+            <title>$utils.getText("inventory-report-diff.short.version-upgrades") $reportContext.withTitle()</title>
             <tgroup cols="3">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />

@@ -1,5 +1,5 @@
 #parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
-#parse("META-INF/templates/shared/macros/tpc_license-tables.diita.vm")
+#parse("META-INF/templates/shared/macros/tpc_license-tables.dita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
   #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-licenses-effective"))
@@ -19,10 +19,11 @@
         #set($tableEffectiveId = $registry.resolve($templateRegistry, "LicensesInEffect"))
         #set($tableEffectiveRef = "<xref href='$tableEffectiveId' type='table'>Licenses in Effect$reportContext.inContextOf()</xref>")
     <p>$utils.getText("inventory-report-bom.different-effective-licenses")</p>
+    <p>$utils.getText("inventory-report-bom.different-effective-licenses-2")</p>
 
-      #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
+        #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
         $utils.getText("inventory-report-bom.different-effective-licenses-footnote")
-      #end
+        #end
 
       ## License Options (not necessarily expressions)
       #if (!$termsWithOptions.isEmpty())

@@ -23,7 +23,7 @@ import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import java.util.Collection;
 import java.util.Optional;
 
-public class Cvss3P0 extends Cvss3 {
+public final class Cvss3P0 extends Cvss3 {
 
     public Cvss3P0() {
         super();

@@ -2,10 +2,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
     #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-license-usage"))
-<topic id="$templateRegistry.registerElement("license-usage-$reportContext.id")">
-    <title>$reportContext.combinedTitle("License Usage", true)</title>
+    <topic id="$templateRegistry.registerElement("license-usage-$reportContext.id")">
+    #set($title = $utils.getText("inventory-report-bom.short.license-usage-title"))
+    <title>$reportContext.combinedTitle("$title", true)</title>
     #set($effectiveLicenses=$inventory.evaluateLicenses(false))
     #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+
 
     <body>
         <p>$utils.getText("inventory-report-bom.effective-license-table")</p>

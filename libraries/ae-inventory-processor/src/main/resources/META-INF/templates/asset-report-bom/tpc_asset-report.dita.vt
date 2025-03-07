@@ -19,8 +19,7 @@
         <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
         <body>
             <p>
-                <table id=$templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)")>
-                <title>$assessmentReportAdapter.assetDisplayType($asset) - $assessmentReportAdapter.assetDisplayName($asset)</title>
+            <table id=$templateRegistry.registerElement("asset-$inventory.deriveLicenseId($assetId)")>
                 <tgroup cols="2">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="80*" />

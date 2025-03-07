@@ -234,4 +234,22 @@ public class Cvss3P1Test {
         Assert.assertEquals(adjImpact, vector.getAdjustedImpactScore(), 0.01);
         Assert.assertEquals(overall, vector.getOverallScore(), 0.01);
     }
+
+    @Test
+    public void toStringAllPropertiesDefinedTest() {
+        final String input = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/MAV:A/MAC:H/MPR:L/MUI:N/MS:C/MC:N/MI:L/MA:N/CR:H/IR:L/AR:H";
+        final Cvss3P1 cvss = new Cvss3P1(input);
+        Assert.assertEquals(input, cvss.toString());
+        Assert.assertEquals(input, cvss.toString(true));
+        Assert.assertEquals(input, cvss.toString(false));
+    }
+
+    @Test
+    public void toStringSomePropertiesUndefinedTest() {
+        final String input = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/MAV:A/MAC:H/MS:C/MC:N/MI:L/MA:N/CR:H";
+        final Cvss3P1 cvss = new Cvss3P1(input);
+        Assert.assertEquals(input, cvss.toString());
+        Assert.assertEquals(input, cvss.toString(true));
+        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/MAV:A/MAC:H/MPR:X/MUI:X/MS:C/MC:N/MI:L/MA:N/CR:H/IR:X/AR:X", cvss.toString(false));
+    }
 }

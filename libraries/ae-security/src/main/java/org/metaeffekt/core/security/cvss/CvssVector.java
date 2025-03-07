@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * Base class for modeling CVSS Vectors.
@@ -203,25 +204,36 @@ public abstract class CvssVector {
     /* APPLYING VECTORS */
 
     public int applyVector(String vector) {
-        if (vector == null) return 0;
+        if (vector == null || vector.isEmpty()) return 0;
 
         final String normalizedVector = normalizeVector(vector);
         if (normalizedVector.isEmpty()) return 0;
 
-        final String[] arguments = normalizedVector.split("/");
-
         int appliedCount = 0;
-        for (String argument : arguments) {
-            if (StringUtils.isEmpty(argument)) continue;
-            final String[] parts = argument.split(":", 2);
+        int start = 0;
+        final int length = normalizedVector.length();
 
-            if (parts.length == 2) {
-                if (applyVectorArgument(parts[0], parts[1])) {
+        while (start < length) {
+            while (start < length && normalizedVector.charAt(start) == '/') start++;
+            if (start >= length) break;
+
+            int mid = start;
+            while (mid < length && normalizedVector.charAt(mid) != ':' && normalizedVector.charAt(mid) != '/') mid++;
+
+            int end;
+            if (mid < length && normalizedVector.charAt(mid) == ':') {
+                end = mid + 1;
+                while (end < length && normalizedVector.charAt(end) != '/') end++;
+
+                if (applyVectorArgument(normalizedVector.substring(start, mid), normalizedVector.substring(mid + 1, end))) {
                     appliedCount++;
                 }
             } else {
-                LOG.debug("Unknown vector argument: [{}]", argument);
+                end = mid;
+                while (end < length && normalizedVector.charAt(end) != '/') end++;
+                LOG.debug("Unknown vector argument: [{}]", normalizedVector.substring(start, end));
             }
+            start = end;
         }
 
         completeVector();
@@ -304,13 +316,20 @@ public abstract class CvssVector {
         return applyVectorPartsIf(vector, scoreType, false);
     }
 
+    private static final Pattern PARENTHESIS_PATTERN = Pattern.compile("[()]");
+    private static final Pattern CVSS_PATTERN = Pattern.compile("CVSS:\\d+\\.?\\d?");
+
     protected static String normalizeVector(String vector) {
-        return vector.toUpperCase()
-                .replace("(", "")
-                .replace(")", "")
-                .replaceAll("CVSS:\\d+\\.?\\d?", "")
-                .replaceAll("^/", "")
-                .trim();
+        String result = vector.toUpperCase();
+        // remove all parentheses
+        result = PARENTHESIS_PATTERN.matcher(result).replaceAll("");
+        // remove CVSS version vector
+        result = CVSS_PATTERN.matcher(result).replaceAll("");
+        // remove leading slash
+        if (!result.isEmpty() && result.charAt(0) == '/') {
+            result = result.substring(1);
+        }
+        return result.trim();
     }
 
     public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {

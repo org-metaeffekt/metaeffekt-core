@@ -4,12 +4,11 @@
     #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-components-no-license"))
     #set($topicId = "no-license-summary-$reportContext.id")
 <topic id="$templateRegistry.registerElement($topicId)">
-    <title>$reportContext.combinedTitle("Components without License", true)</title>
-#set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
-#set($components=$inventory.evaluateComponents($artifactsWithoutLicense))
-    <title>$reportContext.combinedTitle("Artifacts without License", true)</title>
+    #set($titleString = $utils.getText("inventory-report-bom.short.artifact-title"))
+    <title>$reportContext.combinedTitle("$titleString", true)</title>
     #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
     #set($components=$inventory.evaluateComponents($artifactsWithoutLicense))
+
 
 
     <body>

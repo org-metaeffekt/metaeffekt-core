@@ -33,7 +33,7 @@ public class NpmComponentPatternContributorTest {
     @Test
     public void testVariant001() {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-001");
-        final String relativeAnchorePath = "info/package.json";
+        final String relativeAnchorePath = "info/package-lock.json";
         final File anchorFile = new File(baseDir, relativeAnchorePath);
 
         if (!anchorFile.exists()) {
@@ -59,7 +59,7 @@ public class NpmComponentPatternContributorTest {
     @Test
     public void testVariant002() {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-002");
-        final String relativeAnchorePath = "web-app/package.json";
+        final String relativeAnchorePath = "web-app/package-lock.json";
         final File anchorFile = new File(baseDir, relativeAnchorePath);
 
         if (!anchorFile.exists()) {
@@ -72,9 +72,9 @@ public class NpmComponentPatternContributorTest {
         assertThat(cpdList.size()).isEqualTo(1);
 
         final ComponentPatternData cpd = cpdList.get(0);
-        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("web-app-0.0.1-SNAPSHOT");
+        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("web-app-1.0.0-SNAPSHOT");
         assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("web-app");
-        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("0.0.1-SNAPSHOT");
+        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("1.0.0-SNAPSHOT");
         assertThat(cpd.get("Release")).isNull();
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();

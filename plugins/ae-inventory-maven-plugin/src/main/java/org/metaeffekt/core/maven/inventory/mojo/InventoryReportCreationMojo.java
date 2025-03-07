@@ -19,6 +19,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +39,12 @@ public class InventoryReportCreationMojo extends AbstractInventoryReportCreation
 
     @Override
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
-        InventoryReport report = new InventoryReport();
+        // FIXME: revise inventory report; asset descriptor; parameterization/configuration
+
+        // use this to modify the config parameters specific to this mojo
+        ReportConfigurationParameters.ReportConfigurationParametersBuilder configParams = configureParameters();
+
+        InventoryReport report = new InventoryReport(configParams.build());
 
         // apply standard configuration (parent class)
         configureInventoryReport(report);

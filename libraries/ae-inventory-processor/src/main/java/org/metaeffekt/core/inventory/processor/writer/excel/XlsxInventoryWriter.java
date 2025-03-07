@@ -412,6 +412,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         final List<String> finalOrder = deriveOrder(attributes, AssetMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
+                stylers.headerStyleColumnNameAssetId,
                 stylers.headerStyleColumnNameSrcAssetSource,
                 stylers.headerStyleColumnNameAssetConfig,
                 stylers.headerStyleDefault,

@@ -12,8 +12,7 @@
 #else
         <p>$utils.getText("inventory-report-bom.artifact-table-descr")</p>
         <p>
-            <table otherprops="wide">
-                <title>$utils.getText("general.short.artifacts") $reportContext.inContextOf()</title>
+            <table otherprops="wide" id="table_artifacts">
                 <tgroup cols="3">
                     <colspec colname="COLSPEC0" colnum="1" colwidth="20*" />
                     <colspec colname="COLSPEC1" colnum="2" colwidth="45*" />
@@ -21,7 +20,7 @@
                     <thead>
                         <row>
                             <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.components")</entry>
-                            <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.artifacts") / $utils.getText("general.short.packages") / $utils.getText("general.short.web-modules")</entry>
+                            <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.artifacts")</entry>
                             <entry colname="COLSPEC2" valign="top">$utils.getText("inventory-report-bom.short.effective-licenses")</entry>
                         </row>
                     </thead>

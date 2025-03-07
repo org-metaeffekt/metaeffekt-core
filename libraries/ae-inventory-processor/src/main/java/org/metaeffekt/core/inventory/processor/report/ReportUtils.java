@@ -105,7 +105,6 @@ public class ReportUtils {
             }
         }
 
-
         return Collections.emptySet();
     }
 

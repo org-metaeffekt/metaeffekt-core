@@ -15,6 +15,9 @@
  */
 package org.metaeffekt.core.security.cvss.v4P0;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 /**
  * In the calculation of the CVSS:4.0 score, five (3 and 6 have to be considered together, as they are not independent)
  * equivalence classes (EQs) with each contributing some part to the final score, have to be considered.<br>
@@ -24,6 +27,8 @@ package org.metaeffekt.core.security.cvss.v4P0;
  */
 public interface EqOperations {
     String[] getHighestSeverityVectors(Cvss4P0MacroVector thisMacroVector);
+
+    List<Consumer<Cvss4P0>> getHighestSeverityVectorsFn(Cvss4P0MacroVector thisMacroVector);
 
     String[] getRelevantAttributes();
 

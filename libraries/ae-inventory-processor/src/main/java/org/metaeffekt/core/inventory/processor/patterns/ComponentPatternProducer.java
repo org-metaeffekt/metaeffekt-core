@@ -248,6 +248,8 @@ public class ComponentPatternProducer {
     }
 
     private void deriveAddonArtifactsFromMatchResult(List<MatchResult> componentPatterns, FileSystemScanContext fileSystemScanContext) {
+        final Set<Object> consumedObjects = new HashSet<>();
+
         for (MatchResult matchResult : componentPatterns) {
 
             final Artifact derivedArtifact = matchResult.deriveArtifact();
@@ -256,7 +258,7 @@ public class ComponentPatternProducer {
             final Supplier<Inventory> expansionInventorySupplier =
                     matchResult.componentPatternData.getExpansionInventorySupplier();
 
-            if (expansionInventorySupplier != null) {
+            if (expansionInventorySupplier != null && !consumedObjects.contains(expansionInventorySupplier)) {
 
                 final Inventory inventory = expansionInventorySupplier.get();
 
@@ -287,6 +289,8 @@ public class ComponentPatternProducer {
                         }
                         fileSystemScanContext.contribute(artifact);
                     }
+
+                    consumedObjects.add(expansionInventorySupplier);
                 }
             }
 

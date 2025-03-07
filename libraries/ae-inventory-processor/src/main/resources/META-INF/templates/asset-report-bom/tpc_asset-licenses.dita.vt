@@ -1,5 +1,5 @@
 #parse("META-INF/templates/asset-report-bom/macros/tpc_inventory-license.dita.vm")
-#parse("META-INF/templates/shared/macros/tpc_license-tables.diita.vm")
+#parse("META-INF/templates/shared/macros/tpc_license-tables.dita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
     #set($templateRegistry = $registry.register("asset-report-bom", "tpc_asset-licenses"))
@@ -28,7 +28,7 @@
 
     #if (!$licenseExpressions.isEmpty())
         <table id="$templateRegistry.registerElement("associated-license-expressions")" otherprops="wide">
-            <title>$utils.getText("asset-report-bom.short.asset-license-expressions") $reportContext.inContextOf()</title>
+            <title>$utils.getText("asset-report-bom.short.asset-license-expressions") $reportContext.withTitle()</title>
             <tgroup cols="2">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="90*" />
                 <colspec colname="COLSPEC1" colnum="2" colwidth="10*" />
