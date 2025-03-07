@@ -1112,8 +1112,10 @@ public final class Cvss2 extends MultiScoreCvssVector {
             Exploitability.PROOF_OF_CONCEPT,
             RemediationLevel.TEMPORARY,
             RemediationLevel.WORKAROUND,
+            ReportConfidence.UNCONFIRMED,
             ReportConfidence.UNCORROBORATED,
             AccessVector.NETWORK,
+            Exploitability.FUNCTIONAL,
             Exploitability.HIGH,
             Exploitability.NOT_DEFINED,
             RemediationLevel.UNAVAILABLE,
@@ -1122,6 +1124,7 @@ public final class Cvss2 extends MultiScoreCvssVector {
             ReportConfidence.NOT_DEFINED,
             TargetDistribution.HIGH,
             TargetDistribution.NOT_DEFINED,
+            CIARequirement.LOW,
             CIARequirement.MEDIUM,
             CIARequirement.NOT_DEFINED,
             CIARequirement.HIGH

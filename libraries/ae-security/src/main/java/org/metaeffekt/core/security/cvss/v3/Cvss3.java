@@ -1313,9 +1313,6 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
             Scope.UNCHANGED,
             CIAImpact.NULL,
             CIAImpact.NONE,
-            ExploitCodeMaturity.NULL,
-            RemediationLevel.NULL,
-            ReportConfidence.NULL,
 
             AttackVector.PHYSICAL,
             CIAImpact.LOW,
@@ -1344,6 +1341,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
             PrivilegesRequired.NOT_DEFINED,
             UserInteraction.NOT_DEFINED,
             Scope.NOT_DEFINED,
+            Scope.CHANGED,
             CIAImpact.NOT_DEFINED,
             ExploitCodeMaturity.HIGH,
             ExploitCodeMaturity.NOT_DEFINED,
@@ -1351,6 +1349,11 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
             RemediationLevel.NOT_DEFINED,
             ReportConfidence.CONFIRMED,
             ReportConfidence.NOT_DEFINED,
+
+            ExploitCodeMaturity.NULL,
+            RemediationLevel.NULL,
+            ReportConfidence.NULL,
+
             CIARequirement.MEDIUM,
             CIARequirement.NULL,
             CIARequirement.NOT_DEFINED,

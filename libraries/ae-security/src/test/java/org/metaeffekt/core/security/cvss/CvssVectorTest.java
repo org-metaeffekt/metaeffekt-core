@@ -104,29 +104,29 @@ public class CvssVectorTest {
         {
             final String i = "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C";
             final String m = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N/E:U/RL:O/RC:U";
-            final String lower = "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:C/C:N/I:N/A:N/E:U/RL:O/RC:U";
-            final String higher = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/E:H/RL:U/RC:C";
+            final String lower = "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:N/E:U/RL:O/RC:U";
+            final String higher = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H/E:H/RL:U/RC:C";
             assertPartsLowerHigherApplied(i, m, lower, higher);
             assertPartsLowerHigherApplied(m, i, lower, higher);
         }
 
         // base lowest possible values + modified highest possible values
         assertPartsLowerHigherApplied(
-                "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:C/C:N/I:N/A:N", "CVSS:3.1/MAV:N/MAC:L/MPR:N/MUI:N/MS:U/MC:H/MI:H/MA:H/CR:X/IR:X/AR:X",
-                "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:C/C:N/I:N/A:N",
-                "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:C/C:N/I:N/A:N/MAV:N/MAC:L/MPR:N/MUI:N/MS:U/MC:H/MI:H/MA:H");
+                "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:N", "CVSS:3.1/MAV:N/MAC:L/MPR:N/MUI:N/MS:C/MC:H/MI:H/MA:H/CR:X/IR:X/AR:X",
+                "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:N",
+                "CVSS:3.1/AV:P/AC:H/PR:H/UI:R/S:U/C:N/I:N/A:N/MAV:N/MAC:L/MPR:N/MUI:N/MS:C/MC:H/MI:H/MA:H");
         // base highest possible values + modified lowest possible values + modified requirement
         assertPartsLowerHigherApplied(
                 "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H", "CVSS:3.1/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:N/MI:N/MA:N/CR:H/IR:M/AR:L",
                 // CR:H is not applied, since medium is the center where ND is equals
-                "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/MAV:P/MAC:H/MPR:H/MUI:R/MS:C/MC:N/MI:N/MA:N/IR:M/AR:L",
-                "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/CR:H");
+                "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/MAV:P/MAC:H/MPR:H/MUI:R/MC:N/MI:N/MA:N/IR:M/AR:L",
+                "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H/MS:C/CR:H");
 
         // temporal lowest set values
         assertPartsLowerHigherApplied(
                 "CVSS:3.1/E:U/RL:O/RC:U", "CVSS:3.1/E:X/RL:X/RC:X",
-                "CVSS:3.1",
-                "CVSS:3.1/E:U/RL:O/RC:U");
+                "CVSS:3.1/E:U/RL:O/RC:U",
+                "CVSS:3.1");
         assertPartsLowerHigherApplied(
                 "CVSS:3.1/E:U/RL:O/RC:U", "CVSS:3.1/E:P/RL:T/RC:R",
                 "CVSS:3.1/E:U/RL:O/RC:U",
@@ -150,8 +150,22 @@ public class CvssVectorTest {
                 "CVSS:3.1/E:H/RL:U/RC:C");
         assertPartsLowerHigherApplied(
                 "CVSS:3.1/E:H/RL:U/RC:C", "CVSS:3.1/E:X/RL:X/RC:X",
-                "CVSS:3.1",
-                "CVSS:3.1/E:H/RL:U/RC:C");
+                "CVSS:3.1/E:H/RL:U/RC:C",
+                "CVSS:3.1");
+
+        // equal parts
+        assertPartsLowerHigherApplied("CVSS:3.1/AV:N", "CVSS:3.1/MAV:N",
+                "CVSS:3.1/AV:N/MAV:N",
+                "CVSS:3.1/AV:N/MAV:N"
+        );
+        assertPartsLowerHigherApplied("CVSS:3.1/C:L", "CVSS:3.1/MC:L",
+                "CVSS:3.1/C:L/MC:L",
+                "CVSS:3.1/C:L/MC:L"
+        );
+        assertPartsLowerHigherApplied("CVSS:3.1/PR:L", "CVSS:3.1/MPR:L",
+                "CVSS:3.1/PR:L/MPR:L",
+                "CVSS:3.1/PR:L/MPR:L"
+        );
     }
 
     @Test
@@ -188,13 +202,23 @@ public class CvssVectorTest {
                 "CVSS:4.0/AV:P/AC:H/AT:N/PR:L/UI:A/VC:H/VI:H/VA:H/SC:H/SI:L/SA:H"
         );
 
+        // equal parts
+        assertPartsLowerHigherApplied("CVSS:4.0/AV:A", "CVSS:4.0/MAV:A",
+                "CVSS:4.0/AV:A/MAV:A",
+                "CVSS:4.0/AV:A/MAV:A"
+        );
+        assertPartsLowerHigherApplied("CVSS:4.0/SC:H", "CVSS:4.0/MSC:H",
+                "CVSS:4.0/SC:H/MSC:H",
+                "CVSS:4.0/SC:H/MSC:H"
+        );
+
         // random
         assertPartsLowerHigherApplied("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:P/VC:N/VI:N/VA:L/SC:N/SI:L/SA:N", "CVSS:4.0/AV:P/AC:H/AT:P/PR:L/UI:N/VC:N/VI:L/VA:L/SC:L/SI:N/SA:L",
                 "CVSS:4.0/AV:P/AC:H/AT:P/PR:L/UI:P/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N",
                 "CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L"
         );
         assertPartsLowerHigherApplied("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L", "CVSS:4.0/MAV:A/MAC:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N/MSI:X/MSA:S",
-                "CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAV:X/MAC:X/MAT:P/MPR:L/MUI:X/MVC:X/MVI:X/MVA:N/MSC:N/MSI:X/MSA:X",
+                "CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N",
                 "CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAV:A/MAC:L/MAT:X/MPR:X/MUI:N/MVC:N/MVI:L/MVA:X/MSC:X/MSI:X/MSA:S"
         );
     }

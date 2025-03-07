@@ -2184,110 +2184,98 @@ public final class Cvss4P0 extends CvssVector {
         return Optional.of(new Cvss4P0(vector));
     }
 
-    public final static List<Cvss4P0Attribute> ATTRIBUTE_SEVERITY_ORDER = Arrays.asList(
-            AttackRequirements.PRESENT,
-            ModifiedAttackRequirements.PRESENT,
-            AttackRequirements.NONE,
-            ModifiedAttackRequirements.NONE,
-            AttackRequirements.NOT_DEFINED,
-            ModifiedAttackRequirements.NOT_DEFINED,
+    public final static List<Set<Cvss4P0Attribute>> ATTRIBUTE_SEVERITY_ORDER = Arrays.<Set<Cvss4P0Attribute>>asList(
+            // AttackRequirements
+            setOf(AttackRequirements.PRESENT, ModifiedAttackRequirements.PRESENT),
+            setOf(AttackRequirements.NONE, ModifiedAttackRequirements.NONE),
+            setOf(AttackRequirements.NOT_DEFINED, ModifiedAttackRequirements.NOT_DEFINED),
 
-            Safety.NOT_DEFINED,
-            Safety.NEGLIGIBLE,
-            Safety.PRESENT,
+            // Safety
+            Collections.singleton(Safety.NOT_DEFINED),
+            Collections.singleton(Safety.NEGLIGIBLE),
+            Collections.singleton(Safety.PRESENT),
 
-            Automatable.NOT_DEFINED,
-            Automatable.NO,
-            Automatable.YES,
+            // Automatable
+            Collections.singleton(Automatable.NOT_DEFINED),
+            Collections.singleton(Automatable.NO),
+            Collections.singleton(Automatable.YES),
 
-            ValueDensity.NOT_DEFINED,
-            ValueDensity.DIFFUSE,
-            ValueDensity.CONCENTRATED,
+            // ValueDensity
+            Collections.singleton(ValueDensity.NOT_DEFINED),
+            Collections.singleton(ValueDensity.DIFFUSE),
+            Collections.singleton(ValueDensity.CONCENTRATED),
 
-            AttackComplexity.HIGH,
-            ModifiedAttackComplexity.HIGH,
-            AttackComplexity.LOW,
-            ModifiedAttackComplexity.LOW,
-            AttackComplexity.NOT_DEFINED,
-            ModifiedAttackComplexity.NOT_DEFINED,
+            // AttackComplexity
+            setOf(AttackComplexity.HIGH, ModifiedAttackComplexity.HIGH),
+            setOf(AttackComplexity.LOW, ModifiedAttackComplexity.LOW),
+            setOf(AttackComplexity.NOT_DEFINED, ModifiedAttackComplexity.NOT_DEFINED),
 
-            PrivilegesRequired.HIGH,
-            ModifiedPrivilegesRequired.HIGH,
-            PrivilegesRequired.LOW,
-            ModifiedPrivilegesRequired.LOW,
-            PrivilegesRequired.NONE,
-            ModifiedPrivilegesRequired.NONE,
-            PrivilegesRequired.NOT_DEFINED,
-            ModifiedPrivilegesRequired.NOT_DEFINED,
+            // PrivilegesRequired
+            setOf(PrivilegesRequired.HIGH, ModifiedPrivilegesRequired.HIGH),
+            setOf(PrivilegesRequired.LOW, ModifiedPrivilegesRequired.LOW),
+            setOf(PrivilegesRequired.NONE, ModifiedPrivilegesRequired.NONE),
+            setOf(PrivilegesRequired.NOT_DEFINED, ModifiedPrivilegesRequired.NOT_DEFINED),
 
-            UserInteraction.ACTIVE,
-            ModifiedUserInteraction.ACTIVE,
-            UserInteraction.PASSIVE,
-            ModifiedUserInteraction.PASSIVE,
-            UserInteraction.NONE,
-            ModifiedUserInteraction.NONE,
-            UserInteraction.NOT_DEFINED,
-            ModifiedUserInteraction.NOT_DEFINED,
+            // UserInteraction
+            setOf(UserInteraction.ACTIVE, ModifiedUserInteraction.ACTIVE),
+            setOf(UserInteraction.PASSIVE, ModifiedUserInteraction.PASSIVE),
+            setOf(UserInteraction.NONE, ModifiedUserInteraction.NONE),
+            setOf(UserInteraction.NOT_DEFINED, ModifiedUserInteraction.NOT_DEFINED),
 
-            VulnerabilityCia.NOT_DEFINED,
-            ModifiedVulnerabilityCia.NOT_DEFINED,
-            VulnerabilityCia.NONE,
-            ModifiedVulnerabilityCia.NONE,
-            VulnerabilityCia.LOW,
-            ModifiedVulnerabilityCia.LOW,
-            VulnerabilityCia.HIGH,
-            ModifiedVulnerabilityCia.HIGH,
+            // VulnerabilityCia
+            setOf(VulnerabilityCia.NOT_DEFINED, ModifiedVulnerabilityCia.NOT_DEFINED),
+            setOf(VulnerabilityCia.NONE, ModifiedVulnerabilityCia.NONE),
+            setOf(VulnerabilityCia.LOW, ModifiedVulnerabilityCia.LOW),
+            setOf(VulnerabilityCia.HIGH, ModifiedVulnerabilityCia.HIGH),
 
-            ModifiedSubsequentConfidentiality.NOT_DEFINED,
-            ModifiedSubsequentIntegrityAvailability.NOT_DEFINED,
-            SubsequentCia.NOT_DEFINED,
-            ModifiedSubsequentConfidentiality.NEGLIGIBLE,
-            ModifiedSubsequentIntegrityAvailability.NEGLIGIBLE,
-            SubsequentCia.NONE,
-            ModifiedSubsequentConfidentiality.LOW,
-            ModifiedSubsequentIntegrityAvailability.LOW,
-            SubsequentCia.LOW,
-            ModifiedSubsequentConfidentiality.HIGH,
-            ModifiedSubsequentIntegrityAvailability.HIGH,
-            SubsequentCia.HIGH,
-            ModifiedSubsequentIntegrityAvailability.SAFETY,
-            SubsequentCia.SAFETY,
+            // Subsequent CIA metrics
+            setOf(ModifiedSubsequentConfidentiality.NOT_DEFINED, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED, SubsequentCia.NOT_DEFINED),
+            setOf(ModifiedSubsequentConfidentiality.NEGLIGIBLE, ModifiedSubsequentIntegrityAvailability.NEGLIGIBLE, SubsequentCia.NONE),
+            setOf(ModifiedSubsequentConfidentiality.LOW, ModifiedSubsequentIntegrityAvailability.LOW, SubsequentCia.LOW),
+            setOf(ModifiedSubsequentConfidentiality.HIGH, ModifiedSubsequentIntegrityAvailability.HIGH, SubsequentCia.HIGH),
+            setOf(ModifiedSubsequentIntegrityAvailability.SAFETY, SubsequentCia.SAFETY),
 
-            RequirementsCia.LOW,
-            RequirementsCia.MEDIUM,
-            RequirementsCia.HIGH,
-            RequirementsCia.NOT_DEFINED,
+            // RequirementsCia
+            Collections.singleton(RequirementsCia.LOW),
+            Collections.singleton(RequirementsCia.MEDIUM),
+            Collections.singleton(RequirementsCia.HIGH),
+            Collections.singleton(RequirementsCia.NOT_DEFINED),
 
-            ExploitMaturity.UNREPORTED,
-            ExploitMaturity.POC,
-            ExploitMaturity.ATTACKED,
-            ExploitMaturity.NOT_DEFINED,
+            // ExploitMaturity
+            Collections.singleton(ExploitMaturity.UNREPORTED),
+            Collections.singleton(ExploitMaturity.POC),
+            Collections.singleton(ExploitMaturity.ATTACKED),
+            Collections.singleton(ExploitMaturity.NOT_DEFINED),
 
-            Recovery.NOT_DEFINED,
-            Recovery.AUTOMATIC,
-            Recovery.USER,
-            Recovery.IRRECOVERABLE,
+            // Recovery
+            Collections.singleton(Recovery.NOT_DEFINED),
+            Collections.singleton(Recovery.AUTOMATIC),
+            Collections.singleton(Recovery.USER),
+            Collections.singleton(Recovery.IRRECOVERABLE),
 
-            VulnerabilityResponseEffort.NOT_DEFINED,
-            VulnerabilityResponseEffort.LOW,
-            VulnerabilityResponseEffort.MODERATE,
-            VulnerabilityResponseEffort.HIGH,
+            // VulnerabilityResponseEffort
+            Collections.singleton(VulnerabilityResponseEffort.NOT_DEFINED),
+            Collections.singleton(VulnerabilityResponseEffort.LOW),
+            Collections.singleton(VulnerabilityResponseEffort.MODERATE),
+            Collections.singleton(VulnerabilityResponseEffort.HIGH),
 
-            ProviderUrgency.NOT_DEFINED,
-            ProviderUrgency.CLEAR,
-            ProviderUrgency.GREEN,
-            ProviderUrgency.AMBER,
-            ProviderUrgency.RED,
+            // ProviderUrgency
+            Collections.singleton(ProviderUrgency.NOT_DEFINED),
+            Collections.singleton(ProviderUrgency.CLEAR),
+            Collections.singleton(ProviderUrgency.GREEN),
+            Collections.singleton(ProviderUrgency.AMBER),
+            Collections.singleton(ProviderUrgency.RED),
 
-            AttackVector.NOT_DEFINED,
-            ModifiedAttackVector.NOT_DEFINED,
-            AttackVector.PHYSICAL,
-            ModifiedAttackVector.PHYSICAL,
-            AttackVector.LOCAL,
-            ModifiedAttackVector.LOCAL,
-            AttackVector.ADJACENT_NETWORK,
-            ModifiedAttackVector.ADJACENT_NETWORK,
-            AttackVector.NETWORK,
-            ModifiedAttackVector.NETWORK
+            // AttackVector
+            setOf(AttackVector.NOT_DEFINED, ModifiedAttackVector.NOT_DEFINED),
+            setOf(AttackVector.PHYSICAL, ModifiedAttackVector.PHYSICAL),
+            setOf(AttackVector.LOCAL, ModifiedAttackVector.LOCAL),
+            setOf(AttackVector.ADJACENT_NETWORK, ModifiedAttackVector.ADJACENT_NETWORK),
+            setOf(AttackVector.NETWORK, ModifiedAttackVector.NETWORK)
     );
+
+    private static <T> Set<T> setOf(T... values) {
+        return new HashSet<>(Arrays.asList(values));
+
+    }
 }

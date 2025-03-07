@@ -32,7 +32,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.regex.Pattern;
 
 /**
  * Base class for modeling CVSS Vectors.
@@ -369,19 +368,25 @@ public abstract class CvssVector {
     }
 
     protected int determineAttributeSeverityOrder(CvssVectorAttribute attribute) {
-        if (attribute == null) {
-            return -1;
+        if (attribute == null) return -1;
+
+        if (attribute instanceof Cvss4P0.Cvss4P0Attribute) {
+            for (int i = 0; i < Cvss4P0.ATTRIBUTE_SEVERITY_ORDER.size(); i++) {
+                if (Cvss4P0.ATTRIBUTE_SEVERITY_ORDER.get(i).contains(attribute)) {
+                    // group index as severity order
+                    return i;
+                }
+            }
         }
 
-        if (attribute instanceof Cvss2.Cvss2Attribute) {
+        // Handle CVSS 2/3 with their existing logic
+        else if (attribute instanceof Cvss2.Cvss2Attribute) {
             return Cvss2.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
         } else if (attribute instanceof Cvss3.Cvss3Attribute) {
             return Cvss3.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
-        } else if (attribute instanceof Cvss4P0.Cvss4P0Attribute) {
-            return Cvss4P0.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
         }
 
-        LOG.warn("Unknown attribute type when determining severity order [{}]", attribute);
+        LOG.warn("Unknown attribute type: {}", attribute);
         return -1;
     }
 
