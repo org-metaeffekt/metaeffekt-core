@@ -2,8 +2,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
   #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-component-license-details"))
-#set($topicId = "notices-$reportContext.id")
-<topic id="$templateRegistry.registerElement($topicId)" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+#set($topicId = $templateRegistry.registerElement("notices-${reportContext.id}"))
+<topic id="$topicId" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.license-notices"), true)</title>
     #set($componentNoticeList=$inventory.evaluateComponentNotices())
     #set($licensesInEffect=$inventory.evaluateLicenses(false))
@@ -12,7 +12,8 @@
         <body>$utils.getText("inventory-report-bom.no-component-licenses")</body>
     #else
         #foreach($componentNotice in $componentNoticeList)
-            <topic id="$templateRegistry.registerElement("component-notice-$inventory.deriveLicenseId($componentNotice.getComponentName())")">
+          #set($topicId = $templateRegistry.registerElement("component-notice-${inventory.deriveLicenseId($componentNotice.getComponentName())}"))
+          <topic id="$topicId">w
                 <title>$report.xmlEscapeString($componentNotice.getComponentName())</title>
                 <body>
 

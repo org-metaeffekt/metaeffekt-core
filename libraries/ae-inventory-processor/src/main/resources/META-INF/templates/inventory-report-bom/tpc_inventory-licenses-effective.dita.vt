@@ -27,7 +27,8 @@
 
       ## License Options (not necessarily expressions)
       #if (!$termsWithOptions.isEmpty())
-      <table id="$templateRegistry.registerElement("LicenseOptions")" otherprops="wide">
+        #set($tableId = $templateRegistry.registerElement("LicenseOptions"))
+        <table id="$tableId" otherprops="wide">
           <title>$utils.getText("general.short.license-options") $reportContext.inContextOf()</title>
           <tgroup cols="2">
               <colspec colname="COLSPEC0" colnum="1" colwidth="88*"/>
@@ -45,7 +46,7 @@
                 <row>
                   #if ($inventory.isLicenseSubstructureRequired($license, $effectiveLicensesRepresented))
                       <entry>
-                          <xref href="$registry.resolve($templateRegistry, "effective-license-$inventory.deriveLicenseId($license)")"
+                          <xref href="$registry.resolve($templateRegistry, "effective-license-${inventory.deriveLicenseId($license)}")"
                                 type="topic">
                             $report.xmlEscapeLicense($license)
                               <xref href="$registry.resolve($templateRegistry, "$reportContext.id/id-footnote")" type="fn"/>
@@ -53,14 +54,14 @@
                       </entry>
                   #else
                       <entry>
-                          <xref href="$registry.resolve($templateRegistry, "effective-license-$inventory.deriveLicenseId($license)")"
+                          <xref href="$registry.resolve($templateRegistry, "effective-license-${inventory.deriveLicenseId($license)}")"
                                 type="topic">
                             $report.xmlEscapeLicense($license)
                           </xref>
                       </entry>
                   #end
                     <entry>
-                        <xref href="$registry.resolve($templateRegistry, "effective-license-$inventory.deriveLicenseId($license)")"
+                        <xref href="$registry.resolve($templateRegistry, "effective-license-${inventory.deriveLicenseId($license)}")"
                               type="topic">
                             <codeph>$componentCount</codeph>
                         </xref>

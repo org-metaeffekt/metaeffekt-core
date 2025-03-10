@@ -15,7 +15,8 @@
 
     #foreach($license in $effectiveLicensesRepresented)
 
-        <topic id="$templateRegistry.registerElement("effective-license-$inventory.deriveLicenseId($license)")">
+        #set($topicId = $templateRegistry.registerElement("effective-license-${inventory.deriveLicenseId($license)}"))
+        <topic id="$topicId">
 
             #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
                 #insertLicenseArtifactTopic($templateRegistry $license)
@@ -27,7 +28,7 @@
                         #insertLicenseArtifactTopic($templateRegistry $effLicense)
                     #end
                 </body>
+            #end
         </topic>
-        #end
     #end
 </topic>

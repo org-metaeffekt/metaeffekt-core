@@ -742,6 +742,7 @@ public class InventoryReport {
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
         context.put("utils", reportUtils);
+        context.put("registry", registry);
 
         context.put("Double", Double.class);
         context.put("Float", Float.class);

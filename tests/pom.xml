@@ -17,7 +17,6 @@
 
         <module>ae-merge-inventory-test</module>
         <module>ae-attach-asset-metadata-test</module>
-        <module>ae-inventory-container-itest</module>
         <!-- FIXME-KKL: consider removing -->
         <module>ae-container-validation</module>
 

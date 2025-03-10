@@ -2,20 +2,21 @@
     #set($folder=$inventory.getLicenseFolder($license))
     #set($assetLicenseDataList=$assetData.evaluateAssets($license))
     #if(!$assetLicenseDataList.isEmpty())
-    <topic id="$templateRegistry.registerEtpc_associated_license_details_$inventory.deriveLicenseId($license)">
         <topic id="$id">
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
-        <p>
-            $utils.getText("asset-report-bom.license-asset-topic")
-            #if($folder)
-                $utils.getText("asset-report-bom.license-asset-topic-location")
-                <xref href="$registry.resolve($templateRegistry, "$report.getRelativeLicensePath()/$folder/")" type="html"
-                      scope="external">$report.xmlEscapeString($license)
-                    [external]
+          <p>
+              $utils.getText("asset-report-bom.license-asset-topic")
+              #if($folder)
+                  $utils.getText("asset-report-bom.license-asset-topic-location")
+                  #set($licenseFolder = "${report.getRelativeLicensePath()}/$folder/")
+                  #set($resolvedHref = $registry.resolve($templateRegistry, $licenseFolder))
+                <xref href="$resolvedHref" type="html" scope="external">
+                    $report.xmlEscapeString($license) [external]
                 </xref>
-            #end
-        </p>
+              #end
+          </p>
+
         <p>
         <table otherprops="wide">
             <tgroup cols="3">

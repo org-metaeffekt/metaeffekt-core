@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
@@ -186,6 +187,22 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return relativePath;
     }
 
+
+    /**
+     * Finds a file in a base directory, ignoring file extensions. The name has to be the exact full name. If multiple files
+     * with the same name are found, returns the first one.
+     * @param baseDir the directory in which to search for the file.
+     * @param fileName the full exact file name/
+     * @return the file if found or null if not found.
+     */
+    public static File findFirstFileByName(File baseDir, String fileName) {
+        File[] matchingFiles = baseDir.listFiles((dir, name) -> name.startsWith(fileName));
+
+        if (matchingFiles != null) {
+            return matchingFiles[0];
+        }
+        return null;
+    }
 
     public static boolean matches(final String normalizedPattern, final String normalizedPath) {
         if (normalizedPattern == null) return true;

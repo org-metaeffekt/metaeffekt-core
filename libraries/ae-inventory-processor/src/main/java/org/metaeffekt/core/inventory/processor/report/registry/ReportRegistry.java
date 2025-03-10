@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.formula.functions.T;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -111,7 +112,12 @@ public class ReportRegistry {
     public void populateUnresolvedReferences(File targetDirectory) {
         for (TargetTemplate template : registry) {
             if (!template.getUnresolvedPlaceholders().isEmpty()) {
-                File templateFile = new File(targetDirectory, template.getTemplateId() + ".dita");
+                File templateFile  = org.metaeffekt.core.util.FileUtils.findFirstFileByName(targetDirectory, template.getTemplateId());
+                if (templateFile == null) {
+                    throw new RuntimeException("Failed to locate template file [" + template.getTemplateId() + "] " +
+                            "in  target directory [" + targetDirectory.getAbsolutePath() + "], check if all dita-templates have registered " +
+                            "themselves correctly with the ReportRegistry.");
+                }
                 try {
                     String fileString = FileUtils.readFileToString(templateFile, StandardCharsets.UTF_8);
 
@@ -131,4 +137,5 @@ public class ReportRegistry {
             }
         }
     }
+
 }

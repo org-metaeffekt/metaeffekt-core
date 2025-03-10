@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
     #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-components-no-license"))
-    #set($topicId = "no-license-summary-$reportContext.id")
+    #set($topicId = $templateRegistry.registerElement("no-license-summary-${reportContext.id}"))
 <topic id="$templateRegistry.registerElement($topicId)">
     #set($titleString = $utils.getText("inventory-report-bom.short.artifact-title"))
     <title>$reportContext.combinedTitle("$titleString", true)</title>
@@ -15,7 +15,8 @@
 #if (!$components.isEmpty())
     <p>$utils.getText("inventory-report-bom.component-with-no-licenses")</p>
 
-    <table otherprops="wide" id=$templateRegistry.registerElement("table_artifacts")>
+    #set($tableId = $templateRegistry.registerElement("table_artifacts"))
+    <table otherprops="wide" id="$tableId">
         <title>$utils.getText("inventory-report-bom.component-with-no-licenses-title")</title>
 
         <tgroup cols="2">
@@ -36,7 +37,7 @@
                 <row>
                 #if($hasNotice)
                     <entry>
-                        <xref href="$registry.resolve($templateRegistry, "component-notice-$inventory.deriveLicenseId($component.name)")" type="topic">
+                        <xref href="$registry.resolve($templateRegistry, "component-notice-${inventory.deriveLicenseId($component.name)}")" type="topic">
                             $report.xmlEscapeComponentName($component.getOriginalComponentName())
                         </xref>
                     </entry>

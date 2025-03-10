@@ -38,34 +38,35 @@
                         <entry colname="COLSPEC1" valign="top">Count</entry>
                     </row>
                 </thead>
-                <tbody>
-                    #foreach($license in $licenseExpressions)
-                        #if ($license.contains(" + "))
-                            #set($licenseData=$inventory.findMatchingLicenseData($license))
-                            <row>
-                                #if ($assetData.isLicenseSubstructureRequired($license))
-                                    <entry>
-                                        <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic">
-                                            $report.xmlEscapeLicense($license)
-                                            <xref href="$registry.resolve($templateRegistry, "${reportContext.id}/id-footnote")" type="fn"/>
-                                        </xref>
-                                    </entry>
-                                #else
-                                    <entry>
-                                        <xref href="$registry.resolve($templateRegistry,$inventory.deriveLicenseId($license))" type="topic">
-                                            $report.xmlEscapeLicense($license)
-                                        </xref>
-                                    </entry>
-                                #end
-                                <entry>
-                                    <xref href="$registry.resolve($templateRegistry, $inventory.deriveLicenseId($license))" type="topic">
-                                        <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
-                                    </xref>
-                                </entry>
-                            </row>
-                        #end
-                    #end
-                </tbody>
+              <tbody>
+                  #foreach($license in $licenseExpressions)
+                      #if ($license.contains(" + "))
+                          #set($licenseData = $inventory.findMatchingLicenseData($license))
+                        <row>
+                            #if ($assetData.isLicenseSubstructureRequired($license))
+                              <entry>
+                                <xref href="$registry.resolve($templateRegistry, ${inventory.deriveLicenseId($license)})" type="topic">
+                                    $report.xmlEscapeLicense($license)
+                                  <xref href="$registry.resolve($templateRegistry, '${reportContext.id}/id-footnote')" type="fn"/>
+                                </xref>
+                              </entry>
+                            #else
+                              <entry>
+                                <xref href="$registry.resolve($templateRegistry, ${inventory.deriveLicenseId($license)})" type="topic">
+                                    $report.xmlEscapeLicense($license)
+                                </xref>
+                              </entry>
+                            #end
+                          <entry>
+                            <xref href="$registry.resolve($templateRegistry, ${inventory.deriveLicenseId($license)})" type="topic">
+                              <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
+                            </xref>
+                          </entry>
+                        </row>
+                      #end
+                  #end
+              </tbody>
+
             </tgroup>
         </table>
     #end
