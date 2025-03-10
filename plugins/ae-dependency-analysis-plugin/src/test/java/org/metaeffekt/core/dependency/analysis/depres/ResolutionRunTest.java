@@ -46,7 +46,7 @@ public class ResolutionRunTest {
     @Test
     @Ignore("Used for manual testing")
     public void testManuallyWithRealExtract() {
-        File extractionDir = new File("/Users/jkranzke/Desktop/almalinux-testrun/vm-analysis/analysis");
+        File extractionDir = new File("<path>");
 
         Set<String> mustHaves = new HashSet<>(Arrays.asList("firefox"));
 
