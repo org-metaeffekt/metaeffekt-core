@@ -54,7 +54,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
             Artifact.Attribute.COMMENT,
             Artifact.Attribute.URL,
             Artifact.Attribute.PURL,
-            Artifact.Attribute.PROJECTS,
+            Artifact.Attribute.ROOT_PATHS,
             Artifact.Attribute.VERIFIED
     };
 

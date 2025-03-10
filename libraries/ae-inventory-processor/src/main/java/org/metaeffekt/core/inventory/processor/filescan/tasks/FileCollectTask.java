@@ -30,7 +30,7 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ARTIFACT_ROOT_PATHS;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ROOT_PATHS;
 import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_PATH_IN_ASSET;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
@@ -103,7 +103,7 @@ public class FileCollectTask extends ScanTask {
 
         attachEmbeddedPath(artifact, relativePath);
 
-        artifact.set(ARTIFACT_ROOT_PATHS, relativePath);
+        artifact.set(ROOT_PATHS, relativePath);
 
         fileSystemScanContext.contribute(artifact);
     }

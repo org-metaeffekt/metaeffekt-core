@@ -90,7 +90,7 @@ public class InventoryMergeUtils {
             // matches match on project location
             final List<org.metaeffekt.core.inventory.processor.model.Artifact> matches = new ArrayList<>();
             for (final org.metaeffekt.core.inventory.processor.model.Artifact candidate : candidates) {
-                if (matchesProjects(artifact, candidate)) {
+                if (matchesRootPaths(artifact, candidate)) {
                     matches.add(candidate);
                 }
             }
@@ -126,7 +126,7 @@ public class InventoryMergeUtils {
         final Set<String> mergeAttributes = new HashSet<>(artifactMergeAttributes);
 
         if (addDefaultArtifactMergeAttributes) {
-            mergeAttributes.add("Projects");
+            mergeAttributes.add(Artifact.Attribute.ROOT_PATHS.getKey());
             mergeAttributes.add("Source Project");
         }
 
@@ -201,9 +201,9 @@ public class InventoryMergeUtils {
         }
     }
 
-    private boolean matchesProjects(Artifact artifact, Artifact candidate) {
-        for (String location : artifact.getProjects()) {
-            for (String candidateLocation : candidate.getProjects()) {
+    private boolean matchesRootPaths(Artifact artifact, Artifact candidate) {
+        for (String location : artifact.getRootPaths()) {
+            for (String candidateLocation : candidate.getRootPaths()) {
                 if (candidateLocation.contains(location)) {
                     return true;
                 }
