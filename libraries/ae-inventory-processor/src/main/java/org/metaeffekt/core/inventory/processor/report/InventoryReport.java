@@ -434,7 +434,7 @@ public class InventoryReport {
                     // override flags (the original data does not include context)
                     copy.setRelevant(localArtifact.isRelevant());
                     copy.setManaged(localArtifact.isManaged());
-                    copy.setProjects(localArtifact.getProjects());
+                    copy.setRootPaths(localArtifact.getRootPaths());
                     projectInventory.getArtifacts().add(copy);
 
                     // handle checksum

@@ -41,6 +41,7 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.T
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
+@Ignore // container no longer publicly available
 public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 

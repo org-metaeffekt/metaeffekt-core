@@ -47,7 +47,9 @@ public class NestedJarInspectorTest {
         Artifact artifact = new Artifact();
         artifact.setId(projectFile.getName());
         artifact.deriveArtifactId();
-        artifact.setProjects(Collections.singleton(projectFile.getPath()));
+
+        // FIXME-KKL: is this rather an evidence?
+        artifact.setRootPaths(Collections.singleton(projectFile.getPath()));
 
         return artifact;
     }
