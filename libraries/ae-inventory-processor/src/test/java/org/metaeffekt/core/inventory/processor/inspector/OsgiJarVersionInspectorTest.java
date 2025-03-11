@@ -40,7 +40,7 @@ public class OsgiJarVersionInspectorTest {
 
         artifact.setId(testJar.getName());
         artifact.setArtifactId("dummy-osgi");
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();
@@ -65,7 +65,7 @@ public class OsgiJarVersionInspectorTest {
         Artifact artifact = new Artifact();
         artifact.setId(jarPath);
         artifact.setArtifactId("dummy-osgi");
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // set version to check that it isn't changed
         artifact.setVersion("4.2.4.4.2.2.2.2asd");
@@ -92,7 +92,7 @@ public class OsgiJarVersionInspectorTest {
         Artifact artifact = new Artifact();
         artifact.setId(jarPath);
         artifact.setArtifactId("dummy-osgi");
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // set version to check that an error is recorded
         artifact.setVersion("4.2.4.4.2.2.2.2asd");

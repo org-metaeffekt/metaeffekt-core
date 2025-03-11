@@ -18,14 +18,14 @@ public class AbstractContainerFileFilterTest {
 
     private final Logger LOG = LoggerFactory.getLogger(AbstractContainerFileFilterTest.class);
 
-    protected void assertFilesFiltered(File analysisDir, List<String> excludePatterns, int extectedRemainingFileArtifacts) throws IOException {
+    protected void assertFilesFiltered(File analysisDir, List<String> excludePatterns, int expectedRemainingFileArtifacts) throws IOException {
         Collection<String> fileList = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
-        Assert.assertEquals("Check filters in POM to exclude artifacts or adapt expectation.", extectedRemainingFileArtifacts, fileList.size());
+        Assert.assertEquals("Check filters in POM to exclude artifacts or adapt expectation.", expectedRemainingFileArtifacts, fileList.size());
     }
 
     protected void assertCommonFileAttributes(Artifact artifact) {
-        Set<String> projects = artifact.getProjects();
-        assertTrue("No project is set for file artifact " + artifact.getId(), projects != null && projects.size() == 1);
+        Set<String> paths = artifact.getRootPaths();
+        assertTrue("No artifact root path is set for file artifact " + artifact.getId(), paths != null && paths.size() == 1);
     }
 
 }

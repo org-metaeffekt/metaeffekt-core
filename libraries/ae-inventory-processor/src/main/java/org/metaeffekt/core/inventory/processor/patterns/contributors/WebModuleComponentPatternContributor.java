@@ -304,7 +304,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     protected void scanWebComponents(File inventoryFile, Map<String, WebModule> pathModuleMap, File baseDir) throws IOException {
         final Inventory inventory = new InventoryReader().readInventory(inventoryFile);
         for (Artifact artifact : inventory.getArtifacts()) {
-            for (String project : artifact.getProjects()) {
+            for (String project : artifact.getRootPaths()) {
                 parseWebModule(baseDir, artifact, project, pathModuleMap, "/node_modules/");
                 parseWebModule(baseDir, artifact, project, pathModuleMap, "/bower_components/");
             }

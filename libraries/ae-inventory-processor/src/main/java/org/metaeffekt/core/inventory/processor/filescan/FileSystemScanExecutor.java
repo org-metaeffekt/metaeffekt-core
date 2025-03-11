@@ -324,14 +324,14 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     private static void modulateArtifactRootPaths(Inventory inventory) {
         for (Artifact artifact : inventory.getArtifacts()) {
             Set<String> modulatedSet = new HashSet<>();
-            final Set<String> relativePaths = artifact.getArtifactRootPaths();
+            final Set<String> relativePaths = artifact.getRootPaths();
             for (String path : relativePaths) {
                 if (!StringUtils.isBlank(path)) {
                     final String modulatedRelativePath = stripSquareBraketsFromLastElement(path);
                     modulatedSet.add(modulatedRelativePath);
                 }
             }
-            artifact.setArtifactRootPaths(modulatedSet);
+            artifact.setRootPaths(modulatedSet);
         }
     }
 
@@ -370,7 +370,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     if ("c".equalsIgnoreCase(artifact.get(assetId))) {
                         // manage attributes that should not be merged
                         artifact.set(assetId, null);
-                        artifact.setProjects(Collections.EMPTY_SET);
+                        artifact.setRootPaths(Collections.EMPTY_SET);
 
                         // merge contained artifact into scanned
                         scannedArtifact.merge(artifact);
