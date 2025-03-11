@@ -55,7 +55,7 @@ public class ffmpeg_kit_flutter_6_0_3 extends AbstractCompositionAnalysisTest {
                 .logListWithAllAttributes()
                 .with(attributeValue(ID, "ffmpeg_kit_flutter-6.0.3"),
                         attributeValue(VERSION, "6.0.3"),
-                        attributeValue(ARTIFACT_ROOT_PATHS, "[ffmpeg_kit_flutter-6.0.3.tar.gz]/ffmpeg_kit_flutter-6.0.3.tar"),
+                        attributeValue(ROOT_PATHS, "[ffmpeg_kit_flutter-6.0.3.tar.gz]/ffmpeg_kit_flutter-6.0.3.tar"),
                         attributeValue(PURL, "pkg:pub/ffmpeg_kit_flutter@6.0.3"),
                         attributeValue(COMPONENT_SOURCE_TYPE, "pub"))
                 .assertNotEmpty();

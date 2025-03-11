@@ -62,7 +62,7 @@ public class DirectoryInventoryScanTest {
         new InventoryWriter().writeInventory(resultInventory, new File("target/test-scan/inventory-01.xls"));
 
         for (Artifact a : resultInventory.getArtifacts()) {
-            System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getProjects());
+            System.out.println(a.getId() + " - " + a.getChecksum() + " - " + a.getRootPaths());
         }
 
         assertThat(resultInventory.findAllWithId("file.txt").size()).isEqualTo(2);
@@ -75,7 +75,7 @@ public class DirectoryInventoryScanTest {
         assertThat(resultInventory.findArtifact("b.txt")).isNull();
         assertThat(resultInventory.findArtifact("B Files")).isNotNull();
         assertThat(resultInventory.findArtifactByIdAndChecksum("file.txt", "6a38dfd8c715a9465f871d776267043e").
-                getArtifactRootPaths()).hasSize(1);
+                getRootPaths()).hasSize(1);
 
         assertThat(resultInventory.findArtifact("Please not")).isNull();
 
@@ -184,7 +184,7 @@ public class DirectoryInventoryScanTest {
         final Inventory resultInventory = scan.createScanInventory();
 
         for (Artifact a : resultInventory.getArtifacts()) {
-            System.out.println(a.getId() + " - " + a.getVersion() + " - " + a.getProjects());
+            System.out.println(a.getId() + " - " + a.getVersion() + " - " + a.getRootPaths());
         }
 
         new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
