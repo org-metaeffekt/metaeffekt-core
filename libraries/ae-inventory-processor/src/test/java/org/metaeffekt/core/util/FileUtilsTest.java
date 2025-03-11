@@ -28,7 +28,7 @@ import static org.metaeffekt.core.util.FileUtils.toAbsoluteOrReferencePath;
 public class FileUtilsTest {
 
     @Test
-    public void canonicializeLinuxPathTest() {
+    public void canonicalizeLinuxPathTest() {
         assertEquals("test", FileUtils.canonicalizeLinuxPath("test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./test"));
@@ -41,6 +41,7 @@ public class FileUtilsTest {
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
+        assertEquals("/base/path/inventories", FileUtils.canonicalizeLinuxPath("/base/path/1st_level/2nd_level/3rd_level/4th_level/../../../../inventories/"));
     }
 
     @Test

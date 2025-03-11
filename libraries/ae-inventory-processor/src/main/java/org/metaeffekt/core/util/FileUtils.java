@@ -27,6 +27,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -319,10 +320,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
         if (path.startsWith("/..")) throw new IllegalStateException("Illegal path detected: " + originalPath);
 
-        path = RegExUtils.replaceAll(path, FOLDER_SLASH_DOTDOT_SLASH_PATTERN, "");
-        path = RegExUtils.replaceAll(path, DOT_SLASH_PREFIX_PATTERN, "");
-
-        return path;
+        return Paths.get(path).normalize().toString();
     }
 
     public static String[] scanDirectoryForFolders(File targetDir, String... includes) {
