@@ -128,7 +128,7 @@ public class ReportRegistry {
                             fileString = fileString.replace(entry.getKey(), resolved);
                             FileUtils.writeStringToFile(templateFile, fileString, StandardCharsets.UTF_8);
                         } else {
-                            log.debug("Reference to element id [{}] from template [{}] was unsuccessfull.", entry.getValue(), template.getTemplateId());
+                            log.debug("Reference to element id [{}] fro m template [{}] was unsuccessfull.", entry.getValue(), template.getTemplateId());
                         }
                     }
                 } catch (IOException e) {

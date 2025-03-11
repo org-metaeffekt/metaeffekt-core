@@ -34,7 +34,7 @@
 
         #if(!$artifacts.isEmpty())
         <body>
-        <topic id="$templateRegistry.registerElement('$assetEscapedId')">
+        <topic id="$templateRegistry.registerElement("$assetEscapedId")">
                 <body>
                     <section>
                         <title>$title</title>
