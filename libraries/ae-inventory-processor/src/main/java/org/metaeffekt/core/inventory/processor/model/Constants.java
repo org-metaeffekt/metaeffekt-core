@@ -118,14 +118,14 @@ public final class Constants {
     public static final String KEY_AGGREGATE_DIRECTIVE = "Aggregate Directive";
     public static final String AGGREGATE_DIRECTIVE_SKIP = "skip";
 
+    public static final String MARKER_CROSS = "x";
+    public static final String MARKER_CONTAINS = "c";
+    public static final String MARKER_DEVELOPMENT = "d";
+
     @Deprecated
     public static final String ARTIFACT_TYPE_NODEJS_MODULE = "nodejs-module";
 
     public static final String ARTIFACT_TYPE_WEB_MODULE = "web-module";
-
-    public static final String MARKER_CROSS = "x";
-    public static final String MARKER_CONTAINS = "c";
-    public static final String MARKER_DEVELOPMENT = "d";
 
     public static final String PACKAGE_JSON = "package.json";
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";
