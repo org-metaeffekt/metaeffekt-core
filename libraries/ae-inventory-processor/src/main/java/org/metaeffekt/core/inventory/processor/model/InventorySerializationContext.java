@@ -215,7 +215,7 @@ public class InventorySerializationContext {
             Artifact.Attribute.VULNERABILITY,
             Artifact.Attribute.COMMENT,
             Artifact.Attribute.URL,
-            Artifact.Attribute.PROJECTS,
+            Artifact.Attribute.ROOT_PATHS,
             Artifact.Attribute.VERIFIED,
             Artifact.Attribute.TYPE,
             Artifact.Attribute.COMPONENT_SOURCE_TYPE,

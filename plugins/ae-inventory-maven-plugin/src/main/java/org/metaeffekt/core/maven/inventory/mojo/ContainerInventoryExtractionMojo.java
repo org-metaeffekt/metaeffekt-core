@@ -22,7 +22,6 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.maven.inventory.extractor.*;
@@ -75,9 +74,9 @@ public class ContainerInventoryExtractionMojo extends AbstractInventoryExtractio
             final StringBuilder sb = new StringBuilder();
             for (Artifact artifact : new ArrayList<>(inventory.getArtifacts())) {
                 if (ARTIFACT_TYPE_FILE.equalsIgnoreCase(artifact.get(KEY_TYPE))) {
-                    Set<String> projects = artifact.getProjects();
-                    if (projects != null) {
-                        for (String project : projects) {
+                    Set<String> rootPaths = artifact.getRootPaths();
+                    if (rootPaths != null) {
+                        for (String project : rootPaths) {
                             if (sb.length() > 0) {
                                 sb.append(DELIMITER_NEWLINE);
                             }

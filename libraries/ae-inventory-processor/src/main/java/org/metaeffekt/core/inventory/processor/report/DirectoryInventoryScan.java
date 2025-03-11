@@ -154,7 +154,7 @@ public class DirectoryInventoryScan {
         // NOTE: at this point, the component is fully unwrapped in the file system (expecting already detected component
         //  patterns).
 
-        LOG.info("Scanning directory [{}] completed.", scanDirectoryRef.getPath());
+        LOG.info("Scanning directory [{}] completed.", directoryToScan.getAbsolutePath());
 
         // post-process inventory; merge asset groups
         mergeAssetGroups(fileSystemScan.getInventory());

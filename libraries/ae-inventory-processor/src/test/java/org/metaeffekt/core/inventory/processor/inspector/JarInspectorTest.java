@@ -36,7 +36,7 @@ public class JarInspectorTest {
         String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
         artifact.setId(jarPath);
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();
@@ -62,7 +62,7 @@ public class JarInspectorTest {
         String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
         artifact.setId(jarPath);
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();
@@ -88,7 +88,7 @@ public class JarInspectorTest {
         String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
         artifact.setId(testJar.getName());
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();
@@ -117,7 +117,7 @@ public class JarInspectorTest {
         String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
         artifact.setId(jarPath);
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();
@@ -141,7 +141,7 @@ public class JarInspectorTest {
         String jarPath = testJar.getPath();
         Artifact artifact = new Artifact();
         artifact.setId(jarPath);
-        artifact.setProjects(Collections.singleton(jarPath));
+        artifact.setRootPaths(Collections.singleton(jarPath));
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();
@@ -164,7 +164,7 @@ public class JarInspectorTest {
 
         Artifact artifact = new Artifact();
         artifact.setId(testJar.getName());
-        artifact.setProjects(Collections.singleton(testJar.getPath()));
+        artifact.setRootPaths(Collections.singleton(testJar.getPath()));
 
         // create mock inventory for inspector
         Inventory inventory = new Inventory();

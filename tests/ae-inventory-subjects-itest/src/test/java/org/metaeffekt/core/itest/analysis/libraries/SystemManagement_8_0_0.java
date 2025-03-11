@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -58,7 +59,7 @@ public class SystemManagement_8_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "System.Management-8.0.0"),
                         attributeValue(VERSION, "8.0.0"),
-                        attributeValue(PROJECTS, "system.management.8.0.0.nupkg"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "system.management.8.0.0.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.Management@8.0.0"),
                         attributeValue(PATH_IN_ASSET, "system.management.8.0.0.nupkg"))
                 .assertNotEmpty();

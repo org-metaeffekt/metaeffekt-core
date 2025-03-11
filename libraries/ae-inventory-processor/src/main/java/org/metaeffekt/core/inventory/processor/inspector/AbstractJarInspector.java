@@ -41,7 +41,7 @@ public abstract class AbstractJarInspector implements ArtifactInspector {
         String jarPath = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH);
 
         if (StringUtils.isEmpty(jarPath)) {
-            jarPath = artifact.getProjects().stream().findFirst().orElse(null);
+            jarPath = artifact.getRootPaths().stream().findFirst().orElse(null);
         }
 
         if (jarPath != null) {

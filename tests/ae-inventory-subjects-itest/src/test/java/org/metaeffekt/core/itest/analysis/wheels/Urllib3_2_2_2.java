@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -58,7 +59,7 @@ public class Urllib3_2_2_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "urllib3-2.2.2"),
                         attributeValue(VERSION, "2.2.2"),
-                        attributeValue(PROJECTS, "urllib3-2.2.2-py3-none-any.whl"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "urllib3-2.2.2-py3-none-any.whl"),
                         attributeValue(PATH_IN_ASSET, "urllib3-2.2.2-py3-none-any.whl"))
                 .assertNotEmpty();
     }
