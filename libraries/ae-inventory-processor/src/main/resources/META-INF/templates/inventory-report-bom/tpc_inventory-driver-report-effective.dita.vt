@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_packages-$reportContext.id">
-    #set($title = $utils.getText("general.short.packages"))
+<topic id="tpc_drivers-$reportContext.id">
+    #set($title = $utils.getText("general.short.drivers"))
     <title>$reportContext.combinedTitle("$title", true)</title>
     <body>
-        #set($components=$inventory.evaluateComponentsInContext("package"))
+        #set($components=$inventory.evaluateComponentsInContext("driver"))
         #set($licensesInEffect=$inventory.evaluateLicenses(false))
 
 
         #if($components.isEmpty())
-        <p>$utils.getText("inventory-report-bom.no-individual-package")</p>
+        <p>$utils.getText("inventory-report-bom.no-individual-driver")</p>
         #else
-        <p>$utils.getText("inventory-report-bom.package-table-descr")</p>
+        <p>$utils.getText("inventory-report-bom.driver-table-descr")</p>
         <p>
-        <table otherprops="wide" id="table_packages">
+        <table otherprops="wide" id="table_drivers">
             <tgroup cols="3">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
                 <colspec colname="COLSPEC1" colnum="2" colwidth="45*"/>
@@ -21,7 +21,7 @@
                 <thead>
                 <row>
                     <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.components")</entry>
-                    <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.packages")</entry>
+                    <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.drivers")</entry>
                     <entry colname="COLSPEC2" valign="top">$utils.getText(
                         "inventory-report-bom.short.effective-licenses")</entry>
                 </row>
