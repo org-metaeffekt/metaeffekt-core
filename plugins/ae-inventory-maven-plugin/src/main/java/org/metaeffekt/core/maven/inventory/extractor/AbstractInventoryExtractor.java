@@ -115,7 +115,7 @@ public abstract class AbstractInventoryExtractor implements InventoryExtractor {
             File file = new File(fileName);
             artifact.setId(file.getName());
             // file.getPath() is the absolute path in the container
-            artifact.addProject(file.getPath().substring(1));
+            artifact.addRootPath(file.getPath().substring(1));
             artifact.set(KEY_TYPE, ARTIFACT_TYPE_FILE);
             inventory.getArtifacts().add(artifact);
         }

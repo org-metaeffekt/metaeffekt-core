@@ -138,7 +138,7 @@ public class NestedJarInspector implements ArtifactInspector {
         if (StringUtils.isNotBlank(jarPath)) {
             paths.add(jarPath);
         }
-        paths.addAll(artifact.getProjects());
+        paths.addAll(artifact.getRootPaths());
         return paths;
     }
 }
