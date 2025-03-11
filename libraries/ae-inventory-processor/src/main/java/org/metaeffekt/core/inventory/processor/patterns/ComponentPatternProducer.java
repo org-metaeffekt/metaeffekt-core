@@ -34,7 +34,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ARTIFACT_ROOT_PATHS;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ROOT_PATHS;
 import static org.metaeffekt.core.util.FileUtils.*;
 
 public class ComponentPatternProducer {
@@ -394,8 +394,8 @@ public class ComponentPatternProducer {
         String relativePathFromBaseDir = artifact.get(FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH);
         if (StringUtils.isEmpty(relativePathFromBaseDir)) {
             // FIXME: fallback to old style
-            if (!artifact.getProjects().isEmpty()) {
-                relativePathFromBaseDir = artifact.getProjects().iterator().next();
+            if (!artifact.getRootPaths().isEmpty()) {
+                relativePathFromBaseDir = artifact.getRootPaths().iterator().next();
             }
         }
         return relativePathFromBaseDir;
@@ -551,11 +551,10 @@ public class ComponentPatternProducer {
                             copyCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, fileChecksumOrAsterisk);
 
                             final File file = new File(normalizedPath);
-                            final File virtualRootDir = new File(rootDir.getPath(), artifact.get(ARTIFACT_ROOT_PATHS));
+                            final File virtualRootDir = new File(rootDir.getPath(), artifact.get(ROOT_PATHS));
                             final File componentBaseDir = computeComponentBaseDir(virtualRootDir, file, normalizedVersionAnchor);
                             final String assetIdChain = artifact.get(ATTRIBUTE_KEY_ASSET_ID_CHAIN);
-                            matchedComponentPatterns.add(new MatchResult(copyCpd, file,
-                                    rootDir, componentBaseDir, assetIdChain));
+                            matchedComponentPatterns.add(new MatchResult(copyCpd, file, rootDir, componentBaseDir, assetIdChain));
                         }
                     }
                 }

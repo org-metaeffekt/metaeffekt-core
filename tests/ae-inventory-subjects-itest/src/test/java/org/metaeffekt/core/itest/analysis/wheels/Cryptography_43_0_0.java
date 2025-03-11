@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -58,13 +59,13 @@ public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "System.Numerics.Vectors-4.5.0"),
                         attributeValue(VERSION, "4.5.0"),
-                        attributeValue(PROJECTS, "[system.numerics.vectors.4.5.0.nupkg]"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "[system.numerics.vectors.4.5.0.nupkg]"),
                         attributeValue(PATH_IN_ASSET, "[system.numerics.vectors.4.5.0.nupkg]"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "cryptography-43.0.0"),
                         attributeValue(VERSION, "43.0.0"),
-                        attributeValue(PROJECTS, "cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl"),
                         attributeValue(PATH_IN_ASSET, "cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl"))
                 .assertNotEmpty();
     }

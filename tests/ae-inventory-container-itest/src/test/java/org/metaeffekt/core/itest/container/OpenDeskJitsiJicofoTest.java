@@ -40,6 +40,7 @@ import static org.metaeffekt.core.itest.common.predicates.ContainsToken.contains
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.tokenStartsWith;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
+@Ignore // container no longer publicly available
 public class OpenDeskJitsiJicofoTest extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {

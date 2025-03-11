@@ -31,12 +31,7 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
-    // FIXME: revise attribute name projects; should be paths (in asset)
     public static final String PATH_DELIMITER_REGEXP = "\\|\n";
-
-    @Deprecated // use PATH_DELIMITER
-    public static final String PROJECT_DELIMITER = "|\n";
-
     public static final String PATH_DELIMITER = "|\n";
 
     /**
@@ -73,10 +68,6 @@ public class Artifact extends AbstractModelBase {
         // vulnerability information
         VULNERABILITY("Vulnerability"),
 
-        // FIXME: rename to locations
-        // project locations
-        PROJECTS("Projects"),
-
         VERIFIED("Verified"),
         ERRORS("Errors"),
         HASH_SHA256("Hash (SHA-256)"),
@@ -85,38 +76,37 @@ public class Artifact extends AbstractModelBase {
         PATH_IN_ASSET("Path in Asset"),
 
         /**
-         * An Artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated.  In this
-         * case the path points to a folder. In case of an artifact being represented by a single file. The Artifact
+         * An artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated.  In this
+         * case the path points to a folder. In case of an artifact being represented by a single file, the Artifact
          * Root Path points to the file (and in this case is redundant with “Evidence” as long as Evidence is present).
          * Multiple values are supported (to enable multiple contributors / representations).
-         *
-         * Evidence is currently named Projects and will be changed asap.
          *
          * FIXME: may require a complex structure to be able to manage multiple contributors on the same artifact;
          *   we could store the the version anchor and the matched root path for multiple identifications to differentiate
          *   different pattern sets
          *
-         * NOTE: We require to distinguih three cases here:
+         * NOTE: We require to distinguish three cases here:
          * 1: component-pattern-based identification (group of files; differentiates by anchorFile)
          * 2: file-based identification (single file; differentiated by path)
          * 3: logical-artifact identification (dependency in a descriptor or lock file); no value; not differentiated
          *
          * In the case of 3 PATH_IN_ASSET and/or EVIDENCES will provide further details for identification.
          */
-        ARTIFACT_ROOT_PATHS("Artifact Root Paths"),
+        ROOT_PATHS("Root Paths"),
 
         PURL("PURL"),
         COMPONENT_SOURCE_TYPE("Component Source Type"),
 
+        // FIXME: consolidate
         SOURCE("Source"),
+
+        // FIXME: consolidate
         ORGANIZATION("Organization"),
         SUPPLIER("Supplier"),
 
         ARCHIVE("Archive"),
         STRUCTURED("Structured"),
         EXECUTABLE("Executable");
-
-
 
         private String key;
 
@@ -160,17 +150,8 @@ public class Artifact extends AbstractModelBase {
         this.managed = artifact.isManaged();
     }
 
-    public Set<String> getProjects() {
-        final String projectsString = get(Attribute.PROJECTS);
-        if (StringUtils.isEmpty(projectsString)) {
-            return Collections.emptySet();
-        }
-        return Arrays.stream(projectsString.split(PATH_DELIMITER_REGEXP)).
-                map(String::trim).collect(Collectors.toSet());
-    }
-
-    public Set<String> getArtifactRootPaths() {
-        final String pathsString = get(Attribute.ARTIFACT_ROOT_PATHS);
+    public Set<String> getRootPaths() {
+        final String pathsString = get(Attribute.ROOT_PATHS);
         if (StringUtils.isEmpty(pathsString)) {
             return Collections.emptySet();
         }
@@ -178,12 +159,8 @@ public class Artifact extends AbstractModelBase {
                 map(String::trim).collect(Collectors.toSet());
     }
 
-    public void setProjects(Set<String> project) {
-        set(Attribute.PROJECTS, project.stream().collect(Collectors.joining(PROJECT_DELIMITER)));
-    }
-
-    public void setArtifactRootPaths(Set<String> paths) {
-        set(Attribute.ARTIFACT_ROOT_PATHS, paths.stream().collect(Collectors.joining(PATH_DELIMITER)));
+    public void setRootPaths(Set<String> paths) {
+        set(Attribute.ROOT_PATHS, paths.stream().collect(Collectors.joining(PATH_DELIMITER)));
     }
 
     public String getComponent() {
@@ -289,21 +266,19 @@ public class Artifact extends AbstractModelBase {
         return "Artifact id: " + getId() + ", component: " + getComponent() + ", version: " + getVersion();
     }
 
-    public void addProject(String project) {
-        final Set<String> projects = getProjects();
-        if (projects.contains(project)) return;
+    public void addRootPath(String rootPath) {
+        if (StringUtils.isBlank(rootPath)) return;
+
+        final Set<String> rootPaths = getRootPaths();
+        if (rootPaths.contains(rootPath)) return;
 
         // use append to derive new value
-        append(Attribute.PROJECTS.getKey(), project, PROJECT_DELIMITER);
+        append(Attribute.ROOT_PATHS.getKey(), rootPath, PATH_DELIMITER);
     }
 
     public void merge(Artifact a) {
-
-        // projects merge differently
-        mergeProjects(a);
-
         // artifact root paths merge differently
-        mergeArtifactRootPaths(a);
+        mergeRootPaths(a);
 
         // merge attributes
         super.merge(a);
@@ -311,16 +286,10 @@ public class Artifact extends AbstractModelBase {
         deriveArtifactId();
     }
 
-    private void mergeProjects(Artifact a) {
-        final Set<String> projects = new HashSet<>(getProjects());
-        projects.addAll(a.getProjects());
-        setProjects(projects);
-    }
-
-    private void mergeArtifactRootPaths(Artifact a) {
-        final Set<String> paths = new HashSet<>(getArtifactRootPaths());
-        paths.addAll(a.getArtifactRootPaths());
-        setArtifactRootPaths(paths);
+    private void mergeRootPaths(Artifact a) {
+        final Set<String> paths = new HashSet<>(getRootPaths());
+        paths.addAll(a.getRootPaths());
+        setRootPaths(paths);
     }
 
     /**

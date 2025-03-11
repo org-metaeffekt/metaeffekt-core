@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -59,7 +60,7 @@ public class Erubis_2_7_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "erubis-2.7.0.gem"),
                         attributeValue(VERSION, "2.7.0"),
-                        attributeValue(PROJECTS, "erubis-2.7.0.gem"))
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "erubis-2.7.0.gem"))
                 .assertNotEmpty();
     }
 }

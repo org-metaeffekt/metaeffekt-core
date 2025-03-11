@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
@@ -55,7 +56,7 @@ public class Charts_4_1_0 extends AbstractCompositionAnalysisTest {
                 .logListWithAllAttributes()
                 .with(attributeValue(ID, "Charts-4.1.0"),
                         attributeValue(VERSION, "4.1.0"),
-                        attributeValue(PROJECTS, "[v4.1.0.zip]/Charts-4.1.0"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "[v4.1.0.zip]/Charts-4.1.0"),
                         attributeValue(PURL, "pkg:cocoapods/Charts@4.1.0"),
                         attributeValue(PATH_IN_ASSET, "[v4.1.0.zip]/Charts-4.1.0"))
                 .assertNotEmpty();
