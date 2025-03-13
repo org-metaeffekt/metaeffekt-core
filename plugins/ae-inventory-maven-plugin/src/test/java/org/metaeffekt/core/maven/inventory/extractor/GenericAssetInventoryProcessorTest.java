@@ -2,8 +2,10 @@ package org.metaeffekt.core.maven.inventory.extractor;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +102,34 @@ public class GenericAssetInventoryProcessorTest {
         processor.process();
 
         final Inventory targetInventory = new InventoryReader().readInventory(targetFile);
+        Assert.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
+        Assert.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
+        Assert.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
+        Assert.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
+    }
+
+    @Test
+    public void inPlaceModificationTest() throws IOException {
+        final File sourceAndTargetFile = new File(TARGET_DIRECTORY, "GenericAssetInventoryProcessorTest/inPlaceModificationTest.xls");
+
+        final Inventory sourceInventory = new Inventory();
+        final AssetMetaData sourceAsset = new AssetMetaData();
+        sourceAsset.set("Asset Id", "ASSET-01");
+        sourceInventory.getAssetMetaData().add(sourceAsset);
+        new InventoryWriter().writeInventory(sourceInventory, sourceAndTargetFile);
+
+        final Map<String, String> attributes = new HashMap<>();
+        attributes.put("Asset Path", "namespace/corporation/level");
+        attributes.put("Assessment_Id", "ASSESSMENT-01");
+
+        final GenericAssetInventoryProcessor processor = new GenericAssetInventoryProcessor()
+                .supply("ASSET-01")
+                .withAttributes(attributes)
+                .augmenting(sourceAndTargetFile);
+
+        processor.process();
+
+        final Inventory targetInventory = new InventoryReader().readInventory(sourceAndTargetFile);
         Assert.assertEquals(1, targetInventory.getAssetMetaData().size()); // should not create a new asset
         Assert.assertEquals("ASSET-01", targetInventory.getAssetMetaData().get(0).get("Asset Id"));
         Assert.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
