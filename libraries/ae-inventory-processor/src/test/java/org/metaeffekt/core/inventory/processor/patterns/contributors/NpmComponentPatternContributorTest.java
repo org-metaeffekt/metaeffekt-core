@@ -54,6 +54,11 @@ public class NpmComponentPatternContributorTest {
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
         assertThat(inventory.getArtifacts().size()).isEqualTo(645);
+        inventory.getArtifacts().forEach(artifact -> {
+            if (artifact.getId().contains("rimraf")){
+                assertThat(artifact.getVersion()).isEqualTo("2.6.3");
+            }
+        });
     }
 
     @Test

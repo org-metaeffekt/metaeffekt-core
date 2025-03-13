@@ -94,15 +94,20 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                 inventoryFromLockFile = new NpmPackageLockAdapter().
                         createInventoryFromPackageLock(webModule.packageLockJsonFile, relativeAnchorPath, webModule.name, webModule.dependencies);
             } else if (webModule.yarnLockFile != null) {
-                // TODO-AOE: take already collected dependency information into account
-                inventoryFromLockFile = new YarnLockAdapter().extractInventory(webModule.yarnLockFile, relativeAnchorPath);
-            } else if (webModule.bowerJsonFile != null) {
+                inventoryFromLockFile = new YarnLockAdapter().extractInventory(webModule.yarnLockFile, relativeAnchorPath, webModule.dependencies);
+            } else if (webModule.bowerLockFile != null) {
                 // TODO-AOE: maybe we can use the npm adapter here (to be evaluated)
-            } else if (webModule.composerJsonFile != null) {
+            } else if (webModule.composerLockFile != null) {
                 // TODO-AOE: move composer contributor logic here
             } else {
-                // TODO-AOE: add purl support for several package managers
-                // artifact.set(Artifact.Attribute.PURL, buildPurl(webModule.name, webModule.version));
+                if (anchorFile.getName().endsWith(Constants.PACKAGE_JSON)) {
+                    artifact.set(Artifact.Attribute.PURL, buildPurl("npm", webModule.name, webModule.version));
+                } else if (anchorFile.getName().endsWith(Constants.BOWER_JSON) || 
+                         anchorFile.getName().endsWith(Constants.DOT_BOWER_JSON)) {
+                    artifact.set(Artifact.Attribute.PURL, buildPurl("bower", webModule.name, webModule.version));
+                } else if (anchorFile.getName().endsWith(Constants.COMPOSER_JSON)) {
+                    artifact.set(Artifact.Attribute.PURL, buildPurl("composer", webModule.name, webModule.version));
+                }
             }
         } catch (IOException e) {
             // it was an attempts
@@ -150,8 +155,6 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         } else {
             componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
         }
-        // TODO-AOE: add support for several package managers
-        // componentPatternData.set(Artifact.Attribute.PURL, buildPurl(artifact.getComponent(), artifact.getVersion()));
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json");
 
         if (inventoryFromLockFile != null) {
@@ -222,6 +225,7 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         File packageJsonFile;
         File yarnLockFile;
         File bowerJsonFile;
+        File bowerLockFile;
         File composerJsonFile;
         File composerLockFile;
         List<WebModuleDependency> dependencies = new ArrayList<>();
@@ -232,6 +236,8 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         String name;
         String version;
         boolean isDevDependency;
+        boolean isPeerDependency;
+        boolean isOptionalDependency;
         String versionRange;
     }
 
@@ -335,7 +341,24 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
     }
 
     public static String buildPurl(String packageManager, String name, String version) {
-        return String.format("pkg:%s/%s@%s", packageManager.toLowerCase(), name.toLowerCase(), version);
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+        
+        String normalizedName = name.toLowerCase();
+        if (packageManager.equals("npm") && name.startsWith("@")) {
+            normalizedName = name;
+        }
+        
+        if (version == null || version.isEmpty() || "unspecific".equalsIgnoreCase(version)) {
+            return String.format("pkg:%s/%s", packageManager.toLowerCase(), normalizedName);
+        }
+        
+        if (version.startsWith("v")) {
+            version = version.substring(1);
+        }
+        
+        return String.format("pkg:%s/%s@%s", packageManager.toLowerCase(), normalizedName, version);
     }
 
     private void processAnchorFile(File anchorFile, WebModule webModule) {
@@ -387,7 +410,10 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
                         }
                     }
                 } else if (anchorFile.getName().endsWith("bower.json")) {
-                    webModule.bowerJsonFile = anchorFile;
+                    final File file = new File(anchorFile.getParentFile(), ".bower.json");
+                    if (file.exists()) {
+                        webModule.bowerLockFile = file;
+                    }
                 }
             }
 

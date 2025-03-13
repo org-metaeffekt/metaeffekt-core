@@ -113,9 +113,13 @@ public class NpmPackageLockAdapter {
     }
 
     private static void parseProjectDependencies(Inventory inventory, String path, JSONObject project, JSONObject packages) {
-        // NOTE: we ignore the devDependencies
-        // TODO-AOE: we should consider the devDependencies as well :)
         final Set<NpmModule> modules = collectModules(project.optJSONObject("dependencies"), "node_modules/");
+        // dev dependencies
+        modules.addAll(collectModules(project.optJSONObject("devDependencies"), "node_modules/"));
+        // optional dependencies
+        modules.addAll(collectModules(project.optJSONObject("optionalDependencies"), "node_modules/"));
+        // peer dependencies
+        modules.addAll(collectModules(project.optJSONObject("peerDependencies"), "node_modules/"));
 
         boolean changed;
         do {
@@ -130,8 +134,8 @@ public class NpmPackageLockAdapter {
                 module.setHash(moduleObject.optString("integrity"));
                 module.setVersion(moduleObject.optString("version"));
 
-                final Boolean dev = moduleObject.optBoolean("dev");
-                if (dev != null && dev) {
+                final boolean dev = moduleObject.optBoolean("dev");
+                if (dev) {
                     LOG.warn("Invariant violated. Expecting only non-dev dependency in production dependencies. " +
                             "Module [{}] is a development dependency.", module.getName());
                 }
@@ -214,7 +218,6 @@ public class NpmPackageLockAdapter {
 
                 String version = dep.optString("version");
                 String url = dep.optString("resolved");
-                boolean production = !dep.has("dev") || !dep.getBoolean("dev");
                 for (WebModuleComponentPatternContributor.WebModuleDependency dependency : dependencies) {
                     if (module.equals(dependency.getName())) {
                         Artifact artifact = new Artifact();
@@ -230,9 +233,21 @@ public class NpmPackageLockAdapter {
                         artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
 
                         // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
-                        if (dependency.isDevDependency() == !production) {
-                            // TODO-AOE: we have to check what we want to do with this information
+                        
+                        String assetId = "AID-" + artifact.getId();
+                        
+                        // Set dependency type marker based on the dependency type
+                        if (dependency.isDevDependency()) {
+                            // mark as development dependency
+                            artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
+                        } else if (dependency.isPeerDependency()) {
+                            // mark as peer dependency
+                            artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
+                        } else if (dependency.isOptionalDependency()) {
+                            // mark as optional dependency
+                            artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
                         }
+                        // production dependencies don't need a special marker
 
                         String purl = buildPurl(dependency.getName(), dependency.getVersion());
                         artifact.set(Artifact.Attribute.PURL, purl);
