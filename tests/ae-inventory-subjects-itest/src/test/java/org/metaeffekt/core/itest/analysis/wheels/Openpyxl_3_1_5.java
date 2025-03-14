@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -58,7 +59,7 @@ public class Openpyxl_3_1_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "openpyxl-3.1.5"),
                         attributeValue(VERSION, "3.1.5"),
-                        attributeValue(PROJECTS, "openpyxl-3.1.5-py2.py3-none-any.whl"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "openpyxl-3.1.5-py2.py3-none-any.whl"),
                         attributeValue(PATH_IN_ASSET, "openpyxl-3.1.5-py2.py3-none-any.whl"))
                 .assertNotEmpty();
     }
