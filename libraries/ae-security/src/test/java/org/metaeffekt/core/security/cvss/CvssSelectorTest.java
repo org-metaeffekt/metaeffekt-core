@@ -474,7 +474,7 @@ public class CvssSelectorTest {
         final Cvss4P0 modificationLower = new Cvss4P0("CVSS:4.0/MAV:A/MAC:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N/MSI:X/MSA:S", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_LOWER_METRIC, Cvss4P0.class));
         final Cvss4P0 modificationHigher = new Cvss4P0("CVSS:4.0/MAV:A/MAC:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N/MSI:X/MSA:S", new CvssSource(KnownCvssEntities.ASSESSMENT, KnownCvssEntities.ASSESSMENT_HIGHER_METRIC, Cvss4P0.class));
 
-        Assert.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAT:P/MPR:L/MVA:N/MSC:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationLower)).toString());
+        Assert.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAT:P/MPR:L/MUI:N/MVC:N/MVI:L/MVA:N/MSC:N", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationLower)).toString());
         Assert.assertEquals("CVSS:4.0/AV:L/AC:H/AT:N/PR:N/UI:N/VC:N/VI:L/VA:L/SC:L/SI:L/SA:L/MAV:A/MAC:L/MUI:N/MVC:N/MVI:L/MSA:S", CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(input, modificationHigher)).toString());
     }
 }
