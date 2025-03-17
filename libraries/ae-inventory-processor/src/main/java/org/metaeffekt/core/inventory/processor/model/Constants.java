@@ -117,7 +117,6 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_DRIVER = "driver";
     public static final String ARTIFACT_TYPE_INSTALLATION_PACKAGE = "installation-package";
     public static final String ARTIFACT_TYPE_CONTENT = "content";
-    public static final String ARTIFACT_TYPE_OTHER_ARTIFACT = "other-artifact";
     public static final String ARTIFACT_TYPE_FILE = "file";
     public static final String ARTIFACT_TYPE_ARCHIVE = "archive";
     public static final String ARTIFACT_TYPE_COMPOSITE = "composite";
