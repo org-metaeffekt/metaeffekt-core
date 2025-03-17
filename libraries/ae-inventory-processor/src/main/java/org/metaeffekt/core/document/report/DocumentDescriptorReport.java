@@ -160,7 +160,7 @@ public class DocumentDescriptorReport {
     @Setter
     @Getter
     public static class DocumentDescriptorReportAdapters {
-            Map<String, Properties> propertiesMap = new HashMap<>();
+        Map<String, Properties> propertiesMap = new HashMap<>();
 
         private DocumentDescriptorReportAdapters() {
         }
@@ -172,35 +172,34 @@ public class DocumentDescriptorReport {
      * in DITA creation.
      *
      * @param documentDescriptor the document descriptor used to extract inventory contexts
-     * @param adapters the adapters object to which the properties will be added
+     * @param adapters           the adapters object to which the properties will be added
      */
-    private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
+    private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters) {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-statistics-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-summary-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
+            InventoryContext inventoryContext = documentPart.getInventoryContext();
+            if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX) {
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File(targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT) {
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File(targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT) {
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File(targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-statistics-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT) {
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File(targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-summary-report.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File(targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+            }
+            if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION) {
+                Properties properties = PropertiesUtils.loadPropertiesFile(new File(targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
+                adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
             }
         }
     }
@@ -211,9 +210,9 @@ public class DocumentDescriptorReport {
      * directory. It iterates through all relevant templates and produces the final report output.</p>
      *
      * @param documentDescriptor the document descriptor containing the metadata for report generation
-     * @param adapters the adapters holding additional properties to be used in the templates
-     * @param templateGroup the group of templates to be applied for report generation
-     * @param documentPart the part of a document for which the report will be written
+     * @param adapters           the adapters holding additional properties to be used in the templates
+     * @param templateGroup      the group of templates to be applied for report generation
+     * @param documentPart       the part of a document for which the report will be written
      * @throws IOException if there is an error reading templates or writing reports
      */
     protected void writeReports(DocumentDescriptor documentDescriptor, DocumentPart documentPart,
@@ -253,11 +252,11 @@ public class DocumentDescriptorReport {
     /**
      * Produces a DITA report by applying a Velocity template to the given context data and writing the result to the target file.
      *
-     * @param documentDescriptor the document descriptor containing the metadata for report generation
-     * @param adapters the adapters containing properties to be used in the report
+     * @param documentDescriptor   the document descriptor containing the metadata for report generation
+     * @param adapters             the adapters containing properties to be used in the report
      * @param templateResourcePath the path to the Velocity template resource
-     * @param target the file where the generated report will be saved
-     * @param documentPart the part of the document for which the bookMap will be generated
+     * @param target               the file where the generated report will be saved
+     * @param documentPart         the part of the document for which the bookMap will be generated
      * @throws IOException if there is an error during the report generation process
      */
     private void produceBookMapDita(DocumentDescriptor documentDescriptor,
@@ -310,11 +309,11 @@ public class DocumentDescriptorReport {
     /**
      * Overloaded produceBookMapDita() for cases where no extra context is required.
      *
-     * @param documentDescriptor the document descriptor containing the metadata for report generation
-     * @param documentPart the part of the document for which the bookMap will be generated
-     * @param adapters the adapters containing properties to be used in the report
+     * @param documentDescriptor   the document descriptor containing the metadata for report generation
+     * @param documentPart         the part of the document for which the bookMap will be generated
+     * @param adapters             the adapters containing properties to be used in the report
      * @param templateResourcePath the path to the Velocity template resource
-     * @param target the file where the generated report will be saved
+     * @param target               the file where the generated report will be saved
      */
     private void produceBookMapDita(DocumentDescriptor documentDescriptor,
                                     DocumentPart documentPart,

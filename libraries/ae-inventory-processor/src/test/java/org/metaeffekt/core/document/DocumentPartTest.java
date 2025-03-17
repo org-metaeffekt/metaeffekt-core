@@ -47,15 +47,13 @@ public class DocumentPartTest {
         Inventory inventory = new Inventory();
         Inventory referencedInventory = new Inventory();
         InventoryContext inventoryContext = new InventoryContext(inventory, referencedInventory, "test", "test", "test", "1.0");
-        List<InventoryContext> contexts = new ArrayList<>();
-        contexts.add(inventoryContext);
         Map<String, String> partParams = new HashMap<>();
         partParams.put("generateOverviewTablesForAdvisories", "CERT_EU");
 
         List<DocumentPart> parts = new ArrayList<>();
 
-        DocumentPart vulnerabilityReportPart = new DocumentPart("test", contexts, DocumentPartType.VULNERABILITY_REPORT, partParams);
-        DocumentPart annexPart = new DocumentPart("test", contexts, DocumentPartType.ANNEX, partParams);
+        DocumentPart vulnerabilityReportPart = new DocumentPart("test", inventoryContext, DocumentPartType.VULNERABILITY_REPORT, partParams);
+        DocumentPart annexPart = new DocumentPart("test", inventoryContext, DocumentPartType.ANNEX, partParams);
         parts.add(vulnerabilityReportPart);
         parts.add(annexPart);
 

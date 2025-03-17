@@ -41,7 +41,7 @@ public class DocumentDescriptorReportGeneratorTest {
         DocumentDescriptor documentDescriptor = new DocumentDescriptor();
         DocumentDescriptorReportGenerator documentDescriptorReportGenerator = new DocumentDescriptorReportGenerator();
 
-        List<InventoryContext> inventoryContexts = new ArrayList<>();
+        InventoryContext inventoryContext = null;
         List<DocumentPart> documentParts = new ArrayList<>();
 
         File targetTestDir = new File("target/test-document-descriptor-report-generator");
@@ -50,7 +50,7 @@ public class DocumentDescriptorReportGeneratorTest {
         cleanUpTargetTestDir();
 
         Inventory inventory = new Inventory();
-        InventoryContext inventoryContext = new InventoryContext(inventory, inventory, "test", "testReportContextTitle", "testReportContext", "testVersion");
+        inventoryContext = new InventoryContext(inventory, inventory, "test", "testReportContextTitle", "testReportContext", "testVersion");
 
         Map<String, String> documentParams = new HashMap<>();
         documentParams.put("targetLicensesDir", "");
@@ -58,7 +58,6 @@ public class DocumentDescriptorReportGeneratorTest {
         String language = "en";
         String identifier = "test";
 
-        inventoryContexts.add(inventoryContext);
         documentDescriptor.setParams(documentParams);
         documentDescriptor.setLanguage(language);
         documentDescriptor.setIdentifier(identifier);
@@ -72,7 +71,7 @@ public class DocumentDescriptorReportGeneratorTest {
         Map<String, String> partParams = new HashMap<>();
         partParams.put("", "");
         DocumentPartType partType = DocumentPartType.ANNEX;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContext, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -95,7 +94,7 @@ public class DocumentDescriptorReportGeneratorTest {
         partParams.put("securityPolicyFile", "security-policy-report.json");
         partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_REPORT;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContext, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -118,7 +117,7 @@ public class DocumentDescriptorReportGeneratorTest {
         partParams.put("securityPolicyFile", "security-policy-report.json");
         partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_STATISTICS_REPORT;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContext, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -141,7 +140,7 @@ public class DocumentDescriptorReportGeneratorTest {
         partParams.put("securityPolicyFile", "security-policy-report.json");
         partParams.put("generateOverviewTablesForAdvisories", "CERT_EU, CERT_FR");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_SUMMARY_REPORT;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContext, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -163,7 +162,7 @@ public class DocumentDescriptorReportGeneratorTest {
         Map<String, String> partParams = new HashMap<>();
         partParams.put("", "");
         DocumentPartType partType = DocumentPartType.INITIAL_LICENSE_DOCUMENTATION;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContext, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);
@@ -185,7 +184,7 @@ public class DocumentDescriptorReportGeneratorTest {
         Map<String, String> partParams = new HashMap<>();
         partParams.put("", "");
         DocumentPartType partType = DocumentPartType.LICENSE_DOCUMENTATION;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        DocumentPart documentPart = new DocumentPart("test", inventoryContext, partType, partParams);
         documentParts.add(documentPart);
 
         documentDescriptor.setDocumentParts(documentParts);

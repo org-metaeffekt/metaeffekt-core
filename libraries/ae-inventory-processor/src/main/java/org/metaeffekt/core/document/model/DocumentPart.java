@@ -33,11 +33,11 @@ public class DocumentPart {
 
     String identifier;
 
+
     /**
-     * List containing the inventoryContexts for each inventory we want to add to a report. Each inventoryContext contains
-     * an inventory and other data needed for the report.
+     * The inventory context containing the necessary inventory information for a document part.
      */
-    private List<InventoryContext> inventoryContexts;
+    private InventoryContext inventoryContext;
 
     /**
      * The type of DocumentPart (e.g. vulnerability-statistics-report, vulnerability-summary-report, etc.)
@@ -50,8 +50,8 @@ public class DocumentPart {
      */
     private Map<String, String> params;
 
-    public DocumentPart(String identifier, List<InventoryContext> inventoryContexts, DocumentPartType documentPartType, Map<String, String> params) {
-        this.inventoryContexts = inventoryContexts;
+    public DocumentPart(String identifier, InventoryContext inventoryContext, DocumentPartType documentPartType, Map<String, String> params) {
+        this.inventoryContext = inventoryContext;
         this.documentPartType = documentPartType;
         this.params = params;
         this.identifier = identifier;
@@ -68,20 +68,8 @@ public class DocumentPart {
         if (documentPartType == null) {
             throw new IllegalStateException("The part type must be specified.");
         }
-        // validate each inventoryContext
-        for (InventoryContext context : inventoryContexts) {
-            // check if each inventoryContext references an inventory
-            if (context.getInventory() == null) {
-                throw new IllegalStateException("The inventory must be specified.");
-            }
-            // check if each inventoryContext has an identifier
-            if (context.getIdentifier() == null){
-                throw new IllegalStateException("The identifier must be specified.");
-            }
-            // check if each inventoryContext has an identifier
-            if (context.getIdentifier().isEmpty()){
-                throw new IllegalStateException("The identifier must not be empty.");
-            }
+        if (inventoryContext == null) {
+            throw new IllegalStateException("The inventory context must be specified.");
         }
     }
 }

@@ -100,5 +100,19 @@ public class DocumentDescriptor {
             throw new IllegalStateException("The target report directory must be a directory.");
         }
 
+        // Validation for unique InventoryContext within the same DocumentPartType
+        Map<DocumentPartType, Set<String>> typeToInventoryContextIds = new HashMap<>();
+
+        for (DocumentPart part : documentParts) {
+
+            DocumentPartType type = part.getDocumentPartType();
+            String inventoryContextId = part.getInventoryContext().getIdentifier();
+
+            typeToInventoryContextIds.putIfAbsent(type, new HashSet<>());
+
+            if (!typeToInventoryContextIds.get(type).add(inventoryContextId)) {
+                throw new IllegalStateException("Duplicate InventoryContext detected for DocumentPartType: " + type);
+            }
+        }
     }
 }
