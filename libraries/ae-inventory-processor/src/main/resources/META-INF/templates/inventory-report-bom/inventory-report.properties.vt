@@ -89,14 +89,6 @@ ae.inventory.installation.package.effective.switch=$installationPackagesSwitch
 #end
 ae.inventory.content.effective.switch=$contentsSwitch
 
-# Switch for displaying other artifacts if there are any present
-#set($componentsOtherArtifact=$inventory.evaluateComponentsInContext("other-artifact"))
-#set($otherArtifactsSwitch = true)
-#if($componentsOtherArtifact.isEmpty())
-    #set($otherArtifactsSwitch = false)
-#end
-ae.inventory.other.artifact.effective.switch=$otherArtifactsSwitch
-
 # Switch for displaying modules if there are any present
 #set($componentsModule=$inventory.evaluateComponentsInContext("module"))
 #set($modulesSwitch = true)

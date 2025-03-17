@@ -104,9 +104,6 @@ public class Inventory implements Serializable {
     // Components are structured by context. This is the content context.
     public static final String COMPONENT_CONTEXT_CONTENT = "content";
 
-    // Components are structured by context. This is the web module context.
-    public static final String COMPONENT_CONTEXT_OTHER_ARTIFACT = "other-artifact";
-
     private List<Artifact> artifacts = new CopyOnWriteArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
@@ -948,11 +945,6 @@ public class Inventory implements Serializable {
                             this::isContentType)
                     .collect(Collectors.toList());
         }
-        if (COMPONENT_CONTEXT_OTHER_ARTIFACT.equalsIgnoreCase(context)) {
-            return getArtifacts().stream().filter(
-                            this::isOtherArtifactType)
-                    .collect(Collectors.toList());
-        }
         throw new IllegalStateException("Artifact context '" + context + "' not supported.");
     }
 
@@ -990,10 +982,6 @@ public class Inventory implements Serializable {
 
     private boolean isContentType(Artifact artifact) {
         return ARTIFACT_TYPE_CONTENT.equalsIgnoreCase(artifact.get(KEY_TYPE));
-    }
-
-    private boolean isOtherArtifactType(Artifact artifact) {
-        return ARTIFACT_TYPE_OTHER_ARTIFACT.equalsIgnoreCase(artifact.get(KEY_TYPE));
     }
 
     private boolean isPackageType(Artifact artifact) {

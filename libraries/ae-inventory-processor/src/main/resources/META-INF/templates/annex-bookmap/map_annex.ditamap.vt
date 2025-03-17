@@ -28,9 +28,6 @@
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.content.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-content-report-effective.dita" />
     #end
-    #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.other.artifact.effective.switch") == "true")
-        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-other-artifact-report-effective.dita" />
-    #end
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.module.effective.switch") == "true")
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-module-report-effective.dita" />
     #end
@@ -47,7 +44,7 @@
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
         <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
     #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
-        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" keys="license-notices" />
+        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" />
     #end
     </chapter>
 #end
