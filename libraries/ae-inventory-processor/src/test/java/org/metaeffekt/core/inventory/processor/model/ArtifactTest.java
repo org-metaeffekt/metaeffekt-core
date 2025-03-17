@@ -90,16 +90,16 @@ public class ArtifactTest {
     @Test
     public void testProjects() {
         Artifact artifact = new Artifact();
-        artifact.addProject("A");
-        artifact.addProject("A,B");
-        artifact.addProject("A, B , C");
-        artifact.addProject("D");
+        artifact.addRootPath("A");
+        artifact.addRootPath("A,B");
+        artifact.addRootPath("A, B , C");
+        artifact.addRootPath("D");
 
-        final Set<String> projects = artifact.getProjects();
-        Assert.assertTrue(projects.contains("A"));
-        Assert.assertTrue(projects.contains("A,B"));
-        Assert.assertTrue(projects.contains("A, B , C"));
-        Assert.assertTrue(projects.contains("D"));
+        final Set<String> rootPaths = artifact.getRootPaths();
+        Assert.assertTrue(rootPaths.contains("A"));
+        Assert.assertTrue(rootPaths.contains("A,B"));
+        Assert.assertTrue(rootPaths.contains("A, B , C"));
+        Assert.assertTrue(rootPaths.contains("D"));
     }
 
     @Test

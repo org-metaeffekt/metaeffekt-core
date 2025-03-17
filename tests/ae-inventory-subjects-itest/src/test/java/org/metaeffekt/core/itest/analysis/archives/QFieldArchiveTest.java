@@ -81,6 +81,6 @@ public class QFieldArchiveTest extends AbstractCompositionAnalysisTest {
         final Artifact artifact = aggregatedInventory.findArtifactByIdAndChecksum("LICENSE", "e8c1458438ead3c34974bc0be3a03ed6");
         Assertions.assertThat(artifact).isNotNull();
 
-        Assertions.assertThat(artifact.get(ARTIFACT_ROOT_PATHS)).isNotNull();
+        Assertions.assertThat(artifact.get(ROOT_PATHS)).isNotNull();
     }
 }

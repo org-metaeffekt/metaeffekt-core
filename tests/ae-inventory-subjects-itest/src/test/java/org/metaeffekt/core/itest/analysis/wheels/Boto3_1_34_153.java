@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -58,7 +59,7 @@ public class Boto3_1_34_153 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "boto3-1.34.153"),
                         attributeValue(VERSION, "1.34.153"),
-                        attributeValue(PROJECTS, "boto3-1.34.153-py3-none-any.whl"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "boto3-1.34.153-py3-none-any.whl"),
                         attributeValue(PATH_IN_ASSET, "boto3-1.34.153-py3-none-any.whl"))
                 .assertNotEmpty();
     }
