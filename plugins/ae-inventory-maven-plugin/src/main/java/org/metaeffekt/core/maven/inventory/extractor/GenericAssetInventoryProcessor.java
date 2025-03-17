@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.maven.inventory.extractor;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -97,13 +98,15 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
             artifact.set(effectiveAssetId, Constants.MARKER_CONTAINS);
         }
 
-        File targetInventoryFile = getTargetInventoryFile();
-
-        // support in-place modification, when targetInventory file nott set
+        // support in-place modification, when targetInventory file not set, use the input inventory file
+        final File targetInventoryFile = ObjectUtils.firstNonNull(getTargetInventoryFile(), getInventoryFile());
         if (targetInventoryFile == null) {
-            targetInventoryFile = getInventoryFile();
+            throw new IllegalArgumentException("Either the source or target inventory must be set");
         }
 
+        if (!targetInventoryFile.getParentFile().exists()) {
+            targetInventoryFile.getParentFile().mkdirs();
+        }
         new InventoryWriter().writeInventory(inventory, targetInventoryFile);
     }
 
@@ -113,9 +116,6 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
     }
 
     public GenericAssetInventoryProcessor writing(File targetInventoryFile) {
-        if (!targetInventoryFile.getParentFile().exists()) {
-            targetInventoryFile.getParentFile().mkdirs();
-        }
         super.writing(targetInventoryFile);
         return this;
     }
