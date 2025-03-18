@@ -24,12 +24,15 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Slf4j
 @Getter
-public class AeaaProcessorTimeTracker {
+public class ProcessorTimeTracker {
 
     public final static String TIME_TRACKING_INVENTORY_INFO_ROW_KEY = "processor-time-tracker";
     public final static String TIME_TRACKING_INVENTORY_INFO_COL_KEY = "Timestamps";
@@ -37,9 +40,10 @@ public class AeaaProcessorTimeTracker {
     private final Inventory inventory;
     private final InventoryInfo inventoryInfo;
 
-    private final List<AeaaProcessTimeEntry> entries = new ArrayList<>();
+    @Getter
+    private final List<ProcessTimeEntry> entries = new ArrayList<>();
 
-    public AeaaProcessorTimeTracker(Inventory inventory) {
+    public ProcessorTimeTracker(Inventory inventory) {
         this.inventory = inventory;
         this.inventoryInfo = inventory.findOrCreateInventoryInfo(TIME_TRACKING_INVENTORY_INFO_ROW_KEY);
 
@@ -47,12 +51,12 @@ public class AeaaProcessorTimeTracker {
         applyChanges();
     }
 
-    public void addTimestamp(AeaaProcessTimeEntry entry) {
+    public void addTimestamp(ProcessTimeEntry entry) {
         entries.add(entry);
         applyChanges();
     }
 
-    public AeaaProcessTimeEntry getTimestamp(String processId) {
+    public ProcessTimeEntry getTimestamp(String processId) {
         return entries.stream().filter(entry -> entry.getProcessId().equals(processId)).findFirst().orElse(null);
     }
 
@@ -66,7 +70,7 @@ public class AeaaProcessorTimeTracker {
 
             for (int i = 0; i < json.length(); i++) {
                 final JSONObject object = json.getJSONObject(i);
-                entries.add(AeaaProcessTimeEntry.fromJSON(object));
+                entries.add(ProcessTimeEntry.fromJSON(object));
             }
 
         } catch (Exception e) {
@@ -79,11 +83,35 @@ public class AeaaProcessorTimeTracker {
     public void applyChanges() {
         JSONArray jsonArray = new JSONArray();
 
-        for (AeaaProcessTimeEntry entry : entries) {
+        for (ProcessTimeEntry entry : entries) {
             jsonArray.put(entry.toJSON());
         }
 
         inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, jsonArray.toString());
+    }
+
+    public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker processorTimeTracker1, ProcessorTimeTracker processorTimeTracker2) {
+        ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
+        List<ProcessTimeEntry> mergedEntries = new ArrayList<>();
+
+
+        Set<String> processes = new HashSet<>();
+        processes.addAll(processorTimeTracker1.getEntries().stream().map(ProcessTimeEntry::getProcessId).collect(Collectors.toSet()));
+        processes.addAll(processorTimeTracker2.getEntries().stream().map(ProcessTimeEntry::getProcessId).collect(Collectors.toSet()));
+
+        for (String processId : processes) {
+            ProcessTimeEntry entry1 = processorTimeTracker1.getTimestamp(processId);
+            ProcessTimeEntry entry2 = processorTimeTracker2.getTimestamp(processId);
+            if (entry1 == null){
+                mergedEntries.add(entry2);
+            } else if (entry2 == null) {
+                mergedEntries.add(entry1);
+            } else {
+                mergedEntries.add(ProcessTimeEntry.merge(entry1, entry2));
+            }
+        }
+        merged.getEntries().addAll(mergedEntries);
+        return merged;
     }
 
 }
