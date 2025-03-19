@@ -87,7 +87,7 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     EOL_IS_EOL("EOL Is EOL"),
     EOL_IS_SUPPORTED("EOL Is Support"),
     EOL_IS_SUPPORTED_EXTENDED("EOL Is Extended Support"),
-    EOL_RATING("EOL Rating"),;
+    EOL_RATING("EOL Rating");
 
     private final String key;
 
