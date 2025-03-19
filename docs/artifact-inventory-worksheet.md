@@ -113,7 +113,7 @@ may find columns such as
 * Matched CPEs - List of matched CPEs during vulnerability analysis step. The CPEs show a correlation with the given artifact version.
 * Vulnerability - List of matched vulnerabilities (CVEs).
 * Verified - Indicates that the artifact was identified to be part of concrete project. Deprecated.
-* Projects - List of paths the artifact in the project was identified.
+* Root Paths - List of paths where artifact is located.
 * WILDCARD-MATCH - The artifact matching process support wildcard version matching. This column indicated where a wildcard match was used. Deprecated
 
 Processing columns are intermediate columns that do not need to be maintained in a reference inventory.
