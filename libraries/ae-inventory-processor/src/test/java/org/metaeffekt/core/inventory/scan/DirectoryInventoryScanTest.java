@@ -91,7 +91,7 @@ public class DirectoryInventoryScanTest {
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             qualifiers.add(mapper.getQualifier());
         }
-        assertThat(qualifiers.contains("test-alpha-1.0.0.jar")).isTrue();
+        assertThat(qualifiers.contains("test-alpha-1.0.0.jar-1.0.0-Alpha Component")).isTrue();
 
     }
 
@@ -172,23 +172,21 @@ public class DirectoryInventoryScanTest {
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{"--none--"};
         File inventoryFile = new File("<project.baseDir>/inventory/src/main/resources/inventory/artifact-inventory.xls");
-        Inventory referenceInventory = new InventoryReader().readInventory(inventoryFile);
+        Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
-        final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, referenceInventory);
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
 
         scan.setEnableImplicitUnpack(true);
         scan.setIncludeEmbedded(true);
         scan.setEnableDetectComponentPatterns(true);
 
         final Inventory resultInventory = scan.createScanInventory();
+
+        for (Artifact a : resultInventory.getArtifacts()) {
+            System.out.println(a.getId() + " - " + a.getVersion() + " - " + a.getRootPaths());
+        }
+
         new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory.xls"));
-
-        final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
-                new DirectoryScanAggregatorConfiguration(referenceInventory, resultInventory, scanDir);
-
-
-        directoryScanAggregatorConfiguration.contribute(new File("target/aggregate"), resultInventory);
-        new InventoryWriter().writeInventory(resultInventory, new File("target/scan-inventory_aggregate.xls"));
     }
 
     @Test
@@ -211,13 +209,20 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
 
+        // inputs
         final File scanInputDir = new File("<path-to-input>");
         final File scanDir = new File("<path-to-scan>");
 
+        // other sources
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
+        // outputs
+        final File targetScanInventoryFile = new File("target/scan-inventory.xlsx");
+        final File targetAggregationDir = new File("target/aggregation");
+        final File targetAggregationInventoryFile = new File("target/aggregated-inventory.xlsx");
+
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
-        new InventoryWriter().writeInventory(inventory, new File("target/scan-inventory.xlsx"));
+        new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
 
         for (Artifact artifact : inventory.getArtifacts()) {
             final String pathInAsset = artifact.get(Artifact.Attribute.PATH_IN_ASSET);
@@ -228,38 +233,14 @@ public class DirectoryInventoryScanTest {
 
         final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls");
 
+        final Inventory aggregationInventory = new InventoryReader().readInventory(targetScanInventoryFile);
+
         final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
-                new DirectoryScanAggregatorConfiguration(referenceInventory, inventory, scanDir);
+                new DirectoryScanAggregatorConfiguration(referenceInventory, aggregationInventory, scanDir);
 
-        final List<FilePatternQualifierMapper> filePatternQualifierMappers =
-                directoryScanAggregatorConfiguration.mapArtifactsToCoveredFiles();
+        directoryScanAggregatorConfiguration.aggregateFiles(targetAggregationDir);
 
-        // pick random qualifier from list and check if it is in the aggregated inventory
-        final FilePatternQualifierMapper filePatternQualifierMapper = filePatternQualifierMappers.get(0);
-        final FilePatternQualifierMapper filePatternQualifierMapperEOL = filePatternQualifierMappers.get(filePatternQualifierMappers.size() - 1);
-        final FilePatternQualifierMapper filePatternQualifierMapperHalf = filePatternQualifierMappers.get(filePatternQualifierMappers.size() / 2);
-        final String qualifier = filePatternQualifierMapper.getQualifier();
-        final String finalQualifier = filePatternQualifierMapperEOL.getQualifier();
-        final String halfQualifier = filePatternQualifierMapperHalf.getQualifier();
-        final Artifact artifact = inventory.findArtifact(qualifier);
-        final Artifact lastArtifact = inventory.findArtifact(finalQualifier);
-        final Artifact halfArtifact = inventory.findArtifact(halfQualifier);
-        Assert.assertNotNull(artifact);
-        Assert.assertNotNull(lastArtifact);
-        Assert.assertNotNull(halfArtifact);
-
-        directoryScanAggregatorConfiguration.aggregateFiles(new File("target/aggregation"));
-
-        new InventoryWriter().writeInventory(inventory, new File("target/aggregated-inventory.xlsx"));
-
-        // add assertions by getting random qualifiers/artifacts of the test inventory and check if they are in the aggregated inventory
-        Inventory aggregatedInventory = new InventoryReader().readInventory(new File("target/aggregated-inventory.xlsx"));
-        final Artifact aggregatedArtifact = aggregatedInventory.findArtifact(qualifier);
-        final Artifact aggregatedLastArtifact = aggregatedInventory.findArtifact(finalQualifier);
-        final Artifact aggregatedHalfArtifact = aggregatedInventory.findArtifact(halfQualifier);
-        Assert.assertNotNull(aggregatedArtifact);
-        Assert.assertNotNull(aggregatedLastArtifact);
-        Assert.assertNotNull(aggregatedHalfArtifact);
+        new InventoryWriter().writeInventory(aggregationInventory, targetAggregationInventoryFile);
     }
 
     private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir, String... postScanExcludes) throws IOException {

@@ -387,14 +387,14 @@ public class Inventory implements Serializable {
     }
 
     public AssetMetaData findAssetMetaData(String id) {
-        return findAssetMetaData(id,false);
+        return findAssetMetaData(id, false);
     }
 
     public AssetMetaData findAssetMetaData(String id, boolean matchWildcards) {
         if (id == null) return null;
 
         for (AssetMetaData assetMetaData : getAssetMetaData()) {
-            if (id.equals(assetMetaData.get(KEY_ASSET_ID))){
+            if (id.equals(assetMetaData.get(KEY_ASSET_ID))) {
                 return assetMetaData;
             }
         }
