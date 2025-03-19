@@ -158,18 +158,20 @@ public class DocumentDescriptorReportGenerator {
 
                 switch (documentPart.getDocumentPartType()) {
                     case ANNEX:
-                    setPolicy(mergedParams, report);
+                        setPolicy(mergedParams, report);
                         break;
                     case VULNERABILITY_REPORT:
-                    setPolicy(mergedParams, report);
-                    String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
-                    try {
-                        // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
-                        report.addGenerateOverviewTablesForAdvisoriesByMap(convertToJSONArray(generateOverviewTablesForAdvisories));
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
-                    }
-                        break;
+                        setPolicy(mergedParams, report);
+                        String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
+                        if (generateOverviewTablesForAdvisories != null) {
+                            try {
+                                // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
+                                report.addGenerateOverviewTablesForAdvisoriesByMap(convertToJSONArray(generateOverviewTablesForAdvisories));
+                            } catch (Exception e) {
+                                throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
+                            }
+                            break;
+                        }
                 }
 
                 report.setReferenceInventory(inventoryContext.getReferenceInventory());
