@@ -146,8 +146,12 @@ public class DocumentDescriptorReportGenerator {
                         builder.inventoryBomReportEnabled(true);
                 }
                 builder.reportLanguage(documentDescriptor.getLanguage());
-                boolean includeInofficialOsiStatus = Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus"));
-                builder.includeInofficialOsiStatus(includeInofficialOsiStatus);
+
+                builder.includeInofficialOsiStatus(Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus")));
+                builder.filterAdvisorySummary(Boolean.parseBoolean(mergedParams.get("filterAdvisorySummary")));
+                builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
+                builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
+
                 ReportConfigurationParameters configParams = builder.build();
 
                 // FIXME-KKL: revise if we want different pre-requisites for the different document types, currently we handle all the same way
@@ -245,8 +249,6 @@ public class DocumentDescriptorReportGenerator {
             File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
 
             String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
-
-            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false"));
 
             CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
             securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
