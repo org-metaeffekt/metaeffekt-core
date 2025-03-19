@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_ae-commercial-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Commercial Components</title>
+    <body>
+        <p>
+            The covered software contains commercial third-party components. These are generally licensed
+            individually under vendor-specific license terms, which further apply towards the licensee of ${product.name}.
+        </p>
+        <p>
+            License and contract information regarding commercial licenses are covered in section 
+			<xref keyref="license-notices"/>. Standard license texts are covered by the annex
+            when permitted by the terms and conditions of the license and/or associated contract.
+        </p>
+    </body>
+</topic>

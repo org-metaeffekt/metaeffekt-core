@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="provider">
+    <glossterm>Provider</glossterm>
+    <glossdef>
+        A software provider can be the manufacturer itself or a software distributor. In most cases, the offered software
+        is a mixed form. This means that the manufacturer's own and third-party components are combined.
+        In the context of a supply chain for software, the provider and the recipient represent a link in this chain.
+        A provider, who produces software on the basis of third-party content and uses it to implement projects or products
+         (<i>provider</i>), is also a recipient in the supply chain and is dependent on supplies from other providers
+         (<i>supplier</i>).
+        <p>
+            See also: <abbreviated-form keyref="recipient"/>, <abbreviated-form keyref="software-distribution"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>providers</glossSurfaceForm>
+    </glossBody>
+</glossentry>

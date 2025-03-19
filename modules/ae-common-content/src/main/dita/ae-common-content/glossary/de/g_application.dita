@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="application">
+    <glossterm>Applikation</glossterm>
+    <glossdef>
+        Platzhalter Applikationen
+        <p>
+            Siehe auch: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Applikationen</glossSurfaceForm>
+    </glossBody>
+</glossentry>

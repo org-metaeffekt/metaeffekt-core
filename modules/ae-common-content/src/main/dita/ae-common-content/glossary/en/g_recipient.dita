@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="recipient">
+    <glossterm>Recipient</glossterm>
+    <glossdef>
+        The recipient of a software usually has a conctractual relationship with the provider. This conctractual
+        relationship may also include the software distributor of third-party components.
+        <p>
+            Depending on the contractual relationship, the recipient may further develop, operate and/or be the end user
+            of the software.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="software-distribution"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>recipients</glossSurfaceForm>
+    </glossBody>
+</glossentry>
