@@ -28,8 +28,11 @@ import static org.metaeffekt.core.util.FileUtils.toAbsoluteOrReferencePath;
 public class FileUtilsTest {
 
     @Test
-    public void canonicializeLinuxPathTest() {
+    public void canonicalizeLinuxPathTest() {
         assertEquals("test", FileUtils.canonicalizeLinuxPath("test"));
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("./test"));
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("././././test"));
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("././././test/../././test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/././test"));
@@ -41,6 +44,15 @@ public class FileUtilsTest {
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
         assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
+
+        assertEquals("test/test/test", FileUtils.canonicalizeLinuxPath("./test/./test/test/../././/test"));
+        assertEquals("/a/b", FileUtils.canonicalizeLinuxPath("/a/b/c/d/e/../../../"));
+        assertEquals("/a/b", FileUtils.canonicalizeLinuxPath("/a/b/c/d/e/../../.."));
+
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("./a/../b/../c/../test"));
+        assertEquals("/test", FileUtils.canonicalizeLinuxPath("/./a/../b/../c/../test"));
+        assertEquals("/test", FileUtils.canonicalizeLinuxPath("/./a/.././b/.././c/.././test"));
+
     }
 
     @Test
@@ -50,12 +62,16 @@ public class FileUtilsTest {
         assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/./../test"));
         assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/.././test"));
         assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/./././.././test"));
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/././././test/../.."));
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/././././test/../../a"));
 
         // these normalizations should throw an exception; illegal/undefined path; please also not the OS-specific treatment
         assertThat(Paths.get("/../test").normalize().toString()).isEqualTo(File.separator + "test");
         assertThat(Paths.get("/.././test").normalize().toString()).isEqualTo(File.separator + "test");
         assertThat(Paths.get("/./../test").normalize().toString()).isEqualTo(File.separator + "test");
         assertThat(Paths.get("/./././.././test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/././././test/../..").normalize().toString()).isEqualTo(File.separator);
+        assertThat(Paths.get("/././././test/../../a").normalize().toString()).isEqualTo(File.separator + "a");
     }
 
     @Test
