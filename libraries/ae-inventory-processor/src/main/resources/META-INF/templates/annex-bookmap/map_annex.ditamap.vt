@@ -53,7 +53,7 @@
             <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
         </topicref>
 
-        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licensing.dita">
+        <topicref href="$inventoryContext.getIdentifier()/tpc_license-overview.dita">
 
         #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.components.no.license-switch") == "true")
             <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
