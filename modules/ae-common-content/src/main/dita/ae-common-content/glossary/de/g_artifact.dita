@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="artifact">
-    <glossterm>Sonstiges Artefakt</glossterm>
+    <glossterm>Artefakt</glossterm>
     <glossdef>
         <p>
         Ein Artefakt ist eine physische Datei wie bspw. eine ausführbare Binärdatei, ein Archiv, ein Dokument, ein Text
@@ -12,6 +12,6 @@
         </p>
     </glossdef>
     <glossBody>
-        <glossSurfaceForm>sonstigen Artefakte</glossSurfaceForm>
+        <glossSurfaceForm>Artefakte</glossSurfaceForm>
     </glossBody>
 </glossentry>
