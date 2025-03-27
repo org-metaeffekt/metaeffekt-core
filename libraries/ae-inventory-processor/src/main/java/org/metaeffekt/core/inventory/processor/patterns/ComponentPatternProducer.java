@@ -603,7 +603,6 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new PythonModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new JarModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new NextcloudAppInfoContributor());
-        contributorRunnerBuilder.add(new ComposerLockContributor());
         contributorRunnerBuilder.add(new XWikiExtensionComponentPatternContributor());
         contributorRunnerBuilder.add(new NodeRuntimeComponentPatternContributor());
         contributorRunnerBuilder.add(new NordeckAppComponentPatternContributor());

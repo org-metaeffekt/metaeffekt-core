@@ -18,6 +18,8 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.metaeffekt.core.inventory.processor.adapter.BowerLockAdapter;
+import org.metaeffekt.core.inventory.processor.adapter.ComposerLockAdapter;
 import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
 import org.metaeffekt.core.inventory.processor.adapter.YarnLockAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
@@ -45,6 +47,12 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         add("/package.json");
         add("/composer.json");
         add(".composer.json");
+        add("/yarn.lock");
+        add("/package-lock.json");
+        add("/composer.lock");
+        add(".package-lock.json");
+        add(".composer.lock");
+
     }});
 
     @Override
@@ -66,6 +74,30 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         // attempt reading web modules metadata
         try {
             WebModule webModule = new WebModule();
+
+            if (anchorFile.getName().contains("lock")) {
+                // check if there is a package.json or composer.json or bower.json
+                final File packageJsonFile = new File(anchorParentDir, "package.json");
+                final File bowerJsonFile = new File(anchorParentDir, "bower.json");
+                final File composerJsonFile = new File(anchorParentDir, "composer.json");
+
+                if (packageJsonFile.exists() || bowerJsonFile.exists() || composerJsonFile.exists()) {
+                    return Collections.emptyList();
+                }
+
+                if (!packageJsonFile.exists() && anchorFile.getName().endsWith(Constants.PACKAGE_LOCK_JSON)) {
+                    webModule.packageLockJsonFile = anchorFile;
+                }
+
+                if (!bowerJsonFile.exists() && anchorFile.getName().endsWith(Constants.BOWER_JSON)) {
+                    webModule.bowerLockFile = anchorFile;
+                }
+
+                if (!composerJsonFile.exists() && anchorFile.getName().endsWith("composer.lock")) {
+                    webModule.composerLockFile = anchorFile;
+                }
+            }
+
             processAnchorFile(anchorFile, webModule);
 
 
@@ -96,9 +128,9 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             } else if (webModule.yarnLockFile != null) {
                 inventoryFromLockFile = new YarnLockAdapter().extractInventory(webModule.yarnLockFile, relativeAnchorPath, webModule.dependencies);
             } else if (webModule.bowerLockFile != null) {
-                // TODO-AOE: maybe we can use the npm adapter here (to be evaluated)
+                inventoryFromLockFile = new BowerLockAdapter().extractInventory(webModule.bowerLockFile, relativeAnchorPath, webModule.dependencies);
             } else if (webModule.composerLockFile != null) {
-                // TODO-AOE: move composer contributor logic here
+                inventoryFromLockFile = new ComposerLockAdapter().extractInventory(webModule.composerLockFile, relativeAnchorPath, webModule.dependencies);
             } else {
                 if (anchorFile.getName().endsWith(Constants.PACKAGE_JSON)) {
                     artifact.set(Artifact.Attribute.PURL, buildPurl("npm", webModule.name, webModule.version));
@@ -224,7 +256,6 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
         File packageLockJsonFile;
         File packageJsonFile;
         File yarnLockFile;
-        File bowerJsonFile;
         File bowerLockFile;
         File composerJsonFile;
         File composerLockFile;
@@ -366,15 +397,20 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             final String json = FileUtils.readFileToString(anchorFile, "UTF-8");
             final JSONObject obj = new JSONObject(json);
 
-            webModule.name = getString(obj, "name", webModule.name);
-            webModule.license = getString(obj, "license", webModule.license);
-            webModule.version = getVersion(obj);
-            webModule.anchor = anchorFile;
-            if (webModule.version != null) {
-                webModule.anchorChecksum = FileUtils.computeChecksum(webModule.anchor);
-            }
-            if (webModule.version != null && webModule.version.matches("v[0-9].*")) {
-                webModule.version = webModule.version.substring(1);
+            if (anchorFile.getName().endsWith("composer.lock")) {
+                webModule.name = anchorFile.getParentFile().getName();
+                webModule.version = "unspecific";
+            } else {
+                webModule.name = getString(obj, "name", webModule.name);
+                webModule.license = getString(obj, "license", webModule.license);
+                webModule.version = getVersion(obj);
+                webModule.anchor = anchorFile;
+                if (webModule.version != null) {
+                    webModule.anchorChecksum = FileUtils.computeChecksum(webModule.anchor);
+                }
+                if (webModule.version != null && webModule.version.matches("v[0-9].*")) {
+                    webModule.version = webModule.version.substring(1);
+                }
             }
 
             if (anchorFile.getName().endsWith("package.json") || anchorFile.getName().endsWith("bower.json")) {

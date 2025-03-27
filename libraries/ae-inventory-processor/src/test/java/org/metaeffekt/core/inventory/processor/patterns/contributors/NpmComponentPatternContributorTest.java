@@ -53,10 +53,10 @@ public class NpmComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(645);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(3950);
         inventory.getArtifacts().forEach(artifact -> {
             if (artifact.getId().contains("rimraf")){
-                assertThat(artifact.getVersion()).isEqualTo("2.6.3");
+                assertThat(artifact.getVersion()).isIn("3.0.2", "5.0.7");
             }
         });
     }
@@ -84,7 +84,7 @@ public class NpmComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(190);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(71);
     }
 
     @Test
@@ -110,7 +110,7 @@ public class NpmComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(190);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1539);
     }
 
     @Test

@@ -43,6 +43,7 @@ public class NpmPackageLockAdapter {
      * @param packageLockJsonFile The package-lock.json file to parse.
      * @param relPath The relative path to the file from the relevant basedir.
      * @param projectName The name of the project for which to extract data.
+     * @param dependencies The list of dependencies from package.json.
      *
      * @return An inventory populated with the runtime modules defined in the package json file.
      *
@@ -76,6 +77,15 @@ public class NpmPackageLockAdapter {
 
         @Setter
         boolean resolved;
+
+        @Setter
+        boolean devDependency;
+
+        @Setter
+        boolean peerDependency;
+
+        @Setter
+        boolean optionalDependency;
 
         public NpmModule(String name, String path) {
             this.name = name;
@@ -113,13 +123,13 @@ public class NpmPackageLockAdapter {
     }
 
     private static void parseProjectDependencies(Inventory inventory, String path, JSONObject project, JSONObject packages) {
-        final Set<NpmModule> modules = collectModules(project.optJSONObject("dependencies"), "node_modules/");
+        final Set<NpmModule> modules = collectModules(project.optJSONObject("dependencies"), "node_modules/", null);
         // dev dependencies
-        modules.addAll(collectModules(project.optJSONObject("devDependencies"), "node_modules/"));
+        modules.addAll(collectModules(project.optJSONObject("devDependencies"), "node_modules/", "devDependencies"));
         // optional dependencies
-        modules.addAll(collectModules(project.optJSONObject("optionalDependencies"), "node_modules/"));
+        modules.addAll(collectModules(project.optJSONObject("optionalDependencies"), "node_modules/", "optionalDependencies"));
         // peer dependencies
-        modules.addAll(collectModules(project.optJSONObject("peerDependencies"), "node_modules/"));
+        modules.addAll(collectModules(project.optJSONObject("peerDependencies"), "node_modules/", "peerDependencies"));
 
         boolean changed;
         do {
@@ -134,14 +144,12 @@ public class NpmPackageLockAdapter {
                 module.setHash(moduleObject.optString("integrity"));
                 module.setVersion(moduleObject.optString("version"));
 
-                final boolean dev = moduleObject.optBoolean("dev");
-                if (dev) {
-                    LOG.warn("Invariant violated. Expecting only non-dev dependency in production dependencies. " +
-                            "Module [{}] is a development dependency.", module.getName());
-                }
+                module.setDevDependency(moduleObject.optBoolean("dev"));
+                module.setPeerDependency(moduleObject.optBoolean("peer"));
+                module.setOptionalDependency(moduleObject.optBoolean("optional"));
 
                 changed |= modules.addAll(collectModules(
-                        moduleObject.optJSONObject("dependencies"), effectiveModuleId + "/node_modules/"));
+                        moduleObject.optJSONObject("dependencies"), effectiveModuleId + "/node_modules/", null));
 
                 module.setResolved(true);
             }
@@ -166,6 +174,14 @@ public class NpmPackageLockAdapter {
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
             artifact.set("Source Archive - URL", module.getUrl());
             artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getId() + "]");
+            String assetId = "AID-" + artifact.getId();
+            if (module.isDevDependency()) {
+                artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
+            } else if (module.isPeerDependency()) {
+                artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
+            } else if (module.isOptionalDependency()) {
+                artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
+            }
 
             // NOTE: do not populate ARTIFACT_ROOT_PATHS; a rrot path is not known in this case
 
@@ -189,12 +205,19 @@ public class NpmPackageLockAdapter {
         return effectiveModuleId;
     }
 
-    private static Set<NpmModule> collectModules(JSONObject dependencies, String path) {
+    private static Set<NpmModule> collectModules(JSONObject dependencies, String path, String dependencyTag) {
         Set<NpmModule> modules = new HashSet<>();
         if (dependencies != null) {
             Map<String, Object> map = dependencies.toMap();
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 NpmModule module = new NpmModule(entry.getKey(), path);
+                if ("devDependencies".equals(dependencyTag)) {
+                    module.setDevDependency(true);
+                } else if ("peerDependencies".equals(dependencyTag)) {
+                    module.setPeerDependency(true);
+                } else if ("optionalDependencies".equals(dependencyTag)) {
+                    module.setOptionalDependency(true);
+                }
                 modules.add(module);
             }
         }
@@ -218,42 +241,61 @@ public class NpmPackageLockAdapter {
 
                 String version = dep.optString("version");
                 String url = dep.optString("resolved");
-                for (WebModuleComponentPatternContributor.WebModuleDependency dependency : dependencies) {
-                    if (module.equals(dependency.getName())) {
-                        Artifact artifact = new Artifact();
-                        if (version == null) {
-                            version = dependency.getVersion();
+                if (!dependencies.isEmpty()) {
+                    for (WebModuleComponentPatternContributor.WebModuleDependency dependency : dependencies) {
+                        if (module.equals(dependency.getName())) {
+                            Artifact artifact = new Artifact();
+                            if (version == null) {
+                                version = dependency.getVersion();
+                            }
+                            artifact.setId(dependency.getName() + "-" + version);
+                            artifact.setComponent(dependency.getName());
+                            artifact.setVersion(dependency.getVersion());
+                            artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+                            artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
+                            artifact.setUrl(url);
+                            artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
+
+                            // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
+
+                            String assetId = "AID-" + artifact.getId();
+
+                            // Set dependency type marker based on the dependency type
+                            if (dependency.isDevDependency()) {
+                                // mark as development dependency
+                                artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
+                            } else if (dependency.isPeerDependency()) {
+                                // mark as peer dependency
+                                artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
+                            } else if (dependency.isOptionalDependency()) {
+                                // mark as optional dependency
+                                artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
+                            }
+                            // production dependencies don't need a special marker
+
+                            String purl = buildPurl(dependency.getName(), dependency.getVersion());
+                            artifact.set(Artifact.Attribute.PURL, purl);
+
+                            inventory.getArtifacts().add(artifact);
+                            addDependencies(file, dep, inventory, path, dependencyTag, dependencies);
                         }
-                        artifact.setId(dependency.getName() + "-" + version);
-                        artifact.setComponent(dependency.getName());
-                        artifact.setVersion(dependency.getVersion());
+                    }
+                } else {
+                    if (version != null) {
+                        Artifact artifact = new Artifact();
+                        artifact.setId(module + "-" + version);
+                        artifact.setComponent(module);
+                        artifact.setVersion(version);
                         artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
                         artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
                         artifact.setUrl(url);
                         artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
 
-                        // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
-                        
-                        String assetId = "AID-" + artifact.getId();
-                        
-                        // Set dependency type marker based on the dependency type
-                        if (dependency.isDevDependency()) {
-                            // mark as development dependency
-                            artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
-                        } else if (dependency.isPeerDependency()) {
-                            // mark as peer dependency
-                            artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
-                        } else if (dependency.isOptionalDependency()) {
-                            // mark as optional dependency
-                            artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
-                        }
-                        // production dependencies don't need a special marker
-
-                        String purl = buildPurl(dependency.getName(), dependency.getVersion());
+                        String purl = buildPurl(module, version);
                         artifact.set(Artifact.Attribute.PURL, purl);
 
                         inventory.getArtifacts().add(artifact);
-                        addDependencies(file, dep, inventory, path, dependencyTag, dependencies);
+
                     }
                 }
 
