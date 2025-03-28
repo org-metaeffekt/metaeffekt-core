@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="component">
+    <glossterm>Softwarebestandteil (Component)</glossterm>
+    <glossdef>
+        <p>
+        Ein Softwarebestandteil (Component) ist eine Sammlung bestehend aus einem oder mehreren Artefakten, Paketen oder Webmodulen. Ein
+        Softwarebestandteil kann als logisches Aggregat betrachtet werden. Lizenzinformationen werden auf Softwarebestandteil-Ebene zugeordnet und
+        sind innerhalb der aggregierten Artefakte, Pakete und Webmodule konsistent.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="package"/>, <abbreviated-form keyref="web-module"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Softwarebestandteile</glossSurfaceForm>
+    </glossBody>
+</glossentry>

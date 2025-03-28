@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="appliance">
+    <glossterm>Appliance</glossterm>
+    <glossdef><p>An appliance is a dedicated combination of hardware, hardware-resources and software components that
+        fulfills a specific purpose or function.
+    </p><p>
+        Physically, it can be provided by a mobile device, by server hardware or by a computer. An appliance is always
+        a dedicated host or network node.
+    </p><p>
+        Virtual appliances are software-defined hosts and run on shared hardware resources of a
+        virtualization environment. Virtual appliance are often referred to as virtual machines. A virtual machine
+        can be exported and transferred from a virtualization environment. It is not attached to any hardware.
+    </p></glossdef>
+    <glossBody>
+        <glossSurfaceForm>appliance</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="asset">
+    <glossterm>Asset</glossterm>
+    <glossdef><p>An asset, especially a software or hardware asset, is a collection of hardware and software components
+        for a specific purpose or function.
+        In the context of this documentation, an asset is either an <abbreviated-form keyref="appliance"/> or a
+        <abbreviated-form keyref="container"/>.
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>assets</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="software-distribution">
+    <glossterm>Software Distribution</glossterm>
+    <glossdef>A software distribution is composed of components and complementary data and configurations.
+        A Software Distribution is put together by a provider in order to make the software available to one or more
+        recipients. Depending upon context and relationship between provider and recipient of a software distribution,
+        the license conditions of the contained components must be considered. A Software Distribution can take
+        different characteristics. A software distribution can be converted for instance by an executable file, an
+        archive or a file system image.
+        <p>
+            See also: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="recipient"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>software distribution</glossSurfaceForm>
+    </glossBody>
+</glossentry>

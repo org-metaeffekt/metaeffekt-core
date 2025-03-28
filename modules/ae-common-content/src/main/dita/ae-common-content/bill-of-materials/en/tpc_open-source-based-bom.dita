@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_open-source-based-bom" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>${asset.name} ${asset.version}</title>
+    <body>
+        <p>
+            The <abbreviated-form keyref="software-distribution"/> covered by this document contains
+            <abbreviated-form keyref="component"/> and <abbreviated-form keyref="subcomponent"/> restricted
+            by individual license terms.
+        </p>
+        <p>
+            This document is part of the <abbreviated-form keyref="software-distribution-annex"/> which addresses
+            the obligations deduced from the <abbreviated-form keyref="effective-licenses"/>. The
+            software distribution is made available or transferred only in corresponding
+            combination with the software distribution annex.
+        </p>
+        <p>
+            The component licenses and notice files are provided as part of the software distribution annex.
+            Individual license texts may be omitted in case the terms are restricting the distribution.
+        </p>
+        <p>
+            License obligations of the individual components, as far as these can be addressed in documentation, are
+            detailed in section <xref keyref="license-notices"/>.
+        </p>
+    </body>
+</topic>

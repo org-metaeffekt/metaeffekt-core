@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="nist">
+    <glossterm>National Institute of Standards and Technology</glossterm>
+    <glossdef>
+        The National Institute of Standards and Technology (NIST) is a science laboratory and agency of the United
+        State Department of Commerce.
+        Apart from many other activities the NIST publishes the Cybersecurity Framework guidance on information
+        security and risk management.
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>National Institute of Standards and Technology (NIST)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>NIST</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>

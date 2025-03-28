@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="nvd">
+    <glossterm>National Vulnerability Database</glossterm>
+    <glossdef>
+        The National Vulnerability Database (NVD) is a repository of vulnerability related data.
+        The NVD hosts <abbreviated-form keyref="cpe"/> and <abbreviated-form keyref="cve"/>
+        details for retrieving and matching vulnerability information.
+        <p>The NVD is managed by the <abbreviated-form keyref="nist"/>.</p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>National Vulnerability Database (NVD)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>NVD</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>

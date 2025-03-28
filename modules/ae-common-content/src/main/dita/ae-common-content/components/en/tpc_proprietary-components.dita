@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_ae-commercial-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Third-Party Proprietary Components</title>
+    <body>
+        <p>
+            The covered software distribution contains proprietary third-party components. These are generally licensed 
+            individually under vendor-specific license terms, which further apply towards the licensee of ${product.name}.
+        </p>
+        <p>
+            License and contract information regarding proprietary licenses are covered in section <xref keyref="license-notices"/>.
+            License texts are included in the corresponding software distribution annex when permitted by the terms
+            of the license and/or contract.
+        </p>
+
+    </body>
+</topic>

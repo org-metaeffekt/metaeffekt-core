@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary//EN" "glossary.dtd">
+<glossentry id="g_supported">
+    <glossterm>Compatible</glossterm>
+    <glossdef>
+        <p>A configuration labeled compatible can be used in a production setup. Nevertheless,
+            ${organization.name} cannot provide full or timely support for a given compatible
+            configuration. ${organization.name} expects no issues with such a configuration and is
+            to date not aware of any particular problem. </p>
+        <p>The documented restrictions and limitations may be incomplete. Updates on restrictions
+            and limitations are not actively communicated.</p>
+        <p>${organization.name} is not responsible for any damage caused by using a compatible
+            configuration. </p>
+    </glossdef>
+</glossentry>

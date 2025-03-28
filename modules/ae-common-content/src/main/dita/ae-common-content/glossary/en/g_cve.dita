@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="cve">
+    <glossterm>Common Vulnerability Exposure</glossterm>
+    <glossdef>
+        A Common Vulnerability Exposure (CVE) is a public representation of a vulnerability. Each CVE covers
+        a description and machine-readable information for version matching.
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Common Vulnerability Exposure (CVE)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>CVE</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>

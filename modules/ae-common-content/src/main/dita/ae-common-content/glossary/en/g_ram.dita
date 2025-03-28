@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="ram">
+    <glossterm>System Memory</glossterm>
+    <glossdef>
+        Random-access memory is a form of computer data storage.
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>System Memory (RAM)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>RAM</glossAcronym>
+        </glossAlt>
+    </glossBody>
+    <related-links>
+        <link format="html" href="https://en.wikipedia.org/wiki/Random-access_memory"
+              scope="external">
+            <linktext>Wikipedia Article</linktext>
+        </link>
+    </related-links>
+</glossentry>

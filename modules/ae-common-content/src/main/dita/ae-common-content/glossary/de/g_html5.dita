@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="html5">
+    <glossterm>HTML5</glossterm>
+    <glossdef>Hypertext Markup Language, version 5</glossdef>
+    <glossBody>
+        <glossSurfaceForm>Hypertext Markup Language, Version 5 (HTML5)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>HTML5</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>

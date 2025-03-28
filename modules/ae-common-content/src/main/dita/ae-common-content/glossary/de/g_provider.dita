@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="provider">
+    <glossterm>Anbieter</glossterm>
+    <glossdef>
+        Softwareanbieter können der Hersteller selbst oder ein Software Distributor sein. Meist handelt es sich
+        bei der angebotenen Software um eine Mischform. Das bedeutet, es werden herstellereigene und fremde Softwarebestandteile
+        kombiniert. Innerhalb einer Lieferkette für Software können Anbieter und Empfänger ein Glied in dieser Kette darstellen.
+        Ein Anbieter, der Software auf Basis von Fremdanteilen herstellt und damit Projekte oder Produkte umsetzt
+        (<i>Provider</i>), ist in der Lieferkette ebenfalls Empfänger und auf Zulieferungen von anderen Anbietern
+        (<i>Supplier</i>) angewiesen.
+        <p>
+            Siehe auch: <abbreviated-form keyref="recipient"/>, <abbreviated-form keyref="software-distribution"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Anbieter</glossSurfaceForm>
+    </glossBody>
+</glossentry>

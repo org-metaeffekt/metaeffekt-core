@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="driver">
+    <glossterm>Treiber</glossterm>
+    <glossdef>
+        <p>
+        Platzhalter Treiber
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Treiber</glossSurfaceForm>
+    </glossBody>
+</glossentry>

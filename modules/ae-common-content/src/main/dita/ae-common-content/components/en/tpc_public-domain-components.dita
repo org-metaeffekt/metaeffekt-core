@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_ae-public-domain-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Public Domain Components</title>
+    <body>
+        <p>
+            Public domain components have generally waived all property rights. Nevertheless, public domain components
+            are associated with terms that need to be addressed in compliance.
+        </p>
+    </body>
+</topic>

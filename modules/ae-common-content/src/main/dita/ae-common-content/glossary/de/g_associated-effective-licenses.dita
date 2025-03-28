@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="associated-effective-licenses">
+    <glossterm>Assoziierte und effektive Lizenzen</glossterm>
+    <glossdef>
+        <p>
+            Softwarebestandteile können durch einen Anbieter unter verschiedenen Lizenzen zur Verfügung gestellt werden.
+            Dies ermöglicht die Lizenzierung in Abhängigkeit vom Nutzungskontext oder den Vertriebskanälen, in denen die
+            Softwarebestandteile bereitgestellt oder übertragen werden.
+        </p>
+        <p>
+            Diese Lizenzen werden dem Softwarebestandteil bei Bezug zugeordnet und hier als assoziierte Lizenzen bezeichnet.
+        </p>
+        <p>
+            Im Gegensatz zu den assoziierten Lizenzen sind die effektiven Lizenzen die Lizenzen, unter
+            denen eine Komponente genutzt oder weitergegeben wird. Die assoziierten und effektiven Lizenzen einer Komponente
+            können sich unterscheiden. Die Ableitung der effektiven Lizenzen ist durch die Bedingungen der assoziierten
+            Lizenzen und deren Wahlmöglichkeiten eingeschränkt.
+        </p>
+        <p>
+            Bei Nutzung oder Weitergabe sollte bei Wahlmöglichkeit eine verbindliche Lizenz ausgewählt werden. Dabei sind
+            grundsätzlich folgende Fälle zu berücksichtigen:
+        </p>
+        <ul>
+            <li>
+                Ein Softwarebestandteil wird mit einer Lizenzierungsoption zur Verfügung gestellt (Dual- oder Mehrfachlizenzierung),
+                bei der entweder die eine oder die andere Lizenz für die Softwareauslieferung verwendet werden kann. In diesem
+                Fall sollte eine effektive Lizenz ausgewählt werden.
+            </li>
+            <li>
+                Ein Softwarebestandteil wird mit einer Lizenz in einer bestimmten oder höheren Version der Lizenz versehen.
+                In diesem Fall sollte eine konkrete Version der Lizenz als effektive Lizenz bestimmt werden.
+            </li>
+            <li>
+                Für Softwarebestandteile, die weitere separierte Unterbestandteile enthält, sind bei der Lizenzauswahl, neben
+                der Lizenz der Komponente, auch die Lizenzen der Unterbestandteile zu berücksichtigen.
+            </li>
+            <li>
+                Eine assoziierte Lizenz eines Softwarebestandteils erlaubt die Unterlizenzierung (sub-licensing) mit einer anderen
+                Lizenz. In diesem Fall ist die gewählte Lizenz die effektive Lizenz.
+            </li>
+        </ul>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Assoziierte und effektive Lizenzen</glossSurfaceForm>
+    </glossBody>
+</glossentry>

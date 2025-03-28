@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="installation-package">
+    <glossterm>Installation package</glossterm>
+    <glossdef>
+        Placeholder Installation package
+        <p>
+            See also: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>installation packages</glossSurfaceForm>
+    </glossBody>
+</glossentry>

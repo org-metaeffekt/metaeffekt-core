@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="software-distribution-annex">
+    <glossterm>Software Distribution Annex</glossterm>
+    <glossdef>
+        Der Software Distribution Annex fasst alle Informationen zusammen, die zur Darstellung der
+        Nutzungsbedingungen und zur Erfüllung der Verpflichtungen bei der Bereitstellung oder Übertragung der Software
+        Distribution erforderlich sind. Der Annex umfasst die folgenden Elemente:
+        <ul>
+            <li>Die assoziierten und effektiven Lizenzen und Hinweise der jeweils enthaltenen Komponenten.</li>
+            <li>Den Quellcode der Komponenten, sofern dies für die Software Distribution entsprechend der effektiven
+                Lizenz erforderlich ist.</li>
+            <li>Eine Auflistung aller Komponenten von Drittanbietern (<i>Bill of Materials</i>) mit ergänzenden
+                Lizenzinformationen und Hinweisen.</li>
+        </ul>
+        <p>
+            Je nach Anwendungsfall und vertraglichen Rahmenbedingungen können weitere Aspekte im Software Distribution
+            Annex enthalten sein. Dazu gehören Hinweise zu Im- und Export, die Bewertung von Schwachstellen der
+            Softwarekomponenten oder ergänzende Patentinformationen.
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Software Distribution Annex</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_imprint">
+    <title>Impressum</title>
+    <body>
+        <p/>  
+        <p/>
+        <p/>  
+        <p/>  
+        <p/>
+        <p/>  
+        <section>
+            <title>${product.name}</title>
+            <p>
+                <dl compact="yes">
+                    <dlentry>
+                        <dt>Version:</dt>
+                        <dd>${product.version}</dd>
+                    </dlentry>
+                </dl>
+            </p>
+        </section>
+        <section>
+            <title>${asset.name}</title>
+            <p>
+                <dl compact="yes">
+                    <dlentry>
+                        <dt>Version:</dt>
+                        <dd>${asset.version}</dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Datum:</dt>
+                        <dd>${asset.date_de}</dd>
+                    </dlentry>
+                </dl>
+            </p>
+        </section>
+        <section>
+            <title>${document.name}</title>
+            <p>
+                <dl compact="yes">
+                    <dlentry>
+                        <dt>Version:</dt>
+                        <dd>${document.version}</dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Status:</dt>
+                        <dd>${document.status_de}</dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Klassifikation:</dt>
+                        <dd>${document.classification_de}</dd>
+                    </dlentry>
+                    <dlentry>
+                        <dt>Datum:</dt>
+                        <dd>${document.date_de}</dd>
+                    </dlentry>
+                </dl>
+            </p>
+            <p>
+            </p>
+           <p>
+                Copyright ${document.copyright.year}, ${organization.name}
+            </p>
+        </section>
+        <p/>  
+        <p/>
+        <p/>  
+        <p/>  
+        <section>
+            <title>${organization.name}</title>
+            <p>
+                <lines>${organization.address}</lines>
+            </p>
+        </section>
+    </body>
+</topic>

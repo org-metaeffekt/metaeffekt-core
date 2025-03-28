@@ -1,0 +1,76 @@
+Variables and their semantics
+=============================
+
+NOTE:
+- Before introducing a new variable make sure to evaluate the context and best
+  alignment to the existing variables
+- The variables are sorted alphabetically (at least in blocks)
+- Variables may not be used on shared level, but used on common POM level. Therefore we
+  also list variables, which are locally not covered by content.
+
+${document.name}
+=============================================
+- The name of the document.
+
+${document.classification_de} / ${document.classification_en}
+=============================================================
+- Classification of the document in the respective language.
+
+${document.status_en} / ${document.status_de}
+=============================================
+- Security status of the document in the respective language.
+
+${document.version}
+=============================================
+- The version of the document.
+
+DEPRECATED
+${document.last.change_de} / ${document.last.change_en} 
+=======================================================
+- Date, when the document content was last changed / revised. The format is language specific.
+- de: <Month_de> <Year>
+- en: <Month_en>, <Year> 
+
+${document.date_de} / ${document.date_en}
+=======================================================
+- Date, when the document content was created / built. The format is language specific.
+- de: <Day>.<Month>.<Year>
+- en: <Year>-<Month>-<Day>
+
+${document.copyright.year}
+==========================
+- Year of the document (not necessary the software) copyright.
+
+${product.acronym}
+==================
+- Product acronym. DCC
+
+${product.name}
+===============
+- Product name. Example: Deployment Control Center
+
+${product.version}
+==================
+- Product version. Free-form version on product level.
+
+${asset.date_de} / ${asset.date_en}
+=======================================
+- The concrete day of the asset creation/tag. The format is again language specific
+- de: 30.09.2015
+- en: 2015-09-30
+
+${asset.version}
+==================
+- The tag version of the asset. Usually MAJOR.MINOR.PATCH.BUILD formatted.
+
+${organization.acronym}
+=======================
+- Organization acronym. Example: MyCo 
+
+${organization.name}
+====================
+- Organization name. Example: MyCo AG
+
+${organization.license} / ${organization.license_de}
+====================================================
+- The general license under which the organization distributes its components.

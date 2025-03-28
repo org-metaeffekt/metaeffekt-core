@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Concept//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_notice">
+    <title>Hinweise</title>
+    <body>
+        <p>
+            Alle in dieser Dokumentation genannten Namen von Firmen, Organisationen, Lizenzen und Produkten werden
+            ausschließlich zu Identifikationszwecken verwendet. Eine Marke wird nur dann ausdrücklich als eingetragene
+            oder nicht eingetragene Marke identifiziert, wenn dies durch entsprechende Richtlinien oder
+            Lizenzbestimmungen erforderlich ist.
+        </p>
+        <p>
+            Diese Dokumentation ist urheberrechtlich geschützt. Copyright ${document.copyright.year}, ${organization.name}.
+        </p>
+    </body>
+</topic>

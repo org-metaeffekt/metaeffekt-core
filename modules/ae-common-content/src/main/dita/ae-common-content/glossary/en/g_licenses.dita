@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="licenses">
+    <glossterm>License identifiers and terms</glossterm>
+    <glossdef>
+        The license designators used were derived from the licenses (title, version and content) according to standardized
+        rules, as far as possible and reasonable. The objective of standardizations was pursued and abbreviations were
+        largely avoided.
+        <p>
+            A special feature are licenses or terms of use that do not bear any title or name. For these terms of use,
+             the identifier was derived from content and context. In particular, simple <i>permissions</i>, which are common
+             in many variations, are referred to here as "Permission Terms". In order to be able to classify and
+             distinguish them more quickly, selected properties have been included in the license identifier
+             (e.g. <q>Permission Terms (no warranty;
+            no advertisment)</q>).
+        </p>
+        <p>
+            License information for components which are assignet to multiple licenses, which offer a choice or are provided
+            with an exception, are presented in the form of an expression:
+            <ul>
+                <li>
+                    License identifiers or in turn license expressions separated by a comma (,), correspond to the
+                     conjunction with an <i>AND</i>.
+                </li>
+                <li>
+                    Licenses or license expressions, that are linked with an <i>OR</i> or <i>EITHER OR</i>,
+                    are represented with a plus (+).
+                </li>
+                <li>
+                    <i>AND</i> has priority over <i>OR</i>. A bracket replacement is only used if it is absolutely
+                    necessary for the correct representation.
+                </li>
+            </ul>
+            If you assign the license expression <i>Apache License 2.0, GNU General Public License 2.0 +
+            GNU Lesser General Public License 2.1</i> to a component, this means that the  <q>Apache License 2.0</q>
+            AND one of the two GNU licenses applies. When interpreting the OR, the license notes must be explicitly checked.
+        </p>
+        <p>
+            License assignments may have extensions or exceptions. These are represented by additions to the license
+            identifiers. For example <i>GNU Lesser General Public License 2.1 (or any later version)</i>
+            or <i>GNU General Public License 2.0 (with classpath exception)</i>.
+        </p>
+        <p>See also: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="effective-licenses"/></p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>license identifiers and terms</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary//EN" "glossary.dtd">
+<glossentry id="g_supported">
+    <glossterm>Supported</glossterm>
+    <glossdef>
+        <p>Eine Konfiguration, die unterstützt wird, kann in einer Produktionsumgebung verwendet werden.
+         ${organization.name} versichert, dass die Software mit dieser Systemkonfiguration funktioniert, ohne die
+         Funktionen der Software zu beeinträchtigen. ${organization.name} bestätigt das durch die Verwendung der Konfiguration
+         während der Qualitätskontrolle und Regressionstests der Software.
+         ${organization.name} dokumentiert nach bestem Wissen und Gewissen Auflagen und Beschränkungen.
+         Updates zu den Auflagen und Beschränkungen werden von ${organization.name} aktiv kommuniziert.</p></glossdef>
+</glossentry>

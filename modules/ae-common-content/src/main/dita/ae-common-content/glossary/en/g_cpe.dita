@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="cpe">
+    <glossterm>Common Product Enumeration</glossterm>
+    <glossdef>
+        Common Product Enumeration (CPE) is a scheme used by the <abbreviated-form keyref="nvd"/> to identify
+        vulnerable products (software and hardware). A CPE has a defined structure consisting of several parts:
+        <p>
+            <codeblock>cpe:&lt;cpe_version&gt;:&lt;part&gt;:&lt;vendor&gt;:&lt;product&gt;:&lt;version&gt;:&lt;update&gt;:&lt;edition&gt;:
+    &lt;language&gt;:&lt;sw_edition&gt;:&lt;target_sw&gt;:
+        &lt;target_hw&gt;:&lt;other&gt;</codeblock>
+        </p>
+        <p>
+            With a CPE several vulnerabilities (<abbreviated-form keyref="cve"/>) can be associated.
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Common Product Enumeration (CPE)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>CPE</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>
