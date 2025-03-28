@@ -26,7 +26,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 
-public class NpmComponentPatternContributorTest {
+public class WebModuleComponentPatternContributorTest {
 
     final WebModuleComponentPatternContributor contributor = new WebModuleComponentPatternContributor();
 
@@ -138,4 +138,47 @@ public class NpmComponentPatternContributorTest {
         assertThat(cpd.getExpansionInventorySupplier()).isNull();
     }
 
+    @Test
+    public void testVariant005_bowerFile() {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/bower-001");
+        final String relativeAnchorePath = "bower.json";
+        final File anchorFile = new File(baseDir, relativeAnchorePath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
+                relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
+
+
+        // this is expected to fail since there is no version information in the bower file and in the .bower file
+        assertThat(cpdList.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void testVariant005_dotBowerFileOnly() {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/bower-002");
+        final String relativeAnchorePath = ".bower.json";
+        final File anchorFile = new File(baseDir, relativeAnchorePath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
+                relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
+
+
+        assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("web-component-tester-6.5.0");
+        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("web-component-tester");
+        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("6.5.0");
+
+        final Inventory inventory = cpd.getExpansionInventorySupplier().get();
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(12);
+    }
 }

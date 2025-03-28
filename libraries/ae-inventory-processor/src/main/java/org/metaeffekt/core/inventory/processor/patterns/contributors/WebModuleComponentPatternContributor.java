@@ -414,20 +414,22 @@ public class WebModuleComponentPatternContributor extends ComponentPatternContri
             }
 
             if (anchorFile.getName().endsWith("package.json") || anchorFile.getName().endsWith("bower.json")) {
-                JSONObject dependencies = obj.getJSONObject("dependencies");
-                for (String key : dependencies.keySet()) {
-                    WebModuleDependency dependency = new WebModuleDependency();
-                    dependency.name = key;
-                    dependency.version = dependencies.getString(key);
-                    dependency.isDevDependency = false;
-                    webModule.dependencies.add(dependency);
-                }
-                if (obj.has("devDependencies")) {
-                    dependencies = obj.getJSONObject("devDependencies");
+                if (obj.has("dependencies")) {
+                    JSONObject dependencies = obj.getJSONObject("dependencies");
                     for (String key : dependencies.keySet()) {
                         WebModuleDependency dependency = new WebModuleDependency();
                         dependency.name = key;
                         dependency.version = dependencies.getString(key);
+                        dependency.isDevDependency = false;
+                        webModule.dependencies.add(dependency);
+                    }
+                }
+                if (obj.has("devDependencies")) {
+                    JSONObject devDependencies = obj.getJSONObject("devDependencies");
+                    for (String key : devDependencies.keySet()) {
+                        WebModuleDependency dependency = new WebModuleDependency();
+                        dependency.name = key;
+                        dependency.version = devDependencies.getString(key);
                         dependency.isDevDependency = true;
                         webModule.dependencies.add(dependency);
                     }
