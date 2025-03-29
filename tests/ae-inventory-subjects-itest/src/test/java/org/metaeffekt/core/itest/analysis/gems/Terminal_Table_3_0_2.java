@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Terminal_Table_3_0_2 extends AbstractCompositionAnalysisTest{
 
@@ -56,9 +57,12 @@ public class Terminal_Table_3_0_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "terminal-table-3.0.2.gem"),
+        artifactList.with(attributeValue(ID, "terminal-table-3.0.2"),
                         attributeValue(VERSION, "3.0.2"),
                         attributeValue(PURL, "pkg:gem/terminal-table@3.0.2"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

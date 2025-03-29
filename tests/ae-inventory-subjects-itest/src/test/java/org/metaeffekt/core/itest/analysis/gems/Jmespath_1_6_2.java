@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Jmespath_1_6_2 extends AbstractCompositionAnalysisTest{
 
@@ -56,9 +57,12 @@ public class Jmespath_1_6_2 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "jmespath-1.6.2.gem"),
+        artifactList.with(attributeValue(ID, "jmespath-1.6.2"),
                         attributeValue(VERSION, "1.6.2"),
                         attributeValue(PURL, "pkg:gem/jmespath@1.6.2"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

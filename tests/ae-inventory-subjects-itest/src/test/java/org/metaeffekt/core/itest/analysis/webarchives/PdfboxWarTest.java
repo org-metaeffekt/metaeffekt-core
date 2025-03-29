@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
@@ -77,6 +79,13 @@ public class PdfboxWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts(attributeValue(VERSION, "1.8.17")).hasSizeOf(4);
         analysis.selectArtifacts(attributeValue(VERSION, "1.1.1")).hasSizeOf(1);
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(5);
     }
 
 }

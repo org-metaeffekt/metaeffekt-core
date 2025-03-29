@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Simplecov_Html_0_12_3 extends AbstractCompositionAnalysisTest {
 
@@ -56,9 +57,12 @@ public class Simplecov_Html_0_12_3 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "simplecov-html-0.12.3.gem"),
+        artifactList.with(attributeValue(ID, "simplecov-html-0.12.3"),
                         attributeValue(VERSION, "0.12.3"),
                         attributeValue(PURL, "pkg:gem/simplecov-html@0.12.3"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

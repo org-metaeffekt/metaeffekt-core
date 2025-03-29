@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Coderay_1_1_3 extends AbstractCompositionAnalysisTest{
 
@@ -56,10 +57,13 @@ public class Coderay_1_1_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "coderay-1.1.3.gem"),
+        artifactList.with(attributeValue(ID, "coderay-1.1.3"),
                         attributeValue(VERSION, "1.1.3"),
                         attributeValue(PURL, "pkg:gem/coderay@1.1.3"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }
 

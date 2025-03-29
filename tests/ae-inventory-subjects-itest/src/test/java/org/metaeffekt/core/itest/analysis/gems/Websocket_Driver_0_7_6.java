@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Websocket_Driver_0_7_6 extends AbstractCompositionAnalysisTest{
 
@@ -56,9 +57,12 @@ public class Websocket_Driver_0_7_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "websocket-driver-0.7.6.gem"),
+        artifactList.with(attributeValue(ID, "websocket-driver-0.7.6"),
                         attributeValue(VERSION, "0.7.6"),
                         attributeValue(PURL, "pkg:gem/websocket-driver@0.7.6"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

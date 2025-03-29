@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Nokogiri_1_16_7 extends AbstractCompositionAnalysisTest{
 
@@ -56,10 +57,13 @@ public class Nokogiri_1_16_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "nokogiri-1.16.7.gem"),
+        artifactList.with(attributeValue(ID, "nokogiri-1.16.7"),
                         attributeValue(VERSION, "1.16.7"),
                         attributeValue(PURL, "pkg:gem/nokogiri@1.16.7"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }
 

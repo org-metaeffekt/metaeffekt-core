@@ -19,13 +19,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
 
@@ -59,9 +59,12 @@ public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "System.Memory-4.5.5"),
                         attributeValue(VERSION, "4.5.5"),
-                        attributeValue(Artifact.Attribute.ROOT_PATHS, "[system.memory.4.5.5.nupkg]"),
+                        attributeValue(ROOT_PATHS, "system.memory.4.5.5.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.Memory@4.5.5"),
-                        attributeValue(PATH_IN_ASSET, "system.memory.4.5.5.nupkg"))
+                        attributeValue(PATH_IN_ASSET, "[system.memory.4.5.5.nupkg]"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(1);
     }
 }

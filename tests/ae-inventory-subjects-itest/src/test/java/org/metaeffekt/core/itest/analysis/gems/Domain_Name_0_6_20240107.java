@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Domain_Name_0_6_20240107 extends AbstractCompositionAnalysisTest{
 
@@ -56,9 +57,12 @@ public class Domain_Name_0_6_20240107 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "domain_name-0.6.20240107.gem"),
+        artifactList.with(attributeValue(ID, "domain_name-0.6.20240107"),
                         attributeValue(VERSION, "0.6.20240107"),
                         attributeValue(PURL, "pkg:gem/domain_name@0.6.20240107"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

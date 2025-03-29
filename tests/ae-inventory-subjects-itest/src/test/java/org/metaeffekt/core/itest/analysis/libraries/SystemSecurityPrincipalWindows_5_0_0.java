@@ -19,13 +19,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SystemSecurityPrincipalWindows_5_0_0 extends AbstractCompositionAnalysisTest{
 
@@ -59,10 +59,13 @@ public class SystemSecurityPrincipalWindows_5_0_0 extends AbstractCompositionAna
 
         artifactList.with(attributeValue(ID, "System.Security.Principal.Windows-5.0.0"),
                         attributeValue(VERSION, "5.0.0"),
-                        attributeValue(Artifact.Attribute.ROOT_PATHS, "system.security.principal.windows.5.0.0.nupkg"),
+                        attributeValue(ROOT_PATHS, "[system.security.principal.windows.5.0.0.nupkg]"),
                         attributeValue(PURL, "pkg:nuget/System.Security.Principal.Windows@5.0.0"),
-                        attributeValue(PATH_IN_ASSET, "system.security.principal.windows.5.0.0.nupkg"))
+                        attributeValue(PATH_IN_ASSET, "[system.security.principal.windows.5.0.0.nupkg]"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
     }
 }
 

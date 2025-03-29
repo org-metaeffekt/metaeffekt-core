@@ -19,12 +19,15 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
 
@@ -58,8 +61,15 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
                         attributeValue(CHECKSUM, "7a787700b8de9fc9034ffdc070517f51"),
                         attributeValue(VERSION, "6.1.1"),
                         attributeValue(HASH_SHA256, "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
-                        attributeValue(Artifact.Attribute.ROOT_PATHS, "spring-core-6.1.1.jar"),
+                        attributeValue(ROOT_PATHS, "spring-core-6.1.1.jar"),
                         attributeValue(PATH_IN_ASSET, "spring-core-6.1.1.jar"))
                 .assertNotEmpty();
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts()
+                .filter(a -> a.getVersion() != null);
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }
 }

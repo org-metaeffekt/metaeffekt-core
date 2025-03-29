@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Rails_Html_Sanitizer_1_6_0 extends AbstractCompositionAnalysisTest{
 
@@ -56,9 +57,12 @@ public class Rails_Html_Sanitizer_1_6_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rails-html-sanitizer-1.6.0.gem"),
+        artifactList.with(attributeValue(ID, "rails-html-sanitizer-1.6.0"),
                         attributeValue(VERSION, "1.6.0"),
                         attributeValue(PURL, "pkg:gem/rails-html-sanitizer@1.6.0"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

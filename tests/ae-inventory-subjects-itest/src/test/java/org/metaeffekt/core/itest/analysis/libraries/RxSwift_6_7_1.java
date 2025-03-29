@@ -19,13 +19,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
 
@@ -60,37 +60,41 @@ public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "RxTest-6.7.0"),
                     attributeValue(VERSION, "6.7.0"),
-                    attributeValue(Artifact.Attribute.ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
                     attributeValue(PURL, "pkg:cocoapods/RxTest@6.7.0"),
-                    attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
+                    attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(TYPE, "package"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "RxCocoa-6.7.0"),
                     attributeValue(VERSION, "6.7.0"),
-                    attributeValue(Artifact.Attribute.ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
                     attributeValue(PURL, "pkg:cocoapods/RxCocoa@6.7.0"),
                     attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "RxRelay-6.7.0"),
                     attributeValue(VERSION, "6.7.0"),
-                    attributeValue(Artifact.Attribute.ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
                     attributeValue(PURL, "pkg:cocoapods/RxRelay@6.7.0"),
                     attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "RxSwift-6.7.0"),
                     attributeValue(VERSION, "6.7.0"),
-                    attributeValue(Artifact.Attribute.ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
                     attributeValue(PURL, "pkg:cocoapods/RxSwift@6.7.0"),
                     attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
 
         artifactList.with(attributeValue(ID, "RxBlocking-6.7.0"),
                     attributeValue(VERSION, "6.7.0"),
-                    attributeValue(Artifact.Attribute.ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
+                    attributeValue(ROOT_PATHS, "[6.7.1.zip]/RxSwift-6.7.1"),
                     attributeValue(PURL, "pkg:cocoapods/RxBlocking@6.7.0"),
                     attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(5);
     }
 }

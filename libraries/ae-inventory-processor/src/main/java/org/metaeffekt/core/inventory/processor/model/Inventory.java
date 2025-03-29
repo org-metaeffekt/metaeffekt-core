@@ -2109,18 +2109,25 @@ public class Inventory implements Serializable {
 
         final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
         // header and separator
-        final String header = rearrangedAttributeWidths.entrySet().stream()
-                .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
+
+        List<String> columns = new ArrayList<>(rearrangedAttributeWidths.keySet());
+        columns = Artifact.orderAttributes(columns, null, Artifact.ARTIFACT_COLUMN_ORDER_LIST);
+
+        final String header = columns.stream()
+                .map(entry -> StringUtils.rightPad(entry, rearrangedAttributeWidths.get(entry)))
                 .collect(Collectors.joining(" | ", "| ", " |"));
-        final String separator = rearrangedAttributeWidths.values().stream()
+
+        final String separator = columns.stream()
+                .map(c -> rearrangedAttributeWidths.get(c))
                 .map(integer -> StringUtils.repeat("-", integer + 2))
                 .collect(Collectors.joining("|", "|", "|"));
+
         LOG.info(header);
         LOG.info(separator);
 
         // logging each model's attributes
         for (AbstractModelBase model : models) {
-            String row = rearrangedAttributeWidths.keySet().stream()
+            String row = columns.stream()
                     .map(key -> StringUtils.rightPad(model.get(key) != null ? model.get(key).replace("\n", "<br>") : "", rearrangedAttributeWidths.get(key)))
                     .collect(Collectors.joining(" | ", "| ", " |"));
             LOG.info(row);

@@ -39,9 +39,20 @@ public class Artifact extends AbstractModelBase {
      */
     public enum Attribute implements AbstractModelBase.Attribute {
         ID("Id"),
+        NAME("Name"),
         COMPONENT("Component"),
+        COMPONENT_TYPE("Component Type"),
+
         CHECKSUM("Checksum"),
         VERSION("Version"),
+        RELEASE("Release"),
+        CLASSIFIER("Classifier"),
+        ARCHITECTURE("Architecture"),
+        DISTRO("Distro"),
+        FILE_NAME("File Name"),
+        FILE_TYPE("File Type"),
+        SPECIFIC_FILE_TYPE("Specific File Type"),
+        PACKAGING("Packaging"),
 
         // latest available version
         LATEST_VERSION("Latest Version"),
@@ -70,9 +81,11 @@ public class Artifact extends AbstractModelBase {
 
         VERIFIED("Verified"),
         ERRORS("Errors"),
+
+        HASH_SHA1("Hash (SHA-1)"),
         HASH_SHA256("Hash (SHA-256)"),
-        HASH_SHA1("Hash (SHA1)"),
         HASH_SHA512("Hash (SHA-512)"),
+
         PATH_IN_ASSET("Path in Asset"),
 
         /**
@@ -119,6 +132,44 @@ public class Artifact extends AbstractModelBase {
         }
     }
 
+    /**
+     * Defines a default order.
+     */
+    public static Artifact.Attribute[] ARTIFACT_ATTRIBUTE_LIST = new Artifact.Attribute[] {
+            Attribute.ID,
+            Attribute.GROUPID,
+            Attribute.NAME,
+            Attribute.VERSION,
+            Attribute.RELEASE,
+            Attribute.CLASSIFIER,
+            Attribute.ARCHITECTURE,
+            Attribute.DISTRO,
+            Attribute.PURL,
+            Attribute.FILE_NAME,
+            Attribute.CHECKSUM,
+            Attribute.HASH_SHA1,
+            Attribute.HASH_SHA256,
+            Attribute.HASH_SHA512,
+            Attribute.FILE_TYPE,
+            Attribute.SPECIFIC_FILE_TYPE,
+            Attribute.PACKAGING,
+            Attribute.COMPONENT,
+            Attribute.COMPONENT_TYPE,
+            Attribute.ROOT_PATHS,
+            Attribute.PATH_IN_ASSET,
+            Attribute.LATEST_VERSION,
+            Attribute.LICENSE,
+            Attribute.CLASSIFICATION,
+            Attribute.SECURITY_RELEVANT,
+            Attribute.SECURITY_CATEGORY,
+            Attribute.VULNERABILITY,
+            Attribute.COMMENT,
+            Attribute.URL,
+            Attribute.VERIFIED
+    };
+
+    public static List<String> ARTIFACT_COLUMN_ORDER_LIST =
+            Arrays.stream(ARTIFACT_ATTRIBUTE_LIST).map(a -> a.key).collect(Collectors.toList());
 
     // artifact id (derived from id and version)
     private transient String artifactId;
@@ -284,6 +335,7 @@ public class Artifact extends AbstractModelBase {
         super.merge(a);
 
         deriveArtifactId();
+        set(Attribute.CLASSIFIER, inferClassifierFromFileNameAndVersion());
     }
 
     private void mergeRootPaths(Artifact a) {
@@ -404,7 +456,7 @@ public class Artifact extends AbstractModelBase {
         String type = null;
         String id = getId();
         if (id != null) {
-            String classifier = inferClassifierFromId();
+            String classifier = inferClassifierFromFileNameAndVersion();
             String version = getVersion();
 
             if (version == null) {
@@ -509,9 +561,40 @@ public class Artifact extends AbstractModelBase {
         return null;
     }
 
+    public String inferClassifierFromFileNameAndVersion() {
+        final String fileName = get(Attribute.FILE_NAME);
+        final String version = getVersion();
+        if (StringUtils.isNotBlank(fileName) && StringUtils.isNotBlank(version)) {
+            // get rid of anything right to version
+            final String queryString = DELIMITER_DASH + version + DELIMITER_DASH;
+            final int versionIndex = fileName.indexOf(queryString);
+            if (versionIndex < 0) {
+                // no '-<version>-' part, no classifier
+                return null;
+            }
+            final int beginIndex = versionIndex + queryString.length();
+            final String classifierAndType = fileName.substring(beginIndex);
+            // get rid of trailing .{type}
+            final int index = classifierAndType.indexOf(DELIMITER_DOT);
+            if (index != -1) {
+                final String classifier = classifierAndType.substring(0, index).trim();
+                if (StringUtils.isNotBlank(classifier)) {
+                    return classifier;
+                }
+            }
+        }
+        return null;
+    }
+
     public String createCompareStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
         artifactRepresentation.append(normalize(getId()));
+        artifactRepresentation.append(DELIMITER_COLON);
+        artifactRepresentation.append(normalize(get(Attribute.NAME)));
+        artifactRepresentation.append(DELIMITER_COLON);
+        artifactRepresentation.append(normalize(get(Attribute.FILE_NAME)));
+        artifactRepresentation.append(DELIMITER_COLON);
+        artifactRepresentation.append(normalize(get(Attribute.CLASSIFIER)));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getChecksum()));
         artifactRepresentation.append(DELIMITER_COLON);
@@ -559,9 +642,9 @@ public class Artifact extends AbstractModelBase {
         return inferTypeFromId();
     }
 
-
+    @Deprecated
     public String getClassifier() {
-        return inferClassifierFromId();
+        return get(Attribute.CLASSIFIER);
     }
 
     public boolean isEnabledForDistribution() {
@@ -763,6 +846,32 @@ public class Artifact extends AbstractModelBase {
         }
 
         return false;
+    }
+
+    public static List<String> orderAttributes(Collection<String> attributes, List<String> contextColumnList, List<String> artifactColumnOrder) {
+        // impose context or default order
+        final List<String> ordered = new ArrayList<>(attributes);
+        Collections.sort(ordered);
+        int insertIndex = 0;
+        if (contextColumnList != null) {
+            for (String key : contextColumnList) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        } else {
+            for (String key : artifactColumnOrder) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributes);
+            }
+        }
+        return ordered;
+    }
+
+    private static int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Collection<String> attributesSet) {
+        if (attributesSet.contains(key)) {
+            orderedAttributesList.remove(key);
+            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
+            insertIndex++;
+        }
+        return insertIndex;
     }
 
 }

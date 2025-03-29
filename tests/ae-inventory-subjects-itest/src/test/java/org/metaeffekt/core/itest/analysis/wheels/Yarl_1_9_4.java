@@ -19,13 +19,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Yarl_1_9_4 extends AbstractCompositionAnalysisTest{
 
@@ -59,8 +59,12 @@ public class Yarl_1_9_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "yarl-1.9.4"),
                         attributeValue(VERSION, "1.9.4"),
-                        attributeValue(Artifact.Attribute.ROOT_PATHS, "yarl-1.9.4-py3-none-any.whl"),
-                        attributeValue(PATH_IN_ASSET, "yarl-1.9.4-py3-none-any.whl"))
+                        attributeValue(ROOT_PATHS, "[yarl-1.9.4-py3-none-any.whl]"),
+                        attributeValue(PATH_IN_ASSET, "[yarl-1.9.4-py3-none-any.whl]"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(1);
+        artifactList.hasSizeOf(2);
     }
 }

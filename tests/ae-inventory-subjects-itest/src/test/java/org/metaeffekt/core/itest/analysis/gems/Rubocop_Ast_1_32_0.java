@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Rubocop_Ast_1_32_0 extends AbstractCompositionAnalysisTest {
 
@@ -56,9 +57,12 @@ public class Rubocop_Ast_1_32_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rubocop-ast-1.32.0.gem"),
+        artifactList.with(attributeValue(ID, "rubocop-ast-1.32.0"),
                         attributeValue(VERSION, "1.32.0"),
                         attributeValue(PURL, "pkg:gem/rubocop-ast@1.32.0"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
     }
 }

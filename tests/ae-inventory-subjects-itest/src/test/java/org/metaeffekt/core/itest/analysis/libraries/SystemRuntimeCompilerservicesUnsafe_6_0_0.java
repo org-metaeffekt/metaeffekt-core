@@ -19,13 +19,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SystemRuntimeCompilerservicesUnsafe_6_0_0 extends AbstractCompositionAnalysisTest{
 
@@ -59,9 +59,12 @@ public class SystemRuntimeCompilerservicesUnsafe_6_0_0 extends AbstractCompositi
 
         artifactList.with(attributeValue(ID, "System.Runtime.CompilerServices.Unsafe-6.0.0"),
                         attributeValue(VERSION, "6.0.0"),
-                        attributeValue(Artifact.Attribute.ROOT_PATHS, "system.runtime.compilerservices.unsafe.6.0.0.nupkg"),
+                        attributeValue(ROOT_PATHS, "[system.runtime.compilerservices.unsafe.6.0.0.nupkg]"),
                         attributeValue(PURL, "pkg:nuget/System.Runtime.CompilerServices.Unsafe@6.0.0"),
-                        attributeValue(PATH_IN_ASSET, "system.runtime.compilerservices.unsafe.6.0.0.nupkg"))
+                        attributeValue(PATH_IN_ASSET, "[system.runtime.compilerservices.unsafe.6.0.0.nupkg]"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
     }
 }
