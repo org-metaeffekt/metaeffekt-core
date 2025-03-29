@@ -57,12 +57,12 @@ public class Pg_1_5_7 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "pg-1.5.7"),
+        artifactList.with(attributeValue(ID, "pg-1.5.7.gem"),
                         attributeValue(VERSION, "1.5.7"),
                         attributeValue(PURL, "pkg:gem/pg@1.5.7"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

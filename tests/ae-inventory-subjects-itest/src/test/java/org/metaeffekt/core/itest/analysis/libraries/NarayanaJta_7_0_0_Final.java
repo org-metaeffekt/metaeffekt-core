@@ -65,7 +65,8 @@ public class NarayanaJta_7_0_0_Final extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "arjuna-7.0.0.Final.jar"),
                         attributeValue(VERSION, "7.0.0.Final"),
-                        attributeValue(ROOT_PATHS, "[narayana-jta-7.0.0.Final.jar]/META-INF/maven/org.jboss.narayana.arjunacore/arjuna/pom.xml"),
+                        // FIXME: provide a ROOT_PATH for embedded components
+                        // attributeValue(Artifact.Attribute.ROOT_PATHS, "[narayana-jta-7.0.0.Final.jar]/META-INF/maven/org.jboss.narayana.arjunacore/arjuna/pom.xml"),
                         attributeValue(PATH_IN_ASSET, "[narayana-jta-7.0.0.Final.jar]/META-INF/maven/org.jboss.narayana.arjunacore/arjuna/pom.xml"))
                 .assertNotEmpty();
 

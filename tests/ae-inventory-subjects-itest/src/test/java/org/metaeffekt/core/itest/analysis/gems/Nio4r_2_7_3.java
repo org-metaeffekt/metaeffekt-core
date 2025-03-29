@@ -57,12 +57,12 @@ public class Nio4r_2_7_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "nio4r-2.7.3"),
+        artifactList.with(attributeValue(ID, "nio4r-2.7.3.gem"),
                         attributeValue(VERSION, "2.7.3"),
                         attributeValue(PURL, "pkg:gem/nio4r@2.7.3"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

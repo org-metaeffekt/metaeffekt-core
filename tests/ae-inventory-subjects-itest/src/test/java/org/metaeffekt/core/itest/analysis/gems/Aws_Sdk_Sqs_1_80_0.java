@@ -57,13 +57,13 @@ public class Aws_Sdk_Sqs_1_80_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "aws-sdk-sqs-1.80.0"),
+        artifactList.with(attributeValue(ID, "aws-sdk-sqs-1.80.0.gem"),
                         attributeValue(VERSION, "1.80.0"),
                         attributeValue(PURL, "pkg:gem/aws-sdk-sqs@1.80.0"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 
 }

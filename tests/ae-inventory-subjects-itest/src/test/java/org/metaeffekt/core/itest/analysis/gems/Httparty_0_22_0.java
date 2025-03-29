@@ -57,12 +57,12 @@ public class Httparty_0_22_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "httparty-0.22.0"),
+        artifactList.with(attributeValue(ID, "httparty-0.22.0.gem"),
                         attributeValue(VERSION, "0.22.0"),
                         attributeValue(PURL, "pkg:gem/httparty@0.22.0"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "java-runtime")).hasSizeOf(1);
     }
 }

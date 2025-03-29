@@ -57,12 +57,12 @@ public class Doclie_1_4_1 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "docile-1.4.1"),
+        artifactList.with(attributeValue(ID, "docile-1.4.1.gem"),
                         attributeValue(VERSION, "1.4.1"),
                         attributeValue(PURL, "pkg:gem/docile@1.4.1"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

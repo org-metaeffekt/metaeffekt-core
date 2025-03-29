@@ -57,12 +57,12 @@ public class Capybara_3_40_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "capybara-3.40.0"),
+        artifactList.with(attributeValue(ID, "capybara-3.40.0.gem"),
                         attributeValue(VERSION, "3.40.0"),
                         attributeValue(PURL, "pkg:gem/capybara@3.40.0"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

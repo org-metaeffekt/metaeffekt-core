@@ -57,12 +57,12 @@ public class Signet_0_19_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "signet-0.19.0"),
+        artifactList.with(attributeValue(ID, "signet-0.19.0.gem"),
                         attributeValue(VERSION, "0.19.0"),
                         attributeValue(PURL, "pkg:gem/signet@0.19.0"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

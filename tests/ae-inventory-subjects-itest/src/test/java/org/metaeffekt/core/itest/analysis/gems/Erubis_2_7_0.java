@@ -58,12 +58,12 @@ public class Erubis_2_7_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "erubis-2.7.0"),
+        artifactList.with(attributeValue(ID, "erubis-2.7.0.gem"),
                         attributeValue(VERSION, "2.7.0"),
-                        attributeValue(ROOT_PATHS, "erubis-2.7.0.gem"))
+                        attributeValue(ROOT_PATHS, "."))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "gem-archive")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "gem-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

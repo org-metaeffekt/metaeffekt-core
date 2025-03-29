@@ -57,12 +57,12 @@ public class Mulit_Xml_0_7_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "multi_xml-0.7.1"),
+        artifactList.with(attributeValue(ID, "multi_xml-0.7.1.gem"),
                         attributeValue(VERSION, "0.7.1"),
                         attributeValue(PURL, "pkg:gem/multi_xml@0.7.1"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

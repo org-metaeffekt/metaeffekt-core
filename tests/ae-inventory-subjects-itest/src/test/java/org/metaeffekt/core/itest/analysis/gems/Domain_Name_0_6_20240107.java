@@ -57,12 +57,12 @@ public class Domain_Name_0_6_20240107 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "domain_name-0.6.20240107"),
+        artifactList.with(attributeValue(ID, "domain_name-0.6.20240107.gem"),
                         attributeValue(VERSION, "0.6.20240107"),
                         attributeValue(PURL, "pkg:gem/domain_name@0.6.20240107"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

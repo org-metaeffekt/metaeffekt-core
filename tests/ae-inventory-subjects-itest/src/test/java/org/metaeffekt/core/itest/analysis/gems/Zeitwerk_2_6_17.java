@@ -57,12 +57,12 @@ public class Zeitwerk_2_6_17 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "zeitwerk-2.6.17"),
+        artifactList.with(attributeValue(ID, "zeitwerk-2.6.17.gem"),
                         attributeValue(VERSION, "2.6.17"),
                         attributeValue(PURL, "pkg:gem/zeitwerk@2.6.17"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

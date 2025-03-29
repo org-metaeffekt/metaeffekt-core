@@ -57,12 +57,12 @@ public class Unf_Ext_0_0_9_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "unf_ext-0.0.9.1"),
+        artifactList.with(attributeValue(ID, "unf_ext-0.0.9.1.gem"),
                         attributeValue(VERSION, "0.0.9.1"),
                         attributeValue(PURL, "pkg:gem/unf_ext@0.0.9.1"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

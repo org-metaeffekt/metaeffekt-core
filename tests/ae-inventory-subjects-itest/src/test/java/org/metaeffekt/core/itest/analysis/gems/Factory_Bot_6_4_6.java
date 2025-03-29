@@ -57,12 +57,12 @@ public class Factory_Bot_6_4_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "factory_bot-6.4.6"),
+        artifactList.with(attributeValue(ID, "factory_bot-6.4.6.gem"),
                         attributeValue(VERSION, "6.4.6"),
                         attributeValue(PURL, "pkg:gem/factory_bot@6.4.6"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

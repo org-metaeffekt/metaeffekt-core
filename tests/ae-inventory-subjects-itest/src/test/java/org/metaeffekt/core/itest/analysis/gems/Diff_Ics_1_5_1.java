@@ -57,12 +57,12 @@ public class Diff_Ics_1_5_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "diff-lcs-1.5.1"),
+        artifactList.with(attributeValue(ID, "diff-lcs-1.5.1.gem"),
                         attributeValue(VERSION, "1.5.1"),
                         attributeValue(PURL, "pkg:gem/diff-lcs@1.5.1"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

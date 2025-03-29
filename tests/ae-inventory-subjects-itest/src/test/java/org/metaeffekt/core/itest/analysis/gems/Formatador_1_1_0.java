@@ -57,12 +57,12 @@ public class Formatador_1_1_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "formatador-1.1.0"),
+        artifactList.with(attributeValue(ID, "formatador-1.1.0.gem"),
                         attributeValue(VERSION, "1.1.0"),
                         attributeValue(PURL, "pkg:gem/formatador@1.1.0"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(1);
     }
 }

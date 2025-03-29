@@ -109,11 +109,15 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2")).hasSizeOf(1);
 
         ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
-        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(1);
 
         final int size = analysis.selectArtifacts().getItemList().size();
 
-        Assert.assertTrue(size == 3 || size == 4); // result depends on whether 7z is installed
+        Assertions.assertThat(size).isEqualTo(38);
+
+        // FIXME-KKL: with the current process we loose the checksums on the exe files.
+        // FIXME-KKL: verify projects are set correctly after merging PR-188
+
     }
 
 }

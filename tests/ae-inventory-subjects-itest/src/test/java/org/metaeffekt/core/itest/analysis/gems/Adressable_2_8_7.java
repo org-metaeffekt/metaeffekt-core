@@ -57,13 +57,12 @@ public class Adressable_2_8_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "addressable-2.8.7"),
+        artifactList.with(attributeValue(ID, "addressable-2.8.7.gem"),
                         attributeValue(VERSION, "2.8.7"),
                         attributeValue(PURL, "pkg:gem/addressable@2.8.7"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(1);
     }
 
 }

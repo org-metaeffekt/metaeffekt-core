@@ -57,12 +57,12 @@ public class Public_Suffix_6_0_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "public_suffix-6.0.1"),
+        artifactList.with(attributeValue(ID, "public_suffix-6.0.1.gem"),
                         attributeValue(VERSION, "6.0.1"),
                         attributeValue(PURL, "pkg:gem/public_suffix@6.0.1"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

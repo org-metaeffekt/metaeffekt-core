@@ -57,12 +57,12 @@ public class Rb_Inotify_0_11_1 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rb-inotify-0.11.1"),
+        artifactList.with(attributeValue(ID, "rb-inotify-0.11.1.gem"),
                         attributeValue(VERSION, "0.11.1"),
                         attributeValue(PURL, "pkg:gem/rb-inotify@0.11.1"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

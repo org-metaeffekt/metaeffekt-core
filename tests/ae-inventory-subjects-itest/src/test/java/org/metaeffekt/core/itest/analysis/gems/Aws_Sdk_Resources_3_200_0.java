@@ -57,13 +57,13 @@ public class Aws_Sdk_Resources_3_200_0 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "aws-sdk-resources-3.200.0"),
+        artifactList.with(attributeValue(ID, "aws-sdk-resources-3.200.0.gem"),
                         attributeValue(VERSION, "3.200.0"),
                         attributeValue(PURL, "pkg:gem/aws-sdk-resources@3.200.0"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 
 }

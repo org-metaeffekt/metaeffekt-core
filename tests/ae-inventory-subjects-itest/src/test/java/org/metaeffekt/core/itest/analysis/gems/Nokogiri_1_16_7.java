@@ -57,13 +57,13 @@ public class Nokogiri_1_16_7 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "nokogiri-1.16.7"),
+        artifactList.with(attributeValue(ID, "nokogiri-1.16.7.gem"),
                         attributeValue(VERSION, "1.16.7"),
                         attributeValue(PURL, "pkg:gem/nokogiri@1.16.7"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }
 

@@ -57,12 +57,12 @@ public class Tzinfo_2_0_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "tzinfo-2.0.6"),
+        artifactList.with(attributeValue(ID, "tzinfo-2.0.6.gem"),
                         attributeValue(VERSION, "2.0.6"),
                         attributeValue(PURL, "pkg:gem/tzinfo@2.0.6"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

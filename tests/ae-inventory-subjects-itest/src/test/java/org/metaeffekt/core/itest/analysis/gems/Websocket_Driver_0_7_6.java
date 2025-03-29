@@ -57,12 +57,12 @@ public class Websocket_Driver_0_7_6 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "websocket-driver-0.7.6"),
+        artifactList.with(attributeValue(ID, "websocket-driver-0.7.6.gem"),
                         attributeValue(VERSION, "0.7.6"),
                         attributeValue(PURL, "pkg:gem/websocket-driver@0.7.6"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

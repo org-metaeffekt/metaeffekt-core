@@ -57,12 +57,12 @@ public class Sawyer_0_9_2 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "sawyer-0.9.2"),
+        artifactList.with(attributeValue(ID, "sawyer-0.9.2.gem"),
                         attributeValue(VERSION, "0.9.2"),
                         attributeValue(PURL, "pkg:gem/sawyer@0.9.2"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "java-runtime")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

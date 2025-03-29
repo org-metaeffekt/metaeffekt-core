@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -57,13 +58,13 @@ public class SystemIoFilesystemAccesscontrol_5_0_0 extends AbstractCompositionAn
 
         artifactList.with(attributeValue(ID, "System.IO.FileSystem.AccessControl-5.0.0"),
                         attributeValue(VERSION, "5.0.0"),
-                        attributeValue(ROOT_PATHS, "[system.io.filesystem.accesscontrol.5.0.0.nupkg]"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "system.io.filesystem.accesscontrol.5.0.0.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.IO.FileSystem.AccessControl@5.0.0"),
                         attributeValue(PATH_IN_ASSET, "[system.io.filesystem.accesscontrol.5.0.0.nupkg]"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(artifactList.size());
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(1);
     }
 
 }

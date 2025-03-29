@@ -57,13 +57,13 @@ public class Rails_Dom_Testing_2_2_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "rails-dom-testing-2.2.0"),
+        artifactList.with(attributeValue(ID, "rails-dom-testing-2.2.0.gem"),
                         attributeValue(VERSION, "2.2.0"),
                         attributeValue(PURL, "pkg:gem/rails-dom-testing@2.2.0"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }
 

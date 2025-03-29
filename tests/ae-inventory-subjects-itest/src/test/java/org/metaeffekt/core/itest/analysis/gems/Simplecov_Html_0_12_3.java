@@ -57,12 +57,12 @@ public class Simplecov_Html_0_12_3 extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "simplecov-html-0.12.3"),
+        artifactList.with(attributeValue(ID, "simplecov-html-0.12.3.gem"),
                         attributeValue(VERSION, "0.12.3"),
                         attributeValue(PURL, "pkg:gem/simplecov-html@0.12.3"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

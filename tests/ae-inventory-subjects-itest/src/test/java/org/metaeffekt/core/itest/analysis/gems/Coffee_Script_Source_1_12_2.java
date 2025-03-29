@@ -57,12 +57,12 @@ public class Coffee_Script_Source_1_12_2 extends AbstractCompositionAnalysisTest
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "coffee-script-source-1.12.2"),
+        artifactList.with(attributeValue(ID, "coffee-script-source-1.12.2.gem"),
                         attributeValue(VERSION, "1.12.2"),
                         attributeValue(PURL, "pkg:gem/coffee-script-source@1.12.2"))
                 .assertNotEmpty();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }
