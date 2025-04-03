@@ -84,11 +84,8 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
         }
 
         for (Map.Entry<String, String> attribute : attributes.entrySet()) {
-
             // handle escaping (_ are spaces, __ are _)
-            String key = attribute.getKey().replaceAll("([^_]+)_([^_]+)", "$1 $2");
-            key = key.replaceAll("([^_]+)__([^_]+)", "$1_$2");
-
+            final String key = unescapeKey(attribute.getKey());
             assetMetaData.set(key, attribute.getValue());
         }
 
@@ -108,6 +105,12 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
             targetInventoryFile.getParentFile().mkdirs();
         }
         new InventoryWriter().writeInventory(inventory, targetInventoryFile);
+    }
+
+    public static String unescapeKey(String key) {
+        return key
+                .replaceAll("([^_]+)_([^_])", "$1 $2")
+                .replaceAll("([^_]+)__([^_])", "$1_$2");
     }
 
     public GenericAssetInventoryProcessor withAttributes(Map<String, String> attributes) {
