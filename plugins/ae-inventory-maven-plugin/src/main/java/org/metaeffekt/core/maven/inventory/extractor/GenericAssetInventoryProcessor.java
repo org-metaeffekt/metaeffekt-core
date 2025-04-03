@@ -109,8 +109,8 @@ public class GenericAssetInventoryProcessor extends BaseInventoryProcessor {
 
     public static String unescapeKey(String key) {
         return key
-                .replaceAll("([^_]+)_([^_])", "$1 $2")
-                .replaceAll("([^_]+)__([^_])", "$1_$2");
+                .replaceAll("([^_]+)_(?=[^_])", "$1 ")
+                .replaceAll("([^_]+)__(?=[^_])", "$1_");
     }
 
     public GenericAssetInventoryProcessor withAttributes(Map<String, String> attributes) {
