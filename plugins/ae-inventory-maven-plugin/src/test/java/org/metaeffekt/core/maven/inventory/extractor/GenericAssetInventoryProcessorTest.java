@@ -150,4 +150,20 @@ public class GenericAssetInventoryProcessorTest {
         Assert.assertEquals("namespace/corporation/level", targetInventory.getAssetMetaData().get(0).get("Asset Path"));
         Assert.assertEquals("ASSESSMENT-01", targetInventory.getAssetMetaData().get(0).get("Assessment Id"));
     }
+
+    @Test
+    public void underscoreKeyHandlingTest() {
+        Assert.assertEquals("test_test_test", GenericAssetInventoryProcessor.unescapeKey("test__test__test"));
+        Assert.assertEquals("test test test", GenericAssetInventoryProcessor.unescapeKey("test_test_test"));
+        Assert.assertEquals("test_test test test_test test_test", GenericAssetInventoryProcessor.unescapeKey("test__test_test test__test_test__test"));
+        Assert.assertEquals("t t t", GenericAssetInventoryProcessor.unescapeKey("t_t_t"));
+        Assert.assertEquals("t_t_t", GenericAssetInventoryProcessor.unescapeKey("t__t__t"));
+        Assert.assertEquals("_", GenericAssetInventoryProcessor.unescapeKey("_"));
+        Assert.assertEquals("__", GenericAssetInventoryProcessor.unescapeKey("__"));
+        Assert.assertEquals("_t", GenericAssetInventoryProcessor.unescapeKey("_t"));
+        Assert.assertEquals("t_", GenericAssetInventoryProcessor.unescapeKey("t_"));
+        Assert.assertEquals("t__", GenericAssetInventoryProcessor.unescapeKey("t__"));
+        Assert.assertEquals("__t", GenericAssetInventoryProcessor.unescapeKey("__t"));
+        Assert.assertEquals("_t___t_", GenericAssetInventoryProcessor.unescapeKey("_t___t_"));
+    }
 }
