@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
+import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.ParsingUtils;
 import org.slf4j.Logger;
@@ -30,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 public class PythonModuleComponentPatternContributor extends ComponentPatternContributor {
     private static final Logger LOG = LoggerFactory.getLogger(PythonModuleComponentPatternContributor.class);
@@ -44,17 +44,48 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
 
     @Override
     public boolean applies(String pathInContext) {
-        //FIXME: this triggers THRICE, creating three identical component patterns for one unpacked wheel. is that OK?
-        return pathInContext.endsWith(".dist-info/METADATA")
-                || pathInContext.endsWith(".dist-info/RECORD")
-                || pathInContext.endsWith(".dist-info/WHEEL");
+        return pathInContext.endsWith(".dist-info/METADATA") ||
+            pathInContext.endsWith(".dist-info/RECORD") ||
+            pathInContext.endsWith(".dist-info/WHEEL");
     }
 
     @Override
-    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum) {
+    public List<ComponentPatternData> contribute(File baseDir, String relativeAnchorPath, String anchorChecksum, EvaluationContext evaluationContext) {
 
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final File anchorParentDir = anchorFile.getParentFile();
+
+        // compute semaphore to see whether this component has been already processed
+        final Object semaphore = getClass().getCanonicalName() + "/" + anchorParentDir.getAbsolutePath();
+
+        // skip if component was already detected with a different anchor
+        if (evaluationContext.isProcessed(semaphore)) {
+            return Collections.emptyList();
+        }
+
+        // prioritize METADATA file
+        final File metadataFile = new File(anchorFile.getParentFile(), "METADATA");
+        final boolean anchorIsMetadata = anchorFile.getName().equals("METADATA");
+
+        if (metadataFile.exists()) {
+            if (!anchorIsMetadata) {
+                // METADATA exists, but is not our current anchor; skip
+                return Collections.emptyList();
+                }
+        } else {
+            // METADATA does not exist...
+
+            // prioritize WHEEL file second
+            final File wheelFile = new File(anchorFile.getParentFile(), "WHEEL");
+            final boolean anchorIsWheel = anchorFile.getName().equals("WHEEL");
+
+            if (wheelFile.exists() && !anchorIsWheel) {
+                // WHEEL exists, but is not our current anchor; skip
+                return Collections.emptyList();
+            }
+        }
+
+        // Either METADATA, WHEEL or RECORD is the version anchor
 
         // this is the root of the component
         final File contextBaseDir = anchorParentDir.getParentFile();
@@ -64,6 +95,7 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
 
         // unclean id first, better than nothing
         String componentPart = relativeAnchorPath.replace(".dist-info/" + anchorFile.getName(), "");
+
         String componentName = null;
         String componentVersion = null;
 
@@ -102,22 +134,40 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         // this one doesn't seem to be doing anything
         String includePattern = distInfoFolderName + "/**/*";
 
-        final File topLevelInfo = new File(anchorFile.getParentFile(), "top_level.txt");
-        if (topLevelInfo.exists()) {
-            try {
-                final List<String> topLevelNames = FileUtils.readLines(topLevelInfo, FileUtils.ENCODING_UTF_8);
-                for (String line : topLevelNames) {
-                    line = line.trim();
-                    if (StringUtils.isBlank(line)) continue;
-                    includePattern += "," + line + "/**/*";
+        final List<String> recordListedFiles = parseRecordFile(anchorFile);
+
+        // prefer RECORD over top_level.txt. The collection via the top_level is inacurrate and should only be done
+        // when RECORD is not available.
+        if (!recordListedFiles.isEmpty()) {
+            for (String file : recordListedFiles) {
+                if (ArchiveUtils.isArchiveByName(file)) {
+                    // FIXME-KKL: there must be better way to cover unpacked subdirs; should be handled implicit
+                    // in this case the archive was on the file list, the include pattern
+                    // must therefore cover everything within the archive
+                    File f = new File(file);
+                    final String archiveFolder = f.getParent() + "/[" + f.getName() + "]/**/*";
+                    includePattern += ", " + archiveFolder;
                 }
-            } catch (IOException e) {
-                LOG.debug("IOException while trying to parse top_level.txt at [{}]." , topLevelInfo);
+                includePattern += ", " + file;
             }
         } else {
-            // FIXME: this creates VERY inclusive paths like "numpy/**/*" which didn't even do anything in testing
-            // in case no top_level.txt exists we use the current component name
-            includePattern += ", " + componentName + "/**/*";
+            final File topLevelInfo = new File(anchorFile.getParentFile(), "top_level.txt");
+            if (topLevelInfo.exists()) {
+                try {
+                    final List<String> topLevelNames = FileUtils.readLines(topLevelInfo, FileUtils.ENCODING_UTF_8);
+                    for (String line : topLevelNames) {
+                        line = line.trim();
+                        if (StringUtils.isBlank(line)) continue;
+                        includePattern += "," + line + "/**/*";
+                    }
+                } catch (IOException e) {
+                    LOG.debug("IOException while trying to parse top_level.txt at [{}].", topLevelInfo);
+                }
+            } else {
+                // FIXME: this creates VERY inclusive paths like "numpy/**/*" which didn't even do anything in testing
+                // in case no top_level.txt exists we use the current component name
+                includePattern += ", " + componentName + "/**/*";
+            }
         }
 
         // construct component pattern
@@ -130,9 +180,10 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, componentPart);
 
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                "**/node_modules/**/*" + ",**/bower_components/**/*" + ",**/__pycache__/**/*");
+                "**/node_modules/**/*" + ", **/bower_components/**/*");
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.py, **/WHEEL, **/RECORD, **/METADATA, **/top_level.txt, **/*.exe");
+
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/*.exe");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "python-library");
@@ -140,7 +191,37 @@ public class PythonModuleComponentPatternContributor extends ComponentPatternCon
         String purl = buildPurl(componentName, componentVersion);
         componentPatternData.set(Artifact.Attribute.PURL.getKey(), purl);
 
+        evaluationContext.registerProcessed(semaphore);
+
         return Collections.singletonList(componentPatternData);
+    }
+
+    private static List<String> parseRecordFile(File anchorFile) {
+        final File recordFile = new File(anchorFile.getParentFile(), "RECORD");
+        if (recordFile.exists()) {
+            final List<String> recordListedFiles = new ArrayList<>();
+            try {
+                List<String> lines = FileUtils.readLines(recordFile, FileUtils.ENCODING_UTF_8);
+                for (String line : lines) {
+                    if (!StringUtils.isBlank(line)) {
+                        int lastCommaIndex = line.lastIndexOf(",");
+                        if (lastCommaIndex != -1) {
+                            line = line.substring(0, lastCommaIndex);
+                        }
+                        int secondLastCommaIndex = line.lastIndexOf(",");
+                        int fileNameEndIndex = secondLastCommaIndex == -1 ? line.length() - 1 : secondLastCommaIndex;
+
+                        String file = line.substring(0, fileNameEndIndex);
+                        recordListedFiles.add(file);
+                    }
+                }
+
+            } catch (IOException e) {
+                LOG.warn("Unable to parse RECORD file: "+ recordFile.getAbsolutePath());
+            }
+            return recordListedFiles;
+        }
+        return Collections.emptyList();
     }
 
     @Override

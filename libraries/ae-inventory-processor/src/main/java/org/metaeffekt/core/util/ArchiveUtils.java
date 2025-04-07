@@ -60,6 +60,11 @@ public class ArchiveUtils {
 
     private static final Set<String> windowsExtensions = new HashSet<>();
 
+    /**
+     * In allExtensions we collect all suffixes
+     */
+    private static final Set<String> allExtensions = new HashSet<>();
+
     static {
         zipExtensions.add("war");
         // zip: regular zip archives
@@ -111,26 +116,38 @@ public class ArchiveUtils {
         jimageExtensions.add("modules");
 
         jimageFilenames.add("modules");
+
+        allExtensions.addAll(zipExtensions);
+        allExtensions.addAll(gzipExtensions);
+        allExtensions.addAll(tarExtensions);
+        allExtensions.addAll(windowsExtensions);
+        allExtensions.addAll(jmodExtensions);
+        allExtensions.addAll(jimageExtensions);
     }
 
     public static void registerZipExtension(String suffix) {
         zipExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerGzipExtension(String suffix) {
         gzipExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerTarExtension(String suffix) {
         tarExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerJmodExtension(String suffix) {
         jmodExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerJimageExtension(String suffix) {
         jimageExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     /**
@@ -554,6 +571,12 @@ public class ArchiveUtils {
         execParam.timeoutAfter(EXTRACT_DURATION, EXTRACT_DURATION_TIMEOUT_UNIT);
 
         ExecUtils.executeAndThrowIOExceptionOnFailure(execParam);
+    }
+
+    public static boolean isArchiveByName(String pathOrName) {
+        if (pathOrName == null) return false;
+        final String extension = FilenameUtils.getExtension(pathOrName.toLowerCase(Locale.US));
+        return allExtensions.contains(extension);
     }
 
 }

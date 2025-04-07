@@ -107,9 +107,16 @@ public final class Constants {
     public static final String KEY_ARCHIVE_PATH = "Archive Path";
 
     public static final String ARTIFACT_TYPE_DISTRO = "distro";
-    public static final String ARTIFACT_TYPE_CONTAINER = "container";
     public static final String ARTIFACT_TYPE_PACKAGE = "package";
+    public static final String ARTIFACT_TYPE_APPLICATION = "application";
+    public static final String ARTIFACT_TYPE_APPLIANCE = "appliance";
     public static final String ARTIFACT_TYPE_MODULE = "module";
+    public static final String ARTIFACT_TYPE_CONTAINER = "container";
+    public static final String ARTIFACT_TYPE_DEVICE = "device";
+    public static final String ARTIFACT_TYPE_PART = "part";
+    public static final String ARTIFACT_TYPE_DRIVER = "driver";
+    public static final String ARTIFACT_TYPE_INSTALLATION_PACKAGE = "installation-package";
+    public static final String ARTIFACT_TYPE_CONTENT = "content";
     public static final String ARTIFACT_TYPE_FILE = "file";
     public static final String ARTIFACT_TYPE_ARCHIVE = "archive";
     public static final String ARTIFACT_TYPE_COMPOSITE = "composite";

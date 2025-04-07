@@ -100,28 +100,28 @@ public class ReportConfigurationParameters {
     // template inclusion section
 
     @Builder.Default
-    private boolean inventoryBomReportEnabled = true;
+    private boolean inventoryBomReportEnabled = false;
 
     @Builder.Default
-    private boolean inventoryDiffReportEnabled = true;
+    private boolean inventoryDiffReportEnabled = false;
 
     @Builder.Default
-    private boolean inventoryPomEnabled = true;
+    private boolean inventoryPomEnabled = false;
 
     @Builder.Default
-    private boolean inventoryVulnerabilityReportEnabled = true;
+    private boolean inventoryVulnerabilityReportEnabled = false;
 
     @Builder.Default
-    private boolean inventoryVulnerabilityReportSummaryEnabled = true;
+    private boolean inventoryVulnerabilityReportSummaryEnabled = false;
 
     @Builder.Default
-    private boolean inventoryVulnerabilityStatisticsReportEnabled = true;
+    private boolean inventoryVulnerabilityStatisticsReportEnabled = false;
 
     @Builder.Default
-    private boolean assetBomReportEnabled = true;
+    private boolean assetBomReportEnabled = false;
 
     @Builder.Default
-    private boolean assessmentReportEnabled = true;
+    private boolean assessmentReportEnabled = false;
 
     public void setAllFailConditions(boolean shouldFail) {
         failOnError = shouldFail;
@@ -136,16 +136,5 @@ public class ReportConfigurationParameters {
         failOnMissingLicenseFile = shouldFail;
         failOnMissingNotice = shouldFail;
         failOnMissingComponentFiles = shouldFail;
-    }
-
-    public void setGenerationForAllTemplates(boolean shouldGenerate) {
-        inventoryBomReportEnabled = shouldGenerate;
-        inventoryDiffReportEnabled = shouldGenerate;
-        inventoryPomEnabled = shouldGenerate;
-        inventoryVulnerabilityReportEnabled = shouldGenerate;
-        inventoryVulnerabilityReportSummaryEnabled = shouldGenerate;
-        inventoryVulnerabilityStatisticsReportEnabled = shouldGenerate;
-        assetBomReportEnabled = shouldGenerate;
-        assessmentReportEnabled = shouldGenerate;
     }
 }

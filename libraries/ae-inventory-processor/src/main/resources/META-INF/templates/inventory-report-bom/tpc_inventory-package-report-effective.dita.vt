@@ -12,7 +12,7 @@
 
         #if($components.isEmpty())
         <p>$utils.getText("inventory-report-bom.no-individual-package")</p>
-#else
+        #else
         <p>$utils.getText("inventory-report-bom.package-table-descr")</p>
         <p>
             <table otherprops="wide" id="$templateRegistry.registerElement('table_packages')">
@@ -72,6 +72,6 @@
                 </tgroup>
             </table>
         </p>
-#end
+        #end
     </body>
 </topic>

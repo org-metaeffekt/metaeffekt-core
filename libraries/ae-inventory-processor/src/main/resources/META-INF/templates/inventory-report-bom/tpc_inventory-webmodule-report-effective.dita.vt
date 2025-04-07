@@ -11,7 +11,7 @@
 
         #if($components.isEmpty())
         <p>$utils.getText("inventory-report-bom.no-individual-web-module")</p>
-#else
+        #else
         <p>$utils.getText("inventory-report-bom.web-module-table-descr")</p>
         <p>
             <table otherprops="wide" id="$templateRegistry.registerElement('table_web_modules')">
@@ -27,7 +27,7 @@
                         </row>
                     </thead>
 
-                    <tbody>
+                <tbody>
 
 #foreach($component in $components)
     #set($groups=$inventory.evaluateComponent($component))
@@ -70,6 +70,6 @@
                 </tgroup>
             </table>
         </p>
-#end
+        #end
     </body>
 </topic>

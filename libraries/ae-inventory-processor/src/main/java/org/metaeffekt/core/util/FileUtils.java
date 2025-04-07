@@ -29,8 +29,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -55,7 +57,8 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     private static final Pattern SLASH_DOT_SLASH_PATTERN = Pattern.compile("/\\./");
     private static final Pattern DOT_SLASH_PREFIX_PATTERN = Pattern.compile("^\\./");
-    private static final Pattern FOLDER_SLASH_DOTDOT_SLASH_PATTERN = Pattern.compile("[^/]*/\\.\\./");
+    private static final Pattern FOLDER_SLASH_DOTDOT_SLASH_PATTERN = Pattern.compile("([^/]*)/\\.\\./");
+    private static final Pattern FOLDER_SLASH_DOTDOT_SUFFIX_PATTERN = Pattern.compile("([^/]*)/\\.\\.$");
     private static final Pattern SLASH_SLASH_PATTERN = Pattern.compile("//");
 
     /**
@@ -331,14 +334,54 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static String canonicalizeLinuxPath(String path) {
         final String originalPath = path;
 
+        // replace /./ by /
         path = RegExUtils.replaceAll(path, SLASH_DOT_SLASH_PATTERN, SEPARATOR_SLASH);
+
+        // replace // by /
         path = RegExUtils.replaceAll(path, SLASH_SLASH_PATTERN, SEPARATOR_SLASH);
+        validatePath(path, originalPath);
 
-        if (path.startsWith("/..")) throw new IllegalStateException("Illegal path detected: " + originalPath);
+        // the set is meant to detect, when no change is applied
+        final Set<String> previousVersions = new HashSet<>();
 
-        path = RegExUtils.replaceAll(path, FOLDER_SLASH_DOTDOT_SLASH_PATTERN, "");
+        // replace <folder>/../ constructs
+        path = replaceFolderDotDotConstruct(path, previousVersions, FOLDER_SLASH_DOTDOT_SLASH_PATTERN, originalPath);
+        validatePath(path, originalPath);
+
+        // replace <folder>/..$ constructs
+        path = replaceFolderDotDotConstruct(path, previousVersions, FOLDER_SLASH_DOTDOT_SUFFIX_PATTERN, originalPath);
+        validatePath(path, originalPath);
+
+        // eliminate prefixed ./
         path = RegExUtils.replaceAll(path, DOT_SLASH_PREFIX_PATTERN, "");
 
+        // remove trailing / an any case
+        if (path.length() > 1 && path.endsWith(SEPARATOR_SLASH)) {
+            return path.substring(0, path.length() - 1);
+        }
+
+        return path;
+    }
+
+    private static void validatePath(String path, String originalPath) {
+        if (path.startsWith("/..")) throw new IllegalStateException("Illegal path detected: " + originalPath);
+    }
+
+    private static String replaceFolderDotDotConstruct(String path, Set<String> previousVersions, Pattern pattern, String originalPath) {
+        do {
+            previousVersions.add(path);
+            final Matcher matcher = pattern.matcher(path);
+            while (matcher.find()) {
+                final String group = matcher.group(1);
+                // skip occurrences where the parent is not real '../..' or './..'
+                if (!group.equals(".") && !group.equals("..")) {
+                    path = path.substring(0, matcher.start()) + path.substring(matcher.end());
+                    // since we modified the path, we have to rematch; path should already be different
+                    break;
+                }
+            }
+            validatePath(path, originalPath);
+        } while (!previousVersions.contains(path));
         return path;
     }
 
@@ -360,7 +403,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String[] scanDirectoryForFiles(File targetDir, String... includes) {
-        DirectoryScanner scanner = new DirectoryScanner();
+        final DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(targetDir);
         scanner.setIncludes(includes);
         scanner.setCaseSensitive(false);
@@ -369,7 +412,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String[] scanDirectoryForFiles(File targetDir, String[] includes, String[] excludes) {
-        DirectoryScanner scanner = new DirectoryScanner();
+        final DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(targetDir);
         scanner.setIncludes(includes);
         scanner.setExcludes(excludes);

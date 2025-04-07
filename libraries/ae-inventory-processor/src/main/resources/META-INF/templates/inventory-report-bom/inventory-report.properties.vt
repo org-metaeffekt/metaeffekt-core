@@ -8,6 +8,7 @@
 #foreach($notice in $artifactNoticeList)
     #set($unused = $notices.add($notice))
 #end
+
 # Switch for displaying web modules if there are any present
 #set($componentsWebModule=$inventory.evaluateComponentsInContext("web-module"))
 #set($webModulesSwitch = true)
@@ -15,6 +16,7 @@
     #set($webModulesSwitch = false)
 #end
 ae.inventory.web.module.effective.switch=$webModulesSwitch
+
 # Switch for displaying packages if there are any present
 #set($componentsPackage=$inventory.evaluateComponentsInContext("package"))
 #set($packagesSwitch = true)
@@ -22,6 +24,79 @@ ae.inventory.web.module.effective.switch=$webModulesSwitch
     #set($packagesSwitch = false)
 #end
 ae.inventory.package.effective.switch=$packagesSwitch
+
+# Switch for displaying applications if there are any present
+#set($componentsApplication=$inventory.evaluateComponentsInContext("application"))
+#set($applicationsSwitch = true)
+#if($componentsApplication.isEmpty())
+    #set($applicationsSwitch = false)
+#end
+ae.inventory.application.effective.switch=$applicationsSwitch
+
+# Switch for displaying appliances if there are any present
+#set($componentsAppliance=$inventory.evaluateComponentsInContext("appliance"))
+#set($appliancesSwitch = true)
+#if($componentsAppliance.isEmpty())
+    #set($appliancesSwitch = false)
+#end
+ae.inventory.appliance.effective.switch=$appliancesSwitch
+
+# Switch for displaying containers if there are any present
+#set($componentsContainer=$inventory.evaluateComponentsInContext("container"))
+#set($containersSwitch = true)
+#if($componentsContainer.isEmpty())
+    #set($containersSwitch = false)
+#end
+ae.inventory.container.effective.switch=$containersSwitch
+
+# Switch for displaying devices if there are any present
+#set($componentsDevice=$inventory.evaluateComponentsInContext("device"))
+#set($devicesSwitch = true)
+#if($componentsDevice.isEmpty())
+    #set($devicesSwitch = false)
+#end
+ae.inventory.device.effective.switch=$devicesSwitch
+
+# Switch for displaying parts if there are any present
+#set($componentsPart=$inventory.evaluateComponentsInContext("part"))
+#set($partsSwitch = true)
+#if($componentsPart.isEmpty())
+    #set($partsSwitch = false)
+#end
+ae.inventory.part.effective.switch=$partsSwitch
+
+# Switch for displaying drivers if there are any present
+#set($componentsDriver=$inventory.evaluateComponentsInContext("driver"))
+#set($driversSwitch = true)
+#if($componentsDriver.isEmpty())
+    #set($driversSwitch = false)
+#end
+ae.inventory.driver.effective.switch=$driversSwitch
+
+# Switch for displaying installation packages if there are any present
+#set($componentsInstallationPackage=$inventory.evaluateComponentsInContext("installation-package"))
+#set($installationPackagesSwitch = true)
+#if($componentsInstallationPackage.isEmpty())
+    #set($installationPackagesSwitch = false)
+#end
+ae.inventory.installation.package.effective.switch=$installationPackagesSwitch
+
+# Switch for displaying contents if there are any present
+#set($componentsContent=$inventory.evaluateComponentsInContext("content"))
+#set($contentsSwitch = true)
+#if($componentsContent.isEmpty())
+    #set($contentsSwitch = false)
+#end
+ae.inventory.content.effective.switch=$contentsSwitch
+
+# Switch for displaying modules if there are any present
+#set($componentsModule=$inventory.evaluateComponentsInContext("module"))
+#set($modulesSwitch = true)
+#if($componentsModule.isEmpty())
+    #set($modulesSwitch = false)
+#end
+ae.inventory.module.effective.switch=$modulesSwitch
+
 # Switch for displaying components without license if there are any present
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))
@@ -30,6 +105,7 @@ ae.inventory.package.effective.switch=$packagesSwitch
     #set($componentsNoLicenseSwitch = false)
 #end
 ae.inventory.components.no.license-switch=$componentsNoLicenseSwitch
+
 # Switch to be used on a license details level
 # If no notices are available across all components switch is 'false'; 'true' otherwise
 #set($noticesSwitch = true)

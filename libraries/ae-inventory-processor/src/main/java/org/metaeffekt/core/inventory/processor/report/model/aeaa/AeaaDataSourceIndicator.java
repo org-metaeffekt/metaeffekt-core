@@ -15,9 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
+import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.csaf.AeaaCsafEntryVulnerabilityStatus;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -198,6 +200,44 @@ public class AeaaDataSourceIndicator {
         public JSONObject toJson() {
             return super.toJson()
                     .put("coordinates", coordinates);
+        }
+    }
+
+    @Getter
+    public static class ArtifactCsafReason extends ArtifactReason {
+        public final static String TYPE = "artifact-csaf";
+
+        private final String provider;
+        private final String documentId;
+
+        private final Map<AeaaCsafEntryVulnerabilityStatus, Set<String>> helpers;
+
+        public ArtifactCsafReason(Artifact artifact, AeaaAdvisoryTypeIdentifier<?> advisoryTypeIdentifier, String document, Map<AeaaCsafEntryVulnerabilityStatus, Set<String>> helpers) {
+            super(TYPE, artifact);
+
+            this.provider = advisoryTypeIdentifier.getWellFormedName();
+            this.documentId = document;
+            this.helpers = helpers;
+        }
+
+        protected ArtifactCsafReason(JSONObject artifactData, String provider, String document, Map<AeaaCsafEntryVulnerabilityStatus, Set<String>> helpers) {
+            super(TYPE, artifactData);
+
+            this.provider = provider;
+            this.documentId = document;
+            this.helpers = helpers;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            JSONObject statusMappings = new JSONObject();
+            for (Map.Entry<AeaaCsafEntryVulnerabilityStatus, Set<String>> entry : helpers.entrySet()) {
+                statusMappings.put(entry.getKey().getDefaultValue(), new ArrayList<>(entry.getValue()));
+            }
+            return super.toJson()
+                    .put("provider", provider)
+                    .put("document", documentId)
+                    .put("usedHelpers", statusMappings);
         }
     }
 
@@ -506,6 +546,21 @@ public class AeaaDataSourceIndicator {
                             json,
                             json.optString("coordinates", null)
                     );
+                case ArtifactCsafReason.TYPE:
+                    JSONObject helpersJson = json.getJSONObject("usedHelpers");
+                    Map<AeaaCsafEntryVulnerabilityStatus, Set<String>> helperStatusMapping = new HashMap<>();
+                    for (String key : helpersJson.keySet()) {
+                        JSONArray helperJson = helpersJson.getJSONArray(key);
+                        Set<String> helpers = new HashSet<>();
+                        for (int i = 0; i < helperJson.length(); i++) {
+                            final JSONObject jsonObject = helperJson.getJSONObject(i);
+                            helpers.add(jsonObject.toString());
+                        }
+                        helperStatusMapping.put(AeaaCsafEntryVulnerabilityStatus.fromString(key), helpers);
+                    }
+                    ArtifactCsafReason ArtifactCSafReason = new ArtifactCsafReason(json, json.getString("provider"),
+                            json.getString("document"), helperStatusMapping);
+                    return ArtifactCSafReason;
                 case AnyReason.TYPE:
                     return new AnyReason(json.optString("description", null));
                 case AnyArtifactReason.TYPE:

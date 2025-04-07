@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -73,23 +74,23 @@ public class DirectoryScanAggregatorConfiguration {
             final String componentVersion = artifact.getVersion();
             final String componentPart = artifact.getId();
 
+            // concluded derived qualifier
+            final String derivedQualifier = deriveMapQualifier(componentName, componentPart, componentVersion);
+
             // identify matching component patterns (this may overlap with real artifacts)
-            final ComponentPatternMatches componentPatternMatches =
-                    findComponentPatternMatches(qualifierToComponentPatternMap, componentName, componentVersion, componentPart);
+            final ComponentPatternMatches componentPatternMatches = findComponentPatternMatches(
+                    qualifierToComponentPatternMap, componentName, componentVersion, componentPart);
 
             // build FilePatternQualifierMapper baseline
             final FilePatternQualifierMapper filePatternQualifierMapper = new FilePatternQualifierMapper();
             filePatternQualifierMapper.setArtifact(artifact);
-            filePatternQualifierMapper.setQualifier(componentPart);
-
-            final String derivedQualifier = deriveMapQualifier(componentName, componentPart, componentVersion);
-            filePatternQualifierMapper.setDerivedQualifier(derivedQualifier);
+            filePatternQualifierMapper.setQualifier(derivedQualifier);
             filePatternQualifierMapper.setPathInAsset(artifact.getPathInAsset());
 
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
-                final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap =
-                    new HashMap<>(mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
+                final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(
+                        mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
                 filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
 
                 // collect component-pattern-covered files
@@ -183,7 +184,8 @@ public class DirectoryScanAggregatorConfiguration {
         return duplicateToComponentPatternFilesMap;
     }
 
-    private void aggregateComponentFiles(File baseDir, File componentBaseDir, String includes, String excludes, List<File> componentPatternCoveredFiles) {
+    private void aggregateComponentFiles(
+            File baseDir, File componentBaseDir, String includes, String excludes, List<File> componentPatternCoveredFiles) {
 
         // split includes/excludes in relative and absolute paths
         final ComponentPatternProducer.NormalizedPatternSet includePatternSet = ComponentPatternProducer.normalizePattern(includes);
@@ -312,10 +314,6 @@ public class DirectoryScanAggregatorConfiguration {
 
     public static String deriveMapQualifier(String componentName, String componentPart, String componentVersion) {
         final StringBuilder sb = new StringBuilder();
-        if (StringUtils.isNotBlank(componentName)) {
-            sb.append(componentName);
-        }
-        sb.append("-");
         // NOTE: the componentPart is the artifact id; it is usually not blank; we nevertheless treat it equivalently
         if (StringUtils.isNotBlank(componentPart)) {
             sb.append(componentPart);
@@ -323,6 +321,10 @@ public class DirectoryScanAggregatorConfiguration {
         sb.append("-");
         if (StringUtils.isNotBlank(componentVersion)) {
             sb.append(componentVersion);
+        }
+        sb.append("-");
+        if (StringUtils.isNotBlank(componentName)) {
+            sb.append(componentName);
         }
         return sb.toString();
     }
@@ -346,129 +348,123 @@ public class DirectoryScanAggregatorConfiguration {
 
         if (aggregationDir != null && aggregationDir.exists()) {
             // post-processing steps
-            // 1. produce one file with all ArtifactFile types
+
+            // evaluate component patterns
             final List<FilePatternQualifierMapper> filePatternQualifierMappers =
-                    ComponentPatternValidator.evaluateComponentPatterns(referenceInventory, resultInventory, scanBaseDir);
+                    evaluateComponentPatterns(referenceInventory, resultInventory, scanBaseDir);
 
-            // 2. analyze component containment
-            for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-                final String assetId = "AID-" + mapper.getArtifact().getId() + "-" + mapper.getArtifact().getChecksum();
-                if (mapper.getSubSetMap() != null) {
-                    for (String qualifier : mapper.getSubSetMap().keySet()) {
-                        Artifact foundArtifact = resultInventory.getArtifacts().stream()
-                                .filter(a -> matchQualifierToIdOrDerivedQualifier(qualifier, a))
-                                .findFirst().orElse(null);
-                        if (foundArtifact != null) {
-                            String marker = foundArtifact.get(assetId);
-                            if (!marker.equals(MARKER_CONTAINS) && !marker.equals(MARKER_CROSS)) {
-                                LOG.error("Artifact [{}] does not contain asset [{}]", foundArtifact.getId(), assetId);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 3. build zips for all components
+            // aggregate files (atomic and component patterns)
             aggregateFilesForAllArtifacts(scanBaseDir, filePatternQualifierMappers, aggregationDir);
         }
     }
 
     private void aggregateFilesForAllArtifacts(File scanBaseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers, File targetDir) {
 
+        // perform aggregation for each map
+        final Set<Artifact> coveredArtifacts = new HashSet<>();
+        final String canonicalScanBaseDir = FileUtils.canonicalizeLinuxPath(scanBaseDir.getAbsolutePath());
+        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
+            coveredArtifacts.addAll(aggregateFilesForMapper(mapper, canonicalScanBaseDir, targetDir));
+        }
+
+        // copy remaining artifacts not covered by component-patterns to aggregation dir (mapper-independent)
+        for (Artifact artifact : resultInventory.getArtifacts()) {
+
+            // skip artifact covered by component patterns
+            if (coveredArtifacts.contains(artifact)) continue;
+
+            // evaluate directive
+            if (hasSkipAggregationDirective(artifact)) continue;
+
+            for (String project : artifact.getRootPaths()) {
+                final File file = new File(scanBaseDir, project);
+                if (file.exists() && !FileUtils.isSymlink(file) && file.isFile()) {
+                    final String relativePath = FileUtils.asRelativePath(scanBaseDir, file);
+                    try {
+                        final File targetFile = new File(targetDir, relativePath);
+                        FileUtils.copyFile(file, targetFile);
+                        artifact.set(KEY_ARCHIVE_PATH, targetFile.getAbsolutePath());
+                    } catch (IOException e) {
+                        LOG.warn("Cannot copy file [{}] to aggregation folder [{}]", file.getAbsolutePath(), targetDir.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
+
+    private Set<Artifact> aggregateFilesForMapper(FilePatternQualifierMapper mapper, String canonicalScanBaseDir, File targetDir) {
         final Set<Artifact> coveredArtifacts = new HashSet<>();
 
-        for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
-            final File tmpFolder = FileUtils.initializeTmpFolder(targetDir);
+        // the checksum must not be included in the archive; separate the two location
+        final File tmpBaseDir = FileUtils.initializeTmpFolder(targetDir);
+        final File tmpContentDir = new File(tmpBaseDir, "content");
 
-            // FIXME: why isn't that always the mapper.artifact
-            final Artifact foundArtifact = resultInventory.getArtifacts().stream()
-                    .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
-                    .findFirst().orElse(null);
-            try {
-                boolean contentDetected = false;
+        // FIXME: why isn't that always the mapper.artifact
+        final Artifact foundArtifact = resultInventory.getArtifacts().stream()
+                .filter(artifact -> matchQualifierToIdOrDerivedQualifier(mapper.getQualifier(), artifact))
+                .findFirst().orElse(null);
+        try {
+            boolean contentDetected = false;
 
-                // loop over each entry in the file map
-                for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
-                    final List<File> files = entry.getValue();
-                    if (foundArtifact != null) {
-                        String noFileMatchAttribute = foundArtifact.get(KEY_NO_FILE_MATCH_REQUIRED);
-                        if (files.isEmpty() && noFileMatchAttribute == null) {
-                            continue;
-                        }
-                    }
-
-                    coveredArtifacts.add(mapper.getArtifact());
-
-                    final File commonRootDir = determineCommonRootDir(scanBaseDir, files);
-
-                    // add each file to the zip
-                    for (File file : files) {
-                        // copy the file to the tmp folder; use full path from scan
-                        final String relativePath = FileUtils.asRelativePath(commonRootDir, file);
-                        if (file.exists()) {
-                            FileUtils.copyFile(file, new File(tmpFolder, relativePath));
-                        }
-
-                        contentDetected = true;
+            // loop over each entry in the file map
+            for (Map.Entry<Boolean, List<File>> entry : mapper.getFileMap().entrySet()) {
+                final List<File> files = entry.getValue();
+                if (foundArtifact != null) {
+                    String noFileMatchAttribute = foundArtifact.get(KEY_NO_FILE_MATCH_REQUIRED);
+                    if (files.isEmpty() && noFileMatchAttribute == null) {
+                        continue;
                     }
                 }
 
-                // FIXME-AOE: please review structural change
+                coveredArtifacts.add(mapper.getArtifact());
 
-                // in case content was detected we create the content checksum and pack the files into a zip
-                if (contentDetected) {
-                    final File contentChecksumFile = new File(tmpFolder, mapper.getArtifact().getId() + ".content.md5");
-                    FileUtils.createDirectoryContentChecksumFile(tmpFolder, contentChecksumFile);
+                final String commonRootPath = determineCommonRootPath(canonicalScanBaseDir, files);
 
-                    // set the content checksum
-                    final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
-                    final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
-
-                    mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                    mapper.getArtifact().set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
-
-                    if (foundArtifact != null) {
-                        // FIXME: see above
-                        foundArtifact.set(KEY_CONTENT_CHECKSUM, contentChecksum);
-                        foundArtifact.set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
+                // add each file to the zip
+                for (File file : files) {
+                    // copy the file to the tmp folder; use full path from scan
+                    final String filePath = FileUtils.canonicalizeLinuxPath(file.getAbsolutePath());
+                    final String relativePath = FileUtils.asRelativePath(commonRootPath, filePath);
+                    if (file.exists()) {
+                        FileUtils.copyFile(file, new File(tmpContentDir, relativePath));
                     }
 
-                    ArchiveUtils.zipAnt(tmpFolder, zipFile);
-                    if (!zipFile.exists()) {
-                        // protocol as error and continue
-                        throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
-                    }
-                }
-            } catch (IOException e) {
-                LOG.error("Error processing artifact: [{}] with following error: [{}]", mapper.getArtifact().getId(), e.getMessage());
-            } finally {
-                // ensure the tmp folder is deleted
-                FileUtils.deleteDirectoryQuietly(tmpFolder);
-            }
-        }
-
-        // copy remaining artifacts not covered by component-patterns to aggregation dir
-        for (Artifact artifact : resultInventory.getArtifacts()) {
-            if (!coveredArtifacts.contains(artifact)) {
-
-                // evaluate directive
-                if (hasSkipAggregationDirective(artifact)) continue;
-
-                for (String project : artifact.getRootPaths()) {
-                    File file = new File(scanBaseDir, project);
-                    if (file.exists() && !FileUtils.isSymlink(file) && file.isFile()) {
-                        final String relativePath = FileUtils.asRelativePath(scanBaseDir, file);
-                        try {
-                            final File targetFile = new File(targetDir, relativePath);
-                            FileUtils.copyFile(file, targetFile);
-                            artifact.set(KEY_ARCHIVE_PATH, targetFile.getAbsolutePath());
-                        } catch (IOException e) {
-                            LOG.warn("Cannot copy file [{}] to aggregation folder [{}]", file.getAbsolutePath(), targetDir.getAbsolutePath());
-                        }
-                    }
+                    contentDetected = true;
                 }
             }
+
+            // in case content was detected we create the content checksum and pack the files into a zip
+            if (contentDetected) {
+                final File contentChecksumFile = new File(tmpBaseDir, mapper.getArtifact().getId() + ".content.md5");
+                FileUtils.createDirectoryContentChecksumFile(tmpContentDir, contentChecksumFile);
+
+                // set the content checksum
+                final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
+                final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
+
+                mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
+                mapper.getArtifact().set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
+
+                if (foundArtifact != null) {
+                    // FIXME: see above
+                    foundArtifact.set(KEY_CONTENT_CHECKSUM, contentChecksum);
+                    foundArtifact.set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
+                }
+
+                ArchiveUtils.zipAnt(tmpContentDir, zipFile);
+                if (!zipFile.exists()) {
+                    // protocol as error and continue
+                    throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
+                }
+            }
+        } catch (IOException e) {
+            LOG.error("Error processing artifact: [{}] with following error: [{}]", mapper.getArtifact().getId(), e.getMessage());
+        } finally {
+            // ensure the tmp folder is deleted (content and checksum file)
+            FileUtils.deleteDirectoryQuietly(tmpBaseDir);
         }
+
+        return coveredArtifacts;
     }
 
     private boolean hasSkipAggregationDirective(Artifact artifact) {
@@ -476,16 +472,21 @@ public class DirectoryScanAggregatorConfiguration {
         return AGGREGATE_DIRECTIVE_SKIP.equalsIgnoreCase(directive);
     }
 
-    private File determineCommonRootDir(File scanBaseDir, List<File> files) {
-        if (files == null || files.isEmpty()) return scanBaseDir;
+    private String determineCommonRootPath(String canonicalScanBasePath, List<File> files) {
+        if (files == null || files.isEmpty()) {
+            return canonicalScanBasePath;
+        }
 
-        File guess = files.get(0).getParentFile();
-
+        String candidatePath = FileUtils.canonicalizeLinuxPath(files.get(0).getParentFile().getAbsolutePath());
         boolean commonRoot = true;
         do {
+            // match only with trailing slash not to match a folder starting with the last element in the path
+            final String matchPath = candidatePath + "/";
+
             for (File file : files) {
-                final String path = guess.getPath();
-                if (!file.getPath().startsWith(path)) {
+                final String filePath = FileUtils.canonicalizeLinuxPath(file.getAbsolutePath());
+
+                if (!filePath.startsWith(matchPath)) {
                     commonRoot = false;
                     break;
                 }
@@ -493,13 +494,17 @@ public class DirectoryScanAggregatorConfiguration {
 
             if (!commonRoot) {
                 // try next level up
-                guess = guess.getParentFile();
+                final File parentFile = new File(candidatePath).getParentFile();
+                if (parentFile != null) {
+                    candidatePath = FileUtils.canonicalizeLinuxPath(parentFile.getAbsolutePath());
+                } else {
+                    LOG.warn("Issue detected evaluating common root path. Inputs: scanBasePath={}, candidatePath={}", canonicalScanBasePath, candidatePath);
+                    candidatePath = null;
+                }
             }
-        } while (!commonRoot && guess != null);
+        } while (!commonRoot && candidatePath != null && !canonicalScanBasePath.equals(candidatePath));
 
-        if (guess == null) return scanBaseDir;
-
-        return guess;
+        return (candidatePath == null) ? canonicalScanBasePath : candidatePath;
     }
 
     public static boolean matchQualifierToIdOrDerivedQualifier(String qualifier, Artifact a) {

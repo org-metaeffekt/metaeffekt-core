@@ -45,7 +45,6 @@ import static org.junit.Assert.assertTrue;
 
 public class RepositoryReportTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RepositoryReportTest.class);
 
     private static final File INVENTORY_DIR = new File("src/test/resources/test-inventory-01");
     private static final String INVENTORY_INCLUDES = "*.xls";
@@ -63,6 +62,7 @@ public class RepositoryReportTest {
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
                 .failOnUnknown(false)
                 .failOnUnknownVersion(false)
+                .inventoryBomReportEnabled(true)
                 .build());
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
@@ -193,9 +193,13 @@ public class RepositoryReportTest {
         final File inventoryDir = new File("src/test/resources/test-inventory-02");
         final File reportDir = new File("target/test-inventory-02");
 
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .inventoryBomReportEnabled(true)
+                .build());
+
         configureAndCreateReport(inventoryDir, "*.xls",
                 inventoryDir, "*.xls",
-                reportDir, new InventoryReport());
+                reportDir, report);
 
         // read package report (effective)
         File packageReportEffectiveFile = new File(reportDir, "report/tpc_inventory-package-report-effective.dita");
