@@ -1,7 +1,8 @@
 #parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
-<topic id="tpc_license-usage-$reportContext.id">
+    #set($templateRegistry = $registry.register("inventory-report-bom", "tpc_inventory-license-usage"))
+    <topic id="$templateRegistry.registerElement("license-usage-$reportContext.id")">
     #set($title = $utils.getText("inventory-report-bom.short.license-usage-title"))
     <title>$reportContext.combinedTitle("$title", true)</title>
     #set($effectiveLicenses=$inventory.evaluateLicenses(false))
@@ -9,22 +10,25 @@
 
 
     <body>
-    <p>$utils.getText("inventory-report-bom.effective-license-table")</p>
-</body>
+        <p>$utils.getText("inventory-report-bom.effective-license-table")</p>
+    </body>
 
-#foreach($license in $effectiveLicensesRepresented)
-    #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
-        #insertLicenseArtifactTopic($license)
-    #else
-        <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
-            <title>$report.xmlEscapeLicense($license) $utils.getText("general.short.variants")</title>
-            <body>
+    #foreach($license in $effectiveLicensesRepresented)
+
+        #set($topicId = $templateRegistry.registerElement("effective-license-${inventory.deriveLicenseId($license)}"))
+        <topic id="$topicId">
+
+            #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
+                #insertLicenseArtifactTopic($templateRegistry $license)
+            #else
+                <title>$report.xmlEscapeLicense($license) $utils.getText("general.short.variants")</title>
+                <body>
                 <p>$utils.getText("inventory-report-bom.license-variations")</p>
                     #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))
-                    #insertLicenseArtifactTopic($effLicense)
+                        #insertLicenseArtifactTopic($templateRegistry $effLicense)
                     #end
-            </body>
+                </body>
+            #end
         </topic>
     #end
-#end
 </topic>
