@@ -3,7 +3,7 @@
 <glossentry id="driver">
     <glossterm>Driver</glossterm>
     <glossdef>
-        Placeholder Driver
+        A driver is a software component that allows a device or peripheral to communicate with the operating system.
         <p>
             See also: <abbreviated-form keyref="component"/>
         </p>

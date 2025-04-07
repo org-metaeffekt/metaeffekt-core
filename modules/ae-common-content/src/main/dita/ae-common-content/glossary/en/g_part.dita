@@ -3,9 +3,9 @@
 <glossentry id="part">
     <glossterm>Part</glossterm>
     <glossdef>
-        Placeholder Part
+        Parts are identifiable elements that a device can be disassembled into.
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            See also: <abbreviated-form keyref="device"/>, <abbreviated-form keyref="component"/>
         </p>
     </glossdef>
     <glossBody>

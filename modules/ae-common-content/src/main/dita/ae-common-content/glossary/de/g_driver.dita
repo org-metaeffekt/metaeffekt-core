@@ -4,7 +4,7 @@
     <glossterm>Treiber</glossterm>
     <glossdef>
         <p>
-        Platzhalter Treiber
+        Ein Treiber ist eine Softwarekomponente, die es einem Gerät oder einer Peripherie ermöglicht, mit dem Betriebssystem zu kommunizieren.
         </p>
         <p>
             Siehe auch: <abbreviated-form keyref="component"/>

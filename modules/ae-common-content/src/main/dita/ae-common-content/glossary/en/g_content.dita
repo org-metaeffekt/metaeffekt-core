@@ -3,7 +3,7 @@
 <glossentry id="content">
     <glossterm>Content</glossterm>
     <glossdef>
-        Placeholder Content
+        Content includes data-centric artifacts such as databases, AI/ML models, or multimedia files that can be used or consumed by applications or services.
         <p>
             See also: <abbreviated-form keyref="component"/>
         </p>

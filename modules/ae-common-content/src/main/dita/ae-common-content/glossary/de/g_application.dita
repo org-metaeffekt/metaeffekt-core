@@ -3,7 +3,7 @@
 <glossentry id="application">
     <glossterm>Applikation</glossterm>
     <glossdef>
-        Platzhalter Applikationen
+        Eine Applikation ist ein Software-Artefakt, das dafür entwickelt wurde, bestimmte Aufgaben auszuführen oder Dienste für Benutzer oder andere Systeme bereitzustellen. Sie kann als ausführbare Datei (z. B. EXE, WAR, JAR) bereitgestellt werden und enthält oft gebündelte Bibliotheken und Ressourcen.
         <p>
             Siehe auch: <abbreviated-form keyref="component"/>
         </p>

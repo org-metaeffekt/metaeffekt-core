@@ -4,10 +4,10 @@
     <glossterm>Teil</glossterm>
     <glossdef>
         <p>
-        Platzhalter Teile
+        Teile sind identifizierbare Elemente, in die ein Gerät zerlegt werden kann.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="component"/>
+            Siehe auch: <abbreviated-form keyref="device"/>, <abbreviated-form keyref="component"/>
         </p>
     </glossdef>
     <glossBody>

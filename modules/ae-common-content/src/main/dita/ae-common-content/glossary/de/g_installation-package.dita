@@ -4,7 +4,7 @@
     <glossterm>Installlationspaket</glossterm>
     <glossdef>
         <p>
-        Platzhalter Installationspakete
+        Ein Installationspaket ist ein gebündelter Satz von Dateien zur Installation von Software. Gängige Formate sind EXE, MSI, DMG, ISO und Firmware-Archive.
         </p>
         <p>
             Siehe auch: <abbreviated-form keyref="component"/>
