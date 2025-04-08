@@ -605,6 +605,7 @@ public class Inventory implements Serializable {
      *
      * @param includeLicensesWithArtifactsOnly Result will cover licenses of artifacts without artifactId when true.
      * @param includeManagedArtifactsOnly      Results will only cover license of managed artifacts when true.
+     *
      * @return List of license names covered by this inventory.
      */
     public List<String> evaluateLicenses(boolean includeLicensesWithArtifactsOnly, boolean includeManagedArtifactsOnly) {
@@ -686,6 +687,7 @@ public class Inventory implements Serializable {
      * Returns all relevant notices for a given effective license.
      *
      * @param effectiveLicense The effective license.
+     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateNotices(String effectiveLicense) {
@@ -759,6 +761,7 @@ public class Inventory implements Serializable {
      * Collect ArtifactLicenseData aggregates artifacts that use the effective license given.
      *
      * @param effectiveLicense The effective license to evaluate the artifacts for.
+     *
      * @return List of {@link ArtifactLicenseData} instances.
      */
     public List<ArtifactLicenseData> evaluateComponents(String effectiveLicense) {
