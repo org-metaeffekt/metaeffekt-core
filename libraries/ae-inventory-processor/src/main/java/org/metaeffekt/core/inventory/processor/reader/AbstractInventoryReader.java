@@ -230,11 +230,14 @@ public abstract class AbstractInventoryReader {
     }
 
     protected void populateSerializationContextHeaders(Inventory inventory, Sheet sheet, String contextKey, ParsingContext pc) {
-        final List<String> headerList = pc.columns.stream().filter(col -> !this.isSplitColumn(col)).collect(Collectors.toList());
+        final List<String> headerList = pc.columns;
+        final List<String> filteredHeaderList = headerList.stream().filter(col -> !this.isSplitColumn(col)).collect(Collectors.toList());
+
         final InventorySerializationContext serializationContext = inventory.getSerializationContext();
-        serializationContext.put(contextKey + ".columnlist", headerList);
+        serializationContext.put(contextKey + ".columnlist", filteredHeaderList);
         for (int i = 0; i < headerList.size(); i++) {
-            int width = sheet.getColumnWidth(i);
+            if (!filteredHeaderList.contains(headerList.get(i))) continue;
+            final int width = sheet.getColumnWidth(i);
             serializationContext.put(contextKey + ".column[" + i + "].width", width);
         }
     }
