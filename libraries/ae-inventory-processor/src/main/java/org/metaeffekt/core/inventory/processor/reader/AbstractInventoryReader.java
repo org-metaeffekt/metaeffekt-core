@@ -94,6 +94,10 @@ public abstract class AbstractInventoryReader {
         }
     }
 
+    protected void update(AssetMetaData assetMetaData) {
+        resolveRename(assetMetaData, "Role", AssetMetaData.Attribute.AUDIENCE.getKey());
+    }
+
     protected void update(VulnerabilityMetaData vulnerabilityMetaData) {
         // compensate rename of attributes
         mapContent(vulnerabilityMetaData, "Referenced Content IDs", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
