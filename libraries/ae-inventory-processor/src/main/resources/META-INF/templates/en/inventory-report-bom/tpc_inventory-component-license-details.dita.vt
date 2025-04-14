@@ -76,7 +76,7 @@
                             #if($componentNotice.getLicense())
                                 <p>
                                     In the present version, $componentNotice.getComponentName() is subject to the terms
-                                    of the $componentNotice.getLicense().
+                                    of the $report.xmlEscapeLicense($componentNotice.getLicense()).
                                 </p>
                             #end
                         #else

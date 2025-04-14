@@ -10,13 +10,13 @@
                 $license stehen.
                 #if($folder)
                     Details zur Lizenzierung k&#246;nnen unter
-                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$license
+                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html" scope="external">$report.xmlEscapeLicense($license)
                         [external]</xref> eingesehen werden.
                 #end
             </p>
             <p>
                 <table otherprops="wide">
-                    <title>Komponenten unter $license.trim()$reportContext.inContextOf()</title>
+                    <title>Komponenten unter $report.xmlEscapeLicense($license)$reportContext.inContextOf()</title>
                     <tgroup cols="3">
                         <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
                         <colspec colname="COLSPEC1" colnum="2" colwidth="60*"/>
