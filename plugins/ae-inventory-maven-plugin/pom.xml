@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>0.135.10</version>
+        <version>0.135-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
