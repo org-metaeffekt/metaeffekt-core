@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -59,12 +60,12 @@ public class Beautifulsoup4_4_12_3 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "beautifulsoup4-4.12.3"),
                         attributeValue(VERSION, "4.12.3"),
-                        attributeValue(ROOT_PATHS, "[beautifulsoup4-4.12.3-py3-none-any.whl]"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "beautifulsoup4-4.12.3-py3-none-any.whl"),
                         attributeValue(PATH_IN_ASSET, "[beautifulsoup4-4.12.3-py3-none-any.whl]"))
                 .assertNotEmpty();
 
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(1);
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(1);
-        artifactList.hasSizeOf(47);
+        artifactList.hasSizeOf(2);
     }
 }

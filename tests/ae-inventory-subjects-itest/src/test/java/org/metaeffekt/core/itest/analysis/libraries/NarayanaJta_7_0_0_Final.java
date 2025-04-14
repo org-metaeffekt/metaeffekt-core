@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -65,7 +66,7 @@ public class NarayanaJta_7_0_0_Final extends AbstractCompositionAnalysisTest {
 
         artifactList.with(attributeValue(ID, "arjuna-7.0.0.Final.jar"),
                         attributeValue(VERSION, "7.0.0.Final"),
-                        // FIXME: provide a ROOT_PATH for embedded components
+                        // FIXME there is no existing ROOTPATH for "arjuna-7.0.0.Final.jar"
                         // attributeValue(Artifact.Attribute.ROOT_PATHS, "[narayana-jta-7.0.0.Final.jar]/META-INF/maven/org.jboss.narayana.arjunacore/arjuna/pom.xml"),
                         attributeValue(PATH_IN_ASSET, "[narayana-jta-7.0.0.Final.jar]/META-INF/maven/org.jboss.narayana.arjunacore/arjuna/pom.xml"))
                 .assertNotEmpty();

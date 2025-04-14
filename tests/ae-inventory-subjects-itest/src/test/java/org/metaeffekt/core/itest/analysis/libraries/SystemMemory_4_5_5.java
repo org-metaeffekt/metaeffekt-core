@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -59,7 +60,7 @@ public class SystemMemory_4_5_5 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "System.Memory-4.5.5"),
                         attributeValue(VERSION, "4.5.5"),
-                        attributeValue(ROOT_PATHS, "system.memory.4.5.5.nupkg"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "[system.memory.4.5.5.nupkg]"),
                         attributeValue(PURL, "pkg:nuget/System.Memory@4.5.5"),
                         attributeValue(PATH_IN_ASSET, "[system.memory.4.5.5.nupkg]"))
                 .assertNotEmpty();

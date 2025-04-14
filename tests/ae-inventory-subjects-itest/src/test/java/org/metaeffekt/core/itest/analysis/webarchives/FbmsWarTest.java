@@ -99,8 +99,9 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(90);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "war-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(89);
+        artifactList.hasSizeOf(90);
 
         //ArtifactList warList = artifactList.with(containsToken(ID, ".war"));
         //warList.with(attributeValue(TYPE, "module")).hasSizeOf(warList);

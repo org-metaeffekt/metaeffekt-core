@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -59,7 +60,7 @@ public class Yarl_1_9_4 extends AbstractCompositionAnalysisTest{
 
         artifactList.with(attributeValue(ID, "yarl-1.9.4"),
                         attributeValue(VERSION, "1.9.4"),
-                        attributeValue(ROOT_PATHS, "[yarl-1.9.4-py3-none-any.whl]"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "yarl-1.9.4-py3-none-any.whl"),
                         attributeValue(PATH_IN_ASSET, "[yarl-1.9.4-py3-none-any.whl]"))
                 .assertNotEmpty();
 

@@ -53,7 +53,7 @@ public class BouncyCastleTest extends AbstractCompositionAnalysisTest {
 
     @Ignore
     @Test
-    public void inventorize() throws Exception {
+    public void analyse() throws Exception {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 

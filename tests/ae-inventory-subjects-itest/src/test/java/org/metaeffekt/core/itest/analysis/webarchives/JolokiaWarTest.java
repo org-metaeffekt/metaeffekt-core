@@ -80,7 +80,8 @@ public class JolokiaWarTest extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(4);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "war-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(3);
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "web-app")).hasSizeOf(1);
         artifactList.hasSizeOf(5);
     }

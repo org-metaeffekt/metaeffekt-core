@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -61,7 +62,7 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
                         attributeValue(CHECKSUM, "7a787700b8de9fc9034ffdc070517f51"),
                         attributeValue(VERSION, "6.1.1"),
                         attributeValue(HASH_SHA256, "a2ef6992edc54d3380ba95c56d86d1baf64afb0eda9296518be21a483318d93f"),
-                        attributeValue(ROOT_PATHS, "spring-core-6.1.1.jar"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "spring-core-6.1.1.jar"),
                         attributeValue(PATH_IN_ASSET, "spring-core-6.1.1.jar"))
                 .assertNotEmpty();
 

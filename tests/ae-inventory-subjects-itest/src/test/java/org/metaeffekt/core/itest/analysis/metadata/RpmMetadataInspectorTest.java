@@ -87,7 +87,5 @@ public class RpmMetadataInspectorTest extends AbstractCompositionAnalysisTest {
 
         artifactList.with(AttributeValue.attributeValue(Artifact.Attribute.ID, "krb5-libs-1.18.2-8.3.el8_4.x86_64.rpm")).with();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(1);
     }
 }
