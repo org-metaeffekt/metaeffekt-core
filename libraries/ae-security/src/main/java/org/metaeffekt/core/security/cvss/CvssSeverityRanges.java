@@ -85,8 +85,22 @@ public class CvssSeverityRanges {
         return UNDEFINED_SEVERITY_RANGE;
     }
 
+    //TODO: consider replace for 'getRangeByName'
+    public SeverityRange getRangeByNameInsensitive(String name) {
+        for (SeverityRange range : ranges) {
+            if (range.getName().equalsIgnoreCase(name)) {
+                return range;
+            }
+        }
+        return UNDEFINED_SEVERITY_RANGE;
+    }
+
     public SeverityRange[] getRanges() {
         return ranges;
+    }
+
+    public String getRangeNames() {
+        return Arrays.stream(ranges).map(SeverityRange::getName).collect(Collectors.joining(", "));
     }
 
     public static class SeverityRange implements Comparable<SeverityRange> {
