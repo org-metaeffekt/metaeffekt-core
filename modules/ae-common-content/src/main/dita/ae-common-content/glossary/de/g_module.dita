@@ -4,7 +4,7 @@
     <glossterm>Modul</glossterm>
     <glossdef>
         <p>
-        Platzhalter Module
+        Ein Modul ist eine eigenständige Softwareeinheit mit spezieller Funktionalität, die in verschiedenen Anwendungen wiederverwendet werden kann. Beispiele: JARs, Python-Packages, Ruby Gems.
         </p>
         <p>
             Siehe auch: <abbreviated-form keyref="component"/>

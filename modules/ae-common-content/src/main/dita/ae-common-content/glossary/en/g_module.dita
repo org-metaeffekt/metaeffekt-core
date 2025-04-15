@@ -3,7 +3,7 @@
 <glossentry id="module">
     <glossterm>Module</glossterm>
     <glossdef>
-        Placeholder Module
+        A module is a self-contained software unit that provides specific functionality and can be reused in different applications. Examples include JARs, Python packages, and Ruby Gems.
         <p>
             See also: <abbreviated-form keyref="component"/>
         </p>
