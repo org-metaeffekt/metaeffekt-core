@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="component">
+    <glossterm>Component</glossterm>
+    <glossdef>
+        A component is a group of one or more artifacts, packages or web modules. A component can be regarded as
+        logical aggregate. License information is assigned at the component level and is consistent within
+        aggregated artifacts, packages and web modules.
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="package"/>, <abbreviated-form keyref="web-module"/>, <abbreviated-form keyref="subcomponent"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>components</glossSurfaceForm>
+    </glossBody>
+</glossentry>

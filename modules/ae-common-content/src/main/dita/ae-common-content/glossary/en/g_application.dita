@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="application">
+    <glossterm>Application</glossterm>
+    <glossdef>
+        An application is a software artifact designed to perform specific tasks or provide services to users or other systems. It can be delivered as executable files (e.g., EXE, WAR, JAR) and often includes bundled libraries and resources.
+        <p>
+            See also: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>applications</glossSurfaceForm>
+    </glossBody>
+</glossentry>

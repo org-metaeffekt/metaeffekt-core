@@ -23,6 +23,7 @@ import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents the descriptor for a document, encapsulating all the information necessary for generating a document report.
@@ -98,6 +99,26 @@ public class DocumentDescriptor {
         // Descriptor, if it does not exist, then the dita generation process for the document creates the directory
         if (targetReportDir.exists() && !targetReportDir.isDirectory()) {
             throw new IllegalStateException("The target report directory must be a directory.");
+        }
+
+        // Validation for unique InventoryContexts within the same DocumentPartType
+        Map<DocumentPartType, Set<String>> typeToInventoryContextIds = new HashMap<>();
+
+        for (DocumentPart part : documentParts) {
+
+            DocumentPartType type = part.getDocumentPartType();
+            Set<String> inventoryContextIds = part.getInventoryContexts().stream()
+                    .map(InventoryContext::getIdentifier)
+                    .collect(Collectors.toSet());
+
+            typeToInventoryContextIds.putIfAbsent(type, new HashSet<>());
+
+            // Check if any inventory context in the current list already exists in the map
+            for (String inventoryContextId : inventoryContextIds) {
+                if (!typeToInventoryContextIds.get(type).add(inventoryContextId)) {
+                    throw new IllegalStateException("Duplicate InventoryContext detected for DocumentPartType: " + type);
+                }
+            }
         }
 
     }

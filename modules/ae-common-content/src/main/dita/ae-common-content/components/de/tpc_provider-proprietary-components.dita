@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_ae-commercial-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>${organization.name} Proprietäre Komponenten</title>
+    <body>
+        <p>
+            Proprietäre Komponenten, die in der von der ${organization.name} entwickelten und gelieferten
+            Software Distribution enthalten sind, werden - sofern nicht ausdrücklich anders angegeben - unter
+            ${organization.license_de} zur Verfügung gestellt.
+        </p>
+    </body>
+</topic>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="driver">
+    <glossterm>Treiber</glossterm>
+    <glossdef>
+        <p>
+        Ein Treiber ist eine Softwarekomponente, die es einem Gerät oder einer Peripherie ermöglicht, mit dem Betriebssystem zu kommunizieren.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Treiber</glossSurfaceForm>
+    </glossBody>
+</glossentry>

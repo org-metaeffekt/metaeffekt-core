@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="package">
+    <glossterm>Webmodul</glossterm>
+    <glossdef>
+        <p>
+        Ein Webmodul enthält für gewöhnlich eine Reihe von Ressourcen und Skripten, die bestimmte Funktionen
+        für webbasierte Benutzeroberflächen umsetzen.
+        </p>
+         <p>
+             Siehe auch: <abbreviated-form keyref="component"/>
+         </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Webmodule</glossSurfaceForm>
+    </glossBody>
+</glossentry>

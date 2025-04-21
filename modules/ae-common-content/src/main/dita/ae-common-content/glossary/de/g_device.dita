@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="device">
+    <glossterm>Gerät</glossterm>
+    <glossdef>
+        <p>
+        Ein Gerät repräsentiert eine physische oder virtuelle Peripherie wie eine Tastatur, Maus, einen Monitor oder andere computergebundene Hardware. Geräte können weiter in Teile zerlegt oder als Assets modelliert werden.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="part"/>, <abbreviated-form keyref="asset"/>, <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Gerät</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_import-export-information-use" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Import / Export Information</title>
+    <body>
+        <p conref="tpc_import-export-information.dita#tpc_import-export-information/distribution-with-restricted-components-intro" />
+        <p conref="tpc_import-export-information.dita#tpc_import-export-information/distribution-of-restricted-components-hint" />
+        <p conref="tpc_import-export-information.dita#tpc_import-export-information/distribution-with-restricted-components-table" />
+        <p>
+            <table>
+                <title>Import / Export Classification</title>
+                <tgroup cols="2">
+                    <colspec colname="1" colwidth="20*" />
+                    <colspec colname="2" colwidth="80*" />
+                    <thead>
+                        <row>
+                            <entry colname="1" valign="top">Component Name</entry>
+                            <entry colname="2" valign="top">Import / Export Classification Details</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row conref="tpc_import-export-information.dita#tpc_import-export-information/cryptographic-component_bouncy-castle">
+                            <entry>CONREF</entry>
+                        </row>
+                        <row conref="tpc_import-export-information.dita#tpc_import-export-information/cryptographic-component_jasypt">
+                            <entry>CONREF</entry>
+                        </row>
+                        <row conref="tpc_import-export-information.dita#tpc_import-export-information/cryptographic-component_oracle-jre">
+                            <entry>CONREF</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </p>
+        <p conref="tpc_import-export-information.dita#tpc_import-export-information/distribution-of-restricted-components-disclaimer" />
+    </body>
+</topic>

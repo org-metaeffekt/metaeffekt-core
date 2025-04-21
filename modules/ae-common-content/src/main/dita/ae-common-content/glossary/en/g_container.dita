@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="container">
+    <glossterm>Container</glossterm>
+    <glossdef><p>A container consists of software components organized in different layers. A container encapsulates a defined service or function.
+    </p><p>
+        A container requires a container runtime environment to be instantiated. Containers are more compact than
+        virtual appliances. They can be easily managed in clustered environments and are often used to scale services
+        dynamically. A common container runtime environment is Kubernetes.
+    </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>containers</glossSurfaceForm>
+    </glossBody>
+</glossentry>

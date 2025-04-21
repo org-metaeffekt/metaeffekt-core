@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-summary-$reportContext.id">
-    <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.licenses-in-effect"), true)</title>
+    <title>$utils.getText("inventory-report-bom.short.licenses-in-effect")</title>
     #set($effectiveLicenses=$inventory.evaluateLicenses(false))
     #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
     #set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))

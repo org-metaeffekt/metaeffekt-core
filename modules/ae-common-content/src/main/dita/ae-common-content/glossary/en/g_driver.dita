@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="driver">
+    <glossterm>Driver</glossterm>
+    <glossdef>
+        A driver is a software component that allows a device or peripheral to communicate with the operating system.
+        <p>
+            See also: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>drivers</glossSurfaceForm>
+    </glossBody>
+</glossentry>

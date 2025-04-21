@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="part">
+    <glossterm>Teil</glossterm>
+    <glossdef>
+        <p>
+        Teile sind identifizierbare Elemente, in die ein Gerät zerlegt werden kann.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="device"/>, <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Teile</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="module">
+    <glossterm>Modul</glossterm>
+    <glossdef>
+        <p>
+        Ein Modul ist eine eigenständige Softwareeinheit mit spezieller Funktionalität, die in verschiedenen Anwendungen wiederverwendet werden kann. Beispiele: JARs, Python-Packages, Ruby Gems.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Module</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary//EN" "glossary.dtd">
+<glossentry id="x509-client-certificate">
+    <glossterm>X.509 client certificate</glossterm>
+    <glossdef><p>A digital document which is used on the Internet as a digital identification for the user.
+    The X.509 client certificate is based on the X.509 format, an Internet standard developed by the International
+    Telecommunication Union (ITU).</p></glossdef>
+</glossentry>
