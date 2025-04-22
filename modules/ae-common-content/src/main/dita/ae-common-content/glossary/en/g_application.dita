@@ -3,9 +3,13 @@
 <glossentry id="application">
     <glossterm>Application</glossterm>
     <glossdef>
-        An application is a software artifact designed to perform specific tasks or provide services to users or other systems. It can be delivered as executable files (e.g., EXE, WAR, JAR) and often includes bundled libraries and resources.
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            An application is a software artifact designed to perform specific tasks or provide services to users or other
+            systems. It can be delivered as executable files (e.g., EXE, WAR, JAR) and often includes bundled libraries and
+            resources.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>
         </p>
     </glossdef>
     <glossBody>

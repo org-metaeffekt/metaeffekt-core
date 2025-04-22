@@ -4,10 +4,11 @@
     <glossterm>Gerät</glossterm>
     <glossdef>
         <p>
-        Ein Gerät repräsentiert eine physische oder virtuelle Peripherie wie eine Tastatur, Maus, einen Monitor oder andere computergebundene Hardware. Geräte können weiter in Teile zerlegt oder als Assets modelliert werden.
+            Ein Gerät repräsentiert eine physische oder virtuelle Peripherie wie eine Tastatur, Maus, einen Monitor oder andere
+            computergebundene Hardware. Geräte können weiter in Teilen separat erfasst werden.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="part"/>, <abbreviated-form keyref="asset"/>, <abbreviated-form keyref="component"/>
+            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="part"/>
         </p>
     </glossdef>
     <glossBody>

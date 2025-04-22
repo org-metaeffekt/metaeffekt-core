@@ -3,8 +3,23 @@
 <glossentry id="artifact">
     <glossterm>Artifact</glossterm>
     <glossdef>
-        An artifact is a physical file such as an executable binary, archive, document, text or
-        configuration file. An artifact is associated with a component.
+        <p>
+            Hard- and software assets consist of different constituents. These constituents are identified and
+            determined based on various properties and representations.
+            The term artifact is used as generalized term for the identification and tracking of these constituents.
+            Artifacts are:
+            <ul>
+                <li>individual files identified in the file system</li>
+                <li>installed software consisting of several files and folders</li>
+                <li>software packages or archives which are can be obtained from a package manager a repository or registry</li>
+                <li>complete images of virtual machines, storage media or storage units</li>
+                <li>identified devices or parts (logical, software-defined or physical)</li>
+            </ul>
+        </p>
+        <p>
+            Artifacts have different properties depending on their kind (hardware/software) and representation, which are used for
+            identification and differentiation. Artifacts are classified and documented here according to defined artifact types.
+        </p>
         <p>
             See also: <abbreviated-form keyref="component"/>
         </p>

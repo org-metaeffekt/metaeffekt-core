@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="asset">
-    <glossterm>Softwarebestand (Asset)</glossterm>
+    <glossterm>Asset</glossterm>
     <glossdef>
-        <p>Ein Softwarebestand (Asset), insbesondere ein Software- oder Hardware-Asset, ist eine Zusammenstellung von Hard- und
-        Softwarekomponenten für einen bestimmten Zweck oder eine bestimmte Funktion.</p>
         <p>
-            Im Rahmen dieser Dokumentation ist ein Asset entweder eine <abbreviated-form keyref="appliance"/> oder ein
-            <abbreviated-form keyref="container"/>.
+            Ein Asset, insbesondere ein Software- oder Hardware-Asset, ist eine identifizier- und nutzbare Einheit, die einem
+            bestimmten Zweck oder einer bestimmten Funktion dient. Ein Software- oder Hardware-Asset stellt für gewöhnlich einen
+            Wert- oder Liefergegenstand in einer Lieferanten-Empfänger-Beziehung dar.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="component"/>
         </p>
     </glossdef>
     <glossBody>
-        <glossSurfaceForm>Softwarebestand</glossSurfaceForm>
+        <glossSurfaceForm>Assets</glossSurfaceForm>
     </glossBody>
 </glossentry>

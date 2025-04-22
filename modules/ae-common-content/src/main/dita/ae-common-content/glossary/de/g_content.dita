@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="content">
-    <glossterm>Inhalt</glossterm>
+    <glossterm>Inhalte (Content)</glossterm>
     <glossdef>
         <p>
-        Inhalte umfassen datenorientierte Artefakte wie Datenbanken, KI-/ML-Modelle oder Multimediadateien, die von Anwendungen oder Diensten genutzt oder verarbeitet werden können.
+            Inhalte umfassen datenorientierte Artefakte wie Datenbanken, KI-/ML-Modelle oder Multimediadateien, die von
+            Anwendungen oder Diensten genutzt oder verarbeitet werden können.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="component"/>
+            Siehe auch: <abbreviated-form keyref="artifact"/>
         </p>
     </glossdef>
     <glossBody>

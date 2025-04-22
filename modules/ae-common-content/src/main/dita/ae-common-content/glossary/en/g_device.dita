@@ -3,9 +3,12 @@
 <glossentry id="device">
     <glossterm>Device</glossterm>
     <glossdef>
-        A device represents a physical or virtual peripheral such as a keyboard, mouse, monitor, or other computer-attached hardware. Devices can also be broken down into parts or modeled as assets.
         <p>
-            See also: <abbreviated-form keyref="part"/>, <abbreviated-form keyref="asset"/>, <abbreviated-form keyref="component"/>
+            A device represents a physical or virtual peripheral such as a keyboard, mouse, monitor, or other
+            computer-attached hardware. Devices can also be broken down into parts.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="part"/>
         </p>
     </glossdef>
     <glossBody>

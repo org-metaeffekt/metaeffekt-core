@@ -3,10 +3,12 @@
 <glossentry id="package">
     <glossterm>Web Module</glossterm>
     <glossdef>
-        <p>A web module usually contains a set of resources and scripts that implement a specific function of a
-        web-based user interface.</p>
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            A web module usually contains a set of resources and scripts that implement a specific function of a
+            web-based user interface.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>
         </p>
     </glossdef>
     <glossBody>

@@ -3,9 +3,11 @@
 <glossentry id="driver">
     <glossterm>Driver</glossterm>
     <glossdef>
-        A driver is a software component that allows a device or peripheral to communicate with the operating system.
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            A driver is a software component that allows a device or peripheral to communicate with the operating system.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>
         </p>
     </glossdef>
     <glossBody>

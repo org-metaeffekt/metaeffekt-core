@@ -43,10 +43,12 @@
                                                 <includes>
                                                     <include>**/*</include>
                                                 </includes>
-                                                <excludes>
-                                                    <exclude>**/.svn/**/*</exclude>
-                                                    <exclude>**/.svn</exclude>
-                                                </excludes>
+                                            </fileset>
+                                            <fileset>
+                                                <directory>${basedir}/src/main/resources</directory>
+                                                <includes>
+                                                    <include>META-INF/**/*</include>
+                                                </includes>
                                             </fileset>
                                         </filesets>
                                     </configuration>

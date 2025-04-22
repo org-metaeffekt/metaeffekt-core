@@ -4,10 +4,10 @@
     <glossterm>Teil</glossterm>
     <glossdef>
         <p>
-        Teile sind identifizierbare Elemente, in die ein Gerät zerlegt werden kann.
+            Teile sind identifizierbare Hardware-Elemente. Geräte können in Teilen erfasst werden.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="device"/>, <abbreviated-form keyref="component"/>
+            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="device"/>
         </p>
     </glossdef>
     <glossBody>

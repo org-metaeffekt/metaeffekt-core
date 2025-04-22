@@ -3,12 +3,13 @@
 <glossentry id="package">
     <glossterm>Package</glossterm>
     <glossdef>
-        <p>A package consists of a set of files that are installed as a a whole. A package can be part of a component
-        that is represented by one or more packages.</p>
-         <p>
-            See also: <abbreviated-form keyref="component"/>
-          </p>
-
+        <p>
+            A package consists of a set of files that are installed as a whole. A package can be part of a component
+            that is represented by one or more packages.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>
+        </p>
     </glossdef>
     <glossBody>
         <glossSurfaceForm>packages</glossSurfaceForm>

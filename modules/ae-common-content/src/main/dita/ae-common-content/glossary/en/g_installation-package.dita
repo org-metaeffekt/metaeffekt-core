@@ -3,9 +3,11 @@
 <glossentry id="installation-package">
     <glossterm>Installation package</glossterm>
     <glossdef>
-        An installation package is a bundled set of files used to install software. Common formats include EXE, MSI, DMG, ISO, and firmware archives.
         <p>
-            See also: <abbreviated-form keyref="component"/>
+            An installation package is a bundled set of files used to install software. Common formats include EXE, MSI, and DMG.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>
         </p>
     </glossdef>
     <glossBody>

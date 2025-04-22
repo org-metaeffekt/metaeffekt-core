@@ -3,12 +3,17 @@
 <glossentry id="associated-licenses">
     <glossterm>Associated Licenses</glossterm>
     <glossdef>
-        A component and its parts can be made available by a provider under different licenses. This enables
-        licensing depending on the context of use or the distribution channels in which the component is provided
-        or transferred. These licenses are assigned to the component at the time of purchase and are referred to
-        here as associated licenses. In contrast to associated licenses, effective licenses are the licenses under
-        which a component is transferred. The associated and effective licenses of a component may differ. The
-        derivation of the effective licenses is limited by the terms of the associated licenses and their options.
+        <p>
+            A component and its parts can be made available by a provider under different licenses. This enables
+            licensing depending on the context of use or the distribution channels in which the component is provided
+            or transferred. These licenses are assigned to the component at the time of purchase and are referred to
+            here as associated licenses.
+        </p>
+        <p>
+            In contrast to associated licenses, effective licenses are the licenses under
+            which a component is transferred. The associated and effective licenses of a component may differ. The
+            derivation of the effective licenses is limited by the terms of the associated licenses and their options.
+        </p>
         <p>
             See also: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="effective-licenses"/>, <abbreviated-form keyref="licenses"/>
         </p>

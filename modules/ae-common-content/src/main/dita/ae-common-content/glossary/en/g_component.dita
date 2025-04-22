@@ -3,11 +3,26 @@
 <glossentry id="component">
     <glossterm>Component</glossterm>
     <glossdef>
-        A component is a group of one or more artifacts, packages or web modules. A component can be regarded as
-        logical aggregate. License information is assigned at the component level and is consistent within
-        aggregated artifacts, packages and web modules.
         <p>
-            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="package"/>, <abbreviated-form keyref="web-module"/>, <abbreviated-form keyref="subcomponent"/>
+            A component is a group of one or more artifacts.
+        </p>
+        <p>
+            A component can be regarded as logical aggregate. License information is assigned at the component level and is consistent within
+            aggregated artifacts.
+        </p>
+        <p>
+            A hardware component groups devices or parts.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="subcomponent"/>
+        </p>
+        <p>
+            In common usage, the term component has a different connotation. In the context of software design or software architecture, the term "component" is understood as a
+            self-contained building block that is integrated into a system. In an actual implementation, however, a system-specific manifestation or a component is used only in
+            parts. Therefore, the term "component" is used here only to group the actual constituents (artifacts).
+        </p>
+        <p>
+            Sell also: <abbreviated-form keyref="artifact"/>
         </p>
     </glossdef>
     <glossBody>

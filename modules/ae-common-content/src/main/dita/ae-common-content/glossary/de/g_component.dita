@@ -1,18 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
 <glossentry id="component">
-    <glossterm>Softwarebestandteil (Component)</glossterm>
+    <glossterm>Komponente</glossterm>
     <glossdef>
         <p>
-        Ein Softwarebestandteil (Component) ist eine Sammlung bestehend aus einem oder mehreren Artefakten, Paketen oder Webmodulen. Ein
-        Softwarebestandteil kann als logisches Aggregat betrachtet werden. Lizenzinformationen werden auf Softwarebestandteil-Ebene zugeordnet und
-        sind innerhalb der aggregierten Artefakte, Pakete und Webmodule konsistent.
+            Eine Komponente ist eine Gruppe, die ein oder mehrere Artefakte umfasst.
         </p>
         <p>
-            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="package"/>, <abbreviated-form keyref="web-module"/>
+            Eine Software-Komponente kann als  logisches Aggregat betrachtet werden. Lizenzinformationen werden auf Softwarebestandteil-Ebene zugeordnet und sind innerhalb der
+            aggregierten Artefakte konsistent.
+        </p>
+        <p>
+            Eine Hardware-Komponente gruppiert analog Geräte oder Bauteile.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="subcomponent"/>
+        </p>
+        <p>
+            Im allgemeinen Sprachgebrauch ist der Begriff der Komponente anders belegt. Im Kontext des Software-Designs oder der
+            Software-Architektur wird der Begriff der Komponente als abgeschlossener Baustein, der in einem System integriert wird, verstanden.
+            In der tatsächlichen Umsetzung wird allerdings immer eine system-spezifische Ausprägung oder eine Komponente nur in Teilen verwendet.
+            Daher wird der Begriff der Komponente hier lediglich zur Gruppierung der tatsächlichen Bestandteilen (Artifakte) verwendet.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="artifact"/>
         </p>
     </glossdef>
     <glossBody>
-        <glossSurfaceForm>Softwarebestandteile</glossSurfaceForm>
+        <glossSurfaceForm>Komponenten</glossSurfaceForm>
     </glossBody>
 </glossentry>

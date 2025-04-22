@@ -3,10 +3,12 @@
 <glossentry id="associated-licenses">
     <glossterm>Assoziierte Lizenzen</glossterm>
     <glossdef>
-        Eine Komponente und ihre Bestandteile können durch einen Anbieter unter verschiedenen
-        Lizenzen zur Verfügung gestellt werden. Dies ermöglicht die Lizenzierung in Abhängigkeit vom Nutzungskontext
-        oder den Vertriebskanälen, in denen die Komponente bereitgestellt oder übertragen wird.
-        Diese Lizenzen werden der Komponente bei Bezug zugeordnet und hier als assoziierte Lizenzen bezeichnet.
+        <p>
+            Eine Komponente und ihre Bestandteile können durch einen Anbieter unter verschiedenen
+            Lizenzen zur Verfügung gestellt werden. Dies ermöglicht die Lizenzierung in Abhängigkeit vom Nutzungskontext
+            oder den Vertriebskanälen, in denen die Komponente bereitgestellt oder übertragen wird.
+            Diese Lizenzen werden der Komponente bei Bezug zugeordnet und hier als assoziierte Lizenzen bezeichnet.
+        </p>
         <p>
             Im Gegensatz zu den assoziierten Lizenzen sind die effektiven Lizenzen die Lizenzen, unter
             denen eine Komponente weitergegeben wird. Die assoziierten und effektiven Lizenzen einer Komponente

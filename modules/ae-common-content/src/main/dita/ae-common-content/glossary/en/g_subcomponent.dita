@@ -3,8 +3,7 @@
 <glossentry id="subcomponent">
     <glossterm>Subcomponent</glossterm>
     <glossdef>
-        A subcomponent is a component that is embedded in a parent component. Special licenses may be assigned to a
-        subcomponent.
+        A subcomponent is a component that is embedded in or linked by another component.
         <p>
             See also: <abbreviated-form keyref="component"/>
         </p>

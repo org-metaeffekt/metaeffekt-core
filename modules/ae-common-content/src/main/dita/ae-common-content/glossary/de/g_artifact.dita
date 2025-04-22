@@ -4,8 +4,22 @@
     <glossterm>Artefakt</glossterm>
     <glossdef>
         <p>
-        Ein Artefakt ist eine physische Datei wie bspw. eine ausführbare Binärdatei, ein Archiv, ein Dokument, ein Text
-        oder eine Konfigurationsdatei. Ein Artefakt wird einer Komponente zugeordnet.
+            Hard- und Software-Assets sind aus verschiedenen Bestandteilen aufgebaut. Dabei werden diese Bestandteile
+            anhand unterschiedlicher Eigenschaften oder Repräsentationen identifiziert und erfasst.
+            Der Begriff Artefakt wird als Überbegriff zur Identifikation und Erfassung dieser Bestandteilen verwendet.
+            Artefakte sind insbesondere:
+            <ul>
+                <li>Individuelle Dateien, die im Dateisystem identifiziert wurden</li>
+                <li>Installierte Software, die ggf. aus mehreren Dateien und Ordnern besteht</li>
+                <li>Softwarepakete bzw. -archive, die über einen Paketmanager, eine organisierte Ablage (Repository) oder eine Registratur (Registry) bezogen werden können
+                    (etwa Binärpakete oder -archive, Quellpakete oder -archive, Container)</li>
+                <li>Vollständige Abbilder (Images) von virtuellen Maschinen, Datenträgern oder Speichern</li>
+                <li>Identifizierte Geräte oder Bauteile (logisch, durch Software definiert oder physikalisch)</li>
+            </ul>
+        </p>
+        <p>
+            Artefakte haben nach Art (Hardware/Software) und Repräsentation unterschiedliche Eigenschaften, die zur Identifikation und Unterscheidung herangezogen werden.
+            Daher werden Artefakte hier nach Artefakt-Typen eingeordnet und dokumentiert.
         </p>
         <p>
             Siehe auch: <abbreviated-form keyref="component"/>
