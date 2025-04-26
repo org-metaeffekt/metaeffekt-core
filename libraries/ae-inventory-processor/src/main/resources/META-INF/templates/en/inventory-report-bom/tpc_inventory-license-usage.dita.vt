@@ -17,7 +17,7 @@
         #insertLicenseArtifactTopic($license)
     #else
         <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
-            <title>$report.xmlEscapeLicense($license) Variants</title>
+          <title>$report.xmlEscapeLicense($license) Variants</title>
             <body>
                 <p>
                     $license is representative of all licenses with variations,
