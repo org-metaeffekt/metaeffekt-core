@@ -1794,11 +1794,12 @@ public class Inventory implements Serializable {
     }
 
     public List<String> getRepresentedLicenses(List<String> effectiveLicenses) {
-        return effectiveLicenses.stream()
+        List<String> representedLicenses = effectiveLicenses.stream()
                 .map(this::getRepresentedLicenseName)
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .distinct()
                 .collect(Collectors.toList());
+        return representedLicenses;
     }
 
     public List<String> getLicensesRepresentedBy(String representedLicenseName) {

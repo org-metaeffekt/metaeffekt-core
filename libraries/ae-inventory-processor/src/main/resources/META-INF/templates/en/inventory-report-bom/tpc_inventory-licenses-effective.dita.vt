@@ -98,8 +98,8 @@
 #if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
                     <entry>
                         <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
-                            $report.xmlEscapeLicense($license)<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
-                        </xref>
+                            $report.xmlEscapeLicense($license)
+                        </xref><xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
                     </entry>
                     <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>

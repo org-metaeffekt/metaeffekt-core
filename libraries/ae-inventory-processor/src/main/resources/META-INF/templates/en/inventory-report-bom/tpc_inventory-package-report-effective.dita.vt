@@ -2,10 +2,11 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_packages-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
     <title>$reportContext.combinedTitle("Packages", true)</title>
+    #set($components=$inventory.evaluateComponentsInContext("package"))
+    #set($licensesInEffect=$inventory.evaluateLicenses(false))
+    #set($licensesRepresented=$inventory.getRepresentedLicenses($licensesInEffect))
     <body>
-#set($components=$inventory.evaluateComponentsInContext("package"))
-#set($licensesInEffect=$inventory.evaluateLicenses(false))
-#if($components.isEmpty())
+        #if($components.isEmpty())
         <p>
             There are no individual <abbreviated-form keyref="package"/>.
         </p>
@@ -14,6 +15,12 @@
             The following table lists all <abbreviated-form keyref="package"/> included in the software covered by
             this document. The list is organized by components to group the packages.
         </p>
+
+        #if ($inventory.isFootnoteRequired($licensesInEffect, $licensesRepresented))
+          <fn id="id-footnote">License variations are represented as a single effective license. The concrete
+            license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
+        #end
+
         <p>
             <table otherprops="wide" id="table_packages">
                 <title>Packages$reportContext.inContextOf()</title>
@@ -59,9 +66,13 @@
                         <entry>&nbsp;</entry>
                     #else
                     <entry>
-## preserve formating to achive proper line-breaks
-<lines>#foreach($license in $effectiveLicensesRepresented)<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
-#end</lines>
+                    #foreach($license in $effectiveLicensesRepresented)
+                        #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
+                          <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref><xref href="#tpc_packages-$reportContext.id/id-footnote" type="fn"/></lines>
+                        #else
+                          <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
+                        #end
+                    #end
                     </entry>
                     #end
                 </row>
