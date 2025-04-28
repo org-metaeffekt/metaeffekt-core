@@ -4,11 +4,16 @@
     <title>$reportContext.combinedTitle("License Notices", true)</title>
     #set($componentNoticeList=$inventory.evaluateComponentNotices())
     #set($licensesInEffect=$inventory.evaluateLicenses(false))
+    #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($licensesInEffect))
     #if($componentNoticeList.isEmpty())
         <body>
             No component with license notices covered.
         </body>
     #else
+        #if ($inventory.isFootnoteRequired($licensesInEffect, $effectiveLicensesRepresented))
+          <fn id="id-footnote">License variations are represented as a single effective license. The concrete
+            license may differ from the standard license template. The variations are detailed in the corresponding paragraphs.</fn>
+        #end
         #foreach($componentNotice in $componentNoticeList)
             <topic id="tpc_component_notice_$inventory.deriveLicenseId($componentNotice.getComponentName())">
                 <title>$report.xmlEscapeString($componentNotice.getComponentName())</title>
@@ -50,9 +55,13 @@
                                             <entry>&nbsp;</entry>
                                         #else
                                             <entry>
-## preserve formating to achive proper line-breaks
-<lines>#foreach($license in $effectiveLicensesRepresented)<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
-#end</lines>
+                                            #foreach($license in $effectiveLicensesRepresented)
+                                                #if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
+                                                  <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref><xref href="#tpc_notices-$reportContext.id/id-footnote" type="fn"/></lines>
+                                                #else
+                                                  <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
+                                                #end
+                                            #end
                                             </entry>
                                         #end
                                     </row>
