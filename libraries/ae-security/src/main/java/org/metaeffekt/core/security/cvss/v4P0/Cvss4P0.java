@@ -542,13 +542,66 @@ public final class Cvss4P0 extends CvssVector {
         return exploitMaturity != ExploitMaturity.NOT_DEFINED;
     }
 
-    @Override
-    public double getOverallScore() {
-        return getBaseScore();
+    private void clearEnvironmental() {
+        this.modifiedAttackVector = ModifiedAttackVector.NOT_DEFINED;
+        this.modifiedAttackComplexity = ModifiedAttackComplexity.NOT_DEFINED;
+        this.modifiedAttackRequirements = ModifiedAttackRequirements.NOT_DEFINED;
+        this.modifiedPrivilegesRequired = ModifiedPrivilegesRequired.NOT_DEFINED;
+        this.modifiedUserInteraction = ModifiedUserInteraction.NOT_DEFINED;
+        this.modifiedVulnConfidentialityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedVulnIntegrityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedVulnAvailabilityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedSubConfidentialityImpact = ModifiedSubsequentConfidentiality.NOT_DEFINED;
+        this.modifiedSubIntegrityImpact = ModifiedSubsequentIntegrityAvailability.NOT_DEFINED;
+        this.modifiedSubAvailabilityImpact = ModifiedSubsequentIntegrityAvailability.NOT_DEFINED;
+    }
+
+    private void clearThreat() {
+        this.exploitMaturity = ExploitMaturity.NOT_DEFINED;
     }
 
     @Override
     public double getBaseScore() {
+        if (isAnyEnvironmentalDefined() || isAnyThreatDefined()) {
+            final Cvss4P0 vector = this.clone();
+            vector.clearEnvironmental();
+            vector.clearThreat();
+            return vector.getOverallScore();
+        }
+
+        return this.getOverallScore();
+    }
+
+    public double getEnvironmentalScore() {
+        if (isAnyEnvironmentalDefined()) {
+            if (isAnyThreatDefined()) {
+                final Cvss4P0 vector = this.clone();
+                vector.clearThreat();
+                return vector.getOverallScore();
+            } else {
+                return getOverallScore();
+            }
+        }
+
+        return Double.NaN;
+    }
+
+    public double getThreatScore() {
+        if (isAnyThreatDefined()) {
+            if (isAnyEnvironmentalDefined()) {
+                final Cvss4P0 vector = this.clone();
+                vector.clearEnvironmental();
+                return vector.getOverallScore();
+            } else {
+                return getOverallScore();
+            }
+        }
+
+        return Double.NaN;
+    }
+
+    @Override
+    public double getOverallScore() {
         // check if base is undefined
         if (!isBaseFullyDefined()) {
             return 0.0;
