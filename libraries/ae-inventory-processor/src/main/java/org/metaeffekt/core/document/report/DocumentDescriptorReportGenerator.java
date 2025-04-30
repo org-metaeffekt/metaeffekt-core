@@ -200,18 +200,7 @@ public class DocumentDescriptorReportGenerator {
                     report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
                 }
 
-                boolean omitAssetPrefix = Boolean.parseBoolean(mergedParams.get("omitAssetPrefix"));
-                String title = null;
-
-                if (mergedParams.get("omitAssetPrefix") != null) {
-                    if (!omitAssetPrefix) {
-                        title = inventoryContext.getReportContextTitle();
-                    }
-                } else {
-                    title = inventoryContext.getReportContextTitle();
-                }
-
-                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), title, inventoryContext.getReportContext()));
+                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
 
