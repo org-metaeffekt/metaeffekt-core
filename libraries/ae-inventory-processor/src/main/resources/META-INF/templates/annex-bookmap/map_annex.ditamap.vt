@@ -50,7 +50,10 @@
                     "ae.inventory.part.effective.switch") == "true")
                     <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-part-report-effective.dita"/>
                 #end
-                <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita"/>
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty(
+                    "ae.inventory.artifact.effective.switch") == "true")
+                        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita"/>
+                #end
             </topicref>
 
             <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licensing.dita">

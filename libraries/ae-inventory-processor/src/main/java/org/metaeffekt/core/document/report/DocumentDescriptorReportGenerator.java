@@ -183,6 +183,7 @@ public class DocumentDescriptorReportGenerator {
 
                 // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
                 // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
+                // FIXME: provide params for targetComponentDir & targetLicenseDir, currently we only define the source but not the target for these files
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
