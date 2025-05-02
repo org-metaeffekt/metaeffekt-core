@@ -183,6 +183,7 @@ public class DocumentDescriptorReportGenerator {
 
                 // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
                 // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
+                // FIXME: provide params for targetComponentDir & targetLicenseDir, currently we only define the source but not the target for these files
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
@@ -199,18 +200,7 @@ public class DocumentDescriptorReportGenerator {
                     report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
                 }
 
-                boolean omitAssetPrefix = Boolean.parseBoolean(mergedParams.get("omitAssetPrefix"));
-                String title = null;
-
-                if (mergedParams.get("omitAssetPrefix") != null) {
-                    if (!omitAssetPrefix) {
-                        title = inventoryContext.getReportContextTitle();
-                    }
-                } else {
-                    title = inventoryContext.getReportContextTitle();
-                }
-
-                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), title, inventoryContext.getReportContext()));
+                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
 

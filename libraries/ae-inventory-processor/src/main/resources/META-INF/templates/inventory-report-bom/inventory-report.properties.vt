@@ -97,6 +97,14 @@ ae.inventory.content.effective.switch=$contentsSwitch
 #end
 ae.inventory.module.effective.switch=$modulesSwitch
 
+# Switch for displaying other artifacts if there are any present
+#set($componentsArtifact=$inventory.evaluateComponentsInContext("artifact"))
+#set($artifactsSwitch = true)
+#if($componentsArtifact.isEmpty())
+    #set($artifactsSwitch = false)
+#end
+ae.inventory.artifact.effective.switch=$artifactsSwitch
+
 # Switch for displaying components without license if there are any present
 #set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
 #set($componentsNoLicense=$inventory.evaluateComponents($artifactsWithoutLicense))

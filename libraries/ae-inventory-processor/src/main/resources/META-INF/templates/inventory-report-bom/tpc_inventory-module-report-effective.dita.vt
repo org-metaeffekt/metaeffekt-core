@@ -11,7 +11,6 @@
         <p>$utils.getText("inventory-report-bom.no-individual-module")</p>
         #else
         <p>$utils.getText("inventory-report-bom.module-table-descr")</p>
-        <p>
         <table otherprops="wide" id="table_modules">
             <tgroup cols="3">
                 <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
@@ -45,14 +44,13 @@
                             #end
                             #set($addParagraph=false)
                             <entry>#foreach($artifact in $name)#if($artifact.getGroupId())
-                                <lines>#if($addParagraph)
-                                    <line>
-                                    </line>#end
-                                    <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
-                                        <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
-                                    </line>
+                                <lines>
+                                    #if($addParagraph)<line></line>#end
+                                    <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
+                                    <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line>
                                 </lines>#else
-                                <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
+                                <pre>$report.xmlEscapeArtifactId($artifact.getId())</pre>
+                                <pre></pre>#end
                                 #set($addParagraph=true)#end
                             </entry>
                             #set($licenses=$inventory.getEffectiveLicenses($name.get(0)))
@@ -75,7 +73,6 @@
                 </tbody>
             </tgroup>
         </table>
-        </p>
         #end
     </body>
 </topic>
