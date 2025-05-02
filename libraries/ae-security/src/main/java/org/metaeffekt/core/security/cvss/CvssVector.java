@@ -377,7 +377,7 @@ public abstract class CvssVector {
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
     public static CvssVector parseVector(String vector) {
-        if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector))) {
+        if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector)) || vector.startsWith("SSVC:")) {
             return null;
         }
 
