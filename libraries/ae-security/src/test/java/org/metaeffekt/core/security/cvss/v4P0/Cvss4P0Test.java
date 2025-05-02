@@ -44,7 +44,7 @@ public class Cvss4P0Test {
 
         LOG.info("{}", cvss4P0);
         LOG.info("{}", cvss4P0.getMacroVector());
-        LOG.info("{}", cvss4P0.getBaseScore());
+        LOG.info("{}", cvss4P0.getOverallScore());
     }
 
     @Test
@@ -66,7 +66,18 @@ public class Cvss4P0Test {
 
         Assert.assertEquals(vectorString, cvss4P0.toString());
         Assert.assertEquals("212021", cvss4P0.getMacroVector().toString());
-        Assert.assertEquals(1.0, cvss4P0.getBaseScore(), 0.01);
+        Assert.assertEquals(1.0, cvss4P0.getOverallScore(), 0.01);
+    }
+
+    @Test
+    public void nomenclatureMultiScoreTest() {
+        final String vectorString = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:A/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N/MAV:N/MAT:P/MUI:N/MSC:N/E:U";
+        final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
+
+        Assert.assertEquals(1.7, cvss4P0.getOverallScore(), 0.01);
+        Assert.assertEquals(5.1, cvss4P0.getBaseScore(), 0.01);
+        Assert.assertEquals(6.3, cvss4P0.getEnvironmentalScore(), 0.01);
+        Assert.assertEquals(1.2, cvss4P0.getThreatScore(), 0.01);
     }
 
     @Test
@@ -92,7 +103,7 @@ public class Cvss4P0Test {
                 final Cvss4P0 cvss4P0 = new Cvss4P0(vectorString);
                 final Cvss4P0MacroVector macroVector = cvss4P0.getMacroVector();
                 final String actualMacroVector = macroVector.toString();
-                final double actualResultingScore = cvss4P0.getBaseScore();
+                final double actualResultingScore = cvss4P0.getOverallScore();
 
                 if (!expectedMacroVector.equals(actualMacroVector)) {
                     invalidVectors.add(line);
