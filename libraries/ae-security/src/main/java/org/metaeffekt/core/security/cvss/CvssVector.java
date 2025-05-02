@@ -510,7 +510,10 @@ public abstract class CvssVector {
                 return potentialCvss4P0Vector;
             }
 
-            LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            if (vector.startsWith("CVSS:")) {
+                LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            }
+
             return null;
         }
     }
