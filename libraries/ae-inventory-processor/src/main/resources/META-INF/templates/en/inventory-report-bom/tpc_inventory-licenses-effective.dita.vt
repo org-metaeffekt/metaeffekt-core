@@ -88,6 +88,22 @@
                     <entry colname="COLSPEC3" valign="top">Number of Components</entry>
                 </row>
             </thead>
+#if($report.isIncludeInofficialOsiStatus())
+    #set($osiStatusMap = {
+        "approved" : "approved",
+        "submitted" : "submitted",
+        "not submitted" : "not submitted",
+        "pending" : "pending",
+        "withdrawn" : "withdrawn",
+        "rejected" : "rejected",
+        "ineligible" : "ineligible",
+        "unclear" : "unclear"
+    })
+#else
+    #set($osiStatusMap = {
+        "approved" : "approved"
+    })
+#end
             <tbody>
 #foreach($licenseData in $atomicTerms)
 #set($license=$licenseData.get("Canonical Name"))
@@ -98,8 +114,7 @@
 #if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
                     <entry>
                         <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
-                            $report.xmlEscapeLicense($license)
-                        </xref><xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
+                            $report.xmlEscapeLicense($license)</xref><xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
                     </entry>
                     <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
@@ -112,9 +127,7 @@
                         </xref>
                     </entry>
                     <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
-                    <entry>
-                        #if($licenseData)#if($licenseData.get("OSI Status"))$licenseData.get("OSI Status")#else&nbsp;#end#else&nbsp;#end
-                    </entry>
+                    <entry>#if ($licenseData)$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;")#else&nbsp;#end</entry>
 #end
                     <entry>
                          <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
