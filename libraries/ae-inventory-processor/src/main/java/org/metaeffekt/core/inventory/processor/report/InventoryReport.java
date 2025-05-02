@@ -976,10 +976,9 @@ public class InventoryReport {
                     missingFiles |= checkAndCopyLicenseFolder(effectiveLicenseFolderName,
                             new File(targetLicenseDir, effectiveLicenseFolderName), reportedSourceFolders);
 
-                    // copy the component folder into the effective license folder
-                    final File licenseTargetDir = new File(targetLicenseDir, effectiveLicenseFolderName);
-                    missingFiles |= checkAndCopyComponentFolder(sourcePath,
-                            new File(licenseTargetDir, targetPath), reportedSourceFolders);
+                    // NOTE: copying of component folder into the effective license folder was deactivated deactivated
+                    //  the procedure causes many redundant files and is not producing accurate results.
+                    //  copy touched components to target component folder will still be perfomed
                 }
             }
         }
