@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="cvss">
+    <glossterm>Common Vulnerability Scoring System</glossterm>
+    <glossdef>
+        Der Schweregrad von Sicherheitslücken wird in der Regel mit dem CVSS-Bewertungssystem (Common Vulnerability
+        Scoring System) bestimmt.
+        Dabei werden einzelne Messgrößen verwendet, um verschiedene Faktoren einer Schwachstelle
+        zu erfassen.
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Common Vulnerability Scoring System (CVSS)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>CVSS</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>

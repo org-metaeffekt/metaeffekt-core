@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="effective-licenses">
+    <glossterm>Effektive Lizenzen</glossterm>
+    <glossdef>
+        Es gibt verschiedene Fälle, in denen eine Komponente von einem Anbieter unter mehreren zugeordneten Lizenzen
+        zur Verfügung gestellt wird. Die effektiven Lizenzen sind die Lizenzen, die für die Software
+        Distribution bindend sind:
+        <ul>
+            <li>
+                Eine Komponente wird mit Lizenzierungsoptionen zur Verfügung gestellt (Dual- oder
+                Mehrfachlizenzierung), bei der entweder die eine oder die andere Lizenz für die Software Distribution
+                verwendet werden kann. In diesem Fall muss eine einzige effektive Lizenz festgelegt werden.
+            </li>
+            <li>
+                Eine Komponente wird mit einer Lizenz in einer bestimmten oder höheren Version der Lizenz
+                versehen. In diesem Fall ist eine Version der Lizenz als effektive Lizenz zu bestimmen.
+            </li>
+            <li>
+                Für eine Komponente, die Unterkomponenten enthält, sind neben der Lizenz der Komponente auch die
+                jeweiligen Lizenzen der Unterkomponenten binded zu berücksichtigen.
+            </li>
+            <li>
+                Eine assoziierte Lizenz einer Komponente erlaubt die Unterlizenzierung unter einer anderen Lizenz.
+                In diesem Fall ist die gewählte Lizenz die effektive Lizenz.
+            </li>
+        </ul>
+        <p>
+            Siehe auch: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="licenses"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Effektive Lizenzen</glossSurfaceForm>
+    </glossBody>
+</glossentry>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_ae-oss-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Open Source Komponenten</title>
+    <body>
+        <p>
+            Im Allgemeinen gelten für jede Open Source-Komponente die individuellen Bedingungen der
+            <abbreviated-form keyref="associated-licenses"/>. Dem Lizenznehmer einer Open Source Komponente wird von
+            den jeweiligen Rechteinhabern ein nicht ausschließliches Nutzungsrecht gewährt, das durch die in der
+            zugehörigen Lizenz festgelegten Bedingungen eingeschränkt ist. Insbesondere gelten die Haftungs- und
+            Gewährleistungsbestimmungen der einzelnen Open Source Lizenzen.
+        </p>
+        <p>
+            Spezifische Haftungs- und Gewährleistungsbestimmungen von ${product.name}, sofern vorhanden, unterliegen
+            der vertraglichen Vereinbarung, unter der die Software Distribution zur Verfügung gestellt wird. Spezifische
+            Haftungsverpflichtungen bleiben von den Bestimmungen der einzelnen Open Source Lizenzen unberührt.
+        </p>
+        <p>
+            Wenn eine Lizenz die Bereitstellung von Quellcode für eine Komponente erfordert, wird der Quellcode durch
+            Hinzufügen von Quellcode-Archiven zum Software Distribution Annex oder durch eine Bereitstellung des
+            Quellcodes den Erläuterungen in <xref keyref="license-notices"/> entsprechend verfahren.
+        </p>
+    </body>
+</topic>

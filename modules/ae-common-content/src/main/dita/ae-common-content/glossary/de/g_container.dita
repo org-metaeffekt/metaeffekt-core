@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="container">
+    <glossterm>Container</glossterm>
+    <glossdef>
+        <p>
+            Ein Container besteht aus Softwarekomponenten, die in verschiedenen Ebenen aufgebaut sind. In einem
+            Container wird eine definierte Leistung oder eine definierte Funktion hinterlegt.
+        </p>
+        <p>
+            Ein Container erfordert eine Container-Laufzeitumgebung, damit er instanziiert werden kann. Container sind
+            kompakter als virtuelle Appliances. Sie können mühelos in Clusterumgebungen bedient werden und werden
+            häufig zur dynamischen Umsetzung von Scaling Services verwendet. Eine typische Container-Laufzeitumgebung
+            ist Kubernetes.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="asset"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Container</glossSurfaceForm>
+    </glossBody>
+</glossentry>

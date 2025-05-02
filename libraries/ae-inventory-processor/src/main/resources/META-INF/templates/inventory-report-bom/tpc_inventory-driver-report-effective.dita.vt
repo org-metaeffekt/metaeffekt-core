@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_drivers-$reportContext.id">
+    <title>$utils.getText("general.short.drivers")</title>
+    <body>
+        #set($components=$inventory.evaluateComponentsInContext("driver"))
+        #set($licensesInEffect=$inventory.evaluateLicenses(false))
+
+
+        #if($components.isEmpty())
+        <p>$utils.getText("inventory-report-bom.no-individual-driver")</p>
+        #else
+        <p>$utils.getText("inventory-report-bom.driver-table-descr")</p>
+        <p>
+        <table otherprops="wide" id="table_drivers">
+            <tgroup cols="3">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="45*"/>
+                <colspec colname="COLSPEC2" colnum="3" colwidth="35*"/>
+                <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.components")</entry>
+                    <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.drivers")</entry>
+                    <entry colname="COLSPEC2" valign="top">$utils.getText(
+                        "inventory-report-bom.short.effective-licenses")</entry>
+                </row>
+                </thead>
+
+                <tbody>
+
+                    #foreach($component in $components)
+                        #set($groups=$inventory.evaluateComponent($component))
+                        #foreach($name in $groups)
+                            #set($hasNotice=$inventory.hasNotice($component))
+                        <row>
+                            #if($hasNotice)
+                                <entry>
+                                    <xref href="tpc_inventory-component-license-details.dita#tpc_component_notice_$inventory.deriveLicenseId($component.name)"
+                                          type="topic">
+                                        $report.xmlEscapeComponentName($component.getOriginalComponentName())
+                                    </xref>
+                                </entry>
+                            #else
+                                <entry>$report.xmlEscapeComponentName($component.getOriginalComponentName())</entry>
+                            #end
+                            #set($addParagraph=false)
+                            <entry>#foreach($artifact in $name)#if($artifact.getGroupId())
+                                <lines>#if($addParagraph)
+                                    <line>
+                                    </line>#end
+                                    <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
+                                        <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+                                    </line>
+                                </lines>#else
+                                <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
+                                #set($addParagraph=true)#end
+                            </entry>
+                            #set($licenses=$inventory.getEffectiveLicenses($name.get(0)))
+                            #set($licensesAsString=$inventory.getEffectiveLicense($name.get(0)))
+                            #if($licenses.isEmpty())
+                                <entry>&nbsp;</entry>
+                            #else
+                                <entry>
+                                    ## preserve formating to achive proper line-breaks
+                                    <lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))
+                                        <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)"
+                                              type="topic">$report.xmlEscapeLicense($license)</xref>
+                                    #else$report.xmlEscapeLicense($license)
+                                    #end#end</lines>
+                                </entry>
+                            #end
+                        </row>
+                        #end
+                    #end
+                </tbody>
+            </tgroup>
+        </table>
+        </p>
+        #end
+    </body>
+</topic>

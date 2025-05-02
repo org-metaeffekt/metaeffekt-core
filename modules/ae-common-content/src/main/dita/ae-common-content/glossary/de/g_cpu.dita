@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary//EN" "glossary.dtd">
+<glossentry id="cpu">
+    <glossterm>Prozessor</glossterm>
+    <glossdef>
+            Der Prozessor (CPU) ist der elektronische Schaltkreis in einem Computer,
+            der Anweisungen eines Computerprogramms ausführt, indem er die grundlegenden arithmetischen, logischen,
+            Steuerungs- sowie Ein- und Ausgabe-Befehle verarbeitet, die in den Anweisungen aufgeführt sind.
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Prozessor</glossSurfaceForm>
+    </glossBody>
+</glossentry>
