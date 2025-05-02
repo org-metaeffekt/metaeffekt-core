@@ -494,7 +494,6 @@ public abstract class CvssVector {
             return new Cvss3P1(vector);
         } else if (vector.startsWith("CVSS:4.0")) {
             return new Cvss4P0(vector);
-
         } else {
             final Cvss2 potentialCvss2Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss2::new);
             if (potentialCvss2Vector != null) {
