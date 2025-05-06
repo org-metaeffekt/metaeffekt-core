@@ -314,12 +314,15 @@ public class DocumentDescriptorReport {
         final Template template = velocityEngine.getTemplate(templateResourcePath);
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
+        final ReportUtils reportUtils = new ReportUtils();
+        reportUtils.setContext(context);
+        reportUtils.setLang(documentDescriptor.getLanguage());
 
         // Add common context entries.
         context.put("targetReportDir", this.targetReportDir);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
-        context.put("utils", new ReportUtils());
+        context.put("utils", reportUtils);
         context.put("Double", Double.class);
         context.put("Float", Float.class);
         context.put("String", String.class);

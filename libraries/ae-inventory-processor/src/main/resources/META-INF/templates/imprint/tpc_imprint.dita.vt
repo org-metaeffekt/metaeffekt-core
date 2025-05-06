@@ -2,7 +2,7 @@
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_imprint" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
 
-    <title>Imprint</title>
+    <title>$utils.getText("general.short.imprint-title")</title>
     <body>
     <p/>
     <p/>
@@ -15,7 +15,7 @@
         <p>
         <dl compact="yes">
             <dlentry>
-                <dt>Version:</dt>
+                <dt>$utils.getText("general.short.imprint-version")</dt>
                 <dd>${product.version}</dd>
             </dlentry>
         </dl>
@@ -27,7 +27,7 @@
         <p>
         <dl compact="yes">
             <dlentry>
-                <dt>Version:</dt>
+                <dt>$utils.getText("general.short.imprint-version")</dt>
                 <dd>
                     #set($versions = $assetMap.get($assetName))
                     #set($count = 0)
@@ -47,19 +47,19 @@
         <p>
         <dl compact="yes">
             <dlentry>
-                <dt>Version:</dt>
+                <dt>$utils.getText("general.short.imprint-version")</dt>
                 <dd>${document.version}</dd>
             </dlentry>
             <dlentry>
-                <dt>Status:</dt>
+                <dt>$utils.getText("general.short.imprint-status")</dt>
                 <dd>${document.status_en}</dd>
             </dlentry>
             <dlentry>
-                <dt>Classification:</dt>
+                <dt>$utils.getText("general.short.imprint-classification")</dt>
                 <dd>${document.classification_en}</dd>
             </dlentry>
             <dlentry>
-                <dt>Date:</dt>
+                <dt>$utils.getText("general.short.imprint-date")</dt>
                 <dd>${document.date_en}</dd>
             </dlentry>
         </dl>
