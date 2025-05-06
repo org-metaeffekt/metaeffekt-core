@@ -115,17 +115,20 @@ public class RepositoryReportTest {
         assertFalse(new File(targetLicensesDir, "T-License").exists());
 
         // check multiple licensed artifacts are multiplied to the different license folders
-        assertTrue(new File(targetLicensesDir, "A-License/AlphaBeta-Component-1.0.0").exists());
+        // NOTE: disabled aggregation of component folders inside license folder
+        // assertTrue(new File(targetLicensesDir, "A-License/AlphaBeta-Component-1.0.0").exists());
         assertTrue(new File(targetComponentDir, "AlphaBeta-Component-1.0.0").exists());
 
         // check license information is multiplied for sub-components
-        assertTrue(new File(targetLicensesDir, "A-License/Gamma-Component-1.0.0").exists());
-        assertTrue(new File(targetLicensesDir, "B-License/Gamma-Component-1.0.0").exists());
+        // NOTE: disabled aggregation of component folders inside license folder
+        // assertTrue(new File(targetLicensesDir, "A-License/Gamma-Component-1.0.0").exists());
+        // assertTrue(new File(targetLicensesDir, "B-License/Gamma-Component-1.0.0").exists());
         assertTrue(new File(targetComponentDir, "Gamma-Component-1.0.0").exists());
 
         // check license information is multiplied for sub-components
-        assertTrue(new File(targetLicensesDir, "A-License/Omega-Component").exists());
-        assertTrue(new File(targetLicensesDir, "B-License/Omega-Component").exists());
+        // NOTE: disabled aggregation of component folders inside license folder
+        // assertTrue(new File(targetLicensesDir, "A-License/Omega-Component").exists());
+        // assertTrue(new File(targetLicensesDir, "B-License/Omega-Component").exists());
         assertTrue(new File(targetComponentDir, "Omega-Component").exists());
 
         assertTrue(new File(targetComponentDir, "Sigma-Component-1.0.0").exists());
