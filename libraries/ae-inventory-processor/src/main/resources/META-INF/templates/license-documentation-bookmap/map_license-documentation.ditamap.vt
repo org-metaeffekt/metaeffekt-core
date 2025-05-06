@@ -3,18 +3,18 @@
 <bookmap id="map_annex">
     #foreach($inventoryContext in $documentPart.getInventoryContexts())
         #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
-    <chapter href="$inventoryContext.getIdentifier()/tpc_inventory-asset.dita">
-        <topicref href="$inventoryContext.getIdentifier()/tpc_license-overview.dita" >
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" keys="license-notices" />
+    <chapter href="../$inventoryContext.getIdentifier()/tpc_inventory-asset.dita">
+        <topicref href="../$inventoryContext.getIdentifier()/tpc_license-overview.dita" >
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita" />
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita" />
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita" />
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita" keys="license-notices" />
         </topicref>
 
-        <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita" >
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
-            <topicref href="$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
+        <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita" >
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita" />
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita" />
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita" />
         </topicref>
     </chapter>
     #end

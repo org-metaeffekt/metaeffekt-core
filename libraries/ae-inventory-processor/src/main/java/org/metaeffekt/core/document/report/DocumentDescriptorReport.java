@@ -285,7 +285,7 @@ public class DocumentDescriptorReport {
             }
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
-            final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
+            final File targetReportPath = new File(this.targetReportDir + "/parts", new File(relPath, targetFileName).toString());
 
             produceDita(documentDescriptor, documentPart, adapters, filePath, targetReportPath);
         }
