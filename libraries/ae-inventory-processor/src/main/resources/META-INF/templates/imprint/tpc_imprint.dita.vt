@@ -21,26 +21,28 @@
         </dl>
         </p>
     </section>
-    #foreach ($assetName in $assetMap.keySet())
-    <section>
-        <title>$assetName</title>
-        <p>
-        <dl compact="yes">
-            <dlentry>
-                <dt>$utils.getText("general.short.imprint-version")</dt>
-                <dd>
-                    #set($versions = $assetMap.get($assetName))
-                    #set($count = 0)
-                    #set($size = $versions.size())
-                    #foreach ($version in $versions)
-                        $version#if($count < $size - 1), #end
-                        #set($count = $count + 1)
-                    #end
-                </dd>
-            </dlentry>
-        </dl>
-        </p>
-    </section>
+    #if (!$excludeAssetsFromImprint)
+        #foreach ($assetName in $assetMap.keySet())
+        <section>
+            <title>$assetName</title>
+            <p>
+            <dl compact="yes">
+                <dlentry>
+                    <dt>$utils.getText("general.short.imprint-version")</dt>
+                    <dd>
+                        #set($versions = $assetMap.get($assetName))
+                        #set($count = 0)
+                        #set($size = $versions.size())
+                        #foreach ($version in $versions)
+                            $version#if($count < $size - 1), #end
+                            #set($count = $count + 1)
+                        #end
+                    </dd>
+                </dlentry>
+            </dl>
+            </p>
+        </section>
+        #end
     #end
     <section>
         <title>${document.name}</title>

@@ -179,6 +179,12 @@ public class DocumentDescriptorReport {
         Map<String, Object> extraContext = new HashMap<>();
         extraContext.put("assetMap", assetMap);
 
+        boolean excludeAssetsFromImprint = false;
+        if (documentDescriptor.getParams() != null) {
+            excludeAssetsFromImprint = Boolean.parseBoolean(documentDescriptor.getParams().get("excludeAssetsFromImprint"));
+        }
+        extraContext.put("excludeAssetsFromImprint", excludeAssetsFromImprint);
+
         produceDita(documentDescriptor,
                 null,
                 new DocumentDescriptorReportAdapters(),
