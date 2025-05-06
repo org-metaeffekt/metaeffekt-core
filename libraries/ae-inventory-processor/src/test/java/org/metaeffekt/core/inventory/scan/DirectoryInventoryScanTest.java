@@ -203,8 +203,20 @@ public class DirectoryInventoryScanTest {
         assertThat(inventory.getAssetMetaData().size()).isEqualTo(1);
 
         new InventoryWriter().writeInventory(inventory, new File("target/linux-distro-001.xls"));
-
     }
+
+    @Test
+    public void testScan_NPM() throws IOException {
+        final File scanInputDir = new File("src/test/resources/component-pattern-contributor/npm-005");
+        final File scanDir = new File("target/scan/npm-005");
+
+        final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+        new InventoryWriter().writeInventory(inventory, new File("target/npm-005.xls"));
+
+        Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(225);
+    }
+
 
     @Ignore
     @Test
