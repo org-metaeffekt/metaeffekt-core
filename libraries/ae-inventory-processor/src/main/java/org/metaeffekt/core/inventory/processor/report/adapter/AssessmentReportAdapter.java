@@ -143,7 +143,6 @@ public class AssessmentReportAdapter {
 
         AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
         vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
-        vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
 
         // compute both effective and initial counts
         final VulnerabilityCounts effectiveCounts = computeCounts(true, vAssetInventory);

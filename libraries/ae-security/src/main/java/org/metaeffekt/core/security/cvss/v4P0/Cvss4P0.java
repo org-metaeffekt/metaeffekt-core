@@ -542,13 +542,66 @@ public final class Cvss4P0 extends CvssVector {
         return exploitMaturity != ExploitMaturity.NOT_DEFINED;
     }
 
-    @Override
-    public double getOverallScore() {
-        return getBaseScore();
+    private void clearEnvironmental() {
+        this.modifiedAttackVector = ModifiedAttackVector.NOT_DEFINED;
+        this.modifiedAttackComplexity = ModifiedAttackComplexity.NOT_DEFINED;
+        this.modifiedAttackRequirements = ModifiedAttackRequirements.NOT_DEFINED;
+        this.modifiedPrivilegesRequired = ModifiedPrivilegesRequired.NOT_DEFINED;
+        this.modifiedUserInteraction = ModifiedUserInteraction.NOT_DEFINED;
+        this.modifiedVulnConfidentialityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedVulnIntegrityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedVulnAvailabilityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedSubConfidentialityImpact = ModifiedSubsequentConfidentiality.NOT_DEFINED;
+        this.modifiedSubIntegrityImpact = ModifiedSubsequentIntegrityAvailability.NOT_DEFINED;
+        this.modifiedSubAvailabilityImpact = ModifiedSubsequentIntegrityAvailability.NOT_DEFINED;
+    }
+
+    private void clearThreat() {
+        this.exploitMaturity = ExploitMaturity.NOT_DEFINED;
     }
 
     @Override
     public double getBaseScore() {
+        if (isAnyEnvironmentalDefined() || isAnyThreatDefined()) {
+            final Cvss4P0 vector = this.clone();
+            vector.clearEnvironmental();
+            vector.clearThreat();
+            return vector.getOverallScore();
+        }
+
+        return this.getOverallScore();
+    }
+
+    public double getEnvironmentalScore() {
+        if (isAnyEnvironmentalDefined()) {
+            if (isAnyThreatDefined()) {
+                final Cvss4P0 vector = this.clone();
+                vector.clearThreat();
+                return vector.getOverallScore();
+            } else {
+                return getOverallScore();
+            }
+        }
+
+        return Double.NaN;
+    }
+
+    public double getThreatScore() {
+        if (isAnyThreatDefined()) {
+            if (isAnyEnvironmentalDefined()) {
+                final Cvss4P0 vector = this.clone();
+                vector.clearEnvironmental();
+                return vector.getOverallScore();
+            } else {
+                return getOverallScore();
+            }
+        }
+
+        return Double.NaN;
+    }
+
+    @Override
+    public double getOverallScore() {
         // check if base is undefined
         if (!isBaseFullyDefined()) {
             return 0.0;
@@ -1910,6 +1963,10 @@ public final class Cvss4P0 extends CvssVector {
                 return defaultValue;
             }
         }
+
+        default boolean isSet() {
+            return !getIdentifier().equals(VALUE_NOT_DEFINED) && !getIdentifier().equals(VALUE_NULL);
+        }
     }
 
     // getters/setters
@@ -2178,5 +2235,100 @@ public final class Cvss4P0 extends CvssVector {
         }
 
         return Optional.of(new Cvss4P0(vector));
+    }
+
+    public final static List<Set<Cvss4P0Attribute>> ATTRIBUTE_SEVERITY_ORDER = Arrays.<Set<Cvss4P0Attribute>>asList(
+            // AttackRequirements
+            setOf(AttackRequirements.PRESENT, ModifiedAttackRequirements.PRESENT),
+            setOf(AttackRequirements.NONE, ModifiedAttackRequirements.NONE),
+            setOf(AttackRequirements.NOT_DEFINED, ModifiedAttackRequirements.NOT_DEFINED),
+
+            // Safety
+            Collections.singleton(Safety.NOT_DEFINED),
+            Collections.singleton(Safety.NEGLIGIBLE),
+            Collections.singleton(Safety.PRESENT),
+
+            // Automatable
+            Collections.singleton(Automatable.NOT_DEFINED),
+            Collections.singleton(Automatable.NO),
+            Collections.singleton(Automatable.YES),
+
+            // ValueDensity
+            Collections.singleton(ValueDensity.NOT_DEFINED),
+            Collections.singleton(ValueDensity.DIFFUSE),
+            Collections.singleton(ValueDensity.CONCENTRATED),
+
+            // AttackComplexity
+            setOf(AttackComplexity.HIGH, ModifiedAttackComplexity.HIGH),
+            setOf(AttackComplexity.LOW, ModifiedAttackComplexity.LOW),
+            setOf(AttackComplexity.NOT_DEFINED, ModifiedAttackComplexity.NOT_DEFINED),
+
+            // PrivilegesRequired
+            setOf(PrivilegesRequired.HIGH, ModifiedPrivilegesRequired.HIGH),
+            setOf(PrivilegesRequired.LOW, ModifiedPrivilegesRequired.LOW),
+            setOf(PrivilegesRequired.NONE, ModifiedPrivilegesRequired.NONE),
+            setOf(PrivilegesRequired.NOT_DEFINED, ModifiedPrivilegesRequired.NOT_DEFINED),
+
+            // UserInteraction
+            setOf(UserInteraction.ACTIVE, ModifiedUserInteraction.ACTIVE),
+            setOf(UserInteraction.PASSIVE, ModifiedUserInteraction.PASSIVE),
+            setOf(UserInteraction.NONE, ModifiedUserInteraction.NONE),
+            setOf(UserInteraction.NOT_DEFINED, ModifiedUserInteraction.NOT_DEFINED),
+
+            // VulnerabilityCia
+            setOf(VulnerabilityCia.NOT_DEFINED, ModifiedVulnerabilityCia.NOT_DEFINED),
+            setOf(VulnerabilityCia.NONE, ModifiedVulnerabilityCia.NONE),
+            setOf(VulnerabilityCia.LOW, ModifiedVulnerabilityCia.LOW),
+            setOf(VulnerabilityCia.HIGH, ModifiedVulnerabilityCia.HIGH),
+
+            // Subsequent CIA metrics
+            setOf(ModifiedSubsequentConfidentiality.NOT_DEFINED, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED, SubsequentCia.NOT_DEFINED),
+            setOf(ModifiedSubsequentConfidentiality.NEGLIGIBLE, ModifiedSubsequentIntegrityAvailability.NEGLIGIBLE, SubsequentCia.NONE),
+            setOf(ModifiedSubsequentConfidentiality.LOW, ModifiedSubsequentIntegrityAvailability.LOW, SubsequentCia.LOW),
+            setOf(ModifiedSubsequentConfidentiality.HIGH, ModifiedSubsequentIntegrityAvailability.HIGH, SubsequentCia.HIGH),
+            setOf(ModifiedSubsequentIntegrityAvailability.SAFETY, SubsequentCia.SAFETY),
+
+            // RequirementsCia
+            Collections.singleton(RequirementsCia.LOW),
+            Collections.singleton(RequirementsCia.MEDIUM),
+            Collections.singleton(RequirementsCia.HIGH),
+            Collections.singleton(RequirementsCia.NOT_DEFINED),
+
+            // ExploitMaturity
+            Collections.singleton(ExploitMaturity.UNREPORTED),
+            Collections.singleton(ExploitMaturity.POC),
+            Collections.singleton(ExploitMaturity.ATTACKED),
+            Collections.singleton(ExploitMaturity.NOT_DEFINED),
+
+            // Recovery
+            Collections.singleton(Recovery.NOT_DEFINED),
+            Collections.singleton(Recovery.AUTOMATIC),
+            Collections.singleton(Recovery.USER),
+            Collections.singleton(Recovery.IRRECOVERABLE),
+
+            // VulnerabilityResponseEffort
+            Collections.singleton(VulnerabilityResponseEffort.NOT_DEFINED),
+            Collections.singleton(VulnerabilityResponseEffort.LOW),
+            Collections.singleton(VulnerabilityResponseEffort.MODERATE),
+            Collections.singleton(VulnerabilityResponseEffort.HIGH),
+
+            // ProviderUrgency
+            Collections.singleton(ProviderUrgency.NOT_DEFINED),
+            Collections.singleton(ProviderUrgency.CLEAR),
+            Collections.singleton(ProviderUrgency.GREEN),
+            Collections.singleton(ProviderUrgency.AMBER),
+            Collections.singleton(ProviderUrgency.RED),
+
+            // AttackVector
+            setOf(AttackVector.NOT_DEFINED, ModifiedAttackVector.NOT_DEFINED),
+            setOf(AttackVector.PHYSICAL, ModifiedAttackVector.PHYSICAL),
+            setOf(AttackVector.LOCAL, ModifiedAttackVector.LOCAL),
+            setOf(AttackVector.ADJACENT_NETWORK, ModifiedAttackVector.ADJACENT_NETWORK),
+            setOf(AttackVector.NETWORK, ModifiedAttackVector.NETWORK)
+    );
+
+    private static <T> Set<T> setOf(T... values) {
+        return new HashSet<>(Arrays.asList(values));
+
     }
 }

@@ -21,7 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatus;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaVulnerabilityAssessmentEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,7 @@ public class AeaaKeywordSet implements Comparable<AeaaKeywordSet> {
     private String name;
     private String category;
     private String notes;
-    private AeaaVulnerabilityStatus status;
+    private List<AeaaVulnerabilityAssessmentEvent> status = new ArrayList<>();
 
     private final List<AeaaKeywordTokenList> mustContainAll = new ArrayList<>();
     private final List<AeaaKeywordTokenList> mustNotContain = new ArrayList<>();
@@ -145,6 +145,11 @@ public class AeaaKeywordSet implements Comparable<AeaaKeywordSet> {
         }
         exportJson.put(KEY_MAX, maxJson);
 
+        if (status == null) {
+            this.status = new ArrayList<>();
+        }
+        exportJson.put(KEY_STATUS, status.stream().map(AeaaVulnerabilityAssessmentEvent::toJsonObject).collect(Collectors.toList()));
+
         return exportJson;
     }
 
@@ -194,6 +199,19 @@ public class AeaaKeywordSet implements Comparable<AeaaKeywordSet> {
         parseMinMaxTokensFromToJson(properties, KEY_MIN, minContain);
         parseMinMaxTokensFromToJson(properties, KEY_MAX, maxContain);
 
+        if (properties.containsKey(KEY_STATUS)) {
+            final Object statusObject = properties.get(KEY_STATUS);
+            if (statusObject instanceof List) {
+                final List<Object> statusList = (List<Object>) statusObject;
+                for (Object entry : statusList) {
+                    if (entry instanceof Map) {
+                        final Map<String, Object> statusMap = (Map<String, Object>) entry;
+                        status.add(AeaaVulnerabilityAssessmentEvent.fromMap(statusMap));
+                    }
+                }
+            }
+        }
+
         return this;
     }
 
@@ -233,10 +251,6 @@ public class AeaaKeywordSet implements Comparable<AeaaKeywordSet> {
                 }
             }
         }
-    }
-
-    public AeaaVulnerabilityStatus getStatus() {
-        return status;
     }
 
     @Override

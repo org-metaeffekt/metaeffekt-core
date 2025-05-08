@@ -188,6 +188,12 @@ public class CvssSeverityRanges {
                     "due:strong-dark-orange:7.0:8.9," +
                     "elevated:strong-light-orange::6.9"
     );
+    public static final CvssSeverityRanges EPSS_SCORE_SEVERITY_RANGES = new CvssSeverityRanges(
+            ">0.8:strong-red:0.8:," +
+                    ">0.1:strong-light-orange:0.1:0.8," +
+                    ">0.01:strong-yellow:0.01:0.1," +
+                    "≤0.01:pastel-gray::0.01"
+    );
 
 
     private static String getAvailableColors() {

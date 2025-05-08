@@ -532,9 +532,31 @@ public class CvssSelector implements Cloneable {
     public String explain(String selectorName) {
         final StringBuilder explanation = new StringBuilder();
 
+        // markdown escaper
+        final Function<String, String> escape = s -> s != null ?
+                s.replace("\\", "\\\\")
+                        .replace("`", "\\`")
+                        .replace("*", "\\*")
+                        .replace("_", "\\_")
+                        .replace("{", "\\{")
+                        .replace("}", "\\}")
+                        .replace("[", "\\[")
+                        .replace("]", "\\]")
+                        .replace("(", "\\(")
+                        .replace(")", "\\)")
+                        .replace("#", "\\#")
+                        .replace("+", "\\+")
+                        .replace("-", "\\-")
+                        .replace(".", "\\.")
+                        .replace("!", "\\!")
+                        .replace("|", "\\|")
+                        .replace("~", "\\~")
+                        .replace(">", "\\>")
+                : "";
+
         if (!rules.isEmpty()) {
             if (selectorName != null) {
-                explanation.append("The [").append(selectorName).append("]");
+                explanation.append("The [").append(escape.apply(selectorName)).append("]");
             } else {
                 explanation.append("The");
             }
@@ -553,23 +575,23 @@ public class CvssSelector implements Cloneable {
                         if (source.getHostingEntities().isEmpty()) {
                             ruleSegments.add("*");
                         } else if (source.getHostingEntities().size() == 1) {
-                            ruleSegments.add(source.getHostingEntities().get(0).toString());
+                            ruleSegments.add(escape.apply(source.getHostingEntities().get(0).toString()));
                         } else {
-                            ruleSegments.add(source.getHostingEntities().stream().map(Object::toString).collect(Collectors.joining(" AND ", "(", ")")));
+                            ruleSegments.add(source.getHostingEntities().stream().map(Object::toString).map(escape).collect(Collectors.joining(" AND ", "(", ")")));
                         }
                         if (source.getIssuingEntityRoles().isEmpty()) {
                             ruleSegments.add("*");
                         } else if (source.getIssuingEntityRoles().size() == 1) {
-                            ruleSegments.add(source.getIssuingEntityRoles().get(0).toString());
+                            ruleSegments.add(escape.apply(source.getIssuingEntityRoles().get(0).toString()));
                         } else {
-                            ruleSegments.add(source.getIssuingEntityRoles().stream().map(Object::toString).collect(Collectors.joining(" AND ", "(", ")")));
+                            ruleSegments.add(source.getIssuingEntityRoles().stream().map(Object::toString).map(escape).collect(Collectors.joining(" AND ", "(", ")")));
                         }
                         if (source.getIssuingEntities().isEmpty()) {
                             ruleSegments.add("*");
                         } else if (source.getIssuingEntities().size() == 1) {
-                            ruleSegments.add(source.getIssuingEntities().get(0).toString());
+                            ruleSegments.add(escape.apply(source.getIssuingEntities().get(0).toString()));
                         } else {
-                            ruleSegments.add(source.getIssuingEntities().stream().map(Object::toString).collect(Collectors.joining(" AND ", "(", ")")));
+                            ruleSegments.add(source.getIssuingEntities().stream().map(Object::toString).map(escape).collect(Collectors.joining(" AND ", "(", ")")));
                         }
 
                         ruleSegmentsJoiner.add(ruleSegments.toString());
@@ -598,7 +620,7 @@ public class CvssSelector implements Cloneable {
                                 operationsBuilder.append("Since no selector is specified, the following is always applied: ");
                             } else {
                                 operationsBuilder.append("If the selected vector is ")
-                                        .append(operations.entrySet().stream().map(e -> e.getKey().toPotentiallyInvertedPrettyString(e.getValue())).collect(Collectors.joining("] AND [", "[", "]")))
+                                        .append(operations.entrySet().stream().map(e -> escape.apply(e.getKey().toPotentiallyInvertedPrettyString(e.getValue()))).collect(Collectors.joining("] AND [", "[", "]")))
                                         .append(", then ");
                             }
 
@@ -678,7 +700,7 @@ public class CvssSelector implements Cloneable {
                                 statsExplanation.append("is set to ");
                             }
 
-                            statsExplanation.append("the stats collector attribute [" + statsCollector.getAttributeName() + "].");
+                            statsExplanation.append("the stats collector attribute [").append(escape.apply(statsCollector.getAttributeName())).append("].");
 
                             statsJoiner.add(statsExplanation);
                         }
@@ -707,7 +729,7 @@ public class CvssSelector implements Cloneable {
             for (SelectorStatsEvaluator statsEvaluatorAction : statsEvaluatorActions) {
                 final StringBuilder statsEvaluatorExplanation = new StringBuilder();
 
-                statsEvaluatorExplanation.append("If the stats collector attribute [").append(statsEvaluatorAction.getAttributeName()).append("] is [")
+                statsEvaluatorExplanation.append("If the stats collector attribute [").append(escape.apply(statsEvaluatorAction.getAttributeName())).append("] is [")
                         .append(statsEvaluatorAction.getComparator().name().replace("_", " ").toLowerCase()).append("] to [").append(statsEvaluatorAction.getComparisonValue()).append("], then ");
 
                 if (statsEvaluatorAction.getAction() == EvaluatorAction.RETURN_NULL) {
@@ -749,7 +771,7 @@ public class CvssSelector implements Cloneable {
                         operationsBuilder.append("Since no selector is specified, the following is always applied: ");
                     } else {
                         operationsBuilder.append("If the resulting vector is ")
-                                .append(operations.entrySet().stream().map(e -> e.getKey().toPotentiallyInvertedPrettyString(e.getValue())).collect(Collectors.joining("] AND [", "[", "]")))
+                                .append(operations.entrySet().stream().map(e -> escape.apply(e.getKey().toPotentiallyInvertedPrettyString(e.getValue()))).collect(Collectors.joining("] AND [", "[", "]")))
                                 .append(", then ");
                     }
 
@@ -772,7 +794,7 @@ public class CvssSelector implements Cloneable {
             }
         }
 
-        return explanation.toString();
+        return explanation.toString().replace("[", "`[").replace("]", "]`");
     }
 
     public static class CvssRule implements Cloneable {
@@ -1410,7 +1432,7 @@ public class CvssSelector implements Cloneable {
         }),
         /**
          * Represents a merging method that selectively includes attributes.
-         * Apply all parts of the newCvssVector to the base CvssVector if it results in a lower/equal overall score.
+         * Apply all parts of the newVector to the base CvssVector if it results in a lower/equal overall score.
          */
         LOWER((base, newVector) -> {
             final CvssVector clone = base.clone();
@@ -1419,7 +1441,7 @@ public class CvssSelector implements Cloneable {
         }),
         /**
          * Represents a merging method that selectively includes attributes.
-         * Apply all parts of the newCvssVector to the base CvssVector if it results in a higher/equal overall score.
+         * Apply all parts of the newVector to the base CvssVector if it results in a higher/equal overall score.
          */
         HIGHER((base, newVector) -> {
             final CvssVector clone = base.clone();
@@ -1427,7 +1449,25 @@ public class CvssSelector implements Cloneable {
             return Pair.of(clone, parts);
         }),
         /**
-         * Represents a merging method that overwrites the full base CvssVector with the newCvssVector.
+         * Represents a merging method that selectively includes attributes.
+         * Apply all parts of the newVector to the base CvssVector if the metric is ranked as less/equal severe.
+         */
+        LOWER_METRIC((base, newVector) -> {
+            final CvssVector clone = base.clone();
+            final int parts = clone.applyVectorPartsIfMetricsLower(newVector.toString());
+            return Pair.of(clone, parts);
+        }),
+        /**
+         * Represents a merging method that selectively includes attributes.
+         * Apply all parts of the newVector to the base CvssVector if the metric is ranked as more/equal severe.
+         */
+        HIGHER_METRIC((base, newVector) -> {
+            final CvssVector clone = base.clone();
+            final int parts = clone.applyVectorPartsIfMetricsHigher(newVector.toString());
+            return Pair.of(clone, parts);
+        }),
+        /**
+         * Represents a merging method that overwrites the full base CvssVector with the newVector.
          */
         OVERWRITE((base, newVector) -> Pair.of(newVector.clone(), 0));
 
