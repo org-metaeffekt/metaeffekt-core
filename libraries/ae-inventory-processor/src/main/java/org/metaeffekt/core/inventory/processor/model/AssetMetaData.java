@@ -52,7 +52,7 @@ public class AssetMetaData extends AbstractModelBase {
         NAME("Name"),
         VERSION("Version"),
         ASSESSMENT_ID("Assessment Id"),
-        ROLE("Role"),
+        AUDIENCE("Audience"),
         ASSESSMENT("Assessment"),
         CHECKSUM("Checksum"),
         HASH_SHA256("Hash (SHA-256)"),
