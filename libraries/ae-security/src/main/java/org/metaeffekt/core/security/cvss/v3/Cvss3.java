@@ -1274,7 +1274,7 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
 
     public interface Cvss3Attribute extends CvssVectorAttribute {
         default boolean isSet() {
-            return !getIdentifier().equals("NOT_DEFINED") && !getIdentifier().equals("NULL");
+            return !getIdentifier().equals(VALUE_NOT_DEFINED) && !getIdentifier().equals(VALUE_NULL);
         }
 
         static <T extends Cvss3Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {

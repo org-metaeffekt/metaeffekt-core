@@ -594,4 +594,7 @@ public abstract class CvssVector {
 
         boolean isSet();
     }
+
+    public final static String VALUE_NOT_DEFINED = "NOT_DEFINED";
+    public final static String VALUE_NULL = "NULL";
 }

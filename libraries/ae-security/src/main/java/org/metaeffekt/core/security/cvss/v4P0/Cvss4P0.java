@@ -1965,7 +1965,7 @@ public final class Cvss4P0 extends CvssVector {
         }
 
         default boolean isSet() {
-            return !getIdentifier().equals("NOT_DEFINED") && !getIdentifier().equals("NULL");
+            return !getIdentifier().equals(VALUE_NOT_DEFINED) && !getIdentifier().equals(VALUE_NULL);
         }
     }
 

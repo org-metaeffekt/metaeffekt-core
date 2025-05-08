@@ -123,7 +123,7 @@ public class StatisticsOverviewTable {
         for (AeaaVulnerability vulnerability : effectiveVulnerabilities) {
 
             // status in effectiveStatus
-            final AeaaEffectiveVulnerabilityAssessment assessment = vulnerability.getEffectiveDisplayVulnerabilityAssessment(securityPolicy);
+            final AeaaEffectiveVulnerabilityAssessment assessment = vulnerability.getEffectiveVulnerabilityAssessment(securityPolicy);
             final String effectiveStatus = securityPolicy.getVulnerabilityStatusDisplayMapper().getMapper().apply(assessment.getStatus());
 
             // severity in effectiveSeverity
