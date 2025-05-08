@@ -77,11 +77,11 @@ public class DocumentDescriptorReportGenerator {
 
         // generate bookmaps to integrate InventoryReport-generated results
         DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
+
         documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetReportDir());
-
         documentDescriptorReport.createPartBookMap(documentDescriptor);
-
         documentDescriptorReport.createDocumentBookMap(documentDescriptor);
+        documentDescriptorReport.createImprint(documentDescriptor);
     }
 
     /**
@@ -187,6 +187,12 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
+                if (mergedParams.get("referenceLicensePath") != null) {
+                    report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
+                }
+                if (mergedParams.get("referenceComponentPath") != null) {
+                    report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
+                }
                 if (mergedParams.get("LicensesDir") == null) {
                     report.setTargetLicenseDir(new File("license"));
                     log.info("used default targetLicensesDir as 'license'");

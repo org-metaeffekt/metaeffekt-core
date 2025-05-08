@@ -3,8 +3,8 @@
 <bookmap id="map_annex">
 #foreach($inventoryContext in $documentPart.getInventoryContexts())
     #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
-    <chapter href="$inventoryContext.getIdentifier()/tpc_asset-report.dita" />
-    <chapter href="$inventoryContext.getIdentifier()/tpc_asset-licenses.dita" />
-    <chapter href="$inventoryContext.getIdentifier()/tpc_asset-no-license.dita" />
+    <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-report.dita" />
+    <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-licenses.dita" />
+    <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-no-license.dita" />
 #end
 </bookmap>
