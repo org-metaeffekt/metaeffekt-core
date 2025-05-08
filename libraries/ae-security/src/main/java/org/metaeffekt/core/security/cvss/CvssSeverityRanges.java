@@ -85,7 +85,6 @@ public class CvssSeverityRanges {
         return UNDEFINED_SEVERITY_RANGE;
     }
 
-    //TODO: consider replace for 'getRangeByName'
     public SeverityRange getRangeByNameInsensitive(String name) {
         for (SeverityRange range : ranges) {
             if (range.getName().equalsIgnoreCase(name)) {
