@@ -52,8 +52,16 @@ public class ProcessorTimeTracker {
         applyChanges();
     }
 
-    public void addTimestamp(ProcessTimeEntry entry) {
-        entries.add(entry);
+    public void addTimestamp(ProcessTimeEntry newEntry) {
+
+        for(ProcessTimeEntry entry : entries){
+            if(entry.getProcessId().equals(newEntry.getProcessId())){
+                entry.merge(newEntry);
+                applyChanges();
+                return;
+            }
+        }
+        entries.add(newEntry);
         applyChanges();
     }
 
@@ -93,25 +101,15 @@ public class ProcessorTimeTracker {
 
     public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker processorTimeTracker1, ProcessorTimeTracker processorTimeTracker2) {
         ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
-        List<ProcessTimeEntry> mergedEntries = new ArrayList<>();
 
-
-        Set<String> processes = new HashSet<>();
-        processes.addAll(processorTimeTracker1.getEntries().stream().map(ProcessTimeEntry::getProcessId).collect(Collectors.toSet()));
-        processes.addAll(processorTimeTracker2.getEntries().stream().map(ProcessTimeEntry::getProcessId).collect(Collectors.toSet()));
-
-        for (String processId : processes) {
-            ProcessTimeEntry entry1 = processorTimeTracker1.getTimestamp(processId);
-            ProcessTimeEntry entry2 = processorTimeTracker2.getTimestamp(processId);
-            if (entry1 == null){
-                mergedEntries.add(entry2);
-            } else if (entry2 == null) {
-                mergedEntries.add(entry1);
-            } else {
-                mergedEntries.add(ProcessTimeEntry.merge(entry1, entry2));
-            }
+        for(ProcessTimeEntry entry : processorTimeTracker1.getEntries()){
+            merged.addTimestamp(entry);
         }
-        merged.getEntries().addAll(mergedEntries);
+
+        for(ProcessTimeEntry entry : processorTimeTracker2.getEntries()){
+            merged.addTimestamp(entry);
+        }
+
         return merged;
     }
 

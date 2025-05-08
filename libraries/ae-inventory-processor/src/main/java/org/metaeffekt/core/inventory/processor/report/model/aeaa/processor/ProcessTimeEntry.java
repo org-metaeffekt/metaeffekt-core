@@ -16,7 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.processor;
 
 import lombok.Getter;
-import org.json.JSONArray;
+import lombok.Setter;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -25,13 +25,14 @@ import java.util.Map;
 import java.util.Set;
 
 @Getter
+@Setter
 public class ProcessTimeEntry {
 
-    private final String processId;
+    private String processId;
 
-    private final ProcessTimestamp timestamp;
+    private ProcessTimestamp timestamp;
 
-    private final Map<String, ProcessTimestamp> indexTimestamps = new HashMap<>();
+    private Map<String, ProcessTimestamp> indexTimestamps = new HashMap<>();
 
     public ProcessTimeEntry(String processId, long timestamp) {
         this.processId = processId;
@@ -70,14 +71,16 @@ public class ProcessTimeEntry {
         return tracker;
     }
 
-    public static ProcessTimeEntry merge(ProcessTimeEntry entry1, ProcessTimeEntry entry2) {
-        ProcessTimeEntry merged = new ProcessTimeEntry(entry1.getProcessId(), ProcessTimestamp.merged(entry1.getTimestamp(), entry2.getTimestamp()));
+    public void merge(ProcessTimeEntry entry2) {
+        this.setTimestamp(ProcessTimestamp.merged(this.getTimestamp(), entry2.getTimestamp()));
+
         Map<String, ProcessTimestamp>  mergedTimestamps = new HashMap<>();
         Set<String> indices = new HashSet<>();
-        Map<String, ProcessTimestamp> indexTimestamps1 = entry1.getIndexTimestamps();
+        Map<String, ProcessTimestamp> indexTimestamps1 = this.getIndexTimestamps();
         Map<String, ProcessTimestamp> indexTimestamps2 = entry2.getIndexTimestamps();
         indices.addAll(indexTimestamps1.keySet());
         indices.addAll(indexTimestamps2.keySet());
+
         for(String index : indices) {
             if(!indexTimestamps1.containsKey(index)) {
                 mergedTimestamps.put(index, indexTimestamps2.get(index));
@@ -87,7 +90,7 @@ public class ProcessTimeEntry {
                 mergedTimestamps.put(index, ProcessTimestamp.merged(indexTimestamps1.get(index), indexTimestamps2.get(index)));
             }
         }
-        merged.indexTimestamps.putAll(mergedTimestamps);
-        return merged;
+
+        this.setIndexTimestamps(mergedTimestamps);
     }
 }
