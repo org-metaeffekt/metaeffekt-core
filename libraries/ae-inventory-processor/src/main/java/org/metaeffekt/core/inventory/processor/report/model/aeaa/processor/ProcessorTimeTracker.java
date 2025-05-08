@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.processor;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -114,4 +115,20 @@ public class ProcessorTimeTracker {
         return merged;
     }
 
+    @AllArgsConstructor
+    public enum ProcessIds{
+        SPDX_IMPORTER("spdx-importer"),
+        CYCLONEDX_IMPORTER("cyclonedx-importer"),
+        SBOM_CREATION("sbom-creation"),
+        INVENTORY_ENRICHMENT("inventory-enrichment"),
+        ADVISOR_PERIODIC_ENRICHMENT("advisor-periodic-enrichment"),
+        INVENTORY_MERGER("inventory-merger"),
+        ;
+
+        final String id;
+
+        public String get(){
+            return id;
+        }
+    }
 }
