@@ -354,7 +354,10 @@ public class ArchiveUtils {
                             LOG.warn("Symbolic links not supported or insufficient permissions. Skipping symbolic link creation.");
                         }
                     } else {
-                        // targetFile.getParentFile().mkdirs();
+                        final File parentFile = targetFile.getParentFile();
+                        if (!parentFile.exists()) {
+                            FileUtils.forceMkdir(parentFile);
+                        }
                         try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
                             IOUtils.copy(in, out);
                         }
