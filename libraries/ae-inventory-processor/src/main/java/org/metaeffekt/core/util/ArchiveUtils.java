@@ -233,6 +233,7 @@ public class ArchiveUtils {
         }
 
         try {
+            // untar internal is the preferred approach
             untarInternal(file, targetDir);
         } catch (Exception e) {
             LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
@@ -284,16 +285,25 @@ public class ArchiveUtils {
         unpackAndClose(zIn, Files.newOutputStream(targetFile.toPath()));
     }
 
-    private static void untarInternal(File file, File targetFile) throws IOException {
+    /**
+     * This untar method supports the desired handling of symbolic links. This method should be preferred.
+     *
+     * @param file The file to untar.
+     * @param targetDir The target directory to untar to.
+     *
+     * @throws IOException Throws {@link IOException}s in case of an issue.
+     */
+    private static void untarInternal(File file, File targetDir) throws IOException {
         try {
             final InputStream fin = Files.newInputStream(file.toPath());
             final BufferedInputStream in = new BufferedInputStream(fin);
             final TarArchiveInputStream xzIn = new TarArchiveInputStream(in);
-            if (!targetFile.exists()) {
-                FileUtils.forceMkdir(targetFile);
+            if (!targetDir.exists()) {
+                FileUtils.forceMkdir(targetDir);
             }
-            unpackAndClose(xzIn, targetFile);
+            unpackAndClose(xzIn, targetDir);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IOException("Could not untar file [" + file.getAbsolutePath() + "]", e);
         }
     }
@@ -313,11 +323,10 @@ public class ArchiveUtils {
 
     private static void unpackAndClose(TarArchiveInputStream in, File targetDir) throws IOException {
         try {
-            TarArchiveEntry entry;
-
             // we need to check the os we are running on
             boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
+            TarArchiveEntry entry;
             while ((entry = in.getNextEntry()) != null) {
                 final File targetFile = new File(targetDir, entry.getName());
 
