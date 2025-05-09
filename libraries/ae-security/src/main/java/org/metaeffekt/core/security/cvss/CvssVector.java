@@ -377,7 +377,7 @@ public abstract class CvssVector {
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
     public static CvssVector parseVector(String vector) {
-        if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector))) {
+        if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector)) || vector.startsWith("SSVC:")) {
             return null;
         }
 
@@ -387,7 +387,6 @@ public abstract class CvssVector {
             return new Cvss3P1(vector);
         } else if (vector.startsWith("CVSS:4.0")) {
             return new Cvss4P0(vector);
-
         } else {
             final Cvss2 potentialCvss2Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss2::new);
             if (potentialCvss2Vector != null) {
@@ -404,7 +403,9 @@ public abstract class CvssVector {
                 return potentialCvss4P0Vector;
             }
 
-            LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            if (vector.startsWith("CVSS:")) {
+                LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            }
             return null;
         }
     }
