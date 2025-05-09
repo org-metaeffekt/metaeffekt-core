@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report.model.aeaa.processor;
+package org.metaeffekt.core.inventory.processor.tracker;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -34,50 +35,68 @@ public class ProcessTimeEntry {
 
     private Map<String, ProcessTimestamp> indexTimestamps = new HashMap<>();
 
-    public ProcessTimeEntry(String processId, long timestamp) {
-        this.processId = processId;
+    public ProcessTimeEntry(ProcessId processId, long timestamp) {
+        this.processId = processId.get();
         this.timestamp = new ProcessTimestamp(timestamp);
     }
 
-    private ProcessTimeEntry(String processId, ProcessTimestamp timestamp) {
-        this.processId = processId;
+    private ProcessTimeEntry(ProcessId processId, ProcessTimestamp timestamp) {
+        this.processId = processId.get();
         this.timestamp = timestamp;
     }
 
     public void addIndexTimestamp(String indexId, long lastChecked) {
-        indexTimestamps.put(indexId, new ProcessTimestamp(lastChecked));
+        if(indexTimestamps.containsKey(indexId)){
+            ProcessTimestamp indexStamp = indexTimestamps.get(indexId);
+            indexStamp.addTimestamp(lastChecked);
+        } else {
+            indexTimestamps.put(indexId, new ProcessTimestamp(lastChecked));
+        }
     }
 
-    public JSONObject toJSON() {
+     JSONObject toJSON() {
         JSONObject object = new JSONObject();
         object.put("processId", processId);
         object.put("timestamp", timestamp.toJson());
-        JSONObject indexes = new JSONObject();
+        JSONArray indexes = new JSONArray();
         for (Map.Entry<String, ProcessTimestamp> entry : indexTimestamps.entrySet()) {
-            indexes.put(entry.getKey(), entry.getValue().toJson());
+            JSONObject index = new JSONObject();
+            index.put("indexId", entry.getKey());
+            index.put("timestamp", entry.getValue().toJson());
+            indexes.put(index);
         }
         object.put("indexTimestamps", indexes);
         return object;
     }
 
-    public static ProcessTimeEntry fromJSON(JSONObject object) {
-        ProcessTimeEntry tracker = new ProcessTimeEntry(object.getString("processId"), ProcessTimestamp.fromJSON(object.getJSONObject("timestamp")));
-        if(object.getJSONObject("indexTimestamps") != null) {
-            JSONObject indexTimestamps = object.getJSONObject("indexTimestamps");
-            for(String index : indexTimestamps.keySet()) {
-                tracker.indexTimestamps.put(index, ProcessTimestamp.fromJSON(indexTimestamps.getJSONObject(index)));
+    static ProcessTimeEntry fromJSON(JSONObject object) {
+        String processIdString = object.getString("processId");
+        ProcessId processId;
+        try{
+            processId = ProcessId.fromText(processIdString);
+        } catch (IllegalArgumentException e){
+            throw new RuntimeException(String.format("Process Id [%s] is not recognized", processIdString));
+        }
+
+        ProcessTimeEntry tracker = new ProcessTimeEntry(processId, ProcessTimestamp.fromJSON(object.getJSONObject("timestamp")));
+        if(object.getJSONArray("indexTimestamps") != null) {
+            JSONArray indexTimestamps = object.getJSONArray("indexTimestamps");
+            for (int i = 0; i < indexTimestamps.length(); i++) {
+                JSONObject index = indexTimestamps.getJSONObject(i);
+                ProcessTimestamp timestamp = ProcessTimestamp.fromJSON(index.getJSONObject("timestamp"));
+                tracker.indexTimestamps.put(index.getString("indexId"), timestamp);
             }
         }
         return tracker;
     }
 
-    public void merge(ProcessTimeEntry entry2) {
-        this.setTimestamp(ProcessTimestamp.merged(this.getTimestamp(), entry2.getTimestamp()));
+    void merge(ProcessTimeEntry other) {
+        this.setTimestamp(ProcessTimestamp.merged(this.getTimestamp(), other.getTimestamp()));
 
         Map<String, ProcessTimestamp>  mergedTimestamps = new HashMap<>();
         Set<String> indices = new HashSet<>();
         Map<String, ProcessTimestamp> indexTimestamps1 = this.getIndexTimestamps();
-        Map<String, ProcessTimestamp> indexTimestamps2 = entry2.getIndexTimestamps();
+        Map<String, ProcessTimestamp> indexTimestamps2 = other.getIndexTimestamps();
         indices.addAll(indexTimestamps1.keySet());
         indices.addAll(indexTimestamps2.keySet());
 

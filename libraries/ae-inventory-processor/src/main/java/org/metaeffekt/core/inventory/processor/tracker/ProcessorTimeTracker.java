@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report.model.aeaa.processor;
+package org.metaeffekt.core.inventory.processor.tracker;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,10 +25,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -65,8 +62,8 @@ public class ProcessorTimeTracker {
         applyChanges();
     }
 
-    public ProcessTimeEntry getTimestamp(String processId) {
-        return entries.stream().filter(entry -> entry.getProcessId().equals(processId)).findFirst().orElse(null);
+    public ProcessTimeEntry getTimestamp(ProcessId processId) {
+        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElse(null);
     }
 
     private void parse() {
@@ -83,8 +80,8 @@ public class ProcessorTimeTracker {
             }
 
         } catch (Exception e) {
-            log.error("Failed to parse correlation warnings.", e);
-            throw new RuntimeException("Failed to parse correlation warnings from inventory: " + e.getMessage() + "\n" + inventoryInfo.get(TIME_TRACKING_INVENTORY_INFO_COL_KEY), e);
+            log.error("Failed to parse process timestamps.", e);
+            throw new RuntimeException("Failed to parse process timestamps from inventory: " + e.getMessage() + "\n" + inventoryInfo.get(TIME_TRACKING_INVENTORY_INFO_COL_KEY), e);
         }
     }
 
@@ -99,6 +96,16 @@ public class ProcessorTimeTracker {
         inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, jsonArray.toString());
     }
 
+    public JSONArray toJSON(){
+        JSONArray jsonArray = new JSONArray();
+
+        for (ProcessTimeEntry entry : entries) {
+            jsonArray.put(entry.toJSON());
+        }
+
+        return jsonArray;
+    }
+
     public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker processorTimeTracker1, ProcessorTimeTracker processorTimeTracker2) {
         ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
 
@@ -111,22 +118,5 @@ public class ProcessorTimeTracker {
         }
 
         return merged;
-    }
-
-    @AllArgsConstructor
-    public enum ProcessIds{
-        SPDX_IMPORTER("spdx-importer"),
-        CYCLONEDX_IMPORTER("cyclonedx-importer"),
-        SBOM_CREATION("sbom-creation"),
-        INVENTORY_ENRICHMENT("inventory-enrichment"),
-        ADVISOR_PERIODIC_ENRICHMENT("advisor-periodic-enrichment"),
-        INVENTORY_MERGER("inventory-merger"),
-        ;
-
-        final String id;
-
-        public String get(){
-            return id;
-        }
     }
 }

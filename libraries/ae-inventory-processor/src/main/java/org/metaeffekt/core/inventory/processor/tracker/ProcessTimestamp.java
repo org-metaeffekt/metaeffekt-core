@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.metaeffekt.core.inventory.processor.report.model.aeaa.processor;
+package org.metaeffekt.core.inventory.processor.tracker;
 
 import lombok.Getter;
 import org.json.JSONObject;
