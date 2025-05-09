@@ -21,7 +21,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
@@ -30,7 +33,7 @@ public class ProcessTimeTrackerTest {
     Inventory inventory;
 
     @Before
-    public void setUp(){
+    public void setUp() {
         inventory = new Inventory();
         ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
 
@@ -54,7 +57,7 @@ public class ProcessTimeTrackerTest {
     }
 
     @Test
-    public void test001(){
+    public void test001() {
         ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
 
         log.info(String.valueOf(tracker.toJSON()));
@@ -86,9 +89,18 @@ public class ProcessTimeTrackerTest {
         Assert.assertEquals(6, index2.getLast());
 
 
+    }
 
 
+    @Test
+    public void testOutdatedFormat() throws IOException {
+        InventoryReader reader = new InventoryReader();
+        //Inventory with old json format
+        Inventory inv = reader.readInventory(new File("src/test/resources/merged-inventories/outdated-tracker-format/example-0.1.0-merged.xls"));
 
+        //Check if attempting to read or add a timestamp fails
+        ProcessorTimeTracker tracker = new ProcessorTimeTracker(inv);
+        tracker.addTimestamp(new ProcessTimeEntry(ProcessId.SPDX_IMPORTER, 1));
     }
 
 }

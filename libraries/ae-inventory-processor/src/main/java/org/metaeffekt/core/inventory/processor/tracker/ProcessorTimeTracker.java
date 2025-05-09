@@ -45,14 +45,15 @@ public class ProcessorTimeTracker {
         this.inventory = inventory;
         this.inventoryInfo = inventory.findOrCreateInventoryInfo(TIME_TRACKING_INVENTORY_INFO_ROW_KEY);
 
-        parse();
-        applyChanges();
+        if (parse()) {
+            applyChanges();
+        }
     }
 
     public void addTimestamp(ProcessTimeEntry newEntry) {
 
-        for(ProcessTimeEntry entry : entries){
-            if(entry.getProcessId().equals(newEntry.getProcessId())){
+        for (ProcessTimeEntry entry : entries) {
+            if (entry.getProcessId().equals(newEntry.getProcessId())) {
                 entry.merge(newEntry);
                 applyChanges();
                 return;
@@ -66,9 +67,9 @@ public class ProcessorTimeTracker {
         return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElse(null);
     }
 
-    private void parse() {
+    private boolean parse() {
         if (StringUtils.isBlank(inventoryInfo.get(TIME_TRACKING_INVENTORY_INFO_COL_KEY))) {
-            return;
+            return true;
         }
 
         try {
@@ -80,23 +81,28 @@ public class ProcessorTimeTracker {
             }
 
         } catch (Exception e) {
-            log.error("Failed to parse process timestamps.", e);
-            throw new RuntimeException("Failed to parse process timestamps from inventory: " + e.getMessage() + "\n" + inventoryInfo.get(TIME_TRACKING_INVENTORY_INFO_COL_KEY), e);
+            log.warn("Failed to parse process timestamps.", e);
+            return false;
         }
+        return true;
     }
 
 
     public void applyChanges() {
-        JSONArray jsonArray = new JSONArray();
+        try {
+            JSONArray jsonArray = new JSONArray();
 
-        for (ProcessTimeEntry entry : entries) {
-            jsonArray.put(entry.toJSON());
+            for (ProcessTimeEntry entry : entries) {
+                jsonArray.put(entry.toJSON());
+            }
+
+            inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, jsonArray.toString());
+        } catch (Exception e) {
+            log.warn("Failed to add timestamp to time tracker");
         }
-
-        inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, jsonArray.toString());
     }
 
-    public JSONArray toJSON(){
+    JSONArray toJSON() {
         JSONArray jsonArray = new JSONArray();
 
         for (ProcessTimeEntry entry : entries) {
@@ -109,11 +115,11 @@ public class ProcessorTimeTracker {
     public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker processorTimeTracker1, ProcessorTimeTracker processorTimeTracker2) {
         ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
 
-        for(ProcessTimeEntry entry : processorTimeTracker1.getEntries()){
+        for (ProcessTimeEntry entry : processorTimeTracker1.getEntries()) {
             merged.addTimestamp(entry);
         }
 
-        for(ProcessTimeEntry entry : processorTimeTracker2.getEntries()){
+        for (ProcessTimeEntry entry : processorTimeTracker2.getEntries()) {
             merged.addTimestamp(entry);
         }
 
