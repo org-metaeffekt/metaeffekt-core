@@ -63,6 +63,7 @@ public final class Constants {
 
     // Artifact and Asset base keys
     public static final String KEY_ID = "Id";
+    public static final String KEY_NAME = "Name";
     public static final String KEY_ASSET_ID = "Asset Id";
     public static final String KEY_URL = "URL";
     public static final String KEY_VERSION = "Version";
