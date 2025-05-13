@@ -33,7 +33,6 @@ public class ComponentPatternValidator {
 
     private static final Logger LOG = LoggerFactory.getLogger(ComponentPatternValidator.class);
 
-    @Deprecated // may be inline
     public static List<FilePatternQualifierMapper> evaluateComponentPatterns(Inventory referenceInventory, Inventory resultInventory, File baseDir) {
         final DirectoryScanAggregatorConfiguration configuration =
                 new DirectoryScanAggregatorConfiguration(referenceInventory, resultInventory, baseDir);
@@ -46,25 +45,15 @@ public class ComponentPatternValidator {
             final List<FilePatternQualifierMapper> filePatternQualifierMapperList = configuration.mapArtifactsToCoveredFiles();
 
             // build map from qualifiers to file sets
-            final Map<String, FilePatternQualifierMapper> qualifierToMapperMap =
-                    buildQualifierToMapperMap(filePatternQualifierMapperList);
+            final Map<String, FilePatternQualifierMapper> qualifierToMapperMap = buildQualifierToMapperMap(filePatternQualifierMapperList);
 
             // compute duplicate files
-            detectDuplicateFiles(qualifierToMapperMap, filePatternQualifierMapperList);
+            detectDuplicateFiles(qualifierToMapperMap);
 
             return filePatternQualifierMapperList;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static Map<String, Set<File>> buildQualifierToFileSetMap(List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
-        final Map<String, Set<File>> qualifierToComponentPatternFilesMap = new HashMap<>();
-        for (FilePatternQualifierMapper filePatternQualifierMapper : filePatternQualifierMapperList) {
-            final HashSet<File> fileSet = new HashSet<>(filePatternQualifierMapper.getFiles());
-            qualifierToComponentPatternFilesMap.put(filePatternQualifierMapper.getQualifier(), fileSet);
-        }
-        return qualifierToComponentPatternFilesMap;
     }
 
     private static Map<String, FilePatternQualifierMapper> buildQualifierToMapperMap(List<FilePatternQualifierMapper> mapperList) {
@@ -75,8 +64,7 @@ public class ComponentPatternValidator {
         return qualifierToMapperMap;
     }
 
-    private static void detectDuplicateFiles(final Map<String, FilePatternQualifierMapper> qualifierToMapperMap,
-             final List<FilePatternQualifierMapper> filePatternQualifierMapperList) {
+    private static void detectDuplicateFiles(final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
 
         final Set<String> qualifiers = qualifierToMapperMap.keySet();
 
@@ -130,7 +118,7 @@ public class ComponentPatternValidator {
         childOnlyFiles.removeAll(parentFiles);
 
         // process child-level files to identify whether there are files which where explicit excluded on parent-level; these must not contribute to the coverage criteria
-        final Set<File> filesToRemoveFromParent = collectFilesExcludedOnParentLevel(childOnlyFiles, parentQualifier, childQualifier, qualifierToMapperMap);
+        final Set<File> filesToRemoveFromParent = collectFilesExcludedOnParentLevel(childOnlyFiles, parentQualifier, qualifierToMapperMap);
 
         // process childOnlyFiles for shared include patterns
         processSharedIncludePatterns(childOnlyFiles, parentQualifier, duplicateAllowedFiles, qualifierToMapperMap);
@@ -140,20 +128,13 @@ public class ComponentPatternValidator {
         processSharedExcludePatterns(childOnlyFiles, parentQualifier, sharedExcludedFiles, qualifierToMapperMap);
         removeSharedExcludedFiles(parentQualifier, sharedExcludedFiles, qualifierToMapperMap);
 
-        if (LOG.isDebugEnabled()) {
-            // compute complementary sets for debugging purposes
-            final Set<File> parentOnlyFiles = new HashSet<>(parentFiles);
-            parentOnlyFiles.removeAll(childFiles);
-
-        }
-
         // remove the excluded files from the childOnlyFiles; these may obscure that child if fully covered by parent
         childOnlyFiles.removeAll(filesToRemoveFromParent);
 
         // if (intersectionFiles.size() == childFiles.size()) {
         if (childOnlyFiles.isEmpty()) {
             LOG.info("Qualifier [{}] is a full subset of qualifier [{}].", childQualifier, parentQualifier);
-            removeAllFilesFromParent(parentQualifier, childQualifier, parentFiles, childFiles, qualifierToMapperMap);
+            removeAllFilesFromParent(parentQualifier, childQualifier, parentFiles, qualifierToMapperMap);
         }
     }
 
@@ -184,10 +165,10 @@ public class ComponentPatternValidator {
     }
 
     private static Set<File> collectFilesExcludedOnParentLevel(
-            Set<File> removedParentFiles, String parentQualifier, String childQualifier,
+            Set<File> removedParentFiles, String parentQualifier,
             final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
 
-        final Set filesToRemoveFromParent = new HashSet();
+        final Set<File> filesToRemoveFromParent = new HashSet<>();
 
         final FilePatternQualifierMapper parentMapper = qualifierToMapperMap.get(parentQualifier);
 
@@ -257,7 +238,7 @@ public class ComponentPatternValidator {
     }
 
     private static void removeAllFilesFromParent(String parentQualifier, String childQualifier,
-             Collection<File> parentFileSet, Collection<File> childFileSet,
+             Collection<File> childFileSet,
              final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
 
         final FilePatternQualifierMapper parentMapper = qualifierToMapperMap.get(parentQualifier);
@@ -268,9 +249,6 @@ public class ComponentPatternValidator {
             LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
 
             subsetMap.put(childQualifier, new ArrayList<>(childFileSet));
-
-            final Set<File> parentQualifierFileSet = new HashSet<>(parentFileSet);
-            parentQualifierFileSet.removeAll(childFileSet);
 
             final List<File> parentMapperFileList_false = parentMapper.getFileMap().get(false);
             parentMapperFileList_false.removeAll(childFileSet);

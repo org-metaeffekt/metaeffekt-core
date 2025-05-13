@@ -21,8 +21,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class PrepareScanDirectoryCommand {
 
@@ -64,7 +62,7 @@ public class PrepareScanDirectoryCommand {
 
     private String combinePatterns(String[] patterns, String defaultPattern) {
         if (patterns == null) return defaultPattern;
-        return Arrays.stream(patterns).collect(Collectors.joining(","));
+        return String.join(",", patterns);
     }
 
 }

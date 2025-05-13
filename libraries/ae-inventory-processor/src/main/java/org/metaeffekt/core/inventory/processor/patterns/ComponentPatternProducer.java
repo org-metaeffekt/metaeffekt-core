@@ -315,11 +315,6 @@ public class ComponentPatternProducer {
                 final NormalizedPatternSet normalizedIncludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
                 final NormalizedPatternSet normalizedExcludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
 
-                final PatternSetMatcher absoluteIncludesPatternSetMatcher = new PatternSetMatcher(normalizedIncludePattern.absolutePatterns);
-                final PatternSetMatcher relativeIncludedPatternSetMatcher = new PatternSetMatcher(normalizedIncludePattern.relativePatterns);
-                final PatternSetMatcher absoluteExcludesPatternSetMatcher = new PatternSetMatcher(normalizedExcludePattern.absolutePatterns);
-                final PatternSetMatcher relativeExcludesPatternSetMatcher = new PatternSetMatcher(normalizedExcludePattern.relativePatterns);
-
                 boolean matched = false;
 
                 for (final Artifact artifact : inventory.getArtifacts()) {
@@ -328,13 +323,13 @@ public class ComponentPatternProducer {
                     final String absolutePathFromBaseDir = "/" + relativePathFromBaseDir;
 
                     // match absolute exclude first (anchor matched, so we have to check anyway)
-                    if (absoluteExcludesPatternSetMatcher.matches(absolutePathFromBaseDir)) {
+                    if (matches(normalizedExcludePattern.absolutePatterns, absolutePathFromBaseDir)) {
                         // continue without adding since excluded
                         continue;
                     }
 
                     // match absolute include patterns
-                    if (absoluteIncludesPatternSetMatcher.matches(absolutePathFromBaseDir)) {
+                    if (matches(normalizedIncludePattern.absolutePatterns, absolutePathFromBaseDir)) {
                         markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
                         matched = true;
 
@@ -358,8 +353,8 @@ public class ComponentPatternProducer {
                         }
 
                         // match patterns (relative only)
-                        if (!relativeExcludesPatternSetMatcher.matches(relativePathFromComponentBaseDir)) {
-                            if (relativeIncludedPatternSetMatcher.matches(relativePathFromComponentBaseDir)) {
+                        if (!matches(normalizedExcludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
+                            if (matches(normalizedIncludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
                                 markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
                                 matched = true;
                             }
