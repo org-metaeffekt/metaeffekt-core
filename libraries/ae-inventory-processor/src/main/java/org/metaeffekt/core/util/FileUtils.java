@@ -27,10 +27,7 @@ import org.springframework.util.AntPathMatcher;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -132,13 +129,15 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String asRelativePath(String workingDirPath, String filePath) {
-        try {
-            File file = new File(filePath).getCanonicalFile();
-            File workingDirFile = new File(workingDirPath).getCanonicalFile();
-            return asRelativePath(workingDirFile, file);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot compute relative path for " + filePath + ".", e);
-        }
+        File file = new File(FileUtils.canonicalizeLinuxPath(FileUtils.normalizePathToLinux(filePath)));
+        File workingDirFile = new File(FileUtils.canonicalizeLinuxPath(FileUtils.normalizePathToLinux(workingDirPath)));
+        return asRelativePath(workingDirFile, file);
+    }
+
+    public static String asRelativePath(FileRef workingDirPath, FileRef filePath) {
+        File file = new File(FileUtils.canonicalizeLinuxPath(filePath.getPath()));
+        File workingDirFile = new File(FileUtils.canonicalizeLinuxPath(workingDirPath.getPath()));
+        return asRelativePath(workingDirFile, file);
     }
 
     public static String asRelativePath(File workingDirFile, File file) {
@@ -189,20 +188,20 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return relativePath;
     }
 
-
+    // FIXME: further harmonize with PatternSetMatcher; move method; rename to differentiate from PSM.matches()
     public static boolean matches(final String normalizedPattern, final String normalizedPath) {
         if (normalizedPattern == null) return true;
         if (normalizedPath == null) return false;
 
         if (!normalizedPattern.contains(SEPARATOR_COMMA)) {
             final String trimmedPattern = normalizedPattern.trim();
-            return internalMatching(normalizedPath, trimmedPattern);
+            return PatternSetMatcher.internalMatching(normalizedPath, trimmedPattern);
         }
 
         final String[] patterns = normalizedPattern.split(SEPARATOR_COMMA);
         for (final String pattern : patterns) {
             final String trimmedPattern = pattern.trim();
-            if (internalMatching(normalizedPath, trimmedPattern)) {
+            if (PatternSetMatcher.internalMatching(normalizedPath, trimmedPattern)) {
                 return true;
             }
         }
@@ -229,7 +228,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
             // matching absolute path; check whether this is at all needed; i.e. by static defined component patterns
 
             if (!normalizedPath.contains(":")) {
-                final Boolean matched = matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
+                final Boolean matched = PatternSetMatcher.matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
                 if (matched != null) return matched;
             }
 
@@ -247,7 +246,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
                         return normalizedPath.endsWith(subPattern);
                     }
                 } else {
-                    final Boolean matched = matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
+                    final Boolean matched = PatternSetMatcher.matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
                     if (matched != null) return matched;
                 }
             }
@@ -260,27 +259,13 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
     }
 
-    private static Boolean matchStandardPatternAnyFileInPath(String normalizedPath, String normalizedPattern) {
-        if (normalizedPattern.endsWith("/**/*")) {
-            final String subPattern = normalizedPattern.substring(0, normalizedPattern.length() - 4);
-            if (!subPattern.contains("*") && !subPattern.contains(":")) {
-                return normalizedPath.startsWith(subPattern);
-            }
-        }
-
-        // return null to indicate that match was not evaluated
-        return null;
+    public static boolean matches(final Set<String> normalizedPatternSet, final String normalizedPath) {
+        PatternSetMatcher patternSetMatcher = new PatternSetMatcher(normalizedPatternSet);
+        return patternSetMatcher.matches(normalizedPath);
     }
 
-    public static boolean matches(final Set<String> normalizedPatternSet, final String normalizedPath) {
-        if (normalizedPath == null) return false;
-        for (final String pattern : normalizedPatternSet) {
-            final String trimmedPattern = pattern.trim();
-            if (internalMatching(normalizedPath, trimmedPattern)) {
-                return true;
-            }
-        }
-        return false;
+    public static boolean matches(final PatternSetMatcher patternSetMatcher, final String normalizedPath) {
+        return patternSetMatcher.matches(normalizedPath);
     }
 
     public static String[] normalizePatterns(String[] patterns) {
@@ -368,6 +353,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return path;
     }
 
+    @Deprecated // use PatternSetMatcher instead
     public static String[] scanDirectoryForFolders(File targetDir, String... includes) {
         DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(targetDir);
@@ -406,8 +392,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static void createDirectoryContentChecksumFile(File baseDir, File targetContentChecksumFile) throws IOException {
         final StringBuilder checksumSequence = new StringBuilder();
+        
+        // NOTE: could be moved to FileSystemMap; currentl impl may be more efficient
         final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
-
+        // FIXME: we can save the normalizePathToLinux operation when the FileSystemMap could produce FileRef; revise
         Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(fileName -> {
             final File file = new File(baseDir, fileName);
             try {

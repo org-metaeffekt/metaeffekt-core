@@ -17,8 +17,8 @@ package org.metaeffekt.core.inventory.processor.command;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
-import org.apache.tools.ant.taskdefs.Delete;
 import org.apache.tools.ant.types.FileSet;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -44,10 +44,7 @@ public class PrepareScanDirectoryCommand {
 
         // delete scan directory (content is progressively unpacked)
         if (scanDir.exists()) {
-            Delete delete = new Delete();
-            delete.setProject(project);
-            delete.setDir(scanDir);
-            delete.execute();
+            FileUtils.deleteDirectoryQuietly(scanDir);
         }
 
         // ensure scan directory root folder is recreated

@@ -17,12 +17,12 @@ package org.metaeffekt.core.inventory.processor.configuration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryMergeUtils;
-import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.ContributorUtils;
 import org.metaeffekt.core.util.ArchiveUtils;
 import org.metaeffekt.core.util.ArtifactUtils;
+import org.metaeffekt.core.util.FileSystemMap;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +55,8 @@ public class DirectoryScanAggregatorConfiguration {
     }
 
     public List<FilePatternQualifierMapper> mapArtifactsToCoveredFiles() throws IOException {
+        // scan filesystem and create map
+        final FileSystemMap fileSystemMap = FileSystemMap.create(getExtractedFilesBaseDir());
 
         // initialize component pattern and file pattern map
         final Map<String, List<ComponentPatternData>> qualifierToComponentPatternMap = new HashMap<>();
@@ -90,7 +92,9 @@ public class DirectoryScanAggregatorConfiguration {
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
                 final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(
-                        mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper));
+                        mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches,
+                        filePatternQualifierMapper, fileSystemMap));
+
                 filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
 
                 // collect component-pattern-covered files
@@ -115,7 +119,8 @@ public class DirectoryScanAggregatorConfiguration {
     }
 
     private Map<Boolean, List<File>> mapCoveredFilesByDuplicateStatus(Artifact artifact,
-              ComponentPatternMatches componentPatternMatches, FilePatternQualifierMapper filePatternQualifierMapper) {
+              ComponentPatternMatches componentPatternMatches, FilePatternQualifierMapper filePatternQualifierMapper,
+              FileSystemMap fileSystemMap) {
 
         // initialize map
         final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>();
@@ -171,7 +176,8 @@ public class DirectoryScanAggregatorConfiguration {
 
                     // differentiate directories and single files
                     if (componentBaseDir.isDirectory()) {
-                        aggregateComponentFiles(getExtractedFilesBaseDir(), componentBaseDir, includes, excludes, componentPatternCoveredFiles);
+                        aggregateComponentFiles(getExtractedFilesBaseDir(), componentBaseDir, includes, excludes,
+                            componentPatternCoveredFiles, fileSystemMap);
                     } else {
                         // the component pattern matches a single file; this is what we add to the list
                         // TODO: check if we should add symbolic links as well
@@ -184,8 +190,9 @@ public class DirectoryScanAggregatorConfiguration {
         return duplicateToComponentPatternFilesMap;
     }
 
-    private void aggregateComponentFiles(
-            File baseDir, File componentBaseDir, String includes, String excludes, List<File> componentPatternCoveredFiles) {
+    private void aggregateComponentFiles(final File baseDir, final File componentBaseDir,
+            final String includes, final String excludes, final List<File> componentPatternCoveredFiles,
+            final FileSystemMap fileSystemMap) {
 
         // split includes/excludes in relative and absolute paths
         final ComponentPatternProducer.NormalizedPatternSet includePatternSet = ComponentPatternProducer.normalizePattern(includes);
@@ -197,20 +204,22 @@ public class DirectoryScanAggregatorConfiguration {
         int count = 0;
 
         if (!includePatternSet.relativePatterns.isEmpty()) {
+            // extend the patterns to include unwrapped path
             for (String normalizedInclude : new HashSet<>(includePatternSet.relativePatterns)) {
-                String bloatedNormalizedInclude = ContributorUtils.extendArchivePattern(normalizedInclude);
+                final String bloatedNormalizedInclude = ContributorUtils.extendArchivePattern(normalizedInclude);
                 if (bloatedNormalizedInclude == null) {
                     continue;
                 }
                 includePatternSet.relativePatterns.add(bloatedNormalizedInclude);
             }
-            final String[] relativeCoveredFiles = FileUtils.scanDirectoryForFiles(componentBaseDir,
-                    toArray(includePatternSet.relativePatterns), toArray(excludePatternSet.relativePatterns));
+            final String[] relativeCoveredFiles = fileSystemMap.scanDirectoryForFiles(componentBaseDir,
+                    includePatternSet.relativePatterns, excludePatternSet.relativePatterns);
             aggregateFiles(componentBaseDir, relativeCoveredFiles, componentPatternCoveredFiles);
             count += relativeCoveredFiles.length;
         }
 
         if (!relativizedIncludePatterns.isEmpty()) {
+            // extend the patterns to include unwrapped path
             for (String relativeInclude : new HashSet<>(relativizedIncludePatterns)) {
                 String bloatedRelativeInclude = ContributorUtils.extendArchivePattern(relativeInclude);
                 if (bloatedRelativeInclude == null) {
@@ -218,8 +227,10 @@ public class DirectoryScanAggregatorConfiguration {
                 }
                 relativizedIncludePatterns.add(bloatedRelativeInclude);
             }
-            final String[] absoluteCoveredFiles = FileUtils.scanDirectoryForFiles(baseDir,
-                    toArray(relativizedIncludePatterns), toArray(relativizedExcludePatterns));
+
+            final String[] absoluteCoveredFiles = fileSystemMap.scanDirectoryForFiles(baseDir,
+                    relativizedIncludePatterns, relativizedExcludePatterns);
+
             aggregateFiles(baseDir, absoluteCoveredFiles, componentPatternCoveredFiles);
             count += absoluteCoveredFiles.length;
         }
@@ -233,14 +244,11 @@ public class DirectoryScanAggregatorConfiguration {
     private void aggregateFiles(File baseDir, String[] coveredFiles, List<File> componentPatternCoveredFiles) {
         for (String file : coveredFiles) {
             final File srcFile = new File(baseDir, file);
-            // TODO: check if we should add symbolic links as well
-            componentPatternCoveredFiles.add(srcFile);
+            if (!srcFile.isDirectory()) {
+                // TODO: check if we should add symbolic links as well
+                componentPatternCoveredFiles.add(srcFile);
+            }
         }
-    }
-
-    private String[] toArray(Set<String> patternSet) {
-        if (patternSet.isEmpty()) return null;
-        return patternSet.toArray(new String[0]);
     }
 
     private Set<String> relativizePatterns(Set<String> patternSet) {
@@ -425,7 +433,7 @@ public class DirectoryScanAggregatorConfiguration {
                     // copy the file to the tmp folder; use full path from scan
                     final String filePath = FileUtils.canonicalizeLinuxPath(file.getAbsolutePath());
                     final String relativePath = FileUtils.asRelativePath(commonRootPath, filePath);
-                    if (file.exists()) {
+                    if (file.exists() && !file.isDirectory()) {
                         FileUtils.copyFile(file, new File(tmpContentDir, relativePath));
                     }
 
@@ -435,12 +443,12 @@ public class DirectoryScanAggregatorConfiguration {
 
             // in case content was detected we create the content checksum and pack the files into a zip
             if (contentDetected) {
-                final File contentChecksumFile = new File(tmpBaseDir, mapper.getArtifact().getId() + ".content.md5");
+                final File contentChecksumFile = new File(tmpBaseDir, determineArchiveFileName(mapper) + ".content.md5");
                 FileUtils.createDirectoryContentChecksumFile(tmpContentDir, contentChecksumFile);
 
                 // set the content checksum
                 final String contentChecksum = FileUtils.computeChecksum(contentChecksumFile);
-                final File zipFile = new File(targetDir, mapper.getArtifact().getId() + "-" + contentChecksum + ".zip");
+                final File zipFile = new File(targetDir, determineArchiveFileName(mapper) + "-" + contentChecksum + ".zip");
 
                 mapper.getArtifact().set(KEY_CONTENT_CHECKSUM, contentChecksum);
                 mapper.getArtifact().set(KEY_ARCHIVE_PATH, zipFile.getAbsolutePath());
@@ -465,6 +473,21 @@ public class DirectoryScanAggregatorConfiguration {
         }
 
         return coveredArtifacts;
+    }
+
+    private String determineArchiveFileName(FilePatternQualifierMapper mapper) {
+        String id = mapper.getArtifact().getId();
+
+        id = id.replace("..", "_");
+        id = id.replace("/", "_");
+        id = id.replace("\\", "_");
+        id = id.replace(":", "_");
+        id = id.replace(";", "_");
+
+        id = id.replace("._", "_");
+        id = id.replace("_.", "_");
+
+        return id;
     }
 
     private boolean hasSkipAggregationDirective(Artifact artifact) {

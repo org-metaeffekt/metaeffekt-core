@@ -95,8 +95,7 @@ public class ComponentPatternValidator {
 
                 if (rightFiles.isEmpty()) continue;
 
-                final Set<File> intersectionFiles = computeIntersection(leftFiles, rightFiles);
-                if (intersectionFiles.isEmpty()) continue;
+                if (!hasIntersection(leftFiles, rightFiles)) continue;
 
                 // for each tuple both directions are evaluated...
 
@@ -106,10 +105,17 @@ public class ComponentPatternValidator {
         }
     }
 
-    private static Set<File> computeIntersection(Collection<File> leftSet, Collection<File> rightSet) {
-        final Set<File> intersection = new HashSet<>(leftSet);
-        intersection.retainAll(rightSet);
-        return intersection;
+    private static boolean hasIntersection(Collection<File> leftSet, Collection<File> rightSet) {
+        if (leftSet.size() > rightSet.size()) {
+            for (final File file : rightSet) {
+                if (leftSet.contains(file)) return true;
+            }
+        } else {
+            for (final File file : leftSet) {
+                if (rightSet.contains(file)) return true;
+            }
+        }
+        return false;
     }
 
     private static void identifyAndLogSubsets(

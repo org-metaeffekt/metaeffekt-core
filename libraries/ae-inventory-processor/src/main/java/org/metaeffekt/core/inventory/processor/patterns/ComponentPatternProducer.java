@@ -25,6 +25,7 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.*;
 import org.metaeffekt.core.util.FileUtils;
+import org.metaeffekt.core.util.PatternSetMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,6 +315,11 @@ public class ComponentPatternProducer {
                 final NormalizedPatternSet normalizedIncludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
                 final NormalizedPatternSet normalizedExcludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
 
+                final PatternSetMatcher absoluteIncludesPatternSetMatcher = new PatternSetMatcher(normalizedIncludePattern.absolutePatterns);
+                final PatternSetMatcher relativeIncludedPatternSetMatcher = new PatternSetMatcher(normalizedIncludePattern.relativePatterns);
+                final PatternSetMatcher absoluteExcludesPatternSetMatcher = new PatternSetMatcher(normalizedExcludePattern.absolutePatterns);
+                final PatternSetMatcher relativeExcludesPatternSetMatcher = new PatternSetMatcher(normalizedExcludePattern.relativePatterns);
+
                 boolean matched = false;
 
                 for (final Artifact artifact : inventory.getArtifacts()) {
@@ -322,13 +328,13 @@ public class ComponentPatternProducer {
                     final String absolutePathFromBaseDir = "/" + relativePathFromBaseDir;
 
                     // match absolute exclude first (anchor matched, so we have to check anyway)
-                    if (matches(normalizedExcludePattern.absolutePatterns, absolutePathFromBaseDir)) {
+                    if (absoluteExcludesPatternSetMatcher.matches(absolutePathFromBaseDir)) {
                         // continue without adding since excluded
                         continue;
                     }
 
                     // match absolute include patterns
-                    if (matches(normalizedIncludePattern.absolutePatterns, absolutePathFromBaseDir)) {
+                    if (absoluteIncludesPatternSetMatcher.matches(absolutePathFromBaseDir)) {
                         markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
                         matched = true;
 
@@ -352,8 +358,8 @@ public class ComponentPatternProducer {
                         }
 
                         // match patterns (relative only)
-                        if (!matches(normalizedExcludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
-                            if (matches(normalizedIncludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
+                        if (!relativeExcludesPatternSetMatcher.matches(relativePathFromComponentBaseDir)) {
+                            if (relativeIncludedPatternSetMatcher.matches(relativePathFromComponentBaseDir)) {
                                 markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
                                 matched = true;
                             }
