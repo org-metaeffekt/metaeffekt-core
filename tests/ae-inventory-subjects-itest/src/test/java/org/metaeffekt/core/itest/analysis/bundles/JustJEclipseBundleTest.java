@@ -20,11 +20,14 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
+import org.metaeffekt.core.itest.common.predicates.ContainsToken;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +58,9 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
     @Test
     public void inventorize() throws Exception{
         Assert.assertTrue(testSetup.rebuildInventory());
+
+        assertContent();
+
     }
 
     @Test
@@ -98,9 +104,36 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
         Assertions.assertThat(size).isEqualTo(38);
 
-        // FIXME-KKL: with the current process we loose the checksums on the exe files.
-        // FIXME-KKL: verify projects are set correctly after merging PR-188
+        // EXE files
+        final ArtifactList exeArtifactList = analysis.selectArtifacts(ContainsToken.containsToken(ID, ".exe"));
+        exeArtifactList.hasSizeOf(35);
 
+        // check we do not lose the checksums on the exe files.
+        exeArtifactList.filter(a -> a.getChecksum() == null).hasSizeOf(0);
+    }
+    @Test
+
+    public void assertAggregation() throws Exception {
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        final File aggregationTargetDir = new File(testSetup.getInventoryFolder(), "aggregation");
+
+        FileUtils.deleteDirectoryQuietly(aggregationTargetDir);
+
+        final DirectoryScanAggregatorConfiguration aggregatorConfiguration =
+                new DirectoryScanAggregatorConfiguration(testSetup.readReferenceInventory(), testSetup.getInventory(), baseDir);
+
+        aggregatorConfiguration.aggregateFiles(aggregationTargetDir);
+
+        String[] testPaths = new String[] {
+            "javac.exe-5d92e5bee0d30faf2e0d600c5cad98ad.zip",
+            "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar-2759ea96a065ce1874d3f05c47efab3a.zip",
+            "temurin-jdk-17.0.2-63eb88994410d27ccf610e3ae97f3dc9.zip"
+        };
+
+        for (String testPath : testPaths) {
+            File file = new File(aggregationTargetDir, testPath);
+            FileUtils.validateExists(file);
+        }
     }
 
 }

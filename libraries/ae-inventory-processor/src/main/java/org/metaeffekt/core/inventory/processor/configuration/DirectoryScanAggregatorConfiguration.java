@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.configuration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryMergeUtils;
+import org.metaeffekt.core.inventory.processor.filescan.ArtifactFile;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.ContributorUtils;
@@ -31,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator.evaluateComponentPatterns;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
@@ -91,9 +91,8 @@ public class DirectoryScanAggregatorConfiguration {
 
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
-                final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(
-                        mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches,
-                        filePatternQualifierMapper, fileSystemMap));
+                final Map<Boolean, List<File>> booleanListMap = mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper, fileSystemMap);
+                final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(booleanListMap);
 
                 filePatternQualifierMapper.setFileMap(duplicateToComponentPatternFilesMap);
 
@@ -278,8 +277,7 @@ public class DirectoryScanAggregatorConfiguration {
 
                 // also include fallback mapping (in case component name does not match)
                 componentPatternMap.put(deriveFallbackMapQualifier(
-                        cpd.get(COMPONENT_PART),
-                        cpd.get(COMPONENT_VERSION)), list);
+                        cpd.get(COMPONENT_PART), cpd.get(COMPONENT_VERSION)), list);
             }
             list.add(cpd);
         }
@@ -358,8 +356,7 @@ public class DirectoryScanAggregatorConfiguration {
             // post-processing steps
 
             // evaluate component patterns
-            final List<FilePatternQualifierMapper> filePatternQualifierMappers =
-                    evaluateComponentPatterns(referenceInventory, resultInventory, scanBaseDir);
+            final List<FilePatternQualifierMapper> filePatternQualifierMappers = evaluateComponentPatterns();
 
             // aggregate files (atomic and component patterns)
             aggregateFilesForAllArtifacts(scanBaseDir, filePatternQualifierMappers, aggregationDir);
@@ -371,6 +368,7 @@ public class DirectoryScanAggregatorConfiguration {
         // perform aggregation for each map
         final Set<Artifact> coveredArtifacts = new HashSet<>();
         final String canonicalScanBaseDir = FileUtils.canonicalizeLinuxPath(scanBaseDir.getAbsolutePath());
+
         for (FilePatternQualifierMapper mapper : filePatternQualifierMappers) {
             coveredArtifacts.addAll(aggregateFilesForMapper(mapper, canonicalScanBaseDir, targetDir));
         }
@@ -378,11 +376,14 @@ public class DirectoryScanAggregatorConfiguration {
         // copy remaining artifacts not covered by component-patterns to aggregation dir (mapper-independent)
         for (Artifact artifact : resultInventory.getArtifacts()) {
 
+            String guessedFileName = artifact.getId();
+            boolean isUnwrappedWrapped = guessedFileName.toLowerCase(Locale.US).endsWith(".exe");
+
             // skip artifact covered by component patterns
-            if (coveredArtifacts.contains(artifact)) continue;
+            if (coveredArtifacts.contains(artifact) && !isUnwrappedWrapped) continue;
 
             // evaluate directive
-            if (hasSkipAggregationDirective(artifact)) continue;
+            if (hasSkipAggregationDirective(artifact) && !isUnwrappedWrapped) continue;
 
             for (String project : artifact.getRootPaths()) {
                 final File file = new File(scanBaseDir, project);
@@ -406,6 +407,8 @@ public class DirectoryScanAggregatorConfiguration {
         // the checksum must not be included in the archive; separate the two location
         final File tmpBaseDir = FileUtils.initializeTmpFolder(targetDir);
         final File tmpContentDir = new File(tmpBaseDir, "content");
+
+        tmpContentDir.mkdirs();
 
         // FIXME: why isn't that always the mapper.artifact
         final Artifact foundArtifact = resultInventory.getArtifacts().stream()
@@ -431,12 +434,11 @@ public class DirectoryScanAggregatorConfiguration {
                 // add each file to the zip
                 for (File file : files) {
                     // copy the file to the tmp folder; use full path from scan
-                    final String filePath = FileUtils.canonicalizeLinuxPath(file.getAbsolutePath());
+                    final String filePath = FileUtils.normalizePathToLinux(file.getAbsolutePath());
                     final String relativePath = FileUtils.asRelativePath(commonRootPath, filePath);
                     if (file.exists() && !file.isDirectory()) {
                         FileUtils.copyFile(file, new File(tmpContentDir, relativePath));
                     }
-
                     contentDetected = true;
                 }
             }
@@ -593,6 +595,232 @@ public class DirectoryScanAggregatorConfiguration {
                     LOG.warn("Artifact {} with file content does not have an archive path! " +
                             "Validate that the component patterns for this process are complete.", artifact);
                 }
+            }
+        }
+    }
+
+    // the following methods require consolidation
+
+    public List<FilePatternQualifierMapper> evaluateComponentPatterns() {
+        try {
+            // establish qualifier mappers
+            final List<FilePatternQualifierMapper> filePatternQualifierMapperList = mapArtifactsToCoveredFiles();
+
+            // build map from qualifiers to file sets
+            final Map<String, FilePatternQualifierMapper> qualifierToMapperMap = buildQualifierToMapperMap(filePatternQualifierMapperList);
+
+            // manage intersections and overlaps
+            manageIntersectionsAndContainment(qualifierToMapperMap);
+
+            return filePatternQualifierMapperList;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Map<String, FilePatternQualifierMapper> buildQualifierToMapperMap(List<FilePatternQualifierMapper> mapperList) {
+        final Map<String, FilePatternQualifierMapper> qualifierToMapperMap = new HashMap<>();
+        for (FilePatternQualifierMapper mapper : mapperList) {
+            qualifierToMapperMap.put(mapper.getQualifier(), mapper);
+        }
+        return qualifierToMapperMap;
+    }
+
+    public void manageIntersectionsAndContainment(final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        final Set<String> qualifiers = qualifierToMapperMap.keySet();
+
+        for (String leftQualifier : qualifiers) {
+            final FilePatternQualifierMapper leftMapper = qualifierToMapperMap.get(leftQualifier);
+            final List<File> leftFiles = leftMapper.getFiles();
+
+            if (leftFiles.isEmpty()) continue;
+
+            for (final String rightQualifier : qualifiers) {
+                // each pair is processed once
+                if (leftQualifier.equals(rightQualifier)) break;
+
+                final FilePatternQualifierMapper rightMapper = qualifierToMapperMap.get(rightQualifier);
+                final List<File> rightFiles = rightMapper.getFiles();
+
+                if (rightFiles.isEmpty()) continue;
+
+                // we can stop the process in case there is no intersection
+                if (!hasIntersection(leftFiles, rightFiles)) continue;
+
+                // for each tuple both directions are evaluated...
+
+                identifyAndLogSubsets(leftQualifier, rightQualifier, leftFiles, rightFiles, qualifierToMapperMap);
+                identifyAndLogSubsets(rightQualifier, leftQualifier, rightFiles, leftFiles, qualifierToMapperMap);
+            }
+        }
+    }
+
+    private static boolean hasIntersection(Collection<File> leftSet, Collection<File> rightSet) {
+        if (leftSet.size() > rightSet.size()) {
+            for (final File file : rightSet) {
+                if (leftSet.contains(file)) return true;
+            }
+        } else {
+            for (final File file : leftSet) {
+                if (rightSet.contains(file)) return true;
+            }
+        }
+        return false;
+    }
+
+    private static void identifyAndLogSubsets(
+            String parentQualifier, String childQualifier,
+            Collection<File> parentFiles, Collection<File> childFiles,
+            Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        final Set<File> duplicateAllowedFiles = new HashSet<>();
+        final Set<File> sharedExcludedFiles = new HashSet<>();
+
+        final Set<File> childOnlyFiles = new HashSet<>(childFiles);
+        childOnlyFiles.removeAll(parentFiles);
+
+        // process child-level files to identify whether there are files which where explicit excluded on parent-level; these must not contribute to the coverage criteria
+        final Set<File> filesToRemoveFromParent = collectFilesExcludedOnParentLevel(childOnlyFiles, parentQualifier, qualifierToMapperMap);
+
+        // process childOnlyFiles for shared include patterns
+        processSharedIncludePatterns(childOnlyFiles, parentQualifier, duplicateAllowedFiles, qualifierToMapperMap);
+        moveFilesToDuplicateAllowed(parentQualifier, duplicateAllowedFiles, qualifierToMapperMap);
+
+        // process childOnlyFiles for shared exclude patterns
+        processSharedExcludePatterns(childOnlyFiles, parentQualifier, sharedExcludedFiles, qualifierToMapperMap);
+        removeSharedExcludedFiles(parentQualifier, sharedExcludedFiles, qualifierToMapperMap);
+
+        // remove the excluded files from the childOnlyFiles; these may obscure that child if fully covered by parent
+        childOnlyFiles.removeAll(filesToRemoveFromParent);
+
+        // if (intersectionFiles.size() == childFiles.size()) {
+        if (childOnlyFiles.isEmpty()) {
+            LOG.info("Qualifier [{}] is a full subset of qualifier [{}].", childQualifier, parentQualifier);
+            removeAllFilesFromParent(parentQualifier, childQualifier, childFiles, qualifierToMapperMap);
+        }
+    }
+
+    private static void moveFilesToDuplicateAllowed(
+            String qualifier, Set<File> duplicateAllowedFiles,
+            final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        final FilePatternQualifierMapper mapper = qualifierToMapperMap.get(qualifier);
+
+        final Map<Boolean, List<File>> fileMap = mapper.getFileMap();
+        for (final File file : duplicateAllowedFiles) {
+            LOG.info("Moving file [{}] to allowed duplicates for qualifier [{}].", file, qualifier);
+            fileMap.get(false).remove(file);
+            fileMap.computeIfAbsent(true, a -> new ArrayList<>()).add(file);
+        }
+    }
+
+    private static void removeSharedExcludedFiles(String qualifier,
+                                                  Set<File> sharedExcludedFiles,
+                                                  final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        FilePatternQualifierMapper mapper = qualifierToMapperMap.get(qualifier);
+
+        for (File file : sharedExcludedFiles) {
+            mapper.getFileMap().get(false).remove(file);
+            LOG.info("Removing file [{}] from qualifier [{}].", file, qualifier);
+        }
+    }
+
+    private static Set<File> collectFilesExcludedOnParentLevel(
+            Set<File> removedParentFiles, String parentQualifier,
+            final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        final Set<File> filesToRemoveFromParent = new HashSet<>();
+
+        final FilePatternQualifierMapper parentMapper = qualifierToMapperMap.get(parentQualifier);
+
+        for (File file : removedParentFiles) {
+            String normalizedPath = FileUtils.normalizePathToLinux(file);
+            for (ComponentPatternData cpd : parentMapper.getComponentPatternDataList()) {
+                String excludePattern = cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN);
+                if (excludePattern != null && !excludePattern.isEmpty()) {
+                    if (FileUtils.matches(excludePattern, normalizedPath)) {
+                        filesToRemoveFromParent.add(file);
+                    }
+                }
+            }
+        }
+
+        return filesToRemoveFromParent;
+    }
+
+    private static void processSharedIncludePatterns(Set<File> removedParentFiles, String parentQualifier,
+                                                     Set<File> duplicateAllowedFiles,
+                                                     Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        FilePatternQualifierMapper parentMapper = qualifierToMapperMap.get(parentQualifier);
+
+        List<ArtifactFile> sharedIncludePatternFiles = new ArrayList<>();
+        for (File file : removedParentFiles) {
+            String normalizedPath = FileUtils.normalizePathToLinux(file);
+            for (ComponentPatternData cpd : parentMapper.getComponentPatternDataList()) {
+                String sharedIncludePattern = cpd.get(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN);
+                if (sharedIncludePattern != null && !sharedIncludePattern.isEmpty()) {
+                    if (FileUtils.matches(sharedIncludePattern, normalizedPath)) {
+                        // mark the file as allowed for duplicates
+                        duplicateAllowedFiles.add(file);
+                        ArtifactFile artifactFile = new ArtifactFile(file);
+                        artifactFile.addOwningComponent(parentMapper);
+                        sharedIncludePatternFiles.add(artifactFile);
+                    }
+                }
+            }
+            parentMapper.setSharedIncludedPatternFiles(sharedIncludePatternFiles);
+        }
+    }
+
+
+    private static void processSharedExcludePatterns(
+            Set<File> removedParentFiles, String parentQualifier, Set<File> sharedExcludedFiles,
+            final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        FilePatternQualifierMapper parentQualifierMapper = qualifierToMapperMap.get(parentQualifier);
+
+        List<ArtifactFile> sharedExcludePatternFiles = new ArrayList<>();
+        for (File file : removedParentFiles) {
+            String normalizedPath = FileUtils.normalizePathToLinux(file);
+            for (ComponentPatternData cpd : parentQualifierMapper.getComponentPatternDataList()) {
+                String sharedExcludePattern = cpd.get(ComponentPatternData.Attribute.SHARED_EXCLUDE_PATTERN);
+                if (sharedExcludePattern != null && !sharedExcludePattern.isEmpty()) {
+                    if (FileUtils.matches(sharedExcludePattern, normalizedPath)) {
+                        sharedExcludedFiles.add(file);
+                        ArtifactFile artifactFile = new ArtifactFile(file);
+                        artifactFile.addOwningComponent(parentQualifierMapper);
+                        sharedExcludePatternFiles.add(artifactFile);
+                    }
+                }
+            }
+            parentQualifierMapper.setSharedExcludedPatternFiles(sharedExcludePatternFiles);
+        }
+    }
+
+    private static void removeAllFilesFromParent(String parentQualifier, String childQualifier,
+                                                 Collection<File> childFileSet,
+                                                 final Map<String, FilePatternQualifierMapper> qualifierToMapperMap) {
+
+        final FilePatternQualifierMapper parentMapper = qualifierToMapperMap.get(parentQualifier);
+        final FilePatternQualifierMapper childMapper = qualifierToMapperMap.get(childQualifier);
+        final Map<String, List<File>> subsetMap = new HashMap<>();
+
+        if (parentMapper != null) {
+            LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
+
+            subsetMap.put(childQualifier, new ArrayList<>(childFileSet));
+
+            final List<File> parentMapperFileList_false = parentMapper.getFileMap().get(false);
+            parentMapperFileList_false.removeAll(childFileSet);
+
+            parentMapper.setSubSetMap(subsetMap);
+            if (childMapper != null) {
+                final String assetId = "AID-" + parentMapper.getArtifact().getId() + "-" + parentMapper.getArtifact().getChecksum();
+                childMapper.getArtifact().set(assetId, Constants.MARKER_CONTAINS);
+                parentMapper.getArtifact().set(assetId, Constants.MARKER_CROSS);
             }
         }
     }

@@ -32,7 +32,11 @@ public class FileSystemMap {
 
     private FileRef baseDirRef;
 
-    private Map<String, FolderContent> map = new HashMap<>();
+    /**
+     * Maps absolute, normalized paths to {@link FolderContent} instances. The FolderContent contains
+     * details on the files and folders contained.
+     */
+    private Map<String, FolderContent> absolutePathToContentMap = new HashMap<>();
 
     public static FileSystemMap create(final File baseDir) throws IOException {
         final FileSystemMap fileSystemMap = new FileSystemMap();
@@ -41,9 +45,9 @@ public class FileSystemMap {
     }
 
     private void initialize(File baseDir, FileSystemMap fileSystemMap) throws IOException {
-        baseDirRef = new FileRef(baseDir.getAbsoluteFile());
+        this.baseDirRef = new FileRef(baseDir.getAbsoluteFile());
 
-        Files.walkFileTree(baseDir.toPath(), new SimpleFileVisitor<Path>() {
+        Files.walkFileTree(baseDirRef.getFile().toPath(), new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                 return getFileVisitResult(path, attrs);
@@ -55,15 +59,14 @@ public class FileSystemMap {
             }
 
             private FileVisitResult getFileVisitResult(Path path, BasicFileAttributes attrs) {
-                final File parentFile = path.getParent().toFile();
-                final File file = path.toFile();
+                final String normalizedParentPath = normalizePathToLinux(path.getParent().toAbsolutePath().toString());
+                final String normalizedPath = normalizePathToLinux(path.toAbsolutePath().toFile().toString());
+                final String relativePathFromBaseDir = normalizePathToLinux(FileUtils.asRelativePath(baseDirRef.getPath(), normalizedPath));
 
-                final String normalizedParentPath = normalizePathToLinux(parentFile.getAbsolutePath());
-                final String normalizedPath = normalizePathToLinux(file);
-                final String relativePath = normalizePathToLinux(FileUtils.asRelativePath(baseDirRef.getPath(), normalizedPath));
+                validateRelativePath(relativePathFromBaseDir);
 
-                final FolderContent folderContent = fileSystemMap.map.computeIfAbsent(normalizedParentPath, a -> new FolderContent());
-                final FileRef fileRef = new FileRef(relativePath);
+                final FolderContent folderContent = fileSystemMap.absolutePathToContentMap.computeIfAbsent(normalizedParentPath, a -> new FolderContent());
+                final FileRef fileRef = new FileRef(relativePathFromBaseDir);
 
                 if (!".".equals(fileRef.getPath())) {
                     if (attrs.isDirectory()) {
@@ -87,10 +90,17 @@ public class FileSystemMap {
         });
     }
 
-    public String[] scanDirectoryForFiles(File scanBaseDir, Set<String> includes, Set<String> excludes) {
-        final String basePath = normalizePathToLinux(scanBaseDir.getAbsolutePath());
+    private void validateRelativePath(String relativePathFromBaseDir) {
+        if (relativePathFromBaseDir.startsWith("../")) {
+            throw new IllegalStateException();
+        }
+    }
 
-        final FolderContent baseFolderContent = map.get(basePath);
+    public String[] scanDirectoryForFiles(File scanBaseDir, Set<String> includes, Set<String> excludes) {
+        final File absoluteScanBaseDir = scanBaseDir.getAbsoluteFile();
+        final String basePath = normalizePathToLinux(absoluteScanBaseDir.getPath());
+
+        final FolderContent baseFolderContent = absolutePathToContentMap.get(basePath);
         if (baseFolderContent == null) return new String[0];
         if (includes == null || includes.isEmpty()) return new String[0];
 
@@ -105,8 +115,11 @@ public class FileSystemMap {
         PatternSetMatcher includesMatcher = new PatternSetMatcher(includes);
 
         // apply includes
-        List<String> matchedFiles = new ArrayList<>();
-        String relativePath = FileUtils.asRelativePath(baseDirRef.getFile(), scanBaseDir);
+        final List<String> matchedFiles = new ArrayList<>();
+        final String relativePath = FileUtils.asRelativePath(baseDirRef.getFile(), absoluteScanBaseDir);
+
+        validateRelativePath(relativePath);
+
         for (FileRef fileRef : candidatePaths) {
             String path = fileRef.getPath();
             if (path.startsWith(relativePath + "/")) {
@@ -118,7 +131,7 @@ public class FileSystemMap {
         }
 
         /*
-        // DEBUG SUPPORT / COMPARSSION
+        // DEBUG SUPPORT / COMPARISON WITH OLD IMPLEMENTATION
         matchedFiles.sort(String.CASE_INSENSITIVE_ORDER);
         System.out.println("Collected " + new LinkedHashSet<>(matchedFiles));
         final String[] files = FileUtils.scanDirectoryForFiles(scanBaseDir, toArray(includes), toArray(excludes));
@@ -151,7 +164,7 @@ public class FileSystemMap {
                 final String absoluteFolderPath = normalizePathToLinux(new File(this.baseDirRef.getFile(), folderRef.getPath()).getAbsoluteFile());
                 if (!processedPaths.contains(absoluteFolderPath)) {
                     processedPaths.add(absoluteFolderPath);
-                    final FolderContent content = map.get(absoluteFolderPath);
+                    final FolderContent content = absolutePathToContentMap.get(absoluteFolderPath);
                     if (content != null) {
                         unprocessedFolderContentStack.push(content);
                     }
