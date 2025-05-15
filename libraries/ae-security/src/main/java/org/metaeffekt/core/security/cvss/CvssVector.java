@@ -16,11 +16,13 @@
 package org.metaeffekt.core.security.cvss;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.processor.UniversalCvssCalculatorLinkGenerator;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
+import org.metaeffekt.core.security.cvss.v3.Cvss3;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
@@ -108,7 +110,7 @@ public abstract class CvssVector {
      */
     protected abstract void completeVector();
 
-    protected abstract boolean applyVectorArgument(String identifier, String value);
+    public abstract boolean applyVectorArgument(String identifier, String value);
 
     public abstract CvssVectorAttribute getVectorArgument(String identifier);
 
@@ -236,11 +238,13 @@ public abstract class CvssVector {
             start = end;
         }
 
-        completeVector();
+        this.completeVector();
 
         bakedScores = null;
         return appliedCount;
     }
+
+    // SECTION: apply by score change
 
     int applyVectorPartsIf(String vector, Function<CvssVector, Double> scoreType, boolean lower) {
         if (vector == null) return 0;
@@ -281,9 +285,112 @@ public abstract class CvssVector {
             }
         }
 
+        this.completeVector();
+
         bakedScores = null;
         return appliedPartsCount;
     }
+
+    // SECTION: apply by metric
+
+    public interface ApplyMetricsPredicate {
+        boolean apply(CvssVectorAttribute currentAttribute, CvssVectorAttribute unmodifiedAttribute, CvssVectorAttribute modifiedAttribute, CvssVectorAttribute newAttribute, boolean isNewAttributeModified);
+    }
+
+    int applyVectorPartsIfMetric(String vector, ApplyMetricsPredicate predicate) {
+        if (vector == null) return 0;
+
+        final String normalizedVector = normalizeVector(vector);
+        if (normalizedVector.isEmpty()) return 0;
+
+        final String[] arguments = normalizedVector.split("/");
+
+        int appliedPartsCount = 0;
+
+        for (String argument : arguments) {
+            if (StringUtils.isEmpty(argument)) continue;
+            final String[] parts = argument.split(":", 2);
+
+            if (parts.length == 2) {
+                // LOG.info("Checking argument [{}]", argument);
+                final CvssVectorAttribute currentAttribute = this.getVectorArgument(parts[0]);
+
+                final boolean isSetAttributeModified = parts[0].startsWith("M");
+                final CvssVectorAttribute unmodifiedAttribute = isSetAttributeModified ? this.getVectorArgument(parts[0].replaceFirst("M", "")) : currentAttribute;
+                final CvssVectorAttribute modifiedAttribute = isSetAttributeModified ? currentAttribute : this.getVectorArgument("M" + parts[0]);
+
+                this.applyVectorArgument(parts[0], parts[1]);
+                final CvssVectorAttribute newAttribute = this.getVectorArgument(parts[0]);
+
+                if (predicate.apply(currentAttribute, unmodifiedAttribute, modifiedAttribute, newAttribute, isSetAttributeModified)) {
+                    appliedPartsCount++;
+                } else {
+                    this.applyVectorArgument(parts[0], currentAttribute.getShortIdentifier());
+                }
+            } else {
+                LOG.debug("Unknown vector argument: [{}]", argument);
+            }
+        }
+
+        this.completeVector();
+
+        bakedScores = null;
+        return appliedPartsCount;
+    }
+
+    public int applyVectorPartsIfMetricsLower(String vector) {
+        if (vector == null) return 0;
+        return applyVectorPartsIfMetric(vector, (currentAttribute, unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified) -> {
+            final Pair<Integer, Integer> severityOrder = findOldNewSeverityOrder(unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified);
+            return severityOrder.getRight() <= severityOrder.getLeft();
+        });
+    }
+
+    public int applyVectorPartsIfMetricsHigher(String vector) {
+        if (vector == null) return 0;
+        return applyVectorPartsIfMetric(vector, (currentAttribute, unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified) -> {
+            final Pair<Integer, Integer> severityOrder = findOldNewSeverityOrder(unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified);
+            return severityOrder.getRight() >= severityOrder.getLeft();
+        });
+    }
+
+    protected Pair<Integer, Integer> findOldNewSeverityOrder(CvssVectorAttribute unmodifiedAttribute, CvssVectorAttribute modifiedAttribute, CvssVectorAttribute newAttribute, boolean isNewAttributeModified) {
+        // compare either the modified or the unmodified attribute with the new attribute
+        final boolean isModifiedAttributeSet = modifiedAttribute != null && modifiedAttribute.isSet();
+        final CvssVectorAttribute oldAttribute = isModifiedAttributeSet && isNewAttributeModified ? modifiedAttribute : unmodifiedAttribute;
+
+        final int oldSeverity = determineAttributeSeverityOrder(oldAttribute);
+        final int newSeverity = determineAttributeSeverityOrder(newAttribute);
+
+        // LOG.info("Comparing old [{} {}] with new [{} {}]", oldAttribute, oldSeverity, newAttribute, newSeverity);
+
+        return Pair.of(oldSeverity, newSeverity);
+    }
+
+    protected int determineAttributeSeverityOrder(CvssVectorAttribute attribute) {
+        if (attribute == null) return -1;
+
+        if (attribute instanceof Cvss4P0.Cvss4P0Attribute) {
+            for (int i = 0; i < Cvss4P0.ATTRIBUTE_SEVERITY_ORDER.size(); i++) {
+                if (Cvss4P0.ATTRIBUTE_SEVERITY_ORDER.get(i).contains(attribute)) {
+                    // group index as severity order
+                    return i;
+                }
+            }
+        }
+
+        // Handle CVSS 2/3 with their existing logic
+        else if (attribute instanceof Cvss2.Cvss2Attribute) {
+            return Cvss2.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
+        } else if (attribute instanceof Cvss3.Cvss3Attribute) {
+            return Cvss3.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
+        }
+
+        LOG.warn("Unknown attribute type: {}", attribute);
+        return -1;
+    }
+
+    // SECTION: general apply
 
     public int applyVector(CvssVector vector) {
         if (vector == null) return 0;
@@ -377,7 +484,7 @@ public abstract class CvssVector {
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
     public static CvssVector parseVector(String vector) {
-        if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector))) {
+        if (vector == null || StringUtils.isEmpty(vector)) {
             return null;
         }
 
@@ -484,5 +591,10 @@ public abstract class CvssVector {
         String getIdentifier();
 
         String getShortIdentifier();
+
+        boolean isSet();
     }
+
+    public final static String VALUE_NOT_DEFINED = "NOT_DEFINED";
+    public final static String VALUE_NULL = "NULL";
 }
