@@ -96,7 +96,6 @@
                             #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;"))
                             #if ($mappedStatus)
                                 $mappedStatus
-                                <xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
                             #end
                         #else
                           &nbsp;
@@ -117,7 +116,8 @@
                             #end
                         #else
                           &nbsp;
-                        #end                    </entry>
+                        #end
+                    </entry>
                 #end
                     <entry>
                          <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
