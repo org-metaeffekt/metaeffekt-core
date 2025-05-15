@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.report.model.aeaa.processor;
+package org.metaeffekt.core.inventory.processor.tracker;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +24,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -47,22 +45,33 @@ public class ProcessorTimeTracker {
         this.inventory = inventory;
         this.inventoryInfo = inventory.findOrCreateInventoryInfo(TIME_TRACKING_INVENTORY_INFO_ROW_KEY);
 
-        parse();
-        applyChanges();
+        this.parse();
     }
 
-    public void addTimestamp(ProcessTimeEntry entry) {
-        entries.add(entry);
-        applyChanges();
+    public ProcessTimeEntry addTimestamp(ProcessTimeEntry newEntry) {
+        for (ProcessTimeEntry entry : entries) {
+            if (entry.getProcessId().equals(newEntry.getProcessId())) {
+                entry.addAll(newEntry);
+                this.writeBack();
+                return entry;
+            }
+        }
+        entries.add(newEntry);
+        this.writeBack();
+        return newEntry;
     }
 
-    public ProcessTimeEntry getTimestamp(String processId) {
-        return entries.stream().filter(entry -> entry.getProcessId().equals(processId)).findFirst().orElse(null);
+    public ProcessTimeEntry getTimestamp(ProcessId processId) {
+        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElse(null);
     }
 
-    private void parse() {
+    public ProcessTimeEntry getOrCreateTimestamp(ProcessId processId, long creationTimestamp) {
+        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElseGet(() -> addTimestamp(new ProcessTimeEntry(processId, creationTimestamp)));
+    }
+
+    private boolean parse() {
         if (StringUtils.isBlank(inventoryInfo.get(TIME_TRACKING_INVENTORY_INFO_COL_KEY))) {
-            return;
+            return true;
         }
 
         try {
@@ -70,48 +79,34 @@ public class ProcessorTimeTracker {
 
             for (int i = 0; i < json.length(); i++) {
                 final JSONObject object = json.getJSONObject(i);
-                entries.add(ProcessTimeEntry.fromJSON(object));
+                entries.add(ProcessTimeEntry.fromJson(object));
             }
-
         } catch (Exception e) {
-            log.error("Failed to parse correlation warnings.", e);
-            throw new RuntimeException("Failed to parse correlation warnings from inventory: " + e.getMessage() + "\n" + inventoryInfo.get(TIME_TRACKING_INVENTORY_INFO_COL_KEY), e);
+            log.warn("Failed to parse process timestamps: {}", e.getMessage(), e);
+            return false;
+        }
+
+        return true;
+    }
+
+    public void writeBack() {
+        try {
+            inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, toJson().toString());
+        } catch (Exception e) {
+            log.warn("Failed to add timestamp to time tracker");
         }
     }
 
-
-    public void applyChanges() {
-        JSONArray jsonArray = new JSONArray();
-
-        for (ProcessTimeEntry entry : entries) {
-            jsonArray.put(entry.toJSON());
-        }
-
-        inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, jsonArray.toString());
+    public JSONArray toJson() {
+        return new JSONArray(entries.stream().map(ProcessTimeEntry::toJson).collect(Collectors.toList()));
     }
 
-    public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker processorTimeTracker1, ProcessorTimeTracker processorTimeTracker2) {
-        ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
-        List<ProcessTimeEntry> mergedEntries = new ArrayList<>();
+    public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker tracker1, ProcessorTimeTracker tracker2) {
+        final ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
 
+        tracker1.getEntries().forEach(merged::addTimestamp);
+        tracker2.getEntries().forEach(merged::addTimestamp);
 
-        Set<String> processes = new HashSet<>();
-        processes.addAll(processorTimeTracker1.getEntries().stream().map(ProcessTimeEntry::getProcessId).collect(Collectors.toSet()));
-        processes.addAll(processorTimeTracker2.getEntries().stream().map(ProcessTimeEntry::getProcessId).collect(Collectors.toSet()));
-
-        for (String processId : processes) {
-            ProcessTimeEntry entry1 = processorTimeTracker1.getTimestamp(processId);
-            ProcessTimeEntry entry2 = processorTimeTracker2.getTimestamp(processId);
-            if (entry1 == null){
-                mergedEntries.add(entry2);
-            } else if (entry2 == null) {
-                mergedEntries.add(entry1);
-            } else {
-                mergedEntries.add(ProcessTimeEntry.merge(entry1, entry2));
-            }
-        }
-        merged.getEntries().addAll(mergedEntries);
         return merged;
     }
-
 }
