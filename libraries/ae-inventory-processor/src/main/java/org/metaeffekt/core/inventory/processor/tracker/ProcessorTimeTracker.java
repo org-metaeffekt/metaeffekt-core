@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.tracker;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -26,6 +25,7 @@ import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -45,26 +45,28 @@ public class ProcessorTimeTracker {
         this.inventory = inventory;
         this.inventoryInfo = inventory.findOrCreateInventoryInfo(TIME_TRACKING_INVENTORY_INFO_ROW_KEY);
 
-        if (parse()) {
-            applyChanges();
-        }
+        this.parse();
     }
 
-    public void addTimestamp(ProcessTimeEntry newEntry) {
-
+    public ProcessTimeEntry addTimestamp(ProcessTimeEntry newEntry) {
         for (ProcessTimeEntry entry : entries) {
             if (entry.getProcessId().equals(newEntry.getProcessId())) {
-                entry.merge(newEntry);
-                applyChanges();
-                return;
+                entry.addAll(newEntry);
+                this.writeBack();
+                return entry;
             }
         }
         entries.add(newEntry);
-        applyChanges();
+        this.writeBack();
+        return newEntry;
     }
 
     public ProcessTimeEntry getTimestamp(ProcessId processId) {
         return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElse(null);
+    }
+
+    public ProcessTimeEntry getOrCreateTimestamp(ProcessId processId, long creationTimestamp) {
+        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElseGet(() -> addTimestamp(new ProcessTimeEntry(processId, creationTimestamp)));
     }
 
     private boolean parse() {
@@ -77,51 +79,33 @@ public class ProcessorTimeTracker {
 
             for (int i = 0; i < json.length(); i++) {
                 final JSONObject object = json.getJSONObject(i);
-                entries.add(ProcessTimeEntry.fromJSON(object));
+                entries.add(ProcessTimeEntry.fromJson(object));
             }
-
         } catch (Exception e) {
-            log.warn("Failed to parse process timestamps.", e);
+            log.warn("Failed to parse process timestamps: {}", e.getMessage(), e);
             return false;
         }
+
         return true;
     }
 
-
-    public void applyChanges() {
+    public void writeBack() {
         try {
-            JSONArray jsonArray = new JSONArray();
-
-            for (ProcessTimeEntry entry : entries) {
-                jsonArray.put(entry.toJSON());
-            }
-
-            inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, jsonArray.toString());
+            inventoryInfo.set(TIME_TRACKING_INVENTORY_INFO_COL_KEY, toJson().toString());
         } catch (Exception e) {
             log.warn("Failed to add timestamp to time tracker");
         }
     }
 
-    JSONArray toJSON() {
-        JSONArray jsonArray = new JSONArray();
-
-        for (ProcessTimeEntry entry : entries) {
-            jsonArray.put(entry.toJSON());
-        }
-
-        return jsonArray;
+    public JSONArray toJson() {
+        return new JSONArray(entries.stream().map(ProcessTimeEntry::toJson).collect(Collectors.toList()));
     }
 
-    public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker processorTimeTracker1, ProcessorTimeTracker processorTimeTracker2) {
-        ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
+    public static ProcessorTimeTracker merge(Inventory inventory, ProcessorTimeTracker tracker1, ProcessorTimeTracker tracker2) {
+        final ProcessorTimeTracker merged = new ProcessorTimeTracker(inventory);
 
-        for (ProcessTimeEntry entry : processorTimeTracker1.getEntries()) {
-            merged.addTimestamp(entry);
-        }
-
-        for (ProcessTimeEntry entry : processorTimeTracker2.getEntries()) {
-            merged.addTimestamp(entry);
-        }
+        tracker1.getEntries().forEach(merged::addTimestamp);
+        tracker2.getEntries().forEach(merged::addTimestamp);
 
         return merged;
     }

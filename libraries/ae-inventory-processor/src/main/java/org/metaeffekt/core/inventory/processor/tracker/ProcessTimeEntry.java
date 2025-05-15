@@ -21,9 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -46,41 +44,39 @@ public class ProcessTimeEntry {
     }
 
     public void addIndexTimestamp(String indexId, long lastChecked) {
-        if(indexTimestamps.containsKey(indexId)){
-            ProcessTimestamp indexStamp = indexTimestamps.get(indexId);
-            indexStamp.addTimestamp(lastChecked);
+        if (indexTimestamps.containsKey(indexId)) {
+            indexTimestamps.get(indexId).addTimestamp(lastChecked);
         } else {
             indexTimestamps.put(indexId, new ProcessTimestamp(lastChecked));
         }
     }
 
-     JSONObject toJSON() {
-        JSONObject object = new JSONObject();
-        object.put("processId", processId);
-        object.put("timestamp", timestamp.toJson());
-        JSONArray indexes = new JSONArray();
+    public JSONObject toJson() {
+        final JSONObject json = new JSONObject()
+                .put("processId", processId)
+                .put("timestamp", timestamp.toJson());
+        final JSONArray indexes = new JSONArray();
         for (Map.Entry<String, ProcessTimestamp> entry : indexTimestamps.entrySet()) {
-            JSONObject index = new JSONObject();
-            index.put("indexId", entry.getKey());
-            index.put("timestamp", entry.getValue().toJson());
-            indexes.put(index);
+            indexes.put(new JSONObject()
+                    .put("indexId", entry.getKey())
+                    .put("timestamp", entry.getValue().toJson()));
         }
-        object.put("indexTimestamps", indexes);
-        return object;
+        json.put("indexTimestamps", indexes);
+        return json;
     }
 
-    static ProcessTimeEntry fromJSON(JSONObject object) {
-        String processIdString = object.getString("processId");
-        ProcessId processId;
-        try{
+    public static ProcessTimeEntry fromJson(JSONObject json) {
+        final String processIdString = json.getString("processId");
+        final ProcessId processId;
+        try {
             processId = ProcessId.fromText(processIdString);
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             throw new RuntimeException(String.format("Process Id [%s] is not recognized", processIdString));
         }
 
-        ProcessTimeEntry tracker = new ProcessTimeEntry(processId, ProcessTimestamp.fromJSON(object.getJSONObject("timestamp")));
-        if(object.getJSONArray("indexTimestamps") != null) {
-            JSONArray indexTimestamps = object.getJSONArray("indexTimestamps");
+        final ProcessTimeEntry tracker = new ProcessTimeEntry(processId, ProcessTimestamp.fromJSON(json.getJSONObject("timestamp")));
+        if (json.getJSONArray("indexTimestamps") != null) {
+            final JSONArray indexTimestamps = json.getJSONArray("indexTimestamps");
             for (int i = 0; i < indexTimestamps.length(); i++) {
                 JSONObject index = indexTimestamps.getJSONObject(i);
                 ProcessTimestamp timestamp = ProcessTimestamp.fromJSON(index.getJSONObject("timestamp"));
@@ -90,25 +86,13 @@ public class ProcessTimeEntry {
         return tracker;
     }
 
-    void merge(ProcessTimeEntry other) {
+    public void addAll(ProcessTimeEntry other) {
         this.setTimestamp(ProcessTimestamp.merged(this.getTimestamp(), other.getTimestamp()));
 
-        Map<String, ProcessTimestamp>  mergedTimestamps = new HashMap<>();
-        Set<String> indices = new HashSet<>();
-        Map<String, ProcessTimestamp> indexTimestamps1 = this.getIndexTimestamps();
-        Map<String, ProcessTimestamp> indexTimestamps2 = other.getIndexTimestamps();
-        indices.addAll(indexTimestamps1.keySet());
-        indices.addAll(indexTimestamps2.keySet());
-
-        for(String index : indices) {
-            if(!indexTimestamps1.containsKey(index)) {
-                mergedTimestamps.put(index, indexTimestamps2.get(index));
-            } else if (!indexTimestamps2.containsKey(index)) {
-                mergedTimestamps.put(index, indexTimestamps1.get(index));
-            } else {
-                mergedTimestamps.put(index, ProcessTimestamp.merged(indexTimestamps1.get(index), indexTimestamps2.get(index)));
-            }
-        }
+        final Map<String, ProcessTimestamp> mergedTimestamps = new HashMap<>(other.getIndexTimestamps());
+        this.indexTimestamps.forEach((key, value) ->
+                mergedTimestamps.merge(key, value, ProcessTimestamp::merged)
+        );
 
         this.setIndexTimestamps(mergedTimestamps);
     }

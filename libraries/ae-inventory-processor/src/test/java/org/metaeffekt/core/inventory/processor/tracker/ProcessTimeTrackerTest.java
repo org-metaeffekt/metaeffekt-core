@@ -30,18 +30,17 @@ import java.util.Map;
 @Slf4j
 public class ProcessTimeTrackerTest {
 
-    Inventory inventory;
+    private Inventory inventory;
 
     @Before
     public void setUp() {
         inventory = new Inventory();
-        ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
-
+        final ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
 
         tracker.addTimestamp(new ProcessTimeEntry(ProcessId.SBOM_CREATION, 1));
         tracker.addTimestamp(new ProcessTimeEntry(ProcessId.SPDX_IMPORTER, 10));
 
-        ProcessTimeEntry processTimeEntry1 = new ProcessTimeEntry(ProcessId.INVENTORY_ENRICHMENT, 11);
+        final  ProcessTimeEntry processTimeEntry1 = new ProcessTimeEntry(ProcessId.INVENTORY_ENRICHMENT, 11);
         processTimeEntry1.addIndexTimestamp("index1", 1);
         processTimeEntry1.addIndexTimestamp("index2", 3);
         processTimeEntry1.addIndexTimestamp("index1", 5);
@@ -49,18 +48,16 @@ public class ProcessTimeTrackerTest {
 
         tracker.addTimestamp(processTimeEntry1);
 
-        ProcessTimeEntry processTimeEntry2 = new ProcessTimeEntry(ProcessId.INVENTORY_ENRICHMENT, 12);
+        final ProcessTimeEntry processTimeEntry2 = new ProcessTimeEntry(ProcessId.INVENTORY_ENRICHMENT, 12);
         processTimeEntry2.addIndexTimestamp("index2", 6);
 
         tracker.addTimestamp(processTimeEntry2);
-
     }
 
     @Test
     public void test001() {
-        ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
-
-        log.info(String.valueOf(tracker.toJSON()));
+        final ProcessorTimeTracker tracker = new ProcessorTimeTracker(inventory);
+        log.info(String.valueOf(tracker.toJson()));
 
         Assert.assertEquals(3, tracker.getEntries().size());
 
@@ -87,20 +84,16 @@ public class ProcessTimeTrackerTest {
         ProcessTimestamp index2 = indexStamps.get("index2");
         Assert.assertEquals(3, index2.getFirst());
         Assert.assertEquals(6, index2.getLast());
-
-
     }
-
 
     @Test
     public void testOutdatedFormat() throws IOException {
         InventoryReader reader = new InventoryReader();
-        //Inventory with old json format
+        // inventory with old json format
         Inventory inv = reader.readInventory(new File("src/test/resources/merged-inventories/outdated-tracker-format/example-0.1.0-merged.xls"));
 
-        //Check if attempting to read or add a timestamp fails
+        // check if attempting to read or add a timestamp fails
         ProcessorTimeTracker tracker = new ProcessorTimeTracker(inv);
         tracker.addTimestamp(new ProcessTimeEntry(ProcessId.SPDX_IMPORTER, 1));
     }
-
 }
