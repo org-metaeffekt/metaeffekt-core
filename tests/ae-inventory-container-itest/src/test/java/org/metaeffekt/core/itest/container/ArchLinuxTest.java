@@ -88,9 +88,10 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
         final Inventory inventory = AbstractCompositionAnalysisTest.testSetup.getInventory();
         final Inventory referenceInventory = AbstractCompositionAnalysisTest.testSetup.readReferenceInventory();
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
-        List<FilePatternQualifierMapper> filePatternQualifierMapperList =
+
+        final List<FilePatternQualifierMapper> filePatternQualifierMapperList =
                 evaluateComponentPatterns(referenceInventory, inventory, baseDir);
-        DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
+        final DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
 
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release", "issue");
 

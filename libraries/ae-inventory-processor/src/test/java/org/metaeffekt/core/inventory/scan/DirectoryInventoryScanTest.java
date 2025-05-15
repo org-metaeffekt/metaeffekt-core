@@ -81,8 +81,7 @@ public class DirectoryInventoryScanTest {
 
         assertThat(resultInventory.findArtifact("test-alpha-1.0.0.jar")).isNotNull();
 
-        // most primitive test on DirectoryScanAggregatorConfiguration
-        DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
+        final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
                 new DirectoryScanAggregatorConfiguration(referenceInventory, resultInventory, scanDir);
 
         final List<FilePatternQualifierMapper> filePatternQualifierMappers =
@@ -203,13 +202,24 @@ public class DirectoryInventoryScanTest {
         assertThat(inventory.getAssetMetaData().size()).isEqualTo(1);
 
         new InventoryWriter().writeInventory(inventory, new File("target/linux-distro-001.xls"));
-
     }
+
+    @Test
+    public void testScan_NPM() throws IOException {
+        final File scanInputDir = new File("src/test/resources/component-pattern-contributor/npm-005");
+        final File scanDir = new File("target/scan/npm-005");
+
+        final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
+        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+        new InventoryWriter().writeInventory(inventory, new File("target/npm-005.xls"));
+
+        Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(225);
+    }
+
 
     @Ignore
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
-
         // inputs
         final File scanInputDir = new File("<path-to-input>");
         final File scanDir = new File("<path-to-scan>");
@@ -225,6 +235,32 @@ public class DirectoryInventoryScanTest {
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
         new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
 
+   //     aggregateInventory(inventory, referenceInventoryDir, targetScanInventoryFile, scanDir, targetAggregationDir, targetAggregationInventoryFile);
+    }
+
+    @Ignore
+    @Test
+    public void testScanExtractedFiles_ExternalNG_Aggregate() throws IOException {
+        // inputs
+        final File scanDir = new File("<path-to-scan>");
+
+        // other sources
+        final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
+
+        // outputs
+        final File targetScanInventoryFile = new File("target/scan-inventory.xlsx");
+        final File targetAggregationDir = new File("target/aggregation");
+        final File targetAggregationInventoryFile = new File("target/aggregated-inventory.xlsx");
+
+        aggregateArchives(targetScanInventoryFile, referenceInventoryDir, scanDir, targetAggregationDir, targetAggregationInventoryFile);
+    }
+
+    private void aggregateArchives(File targetScanInventoryFile, File referenceInventoryDir, File scanDir, File targetAggregationDir, File targetAggregationInventoryFile) throws IOException {
+        final Inventory inventory = new InventoryReader().readInventory(targetScanInventoryFile);
+        aggregateInventory(inventory, referenceInventoryDir, targetScanInventoryFile, scanDir, targetAggregationDir, targetAggregationInventoryFile);
+    }
+
+    private void aggregateInventory(Inventory inventory, File referenceInventoryDir, File targetScanInventoryFile, File scanDir, File targetAggregationDir, File targetAggregationInventoryFile) throws IOException {
         for (Artifact artifact : inventory.getArtifacts()) {
             final String pathInAsset = artifact.get(Artifact.Attribute.PATH_IN_ASSET);
             if (StringUtils.isBlank(pathInAsset)) {

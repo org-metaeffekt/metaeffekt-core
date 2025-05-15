@@ -25,6 +25,7 @@ import java.io.File;
  * The implementation does explicitly not canonicalize the path.
  */
 public class FileRef {
+
     /**
      * The file of the references.
      */
