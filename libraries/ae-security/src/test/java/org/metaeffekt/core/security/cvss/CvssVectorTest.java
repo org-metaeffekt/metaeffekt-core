@@ -248,4 +248,12 @@ public class CvssVectorTest {
         gen.addVector(result, "result", true);
         return gen;
     }
+
+    @Test
+    public void vectorVersionTest() {
+        Assert.assertEquals("CVSS:3.0", Cvss3P0.getVersionName());
+        Assert.assertEquals("CVSS:3.0", new Cvss3P0().getName());
+        Assert.assertEquals("CVSS:3.1", Cvss3P1.getVersionName());
+        Assert.assertEquals("CVSS:3.1", new Cvss3P1().getName());
+    }
 }
