@@ -22,6 +22,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.PodResource;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +31,7 @@ import java.util.UUID;
  * Abstracts an "environment for running commands in".
  * <br>
  * Must guarantee that the environment doesn't change erratically between commands unless modified by the commands
- * themselves.
+ * themselves. Therefore we maintain a dependency on a single pod / container.
  */
 @SuppressWarnings("unused")
 public class KubernetesCommandExecutor implements AutoCloseable {
@@ -105,7 +106,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
         return getPod(client, namespaceName, imageIdentifier, UUID.randomUUID(), envVars);
     }
 
-    // TODO: support proxying pods for internet access
+    // TODO: consider a mode for running pods behind VPN for internet access?
     /**
      * Helper method for ensuring correct pod creation.
      *
@@ -189,6 +190,18 @@ public class KubernetesCommandExecutor implements AutoCloseable {
      */
     public boolean downloadFile(String pathInContainer, Path destination) {
         return client.pods().resource(reservedPod).file(pathInContainer).copy(destination);
+    }
+
+    public InputStream readFile(String pathInContainer) {
+        return client.pods().resource(reservedPod).file(pathInContainer).read();
+    }
+
+    public boolean uploadFile(InputStream input, String pathInContainer) {
+        return client.pods().resource(reservedPod).file(pathInContainer).upload(input);
+    }
+
+    public boolean isClosed() {
+        return closed;
     }
 
     @Override
