@@ -512,6 +512,8 @@ public abstract class CvssVector {
 
             if (vector.startsWith("CVSS:")) {
                 LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Unable to parse non-CVSS vector string [{}]", vector);
             }
 
             return null;
