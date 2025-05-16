@@ -507,7 +507,6 @@ public abstract class CvssVector {
             return new Cvss3P0(vector);
         } else if (vector.startsWith("CVSS:4.0")) {
             return new Cvss4P0(vector);
-
         } else {
             final Cvss2 potentialCvss2Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss2::new);
             if (potentialCvss2Vector != null) {
@@ -524,7 +523,12 @@ public abstract class CvssVector {
                 return potentialCvss4P0Vector;
             }
 
-            LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            if (vector.startsWith("CVSS:")) {
+                LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Unable to parse non-CVSS vector string [{}]", vector);
+            }
+
             return null;
         }
     }
