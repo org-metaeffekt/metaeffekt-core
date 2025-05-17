@@ -3,7 +3,7 @@
 <bookmap id="map_document">
 
     #foreach($bookMap in $partBookMaps)
-        <topicref href="$bookMap" format="ditamap" />
+        <topicref href="parts/$bookMap" format="ditamap" />
     #end
 
 </bookmap>

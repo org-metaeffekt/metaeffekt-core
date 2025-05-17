@@ -47,7 +47,6 @@ public class InventoryMergeUtilsTest {
 
     @Test
     public void emptyInventories() {
-
         Inventory source = new Inventory();
         Inventory target = new Inventory();
         List<Inventory> sourceInventories = Collections.singletonList(source);

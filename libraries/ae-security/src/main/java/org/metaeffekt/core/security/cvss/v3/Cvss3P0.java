@@ -71,4 +71,13 @@ public final class Cvss3P0 extends Cvss3 {
         }
         return Optional.of(new Cvss3P0(vector));
     }
+
+    public static String getVersionName() {
+        return "CVSS:3.0";
+    }
+
+    @Override
+    public String getName() {
+        return Cvss3P0.getVersionName();
+    }
 }

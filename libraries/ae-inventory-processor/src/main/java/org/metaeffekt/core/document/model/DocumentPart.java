@@ -64,6 +64,10 @@ public class DocumentPart {
         if (identifier == null || identifier.isEmpty()) {
             throw new IllegalStateException("The identifier of a part must be specified.");
         }
+        // check if the identifier is valid for file naming
+        if (!identifier.matches("^[a-zA-Z0-9_-]+$")) {
+            throw new IllegalStateException("The identifier '" + identifier + "' contains invalid characters. Only alphanumeric characters, hyphens, and underscores are allowed.");
+        }
         // check if document type is set
         if (documentPartType == null) {
             throw new IllegalStateException("The part type must be specified.");

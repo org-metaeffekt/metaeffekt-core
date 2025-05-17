@@ -53,7 +53,12 @@
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity</artifactId>
             <scope>compile</scope>
-            <!-- velocity 1.x depends on commons-collections 3.2.1. could we update or make it use 3.2.2 instead? -->
+        </dependency>
+        <dependency>
+            <!-- patch commons collections to the latest compatible version; required by velocity -->
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>

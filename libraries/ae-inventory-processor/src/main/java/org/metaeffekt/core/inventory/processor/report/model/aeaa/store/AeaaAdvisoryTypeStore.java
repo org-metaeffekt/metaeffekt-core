@@ -279,7 +279,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_USN =
             createOsvIdentifier("USN", "Ubuntu Security Notices",
-                    Pattern.compile("((USN)|(UBUNTU-CVE))-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
+                    Pattern.compile("((LSN)|(USN)|(UBUNTU-CVE))-\\d{4}-\\d+", Pattern.CASE_INSENSITIVE));
 
     /**
      * Advisory IDs from the <b>Chainguard Security Notices</b>.
