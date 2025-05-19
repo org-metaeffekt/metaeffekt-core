@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.report.adapter;
 
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.model.License;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.LicenseData;
@@ -29,6 +30,7 @@ public class InventoryReportAdapter {
 
     private Inventory inventory;
 
+    private List<LicenseData> licenseDataList;
     /**
      * List to cover artifacts without license.
      */
@@ -36,6 +38,7 @@ public class InventoryReportAdapter {
 
     public InventoryReportAdapter(Inventory inventory) {
         this.inventory = inventory;
+        this.licenseDataList = inventory.getLicenseData();
 
         evaluateArtifactsWithoutLicense();
     }
@@ -103,4 +106,13 @@ public class InventoryReportAdapter {
         return termsCategorization;
     }
 
+    public boolean isRepresentedLicense(String licenseName) {
+        for (LicenseData licenseData : licenseDataList) {
+            if (licenseName.equals(licenseData.get(LicenseData.Attribute.REPRESENTED_AS))
+                    && !licenseName.equals(licenseData.get(LicenseData.Attribute.CANONICAL_NAME))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

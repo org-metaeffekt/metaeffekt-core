@@ -1,4 +1,4 @@
-#macro (insertLicenseTable $id $title $licenseList $handleSubstructure)
+#macro (insertLicenseTable $topicId $id $title $licenseList $forAssets)
 <table id="$id">
     <title>$title$reportContext.withTitle()</title>
     #if($configParams.enableOpenCodeStatus)
@@ -33,20 +33,16 @@
         </thead>
     #end
     #set($osiStatusMap = $assetAdapter.getOsiStatusMap($configParams))
-    #set($openCoDEStatusMap = {
-        "approved" : "yes",
-        "(approved)" : "(yes)",
-        "not approved" : "no"
-    })
+    #set($openCoDEStatusMap = $assetAdapter.getOpenCodeStatusMap($configParams))
     <tbody>
         #foreach($license in $licenseList)
-            #if (!$license.contains(" + "))
-                #set($licenseData=$inventory.findMatchingLicenseData($license))
+            #if(!$license.contains("+"))
+            #set($licenseData=$inventory.findMatchingLicenseData($license))
             <row>
-                #if ($handleSubstructure && $assetData.isLicenseSubstructureRequired($license))
+                #if ($inventoryReportAdapter.isRepresentedLicense($license))
                     <entry>
                         <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                            $report.xmlEscapeLicense($license)<xref href="#$topicId/represented-licenses-fn" type="fn"/>
                         </xref>
                     </entry>
                     <entry>
@@ -60,7 +56,7 @@
                         #if ($licenseData)
                             #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
                             #if ($mappedStatus)
-                                $mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-opencode-similar" type="fn"/>
+                                $mappedStatus<xref href="#$topicId/represented-licenses-fn" type="fn"/>
                             #end
                         #else
                             &nbsp;
@@ -71,7 +67,7 @@
                             #if ($licenseData)
                                 #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
                                 #if ($mappedStatus)
-                                    $mappedStatus<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                    $mappedStatus<xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
                                 #end
                             #else
                                 &nbsp;
@@ -106,7 +102,11 @@
                 #end
                 <entry>
                     <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                        <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, $handleSubstructure)</codeph>
+                        #if($forAssets)
+                            <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
+                        #else
+                            <codeph>$inventory.countComponents($license)</codeph>
+                        #end
                     </xref>
                 </entry>
             </row>

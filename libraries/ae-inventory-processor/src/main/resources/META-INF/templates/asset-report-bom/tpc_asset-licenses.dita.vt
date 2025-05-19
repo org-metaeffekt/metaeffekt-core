@@ -11,14 +11,14 @@
     <p>$utils.getText("asset-report-bom.asset-table-descr")</p>
     <p>$utils.getText("asset-report-bom.asset-table-note")</p>
         #if ($assetData.isLicenseSubstructureRequired())
-            $utils.getText("asset-report-bom.asset-table-foot-note")
+            <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>
         #end
-        #if ($assetData.isIncludesOpenCoDESimilarLicense())
-        <fn id="id-opencode-similar">$utils.getText("asset-report-bom.open-code-similar")</fn>
+        #if ($configParams.isEnableOpenCodeStatus())
+        <fn id="id-opencode-similar-fn">$utils.getText("general.open-code-footnote")</fn>
         #end
 
 #if (!$singleLicenses.isEmpty())
-    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true)
+    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", "AssociatedLicenses", "Asset Licenses", $singleLicenses, true)
 #end
 
     #if (!$licenseExpressions.isEmpty())
@@ -41,7 +41,7 @@
                                 #if ($assetData.isLicenseSubstructureRequired($license))
                                     <entry>
                                         <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/represented-licenses-fn" type="fn"/>
                                         </xref>
                                     </entry>
                                 #else
@@ -77,7 +77,7 @@
                     $utils.getText("asset-report-bom.license-detail-notice")
                 </p>
                 <p>
-                    #insertLicenseTable($license, $utils.getText("general.short.license-variants"), $licenseList, false)
+                    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", $license, $utils.getText("general.short.license-variants"), $licenseList, true)
                 </p>
 
                 #foreach($associatedLicense in $assetData.getLicensesForRepresentedLicense($license))

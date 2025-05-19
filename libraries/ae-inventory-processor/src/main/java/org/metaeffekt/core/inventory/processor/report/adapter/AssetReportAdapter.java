@@ -116,4 +116,16 @@ public class AssetReportAdapter {
         }
         return osiStatusMap;
     }
+
+    public Map<String, String> getOpenCodeStatusMap(ReportConfigurationParameters configParams) {
+        Map<String, String> openCodeStatusMap = new HashMap<>();
+        if (configParams.isEnableOpenCodeStatus()) {
+            openCodeStatusMap.put("approved", "yes");
+            openCodeStatusMap.put("(approved)", "(yes)");
+            openCodeStatusMap.put("not approved", "no");
+        } else {
+            return Collections.emptyMap();
+        }
+        return openCodeStatusMap;
+    }
 }
