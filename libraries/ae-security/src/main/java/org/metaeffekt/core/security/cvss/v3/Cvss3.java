@@ -754,15 +754,6 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
      */
     public abstract double roundUp(double value);
 
-    public static String getVersionName() {
-        return "CVSS:3.1";
-    }
-
-    @Override
-    public String getName() {
-        return getVersionName();
-    }
-
     /**
      * Depending on whether the environmental or temporal attributes are defined, one of the following two URLs is generated:
      * <pre>

@@ -23,6 +23,7 @@ import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.processor.UniversalCvssCalculatorLinkGenerator;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
 import org.metaeffekt.core.security.cvss.v3.Cvss3;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P0;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
@@ -206,10 +207,13 @@ public abstract class CvssVector {
     /* APPLYING VECTORS */
 
     public int applyVector(String vector) {
-        if (vector == null || vector.isEmpty()) return 0;
-
+        if (vector == null) return 0;
         final String normalizedVector = normalizeVector(vector);
-        if (normalizedVector.isEmpty()) return 0;
+        return applyNormalizedVector(normalizedVector);
+    }
+
+    protected int applyNormalizedVector(String normalizedVector) {
+        if (StringUtils.isEmpty(normalizedVector)) return 0;
 
         int appliedCount = 0;
         int start = 0;
@@ -441,8 +445,11 @@ public abstract class CvssVector {
 
     public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
         final T cvssVector = constructor.get();
-        final int unknownAttributes = cvssVector.applyVector(vector);
-        return unknownAttributes > 0 ? null : cvssVector;
+        final String normalizedVector = normalizeVector(vector);
+        final int knownAttributes = cvssVector.applyNormalizedVector(normalizedVector);
+        final int allAttributes = normalizedVector.split("/").length;
+
+        return allAttributes - knownAttributes > 0 ? null : cvssVector;
     }
 
     public static <T extends CvssVector> String getVersionName(Class<T> clazz) {
@@ -450,6 +457,8 @@ public abstract class CvssVector {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
         } else if (Cvss2.class.isAssignableFrom(clazz)) {
             return Cvss2.getVersionName();
+        } else if (Cvss3P0.class.isAssignableFrom(clazz)) {
+            return Cvss3P0.getVersionName();
         } else if (Cvss3P1.class.isAssignableFrom(clazz)) {
             return Cvss3P1.getVersionName();
         } else if (Cvss4P0.class.isAssignableFrom(clazz)) {
@@ -464,6 +473,8 @@ public abstract class CvssVector {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
         } else if (versionName.equals(Cvss2.getVersionName())) {
             return Cvss2.class;
+        } else if (versionName.equals(Cvss3P0.getVersionName())) {
+            return Cvss3P0.class;
         } else if (versionName.equals(Cvss3P1.getVersionName())) {
             return Cvss3P1.class;
         } else if (versionName.equals(Cvss4P0.getVersionName())) {
@@ -490,11 +501,12 @@ public abstract class CvssVector {
 
         if (vector.startsWith("CVSS:2.0")) {
             return new Cvss2(vector);
-        } else if (vector.startsWith("CVSS:3.1") || vector.startsWith("CVSS:3.0")) {
+        } else if (vector.startsWith("CVSS:3.1")) {
             return new Cvss3P1(vector);
+        } else if (vector.startsWith("CVSS:3.0")) {
+            return new Cvss3P0(vector);
         } else if (vector.startsWith("CVSS:4.0")) {
             return new Cvss4P0(vector);
-
         } else {
             final Cvss2 potentialCvss2Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss2::new);
             if (potentialCvss2Vector != null) {
@@ -511,7 +523,12 @@ public abstract class CvssVector {
                 return potentialCvss4P0Vector;
             }
 
-            LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            if (vector.startsWith("CVSS:")) {
+                LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Unable to parse non-CVSS vector string [{}]", vector);
+            }
+
             return null;
         }
     }
