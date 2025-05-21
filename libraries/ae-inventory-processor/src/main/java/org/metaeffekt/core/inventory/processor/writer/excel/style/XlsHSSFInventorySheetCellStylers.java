@@ -44,6 +44,10 @@ public class XlsHSSFInventorySheetCellStylers {
     public final InventorySheetCellStyler headerStyleColumnNameAssetId;
     public final InventorySheetCellStyler headerStyleColumnNameIncompleteMatch;
     public final InventorySheetCellStyler headerStyleColumnNameErrors;
+    public final InventorySheetCellStyler headerStyleBinaryArtifact;
+    public final InventorySheetCellStyler headerStyleSourceArtifact;
+    public final InventorySheetCellStyler headerStyleSourceArchive;
+    public final InventorySheetCellStyler headerStyleDescriptor;
     public final InventorySheetCellStyler headerStyleDefault;
     public final InventorySheetCellStyler headerStyleColumnNameSrcAssetSource;
     public final InventorySheetCellStyler headerStyleColumnNameAssetConfig;
@@ -63,6 +67,10 @@ public class XlsHSSFInventorySheetCellStylers {
         final HSSFCellStyle assetSourceHeaderStyle = createAssetSourceHeaderStyle(workbook);
         final HSSFCellStyle assetConfigHeaderStyle = createAssetConfigHeaderStyle(workbook);
         final HSSFCellStyle assetHeaderStyle = createAssetHeaderStyle(workbook);
+        final HSSFCellStyle binaryArtifactHeaderStyle = createBinaryArtifactHeaderStyle(workbook);
+        final HSSFCellStyle descriptorHeaderStyle = createDescriptorHeaderStyle(workbook);
+        final HSSFCellStyle sourceArtifactHeaderStyle = createSourceArtifactHeaderStyle(workbook);
+        final HSSFCellStyle sourceArchiveHeaderStyle = createSourceArchiveHeaderStyle(workbook);
         final HSSFCellStyle centeredStyle = createCenteredStyle(workbook);
         final HSSFCellStyle warnHeaderStyle = createWarnHeaderStyle(workbook);
         final HSSFCellStyle errorHeaderStyle = createErrorHeaderStyle(workbook);
@@ -88,6 +96,22 @@ public class XlsHSSFInventorySheetCellStylers {
                     context.getSheet().setColumnWidth(context.getColumnIndex(), 20 * 42);
                     context.getRow().setHeight((short) (170 * 20));
                 });
+
+        this.headerStyleBinaryArtifact = InventorySheetCellStyler.createStyler(
+                context -> context.getFullColumnHeader().startsWith("Binary Artifact - "),
+                context -> context.getCell().setCellStyle(binaryArtifactHeaderStyle));
+
+        this.headerStyleSourceArtifact = InventorySheetCellStyler.createStyler(
+                context -> context.getFullColumnHeader().startsWith("Source Artifact - "),
+                context -> context.getCell().setCellStyle(sourceArtifactHeaderStyle));
+
+        this.headerStyleSourceArchive = InventorySheetCellStyler.createStyler(
+                context -> context.getFullColumnHeader().startsWith("Source Archive - "),
+                context -> context.getCell().setCellStyle(sourceArchiveHeaderStyle));
+
+        this.headerStyleDescriptor = InventorySheetCellStyler.createStyler(
+                context -> context.getFullColumnHeader().startsWith("Descriptor - "),
+                context -> context.getCell().setCellStyle(descriptorHeaderStyle));
 
         this.headerStyleColumnNameErrors = InventorySheetCellStyler.createStyler(
                 context -> {
@@ -286,6 +310,39 @@ public class XlsHSSFInventorySheetCellStylers {
         return cellStyle;
     }
 
+    protected HSSFCellStyle createBinaryArtifactHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "198,224,180");
+        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor);
+        cellStyle.setWrapText(false);
+        return cellStyle;
+    }
+
+    protected HSSFCellStyle createSourceArtifactHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "248,203,173");
+        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor);
+        cellStyle.setWrapText(false);
+        return cellStyle;
+    }
+
+    protected HSSFCellStyle createSourceArchiveHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "241,187,144");
+        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor);
+        cellStyle.setWrapText(false);
+        return cellStyle;
+    }
+
+    protected HSSFCellStyle createDescriptorHeaderStyle(HSSFWorkbook workbook) {
+        final HSSFColor headerColor = resolveColor(workbook, "255,230,153");
+        final HSSFCellStyle cellStyle = createDefaultHeaderStyle(workbook);
+        cellStyle.setFillForegroundColor(headerColor);
+        cellStyle.setWrapText(false);
+        return cellStyle;
+    }
+
+
     public HSSFColor resolveColor(HSSFWorkbook workbook, String rgb) {
         final HSSFPalette palette = workbook.getCustomPalette();
         final String[] rgbSplit = rgb.trim().split(", ?");
@@ -318,20 +375,28 @@ public class XlsHSSFInventorySheetCellStylers {
 
     // CUSTOM DYNAMIC STYLERS
 
+    public InventorySheetCellStyler createArtifactHeaderCellStyler(InventorySerializationContext serializationContext) {
+        return createCustomHeaderStyler(serializationContext, "artifact.header");
+    }
+
     public InventorySheetCellStyler createLicensesHeaderCellStyler(InventorySerializationContext serializationContext) {
+        return createCustomHeaderStyler(serializationContext, "licensedata.header");
+    }
+
+    private InventorySheetCellStyler createCustomHeaderStyler(InventorySerializationContext serializationContext, String prefix) {
         return InventorySheetCellStyler.createStyler(
                 context -> {
-                    final String customHeaderColor = serializationContext.get("licensedata.header.[" + context.getFullColumnHeader() + "].fg");
+                    final String customHeaderColor = serializationContext.get(prefix + ".[" + context.getFullColumnHeader() + "].fg");
                     return StringUtils.isNotBlank(customHeaderColor);
                 }, context -> {
-                    final String customHeaderColor = serializationContext.get("licensedata.header.[" + context.getFullColumnHeader() + "].fg");
+                    final String customHeaderColor = serializationContext.get(prefix + ".[" + context.getFullColumnHeader() + "].fg");
                     final HSSFCellStyle customHeaderStyle = this.createHeaderStyle((HSSFWorkbook) context.getWorkbook());
                     final HSSFColor headerColor = resolveColor((HSSFWorkbook) context.getWorkbook(), customHeaderColor);
                     customHeaderStyle.setFillForegroundColor(headerColor.getIndex());
 
                     // FIXME: IS THIS THE CORRECT BEHAVIOR?
                     //        it seems that the orientation and the width properties are only applied if the foreground color is set.
-                    final String customHeaderOrientation = serializationContext.get("licensedata.header.[" + context.getFullColumnHeader() + "].orientation");
+                    final String customHeaderOrientation = serializationContext.get(prefix + ".[" + context.getFullColumnHeader() + "].orientation");
                     if ("up".equalsIgnoreCase(customHeaderOrientation)) {
                         customHeaderStyle.setRotation((short) -90);
                         context.getSheet().setColumnWidth(context.getColumnIndex(), 20 * 42);
@@ -340,7 +405,7 @@ public class XlsHSSFInventorySheetCellStylers {
                         customHeaderStyle.setVerticalAlignment(VerticalAlignment.TOP);
                     }
 
-                    final Integer customHeaderWidth = serializationContext.get("licensedata.header.[" + context.getFullColumnHeader() + "].width");
+                    final Integer customHeaderWidth = serializationContext.get(prefix + ".[" + context.getFullColumnHeader() + "].width");
                     if (customHeaderWidth != null) {
                         context.getSheet().setColumnWidth(context.getColumnIndex(), customHeaderWidth * 42);
                     }
@@ -359,4 +424,16 @@ public class XlsHSSFInventorySheetCellStylers {
                     context.getCell().setCellStyle(centeredCellStyle);
                 });
     }
+
+    public InventorySheetCellStyler createArtifactsCellStyler(InventorySerializationContext serializationContext) {
+        return InventorySheetCellStyler.createStyler(
+                context -> {
+                    final Boolean centered = serializationContext.get("artifact.column.[" + context.getFullColumnHeader() + "].centered");
+                    return centered != null && centered;
+                }, context -> {
+                    final HSSFCellStyle centeredCellStyle = this.createCenteredStyle((HSSFWorkbook) context.getWorkbook());
+                    context.getCell().setCellStyle(centeredCellStyle);
+                });
+    }
+
 }
