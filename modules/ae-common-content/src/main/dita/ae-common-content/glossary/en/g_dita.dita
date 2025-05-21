@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="dita">
+    <glossterm>Darwin Information Typing Architecture (DITA)</glossterm>
+    <glossdef>OASIS defined standard promoting the creation of standard
+        information types and domain specific markup. DITA defined content can be aggregated in a DITA map and
+        rendered to different output formats such as PDF, HTML or RTF.
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Darwin Information Typing Architecture (DITA)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>DITA</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>

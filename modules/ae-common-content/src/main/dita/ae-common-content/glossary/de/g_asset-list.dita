@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="asset-list">
+    <glossterm>Softwarebestandsliste (Liste von <i>Assets</i> im Projekt/Produkt)</glossterm>
+    <glossdef>
+        <p>Die Softwarebestandsliste führt alle Softwarebestände (Assets) auf.</p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Softwarebestandsliste</glossSurfaceForm>
+    </glossBody>
+</glossentry>

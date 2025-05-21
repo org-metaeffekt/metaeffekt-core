@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_ae-commercial-components" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Proprietäre Komponenten von Drittanbietern</title>
+    <body>
+        <p>
+            Die Software Distribution enthält proprietäre Komponenten von Drittanbietern. Diese werden in der Regel
+            einzeln unter herstellerspezifischen Lizenzbedingungen, die auch für den Lizenznehmer von
+            ${product.name} gelten, lizenziert.
+        </p>
+        <p>
+            Lizenz- und Vertragsinformationen zu proprietären Lizenzen werden im Abschnitt <xref keyref="license-notices"/> dargestellt.
+            Lizenztexte sind im Software Distribution Annex enthalten, sofern dies nach den Bedingungen der Lizenz
+            und/oder des Vertrags zulässig ist.
+        </p>
+
+    </body>
+</topic>

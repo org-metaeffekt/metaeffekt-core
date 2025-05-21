@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary//EN" "glossary.dtd">
+<glossentry id="jconsole">
+    <glossterm>JConsole</glossterm>
+    <glossdef>
+    <p>
+    JMX-Client, der zusammen mit JDK-Distributionen ausgeliefert wird.
+    Per JMX (MBeans) kann eine Zielanwendung während der Laufzeit überwacht und administriert werden.
+    </p>
+    </glossdef>
+</glossentry>

@@ -16,6 +16,7 @@
 
     <modules>
         <module>ae-commons-annotation</module>
+        <module>ae-common-content</module>
     </modules>
 
     <build>

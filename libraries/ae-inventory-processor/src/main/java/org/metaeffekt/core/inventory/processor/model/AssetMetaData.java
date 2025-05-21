@@ -52,6 +52,8 @@ public class AssetMetaData extends AbstractModelBase {
         NAME("Name"),
         VERSION("Version"),
         ASSESSMENT_ID("Assessment Id"),
+        @Deprecated // use AUDIENCE instead; introduced for compatibility with downstream branches; remove once resolved
+        ROLE("Audience"),
         AUDIENCE("Audience"),
         ASSESSMENT("Assessment"),
         CHECKSUM("Checksum"),

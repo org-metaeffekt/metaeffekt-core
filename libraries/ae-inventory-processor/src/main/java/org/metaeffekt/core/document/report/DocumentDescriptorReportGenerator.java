@@ -77,11 +77,11 @@ public class DocumentDescriptorReportGenerator {
 
         // generate bookmaps to integrate InventoryReport-generated results
         DocumentDescriptorReport documentDescriptorReport = new DocumentDescriptorReport();
+
         documentDescriptorReport.setTargetReportDir(documentDescriptor.getTargetReportDir());
-
         documentDescriptorReport.createPartBookMap(documentDescriptor);
-
         documentDescriptorReport.createDocumentBookMap(documentDescriptor);
+        documentDescriptorReport.createImprint(documentDescriptor);
     }
 
     /**
@@ -146,8 +146,12 @@ public class DocumentDescriptorReportGenerator {
                         builder.inventoryBomReportEnabled(true);
                 }
                 builder.reportLanguage(documentDescriptor.getLanguage());
-                boolean includeInofficialOsiStatus = Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus"));
-                builder.includeInofficialOsiStatus(includeInofficialOsiStatus);
+
+                builder.includeInofficialOsiStatus(Boolean.parseBoolean(mergedParams.get("includeInofficialOsiStatus")));
+                builder.filterAdvisorySummary(Boolean.parseBoolean(mergedParams.get("filterAdvisorySummary")));
+                builder.hidePriorityInformation(Boolean.parseBoolean(mergedParams.get("hidePriorityInformation")));
+                builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.get("filterVulnerabilitiesNotCoveredByArtifacts")));
+
                 ReportConfigurationParameters configParams = builder.build();
 
                 // FIXME-KKL: revise if we want different pre-requisites for the different document types, currently we handle all the same way
@@ -182,6 +186,12 @@ public class DocumentDescriptorReportGenerator {
                 report.setReferenceComponentPath("components");
                 report.setReferenceLicensePath("licenses");
 
+                if (mergedParams.get("referenceLicensePath") != null) {
+                    report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
+                }
+                if (mergedParams.get("referenceComponentPath") != null) {
+                    report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
+                }
                 if (mergedParams.get("LicensesDir") == null) {
                     report.setTargetLicenseDir(new File("license"));
                     log.info("used default targetLicensesDir as 'license'");
@@ -195,18 +205,7 @@ public class DocumentDescriptorReportGenerator {
                     report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
                 }
 
-                boolean omitAssetPrefix = Boolean.parseBoolean(mergedParams.get("omitAssetPrefix"));
-                String title = null;
-
-                if (mergedParams.get("omitAssetPrefix") != null) {
-                    if (!omitAssetPrefix) {
-                        title = inventoryContext.getReportContextTitle();
-                    }
-                } else {
-                    title = inventoryContext.getReportContextTitle();
-                }
-
-                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), title, inventoryContext.getReportContext()));
+                report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getReportContextTitle(), inventoryContext.getReportContext()));
 
                 report.getReportContext().setReportInventoryName(inventoryContext.getReportContextTitle());
 
@@ -245,8 +244,6 @@ public class DocumentDescriptorReportGenerator {
             File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
 
             String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
-
-            boolean filterVulnerabilitiesNotCoveredByArtifacts = Boolean.parseBoolean(params.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false"));
 
             CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
             securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);

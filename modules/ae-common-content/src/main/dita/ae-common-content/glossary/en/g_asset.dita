@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="asset">
+    <glossterm>Asset</glossterm>
+    <glossdef>
+        <p>
+            An asset, especially a software or hardware asset, is an identifiable and usable unit dedicated to a specific purpose
+            or function. An asset usually represents a value proposition or delivery item in a supplier-recipient relationship.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>assets</glossSurfaceForm>
+    </glossBody>
+</glossentry>

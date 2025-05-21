@@ -265,13 +265,7 @@ public class XlsInventoryReader extends AbstractInventoryReader {
             }
 
             // read formatting data
-            final List<String> headerList = pc.columns;
-            final InventorySerializationContext serializationContext = inventory.getSerializationContext();
-            serializationContext.put(contextKey + ".columnlist", headerList);
-            for (int i = 0; i < headerList.size(); i++) {
-                int width = sheet.getColumnWidth(i);
-                serializationContext.put(contextKey + ".column[" + i + "].width", width);
-            }
+            populateSerializationContextHeaders(inventory, sheet, contextKey, pc);
         }
     }
 

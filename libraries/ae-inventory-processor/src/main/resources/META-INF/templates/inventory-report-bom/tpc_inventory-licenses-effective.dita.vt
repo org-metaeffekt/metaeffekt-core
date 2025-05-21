@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-summary-$reportContext.id">
-    <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.licenses-in-effect"), true)</title>
+    <title>$utils.getText("inventory-report-bom.short.licenses-in-effect")</title>
     #set($effectiveLicenses=$inventory.evaluateLicenses(false))
     #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
     #set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
@@ -77,13 +77,14 @@
                 </row>
             </thead>
             <tbody>
-#foreach($licenseData in $atomicTerms)
-#set($license=$licenseData.get("Canonical Name"))
-#set($folder=$inventory.getLicenseFolder($license))
-#set($componentCount=$inventory.countComponents($license))
-#set($licenseData=$inventory.findMatchingLicenseData($license))
+            #set($osiStatusMap = $assetAdapter.getOsiStatusMap($configParams))
+            #foreach($licenseData in $atomicTerms)
+                #set($license=$licenseData.get("Canonical Name"))
+                #set($folder=$inventory.getLicenseFolder($license))
+                #set($componentCount=$inventory.countComponents($license))
+                #set($licenseData=$inventory.findMatchingLicenseData($license))
                 <row>
-#if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
+                #if ($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented))
                     <entry>
                         <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
                             $report.xmlEscapeLicense($license)<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>
@@ -91,9 +92,16 @@
                     </entry>
                     <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
-                        #if ($licenseData)#if ($licenseData.get("OSI Status"))$licenseData.get("OSI Status")<xref href="#tpc_license-summary-$reportContext.id/id-footnote" type="fn"/>#else&nbsp;#end#else&nbsp;#end
+                        #if ($licenseData)
+                            #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;"))
+                            #if ($mappedStatus)
+                                $mappedStatus
+                            #end
+                        #else
+                          &nbsp;
+                        #end
                     </entry>
-#else
+                #else
                     <entry>
                         <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
                             $report.xmlEscapeLicense($license)
@@ -101,16 +109,23 @@
                     </entry>
                     <entry>#if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))$report.xmlEscapeString($licenseData.get('SPDX Id'))#else&nbsp;#end</entry>
                     <entry>
-                        #if($licenseData)#if($licenseData.get("OSI Status"))$licenseData.get("OSI Status")#else&nbsp;#end#else&nbsp;#end
+                        #if ($licenseData)
+                            #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap, "&nbsp;"))
+                            #if ($mappedStatus)
+                                $mappedStatus
+                            #end
+                        #else
+                          &nbsp;
+                        #end
                     </entry>
-#end
+                #end
                     <entry>
                          <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
                             <codeph>$componentCount</codeph>
                         </xref>
                     </entry>
                 </row>
-#end
+            #end
             </tbody>
         </tgroup>
     </table>

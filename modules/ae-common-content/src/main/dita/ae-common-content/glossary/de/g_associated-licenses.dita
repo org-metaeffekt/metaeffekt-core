@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="associated-licenses">
+    <glossterm>Assoziierte Lizenzen</glossterm>
+    <glossdef>
+        <p>
+            Eine Komponente und ihre Bestandteile können durch einen Anbieter unter verschiedenen
+            Lizenzen zur Verfügung gestellt werden. Dies ermöglicht die Lizenzierung in Abhängigkeit vom Nutzungskontext
+            oder den Vertriebskanälen, in denen die Komponente bereitgestellt oder übertragen wird.
+            Diese Lizenzen werden der Komponente bei Bezug zugeordnet und hier als assoziierte Lizenzen bezeichnet.
+        </p>
+        <p>
+            Im Gegensatz zu den assoziierten Lizenzen sind die effektiven Lizenzen die Lizenzen, unter
+            denen eine Komponente weitergegeben wird. Die assoziierten und effektiven Lizenzen einer Komponente
+            können sich unterscheiden. Die Ableitung der effektiven Lizenzen ist durch die Bedingungen der assoziierten
+            Lizenzen und deren Wahlmöglichkeiten eingeschränkt.
+        </p>
+        <p>
+            Siehe auch: <abbreviated-form keyref="provider"/>, <abbreviated-form keyref="effective-licenses"/>, <abbreviated-form keyref="licenses"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Assoziierte Lizenzen</glossSurfaceForm>
+    </glossBody>
+</glossentry>

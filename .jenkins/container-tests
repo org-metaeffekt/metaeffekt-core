@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 pipeline {
     agent {
         label 'metaeffekt-astronaut'
@@ -15,29 +16,23 @@ pipeline {
 
         stage('Build') {
             steps {
+                // this also implicitly ensures 7zip is installed
                 withMaven(maven: 'maven-3.9.6') {
-                    sh 'mvn -B clean install -Prun-container-tests -DskipTests'
+                    sh 'mvn -B clean install -DskipTests'
                 }
             }
         }
 
         stage('run-container-tests profile') {
             steps {
+                // FIXME: use profile with test tags instead
                 dir('tests/ae-inventory-container-itest') {
                     withMaven(maven: 'maven-3.9.6') {
-                        sh 'mvn test'
+                        sh 'mvn clean test'
                     }
                 }
             }
         }
-
-/*
-        stage('clean-workspace') {
-            steps {
-                cleanWs()
-            }
-        }
-*/
 
     }
 }
