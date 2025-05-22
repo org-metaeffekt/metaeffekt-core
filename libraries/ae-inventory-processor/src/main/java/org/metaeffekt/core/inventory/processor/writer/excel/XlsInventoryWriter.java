@@ -24,8 +24,6 @@ import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.AbstractInventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.InventorySheetCellStyler;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.XlsHSSFInventorySheetCellStylers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -80,11 +78,17 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
                 stylers.headerStyleColumnNameAssetId,
                 stylers.headerStyleColumnNameIncompleteMatch,
                 stylers.headerStyleColumnNameErrors,
+                stylers.createArtifactHeaderCellStyler(inventory.getSerializationContext()),
+                stylers.headerStyleBinaryArtifact,
+                stylers.headerStyleSourceArtifact,
+                stylers.headerStyleSourceArchive,
+                stylers.headerStyleDescriptor,
                 stylers.headerStyleDefault,
         };
 
         final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
                 stylers.contentStyleColumnNameAssetId,
+                stylers.createArtifactsCellStyler(inventory.getSerializationContext()),
                 stylers.contentStyleColumnNameIncompleteMatch,
         };
 
