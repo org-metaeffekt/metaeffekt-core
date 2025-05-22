@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.util;
 
+import lombok.Getter;
 import org.springframework.util.AntPathMatcher;
 
 import java.util.*;
@@ -33,14 +34,18 @@ public class PatternSetMatcher {
     /**
      * Maps the longest possible literal part of a pattern to
      */
+    @Getter
     private final Map<String, Set<String>> longestLiteralMatchPatternMap = new HashMap<>();
 
     public PatternSetMatcher(Collection<String> patterns) {
         if (patterns != null) {
             for (String pattern : patterns) {
-                final String[] split = SEPARATOR_PATTERN.split(pattern);
-                final String longestLiteralPart = Arrays.stream(split).sorted(LENGTH_COMPARATOR).findFirst().get();
-                longestLiteralMatchPatternMap.computeIfAbsent(longestLiteralPart, c -> new HashSet<>()).add(pattern);
+                if (pattern != null) {
+                    final String modulatedPattern = pattern.replace("**/", "*");
+                    final String[] split = SEPARATOR_PATTERN.split(modulatedPattern);
+                    final String longestLiteralPart = Arrays.stream(split).sorted(LENGTH_COMPARATOR).findFirst().orElse("");
+                    longestLiteralMatchPatternMap.computeIfAbsent(longestLiteralPart, c -> new HashSet<>()).add(pattern);
+                }
             }
         }
     }
