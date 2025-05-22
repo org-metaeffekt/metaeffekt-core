@@ -38,10 +38,9 @@ public class PatternSetMatcherTest {
 
         final Map<String, Set<String>> longestLiteralMatchPatternMap = patternSetMatcher.getLongestLiteralMatchPatternMap();
 
-        System.out.println(longestLiteralMatchPatternMap);
-
-        Assertions.assertThat(longestLiteralMatchPatternMap.containsKey("this/is/a/longer/path/")).isTrue();
-        Assertions.assertThat(longestLiteralMatchPatternMap.get("this/is/a/longer/path/").contains("this/is/a/longer/path/**/*")).isTrue();
+        final Set<String> pathKeyPatterns = longestLiteralMatchPatternMap.get("this/is/a/longer/path/");
+        Assertions.assertThat(pathKeyPatterns).isNotNull();
+        Assertions.assertThat(pathKeyPatterns).contains("this/is/a/longer/path/**/*");
 
         // **/* modulated to ** --> ""; any string
         Assertions.assertThat(longestLiteralMatchPatternMap.containsKey("/")).isFalse();
