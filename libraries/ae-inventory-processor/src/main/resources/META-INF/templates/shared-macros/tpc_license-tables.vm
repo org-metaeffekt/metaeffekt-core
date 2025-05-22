@@ -1,4 +1,4 @@
-#macro (insertLicenseTable $topicId $id $title $licenseList $forAssets)
+#macro (insertLicenseTable $topicId $id $title $licenseList $forAssets $useRepresentedLicenses)
 <table id="$id">
     <title>$title$reportContext.withTitle()</title>
     #if($configParams.enableOpenCodeStatus)
@@ -34,12 +34,19 @@
     #end
     #set($osiStatusMap = $assetAdapter.getOsiStatusMap($configParams))
     #set($openCoDEStatusMap = $assetAdapter.getOpenCodeStatusMap($configParams))
+    
+    #if($useRepresentedLicenses)
+        #set($filteredLicenseList = $inventory.getRepresentedLicenses($licenseList))
+    #else
+        #set($filteredLicenseList = $licenseList)
+    #end
+    
     <tbody>
-        #foreach($license in $licenseList)
+        #foreach($license in $filteredLicenseList)
             #if(!$license.contains("+"))
             #set($licenseData=$inventory.findMatchingLicenseData($license))
             <row>
-                #if ($inventoryReportAdapter.isRepresentedLicense($license))
+                #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
                     <entry>
                         <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
                             $report.xmlEscapeLicense($license)<xref href="#$topicId/represented-licenses-fn" type="fn"/>

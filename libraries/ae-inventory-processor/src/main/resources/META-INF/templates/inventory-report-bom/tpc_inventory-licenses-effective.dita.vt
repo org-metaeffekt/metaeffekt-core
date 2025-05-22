@@ -64,7 +64,7 @@
         </table>
     #end
 
-    #insertLicenseTable("tpc_license-summary-$reportContext.id", "LicensesInEffect", $utils.getText("inventory-report-bom.short.licenses-in-effect"), $effectiveLicensesRepresented, false)
+    #insertLicenseTable("tpc_license-summary-$reportContext.id", "LicensesInEffect", $utils.getText("inventory-report-bom.short.licenses-in-effect"), $effectiveLicensesRepresented, false, true)
 
 </body>
 </topic>
