@@ -17,25 +17,51 @@ package org.metaeffekt.core.container.control.kubernetesapi;
 
 import io.fabric8.kubernetes.client.dsl.ExecWatch;
 import io.fabric8.kubernetes.client.dsl.PodResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 @SuppressWarnings("unused")
 public class KubernetesContainerCommandProcess extends Process implements AutoCloseable {
+    public static final Logger LOG = LoggerFactory.getLogger(KubernetesContainerCommandProcess.class);
+
     private boolean closed = false;
 
     private final ExecWatch watch;
 
+    /**
+     * stdout from process.
+     */
     private final InputStream sout;
+    /**
+     * stderr from process.
+     */
     private final InputStream serr;
+    /**
+     * stdin from process.
+     */
     private final OutputStream sin;
 
     // if redirections for standard out and standard in were used, keep them so they can be closed cleanly
+    /**
+     * Stream for collectiong stdout if buffered.
+     * @see #bufferType
+     */
     private final ByteArrayOutputStream standardOutRedirected;
+    /**
+     * Stream for collectiong stderr if buffered.
+     * @see #bufferType
+     */
     private final ByteArrayOutputStream standardErrRedirected;
 
+    /**
+     * Type of buffering used; either the output is streamed or buffered into a growing buffer in this class.
+     * @see Buffering
+     */
     private final Buffering bufferType;
 
     /**
@@ -43,6 +69,9 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
      */
     private final String[] command;
 
+    /**
+     * Types of buffering that this class may support.
+     */
     public enum Buffering {
         /**
          * No buffering, expose whatever streams {@link #watch} gives us raw.
@@ -56,6 +85,11 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
         MEM_BUF
     }
 
+    /**
+     * Runs the given command and configures this object to act as a interface with the running instance.
+     * @param runnerPod to run the command inside of
+     * @param command command to run
+     */
     public KubernetesContainerCommandProcess(PodResource runnerPod, String... command) {
         this.standardOutRedirected = new ByteArrayOutputStream();
         this.standardErrRedirected = new ByteArrayOutputStream();
@@ -115,7 +149,7 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() throws IOException {
         if (!closed) {
             closed = true;
 
@@ -140,23 +174,45 @@ public class KubernetesContainerCommandProcess extends Process implements AutoCl
         }
     }
 
+    /**
+     * Type of buffering used with this process.
+     * @return type of buffering
+     */
     public Buffering getBufferType() {
         return bufferType;
     }
 
-    public void ensureBuffering() {
+    protected void ensureBuffering() {
         if (bufferType != Buffering.MEM_BUF) {
             throw new IllegalStateException("Buffering is not turned on.");
         }
     }
 
+    /**
+     * Gets stdout buffer with whatever has been written so far.
+     * <br>
+     * Does not wait for the process to complete!
+     * @return whatever has been written so far
+     */
     public byte[] getAllStdOut() {
         ensureBuffering();
+        if (watch.exitCode().getNow(-1) == -1) {
+            LOG.debug("Called getAllStdOut before command exited; Rarely done intentionally; may indicate bugs!");
+        }
         return this.standardOutRedirected.toByteArray();
     }
 
+    /**
+     * Gets stderr buffer with whatever has been written so far.
+     * <br>
+     * Does not wait for the process to complete!
+     * @return whatever has been written so far
+     */
     public byte[] getAllStdErr() {
         ensureBuffering();
+        if (watch.exitCode().getNow(-1) == -1) {
+            LOG.debug("Called getAllStdErr before command exited; Rarely done intentionally; may indicate bugs!");
+        }
         return this.standardErrRedirected.toByteArray();
     }
 
