@@ -48,9 +48,8 @@
             <row>
                 #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
                     <entry>
-                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                            $report.xmlEscapeLicense($license)<xref href="#$topicId/represented-licenses-fn" type="fn"/>
-                        </xref>
+                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                        <xref href="#$topicId/represented-licenses-fn" type="fn"/>
                     </entry>
                     <entry>
                         #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
