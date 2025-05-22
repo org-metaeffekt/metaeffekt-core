@@ -53,13 +53,11 @@ public class PatternSetMatcher {
     public boolean matches(String stringToMatch) {
         for (final Map.Entry<String, Set<String>> entry : longestLiteralMatchPatternMap.entrySet()) {
             final String literal = entry.getKey();
-            if (stringToMatch.contains(literal)) {
-                // match on full literal key
-                if (literal.equals(stringToMatch)) {
-                    return true;
-                }
 
-                // match patterns
+            // check whether longest literal is matched; prefilter candidates
+            if (stringToMatch.contains(literal)) {
+
+                // match patterns; exit once matched
                 for (String pattern : entry.getValue()) {
                     if (internalMatching(stringToMatch, pattern)) {
                         return true;

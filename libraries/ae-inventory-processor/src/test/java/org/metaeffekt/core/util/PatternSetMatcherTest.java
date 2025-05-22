@@ -34,7 +34,8 @@ public class PatternSetMatcherTest {
         patterns.add("**/*");
         patterns.add("");
         patterns.add(null);
-        PatternSetMatcher patternSetMatcher = new PatternSetMatcher(patterns);
+
+        final PatternSetMatcher patternSetMatcher = new PatternSetMatcher(patterns);
 
         final Map<String, Set<String>> longestLiteralMatchPatternMap = patternSetMatcher.getLongestLiteralMatchPatternMap();
 
