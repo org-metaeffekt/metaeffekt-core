@@ -1,4 +1,5 @@
 #parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+#parse("META-INF/templates/shared-macros/tpc_license-tables.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-usage-$reportContext.id">
@@ -19,9 +20,14 @@
             <title>$report.xmlEscapeLicense($license) $utils.getText("general.short.variants")</title>
             <body>
                 <p>$utils.getText("inventory-report-bom.license-variations")</p>
-                    #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))
+
+                #set($licensesRepresentedBy=$inventory.getLicensesRepresentedBy($license))
+
+                #insertLicenseTable("tpc_effective_license_$reportContext.id", $license, "Inventory Licenses", $licensesRepresentedBy, false, false)
+
+                #foreach($effLicense in $licensesRepresentedBy)
                     #insertLicenseArtifactTopic($effLicense)
-                    #end
+                #end
             </body>
         </topic>
     #end

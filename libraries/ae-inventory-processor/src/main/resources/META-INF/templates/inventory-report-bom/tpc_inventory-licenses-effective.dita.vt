@@ -19,6 +19,7 @@
         #end
         #if ($configParams.isEnableOpenCodeStatus())
           <fn id="id-opencode-similar-fn">$utils.getText("general.open-code-footnote")</fn>
+          <fn id="id-opencode-represented-fn">$utils.getText("general.open-code-multiple-footnote")</fn>
         #end
 
 ## License Options (not necessarily expressions)
