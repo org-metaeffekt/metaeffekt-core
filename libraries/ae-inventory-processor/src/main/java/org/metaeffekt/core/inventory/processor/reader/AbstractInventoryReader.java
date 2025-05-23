@@ -141,6 +141,7 @@ public abstract class AbstractInventoryReader {
         inventory.getVulnerabilityMetaDataContexts().forEach(
                 context -> inventory.getVulnerabilityMetaData(context).forEach(this::update)
         );
+        inventory.getAssetMetaData().forEach(this::update);
     }
 
     protected static class ParsingContext {
