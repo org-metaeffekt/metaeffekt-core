@@ -503,7 +503,7 @@ public abstract class CvssVector {
      * </ol>
      * If the <code>strict</code> parameter is set to true, only fully valid vectors are parsed and for others, <code>null</code> is returned.
      *
-     * @param vector   the vector to parse
+     * @param vector the vector to parse
      * @param strict whether <code>null</code> should be returned instead of a partial vector when the vector contains unknown/invalid metrics
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
@@ -557,6 +557,8 @@ public abstract class CvssVector {
     }
 
     /* SERIALIZATION */
+
+    public abstract String toString(boolean filterUndefinedProperties);
 
     public JSONObject toJson() {
         final JSONObject json = new JSONObject();
