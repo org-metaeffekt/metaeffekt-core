@@ -956,61 +956,68 @@ public final class Cvss4P0 extends CvssVector {
     }
 
     @Override
-    public String toString() {
+    public String toString(boolean filterUndefinedProperties) {
         final StringBuilder vector = new StringBuilder();
         vector.append(getName()).append("/");
 
+        boolean appendAnyways = !filterUndefinedProperties;
+
         // Base Metrics: Exploitability Metrics
-        appendIfNotDefault(vector, "AV", attackVector, AttackVector.NOT_DEFINED);
-        appendIfNotDefault(vector, "AC", attackComplexity, AttackComplexity.NOT_DEFINED);
-        appendIfNotDefault(vector, "AT", attackRequirements, AttackRequirements.NOT_DEFINED);
-        appendIfNotDefault(vector, "PR", privilegesRequired, PrivilegesRequired.NOT_DEFINED);
-        appendIfNotDefault(vector, "UI", userInteraction, UserInteraction.NOT_DEFINED);
+        appendIfNotDefault(vector, "AV", attackVector, AttackVector.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AC", attackComplexity, AttackComplexity.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AT", attackRequirements, AttackRequirements.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "PR", privilegesRequired, PrivilegesRequired.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "UI", userInteraction, UserInteraction.NOT_DEFINED, appendAnyways);
 
         // Base Metrics: Vulnerable System Impact Metrics
-        appendIfNotDefault(vector, "VC", vulnConfidentialityImpact, VulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "VI", vulnIntegrityImpact, VulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "VA", vulnAvailabilityImpact, VulnerabilityCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "VC", vulnConfidentialityImpact, VulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "VI", vulnIntegrityImpact, VulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "VA", vulnAvailabilityImpact, VulnerabilityCia.NOT_DEFINED, appendAnyways);
 
         // Base Metrics: Subsequent System Impact Metrics
-        appendIfNotDefault(vector, "SC", subConfidentialityImpact, SubsequentCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "SI", subIntegrityImpact, SubsequentCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "SA", subAvailabilityImpact, SubsequentCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "SC", subConfidentialityImpact, SubsequentCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "SI", subIntegrityImpact, SubsequentCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "SA", subAvailabilityImpact, SubsequentCia.NOT_DEFINED, appendAnyways);
 
         // Threat Metrics
-        appendIfNotDefault(vector, "E", exploitMaturity, ExploitMaturity.NOT_DEFINED);
+        appendIfNotDefault(vector, "E", exploitMaturity, ExploitMaturity.NOT_DEFINED, appendAnyways);
 
         // Environmental (Security Requirements)
-        appendIfNotDefault(vector, "CR", confidentialityRequirement, RequirementsCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "IR", integrityRequirement, RequirementsCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "AR", availabilityRequirement, RequirementsCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "CR", confidentialityRequirement, RequirementsCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "IR", integrityRequirement, RequirementsCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AR", availabilityRequirement, RequirementsCia.NOT_DEFINED, appendAnyways);
 
         // Environmental (Modified Base Metrics): Exploitability Metrics
-        appendIfNotDefault(vector, "MAV", modifiedAttackVector, ModifiedAttackVector.NOT_DEFINED);
-        appendIfNotDefault(vector, "MAC", modifiedAttackComplexity, ModifiedAttackComplexity.NOT_DEFINED);
-        appendIfNotDefault(vector, "MAT", modifiedAttackRequirements, ModifiedAttackRequirements.NOT_DEFINED);
-        appendIfNotDefault(vector, "MPR", modifiedPrivilegesRequired, ModifiedPrivilegesRequired.NOT_DEFINED);
-        appendIfNotDefault(vector, "MUI", modifiedUserInteraction, ModifiedUserInteraction.NOT_DEFINED);
+        appendIfNotDefault(vector, "MAV", modifiedAttackVector, ModifiedAttackVector.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MAC", modifiedAttackComplexity, ModifiedAttackComplexity.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MAT", modifiedAttackRequirements, ModifiedAttackRequirements.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MPR", modifiedPrivilegesRequired, ModifiedPrivilegesRequired.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MUI", modifiedUserInteraction, ModifiedUserInteraction.NOT_DEFINED, appendAnyways);
 
         // Environmental (Modified Base Metrics): Vulnerable System Impact Metrics
-        appendIfNotDefault(vector, "MVC", modifiedVulnConfidentialityImpact, ModifiedVulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "MVI", modifiedVulnIntegrityImpact, ModifiedVulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "MVA", modifiedVulnAvailabilityImpact, ModifiedVulnerabilityCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "MVC", modifiedVulnConfidentialityImpact, ModifiedVulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MVI", modifiedVulnIntegrityImpact, ModifiedVulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MVA", modifiedVulnAvailabilityImpact, ModifiedVulnerabilityCia.NOT_DEFINED, appendAnyways);
 
         // Environmental (Modified Base Metrics): Subsequent System Impact Metrics
-        appendIfNotDefault(vector, "MSC", modifiedSubConfidentialityImpact, ModifiedSubsequentConfidentiality.NOT_DEFINED);
-        appendIfNotDefault(vector, "MSI", modifiedSubIntegrityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED);
-        appendIfNotDefault(vector, "MSA", modifiedSubAvailabilityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED);
+        appendIfNotDefault(vector, "MSC", modifiedSubConfidentialityImpact, ModifiedSubsequentConfidentiality.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MSI", modifiedSubIntegrityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MSA", modifiedSubAvailabilityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED, appendAnyways);
 
         // Supplemental Metrics
-        appendIfNotDefault(vector, "S", safety, Safety.NOT_DEFINED);
-        appendIfNotDefault(vector, "AU", automatable, Automatable.NOT_DEFINED);
-        appendIfNotDefault(vector, "R", recovery, Recovery.NOT_DEFINED);
-        appendIfNotDefault(vector, "V", valueDensity, ValueDensity.NOT_DEFINED);
-        appendIfNotDefault(vector, "RE", vulnerabilityResponseEffort, VulnerabilityResponseEffort.NOT_DEFINED);
-        appendIfNotDefault(vector, "U", providerUrgency, ProviderUrgency.NOT_DEFINED);
+        appendIfNotDefault(vector, "S", safety, Safety.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AU", automatable, Automatable.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "R", recovery, Recovery.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "V", valueDensity, ValueDensity.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "RE", vulnerabilityResponseEffort, VulnerabilityResponseEffort.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "U", providerUrgency, ProviderUrgency.NOT_DEFINED, appendAnyways);
 
         return TRAILING_SLASH_PATTERN.matcher(vector.toString()).replaceAll("");
+    }
+
+    @Override
+    public String toString() {
+        return toString(true);
     }
 
     private static final Pattern TRAILING_SLASH_PATTERN = Pattern.compile("/$");
@@ -1076,8 +1083,8 @@ public final class Cvss4P0 extends CvssVector {
         return array.toString();
     }
 
-    private <T extends Cvss4P0Attribute> void appendIfNotDefault(StringBuilder vector, String partName, T currentValue, T defaultValue) {
-        if (currentValue != defaultValue) {
+    private <T extends Cvss4P0Attribute> void appendIfNotDefault(StringBuilder vector, String partName, T currentValue, T defaultValue, boolean appendAnyways) {
+        if (appendAnyways || currentValue != defaultValue) {
             vector.append(partName).append(":").append(currentValue.getShortIdentifier()).append("/");
         }
     }

@@ -281,4 +281,55 @@ public class CvssVectorTest {
                 Cvss4P0.parseVector("CVSS:4.0/AV:P/AC:L/AT:P/PR:H/UI:P/VC:N/VI:N/VA:N/SC:N/SI:N/SA:H"),
                 CvssVector.parseVector("CVSS:4.0/AV:P/AC:L/AT:P/PR:H/UI:P/VC:N/VI:N/VA:N/SC:N/SI:N/SA:H"));
     }
+
+    @Test
+    public void parseVectorStrictModeTest() {
+        // return null for invalid vectors
+        Assert.assertNull(CvssVector.parseVector("CVSS:2.0/INVALID:VECTOR", true));
+        Assert.assertNull(CvssVector.parseVector("CVSS:3.1/UNKNOWN:METRIC", true));
+        Assert.assertNull(CvssVector.parseVector("AV:P/AC:L/AT:P/PR:H/UI:P/VC:N/VI:N/VA:N/SC:N/SI:N/SA:H/NO:O", true));
+        Assert.assertNull(CvssVector.parseVector("AR:N/NO:O", true));
+        // return vector for valid vectors
+        Assert.assertNotNull(CvssVector.parseVector("CVSS:3.1/AV:N/AC:L/PR:H/UI:R/S:U/C:L/I:N/A:L", true));
+        Assert.assertNotNull(CvssVector.parseVector("CVSS:4.0/AV:P/AC:L/AT:P/PR:H/UI:P/VC:N/VI:N/VA:N/SC:N/SI:N/SA:H", true));
+
+        // default: return vector even with unknown metrics
+        Assert.assertNotNull(CvssVector.parseVector("CVSS:2.0/INVALID:VECTOR"));
+        Assert.assertNotNull(CvssVector.parseVector("CVSS:3.1/UNKNOWN:METRIC"));
+
+        // empty/null vectors
+        Assert.assertNull(CvssVector.parseVector(null, true));
+        Assert.assertNull(CvssVector.parseVector("", true));
+        Assert.assertNull(CvssVector.parseVector("   ", true));
+        Assert.assertNull(CvssVector.parseVector(null));
+        Assert.assertNull(CvssVector.parseVector(""));
+        Assert.assertNull(CvssVector.parseVector("   "));
+
+        // vectors with version prefix but no valid metrics
+        Assert.assertNull(CvssVector.parseVector("CVSS:3.1/", true));
+        Assert.assertNull(CvssVector.parseVector("CVSS:4.0/", true));
+        Assert.assertNotNull(CvssVector.parseVector("CVSS:3.1/"));
+        Assert.assertNotNull(CvssVector.parseVector("CVSS:4.0/"));
+    }
+
+    @Test
+    public void parseVectorStrictModeEdgeCasesTest() {
+        // invalid prefix, valid content
+        Assert.assertNull(CvssVector.parseVector("CVSS:XYZ/AV:N/AC:L", true));
+        // valid prefix, invalid content
+        Assert.assertNull(CvssVector.parseVector("CVSS:3.1/THIS:IS/COMPLETELY:INVALID", true));
+        // some more
+        Assert.assertNull(CvssVector.parseVector("CVSS:3.1/AV:N/INVALID:METRIC/AC:L", true));
+        Assert.assertNotNull(CvssVector.parseVector("CVSS:3.1/AV:N/INVALID:METRIC/AC:L"));
+    }
+
+    @Test
+    public void toStringTest() {
+        Assert.assertEquals("AV:A/CDP:L", CvssVector.parseVector("AV:A/CDP:L", true).toString());
+        Assert.assertEquals("AV:A/AC:X/Au:X/C:X/I:X/A:X/E:X/RL:X/RC:X/CDP:L/TD:ND/CR:ND/IR:ND/AR:ND", CvssVector.parseVector("AV:A/CDP:L", true).toString(false));
+        Assert.assertEquals("CVSS:3.1/AV:L/MAV:L", CvssVector.parseVector("CVSS:3.1/AV:L/MAV:L", true).toString());
+        Assert.assertEquals("CVSS:3.1/AV:L/AC:X/PR:X/UI:X/S:X/C:X/I:X/A:X/E:X/RL:X/RC:X/MAV:L/MAC:X/MPR:X/MUI:X/MS:X/MC:X/MI:X/MA:X/CR:X/IR:X/AR:X", CvssVector.parseVector("CVSS:3.1/AV:L/MAV:L", true).toString(false));
+        Assert.assertEquals("CVSS:4.0/AV:L/MAV:L", CvssVector.parseVector("CVSS:4.0/AV:L/MAV:L", true).toString());
+        Assert.assertEquals("CVSS:4.0/AV:L/AC:X/AT:X/PR:X/UI:X/VC:X/VI:X/VA:X/SC:X/SI:X/SA:X/E:X/CR:X/IR:X/AR:X/MAV:L/MAC:X/MAT:X/MPR:X/MUI:X/MVC:X/MVI:X/MVA:X/MSC:X/MSI:X/MSA:X/S:X/AU:X/R:X/V:X/RE:X/U:X", CvssVector.parseVector("CVSS:4.0/AV:L/MAV:L", true).toString(false));
+    }
 }
