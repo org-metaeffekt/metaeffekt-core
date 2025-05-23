@@ -65,7 +65,9 @@
         </table>
     #end
 
-    #insertLicenseTable("tpc_license-summary-$reportContext.id", "LicensesInEffect", $utils.getText("inventory-report-bom.short.licenses-in-effect"), $effectiveLicensesRepresented, false, true)
+    ## FIXME JFU: The licenseDetailsLink seems to be correct, but the template to which it points does not exist
+    ## FIXME JUF: at the time this link is generated. Is this easily fixable ?
+    #insertLicenseTable("tpc_license-summary-$reportContext.id", "LicensesInEffect", $utils.getText("inventory-report-bom.short.licenses-in-effect"), $effectiveLicensesRepresented, true, "tpc_inventory-license-usage.dita#tpc_effective_license_")
 
 </body>
 </topic>
