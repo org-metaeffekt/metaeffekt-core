@@ -485,28 +485,43 @@ public abstract class CvssVector {
     }
 
     /**
-     * Attempts to parse the given vector. This is split into two steps:
-     * <ol>
-     *     <li>Try to discover the vector version using the prefix (e.g. <code>CVSS:3.1</code>)</li>
-     *     <li>Attempt to find a vector implementation that can parse all attributes on the vector, uses the {@link #parseVectorOnlyIfKnownAttributes(String, Supplier)} method</li>
-     * </ol>
+     * See overload {@link CvssVector#parseVector(String, boolean)} for more details.
+     * The <code>strict</code> parameter is set to false, meaning this method will always return a vector if the version is specified explicitly, even if it contains unknown metrics.
      *
      * @param vector the vector to parse
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
     public static CvssVector parseVector(String vector) {
+        return parseVector(vector, false);
+    }
+
+    /**
+     * Attempts to parse the given vector. This is split into two steps:
+     * <ol>
+     *     <li>Try to discover the vector version using the prefix (e.g. <code>CVSS:3.1</code>)</li>
+     *     <li>Attempt to find a vector implementation that can parse all attributes on the vector, uses the {@link #parseVectorOnlyIfKnownAttributes(String, Supplier)} method</li>
+     * </ol>
+     * If the <code>strict</code> parameter is set to true, only fully valid vectors are parsed and for others, <code>null</code> is returned.
+     *
+     * @param vector the vector to parse
+     * @param strict whether <code>null</code> should be returned instead of a partial vector when the vector contains unknown/invalid metrics
+     * @return the parsed vector or <code>null</code> if the vector could not be parsed
+     */
+    public static CvssVector parseVector(String vector, boolean strict) {
         if (vector == null || StringUtils.isEmpty(vector)) {
             return null;
         }
 
+        final Supplier<CvssVector> constructor;
         if (vector.startsWith("CVSS:2.0")) {
-            return new Cvss2(vector);
+            constructor = Cvss2::new;
         } else if (vector.startsWith("CVSS:3.1")) {
-            return new Cvss3P1(vector);
+            constructor = Cvss3P1::new;
         } else if (vector.startsWith("CVSS:3.0")) {
-            return new Cvss3P0(vector);
+            constructor = Cvss3P0::new;
         } else if (vector.startsWith("CVSS:4.0")) {
-            return new Cvss4P0(vector);
+            constructor = Cvss4P0::new;
+
         } else {
             final Cvss2 potentialCvss2Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss2::new);
             if (potentialCvss2Vector != null) {
@@ -531,9 +546,19 @@ public abstract class CvssVector {
 
             return null;
         }
+
+        if (strict) {
+            return CvssVector.parseVectorOnlyIfKnownAttributes(vector, constructor);
+        } else {
+            final CvssVector inst = constructor.get();
+            inst.applyVector(vector);
+            return inst;
+        }
     }
 
     /* SERIALIZATION */
+
+    public abstract String toString(boolean filterUndefinedProperties);
 
     public JSONObject toJson() {
         final JSONObject json = new JSONObject();

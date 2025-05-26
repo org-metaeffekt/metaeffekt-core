@@ -601,23 +601,25 @@ public final class Cvss2 extends MultiScoreCvssVector {
     }
 
     @Override
-    public String toString() {
+    public String toString(boolean filterUndefinedProperties) {
         final StringBuilder vector = new StringBuilder();
 
-        appendIfValid(vector, "AV", accessVector.shortIdentifier);
-        appendIfValid(vector, "AC", accessComplexity.shortIdentifier);
-        appendIfValid(vector, "Au", authentication.shortIdentifier);
-        appendIfValid(vector, "C", confidentialityImpact.shortIdentifier);
-        appendIfValid(vector, "I", integrityImpact.shortIdentifier);
-        appendIfValid(vector, "A", availabilityImpact.shortIdentifier);
-        appendIfValid(vector, "E", exploitability.shortIdentifier);
-        appendIfValid(vector, "RL", remediationLevel.shortIdentifier);
-        appendIfValid(vector, "RC", reportConfidence.shortIdentifier);
-        appendIfValid(vector, "CDP", collateralDamagePotential.shortIdentifier);
-        appendIfValid(vector, "TD", targetDistribution.shortIdentifier);
-        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier);
-        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier);
-        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier);
+        boolean appendAnyways = !filterUndefinedProperties;
+
+        appendIfValid(vector, "AV", accessVector.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "AC", accessComplexity.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "Au", authentication.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "C", confidentialityImpact.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "I", integrityImpact.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "A", availabilityImpact.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "E", exploitability.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "RL", remediationLevel.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "RC", reportConfidence.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "CDP", collateralDamagePotential.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "TD", targetDistribution.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier, appendAnyways);
 
         if (vector.length() > 0 && vector.charAt(vector.length() - 1) == '/') {
             vector.setLength(vector.length() - 1);
@@ -626,8 +628,13 @@ public final class Cvss2 extends MultiScoreCvssVector {
         return vector.toString();
     }
 
-    private void appendIfValid(StringBuilder builder, String prefix, String value) {
-        if (value != null && !value.equals("X")) {
+    @Override
+    public String toString() {
+        return toString(true);
+    }
+
+    private void appendIfValid(StringBuilder builder, String prefix, String value, boolean appendAnyways) {
+        if (value != null && (appendAnyways || !(value.equals("X") || value.equals("ND")))) {
             if (builder.length() > 0) {
                 builder.append('/');
             }
