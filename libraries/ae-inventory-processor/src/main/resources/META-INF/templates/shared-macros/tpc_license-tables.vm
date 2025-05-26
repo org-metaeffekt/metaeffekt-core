@@ -1,4 +1,4 @@
-#macro (insertLicenseTable $topicId $id $title $licenseList $useRepresentedLicenses $licenseDetailsLink)
+#macro (insertLicenseTable $topicId $id $title $licenseList $useRepresentedLicenses $optionalRefPrefix)
 <table id="$id">
     <title>$title$reportContext.withTitle()</title>
     #if($configParams.enableOpenCodeStatus)
@@ -32,6 +32,13 @@
         </row>
         </thead>
     #end
+
+    #if($optionalRefPrefix == "")
+        #set($refPrefix = "#tpc_associated_license_details_")
+    #else
+        #set($refPrefix = $optionalRefPrefix)
+    #end
+
     #set($osiStatusMap = $inventoryReportAdapter.getOsiStatusMap($configParams, $utils))
     #set($openCoDEStatusMap = $inventoryReportAdapter.getOpenCodeStatusMap($configParams, $utils))
     
@@ -48,7 +55,7 @@
             <row>
                 #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
                     <entry>
-                        <xref href="$licenseDetailsLink$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                        <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
                         <xref href="#$topicId/represented-licenses-fn" type="fn"/>
                     </entry>
                     <entry>
@@ -86,7 +93,7 @@
                     #end
                 #else
                     <entry>
-                        <xref href="$licenseDetailsLink$inventory.deriveLicenseId($license)" type="topic"> $report.xmlEscapeLicense($license)</xref>
+                        <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic"> $report.xmlEscapeLicense($license)</xref>
                     </entry>
                     <entry>
                         #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
@@ -119,7 +126,7 @@
                 #end
                 #set($assetData=$report.getAssetData($inventory))
                 <entry>
-                    <xref href="$licenseDetailsLink$inventory.deriveLicenseId($license)" type="topic">
+                    <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
                         #set($countForAsset=$assetData.countAssetsWithRepresentedAssociatedLicense($license, true))
                         #if(!$countForAsset==0)
                             <codeph>$countForAsset</codeph>
