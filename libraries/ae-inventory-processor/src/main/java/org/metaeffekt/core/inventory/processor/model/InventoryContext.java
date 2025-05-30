@@ -19,6 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 
+import java.io.File;
+
 /**
  * Represents the context for a specific inventory, providing the necessary metadata and references to facilitate
  * document generation.
@@ -53,11 +55,11 @@ public class InventoryContext {
      */
     private String inventoryVersion;
 
-    /**
-     * This inventory is used as a reference for e.g. handling of unknown fields, etc. If no reference seems fit, set
-     * this to the same inventory as the inventory of this context.
-     */
-    private Inventory referenceInventory;
+    private InventoryContext referenceInventoryContext;
+
+    private File licensePath;
+
+    private File componentPath;
 
     /**
      * Fields that are passed to reportContext for inventoryReport generation.
@@ -66,13 +68,14 @@ public class InventoryContext {
     private String reportContextTitle;
     private String reportContext;
 
-    public InventoryContext(Inventory inventory, Inventory referenceInventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion) {
+    public InventoryContext(Inventory inventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion, File licensePath, File componentPath) {
         this.inventory = inventory;
         this.identifier = identifier;
-        this.referenceInventory = referenceInventory;
         this.reportContextTitle = reportContextTitle;
         this.reportContext = reportContext;
         this.inventoryVersion = inventoryVersion;
+        this.licensePath = licensePath;
+        this.componentPath = componentPath;
     }
 
     public void validate() {
@@ -83,10 +86,6 @@ public class InventoryContext {
         // check if the identifier is set
         if (identifier == null) {
             throw new IllegalStateException("The identifier must be specified");
-        }
-        // check if the referenceInventory is set
-        if (referenceInventory == null) {
-            throw new IllegalStateException("The referenceInventory must be specified");
         }
         // check if the reportContextTitle is set
         if (reportContextTitle == null) {

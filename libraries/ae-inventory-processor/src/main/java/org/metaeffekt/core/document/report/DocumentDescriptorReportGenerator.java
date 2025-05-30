@@ -178,20 +178,21 @@ public class DocumentDescriptorReportGenerator {
                         }
                 }
 
-                report.setReferenceInventory(inventoryContext.getReferenceInventory());
+                if (inventoryContext.getReferenceInventoryContext() != null) {
+                    report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
+                    report.setReferenceComponentPath(inventoryContext.getReferenceInventoryContext().getComponentPath().getPath());
+                    report.setReferenceLicensePath(inventoryContext.getReferenceInventoryContext().getLicensePath().getPath());
+
+                } else {
+                    report.setReferenceInventory(inventoryContext.getInventory());
+                    report.setReferenceComponentPath("component");
+                    report.setReferenceLicensePath("license");
+                }
                 report.setInventory(inventoryContext.getInventory());
 
                 // these fields were originally part of DocumentDescriptorReportContext, however we decided that these seem
                 // to be default values that we do not need to change for different DocumentDescriptors, thus we set them here
-                report.setReferenceComponentPath("components");
-                report.setReferenceLicensePath("licenses");
 
-                if (mergedParams.get("referenceLicensePath") != null) {
-                    report.setReferenceLicensePath(mergedParams.get("referenceLicensePath"));
-                }
-                if (mergedParams.get("referenceComponentPath") != null) {
-                    report.setReferenceComponentPath(mergedParams.get("referenceComponentPath"));
-                }
                 if (mergedParams.get("LicensesDir") == null) {
                     report.setTargetLicenseDir(new File("license"));
                     log.info("used default targetLicensesDir as 'license'");
@@ -199,7 +200,7 @@ public class DocumentDescriptorReportGenerator {
                     report.setTargetLicenseDir(new File(mergedParams.get("targetLicensesDir")));
                 }
                 if (mergedParams.get("targetComponentDir") == null) {
-                    report.setTargetLicenseDir(new File("component"));
+                    report.setTargetComponentDir(new File("component"));
                     log.info("used default targetComponentDir as 'component'");
                 } else {
                     report.setTargetComponentDir(new File(mergedParams.get("targetComponentDir")));
