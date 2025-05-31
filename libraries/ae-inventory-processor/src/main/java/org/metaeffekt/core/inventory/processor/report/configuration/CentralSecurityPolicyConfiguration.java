@@ -732,7 +732,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         }
 
         if (jsonFile == null && jsonOverwrite == null) {
-            return new CentralSecurityPolicyConfiguration();
+            throw new IOException("Failed because no security policy configuration file was provided.");
         }
 
         final JSONObject effectiveApplyJson = new JSONObject();
