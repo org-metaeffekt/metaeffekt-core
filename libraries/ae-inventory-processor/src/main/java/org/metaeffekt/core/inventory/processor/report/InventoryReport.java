@@ -27,7 +27,6 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.json.JSONArray;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -38,9 +37,6 @@ import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityRepor
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
@@ -143,12 +139,6 @@ public class InventoryReport {
      * Project name initialized with default value.
      */
     private String projectName = "local project";
-
-    /**
-     * For which advisory providers to generate additional tables in the overview section containing statistic data on
-     * which vulnerabilities have already been reviewed.
-     */
-    private final List<AeaaAdvisoryTypeIdentifier<?>> generateOverviewTablesForAdvisories = new ArrayList<>();
 
     private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
@@ -1026,7 +1016,6 @@ public class InventoryReport {
         LOG.info("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
 
         LOG.info("- Data display settings:");
-        LOG.info(" - generateOverviewTablesForAdvisories: {}", generateOverviewTablesForAdvisories.stream().map(AeaaContentIdentifierStore.AeaaContentIdentifier::toExtendedString).collect(Collectors.toList()));
         logConfigurationLogToString("artifactFilter", artifactFilter);
         logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", configParams.isFilterVulnerabilitiesNotCoveredByArtifacts());
         logConfigurationLogToString("filterAdvisorySummary", configParams.isFilterAdvisorySummary());
@@ -1193,33 +1182,6 @@ public class InventoryReport {
 
     public File getGlobalInventoryDir() {
         return referenceInventoryDir;
-    }
-
-    public void addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeIdentifier<?>... providers) {
-        if (providers == null || providers.length == 0) {
-            return;
-        }
-        this.addGenerateOverviewTablesForAdvisories(Arrays.asList(providers));
-    }
-
-    public void addGenerateOverviewTablesForAdvisories(Collection<AeaaAdvisoryTypeIdentifier<?>> providers) {
-        this.generateOverviewTablesForAdvisories.addAll(providers);
-    }
-
-    public void addGenerateOverviewTablesForAdvisoriesByMap(Map<String, String> providers) {
-        if (providers == null || providers.isEmpty()) {
-            return;
-        }
-        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromMapNamesAndImplementations(providers);
-        this.generateOverviewTablesForAdvisories.addAll(parsed);
-    }
-
-    public void addGenerateOverviewTablesForAdvisoriesByMap(JSONArray providers) {
-        if (providers == null || providers.isEmpty()) {
-            return;
-        }
-        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(providers);
-        this.generateOverviewTablesForAdvisories.addAll(parsed);
     }
 
     public AssetData getAssetData(Inventory inventory) {

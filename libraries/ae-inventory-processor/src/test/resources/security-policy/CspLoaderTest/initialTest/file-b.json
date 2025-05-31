@@ -1,0 +1,7 @@
+[
+  {
+    "id": "config c",
+    "activeByDefault": true,
+    "configuration": "file-c.json"
+  }
+]

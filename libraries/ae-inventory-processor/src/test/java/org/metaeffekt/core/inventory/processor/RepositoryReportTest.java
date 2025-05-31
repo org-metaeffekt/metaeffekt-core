@@ -31,13 +31,12 @@ import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfig
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertFalse;
@@ -65,6 +64,8 @@ public class RepositoryReportTest {
                 .inventoryBomReportEnabled(true)
                 .build());
 
+        report.getSecurityPolicy().setGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.toJson(Arrays.asList(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.GHSA, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC)));
+
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
 
         report.setReferenceInventoryDir(inventoryDir);
@@ -81,7 +82,7 @@ public class RepositoryReportTest {
         File target = new File("target/test-inventory-01");
         target.mkdirs();
 
-        File  targetReportPath = new File(target, "report");
+        File targetReportPath = new File(target, "report");
         targetReportPath.mkdirs();
 
         File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
@@ -276,10 +277,10 @@ public class RepositoryReportTest {
                 .build());
 
 
-        report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.ANY_ADVISORY_FILTER_WILDCARD);
         report.getSecurityPolicy()
                 // .setIncludeVulnerabilitiesWithAdvisoryProviders(Collections.singletonList("GHSA"))
-                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
+                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
+                .setGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.toJson(Collections.singletonList(AeaaAdvisoryTypeStore.ANY_ADVISORY_FILTER_WILDCARD)));
 
         configureAndCreateReport(inventoryDir, "*.xls",
                 inventoryDir, "*.xls",
@@ -362,7 +363,7 @@ public class RepositoryReportTest {
         File target = new File("target/test-inventory-05");
         target.mkdirs();
 
-        File  targetReportPath = new File(target, "report");
+        File targetReportPath = new File(target, "report");
         targetReportPath.mkdirs();
 
         File licenseReport = new File(targetReportPath, "tpc_inventory-licenses.dita");
@@ -430,12 +431,12 @@ public class RepositoryReportTest {
 
         report.setTargetReportDir(new File(reportTarget, "report"));
 
-        report.addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.GHSA, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC);
         report.getSecurityPolicy()
                 .setInsignificantThreshold(7)
                 .setIncludeScoreThreshold(0)
                 .setIncludeAdvisoryTypes(Arrays.asList("alert", "notice"))
-                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED);
+                .setVulnerabilityStatusDisplayMapper(CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED)
+                .setGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeStore.toJson(Arrays.asList(AeaaAdvisoryTypeStore.CERT_FR, AeaaAdvisoryTypeStore.GHSA, AeaaAdvisoryTypeStore.CERT_SEI, AeaaAdvisoryTypeStore.MSRC)));
 
         reportTarget.mkdirs();
 
