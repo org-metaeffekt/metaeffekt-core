@@ -1,0 +1,203 @@
+#macro (insertLicenseTable $topicId $id $title $licenseList $useRepresentedLicenses $optionalRefPrefix)
+<table id="$id">
+    <title>$title$reportContext.withTitle()</title>
+    #if($configParams.enableOpenCodeStatus)
+    <tgroup cols="5">
+        <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
+        <colspec colname="COLSPEC1" colnum="2" colwidth="18*"/>
+        <colspec colname="COLSPEC2" colnum="3" colwidth="13*"/>
+        <colspec colname="COLSPEC3" colnum="4" colwidth="11*"/>
+        <colspec colname="COLSPEC4" colnum="5" colwidth="8*"/>
+        <thead>
+        <row>
+            <entry colname="COLSPEC0" valign="top">$utils.getText("inventory-report-bom.license-overview-title")</entry>
+            <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+            <entry colname="COLSPEC2" valign="top">OSI Status</entry>
+            <entry colname="COLSPEC3" valign="top">Open CoDE Approval</entry>
+            <entry colname="COLSPEC4" valign="top">$utils.getText("general.short.count")</entry>
+        </row>
+        </thead>
+    #else
+    <tgroup cols="4">
+        <colspec colname="COLSPEC0" colnum="1" colwidth="53*" />
+        <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
+        <colspec colname="COLSPEC2" colnum="3" colwidth="10*" />
+        <colspec colname="COLSPEC3" colnum="4" colwidth="12*" />
+        <thead>
+        <row>
+            <entry colname="COLSPEC0" valign="top">$utils.getText("inventory-report-bom.short.licenses-in-effect")</entry>
+            <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
+            <entry colname="COLSPEC2" valign="top">OSI Status</entry>
+            <entry colname="COLSPEC3" valign="top">$utils.getText("general.short.count")</entry>
+        </row>
+        </thead>
+    #end
+
+    #if($optionalRefPrefix == "")
+        #set($refPrefix = "#tpc_associated_license_details_")
+    #else
+        #set($refPrefix = $optionalRefPrefix)
+    #end
+
+    #set($osiStatusMap = $inventoryReportAdapter.getOsiStatusMap($configParams, $utils))
+    #set($openCoDEStatusMap = $inventoryReportAdapter.getOpenCodeStatusMap($configParams, $utils))
+    
+    #if($useRepresentedLicenses)
+        #set($filteredLicenseList = $inventory.getRepresentedLicenses($licenseList))
+    #else
+        #set($filteredLicenseList = $licenseList)
+    #end
+    
+    <tbody>
+        #foreach($license in $filteredLicenseList)
+            #if(!$license.contains("+"))
+            #set($licenseData=$inventory.findMatchingLicenseData($license))
+            <row>
+                #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
+                    <entry>
+                        <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                        <xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                    </entry>
+                    <entry>
+                        #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
+                            $report.xmlEscapeString($licenseData.get('SPDX Id'))
+                        #else
+                            &nbsp;
+                        #end
+                    </entry>
+                    <entry>
+                        #if ($licenseData)
+                            #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
+                            #if ($mappedStatus)
+                                $mappedStatus<xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                            #end
+                        #else
+                            &nbsp;
+                        #end
+                    </entry>
+                    #if($configParams.enableOpenCodeStatus)
+                        <entry>
+                            #if ($licenseData)
+                                #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                                #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
+                                    $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)
+                                    <xref href="#$topicId/id-opencode-similar-fn" type="fn"/> <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                #elseif ($mappedStatus)
+                                    $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils) <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                #end
+                            #else
+                                &nbsp;
+                            #end
+                        </entry>
+                    #end
+                #else
+                    <entry>
+                        <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic"> $report.xmlEscapeLicense($license)</xref>
+                    </entry>
+                    <entry>
+                        #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
+                            $report.xmlEscapeString($licenseData.get('SPDX Id'))
+                        #else
+                            &nbsp;
+                        #end
+                    </entry>
+                    <entry>
+                        #if ($licenseData)
+                            $reportContext.map($licenseData.get("OSI Status"), $osiStatusMap,"&nbsp;")
+                        #else
+                            &nbsp;
+                        #end
+                    </entry>
+                    #if($configParams.enableOpenCodeStatus)
+                        <entry>
+                            #if ($licenseData)
+                                #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                                #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
+                                    $mappedStatus <xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
+                                #elseif ($mappedStatus)
+                                    $mappedStatus
+                                #end
+                            #else
+                                &nbsp;
+                            #end
+                        </entry>
+                    #end
+                #end
+                #set($assetData=$report.getAssetData($inventory))
+                <entry>
+                    <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
+                        #set($countForAsset=$assetData.countAssetsWithRepresentedAssociatedLicense($license, true))
+                        #if(!$countForAsset==0)
+                            <codeph>$countForAsset</codeph>
+                        #else
+                            <codeph>$inventory.countComponents($license)</codeph>
+                        #end
+                    </xref>
+                </entry>
+            </row>
+            #end
+        #end
+    </tbody>
+</tgroup>
+</table>
+#end
+#macro (insertLicenseAssetTopic $license)
+    #set($assetData=$report.getAssetData($inventory))
+    #set($folder=$inventory.getLicenseFolder($license))
+    #set($assetLicenseDataList=$assetData.evaluateAssets($license))
+    #if(!$assetLicenseDataList.isEmpty())
+    <topic id="tpc_associated_license_details_$inventory.deriveLicenseId($license)">
+        <title>$report.xmlEscapeLicense($license)</title>
+        <body>
+        <p>
+            $utils.getText("asset-report-bom.license-asset-topic")
+            #if($folder)
+                $utils.getText("asset-report-bom.license-asset-topic-location")
+                <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
+                      scope="external">$report.xmlEscapeString($license)
+                    [external]
+                </xref>
+            #end
+        </p>
+        <p>
+        <table otherprops="wide">
+            <tgroup cols="3">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="10*"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="70*"/>
+                <colspec colname="COLSPEC2" colnum="3" colwidth="20*"/>
+                <thead>
+                <row>
+                    <entry colname="COLSPEC0" valign="top">Type</entry>
+                    <entry colname="COLSPEC1" valign="top">Name / Repository</entry>
+                    <entry colname="COLSPEC2" valign="top">Version / Tag</entry>
+                </row>
+                </thead>
+                <tbody>
+                    #foreach($assetLicenseData in $assetLicenseDataList)
+                    <row>
+                        <entry>
+                            $report.xmlEscapeString($assetLicenseData.getAssetType())
+                        </entry>
+                        <entry>
+                            <codeph>$report.xmlEscapeArtifactId($assetLicenseData.getAssetName())</codeph>
+                        </entry>
+                        <entry>
+                            <codeph>$report.xmlEscapeGAV($assetLicenseData.getAssetVersion())</codeph>
+                        </entry>
+                    </row>
+                    #end
+                </tbody>
+            </tgroup>
+        </table>
+        </p>
+        </body>
+    </topic>
+    #end
+#end
+#macro (print_if_exist $field $default)
+    #if($field && "$field" !="")
+    "$field"
+    #else
+    "$default"
+    #end
+#end
