@@ -34,10 +34,31 @@ import java.util.stream.Collectors;
 @Data
 public class CspLoader {
     private String inlineOverwriteJson;
-    private List<File> policyFiles = new ArrayList<>();
+    private File file;
+    private List<File> files = new ArrayList<>();
     private List<String> activeIds = new ArrayList<>();
 
-    public CentralSecurityPolicyConfiguration loadConfiguration() throws IOException {
+    public void addFile(File... files) {
+        this.files.addAll(Arrays.asList(files));
+    }
+
+    public List<File> getFiles() {
+        final List<File> policyFiles = new ArrayList<>(files);
+        if (file != null) policyFiles.add(file);
+        return Collections.unmodifiableList(policyFiles);
+    }
+
+    public CentralSecurityPolicyConfiguration loadConfiguration() {
+        try {
+            return this.loadConfigurationInternal();
+        } catch (IOException e) {
+            throw new RuntimeException("CSP loader failed to create Central Security Policy instance from parameters.", e);
+        }
+    }
+
+    protected CentralSecurityPolicyConfiguration loadConfigurationInternal() throws IOException {
+        final List<File> policyFiles = this.getFiles();
+
         if (policyFiles.isEmpty() && StringUtils.isEmpty(inlineOverwriteJson)) {
             log.info("[csp-loader] No policyFiles or inlineOverwriteJson were provided, using default Central Security Policy instance");
             return new CentralSecurityPolicyConfiguration();
@@ -251,11 +272,7 @@ public class CspLoader {
             }
 
         } else {
-            try {
-                return cspLoader.loadConfiguration();
-            } catch (IOException e) {
-                throw new RuntimeException("CSP loader failed to create Central Security Policy instance from parameters.", e);
-            }
+            return cspLoader.loadConfiguration();
         }
     }
 }

@@ -30,8 +30,8 @@ public class CspLoaderTest {
     @Test
     public void initialTest() throws IOException {
         final CspLoader loader = new CspLoader();
-        loader.getPolicyFiles().add(new File(RESOURCE_DIR, "initialTest/file-a.json"));
-        loader.getPolicyFiles().add(new File(RESOURCE_DIR, "initialTest/file-b.json"));
+        loader.setFile(new File(RESOURCE_DIR, "initialTest/file-a.json")); // test via single file property
+        loader.addFile(new File(RESOURCE_DIR, "initialTest/file-b.json")); // and via file list property
 
         loader.setActiveIds(Arrays.asList("config d", "config a"));
         final CentralSecurityPolicyConfiguration resultPolicy1 = loader.loadConfiguration();
@@ -57,17 +57,17 @@ public class CspLoaderTest {
     public void invalidKeysTest() {
         Assert.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
-            loader.getPolicyFiles().add(new File(RESOURCE_DIR, "invalidTest/keys-1.json"));
+            loader.addFile(new File(RESOURCE_DIR, "invalidTest/keys-1.json"));
             loader.loadConfiguration();
         });
         Assert.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
-            loader.getPolicyFiles().add(new File(RESOURCE_DIR, "invalidTest/keys-2.json"));
+            loader.addFile(new File(RESOURCE_DIR, "invalidTest/keys-2.json"));
             loader.loadConfiguration();
         });
         Assert.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
-            loader.getPolicyFiles().add(new File(RESOURCE_DIR, "invalidTest/keys-3.json"));
+            loader.addFile(new File(RESOURCE_DIR, "invalidTest/keys-3.json"));
             loader.loadConfiguration();
         });
     }

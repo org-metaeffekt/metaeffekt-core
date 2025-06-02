@@ -228,35 +228,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     // vulnerability report parameters
 
     /**
-     * @parameter
-     * @deprecated Use {@link AbstractInventoryReportCreationMojo#cspLoader} instead
-     */
-    private CentralSecurityPolicyConfiguration securityPolicy;
-
-    /**
-     * If set, will overwrite the {@link #securityPolicy} with the contents of this file.<br>
-     * If the {@link #securityPolicyOverwriteJson} is set, the properties of both will be merged.
-     *
-     * @parameter
-     * @deprecated Use {@link AbstractInventoryReportCreationMojo#cspLoader} instead
-     */
-    private File securityPolicyFile;
-
-    /**
-     * If set, will overwrite the {@link #securityPolicy} with the contents of this JSON string.<br>
-     * If the {@link #securityPolicyFile} is set, the properties of both will be merged.
-     *
-     * @parameter
-     * @deprecated Use {@link AbstractInventoryReportCreationMojo#cspLoader} instead
-     */
-    private String securityPolicyOverwriteJson;
-
-    /**
      * The CspLoader instance that will provide the {@link CentralSecurityPolicyConfiguration} instance to use for report generation.
      *
      * @parameter
      */
-    private CspLoader cspLoader = new CspLoader();
+    private CspLoader securityPolicy = new CspLoader();
 
     /**
      * @parameter default-value="false"
@@ -352,7 +328,7 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setTargetComponentDir(targetComponentDir);
 
         // vulnerability settings
-        final CentralSecurityPolicyConfiguration activeSecurityPolicy = CspLoader.legacyParsing(this.securityPolicy, this.securityPolicyFile, this.securityPolicyOverwriteJson, this.cspLoader);
+        final CentralSecurityPolicyConfiguration activeSecurityPolicy = this.securityPolicy.loadConfiguration();
 
         // log the security policy only when it fits the context -->
         if (enableAssessmentReport || enableVulnerabilityReport || enableVulnerabilityReportSummary || enableVulnerabilityStatisticsReport) {
