@@ -159,8 +159,8 @@ public class DocumentDescriptorReport {
 
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                String assetName = inventoryContext.getReportContextTitle();
-                String assetVersion = inventoryContext.getInventoryVersion();
+                String assetName = inventoryContext.getAssetName();
+                String assetVersion = inventoryContext.getAssetVersion();
 
                 // Skip if assetName or version is null
                 if (assetName == null || assetVersion == null) continue;
