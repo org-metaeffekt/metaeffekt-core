@@ -19,8 +19,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 
-import java.io.File;
-
 /**
  * Represents the context for a specific inventory, providing the necessary metadata and references to facilitate
  * document generation.
@@ -57,9 +55,9 @@ public class InventoryContext {
 
     private InventoryContext referenceInventoryContext;
 
-    private File licensePath;
+    private String licensesPath;
 
-    private File componentPath;
+    private String componentsPath;
 
     /**
      * Fields that are passed to reportContext for inventoryReport generation.
@@ -68,14 +66,14 @@ public class InventoryContext {
     private String reportContextTitle;
     private String reportContext;
 
-    public InventoryContext(Inventory inventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion, File licensePath, File componentPath) {
+    public InventoryContext(Inventory inventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion, String licensesPath, String componentsPath) {
         this.inventory = inventory;
         this.identifier = identifier;
         this.reportContextTitle = reportContextTitle;
         this.reportContext = reportContext;
         this.inventoryVersion = inventoryVersion;
-        this.licensePath = licensePath;
-        this.componentPath = componentPath;
+        this.licensesPath = licensesPath;
+        this.componentsPath = componentsPath;
     }
 
     public void validate() {

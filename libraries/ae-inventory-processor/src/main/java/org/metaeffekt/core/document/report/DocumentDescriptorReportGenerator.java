@@ -180,8 +180,8 @@ public class DocumentDescriptorReportGenerator {
 
                 if (inventoryContext.getReferenceInventoryContext() != null) {
                     report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
-                    report.setReferenceComponentPath(inventoryContext.getReferenceInventoryContext().getComponentPath().getPath());
-                    report.setReferenceLicensePath(inventoryContext.getReferenceInventoryContext().getLicensePath().getPath());
+                    report.setReferenceComponentPath(inventoryContext.getReferenceInventoryContext().getComponentsPath());
+                    report.setReferenceLicensePath(inventoryContext.getReferenceInventoryContext().getLicensesPath());
 
                 } else {
                     report.setReferenceInventory(inventoryContext.getInventory());
