@@ -1,5 +1,5 @@
-#parse("META-INF/templates/asset-report-bom/macros/tpc_inventory-license.dita.vm")
-<?xml version="1.0" encoding="utf-8"?>
+#parse("META-INF/templates/shared-macros/tpc_license-tables.vm")
+#parse("META-INF/templates/shared-macros/tpc_license-tables.vm")<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_asset-license-summary-$reportContext.id">
     <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-licenses"), true)</title>
@@ -11,14 +11,16 @@
     <p>$utils.getText("asset-report-bom.asset-table-descr")</p>
     <p>$utils.getText("asset-report-bom.asset-table-note")</p>
         #if ($assetData.isLicenseSubstructureRequired())
-            $utils.getText("asset-report-bom.asset-table-foot-note")
+            <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>
         #end
-        #if ($assetData.isIncludesOpenCoDESimilarLicense())
-        <fn id="id-opencode-similar">$utils.getText("asset-report-bom.open-code-similar")</fn>
+        #if ($configParams.isEnableOpenCodeStatus())
+        <fn id="id-opencode-similar-fn">$utils.getText("general.open-code-footnote")</fn>
+        <fn id="id-opencode-represented-fn">$utils.getText("general.open-code-multiple-footnote")</fn>
         #end
 
+
 #if (!$singleLicenses.isEmpty())
-    #insertLicenseTable("AssociatedLicenses", "Asset Licenses", $singleLicenses, true)
+    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", "AssociatedLicenses", "Asset Licenses", $singleLicenses, true, "")
 #end
 
     #if (!$licenseExpressions.isEmpty())
@@ -41,7 +43,7 @@
                                 #if ($assetData.isLicenseSubstructureRequired($license))
                                     <entry>
                                         <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
-                                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/id-footnote" type="fn"/>
+                                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/represented-licenses-fn" type="fn"/>
                                         </xref>
                                     </entry>
                                 #else
@@ -74,13 +76,13 @@
             <title>$report.xmlEscapeLicense($license)</title>
             <body>
                 <p>
-                    $utils.getText("asset-report-bom.license-detail-notice")
+                    $utils.getText("general.license-detail-notice")
                 </p>
                 <p>
-                    #insertLicenseTable($license, $utils.getText("general.short.license-variants"), $licenseList, false)
+                    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", $license, $utils.getText("general.short.license-variants"), $licenseList, false, "")
                 </p>
 
-                #foreach($associatedLicense in $assetData.getLicensesForRepresentedLicense($license))
+                #foreach($associatedLicense in $licenseList)
                    #insertLicenseAssetTopic($associatedLicense)
                 #end
             </body>

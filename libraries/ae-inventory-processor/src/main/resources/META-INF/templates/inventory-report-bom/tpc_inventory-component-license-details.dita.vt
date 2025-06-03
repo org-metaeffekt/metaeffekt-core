@@ -84,16 +84,16 @@
                                         <entry>
                                             <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
                                         </entry>
-                                        #set($licenses=$inventory.getEffectiveLicenses($artifact))
-                                        #set($licensesAsString=$inventory.getEffectiveLicense($artifact))
-                                        #if($licenses.isEmpty())
-                                            <entry>&nbsp;</entry>
+                                        #set($effectiveLicenses=$inventory.getEffectiveLicenses($artifact))
+                                        #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+                                        #if($effectiveLicensesRepresented.isEmpty())
+                                          <entry>&nbsp;</entry>
                                         #else
                                             <entry>
-## preserve formating to achive proper line-breaks
-<lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
-#else$report.xmlEscapeLicense($license)
-#end#end</lines>
+                                                ## preserve formating to achive proper line-breaks
+                                              <lines>#foreach($license in $effectiveLicensesRepresented)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                                              #else$report.xmlEscapeLicense($license)
+                                              #end#end</lines>
                                             </entry>
                                         #end
                                     </row>

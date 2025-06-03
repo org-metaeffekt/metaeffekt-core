@@ -1,29 +1,36 @@
 #parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+#parse("META-INF/templates/shared-macros/tpc_license-tables.vm")
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_license-usage-$reportContext.id">
-    <title>$utils.getText("inventory-report-bom.short.license-usage-title")</title>
+  <title>$utils.getText("inventory-report-bom.short.license-usage-title")</title>
     #set($effectiveLicenses=$inventory.evaluateLicenses(false))
     #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
 
-
-    <body>
+  <body>
     <p>$utils.getText("inventory-report-bom.effective-license-table")</p>
-</body>
+  </body>
 
-#foreach($license in $effectiveLicensesRepresented)
-    #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
-        #insertLicenseArtifactTopic($license)
-    #else
+    #foreach($license in $effectiveLicensesRepresented)
+        #if($inventory.isSubstructureRequired($license, $effectiveLicensesRepresented) == false)
+          #insertLicenseArtifactTopic($license)
+        #else
         <topic id="tpc_effective_license_$inventory.deriveLicenseId($license)">
-            <title>$report.xmlEscapeLicense($license) $utils.getText("general.short.variants")</title>
+
+          <title>$report.xmlEscapeLicense($license) $utils.getText("general.short.variants")</title>
             <body>
-                <p>$utils.getText("inventory-report-bom.license-variations")</p>
-                    #foreach($effLicense in $inventory.getLicensesRepresentedBy($license))
-                    #insertLicenseArtifactTopic($effLicense)
-                    #end
+              <p>$utils.getText("inventory-report-bom.license-variations")</p>
+
+                #set($licensesRepresentedBy=$inventory.getLicensesRepresentedBy($license))
+
+                #insertLicenseTable("tpc_effective_license_$reportContext.id", $license,"Inventory Licenses", $licensesRepresentedBy, false, "")
             </body>
-        </topic>
+          <body>
+                #foreach($effLicense in $licensesRepresentedBy)
+                    #insertLicenseArtifactTopic($effLicense)
+                #end
+            </body>
+          </topic>
+        #end
     #end
-#end
 </topic>
