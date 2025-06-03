@@ -185,8 +185,6 @@ public class DocumentDescriptorReportGenerator {
 
                 } else {
                     report.setReferenceInventory(inventoryContext.getInventory());
-                    report.setReferenceComponentPath("component");
-                    report.setReferenceLicensePath("license");
                 }
                 report.setInventory(inventoryContext.getInventory());
 
