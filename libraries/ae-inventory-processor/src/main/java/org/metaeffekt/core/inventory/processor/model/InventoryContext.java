@@ -53,11 +53,11 @@ public class InventoryContext {
      */
     private String inventoryVersion;
 
-    /**
-     * This inventory is used as a reference for e.g. handling of unknown fields, etc. If no reference seems fit, set
-     * this to the same inventory as the inventory of this context.
-     */
-    private Inventory referenceInventory;
+    private InventoryContext referenceInventoryContext;
+
+    private String licensesPath;
+
+    private String componentsPath;
 
     /**
      * Fields that are passed to reportContext for inventoryReport generation.
@@ -66,13 +66,14 @@ public class InventoryContext {
     private String reportContextTitle;
     private String reportContext;
 
-    public InventoryContext(Inventory inventory, Inventory referenceInventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion) {
+    public InventoryContext(Inventory inventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion, String licensesPath, String componentsPath) {
         this.inventory = inventory;
         this.identifier = identifier;
-        this.referenceInventory = referenceInventory;
         this.reportContextTitle = reportContextTitle;
         this.reportContext = reportContext;
         this.inventoryVersion = inventoryVersion;
+        this.licensesPath = licensesPath;
+        this.componentsPath = componentsPath;
     }
 
     public void validate() {
@@ -83,10 +84,6 @@ public class InventoryContext {
         // check if the identifier is set
         if (identifier == null) {
             throw new IllegalStateException("The identifier must be specified");
-        }
-        // check if the referenceInventory is set
-        if (referenceInventory == null) {
-            throw new IllegalStateException("The referenceInventory must be specified");
         }
         // check if the reportContextTitle is set
         if (reportContextTitle == null) {
