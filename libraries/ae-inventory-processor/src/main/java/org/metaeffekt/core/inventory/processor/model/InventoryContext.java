@@ -51,7 +51,7 @@ public class InventoryContext {
     /**
      * The version of the defined inventory context.
      */
-    private String inventoryVersion;
+    private String assetVersion;
 
     private InventoryContext referenceInventoryContext;
 
@@ -63,15 +63,13 @@ public class InventoryContext {
      * Fields that are passed to reportContext for inventoryReport generation.
      */
     // FIXME: consider renaming these, currently the name is identical to the fields in reportContext.java, however these names do not make a lot of sense in this context
-    private String reportContextTitle;
+    private String assetName;
     private String reportContext;
 
-    public InventoryContext(Inventory inventory, String identifier, String reportContextTitle, String reportContext, String inventoryVersion, String licensesPath, String componentsPath) {
+    public InventoryContext(Inventory inventory, String identifier, String reportContext, String licensesPath, String componentsPath) {
         this.inventory = inventory;
         this.identifier = identifier;
-        this.reportContextTitle = reportContextTitle;
         this.reportContext = reportContext;
-        this.inventoryVersion = inventoryVersion;
         this.licensesPath = licensesPath;
         this.componentsPath = componentsPath;
     }
@@ -85,17 +83,9 @@ public class InventoryContext {
         if (identifier == null) {
             throw new IllegalStateException("The identifier must be specified");
         }
-        // check if the reportContextTitle is set
-        if (reportContextTitle == null) {
-            throw new IllegalStateException("The reportContextTitle must be specified");
-        }
         // check if the reportContext is set
         if (reportContext == null) {
             throw new IllegalStateException("The reportContext must be specified");
-        }
-        // check if the inventoryVersion is set
-        if (inventoryVersion == null) {
-            throw new IllegalStateException("The inventoryVersion must be specified");
         }
     }
 }

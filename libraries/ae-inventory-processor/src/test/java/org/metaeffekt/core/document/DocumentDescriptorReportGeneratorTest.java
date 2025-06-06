@@ -50,7 +50,7 @@ public class DocumentDescriptorReportGeneratorTest {
         cleanUpTargetTestDir();
 
         Inventory inventory = new Inventory();
-        InventoryContext inventoryContext = new InventoryContext(inventory, "test", "testReportContextTitle", "testReportContext", "testVersion", null, null);
+        InventoryContext inventoryContext = new InventoryContext(inventory, "test", "testReportContext", null, null);
 
         Map<String, String> documentParams = new HashMap<>();
         documentParams.put("targetLicensesDir", "");
