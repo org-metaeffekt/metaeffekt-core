@@ -246,6 +246,16 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         return jsonArray;
     }
 
+    public static <T extends AeaaContentIdentifier> JSONArray toJson(Collection<T> contentIdentifiers) {
+        final JSONArray jsonArray = new JSONArray();
+        for (T contentIdentifier : contentIdentifiers) {
+            jsonArray.put(new JSONObject()
+                    .put("name", contentIdentifier.getName())
+                    .put("implementation", contentIdentifier.getImplementation()));
+        }
+        return jsonArray;
+    }
+
     public static class AeaaSingleContentIdentifierParseResult<T extends AeaaContentIdentifier> {
         private final T identifier;
         private final String id;
@@ -254,11 +264,11 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             this.identifier = identifier;
             this.id = id;
         }
-        
+
         public T getIdentifier() {
             return identifier;
         }
-        
+
         public String getId() {
             return id;
         }
