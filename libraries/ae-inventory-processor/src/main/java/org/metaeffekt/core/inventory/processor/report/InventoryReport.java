@@ -707,6 +707,8 @@ public class InventoryReport {
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.SET_NULL_ALLOWED, true);
+        //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
+        properties.put("velocimacro.arguments.strict", true);
 
         final VelocityEngine velocityEngine = new VelocityEngine(properties);
         final Template template = velocityEngine.getTemplate(templateResourcePath);
