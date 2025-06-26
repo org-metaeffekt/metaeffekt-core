@@ -44,10 +44,12 @@
                             #end
                             #set($addParagraph=false)
                             <entry>#foreach($artifact in $name)#if($artifact.getGroupId())
-                                <lines>
-                                    #if($addParagraph)<line></line>#end
-                                    <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
-                                    <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line>
+                                <lines>#if($addParagraph)
+                                  <line>
+                                  </line>#end
+                                  <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
+                                    <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
+                                  </line>
                                 </lines>#else
                                 <pre>$report.xmlEscapeArtifactId($artifact.getId())</pre>
                                 <pre></pre>#end
