@@ -309,7 +309,10 @@
                                 <manageOptional>${artifact.inventory.manage.optional}</manageOptional>
                                 <managePlugins>${artifact.inventory.manage.plugins}</managePlugins>
 
-                                <securityPolicyOverwriteJson>{}</securityPolicyOverwriteJson>
+                                <securityPolicy>
+                                    <failOnMissingPolicyFile>false</failOnMissingPolicyFile>
+                                </securityPolicy>
+
                                 <artifactExcludes>${artifact.inventory.exclude.artifacts}</artifactExcludes>
                             </configuration>
                             <executions>
