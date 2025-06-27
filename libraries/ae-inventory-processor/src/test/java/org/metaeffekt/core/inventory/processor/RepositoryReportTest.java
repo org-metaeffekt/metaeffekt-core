@@ -452,12 +452,20 @@ public class RepositoryReportTest {
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
-        final File inventoryDir = new File("<path>");
-        final File reportDir = new File("<path>");
+        final File inventoryDir = new File("/Users/jfuegen/Desktop/test");
+        final File reportDir = new File("/Users/jfuegen/Desktop/test");
 
-        configureAndCreateReport(inventoryDir, "*.xlsx",
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .reportLanguage("en")
+                .inventoryVulnerabilityStatisticsReportEnabled(true)
+                .inventoryVulnerabilityReportSummaryEnabled(true)
+                .inventoryVulnerabilityReportEnabled(true)
+                .hidePriorityInformation(false)
+                .build());
+
+        configureAndCreateReport(inventoryDir, "*.xls",
                 null, null,
-                reportDir, new InventoryReport(ReportConfigurationParameters.builder().reportLanguage("de").build()));
+                reportDir, report);
     }
 
     @Test

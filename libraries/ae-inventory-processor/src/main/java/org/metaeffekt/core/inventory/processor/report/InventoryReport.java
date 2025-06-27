@@ -998,9 +998,9 @@ public class InventoryReport {
     }
 
     private void logConfiguration() {
-        LOG.info("Report configuration:");
+        LOG.debug("Report configuration:");
 
-        LOG.info("- Source/Target paths:");
+        LOG.debug("- Source/Target paths:");
         logConfigurationLogFile("referenceInventoryDir", referenceInventoryDir);
         logConfigurationLogToString("referenceInventoryIncludes", referenceInventoryIncludes);
         logConfigurationLogToString("referenceComponentPath", referenceComponentPath);
@@ -1013,30 +1013,30 @@ public class InventoryReport {
         logConfigurationLogFile("targetLicenseDir", targetLicenseDir);
         logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
 
-        LOG.info("- Validation fail flags:");
-        LOG.info(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(),  configParams.isFailOnBanned(),  configParams.isFailOnDowngrade(),  configParams.isFailOnUnknown(),  configParams.isFailOnUnknownVersion(),  configParams.isFailOnDevelopment(),  configParams.isFailOnInternal());
-        LOG.info("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
+        LOG.debug("- Validation fail flags:");
+        LOG.debug(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(),  configParams.isFailOnBanned(),  configParams.isFailOnDowngrade(),  configParams.isFailOnUnknown(),  configParams.isFailOnUnknownVersion(),  configParams.isFailOnDevelopment(),  configParams.isFailOnInternal());
+        LOG.debug("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
 
-        LOG.info("- Data display settings:");
+        LOG.debug("- Data display settings:");
         logConfigurationLogToString("artifactFilter", artifactFilter);
         logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", configParams.isFilterVulnerabilitiesNotCoveredByArtifacts());
         logConfigurationLogToString("filterAdvisorySummary", configParams.isFilterAdvisorySummary());
 
-        LOG.info("- Template settings:");
-        LOG.info(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]",  configParams.isInventoryBomReportEnabled(),  configParams.isInventoryDiffReportEnabled(),  configParams.isInventoryPomEnabled(),  configParams.isInventoryVulnerabilityReportEnabled());
-        LOG.info("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]",  configParams.isInventoryVulnerabilityReportSummaryEnabled(),  configParams.isInventoryVulnerabilityStatisticsReportEnabled());
+        LOG.debug("- Template settings:");
+        LOG.debug(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]",  configParams.isInventoryBomReportEnabled(),  configParams.isInventoryDiffReportEnabled(),  configParams.isInventoryPomEnabled(),  configParams.isInventoryVulnerabilityReportEnabled());
+        LOG.debug("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]",  configParams.isInventoryVulnerabilityReportSummaryEnabled(),  configParams.isInventoryVulnerabilityStatisticsReportEnabled());
         logConfigurationLogToString("templateLanguageSelector", configParams.getReportLanguage());
 
-        LOG.info("- Addon data:");
+        LOG.debug("- Addon data:");
         if (addOnArtifacts == null) {
-            LOG.info(" - addOnArtifacts: <null>");
+            LOG.debug(" - addOnArtifacts: <null>");
         } else if (addOnArtifacts.isEmpty()) {
-            LOG.info(" - addOnArtifacts: <empty>");
+            LOG.debug(" - addOnArtifacts: <empty>");
         } else {
-            LOG.info(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
+            LOG.debug(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
         }
 
-        securityPolicy.logConfiguration();
+        securityPolicy.debugLogConfiguration();
     }
 
     private void logConfigurationLogFile(String property, File file) {

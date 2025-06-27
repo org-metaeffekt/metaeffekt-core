@@ -37,6 +37,7 @@ public class CspLoader {
     private File file;
     private List<File> files = new ArrayList<>();
     private List<String> activeIds = new ArrayList<>();
+    private boolean failOnMissingPolicyFile = true;
 
     public void addFile(File... files) {
         this.files.addAll(Arrays.asList(files));
@@ -52,7 +53,7 @@ public class CspLoader {
         try {
             return this.loadConfigurationInternal();
         } catch (IOException e) {
-            throw new RuntimeException("CSP loader failed to create Central Security Policy instance from parameters.", e);
+            throw new RuntimeException("[csp-loader] CSP loader failed to create Central Security Policy instance from parameters.", e);
         }
     }
 
@@ -60,6 +61,11 @@ public class CspLoader {
         final List<File> policyFiles = this.getFiles();
 
         if (policyFiles.isEmpty() && StringUtils.isEmpty(inlineOverwriteJson)) {
+
+            if (failOnMissingPolicyFile) {
+                throw new IllegalStateException("[csp-loader] No valid security policy files were provided and property failOnMissingPolicyFile is set to true.");
+            }
+
             log.info("[csp-loader] No policyFiles or inlineOverwriteJson were provided, using default Central Security Policy instance");
             return new CentralSecurityPolicyConfiguration();
         }

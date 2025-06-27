@@ -332,10 +332,10 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
 
         // log the security policy only when it fits the context -->
         if (enableAssessmentReport || enableVulnerabilityReport || enableVulnerabilityReportSummary || enableVulnerabilityStatisticsReport) {
-            getLog().info("");
-            getLog().info("-------------------< Security Policy Configuration >--------------------");
-            activeSecurityPolicy.logConfiguration();
-            getLog().info("");
+            getLog().debug("");
+            getLog().debug("-------------------< Security Policy Configuration >--------------------");
+            activeSecurityPolicy.debugLogConfiguration();
+            getLog().debug("");
         }
 
         report.setSecurityPolicy(activeSecurityPolicy);
