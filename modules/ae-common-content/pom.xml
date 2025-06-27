@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-modules</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.140.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
