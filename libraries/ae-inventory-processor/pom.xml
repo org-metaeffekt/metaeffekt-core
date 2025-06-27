@@ -350,9 +350,9 @@
 
             <dependencies>
                 <dependency>
-                    <groupId>org.metaeffekt.dita</groupId>
+                    <groupId>org.metaeffekt.core</groupId>
                     <artifactId>ae-common-content</artifactId>
-                    <version>${ae.dita.version}</version>
+                    <version>${ae.core.version}</version>
                     <classifier>doc</classifier>
                 </dependency>
             </dependencies>
