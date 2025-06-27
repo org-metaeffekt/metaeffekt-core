@@ -452,8 +452,8 @@ public class RepositoryReportTest {
     @Ignore
     @Test
     public void testCreateTestReport_External() throws Exception {
-        final File inventoryDir = new File("/Users/jfuegen/Desktop/test");
-        final File reportDir = new File("/Users/jfuegen/Desktop/test");
+        final File inventoryDir = new File("<source>");
+        final File reportDir = new File("<target>");
 
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
                 .reportLanguage("en")
