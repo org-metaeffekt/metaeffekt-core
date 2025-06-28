@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -38,161 +38,154 @@ public class AeaaCapecEntry {
     private AeaaMitre.Severity likelihoodOfAttack;
     private AeaaMitre.Severity typicalSeverity;
     private final Map<AeaaMitre.Relation, List<String>> relatedAttackPatterns = new HashMap<>();
-    private final ArrayList<AeaaConsequence> consequences = new ArrayList<>();
+    private final ArrayList<AeaaWeaknessConsequence> consequences = new ArrayList<>();
     private final ArrayList<String> mitigations = new ArrayList<>();
     private final ArrayList<String> relatedWeaknesses = new ArrayList<>();
     private final List<String> prerequisites = new ArrayList<>();
     private final Map<String, ArrayList<AeaaTaxonomyMapping>> taxonomyMappings = new HashMap<>();
     private final List<String> references = new ArrayList<>();
-    private final Map<String, Map <String, String>> referencesData = new HashMap<>();
+    private final Map<String, Map<String, String>> referencesData = new HashMap<>();
 
+    // FIXME-JKO: Why a static store for parent relations?
+    //  will successive parsings of entries result in different data being parsed or is this simply a cache?
+    //  also, it's never used.
     private static Map<String, List<String>> parentOfs = new HashMap<>();
 
-    protected static final Set<String> CONVERSION_KEYS_AMB = Collections.unmodifiableSet(
-            new HashSet<>());
-
-    protected static final Set<String> CONVERSION_KEYS_MAP = Collections.unmodifiableSet(
-            new HashSet<String>() {{
-                add("id");
-                add("name");
-                add("abstraction");
-                add("status");
-                add("description");
-                add("alternateTerms");
-                add("likelihoodOfAttack");
-                add("typicalSeverity");
-                add("relatedAttackPatterns");
-                add("consequences");
-                add("mitigations");
-                add("relatedWeaknesses");
-                add("prerequisite");
-                add("taxonomyMappings");
-                add("references");
-            }});
-
     public void setId(String id) {
-        if (id == null || id.isEmpty()) {
-            throw new IllegalArgumentException("CAPEC-Entry id cannot be null or empty");
+        if (StringUtils.isEmpty(id)) {
+            throw new IllegalArgumentException("CAPEC-Entry Id cannot be null or empty");
         } else {
-            if (id.startsWith("CAPEC-"))
-                this.id = id;
-            else
-                this.id = "CAPEC-" + id;
+            if (id.startsWith("CAPEC-")) this.id = id;
+            else this.id = "CAPEC-" + id;
         }
     }
 
     public JSONObject toJson() {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("id", getId());
-        jsonObject.put("name", getName());
-        jsonObject.put("abstraction", getAbstraction());
-        jsonObject.put("status", getStatus().toString());
-        jsonObject.put("description", getDescription());
-        jsonObject.put("alternateTerms", new JSONObject(getAlternateTerms()));
-        if (getLikelihoodOfAttack() != null)
-            jsonObject.put("likelihoodOfAttack", getLikelihoodOfAttack().toString());
-        if (getTypicalSeverity() != null)
-            jsonObject.put("typicalSeverity", getTypicalSeverity().toString());
-        jsonObject.put("prerequisites", new JSONArray(getPrerequisites()));
+        // FIXME-JKO: Please do not use all the getters, they cause an overhead of having to call a method for each value.
+        //  just access the values via this.id, etc.
+        final JSONObject json = new JSONObject()
+                .put("id", getId())
+                .put("name", getName())
+                .put("abstraction", getAbstraction())
+                .put("status", getStatus().toString())
+                .put("description", getDescription())
+                .put("alternateTerms", new JSONObject(getAlternateTerms()));
 
-        JSONObject relatedAttackPatterns = new JSONObject();
-        for (AeaaMitre.Relation relation : getRelatedAttackPatterns().keySet()) {
-            JSONArray relationValues = new JSONArray();
-            relationValues.putAll(getRelatedAttackPatterns().get(relation));
-            relatedAttackPatterns.put(relation.toString(), relationValues);
+        if (getLikelihoodOfAttack() != null) {
+            json.put("likelihoodOfAttack", getLikelihoodOfAttack().toString());
         }
-        jsonObject.put("relatedAttackPatterns", relatedAttackPatterns);
-        JSONArray consequences = new JSONArray();
-        getConsequences().forEach(entry -> consequences.put(entry.toJson()));
-        jsonObject.put("consequences", consequences);
-        jsonObject.put("mitigations", new JSONArray(getMitigations()));
-        jsonObject.put("relatedWeaknesses", new JSONArray(getRelatedWeaknesses()));
+        if (getTypicalSeverity() != null) {
+            json.put("typicalSeverity", getTypicalSeverity().toString());
+        }
+        json.put("prerequisites", new JSONArray(getPrerequisites()));
 
-        JSONObject taxonomyMappings = new JSONObject();
+        final JSONObject relatedAttackPatterns = new JSONObject();
+        for (Map.Entry<AeaaMitre.Relation, List<String>> relationEntry : getRelatedAttackPatterns().entrySet()) {
+            relatedAttackPatterns.put(relationEntry.getKey().toString(), new JSONArray(relationEntry.getValue()));
+        }
+        json.put("relatedAttackPatterns", relatedAttackPatterns);
+
+        final JSONArray consequences = new JSONArray();
+        getConsequences().forEach(entry -> consequences.put(entry.toJson()));
+        json.put("consequences", consequences);
+        json.put("mitigations", new JSONArray(getMitigations()));
+        json.put("relatedWeaknesses", new JSONArray(getRelatedWeaknesses()));
+
+        final JSONObject taxonomyMappings = new JSONObject();
         for (String source : getTaxonomyMappings().keySet()) {
-            JSONArray mappings = new JSONArray();
+            final JSONArray mappings = new JSONArray();
             getTaxonomyMappings().get(source).forEach(mapping -> mappings.put(mapping.toJson()));
             taxonomyMappings.put(source, mappings);
         }
-        jsonObject.put("taxonomyMappings", taxonomyMappings);
-        JSONObject referenceData = new JSONObject();
-        getReferencesData().keySet().forEach(key -> referenceData.put(key, new JSONObject(getReferencesData().get(key))));
-        jsonObject.put("referenceData", referenceData);;
+        json.put("taxonomyMappings", taxonomyMappings);
 
-        return jsonObject;
+        final JSONObject referenceData = new JSONObject();
+        for (Map.Entry<String, Map<String, String>> referenceEntry : getReferencesData().entrySet()) {
+            referenceData.put(referenceEntry.getKey(), new JSONObject(referenceEntry.getValue()));
+        }
+        json.put("referenceData", referenceData);
+
+        return json;
     }
 
-    public static AeaaCapecEntry fromJson(JSONObject jsonObject) {
-        AeaaCapecEntry capecEntry = new AeaaCapecEntry();
-        capecEntry.setId(jsonObject.getString("id"));
-        capecEntry.setName(jsonObject.getString("name"));
-        capecEntry.setAbstraction(jsonObject.getString("abstraction"));
-        capecEntry.setStatus(AeaaMitre.Status.of(jsonObject.getString("status")));
-        capecEntry.setDescription(jsonObject.getString("description"));
+    public static AeaaCapecEntry fromJson(JSONObject json) {
+        final AeaaCapecEntry capecEntry = new AeaaCapecEntry();
 
-        JSONArray jsonArray = jsonObject.getJSONArray("prerequisites");
+        // FIXME-JKO: Are you sure the values ALWAYS exist on the JSON Object? Otherwise you must use the opt-versions of the methods, e.g. json.optString("name", null)
+        capecEntry.setId(json.getString("id"));
+        capecEntry.setName(json.getString("name"));
+        capecEntry.setAbstraction(json.getString("abstraction"));
+        capecEntry.setStatus(AeaaMitre.Status.of(json.getString("status")));
+        capecEntry.setDescription(json.getString("description"));
+
+        final JSONArray jsonArray = json.getJSONArray("prerequisites");
         for (int i = 0; i < jsonArray.length(); i++) {
             capecEntry.getPrerequisites().add(jsonArray.getString(i));
         }
-        JSONObject alternateTerms = jsonObject.getJSONObject("alternateTerms");
+
+        final JSONObject alternateTerms = json.getJSONObject("alternateTerms");
         for (String key : alternateTerms.keySet()) {
             capecEntry.getAlternateTerms().put(key, alternateTerms.getString(key));
         }
-        capecEntry.setLikelihoodOfAttack(AeaaMitre.Severity.of(jsonObject.optString("likelihoodOfAttack", "Unknown")));
-        capecEntry.setTypicalSeverity(AeaaMitre.Severity.of(jsonObject.optString("typicalSeverity", "Unknown")));
+        capecEntry.setLikelihoodOfAttack(AeaaMitre.Severity.of(json.optString("likelihoodOfAttack", "Unknown")));
+        capecEntry.setTypicalSeverity(AeaaMitre.Severity.of(json.optString("typicalSeverity", "Unknown")));
 
-        JSONObject relatedAttackPatterns = jsonObject.getJSONObject("relatedAttackPatterns");
+        final JSONObject relatedAttackPatterns = json.getJSONObject("relatedAttackPatterns");
         relatedAttackPatterns.keySet().forEach(key -> {
             AeaaMitre.Relation relation = AeaaMitre.Relation.of(key);
             ArrayList<String> capecs = new ArrayList<>();
             relatedAttackPatterns.optJSONArray(key).forEach(capec -> capecs.add(capec.toString()));
             capecEntry.getRelatedAttackPatterns().put(relation, capecs);
         });
-        JSONArray consequences = jsonObject.getJSONArray("consequences");
+        final JSONArray consequences = json.getJSONArray("consequences");
         if (!consequences.isEmpty()) {
             for (int i = 0; i < consequences.length(); i++) {
-                capecEntry.getConsequences().add(AeaaConsequence.fromJson(consequences.optJSONObject(i)));
+                capecEntry.getConsequences().add(AeaaWeaknessConsequence.fromJson(consequences.optJSONObject(i)));
             }
         }
-        JSONArray mitigations = jsonObject.getJSONArray("mitigations");
+        final JSONArray mitigations = json.getJSONArray("mitigations");
         for (int i = 0; i < mitigations.length(); i++) {
             capecEntry.getMitigations().add(mitigations.getString(i));
         }
-        JSONArray relatedWeaknesses = jsonObject.getJSONArray("relatedWeaknesses");
+        final JSONArray relatedWeaknesses = json.getJSONArray("relatedWeaknesses");
         for (int i = 0; i < relatedWeaknesses.length(); i++) {
             capecEntry.getRelatedWeaknesses().add(relatedWeaknesses.getString(i));
         }
 
-        JSONObject taxonomyMappings = jsonObject.getJSONObject("taxonomyMappings");
-        taxonomyMappings.keySet().forEach(key -> {
-            JSONArray mappings = taxonomyMappings.getJSONArray(key);
+        final JSONObject taxonomyMappings = json.getJSONObject("taxonomyMappings");
+        for (String taxonomyKey : taxonomyMappings.keySet()) {
+            final JSONArray mappings = taxonomyMappings.getJSONArray(taxonomyKey);
 
             for (int i = 0; i < mappings.length(); i++) {
                 Map<String, ArrayList<AeaaTaxonomyMapping>> cweTaxonomyRef = capecEntry.getTaxonomyMappings();
-                if (cweTaxonomyRef.containsKey(key)) {
-                    cweTaxonomyRef.get(key).add(AeaaTaxonomyMapping.fromJson(mappings.getJSONObject(i)));
+                if (cweTaxonomyRef.containsKey(taxonomyKey)) {
+                    cweTaxonomyRef.get(taxonomyKey).add(AeaaTaxonomyMapping.fromJson(mappings.getJSONObject(i)));
                 } else {
-                    cweTaxonomyRef.put(key, new ArrayList<>());
-                    cweTaxonomyRef.get(key).add(AeaaTaxonomyMapping.fromJson(mappings.getJSONObject(i)));
+                    cweTaxonomyRef.put(taxonomyKey, new ArrayList<>());
+                    cweTaxonomyRef.get(taxonomyKey).add(AeaaTaxonomyMapping.fromJson(mappings.getJSONObject(i)));
                 }
             }
-        });
-
-        JSONArray references = jsonObject.optJSONArray("references");
-        if (references != null && !references.isEmpty()) {
-            references.forEach(entry -> capecEntry.getReferences().add(entry.toString()));
         }
 
-        JSONObject referencesData = jsonObject.optJSONObject("referenceData");
+        final JSONArray references = json.optJSONArray("references");
+        if (references != null && !references.isEmpty()) {
+            for (Object entry : references) {
+                // FIXME-JKO: String.valueOf is safer than .toString() for null cases, either that or check it explicitly
+                capecEntry.getReferences().add(String.valueOf(entry));
+            }
+        }
+
+        final JSONObject referencesData = json.optJSONObject("referenceData");
         if (referencesData != null && !referencesData.isEmpty()) {
-            referencesData.keySet().forEach(key -> {
-                Map<String, String> reference = new HashMap<>();
-                JSONObject jsonObject1 = referencesData.optJSONObject(key);
-                jsonObject1.keySet().forEach(innerKey -> {
+            for (String key : referencesData.keySet()) {
+                final Map<String, String> reference = new HashMap<>();
+                // FIXME-JKO: I'm not gonna change it now to make a point, but jsonObject1 is only one of the few examples of a var name that could really be better set.
+                final JSONObject jsonObject1 = referencesData.optJSONObject(key);
+                for (String innerKey : jsonObject1.keySet()) {
                     reference.put(innerKey, jsonObject1.optString(innerKey));
-                });
+                }
                 capecEntry.getReferencesData().put(key, reference);
-            });
+            }
         }
 
         return capecEntry;

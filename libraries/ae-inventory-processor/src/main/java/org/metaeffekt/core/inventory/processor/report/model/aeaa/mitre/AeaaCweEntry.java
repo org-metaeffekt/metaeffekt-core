@@ -38,7 +38,7 @@ public class AeaaCweEntry {
     private final Map<String, String> alternateTerms = new HashMap<>();
     private final List<Map<String, String>> modesOfIntroduction = new ArrayList<>();
     private AeaaMitre.Severity likelihoodOfExploit;
-    private final List<AeaaConsequence> consequences = new ArrayList<>();
+    private final List<AeaaWeaknessConsequence> consequences = new ArrayList<>();
     private final List<Map<String, String>> detectionMethods = new ArrayList<>();
     private final List<Map<String, String>> mitigations = new ArrayList<>();
     private final Map<String, ArrayList<AeaaTaxonomyMapping>> taxonomyMappings = new HashMap<>();
@@ -200,7 +200,7 @@ public class AeaaCweEntry {
         JSONArray consequences = jsonObject.optJSONArray("consequences");
         if (!consequences.isEmpty()) {
             for (int i = 0; i < consequences.length(); i++) {
-                cweEntry.getConsequences().add(AeaaConsequence.fromJson(consequences.optJSONObject(i)));
+                cweEntry.getConsequences().add(AeaaWeaknessConsequence.fromJson(consequences.optJSONObject(i)));
             }
         }
         JSONArray detectionMethods = jsonObject.optJSONArray("detectionMethods");

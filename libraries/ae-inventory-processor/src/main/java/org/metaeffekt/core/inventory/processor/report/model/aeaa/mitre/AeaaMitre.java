@@ -16,14 +16,13 @@
 
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 public class AeaaMitre {
 
+    @AllArgsConstructor
     public enum Severity {
         VERY_HIGH("Very High"),
         HIGH("High"),
@@ -32,24 +31,16 @@ public class AeaaMitre {
         VERY_LOW("Very Low"),
         UNKNOWN("Unknown");
 
-        private static final Map<String, Severity> map = new HashMap<>(values().length, 1);
-
-        static {
-            for (Severity c : values()) map.put(c.severity, c);
-        }
-
         private final String severity;
 
-        Severity(String severity) {
-            this.severity = severity;
-        }
-
-        public static Severity of(String name) {
-            Severity result = map.get(name);
-            if (result == null) {
-                log.error("Unknown severity level: {}", name);
+        public static Severity of(String severity) {
+            for (Severity value : values()) {
+                if (value.severity.equalsIgnoreCase(severity)) {
+                    return value;
+                }
             }
-            return result;
+            log.error("Could not find CWE severity level [{}], expected one of {}", severity, values());
+            return null;
         }
 
         @Override
@@ -58,6 +49,7 @@ public class AeaaMitre {
         }
     }
 
+    @AllArgsConstructor
     public enum Scope {
         CONFIDENTIALITY("Confidentiality"),
         INTEGRITY("Integrity"),
@@ -69,24 +61,16 @@ public class AeaaMitre {
         NON_REPUDIATION("Non-Repudiation"),
         OTHER("Other");
 
-        private static final Map<String, Scope> map = new HashMap<>(values().length, 1);
-
-        static {
-            for (Scope c : values()) map.put(c.scope, c);
-        }
-
         private final String scope;
 
-        Scope(String category) {
-            this.scope = category;
-        }
-
-        public static Scope of(String name) {
-            Scope result = map.get(name);
-            if (result == null) {
-                log.error("Unknown scope: {}", name);
+        public static Scope of(String scope) {
+            for (Scope value : values()) {
+                if (value.scope.equalsIgnoreCase(scope)) {
+                    return value;
+                }
             }
-            return result;
+            log.error("Could not find CWE scope [{}], expected one of {}", scope, values());
+            return null;
         }
 
         @Override
@@ -95,6 +79,7 @@ public class AeaaMitre {
         }
     }
 
+    @AllArgsConstructor
     public enum Status {
         DEPRECATED("Deprecated"),
         DRAFT("Draft"),
@@ -104,24 +89,16 @@ public class AeaaMitre {
         USABLE("Usable"),
         UNKNOWN("Unknown");
 
-        private static final Map<String, Status> map = new HashMap<>(values().length, 1);
-
-        static {
-            for (Status c : values()) map.put(c.status, c);
-        }
-
         private final String status;
 
-        Status(String category) {
-            this.status = category;
-        }
-
-        public static Status of(String name) {
-            Status result = map.get(name);
-            if (result == null) {
-                log.error("Unknown status: {}", name);
+        public static Status of(String status) {
+            for (Status value : values()) {
+                if (value.status.equalsIgnoreCase(status)) {
+                    return value;
+                }
             }
-            return result;
+            log.error("Could not find CWE status [{}], expected one of {}", status, values());
+            return null;
         }
 
         @Override
@@ -130,6 +107,7 @@ public class AeaaMitre {
         }
     }
 
+    @AllArgsConstructor
     public enum Relation {
         CHILD_OF("ChildOf"),
         PARENT_OF("ParentOf"),
@@ -143,56 +121,40 @@ public class AeaaMitre {
         CWE("CWE"),
         CAPEC("CAPEC");
 
-        private static final Map<String, Relation> map = new HashMap<>(values().length, 1);
-
-        static {
-            for (Relation c : values()) map.put(c.relation, c);
-        }
-
         private final String relation;
 
-        Relation(String category) {
-            this.relation = category;
-        }
-
-        public static Relation of(String name) {
-            Relation result = map.get(name);
-            if (result == null) {
-
-
-                log.error("Unknown relation: {}", name);
+        public static Relation of(String relation) {
+            for (Relation value : values()) {
+                if (value.relation.equalsIgnoreCase(relation)) {
+                    return value;
+                }
             }
-            return result;
+            log.error("Could not find CWE relation type [{}], expected one of {}", relation, values());
+            return null;
         }
 
         @Override
-        public String toString(){
+        public String toString() {
             return relation;
         }
     }
 
+    // FIXME-JKO: Importance enum is never used.
+    @AllArgsConstructor
     public enum Importance {
         NORMAL("Normal"),
-        Critical("Critical");
-
-        private static final Map<String, Importance> map = new HashMap<>(values().length, 1);
-
-        static {
-            for (Importance c : values()) map.put(c.importance, c);
-        }
+        CRITICAL("Critical");
 
         private final String importance;
 
-        Importance(String category) {
-            this.importance = category;
-        }
-
-        public static Importance of(String name) {
-            Importance result = map.get(name);
-            if (result == null) {
-                log.error("Unknown importance level: {}", name);
+        public static Importance of(String importance) {
+            for (Importance value : values()) {
+                if (value.importance.equalsIgnoreCase(importance)) {
+                    return value;
+                }
             }
-            return result;
+            log.error("Could not find CWE importance level [{}], expected one of {}", importance, values());
+            return null;
         }
 
         @Override
@@ -201,30 +163,24 @@ public class AeaaMitre {
         }
     }
 
+    // FIXME-JKO: Skill enum is never used.
+    @AllArgsConstructor
     public enum Skill {
         HIGH("High"),
         MEDIUM("Medium"),
         LOW("Low"),
         UNKNOWN("Unknown");
 
-        private static final Map<String, Skill> map = new HashMap<>(values().length, 1);
-
-        static {
-            for (Skill c : values()) map.put(c.skill, c);
-        }
-
         private final String skill;
 
-        Skill(String skill) {
-            this.skill = skill;
-        }
-
-        public static Skill of(String name) {
-            Skill result = map.get(name);
-            if (result == null) {
-                log.error("Unknown skill level: {}", name);
+        public static Skill of(String skill) {
+            for (Skill value : values()) {
+                if (value.skill.equalsIgnoreCase(skill)) {
+                    return value;
+                }
             }
-            return result;
+            log.error("Could not find CWE skill [{}], expected one of {}", skill, values());
+            return null;
         }
 
         @Override
