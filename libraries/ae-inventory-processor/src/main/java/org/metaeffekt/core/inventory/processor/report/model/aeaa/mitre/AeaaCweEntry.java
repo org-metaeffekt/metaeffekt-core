@@ -16,8 +16,10 @@
 
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -26,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class AeaaCweEntry {
 
     private String id;
@@ -44,30 +47,6 @@ public class AeaaCweEntry {
     private final Map<String, ArrayList<AeaaTaxonomyMapping>> taxonomyMappings = new HashMap<>();
     private final List<String> relatedCapecs = new ArrayList<>();
     private final Map<String, Map <String, String>> referencesData = new HashMap<>();
-
-    private static Map<String, List<String>> parentOfs = new ConcurrentHashMap<>();
-
-    protected static final Set<String> CONVERSION_KEYS_AMB = Collections.unmodifiableSet(new HashSet<>());
-
-    protected static final Set<String> CONVERSION_KEYS_MAP = Collections.unmodifiableSet(new HashSet<String>() {{
-        add("id");
-        add("name");
-        add("abstraction");
-        add("status");
-        add("description");
-        add("relatedWeaknesses");
-        add("applicablePlatforms");
-        add("alternateTerms");
-        add("modesOfIntroduction");
-        add("likelihoodOfExploit");
-        add("consequences");
-        add("detectionMethods");
-        add("mitigations");
-        add("taxonomyMappings");
-        add("relatedAttackPatterns");
-        add("referenceData");
-    }});
-
 
     public AeaaCweEntry() {
     }
@@ -88,65 +67,63 @@ public class AeaaCweEntry {
     }
 
     public JSONObject toJson() {
-        JSONObject jsonObject = new JSONObject();
+        JSONObject json = new JSONObject()
+                .put("id", this.id)
+                .put("name", this.name)
+                .put("abstraction", this.abstraction)
+                .put("description", this.description)
+                .put("alternateTerms", new JSONObject(this.alternateTerms));
 
-        jsonObject.put("id", getId());
-        jsonObject.put("name", getName());
-        jsonObject.put("abstraction", getAbstraction());
-        if (getStatus() != null)
-            jsonObject.put("status", getStatus().toString());
-        jsonObject.put("description", getDescription());
+        if (getStatus() != null) json.put("status", getStatus().toString());
 
         JSONObject relatedWeaknesses = new JSONObject();
-        for (AeaaMitre.Relation relation : getRelatedWeaknesses().keySet()) {
-            relatedWeaknesses.put(relation.toString(), new JSONArray(getRelatedWeaknesses().get(relation)));
+        for (AeaaMitre.Relation relation : this.relatedWeaknesses.keySet()) {
+            relatedWeaknesses.put(relation.toString(), new JSONArray(this.relatedWeaknesses.get(relation)));
         }
-        jsonObject.put("relatedWeaknesses", relatedWeaknesses);
+        json.put("relatedWeaknesses", relatedWeaknesses);
 
         JSONObject applicablePlatformsJson = new JSONObject();
-        getApplicablePlatforms().forEach((key, value) -> {
+        this.applicablePlatforms.forEach((key, value) -> {
             JSONArray platforms = new JSONArray();
             value.forEach(entry -> platforms.put(new JSONObject(entry)));
             applicablePlatformsJson.put(key, platforms);
         });
-        jsonObject.put("applicablePlatforms", applicablePlatformsJson);
-
-        jsonObject.put("alternateTerms", new JSONObject(getAlternateTerms()));
+        json.put("applicablePlatforms", applicablePlatformsJson);
 
         JSONArray modesOfIntroductionJsonArray = new JSONArray();
-        getModesOfIntroduction().forEach(entry -> modesOfIntroductionJsonArray.put(new JSONObject(entry)));
-        jsonObject.put("modesOfIntroduction", modesOfIntroductionJsonArray);
+        this.modesOfIntroduction.forEach(entry -> modesOfIntroductionJsonArray.put(new JSONObject(entry)));
+        json.put("modesOfIntroduction", modesOfIntroductionJsonArray);
 
-        if (getLikelihoodOfExploit() != null)
-            jsonObject.put("likelihoodOfExploit", getLikelihoodOfExploit().toString());
+        if (this.likelihoodOfExploit != null)
+            json.put("likelihoodOfExploit", this.likelihoodOfExploit.toString());
 
         JSONArray consequences = new JSONArray();
-        getConsequences().forEach(entry -> consequences.put(entry.toJson()));
-        jsonObject.put("consequences", consequences);
+        this.consequences.forEach(entry -> consequences.put(entry.toJson()));
+        json.put("consequences", consequences);
 
         JSONArray detectionMethods = new JSONArray();
-        getDetectionMethods().forEach(detectionMethods::put);
-        jsonObject.put("detectionMethods", detectionMethods);
+        this.getDetectionMethods().forEach(detectionMethods::put);
+        json.put("detectionMethods", detectionMethods);
 
         JSONArray mitigationJsonArray = new JSONArray();
-        getMitigations().forEach(mitigation -> mitigationJsonArray.put(new JSONObject(mitigation)));
-        jsonObject.put("mitigations", mitigationJsonArray);
+        this.getMitigations().forEach(mitigation -> mitigationJsonArray.put(new JSONObject(mitigation)));
+        json.put("mitigations", mitigationJsonArray);
 
         JSONObject taxonomyMappings = new JSONObject();
-        for (String source : getTaxonomyMappings().keySet()) {
+        for (String source : this.taxonomyMappings.keySet()) {
             JSONArray mappings = new JSONArray();
-            getTaxonomyMappings().get(source).forEach(mapping -> mappings.put(mapping.toJson()));
+            this.taxonomyMappings.get(source).forEach(mapping -> mappings.put(mapping.toJson()));
             taxonomyMappings.put(source, mappings);
         }
-        jsonObject.put("taxonomyMappings", taxonomyMappings);
+        json.put("taxonomyMappings", taxonomyMappings);
 
-        jsonObject.put("relatedCapecs", new JSONArray(getRelatedCapecs()));
+        json.put("relatedCapecs", new JSONArray(this.relatedCapecs));
 
         JSONObject referenceData = new JSONObject();
-        getReferencesData().keySet().forEach(key -> referenceData.put(key, new JSONObject(getReferencesData().get(key))));
-        jsonObject.put("referenceData", referenceData);
+        this.referencesData.keySet().forEach(key -> referenceData.put(key, new JSONObject(this.referencesData.get(key))));
+        json.put("referenceData", referenceData);
 
-        return jsonObject;
+        return json;
     }
 
     public static AeaaCweEntry fromJson(JSONObject jsonObject) {
@@ -158,7 +135,7 @@ public class AeaaCweEntry {
         cweEntry.setStatus(AeaaMitre.Status.of(jsonObject.optString("status", "Unknown")));
         cweEntry.setDescription(jsonObject.optString("description"));
 
-        JSONObject relatedWeaknesses = jsonObject.getJSONObject("relatedWeaknesses");
+        JSONObject relatedWeaknesses = jsonObject.optJSONObject("relatedWeaknesses");
         relatedWeaknesses.keySet().forEach(key -> {
             AeaaMitre.Relation relation = AeaaMitre.Relation.of(key);
             ArrayList<String> weaknesses = new ArrayList<>();
@@ -171,7 +148,7 @@ public class AeaaCweEntry {
             JSONArray jsonArray = applicablePlatformsJsonObject.optJSONArray(applicableTypeKey);
             List<Map<String, String>> platforms = new ArrayList<>();
             for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObjectEntries = jsonArray.getJSONObject(i);
+                JSONObject jsonObjectEntries = jsonArray.optJSONObject(i);
                 HashMap<String, String> platform = new HashMap<>();
                 jsonObjectEntries.keySet().forEach(keyy -> {
                     platform.put(keyy, jsonObjectEntries.optString(keyy));
@@ -181,14 +158,14 @@ public class AeaaCweEntry {
             cweEntry.getApplicablePlatforms().put(applicableTypeKey, platforms);
         }
 
-        JSONObject alternateTerms = jsonObject.getJSONObject("alternateTerms");
+        JSONObject alternateTerms = jsonObject.optJSONObject("alternateTerms");
         for (String key : alternateTerms.keySet()) {
             cweEntry.getAlternateTerms().put(key, alternateTerms.optString(key));
         }
 
         JSONArray modesOfIntroductionJsonArray = jsonObject.optJSONArray("modesOfIntroduction");
         for (int i = 0; i < modesOfIntroductionJsonArray.length(); i++) {
-            JSONObject modesOfIntroductionJsonArrayEntry = modesOfIntroductionJsonArray.getJSONObject(i);
+            JSONObject modesOfIntroductionJsonArrayEntry = modesOfIntroductionJsonArray.optJSONObject(i);
             Map<String, String> modesOfIntroduction = new HashMap<>();
             modesOfIntroductionJsonArrayEntry.keySet().forEach(key -> modesOfIntroduction.put(key, modesOfIntroductionJsonArrayEntry.optString(key)));
             cweEntry.getModesOfIntroduction().add(modesOfIntroduction);
@@ -206,7 +183,7 @@ public class AeaaCweEntry {
         JSONArray detectionMethods = jsonObject.optJSONArray("detectionMethods");
         for (int i = 0; i < detectionMethods.length(); i++) {
             Map<String, String> detectionMethod = new HashMap<>();
-            JSONObject detectionMethodEntry = detectionMethods.getJSONObject(i);
+            JSONObject detectionMethodEntry = detectionMethods.optJSONObject(i);
             detectionMethodEntry.keySet().forEach(key -> {
                 detectionMethod.put(key, detectionMethodEntry.optString(key));
             });
@@ -216,22 +193,22 @@ public class AeaaCweEntry {
         JSONArray mitigations = jsonObject.optJSONArray("mitigations");
         for (int i = 0; i < mitigations.length(); i++) {
             Map<String, String> mitigation = new HashMap<>();
-            JSONObject mitigationEntry = mitigations.getJSONObject(i);
+            JSONObject mitigationEntry = mitigations.optJSONObject(i);
             mitigationEntry.keySet().forEach(key -> mitigation.put(key, mitigationEntry.optString(key)));
             cweEntry.getMitigations().add(mitigation);
         }
 
-        JSONObject taxonomyMappings = jsonObject.getJSONObject("taxonomyMappings");
+        JSONObject taxonomyMappings = jsonObject.optJSONObject("taxonomyMappings");
         taxonomyMappings.keySet().forEach(key -> {
             JSONArray mappings = taxonomyMappings.optJSONArray(key);
 
             Map<String, ArrayList<AeaaTaxonomyMapping>> cweTaxonomyRef = cweEntry.getTaxonomyMappings();
             for (int i = 0; i < mappings.length(); i++) {
                 if (cweTaxonomyRef.containsKey(key)) {
-                    cweTaxonomyRef.get(key).add(AeaaTaxonomyMapping.fromJson(mappings.getJSONObject(i)));
+                    cweTaxonomyRef.get(key).add(AeaaTaxonomyMapping.fromJson(mappings.optJSONObject(i)));
                 } else {
                     cweTaxonomyRef.put(key, new ArrayList<>());
-                    cweTaxonomyRef.get(key).add(AeaaTaxonomyMapping.fromJson(mappings.getJSONObject(i)));
+                    cweTaxonomyRef.get(key).add(AeaaTaxonomyMapping.fromJson(mappings.optJSONObject(i)));
                 }
             }
         });
@@ -255,33 +232,5 @@ public class AeaaCweEntry {
         }
 
         return cweEntry;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AeaaCweEntry that = (AeaaCweEntry) o;
-        return Objects.equals(id, that.id) &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(abstraction, that.abstraction) &&
-                status == that.status &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(relatedWeaknesses, that.relatedWeaknesses) &&
-                Objects.equals(applicablePlatforms, that.applicablePlatforms) &&
-                Objects.equals(alternateTerms, that.alternateTerms) &&
-                Objects.equals(modesOfIntroduction, that.modesOfIntroduction) &&
-                Objects.equals(likelihoodOfExploit, that.likelihoodOfExploit) &&
-                Objects.equals(consequences, that.consequences) &&
-                Objects.equals(detectionMethods, that.detectionMethods) &&
-                Objects.equals(mitigations, that.mitigations) &&
-                Objects.equals(taxonomyMappings, that.taxonomyMappings) &&
-                Objects.equals(relatedCapecs, that.relatedCapecs) &&
-                Objects.equals(referencesData, that.referencesData);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, abstraction, status, description, alternateTerms, consequences, mitigations, relatedWeaknesses, taxonomyMappings, referencesData);
     }
 }
