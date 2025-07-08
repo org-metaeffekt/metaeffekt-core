@@ -286,15 +286,27 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         modulateArtifactRootPaths(inventory);
 
-        final Map<String, List<Artifact>> stringListMap = buildQualifierArtifactMap(inventory);
+        // NOTE: the list may contain duplicates by reference; these must be removed to not lose data
+        final List<Artifact> artifacts = inventory.getArtifacts();
+        final LinkedHashSet<Artifact> artifactSet = new LinkedHashSet<>(artifacts);
+        if (artifactSet.size() != artifacts.size()) {
+            LOG.warn("Detected duplicates by reference in inventory. Ensure analysis does not produce referential duplicates. Applying compensation.");
+            artifacts.clear();
+            artifacts.addAll(artifactSet);
+        }
 
-        for (List<Artifact> list : stringListMap.values()) {
-            Artifact artifact = list.get(0);
+        final Map<String, List<Artifact>> qualifierArtifactMap = buildQualifierArtifactMap(inventory);
+
+        for (List<Artifact> list : qualifierArtifactMap.values()) {
+            final Artifact representativeArtifact = list.get(0);
 
             for (int i = 1; i < list.size(); i++) {
-                final Artifact a = list.get(i);
-                inventory.getArtifacts().remove(a);
-                artifact.merge(a);
+                final Artifact duplicateArtifact = list.get(i);
+                if (representativeArtifact == duplicateArtifact) {
+                    throw new IllegalStateException("Unresolved referential duplicate detected.");
+                }
+                artifacts.remove(duplicateArtifact);
+                representativeArtifact.merge(duplicateArtifact);
             }
         }
 
@@ -312,14 +324,14 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
     private static void modulateArtifactRootPaths(Inventory inventory) {
         for (Artifact artifact : inventory.getArtifacts()) {
             Set<String> modulatedSet = new HashSet<>();
-            final Set<String> relativePaths = artifact.getArtifactRootPaths();
+            final Set<String> relativePaths = artifact.getRootPaths();
             for (String path : relativePaths) {
                 if (!StringUtils.isBlank(path)) {
                     final String modulatedRelativePath = stripSquareBraketsFromLastElement(path);
                     modulatedSet.add(modulatedRelativePath);
                 }
             }
-            artifact.setArtifactRootPaths(modulatedSet);
+            artifact.setRootPaths(modulatedSet);
         }
     }
 
@@ -358,7 +370,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                     if ("c".equalsIgnoreCase(artifact.get(assetId))) {
                         // manage attributes that should not be merged
                         artifact.set(assetId, null);
-                        artifact.setProjects(Collections.EMPTY_SET);
+                        artifact.setRootPaths(Collections.EMPTY_SET);
 
                         // merge contained artifact into scanned
                         scannedArtifact.merge(artifact);

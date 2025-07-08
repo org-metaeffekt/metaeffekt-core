@@ -17,7 +17,6 @@ package org.metaeffekt.core.security.cvss;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.metaeffekt.core.security.cvss.processor.LruLinkedHashMap;
 
 import java.net.URL;
 import java.util.*;
@@ -405,20 +404,41 @@ public class CvssSource {
 
             return result.toString();
         }
+
+        default String optionalEscapedName(boolean escape) {
+            return escape ? getEscapedName() : getName();
+        }
     }
 
     public String toColumnHeaderString() {
-        final String vectorVersion;
-        try {
-            vectorVersion = CvssVector.getVersionName(vectorClass);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Unsupported CVSS version [" + vectorClass + "] in CVSS source: " + this);
+        return toColumnHeaderString(true, true);
+    }
+
+    public String toColumnHeaderString(boolean includeVersion, boolean escapeNames) {
+        final StringBuilder builder = new StringBuilder();
+
+        if (includeVersion) {
+            try {
+                final String vectorVersion = CvssVector.getVersionName(vectorClass);
+                builder.append(vectorVersion).append(" ");
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Unsupported CVSS version [" + vectorClass + "] in CVSS source: " + this);
+            }
         }
+
         if (hostingEntity == null) {
             throw new IllegalStateException("No hosting entity specified for CVSS source: " + this);
         }
 
-        return vectorVersion + " " + hostingEntity.getEscapedName() + (issuingEntityRole != null ? "-" + issuingEntityRole.getEscapedName() : "") + (issuingEntity != null ? "-" + issuingEntity.getEscapedName() : "");
+        builder.append(hostingEntity.optionalEscapedName(escapeNames));
+        if (issuingEntityRole != null) {
+            builder.append("-").append(issuingEntityRole.optionalEscapedName(escapeNames));
+        }
+        if (issuingEntity != null) {
+            builder.append("-").append(issuingEntity.optionalEscapedName(escapeNames));
+        }
+
+        return builder.toString();
     }
 
     public static String toCombinedColumnHeaderString(Collection<CvssSource> sources) {
@@ -426,6 +446,10 @@ public class CvssSource {
     }
 
     public static String toCombinedColumnHeaderString(Collection<CvssSource> sources, boolean includeVersion) {
+        return toCombinedColumnHeaderString(sources, includeVersion, true);
+    }
+
+    public static String toCombinedColumnHeaderString(Collection<CvssSource> sources, boolean includeVersion, boolean escapeNames) {
         if (sources.isEmpty()) return "";
 
         final String vectorVersion;
@@ -442,7 +466,7 @@ public class CvssSource {
 
         final StringJoiner joiner = new StringJoiner(" + ", vectorVersion, "");
         for (CvssSource source : sources) {
-            joiner.add(source.getHostingEntity().getEscapedName() + (source.getIssuingEntityRole() != null ? "-" + source.getIssuingEntityRole().getEscapedName() : "") + (source.getIssuingEntity() != null ? "-" + source.getIssuingEntity().getEscapedName() : ""));
+            joiner.add(source.getHostingEntity().optionalEscapedName(escapeNames) + (source.getIssuingEntityRole() != null ? "-" + source.getIssuingEntityRole().optionalEscapedName(escapeNames) : "") + (source.getIssuingEntity() != null ? "-" + source.getIssuingEntity().optionalEscapedName(escapeNames) : ""));
         }
         return joiner.toString();
     }

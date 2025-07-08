@@ -174,7 +174,8 @@ public class NpmPackageLockAdapter {
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
             artifact.set("Source Archive - URL", module.getUrl());
             artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getId() + "]");
-            String assetId = "AID-" + artifact.getId();
+
+         String assetId = "AID-" + artifact.getId();
             if (module.isDevDependency()) {
                 artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
             } else if (module.isPeerDependency()) {

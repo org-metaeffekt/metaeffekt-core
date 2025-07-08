@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_version-diff-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>$reportContext.combinedTitle("Version Upgrades", true)</title>
+    <body>
+        <table otherprops="wide" id="table_version-diff">
+            <title>$utils.getText("inventory-report-diff.short.version-upgrades") $reportContext.withTitle()</title>
+            <tgroup cols="3">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="50*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
+                <colspec colname="COLSPEC2" colnum="3" colwidth="25*" />
+
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.files")</entry>
+                        <entry colname="COLSPEC1" valign="top">Version</entry>
+                        <entry colname="COLSPEC2" valign="top">$utils.getText("general.short.previous-version")</entry>
+                    </row>
+                </thead>
+
+                <tbody>            
+#foreach($artifact in $inventory.getArtifacts())#if($artifact.getGroupId() || $artifact.getArtifactId())        
+                    <row>
+                        <entry>#if($artifact.getGroupId())<lines><i>$report.xmlEscapeGAV($artifact.getGroupId()) / $report.xmlEscapeArtifactId($artifact.getArtifactId())</i>#end
+
+<codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#if($artifact.getGroupId())</lines>#end
+                        </entry>
+                        <entry><codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph></entry>
+                        <entry><codeph>$report.xmlEscapeGAV($artifact.getPreviousVersion())</codeph></entry>
+                    </row>
+#end#end
+                </tbody>
+            </tgroup>
+        </table>
+    </body>
+</topic>

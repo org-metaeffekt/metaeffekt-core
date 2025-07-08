@@ -85,8 +85,21 @@ public class CvssSeverityRanges {
         return UNDEFINED_SEVERITY_RANGE;
     }
 
+    public SeverityRange getRangeByNameInsensitive(String name) {
+        for (SeverityRange range : ranges) {
+            if (range.getName().equalsIgnoreCase(name)) {
+                return range;
+            }
+        }
+        return UNDEFINED_SEVERITY_RANGE;
+    }
+
     public SeverityRange[] getRanges() {
         return ranges;
+    }
+
+    public String getRangeNames() {
+        return Arrays.stream(ranges).map(SeverityRange::getName).collect(Collectors.joining(", "));
     }
 
     public static class SeverityRange implements Comparable<SeverityRange> {
@@ -187,6 +200,12 @@ public class CvssSeverityRanges {
             "escalate:strong-red:9.0:," +
                     "due:strong-dark-orange:7.0:8.9," +
                     "elevated:strong-light-orange::6.9"
+    );
+    public static final CvssSeverityRanges EPSS_SCORE_SEVERITY_RANGES = new CvssSeverityRanges(
+            ">0.8:strong-red:0.8:," +
+                    ">0.1:strong-light-orange:0.1:0.8," +
+                    ">0.01:strong-yellow:0.01:0.1," +
+                    "≤0.01:pastel-gray::0.01"
     );
 
 

@@ -46,12 +46,7 @@ public enum AeaaCycleStateExtendedSupportInformationPresent {
         final long timeUntilEol = cycle.getTimeUntilEol();
         final long timeUntilExtendedSupportEnd = cycle.getTimeUntilExtendedSupportEnd();
 
-        final long effectiveTimeUntilExtendedSupportEnd;
-        if (Long.MAX_VALUE == timeUntilExtendedSupportEnd) {
-            effectiveTimeUntilExtendedSupportEnd = timeUntilEol;
-        } else {
-            effectiveTimeUntilExtendedSupportEnd = Math.max(timeUntilEol, timeUntilExtendedSupportEnd);
-        }
+        final long effectiveTimeUntilExtendedSupportEnd = Math.max(timeUntilEol, timeUntilExtendedSupportEnd);
 
         // check if EOL has been reached
         if (effectiveTimeUntilExtendedSupportEnd <= 0) {

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/bookmap.dtd">
+<bookmap id="map_annex">
+    #foreach($inventoryContext in $documentPart.getInventoryContexts())
+        <chapter href="../$inventoryContext.getIdentifier()/tpc_inventory-asset.dita">
+            #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-bill-of-materials.dita">
+
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.application.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-application-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.module.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-module-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.web.module.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-webmodule-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.package.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-package-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.driver.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-driver-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.installation.package.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-installation-package-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.content.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-content-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.appliance.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-appliance-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.container.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-container-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.device.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-device-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.part.effective.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-part-report-effective.dita"/>
+                #end
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.artifact.effective.switch") == "true")
+                        <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-artifact-report-effective.dita"/>
+                #end
+            </topicref>
+
+            <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-licensing.dita">
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.components.no.license-switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-components-no-license.dita"/>
+                #end
+                <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-licenses-effective.dita"/>
+                <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-license-usage.dita"/>
+                #if($inventoryReportProperties && $inventoryReportProperties.getProperty("ae.inventory.component.license.details.switch") == "true")
+                    <topicref href="../$inventoryContext.getIdentifier()/tpc_inventory-component-license-details.dita"/>
+                #end
+            </topicref>
+        </chapter>
+    #end
+</bookmap>

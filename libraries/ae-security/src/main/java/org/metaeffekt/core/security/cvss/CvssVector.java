@@ -16,11 +16,14 @@
 package org.metaeffekt.core.security.cvss;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.security.cvss.processor.BakedCvssVectorScores;
 import org.metaeffekt.core.security.cvss.processor.UniversalCvssCalculatorLinkGenerator;
 import org.metaeffekt.core.security.cvss.v2.Cvss2;
+import org.metaeffekt.core.security.cvss.v3.Cvss3;
+import org.metaeffekt.core.security.cvss.v3.Cvss3P0;
 import org.metaeffekt.core.security.cvss.v3.Cvss3P1;
 import org.metaeffekt.core.security.cvss.v4P0.Cvss4P0;
 import org.slf4j.Logger;
@@ -108,7 +111,7 @@ public abstract class CvssVector {
      */
     protected abstract void completeVector();
 
-    protected abstract boolean applyVectorArgument(String identifier, String value);
+    public abstract boolean applyVectorArgument(String identifier, String value);
 
     public abstract CvssVectorAttribute getVectorArgument(String identifier);
 
@@ -204,10 +207,13 @@ public abstract class CvssVector {
     /* APPLYING VECTORS */
 
     public int applyVector(String vector) {
-        if (vector == null || vector.isEmpty()) return 0;
-
+        if (vector == null) return 0;
         final String normalizedVector = normalizeVector(vector);
-        if (normalizedVector.isEmpty()) return 0;
+        return applyNormalizedVector(normalizedVector);
+    }
+
+    protected int applyNormalizedVector(String normalizedVector) {
+        if (StringUtils.isEmpty(normalizedVector)) return 0;
 
         int appliedCount = 0;
         int start = 0;
@@ -236,11 +242,13 @@ public abstract class CvssVector {
             start = end;
         }
 
-        completeVector();
+        this.completeVector();
 
         bakedScores = null;
         return appliedCount;
     }
+
+    // SECTION: apply by score change
 
     int applyVectorPartsIf(String vector, Function<CvssVector, Double> scoreType, boolean lower) {
         if (vector == null) return 0;
@@ -281,9 +289,112 @@ public abstract class CvssVector {
             }
         }
 
+        this.completeVector();
+
         bakedScores = null;
         return appliedPartsCount;
     }
+
+    // SECTION: apply by metric
+
+    public interface ApplyMetricsPredicate {
+        boolean apply(CvssVectorAttribute currentAttribute, CvssVectorAttribute unmodifiedAttribute, CvssVectorAttribute modifiedAttribute, CvssVectorAttribute newAttribute, boolean isNewAttributeModified);
+    }
+
+    int applyVectorPartsIfMetric(String vector, ApplyMetricsPredicate predicate) {
+        if (vector == null) return 0;
+
+        final String normalizedVector = normalizeVector(vector);
+        if (normalizedVector.isEmpty()) return 0;
+
+        final String[] arguments = normalizedVector.split("/");
+
+        int appliedPartsCount = 0;
+
+        for (String argument : arguments) {
+            if (StringUtils.isEmpty(argument)) continue;
+            final String[] parts = argument.split(":", 2);
+
+            if (parts.length == 2) {
+                // LOG.info("Checking argument [{}]", argument);
+                final CvssVectorAttribute currentAttribute = this.getVectorArgument(parts[0]);
+
+                final boolean isSetAttributeModified = parts[0].startsWith("M");
+                final CvssVectorAttribute unmodifiedAttribute = isSetAttributeModified ? this.getVectorArgument(parts[0].replaceFirst("M", "")) : currentAttribute;
+                final CvssVectorAttribute modifiedAttribute = isSetAttributeModified ? currentAttribute : this.getVectorArgument("M" + parts[0]);
+
+                this.applyVectorArgument(parts[0], parts[1]);
+                final CvssVectorAttribute newAttribute = this.getVectorArgument(parts[0]);
+
+                if (predicate.apply(currentAttribute, unmodifiedAttribute, modifiedAttribute, newAttribute, isSetAttributeModified)) {
+                    appliedPartsCount++;
+                } else {
+                    this.applyVectorArgument(parts[0], currentAttribute.getShortIdentifier());
+                }
+            } else {
+                LOG.debug("Unknown vector argument: [{}]", argument);
+            }
+        }
+
+        this.completeVector();
+
+        bakedScores = null;
+        return appliedPartsCount;
+    }
+
+    public int applyVectorPartsIfMetricsLower(String vector) {
+        if (vector == null) return 0;
+        return applyVectorPartsIfMetric(vector, (currentAttribute, unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified) -> {
+            final Pair<Integer, Integer> severityOrder = findOldNewSeverityOrder(unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified);
+            return severityOrder.getRight() <= severityOrder.getLeft();
+        });
+    }
+
+    public int applyVectorPartsIfMetricsHigher(String vector) {
+        if (vector == null) return 0;
+        return applyVectorPartsIfMetric(vector, (currentAttribute, unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified) -> {
+            final Pair<Integer, Integer> severityOrder = findOldNewSeverityOrder(unmodifiedAttribute, modifiedAttribute, newAttribute, isNewAttributeModified);
+            return severityOrder.getRight() >= severityOrder.getLeft();
+        });
+    }
+
+    protected Pair<Integer, Integer> findOldNewSeverityOrder(CvssVectorAttribute unmodifiedAttribute, CvssVectorAttribute modifiedAttribute, CvssVectorAttribute newAttribute, boolean isNewAttributeModified) {
+        // compare either the modified or the unmodified attribute with the new attribute
+        final boolean isModifiedAttributeSet = modifiedAttribute != null && modifiedAttribute.isSet();
+        final CvssVectorAttribute oldAttribute = isModifiedAttributeSet && isNewAttributeModified ? modifiedAttribute : unmodifiedAttribute;
+
+        final int oldSeverity = determineAttributeSeverityOrder(oldAttribute);
+        final int newSeverity = determineAttributeSeverityOrder(newAttribute);
+
+        // LOG.info("Comparing old [{} {}] with new [{} {}]", oldAttribute, oldSeverity, newAttribute, newSeverity);
+
+        return Pair.of(oldSeverity, newSeverity);
+    }
+
+    protected int determineAttributeSeverityOrder(CvssVectorAttribute attribute) {
+        if (attribute == null) return -1;
+
+        if (attribute instanceof Cvss4P0.Cvss4P0Attribute) {
+            for (int i = 0; i < Cvss4P0.ATTRIBUTE_SEVERITY_ORDER.size(); i++) {
+                if (Cvss4P0.ATTRIBUTE_SEVERITY_ORDER.get(i).contains(attribute)) {
+                    // group index as severity order
+                    return i;
+                }
+            }
+        }
+
+        // Handle CVSS 2/3 with their existing logic
+        else if (attribute instanceof Cvss2.Cvss2Attribute) {
+            return Cvss2.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
+        } else if (attribute instanceof Cvss3.Cvss3Attribute) {
+            return Cvss3.ATTRIBUTE_SEVERITY_ORDER.indexOf(attribute);
+        }
+
+        LOG.warn("Unknown attribute type: {}", attribute);
+        return -1;
+    }
+
+    // SECTION: general apply
 
     public int applyVector(CvssVector vector) {
         if (vector == null) return 0;
@@ -334,8 +445,11 @@ public abstract class CvssVector {
 
     public static <T extends CvssVector> T parseVectorOnlyIfKnownAttributes(String vector, Supplier<T> constructor) {
         final T cvssVector = constructor.get();
-        final int unknownAttributes = cvssVector.applyVector(vector);
-        return unknownAttributes > 0 ? null : cvssVector;
+        final String normalizedVector = normalizeVector(vector);
+        final int knownAttributes = cvssVector.applyNormalizedVector(normalizedVector);
+        final int allAttributes = normalizedVector.split("/").length;
+
+        return allAttributes - knownAttributes > 0 ? null : cvssVector;
     }
 
     public static <T extends CvssVector> String getVersionName(Class<T> clazz) {
@@ -343,6 +457,8 @@ public abstract class CvssVector {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
         } else if (Cvss2.class.isAssignableFrom(clazz)) {
             return Cvss2.getVersionName();
+        } else if (Cvss3P0.class.isAssignableFrom(clazz)) {
+            return Cvss3P0.getVersionName();
         } else if (Cvss3P1.class.isAssignableFrom(clazz)) {
             return Cvss3P1.getVersionName();
         } else if (Cvss4P0.class.isAssignableFrom(clazz)) {
@@ -357,6 +473,8 @@ public abstract class CvssVector {
             throw new IllegalArgumentException("Unknown or unregistered CVSS version: null");
         } else if (versionName.equals(Cvss2.getVersionName())) {
             return Cvss2.class;
+        } else if (versionName.equals(Cvss3P0.getVersionName())) {
+            return Cvss3P0.class;
         } else if (versionName.equals(Cvss3P1.getVersionName())) {
             return Cvss3P1.class;
         } else if (versionName.equals(Cvss4P0.getVersionName())) {
@@ -367,26 +485,42 @@ public abstract class CvssVector {
     }
 
     /**
-     * Attempts to parse the given vector. This is split into two steps:
-     * <ol>
-     *     <li>Try to discover the vector version using the prefix (e.g. <code>CVSS:3.1</code>)</li>
-     *     <li>Attempt to find a vector implementation that can parse all attributes on the vector, uses the {@link #parseVectorOnlyIfKnownAttributes(String, Supplier)} method</li>
-     * </ol>
+     * See overload {@link CvssVector#parseVector(String, boolean)} for more details.
+     * The <code>strict</code> parameter is set to false, meaning this method will always return a vector if the version is specified explicitly, even if it contains unknown metrics.
      *
      * @param vector the vector to parse
      * @return the parsed vector or <code>null</code> if the vector could not be parsed
      */
     public static CvssVector parseVector(String vector) {
-        if (vector == null || StringUtils.isEmpty(CvssVector.normalizeVector(vector))) {
+        return parseVector(vector, false);
+    }
+
+    /**
+     * Attempts to parse the given vector. This is split into two steps:
+     * <ol>
+     *     <li>Try to discover the vector version using the prefix (e.g. <code>CVSS:3.1</code>)</li>
+     *     <li>Attempt to find a vector implementation that can parse all attributes on the vector, uses the {@link #parseVectorOnlyIfKnownAttributes(String, Supplier)} method</li>
+     * </ol>
+     * If the <code>strict</code> parameter is set to true, only fully valid vectors are parsed and for others, <code>null</code> is returned.
+     *
+     * @param vector the vector to parse
+     * @param strict whether <code>null</code> should be returned instead of a partial vector when the vector contains unknown/invalid metrics
+     * @return the parsed vector or <code>null</code> if the vector could not be parsed
+     */
+    public static CvssVector parseVector(String vector, boolean strict) {
+        if (vector == null || StringUtils.isEmpty(vector)) {
             return null;
         }
 
+        final Supplier<CvssVector> constructor;
         if (vector.startsWith("CVSS:2.0")) {
-            return new Cvss2(vector);
-        } else if (vector.startsWith("CVSS:3.1") || vector.startsWith("CVSS:3.0")) {
-            return new Cvss3P1(vector);
+            constructor = Cvss2::new;
+        } else if (vector.startsWith("CVSS:3.1")) {
+            constructor = Cvss3P1::new;
+        } else if (vector.startsWith("CVSS:3.0")) {
+            constructor = Cvss3P0::new;
         } else if (vector.startsWith("CVSS:4.0")) {
-            return new Cvss4P0(vector);
+            constructor = Cvss4P0::new;
 
         } else {
             final Cvss2 potentialCvss2Vector = CvssVector.parseVectorOnlyIfKnownAttributes(vector, Cvss2::new);
@@ -404,12 +538,27 @@ public abstract class CvssVector {
                 return potentialCvss4P0Vector;
             }
 
-            LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            if (vector.startsWith("CVSS:")) {
+                LOG.warn("Cannot fully determine CVSS version in vector [{}]", vector);
+            } else if (LOG.isDebugEnabled()) {
+                LOG.debug("Unable to parse non-CVSS vector string [{}]", vector);
+            }
+
             return null;
+        }
+
+        if (strict) {
+            return CvssVector.parseVectorOnlyIfKnownAttributes(vector, constructor);
+        } else {
+            final CvssVector inst = constructor.get();
+            inst.applyVector(vector);
+            return inst;
         }
     }
 
     /* SERIALIZATION */
+
+    public abstract String toString(boolean filterUndefinedProperties);
 
     public JSONObject toJson() {
         final JSONObject json = new JSONObject();
@@ -484,5 +633,10 @@ public abstract class CvssVector {
         String getIdentifier();
 
         String getShortIdentifier();
+
+        boolean isSet();
     }
+
+    public final static String VALUE_NOT_DEFINED = "NOT_DEFINED";
+    public final static String VALUE_NULL = "NULL";
 }

@@ -15,56 +15,101 @@
  */
 package org.metaeffekt.core.util;
 
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+import java.nio.file.Paths;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.Assert.assertEquals;
+import static org.metaeffekt.core.util.FileUtils.toAbsoluteOrReferencePath;
 
 public class FileUtilsTest {
 
     @Test
-    public void canoncializeLinuxPathTest() {
-        Assert.assertEquals("test", FileUtils.canonicalizeLinuxPath("test"));
-        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/test"));
-        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./test"));
-        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/././test"));
-        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./././test"));
-        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./././test"));
-        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././test"));
-        Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./////test/./test/../././test"));
+    public void canonicalizeLinuxPathTest() {
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("test"));
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("./test"));
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("././././test"));
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("././././test/../././test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/././test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("test/./././test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./././test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./////test/./test/../././test"));
+        assertEquals("../test/test", FileUtils.canonicalizeLinuxPath("../test/./test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
+        assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
 
-        Assert.assertEquals("../test/test", FileUtils.canonicalizeLinuxPath("../test/./test"));
+        assertEquals("test/test/test", FileUtils.canonicalizeLinuxPath("./test/./test/test/../././/test"));
+        assertEquals("/a/b", FileUtils.canonicalizeLinuxPath("/a/b/c/d/e/../../../"));
+        assertEquals("/a/b", FileUtils.canonicalizeLinuxPath("/a/b/c/d/e/../../.."));
 
-        // not yet supported
-        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test//./test/../././test"));
-        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test//../././test"));
-        // Assert.assertEquals("test/test", FileUtils.canonicalizeLinuxPath("./test/./test/../././/test"));
+        assertEquals("test", FileUtils.canonicalizeLinuxPath("./a/../b/../c/../test"));
+        assertEquals("/test", FileUtils.canonicalizeLinuxPath("/./a/../b/../c/../test"));
+        assertEquals("/test", FileUtils.canonicalizeLinuxPath("/./a/.././b/.././c/.././test"));
+
+    }
+
+    @Test
+    public void illegalPathBehaviorTest() {
+        // edge cases that require a definition; better: throw exception
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/../test"));
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/./../test"));
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/.././test"));
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/./././.././test"));
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/././././test/../.."));
+        assertThatIllegalStateException().isThrownBy(() -> FileUtils.canonicalizeLinuxPath("/././././test/../../a"));
+
+        // these normalizations should throw an exception; illegal/undefined path; please also not the OS-specific treatment
+        assertThat(Paths.get("/../test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/.././test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/./../test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/./././.././test").normalize().toString()).isEqualTo(File.separator + "test");
+        assertThat(Paths.get("/././././test/../..").normalize().toString()).isEqualTo(File.separator);
+        assertThat(Paths.get("/././././test/../../a").normalize().toString()).isEqualTo(File.separator + "a");
     }
 
     @Test
     public void match() {
         String pattern = "**/md_to_pdf/**/*,/**/cache/**/md_to_pdf/**/*,/**/cache/**/md_to_pdf.*,**/md-to-pdf/**/*,**/md-to-pdf-*/**/*,/**/cache/**/md-to-pdf/**/*,/**/cache/**/md-to-pdf-*/**/*,/**/cache/**/md-to-pdf.*,**/md_to_pdf.gemspec";
         String path = "3.2.0/cache/bundler/git/md-to-pdf-db8a51cb2d2f39298e3259fa5c06fe96d67fec0b/objects/d4/4d0b959ab06938fe21bcb1150f5c2c2c05308a";
-        final boolean matches = FileUtils.matches(pattern, path);
-        System.out.println(matches);
+        assertThat(FileUtils.matches(pattern, path)).isEqualTo(true);
     }
 
     @Test
     public void pathMatching001() {
-        Assertions.assertThat(FileUtils.matches("**/*", "hello/world/test")).isTrue();
-        Assertions.assertThat(FileUtils.matches("**/*", "/hello/world/test")).isTrue();
-        Assertions.assertThat(FileUtils.matches("**/*", "C:/hello/world/test")).isTrue();
-        Assertions.assertThat(FileUtils.matches("/**/*", "/hello/world/test")).isTrue();
-        Assertions.assertThat(FileUtils.matches("/**/*", "C:/hello/world/test")).isTrue();
-        Assertions.assertThat(FileUtils.matches("/**/*", "C:/hello/world/test")).isTrue();
-        Assertions.assertThat(FileUtils.matches("C:/**/*", "C:/hello/world/test")).isTrue();
+        assertThat(FileUtils.matches("**/*", "hello/world/test")).isTrue();
+        assertThat(FileUtils.matches("**/*", "/hello/world/test")).isTrue();
+        assertThat(FileUtils.matches("**/*", "C:/hello/world/test")).isTrue();
+        assertThat(FileUtils.matches("/**/*", "/hello/world/test")).isTrue();
+        assertThat(FileUtils.matches("/**/*", "C:/hello/world/test")).isTrue();
+        assertThat(FileUtils.matches("/**/*", "C:/hello/world/test")).isTrue();
+        assertThat(FileUtils.matches("C:/**/*", "C:/hello/world/test")).isTrue();
 
-        Assertions.assertThat(FileUtils.matches("a/b/**/*", "a/b/c")).isTrue();
-        Assertions.assertThat(FileUtils.matches("a/b/**/*", "a/b/c/d")).isTrue();
-        Assertions.assertThat(FileUtils.matches("**/a/b/**/*", "f/e/a/b/c/d")).isTrue();
-        Assertions.assertThat(FileUtils.matches("**/a/b/**/*", "f/e/a/b/c/d")).isTrue();
+        assertThat(FileUtils.matches("a/b/**/*", "a/b/c")).isTrue();
+        assertThat(FileUtils.matches("a/b/**/*", "a/b/c/d")).isTrue();
+        assertThat(FileUtils.matches("**/a/b/**/*", "f/e/a/b/c/d")).isTrue();
+        assertThat(FileUtils.matches("**/a/b/**/*", "f/e/a/b/c/d")).isTrue();
 
-        Assertions.assertThat(FileUtils.matches("**/a/b", "f/e/a/b")).isTrue();
-        Assertions.assertThat(FileUtils.matches("**/a/b", "f/e/a/c")).isFalse();
+        assertThat(FileUtils.matches("**/a/b", "f/e/a/b")).isTrue();
+        assertThat(FileUtils.matches("**/a/b", "f/e/a/c")).isFalse();
+    }
+
+    @Test
+    public void testToAbsoluteOrExtendedFile() {
+        assertThat(toAbsoluteOrReferencePath("/absolute/path","/test").getPath())
+                .isEqualTo("/absolute/path");
+
+        assertThat(toAbsoluteOrReferencePath("relative/path","/test").getPath())
+                .isEqualTo("/test/relative/path");
+
+        assertThat(toAbsoluteOrReferencePath("relative/path","test/x/..////").getPath())
+                .isEqualTo("test/relative/path");
     }
 
 }

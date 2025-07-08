@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="content">
+    <glossterm>Content</glossterm>
+    <glossdef>
+        <p>
+            Content includes data-centric artifacts such as databases, AI/ML models, or multimedia files that can be used
+            or consumed by applications or services.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>contents</glossSurfaceForm>
+    </glossBody>
+</glossentry>

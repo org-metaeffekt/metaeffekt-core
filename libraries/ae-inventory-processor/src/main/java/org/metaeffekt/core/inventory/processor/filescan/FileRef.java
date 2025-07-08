@@ -20,16 +20,19 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 
 /**
- * Reference for file managing its normalized, absolute path.
+ * Reference for file managing its file and normalized path representation.
+ *
+ * The implementation does explicitly not canonicalize the path.
  */
 public class FileRef {
+
     /**
      * The file of the references.
      */
     private final File file;
 
     /**
-     * The absolute and normalized path
+     * The normalized path.
      */
     private final String path;
 
@@ -40,13 +43,13 @@ public class FileRef {
      */
     public FileRef(File file) {
         this.file = file;
-        this.path = FileUtils.normalizePathToLinux(file.getAbsolutePath());
+        this.path = FileUtils.normalizePathToLinux(file.getPath());
     }
 
     /**
      * Constructor based on a path.
      *
-     * @param path The absolute and normalized path.
+     * @param path The path to use.
      */
     public FileRef(String path) {
         this(new File(path));

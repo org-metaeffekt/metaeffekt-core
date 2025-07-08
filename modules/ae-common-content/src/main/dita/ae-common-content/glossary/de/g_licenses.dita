@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="licenses">
+    <glossterm>Lizenzbezeichner und -ausdrücke</glossterm>
+    <glossdef>
+        Die verwendeten Lizenzbezeichner wurden – soweit möglich und sinnvoll – nach vereinheitlichten Regeln aus den
+        Lizenzen (Titel, Version und Inhalt) abgeleitet. Dabei wurde das Ziel nach der Vereinheitlichung verfolgt und
+        weitgehend auf Abkürzungen verzichtet.
+        <p>
+            Eine Besonderheit bilden hierbei Lizenzen oder Nutzungsbedingungen, die keinerlei Titel oder Namen
+            tragen. Für solche Nutzungsbedingungen wurde der Bezeichner aus Inhalt und Kontext abgeleitet. Insbesondere
+            einfache Berechtigungen (<i>Permissions</i>), die in vielzähligen Variationen gängig sind, werden hier als
+            <q>Permission Terms</q> bezeichnet. Um diese schneller einordnen bzw. sinnvoll unterscheiden zu können,
+            wurden ausgewählte Eigenschaften in den Lizenzbezeichner aufgenommen (z.B. <q>Permission Terms (no warranty;
+            no advertisment)</q>).
+        </p>
+        <p>
+            Lizenzangaben zu Komponenten, die mehreren Lizenzen zugeordnet sind, die eine Wahlmöglichkeit bieten oder
+            mit einer Ausnahme versehen sind, werden mit den folgenden Ausdrücken dargestellt:
+            <ul>
+                <li>
+                    Lizenzbezeichner bzw. Lizenzausdrücke, die durch ein Komma (,) getrennt werden, entsprechen
+                    der Verknüpfung mit einem <i>UND</i>.
+                </li>
+                <li>
+                    Lizenzen bzw. Lizenzausdrücke, die mit einem <i>ODER</i> oder <i>ENTWEDER ODER</i>
+                    verknüpft sind, werden mit einem Plus (+) dargestellt.
+                </li>
+                <li>
+                    <i>UND</i> hat vor <i>ODER</i> Vorrang. Eine Klammersetzung wird nur bei zwingender
+                    Notwendigkeit zur korrekten Darstellung eingesetzt.
+                </li>
+            </ul>
+            Ordnet man einer solchen Komponente den Lizenzausdruck <i>Apache License 2.0, GNU General Public License 2.0 +
+            GNU Lesser General Public License 2.1</i> zu, bedeutet dies, dass die <q>Apache License 2.0</q> UND eine der
+            beiden GNU Lizenzen Anwendung finden. Dabei sind bei der Interpretation des ODERs die Lizenzhinweise explizit
+            zu prüfen.
+        </p>
+        <p>
+            Lizenzzuordnungen können mit Erweiterungen oder Ausnahmen versehen sein. Diese werden durch Zusätze an den
+            Lizenzbezeichnern dargestellt. Etwa <i>GNU Lesser General Public License 2.1 (or any later version)</i>
+            oder <i>GNU General Public License 2.0 (with classpath exception)</i>.
+        </p>
+        <p>Siehe auch: <abbreviated-form keyref="associated-licenses"/>, <abbreviated-form keyref="effective-licenses"/></p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Lizenzbezeichner und -ausdrücke</glossSurfaceForm>
+    </glossBody>
+</glossentry>

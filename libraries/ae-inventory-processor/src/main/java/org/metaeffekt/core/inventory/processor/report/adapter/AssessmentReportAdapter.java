@@ -63,16 +63,19 @@ public class AssessmentReportAdapter {
     }
 
     public String assetGroupDisplayName(AssetMetaData asset) {
-        return InventoryReport.xmlEscapeString(ObjectUtils.firstNonNull(asset.get("Asset Group"), "Other Assets"));
+        return InventoryReport.xmlEscapeString(ObjectUtils.firstNonNull(asset.get("Asset Group"), DEFAULT_ASSET_GROUP_NAME));
     }
 
     /* counting and grouping assets */
 
+    private final static String DEFAULT_ASSET_GROUP_NAME = "Default";
+
     public List<GroupedAssetsVulnerabilityCounts> groupAssetsByAssetGroup(Collection<AssetMetaData> assets, boolean useEffectiveSeverity) {
-        return assets.stream()
+        final List<GroupedAssetsVulnerabilityCounts> groupedAssets = assets.stream()
                 .sorted(Comparator.comparing(this::assetGroupDisplayName, (s, str) -> {
-                    // "Other Assets" should be last
-                    if (s.equals("Other Assets")) return 1;
+                    // "Default" should be last
+                    if (s.equals(DEFAULT_ASSET_GROUP_NAME)) return 1;
+                    if (str.equals(DEFAULT_ASSET_GROUP_NAME)) return -1;
                     return s.compareToIgnoreCase(str);
                 }))
                 .collect(Collectors.groupingBy(this::assetGroupDisplayName, LinkedHashMap::new, Collectors.toList()))
@@ -93,15 +96,42 @@ public class AssessmentReportAdapter {
                             .collect(Collectors.toList());
 
                     final GroupedAssetsVulnerabilityCounts groupedAssetsCounts = new GroupedAssetsVulnerabilityCounts();
-
                     groupedAssetsCounts.setGroupedAssetVulnerabilityCounts(groupedAssetVulnerabilityCounts);
                     groupedAssetsCounts.setAssetGroupDisplayName(entry.getKey());
                     groupedAssetsCounts.setAssetGroupAsXmlId(InventoryReport.xmlEscapeStringAttribute(entry.getKey()));
-                    groupedAssetsCounts.setTotalVulnerabilityCounts(VulnerabilityCounts.sumFrom(groupedAssetVulnerabilityCounts.stream().map(GroupedAssetVulnerabilityCounts::getTotalCounts).collect(Collectors.toList())));
+                    groupedAssetsCounts.setTotalVulnerabilityCounts(VulnerabilityCounts.sumFrom(groupedAssetVulnerabilityCounts.stream()
+                            .map(GroupedAssetVulnerabilityCounts::getTotalCounts).collect(Collectors.toList())));
 
                     return groupedAssetsCounts;
                 })
                 .collect(Collectors.toList());
+
+        // check if all groups contain exactly one asset
+        final boolean allGroupsHaveOneAsset = !groupedAssets.isEmpty() &&
+                groupedAssets.stream().allMatch(group -> group.getGroupedAssetVulnerabilityCounts().size() == 1);
+        // if all groups have exactly one asset and there are more than one group, combine them into a single group
+        boolean combineIntoOneGroup = allGroupsHaveOneAsset && groupedAssets.size() > 1;
+
+        if (!combineIntoOneGroup) {
+            return groupedAssets;
+        }
+
+        log.debug("Combining all groups into a single group [{}] as all groups have exactly one asset: {}", DEFAULT_ASSET_GROUP_NAME,
+                groupedAssets.stream().map(c -> c.getAssetGroupDisplayName() + " (" + c.getGroupedAssetVulnerabilityCounts().stream().map(GroupedAssetVulnerabilityCounts::getAssetDisplayName).collect(Collectors.joining(", ")) + ")").collect(Collectors.joining(", ")));
+
+        final GroupedAssetsVulnerabilityCounts combinedGroup = new GroupedAssetsVulnerabilityCounts();
+        final List<GroupedAssetVulnerabilityCounts> combinedAssets = groupedAssets.stream()
+                .flatMap(group -> group.getGroupedAssetVulnerabilityCounts().stream())
+                .sorted(Comparator.comparing(GroupedAssetVulnerabilityCounts::getAssetDisplayName))
+                .collect(Collectors.toList());
+
+        combinedGroup.setGroupedAssetVulnerabilityCounts(combinedAssets);
+        combinedGroup.setAssetGroupDisplayName(DEFAULT_ASSET_GROUP_NAME);
+        combinedGroup.setAssetGroupAsXmlId(InventoryReport.xmlEscapeStringAttribute(DEFAULT_ASSET_GROUP_NAME));
+        combinedGroup.setTotalVulnerabilityCounts(VulnerabilityCounts.sumFrom(combinedAssets.stream()
+                .map(GroupedAssetVulnerabilityCounts::getTotalCounts).collect(Collectors.toList())));
+
+        return Collections.singletonList(combinedGroup);
     }
 
     public VulnerabilityCounts countVulnerabilities(AssetMetaData assetMetaData, boolean useEffectiveSeverity) {
@@ -113,7 +143,6 @@ public class AssessmentReportAdapter {
 
         AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
         vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
-        vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
 
         // compute both effective and initial counts
         final VulnerabilityCounts effectiveCounts = computeCounts(true, vAssetInventory);

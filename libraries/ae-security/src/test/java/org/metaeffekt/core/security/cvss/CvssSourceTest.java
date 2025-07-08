@@ -101,6 +101,9 @@ public class CvssSourceTest {
         Assert.assertEquals("DEMO-HOST", nvdCnaNvdEntitySource.getHostingEntity().getName());
         Assert.assertEquals("DEMO-ISSUER_", nvdCnaNvdEntitySource.getIssuingEntity().getName());
         Assert.assertEquals("DEMO-_ROLE", nvdCnaNvdEntitySource.getIssuingEntityRole().getName());
+        Assert.assertEquals("DEMO_HOST-DEMO_\\_ROLE-DEMO_ISSUER\\_", nvdCnaNvdEntitySource.toColumnHeaderString(false, true));
+        Assert.assertEquals("DEMO-HOST-DEMO-_ROLE-DEMO-ISSUER_", nvdCnaNvdEntitySource.toColumnHeaderString(false, false));
+        Assert.assertEquals(Cvss2.getVersionName() + " DEMO-HOST-DEMO-_ROLE-DEMO-ISSUER_", nvdCnaNvdEntitySource.toColumnHeaderString(true, false));
     }
 
     @Test

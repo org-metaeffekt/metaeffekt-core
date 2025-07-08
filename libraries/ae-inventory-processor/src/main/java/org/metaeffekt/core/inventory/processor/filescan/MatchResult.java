@@ -28,7 +28,7 @@ import java.util.Set;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ARTIFACT_PATH;
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.ATTRIBUTE_KEY_ASSET_ID_CHAIN;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ARTIFACT_ROOT_PATHS;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ROOT_PATHS;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
@@ -68,11 +68,15 @@ public class MatchResult {
         String pathInAsset = relativePath;
         final String componentPartPath = componentPatternData.get(COMPONENT_PART_PATH);
         if (!StringUtils.isBlank(componentPartPath)) {
-            pathInAsset += "/" + componentPartPath;
+            if (!pathInAsset.equals(".")) {
+                pathInAsset += "/" + componentPartPath;
+            } else {
+                pathInAsset = componentPartPath;
+            }
         }
         derivedArtifact.set(Constants.KEY_PATH_IN_ASSET, pathInAsset);
 
-        derivedArtifact.set(ARTIFACT_ROOT_PATHS, virtualRootPath);
+        derivedArtifact.set(ROOT_PATHS, virtualRootPath);
 
         // also take over the type attribute
         derivedArtifact.set(Constants.KEY_TYPE, componentPatternData.get(Constants.KEY_TYPE));

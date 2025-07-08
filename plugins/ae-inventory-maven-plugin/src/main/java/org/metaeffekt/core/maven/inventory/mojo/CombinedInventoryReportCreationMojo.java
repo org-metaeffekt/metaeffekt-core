@@ -50,8 +50,10 @@ public class CombinedInventoryReportCreationMojo extends AbstractInventoryReport
     @Override
     protected InventoryReport initializeInventoryReport() throws MojoExecutionException {
         try {
-            InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder().
-                    hidePriorityInformation(isHidePriorityScoreInformation()).build());
+            // use this to modify the config parameters specific to this mojo
+            ReportConfigurationParameters.ReportConfigurationParametersBuilder configParams = configureParameters();
+
+            InventoryReport report = new InventoryReport(configParams.build());
 
             // apply standard configuration (parent class)
             configureInventoryReport(report);

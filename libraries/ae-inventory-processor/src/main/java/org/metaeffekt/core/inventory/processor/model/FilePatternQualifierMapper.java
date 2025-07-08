@@ -39,14 +39,9 @@ public class FilePatternQualifierMapper {
     private Artifact artifact;
 
     /**
-     * Qualifier based on component part (artifact id).
-     */
-    private String qualifier;
-
-    /**
      * Qualifier based on component part (artifact id), component name and version.
      */
-    private String derivedQualifier;
+    private String qualifier;
 
     /**
      * The list of files covered (single file or matching files for component-pattern-derived artifacts).

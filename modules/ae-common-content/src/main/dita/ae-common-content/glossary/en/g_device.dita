@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="device">
+    <glossterm>Device</glossterm>
+    <glossdef>
+        <p>
+            A device represents a physical or virtual peripheral such as a keyboard, mouse, monitor, or other
+            computer-attached hardware. Devices can also be broken down into parts.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>, <abbreviated-form keyref="part"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>devices</glossSurfaceForm>
+    </glossBody>
+</glossentry>

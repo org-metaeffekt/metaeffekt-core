@@ -49,11 +49,12 @@ public class YarnLockAdapter {
     public Inventory extractInventory(File yarnLock, String relativePath, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) {
         try {
             LOG.debug("Parsing yarn.lock file: {}", yarnLock.getAbsolutePath());
-            
+
             final List<String> lines = FileUtils.readLines(yarnLock, FileUtils.ENCODING_UTF_8);
 
             Map<String, NpmPackageLockAdapter.NpmModule> webModuleMap = new HashMap<>();
-            // Map to track dependency types directly from yarn.lock
+
+            // map to track dependency types directly from yarn.lock
             Map<String, String> dependencyTypeMap = new HashMap<>();
 
             String currentModuleId = null;
@@ -62,7 +63,7 @@ public class YarnLockAdapter {
             boolean inPeerDependencySection = false;
             boolean inDevDependencySection = false;
 
-            // Detect yarn.lock format version
+            // detect yarn.lock format version
             boolean isYarnV1Format = true;
             for (String line : lines) {
                 if (line.contains("__metadata")) {
@@ -70,7 +71,7 @@ public class YarnLockAdapter {
                     break;
                 }
             }
-            
+
             LOG.debug("Detected yarn.lock format: {}", isYarnV1Format ? "v1" : "v2+");
 
             int lineNumber = 0;
@@ -79,7 +80,7 @@ public class YarnLockAdapter {
                 try {
                     if (line.startsWith("#")) continue;
                     if (StringUtils.isBlank(line)) continue;
-                    
+
                     // Check for dependency section markers
                     if (line.startsWith("  dependencies:")) {
                         inDependencySection = true;
@@ -109,7 +110,7 @@ public class YarnLockAdapter {
                         inDevDependencySection = true;
                         continue;
                     }
-                    
+
                     if (line.startsWith("    ")) {
                         // dependency within a section
                         final Pair<String, String> keyValuePair = extractKeyValuePair(line);
@@ -138,7 +139,7 @@ public class YarnLockAdapter {
                         // process attribute
                         NpmPackageLockAdapter.NpmModule npmModule = webModuleMap.get(currentModuleId);
                         if (npmModule == null) continue;
-                        
+
                         if ("version".equalsIgnoreCase(keyValuePair.getKey())) {
                             npmModule.setVersion(keyValuePair.getRight());
                         }
@@ -166,7 +167,10 @@ public class YarnLockAdapter {
                     if (isYarnV1Format) {
                         final Pair<String, String> nameVersionPair = extractNameVersionPair(line);
                         if (nameVersionPair == null) continue;
-                        NpmPackageLockAdapter.NpmModule webModule =
+
+                        // FIXME-KKL: we used to use relativePath here; that however produced duplication within
+                        //  the path; explicit tests required.
+                        final NpmPackageLockAdapter.NpmModule webModule =
                                 new NpmPackageLockAdapter.NpmModule(nameVersionPair.getKey(), relativePath);
 
                         final String webModuleId = line;
@@ -181,15 +185,15 @@ public class YarnLockAdapter {
                             if (moduleName.contains(",")) {
                                 moduleName = moduleName.substring(0, moduleName.indexOf(",")).trim();
                             }
-                            
+
                             NpmPackageLockAdapter.NpmModule webModule =
                                     new NpmPackageLockAdapter.NpmModule(extractModuleName(moduleName), relativePath);
-                            
+
                             webModuleMap.put(moduleName, webModule);
                             currentModuleId = moduleName;
                         }
                     }
-                    
+
                     // Reset section flags when starting a new module
                     inDependencySection = false;
                     inOptionalDependencySection = false;
@@ -203,7 +207,7 @@ public class YarnLockAdapter {
 
             LOG.debug("Found {} modules in yarn.lock file", webModuleMap.size());
             LOG.debug("Found {} dependency type markers in yarn.lock file", dependencyTypeMap.size());
-            
+
             if (dependencies != null) {
                 LOG.debug("Consolidating with {} dependencies from package.json", dependencies.size());
             }
@@ -227,7 +231,7 @@ public class YarnLockAdapter {
         return extractInventory(yarnLock, relativePath, Collections.emptyList());
     }
 
-    private Inventory createInventory(Map<String, NpmPackageLockAdapter.NpmModule> webModuleMap, String path, 
+    private Inventory createInventory(Map<String, NpmPackageLockAdapter.NpmModule> webModuleMap, String path,
                                      List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies,
                                      Map<String, String> dependencyTypeMap) {
         Inventory inventory = new Inventory();
@@ -253,9 +257,9 @@ public class YarnLockAdapter {
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
             artifact.set("Source Archive - URL", module.getUrl());
             artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getId() + "]");
-            
+
             String assetId = "AID-" + artifact.getId();
-            
+
             // Check if we have dependency information from package.json (takes precedence)
             WebModuleComponentPatternContributor.WebModuleDependency dependency = dependencyMap.get(componentName);
             if (dependency != null) {
@@ -270,7 +274,7 @@ public class YarnLockAdapter {
                     artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
                 }
                 // production dependencies don't need a special marker
-            } 
+            }
             // If no info from package.json, use info from yarn.lock
             else if (dependencyTypeMap.containsKey(componentName)) {
                 artifact.set(assetId, dependencyTypeMap.get(componentName));
@@ -291,7 +295,7 @@ public class YarnLockAdapter {
                     break;
                 }
             }
-            
+
             if (!found && dependency.getVersion() != null) {
                 Artifact artifact = new Artifact();
                 artifact.setId(dependency.getName() + "-" + dependency.getVersion());
@@ -300,9 +304,9 @@ public class YarnLockAdapter {
                 artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
                 artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
                 artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + dependency.getName() + "]");
-                
+
                 String assetId = "AID-" + artifact.getId();
-                
+
                 if (dependency.isDevDependency()) {
                     artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
                 } else if (dependency.isPeerDependency()) {
@@ -310,10 +314,10 @@ public class YarnLockAdapter {
                 } else if (dependency.isOptionalDependency()) {
                     artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
                 }
-                
+
                 String purl = NpmPackageLockAdapter.buildPurl(dependency.getName(), dependency.getVersion());
                 artifact.set(Artifact.Attribute.PURL, purl);
-                
+
                 inventory.getArtifacts().add(artifact);
             }
         }

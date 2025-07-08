@@ -19,6 +19,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
+import org.apache.commons.compress.compressors.zstandard.ZstdCompressorInputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +28,7 @@ import org.apache.tools.ant.taskdefs.Expand;
 import org.apache.tools.ant.taskdefs.GUnzip;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.metaeffekt.bundle.sevenzip.SevenZipExecutableUtils;
+import org.metaeffekt.core.util.ExecUtils.ExecMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +39,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
+import static org.metaeffekt.core.util.ExecUtils.executeAndThrowIOExceptionOnFailure;
+import static org.metaeffekt.core.util.ExecUtils.executeCommand;
 
 /**
  * ArchiveUtils for dealing with different archives on core-level.
@@ -58,6 +62,11 @@ public class ArchiveUtils {
     private static final Set<String> jimageFilenames = new HashSet<>();
 
     private static final Set<String> windowsExtensions = new HashSet<>();
+
+    /**
+     * In allExtensions we collect all suffixes
+     */
+    private static final Set<String> allExtensions = new HashSet<>();
 
     static {
         zipExtensions.add("war");
@@ -85,6 +94,8 @@ public class ArchiveUtils {
         tarExtensions.add("tar");
         // bz2: bzip2 format compressed files
         tarExtensions.add("bz2");
+        // zstd: z compression standard https://github.com/facebook/zstd
+        tarExtensions.add("zst");
         // xz: compression format xz(see also "lzma")
         tarExtensions.add("xz");
         // tgz: sometimes used as a shorthand for ".tar.gz"
@@ -108,26 +119,38 @@ public class ArchiveUtils {
         jimageExtensions.add("modules");
 
         jimageFilenames.add("modules");
+
+        allExtensions.addAll(zipExtensions);
+        allExtensions.addAll(gzipExtensions);
+        allExtensions.addAll(tarExtensions);
+        allExtensions.addAll(windowsExtensions);
+        allExtensions.addAll(jmodExtensions);
+        allExtensions.addAll(jimageExtensions);
     }
 
     public static void registerZipExtension(String suffix) {
         zipExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerGzipExtension(String suffix) {
         gzipExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerTarExtension(String suffix) {
         tarExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerJmodExtension(String suffix) {
         jmodExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     public static void registerJimageExtension(String suffix) {
         jimageExtensions.add(suffix);
+        allExtensions.add(suffix);
     }
 
     /**
@@ -192,6 +215,16 @@ public class ArchiveUtils {
                 expandBzip2(file, target);
                 file = target;
             }
+
+            if(fileName.endsWith(".zst")) {
+                String targetName = file.getName();
+                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".zst"));
+                intermediateFiles.add(target);
+
+                expandZstd(file, target);
+                file = target;
+            }
+
         } catch (Exception e) {
             LOG.warn(e.getMessage());
             for (File intermediateFile : intermediateFiles) {
@@ -203,12 +236,13 @@ public class ArchiveUtils {
         }
 
         try {
+            // untar internal is the preferred approach
             untarInternal(file, targetDir);
         } catch (Exception e) {
             LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
             try {
                 FileUtils.forceMkdir(targetDir);
-                extractFileWithSevenZip(file, targetDir);
+                extractFileWithSevenZip(file, targetDir, true);
             } catch (Exception ex) {
                 LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
                 try {
@@ -246,16 +280,33 @@ public class ArchiveUtils {
         unpackAndClose(bzIn, Files.newOutputStream(targetFile.toPath()));
     }
 
-    private static void untarInternal(File file, File targetFile) throws IOException {
+    private static void expandZstd(File file, File targetFile) throws IOException {
+        final InputStream fin = Files.newInputStream(file.toPath());
+        final BufferedInputStream in = new BufferedInputStream(fin);
+        final ZstdCompressorInputStream zIn = new ZstdCompressorInputStream(in);
+
+        unpackAndClose(zIn, Files.newOutputStream(targetFile.toPath()));
+    }
+
+    /**
+     * This untar method supports the desired handling of symbolic links. This method should be preferred.
+     *
+     * @param file The file to untar.
+     * @param targetDir The target directory to untar to.
+     *
+     * @throws IOException Throws {@link IOException}s in case of an issue.
+     */
+    private static void untarInternal(File file, File targetDir) throws IOException {
         try {
             final InputStream fin = Files.newInputStream(file.toPath());
             final BufferedInputStream in = new BufferedInputStream(fin);
             final TarArchiveInputStream xzIn = new TarArchiveInputStream(in);
-            if (!targetFile.exists()) {
-                FileUtils.forceMkdir(targetFile);
+            if (!targetDir.exists()) {
+                FileUtils.forceMkdir(targetDir);
             }
-            unpackAndClose(xzIn, targetFile);
+            unpackAndClose(xzIn, targetDir);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IOException("Could not untar file [" + file.getAbsolutePath() + "]", e);
         }
     }
@@ -275,11 +326,10 @@ public class ArchiveUtils {
 
     private static void unpackAndClose(TarArchiveInputStream in, File targetDir) throws IOException {
         try {
-            TarArchiveEntry entry;
-
             // we need to check the os we are running on
             boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
+            TarArchiveEntry entry;
             while ((entry = in.getNextEntry()) != null) {
                 final File targetFile = new File(targetDir, entry.getName());
 
@@ -316,6 +366,10 @@ public class ArchiveUtils {
                             LOG.warn("Symbolic links not supported or insufficient permissions. Skipping symbolic link creation.");
                         }
                     } else {
+                        final File parentFile = targetFile.getParentFile();
+                        if (!parentFile.exists()) {
+                            FileUtils.forceMkdir(parentFile);
+                        }
                         try (OutputStream out = Files.newOutputStream(targetFile.toPath())) {
                             IOUtils.copy(in, out);
                         }
@@ -428,7 +482,7 @@ public class ArchiveUtils {
         try {
             if (windowsExtensions.contains(extension)) {
                 FileUtils.forceMkdir(targetDir);
-                extractFileWithSevenZip(archiveFile, targetDir);
+                extractFileWithSevenZip(archiveFile, targetDir, true);
                 return true;
             }
         } catch (Exception e) {
@@ -450,7 +504,7 @@ public class ArchiveUtils {
         final File jmodExecutable = new File(jdkPath, "bin/jmod");
         if (jmodExecutable.exists()) {
             final String[] commandParts = new String[] { jmodExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
-            executeExtraction(commandParts, file, targetFile);
+            executeExtraction(commandParts, file, targetFile, true);
         } else {
             LOG.error("Cannot unpack jmod executable: " + jmodExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
@@ -472,20 +526,20 @@ public class ArchiveUtils {
         final File jImageExecutable = new File(jdkPath, "bin/jimage");
         if (jImageExecutable.exists()) {
             final String[] commandParts = new String[] { jImageExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
-            executeExtraction(commandParts, file, targetFile);
+            executeExtraction(commandParts, file, targetFile, true);
         } else {
             LOG.error("Cannot unpack jimage executable: " + jImageExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
         }
     }
 
-    private static void extractFileWithSevenZip(File file, File targetFile) throws IOException {
+    private static ExecMonitor extractFileWithSevenZip(File file, File targetFile, boolean throwExceptionOnError) throws IOException {
         // this requires 7zip to perform the extraction
         final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
         if (sevenZipBinaryFile.exists()) {
             final String[] commandParts = {sevenZipBinaryFile.getAbsolutePath(), "x",
                     file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath()};
-            executeExtraction(commandParts, file, targetFile);
+            return executeExtraction(commandParts, file, targetFile, throwExceptionOnError);
         } else {
             LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
             throw new IOException("Could not execute command due to missing binary.");
@@ -518,10 +572,10 @@ public class ArchiveUtils {
         String[] commandParts = new String[] {
                 "tar", "-x", "-f", file.getAbsolutePath(),
                 "--no-same-permissions", "-C", targetFile.getAbsolutePath() };
-        executeExtraction(commandParts, file, targetFile);
+        executeExtraction(commandParts, file, targetFile, true);
     }
 
-    private static void executeExtraction(String[] commandParts, File file, File targetFile) throws IOException {
+    private static ExecMonitor executeExtraction(String[] commandParts, File file, File targetFile, boolean throwExceptionOnError) throws IOException {
 
         final ExecUtils.ExecParam execParam = new ExecUtils.ExecParam(commandParts);
 
@@ -531,7 +585,34 @@ public class ArchiveUtils {
         execParam.setWorkingDir(targetFile);
         execParam.timeoutAfter(EXTRACT_DURATION, EXTRACT_DURATION_TIMEOUT_UNIT);
 
-        ExecUtils.executeAndThrowIOExceptionOnFailure(execParam);
+        ExecMonitor execMonitor = throwExceptionOnError ? executeAndThrowIOExceptionOnFailure(execParam): executeCommand(execParam);
+        attemptUnpackingIntermediateArchive(targetFile);
+        return execMonitor;
+    }
+
+    private static void attemptUnpackingIntermediateArchive(File targetFile) {
+        try {
+            final String[] files = FileUtils.scanDirectoryForFiles(targetFile, "*");
+            if (files.length == 1) {
+                for (String unpackedFileName : files) {
+                    final File unpackedFile = new File(targetFile, unpackedFileName);
+                    if (!unpackedFile.isDirectory()) {
+                        if (unpackedFileName.endsWith("~")) {
+                            nativeUntar(unpackedFile, targetFile);
+                            FileUtils.forceDelete(unpackedFile);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Cannot unpack intermediate archives in: " + targetFile, e);
+        }
+    }
+
+    public static boolean isArchiveByName(String pathOrName) {
+        if (pathOrName == null) return false;
+        final String extension = FilenameUtils.getExtension(pathOrName.toLowerCase(Locale.US));
+        return allExtensions.contains(extension);
     }
 
 }

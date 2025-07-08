@@ -50,6 +50,7 @@
         <jdom.version>2.0.2</jdom.version>
         <jsch.version>0.1.54</jsch.version>
         <json.version>20231013</json.version>
+        <gson.version>2.10.1</gson.version>
         <junit.version>4.13.1</junit.version>
         <plexus.utils.version>3.0.24</plexus.utils.version>
         <poi.version>5.2.4</poi.version>
@@ -61,6 +62,7 @@
         <xalan.version>2.7.2</xalan.version>
         <javassist.version>3.21.0-GA</javassist.version>
         <tukaani.xz.version>1.9</tukaani.xz.version>
+        <luben.zstd.version>1.5.5-11</luben.zstd.version>
 
         <minimal.maven.version>3.0.5</minimal.maven.version>
         <maven.plugin.testing.harness.version>2.1</maven.plugin.testing.harness.version>
@@ -108,6 +110,12 @@
                 <artifactId>json</artifactId>
                 <version>${json.version}</version>
                 <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
             </dependency>
 
             <dependency>
@@ -613,6 +621,13 @@
                 <groupId>org.tukaani</groupId>
                 <artifactId>xz</artifactId>
                 <version>${tukaani.xz.version}</version>
+                <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.github.luben</groupId>
+                <artifactId>zstd-jni</artifactId>
+                <version>${luben.zstd.version}</version>
                 <scope>compile</scope>
             </dependency>
 

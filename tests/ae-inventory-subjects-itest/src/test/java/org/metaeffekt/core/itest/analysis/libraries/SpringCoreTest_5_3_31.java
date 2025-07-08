@@ -62,7 +62,7 @@ public class SpringCoreTest_5_3_31 extends AbstractCompositionAnalysisTest {
                 .logListWithAllAttributes()
                 .with(attributeValue(ID, "spring-core-5.3.31.jar"),
                         attributeValue(VERSION, "5.3.31"),
-                        attributeValue(PROJECTS, "spring-core-5.3.31.jar"),
+                        attributeValue(ROOT_PATHS, "spring-core-5.3.31.jar"),
                         attributeValue(PATH_IN_ASSET, "spring-core-5.3.31.jar"))
                 .assertNotEmpty();
     }

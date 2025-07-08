@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="subcomponent">
+    <glossterm>Unterkomponente</glossterm>
+    <glossdef>
+        Eine Unterkomponente ist eine Komponente, die in eine andere Komponente eingebettet oder von dieser intergriert wird.
+        <p>
+            Siehe auch: <abbreviated-form keyref="component"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Unterkomponenten</glossSurfaceForm>
+    </glossBody>
+</glossentry>

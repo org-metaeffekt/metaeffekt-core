@@ -1,0 +1,92 @@
+#parse("META-INF/templates/shared-macros/tpc_license-tables.vm")
+#parse("META-INF/templates/shared-macros/tpc_license-tables.vm")<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_asset-license-summary-$reportContext.id">
+    <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.asset-licenses"), true)</title>
+    #set($assetData=$report.getAssetData($inventory))
+    #set($singleLicenses=$assetData.getRepresentedAssociatedLicensesWithoutOption())
+    #set($licenseExpressions=$assetData.getRepresentedAssociatedLicensesWithOption())
+
+<body>
+    <p>$utils.getText("asset-report-bom.asset-table-descr")</p>
+    <p>$utils.getText("asset-report-bom.asset-table-note")</p>
+        #if ($assetData.isLicenseSubstructureRequired())
+            <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>
+        #end
+        #if ($configParams.isEnableOpenCodeStatus())
+        <fn id="id-opencode-similar-fn">$utils.getText("general.open-code-footnote")</fn>
+        <fn id="id-opencode-represented-fn">$utils.getText("general.open-code-multiple-footnote")</fn>
+        #end
+
+
+#if (!$singleLicenses.isEmpty())
+    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", "AssociatedLicenses", "Asset Licenses", $singleLicenses, true, "")
+#end
+
+    #if (!$licenseExpressions.isEmpty())
+        <table id="AssociatedLicenseExpressions" otherprops="wide">
+            <title>$utils.getText("asset-report-bom.short.asset-license-expressions") $reportContext.withTitle()</title>
+            <tgroup cols="2">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="90*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="10*" />
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">License Expression</entry>
+                        <entry colname="COLSPEC1" valign="top">Count</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    #foreach($license in $licenseExpressions)
+                        #if ($license.contains(" + "))
+                            #set($licenseData=$inventory.findMatchingLicenseData($license))
+                            <row>
+                                #if ($assetData.isLicenseSubstructureRequired($license))
+                                    <entry>
+                                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                            $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/represented-licenses-fn" type="fn"/>
+                                        </xref>
+                                    </entry>
+                                #else
+                                    <entry>
+                                        <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                            $report.xmlEscapeLicense($license)
+                                        </xref>
+                                    </entry>
+                                #end
+                                <entry>
+                                    <xref href="#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">
+                                        <codeph>$assetData.countAssetsWithRepresentedAssociatedLicense($license, true)</codeph>
+                                    </xref>
+                                </entry>
+                            </row>
+                        #end
+                    #end
+                </tbody>
+            </tgroup>
+        </table>
+    #end
+</body>
+
+#foreach($license in $assetData.getRepresentedAssociatedLicenses())
+    #set($licenseList=$assetData.getLicensesForRepresentedLicense($license))
+    #if(!$assetData.isLicenseSubstructureRequired($license))
+        #insertLicenseAssetTopic($license)
+    #else
+        <topic id="tpc_associated_license_details_$inventory.deriveLicenseId($license)">
+            <title>$report.xmlEscapeLicense($license)</title>
+            <body>
+                <p>
+                    $utils.getText("general.license-detail-notice")
+                </p>
+                <p>
+                    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", $license, $utils.getText("general.short.license-variants"), $licenseList, false, "")
+                </p>
+
+                #foreach($associatedLicense in $licenseList)
+                   #insertLicenseAssetTopic($associatedLicense)
+                #end
+            </body>
+        </topic>
+    #end
+#end
+</topic>

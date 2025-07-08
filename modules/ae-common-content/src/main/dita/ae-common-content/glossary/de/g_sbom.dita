@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="sbom">
+    <glossterm>Softwarebestandteilliste (Liste der Bestandteile der Assets; <i>Bill of Materials</i>)</glossterm>
+    <glossdef>
+        <p>
+            In der Softwarebestandteilliste werden sämtliche Softwarebestandteile (Components) eines Softwarebestandes (Asset) aufgelistet.
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Softwarebestandteilliste</glossSurfaceForm>
+    </glossBody>
+</glossentry>

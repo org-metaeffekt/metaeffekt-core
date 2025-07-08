@@ -204,7 +204,7 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
                         }
                     }
 
-                    artifact.addProject(packageObject.optString(ATTRIBUTE_PATH));
+                    artifact.addRootPath(packageObject.optString(ATTRIBUTE_PATH));
                     artifact.set(INVENTORY_ATTRIBUTE_LICENSE_FILE, packageObject.optString(ATTRIBUTE_LICENSE_FILE));
                     artifact.set(INVENTORY_ATTRIBUTE_EXTRACTED_COPYRIGHT_LICENSE_CHECKER, packageObject.optString(ATTRIBUTE_COPYRIGHT));
                 }

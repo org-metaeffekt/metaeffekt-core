@@ -17,6 +17,8 @@ package org.metaeffekt.core.security.cvss.v3;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.metaeffekt.core.security.cvss.CvssVector;
+import org.metaeffekt.core.security.cvss.MultiScoreCvssVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,6 @@ import java.util.List;
 
 public class Cvss3P0Test {
     private final static Logger LOG = LoggerFactory.getLogger(Cvss3P0Test.class);
-
 
     //CVSS 3.0 specific edgecases, the rest of tests in Cvss3P1Test should still apply for Cvss3P0
     @Test
@@ -165,8 +166,12 @@ public class Cvss3P0Test {
             Assert.assertEquals(cvss3P0.getTemporalScore(), temporal, 0.01);
             Assert.assertEquals(cvss3P0.getEnvironmentalScore(), enviromental, 0.01);
 
-
+            MultiScoreCvssVector reParsed = (MultiScoreCvssVector) CvssVector.parseVector(cvss3P0.toString());
+            Assert.assertEquals(reParsed.toString(), cvss3P0.toString());
+            Assert.assertTrue(reParsed + " " + cvss3P0, reParsed.toString().startsWith("CVSS:3.0/"));
+            Assert.assertEquals(reParsed.getBaseScore(), base, 0.01);
+            Assert.assertEquals(reParsed.getTemporalScore(), temporal, 0.01);
+            Assert.assertEquals(reParsed.getEnvironmentalScore(), enviromental, 0.01);
         }
     }
-
 }

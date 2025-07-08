@@ -1,0 +1,77 @@
+#parse("META-INF/templates/inventory-report-bom/macros/tpc_inventory-license.dita.vm")
+#parse("META-INF/templates/shared-macros/tpc_license-tables.vm")
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_license-summary-$reportContext.id">
+    <title>$utils.getText("inventory-report-bom.short.licenses-in-effect")</title>
+    #set($effectiveLicenses=$inventory.evaluateLicenses(false))
+    #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+    #set($termsCategorization=$inventoryReportAdapter.categorizeTerms($effectiveLicensesRepresented))
+    #set($termsWithOptions=$termsCategorization.getTermsWithOptions())
+    #set($atomicTerms=$termsCategorization.getAtomicTerms())
+
+<body>
+    <p>$utils.getText("inventory-report-bom.different-effective-licenses")</p>
+    <p>$utils.getText("inventory-report-bom.different-effective-licenses-2")</p>
+
+        #if ($inventory.isFootnoteRequired($effectiveLicenses, $effectiveLicensesRepresented))
+            <fn id="represented-licenses-fn">$utils.getText("general.represented-licenses-footnote")</fn>
+        #end
+        #if ($configParams.isEnableOpenCodeStatus())
+          <fn id="id-opencode-similar-fn">$utils.getText("general.open-code-footnote")</fn>
+          <fn id="id-opencode-represented-fn">$utils.getText("general.open-code-multiple-footnote")</fn>
+        #end
+
+## License Options (not necessarily expressions)
+    #if (!$termsWithOptions.isEmpty())
+        <table id="LicenseOptions" otherprops="wide">
+            <title>$utils.getText("general.short.license-options") $reportContext.withTitle()</title>
+            <tgroup cols="2">
+                <colspec colname="COLSPEC0" colnum="1" colwidth="88*" />
+                <colspec colname="COLSPEC1" colnum="2" colwidth="12*" />
+                <thead>
+                    <row>
+                        <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.license-options")</entry>
+                        <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.number-of-component")</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    #foreach($licenseData in $termsWithOptions)
+                        #set($license=$licenseData.get("Canonical Name"))
+                        #set($componentCount=$inventory.countComponents($license))
+                        <row>
+                            #if ($inventory.isLicenseSubstructureRequired($license, $effectiveLicensesRepresented))
+                                <entry>
+                                    <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                        $report.xmlEscapeLicense($license)<xref href="#tpc_asset-license-summary-$reportContext.id/represented-licenses-fn" type="fn"/>
+                                    </xref>
+                                </entry>
+                            #else
+                                <entry>
+                                    <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                        $report.xmlEscapeLicense($license)
+                                    </xref>
+                                </entry>
+                            #end
+                            <entry>
+                                <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">
+                                    <codeph>$componentCount</codeph>
+                                </xref>
+                            </entry>
+                        </row>
+                    #end
+                </tbody>
+            </tgroup>
+        </table>
+    #end
+
+    #insertLicenseTable(
+        "tpc_license-summary-$reportContext.id",
+        "LicensesInEffect",
+        $utils.getText("inventory-report-bom.short.licenses-in-effect"),
+        $effectiveLicenses,
+        true,
+        "tpc_inventory-license-usage.dita#tpc_effective_license_")
+
+</body>
+</topic>

@@ -36,6 +36,7 @@ import java.util.Objects;
  */
 public class BakedCvssVectorScores {
 
+    // FIXME-KKL: consider replacing implementation
     private final static LruLinkedHashMap<String, BakedCvssVectorScores> cache = new LruLinkedHashMap<>(5000);
 
     private final Class<? extends CvssVector> cvssVersion;
@@ -45,6 +46,7 @@ public class BakedCvssVectorScores {
     private final double impact;
     private final double exploitability;
     private final double temporal;
+    private final double threat;
     private final double environmental;
     private final double adjustedImpact;
     private final double overall;
@@ -53,24 +55,30 @@ public class BakedCvssVectorScores {
         this.cvssVersion = vector.getClass();
         this.vector = vector.toString();
 
-        if (this.cvssVersion == Cvss4P0.class) {
-            this.base = vector.getBaseScore();
-            this.overall = this.base;
-        } else {
-            this.base = vector.getBaseScore();
-            this.overall = vector.getOverallScore();
-        }
+        this.base = vector.getBaseScore();
+        this.overall = vector.getOverallScore();
 
         if (vector instanceof MultiScoreCvssVector) {
             final MultiScoreCvssVector cast = ((MultiScoreCvssVector) vector);
             this.impact = cast.getImpactScore();
             this.exploitability = cast.getExploitabilityScore();
+            this.threat = Double.NaN;
             this.temporal = cast.getTemporalScore();
             this.environmental = cast.getEnvironmentalScore();
             this.adjustedImpact = cast.getAdjustedImpactScore();
+
+        } else if (this.cvssVersion == Cvss4P0.class) {
+            this.impact = Double.NaN;
+            this.exploitability = Double.NaN;
+            this.threat = ((Cvss4P0) vector).getThreatScore();
+            this.temporal = Double.NaN;
+            this.environmental = ((Cvss4P0) vector).getEnvironmentalScore();
+            this.adjustedImpact = Double.NaN;
+
         } else {
             this.impact = Double.NaN;
             this.exploitability = Double.NaN;
+            this.threat = Double.NaN;
             this.temporal = Double.NaN;
             this.environmental = Double.NaN;
             this.adjustedImpact = Double.NaN;
@@ -106,6 +114,10 @@ public class BakedCvssVectorScores {
         return temporal;
     }
 
+    public double getThreatScore() {
+        return threat;
+    }
+
     public double getEnvironmentalScore() {
         return environmental;
     }
@@ -132,6 +144,10 @@ public class BakedCvssVectorScores {
 
     public boolean isTemporalScoreAvailable() {
         return !Double.isNaN(temporal);
+    }
+
+    public boolean isThreatScoreAvailable() {
+        return !Double.isNaN(threat);
     }
 
     public boolean isEnvironmentalScoreAvailable() {

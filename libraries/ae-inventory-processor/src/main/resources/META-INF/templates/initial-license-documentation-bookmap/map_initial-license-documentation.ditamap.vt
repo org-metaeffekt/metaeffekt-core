@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/bookmap.dtd">
+<bookmap id="map_annex">
+#foreach($inventoryContext in $documentPart.getInventoryContexts())
+    #set($inventoryReportProperties = $documentDescriptorReportAdapters.getPropertiesMap().get($inventoryContext.getIdentifier()))
+    <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-report.dita" />
+    <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-licenses.dita" />
+    <chapter href="../$inventoryContext.getIdentifier()/tpc_asset-no-license.dita" />
+#end
+</bookmap>

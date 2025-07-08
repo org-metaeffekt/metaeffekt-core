@@ -33,9 +33,16 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     /**
      * Contains a JSON Object representing a vulnerability status.
      */
+    @Deprecated
     VULNERABILITY_STATUS("Vulnerability Status"),
+    /**
+     * A JSON Array of {@link org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaVulnerabilityAssessmentEvent}
+     * instances, all of which have been matched to the vulnerability and are applicable.
+     */
+    VULNERABILITY_ASSESSMENT_EVENTS("Assessment Events"),
     STATUS_TITLE("Title"),
     STATUS_HISTORY("Status history"),
+    MEASURES("Measures"),
     STATUS_ACCEPTED("Accepted by"),
     STATUS_REPORTED("Reported by"),
     MS_PRODUCT_ID("MS Product ID"),
@@ -87,7 +94,10 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     EOL_IS_EOL("EOL Is EOL"),
     EOL_IS_SUPPORTED("EOL Is Support"),
     EOL_IS_SUPPORTED_EXTENDED("EOL Is Extended Support"),
-    EOL_RATING("EOL Rating"),;
+    EOL_RATING("EOL Rating"),
+
+    ADVISOR_OSV_GHSA_REVIEWED_STATE("GHSA Reviewed State"),
+    ADVISOR_OSV_GHSA_REVIEWED_DATE("GHSA Reviewed Date");
 
     private final String key;
 
