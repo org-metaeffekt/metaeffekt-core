@@ -6,11 +6,11 @@
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>test-pom-report</artifactId>
     <name>${project.artifactId}</name>
-    <version>0.141.0</version>
+    <version>HEAD-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
-        <ae.core.version>0.141.0</ae.core.version>
+        <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
     </properties>
 
     <build>
