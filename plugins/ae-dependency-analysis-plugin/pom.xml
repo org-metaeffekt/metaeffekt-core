@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>ae-dependency-analysis-plugin</artifactId>
+    <name>${project.artifactId}</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

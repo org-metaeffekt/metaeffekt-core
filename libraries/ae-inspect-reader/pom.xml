@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>ae-inspect-reader</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <properties>

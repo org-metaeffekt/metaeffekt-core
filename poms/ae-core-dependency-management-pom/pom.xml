@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>ae-core-dependency-management-pom</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <modules>

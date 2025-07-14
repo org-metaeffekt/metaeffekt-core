@@ -4,6 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ae-attach-asset-metadata-test</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <parent>

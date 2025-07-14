@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>ae-common-content</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <profiles>

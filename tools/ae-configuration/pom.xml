@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>ae-configuration</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
 </project>

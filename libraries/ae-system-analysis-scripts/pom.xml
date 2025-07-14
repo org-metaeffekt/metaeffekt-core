@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>ae-system-analysis-scripts</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <properties>

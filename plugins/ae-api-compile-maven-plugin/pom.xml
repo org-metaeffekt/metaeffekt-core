@@ -13,6 +13,7 @@
     </parent>
 
     <artifactId>ae-api-compile-maven-plugin</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
     <build>

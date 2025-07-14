@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>ae-npm-extractor-tests</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <properties>

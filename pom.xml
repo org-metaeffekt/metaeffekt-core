@@ -6,10 +6,10 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>ae-core</artifactId>
+    <name>metaeffekt-core</name>
     <version>0.141.0</version>
     <packaging>pom</packaging>
 
-    <name>metaeffekt-core</name>
     <description>Core project with fundamental runtime and build support.</description>
     <url>https://github.com/org-metaeffekt/metaeffekt-core</url>
 
