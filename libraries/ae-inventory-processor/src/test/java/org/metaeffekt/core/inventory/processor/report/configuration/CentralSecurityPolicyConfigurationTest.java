@@ -183,4 +183,12 @@ public class CentralSecurityPolicyConfigurationTest {
             put("any", "");
         }}).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));
     }
+
+    @Test
+    public void dumpDefaultPolicy() {
+        final CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
+
+        securityPolicy.logConfiguration();
+
+    }
 }
