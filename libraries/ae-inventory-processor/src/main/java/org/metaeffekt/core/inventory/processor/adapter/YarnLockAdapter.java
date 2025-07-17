@@ -15,236 +15,110 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter;
 
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.WebModuleComponentPatternContributor;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Extracts an inventory for production npm modules based on a yarn.lock file.
+ *
+ * Compare:
+ * <ul>
+ *     <li>https://www.arahansen.com/the-ultimate-guide-to-yarn-lock-lockfiles/</li>
+ *     <li>https://ayc0.github.io/posts/yarn/yarn-lock-how-to-read-it/</li>
+ * </ul>
  */
+@Slf4j
 public class YarnLockAdapter {
-
-    private static final Logger LOG = LoggerFactory.getLogger(YarnLockAdapter.class);
 
     /**
      * Extracts an inventory for production npm modules based on a yarn.lock file.
      *
      * @param yarnLock The yarn.lock file to parse.
      * @param relativePath The relative path to the file from the relevant basedir.
-     * @param dependencies The list of dependencies from package.json.
+     * @param webModule The webModule of dependencies from package.json.
+     *
      * @return An inventory populated with the modules defined in the yarn.lock file.
      */
-    public Inventory extractInventory(File yarnLock, String relativePath, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) {
+    public Inventory extractInventory(File yarnLock, String relativePath, WebModule webModule) {
         try {
-            LOG.debug("Parsing yarn.lock file: {}", yarnLock.getAbsolutePath());
+            log.debug("Parsing yarn.lock file: {}", yarnLock.getAbsolutePath());
 
-            final List<String> lines = FileUtils.readLines(yarnLock, FileUtils.ENCODING_UTF_8);
+            // list of npm modules parsed from the yarn.lock
+            final List<NpmModule> webModuleList = new ArrayList<>();
 
-            Map<String, NpmPackageLockAdapter.NpmModule> webModuleMap = new HashMap<>();
+            // map to track dependency types directly from yarn.lock; name to dependency type (d, p, o)
+            final Map<String, String> dependencyTypeMap = new HashMap<>();
 
-            // map to track dependency types directly from yarn.lock
-            Map<String, String> dependencyTypeMap = new HashMap<>();
+            final List<YarnInfoBlock> yarnInfoBlocks = parseYarnLock(yarnLock);
 
-            String currentModuleId = null;
-            boolean inDependencySection = false;
-            boolean inOptionalDependencySection = false;
-            boolean inPeerDependencySection = false;
-            boolean inDevDependencySection = false;
+            for (YarnInfoBlock yarnInfoBlock : yarnInfoBlocks) {
+                String moduleName = yarnInfoBlock.getName();
 
-            // detect yarn.lock format version
-            boolean isYarnV1Format = true;
-            for (String line : lines) {
-                if (line.contains("__metadata")) {
-                    isYarnV1Format = false;
-                    break;
+                // __metadata is not a module
+                if (moduleName != null && moduleName.startsWith("__metadata")) continue;
+
+                final NpmModule module = new NpmModule(moduleName, yarnLock.getName());
+                module.setUrl(yarnInfoBlock.resolved);
+                module.setHash(yarnInfoBlock.integrity);
+                if (module.getHash() != null) {
+                    module.setHash(yarnInfoBlock.checksum);
                 }
+                module.setResolved(yarnInfoBlock.resolved != null);
+                module.setVersion(yarnInfoBlock.version);
+
+                webModuleList.add(module);
             }
 
-            LOG.debug("Detected yarn.lock format: {}", isYarnV1Format ? "v1" : "v2+");
+            log.debug("Found {} modules in yarn.lock file", webModuleList.size());
+            log.debug("Found {} dependency type markers in yarn.lock file", dependencyTypeMap.size());
 
-            int lineNumber = 0;
-            for (String line : lines) {
-                lineNumber++;
-                try {
-                    if (line.startsWith("#")) continue;
-                    if (StringUtils.isBlank(line)) continue;
-
-                    // Check for dependency section markers
-                    if (line.startsWith("  dependencies:")) {
-                        inDependencySection = true;
-                        inOptionalDependencySection = false;
-                        inPeerDependencySection = false;
-                        inDevDependencySection = false;
-                        continue;
-                    }
-                    if (line.startsWith("  optionalDependencies:")) {
-                        inDependencySection = false;
-                        inOptionalDependencySection = true;
-                        inPeerDependencySection = false;
-                        inDevDependencySection = false;
-                        continue;
-                    }
-                    if (line.startsWith("  peerDependencies:")) {
-                        inDependencySection = false;
-                        inOptionalDependencySection = false;
-                        inPeerDependencySection = true;
-                        inDevDependencySection = false;
-                        continue;
-                    }
-                    if (line.startsWith("  devDependencies:")) {
-                        inDependencySection = false;
-                        inOptionalDependencySection = false;
-                        inPeerDependencySection = false;
-                        inDevDependencySection = true;
-                        continue;
-                    }
-
-                    if (line.startsWith("    ")) {
-                        // dependency within a section
-                        final Pair<String, String> keyValuePair = extractKeyValuePair(line);
-                        if (keyValuePair == null) continue;
-
-                        // Store dependency type information
-                        String depName = keyValuePair.getLeft();
-                        if (inOptionalDependencySection) {
-                            dependencyTypeMap.put(depName, Constants.MARKER_OPTIONAL_DEPENDENCY);
-                            LOG.debug("Found optional dependency in yarn.lock: {}", depName);
-                        } else if (inPeerDependencySection) {
-                            dependencyTypeMap.put(depName, Constants.MARKER_PEER_DEPENDENCY);
-                            LOG.debug("Found peer dependency in yarn.lock: {}", depName);
-                        } else if (inDevDependencySection) {
-                            dependencyTypeMap.put(depName, Constants.MARKER_DEVELOPMENT);
-                            LOG.debug("Found development dependency in yarn.lock: {}", depName);
-                        }
-                        continue;
-                    }
-                    if (line.startsWith("  ")) {
-                        // attribute
-                        final Pair<String, String> keyValuePair = extractKeyValuePair(line);
-
-                        if (keyValuePair == null) continue;
-
-                        // process attribute
-                        NpmPackageLockAdapter.NpmModule npmModule = webModuleMap.get(currentModuleId);
-                        if (npmModule == null) continue;
-
-                        if ("version".equalsIgnoreCase(keyValuePair.getKey())) {
-                            npmModule.setVersion(keyValuePair.getRight());
-                        }
-                        if ("resolved".equalsIgnoreCase(keyValuePair.getKey())) {
-                            npmModule.setUrl(keyValuePair.getRight());
-                        }
-                        // Check for dev dependency marker
-                        if ("dev".equalsIgnoreCase(keyValuePair.getKey()) && "true".equalsIgnoreCase(keyValuePair.getRight())) {
-                            dependencyTypeMap.put(npmModule.getName(), Constants.MARKER_DEVELOPMENT);
-                            LOG.debug("Found development dependency marker in yarn.lock: {}", npmModule.getName());
-                        }
-                        // Check for optional dependency marker
-                        if ("optional".equalsIgnoreCase(keyValuePair.getKey()) && "true".equalsIgnoreCase(keyValuePair.getRight())) {
-                            dependencyTypeMap.put(npmModule.getName(), Constants.MARKER_OPTIONAL_DEPENDENCY);
-                            LOG.debug("Found optional dependency marker in yarn.lock: {}", npmModule.getName());
-                        }
-                        continue;
-                    }
-                    // module
-                    line = line.trim();
-
-                    line = trimColon(line);
-
-                    // Handle different formats for Yarn v1 and v2+
-                    if (isYarnV1Format) {
-                        final Pair<String, String> nameVersionPair = extractNameVersionPair(line);
-                        if (nameVersionPair == null) continue;
-
-                        // FIXME-KKL: we used to use relativePath here; that however produced duplication within
-                        //  the path; explicit tests required.
-                        final NpmPackageLockAdapter.NpmModule webModule =
-                                new NpmPackageLockAdapter.NpmModule(nameVersionPair.getKey(), relativePath);
-
-                        final String webModuleId = line;
-                        webModuleMap.put(webModuleId, webModule);
-
-                        // subsequent parse events are centric to this module
-                        currentModuleId = webModuleId;
-                    } else {
-                        // Yarn v2+ format
-                        if (line.contains("@")) {
-                            String moduleName = line;
-                            if (moduleName.contains(",")) {
-                                moduleName = moduleName.substring(0, moduleName.indexOf(",")).trim();
-                            }
-
-                            NpmPackageLockAdapter.NpmModule webModule =
-                                    new NpmPackageLockAdapter.NpmModule(extractModuleName(moduleName), relativePath);
-
-                            webModuleMap.put(moduleName, webModule);
-                            currentModuleId = moduleName;
-                        }
-                    }
-
-                    // Reset section flags when starting a new module
-                    inDependencySection = false;
-                    inOptionalDependencySection = false;
-                    inPeerDependencySection = false;
-                    inDevDependencySection = false;
-                } catch (Exception e) {
-                    LOG.warn("Error parsing line {} in yarn.lock file: {}", lineNumber, e.getMessage());
-                    // Continue with next line
-                }
-            }
-
-            LOG.debug("Found {} modules in yarn.lock file", webModuleMap.size());
-            LOG.debug("Found {} dependency type markers in yarn.lock file", dependencyTypeMap.size());
+            List<WebModuleDependency> dependencies = webModule.getDirectDependencies();
 
             if (dependencies != null) {
-                LOG.debug("Consolidating with {} dependencies from package.json", dependencies.size());
+                log.debug("Consolidating with {} dependencies from package.json", dependencies.size());
             }
 
-            return createInventory(webModuleMap, relativePath, dependencies, dependencyTypeMap);
+            return createInventory(webModuleList, relativePath, dependencies, dependencyTypeMap);
 
         } catch (Exception e) {
-            LOG.warn("Cannot read / parse [{}]: {}", yarnLock.getAbsoluteFile(), e.getMessage(), e);
+            log.warn("Cannot read / parse [{}]: {}", yarnLock.getAbsoluteFile(), e.getMessage(), e);
         }
         return null;
     }
 
-    /**
-     * Extracts an inventory for production npm modules based on a yarn.lock file.
-     *
-     * @param yarnLock The yarn.lock file to parse.
-     * @param relativePath The relative path to the file from the relevant basedir.
-     * @return An inventory populated with the modules defined in the yarn.lock file.
-     */
-    public Inventory extractInventory(File yarnLock, String relativePath) {
-        return extractInventory(yarnLock, relativePath, Collections.emptyList());
-    }
-
-    private Inventory createInventory(Map<String, NpmPackageLockAdapter.NpmModule> webModuleMap, String path,
-                                     List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies,
+    private Inventory createInventory(List<NpmModule> webModules, String path,
+                                     List<WebModuleDependency> dependencies,
                                      Map<String, String> dependencyTypeMap) {
-        Inventory inventory = new Inventory();
+
+        final Inventory inventory = new Inventory();
 
         // First build a map of dependencies from package.json for faster lookup
-        Map<String, WebModuleComponentPatternContributor.WebModuleDependency> dependencyMap = new HashMap<>();
-        for (WebModuleComponentPatternContributor.WebModuleDependency dependency : dependencies) {
+        final Map<String, WebModuleDependency> dependencyMap = new HashMap<>();
+        for (WebModuleDependency dependency : dependencies) {
             dependencyMap.put(dependency.getName(), dependency);
         }
 
         // Populate inventory with modules
-        for (NpmPackageLockAdapter.NpmModule module : webModuleMap.values()) {
-            Artifact artifact = new Artifact();
+        for (NpmModule module : webModules) {
+
+            if (module.getVersion() == null) continue;
+            if (module.getName() == null) continue;
+
+            final Artifact artifact = new Artifact();
             artifact.setId(module.getName() + "-" + module.getVersion());
             String componentName = module.getName();
             int slashIndex = componentName.indexOf("/");
@@ -256,16 +130,16 @@ public class YarnLockAdapter {
             artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
             artifact.set("Source Archive - URL", module.getUrl());
-            artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getId() + "]");
+            artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getPath() + "]");
 
             String assetId = "AID-" + artifact.getId();
 
             // Check if we have dependency information from package.json (takes precedence)
-            WebModuleComponentPatternContributor.WebModuleDependency dependency = dependencyMap.get(componentName);
+            WebModuleDependency dependency = dependencyMap.get(componentName);
             if (dependency != null) {
                 if (dependency.isDevDependency()) {
                     // mark as development dependency
-                    artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
+                    artifact.set(assetId, Constants.MARKER_DEVELOPMENT_DEPENDENCY);
                 } else if (dependency.isPeerDependency()) {
                     // mark as peer dependency
                     artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
@@ -287,7 +161,7 @@ public class YarnLockAdapter {
         }
 
         // Add missing dependencies from package.json that weren't found in yarn.lock
-        for (WebModuleComponentPatternContributor.WebModuleDependency dependency : dependencies) {
+        for (WebModuleDependency dependency : dependencies) {
             boolean found = false;
             for (Artifact existingArtifact : inventory.getArtifacts()) {
                 if (dependency.getName().equals(existingArtifact.getComponent())) {
@@ -296,11 +170,11 @@ public class YarnLockAdapter {
                 }
             }
 
-            if (!found && dependency.getVersion() != null) {
+            if (!found && dependency.getResolvedVersion() != null) {
                 Artifact artifact = new Artifact();
-                artifact.setId(dependency.getName() + "-" + dependency.getVersion());
+                artifact.setId(dependency.getName() + "-" + dependency.getResolvedVersion());
                 artifact.setComponent(dependency.getName());
-                artifact.setVersion(dependency.getVersion());
+                artifact.setVersion(dependency.getResolvedVersion());
                 artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
                 artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
                 artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + dependency.getName() + "]");
@@ -308,14 +182,14 @@ public class YarnLockAdapter {
                 String assetId = "AID-" + artifact.getId();
 
                 if (dependency.isDevDependency()) {
-                    artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
+                    artifact.set(assetId, Constants.MARKER_DEVELOPMENT_DEPENDENCY);
                 } else if (dependency.isPeerDependency()) {
                     artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
                 } else if (dependency.isOptionalDependency()) {
                     artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
                 }
 
-                String purl = NpmPackageLockAdapter.buildPurl(dependency.getName(), dependency.getVersion());
+                String purl = NpmPackageLockAdapter.buildPurl(dependency.getName(), dependency.getResolvedVersion());
                 artifact.set(Artifact.Attribute.PURL, purl);
 
                 inventory.getArtifacts().add(artifact);
@@ -337,11 +211,12 @@ public class YarnLockAdapter {
         int separatorIndex = line.indexOf(" ");
 
         if (separatorIndex == -1) {
-            LOG.error("Cannot parse " + line);
+            log.error("Cannot parse " + line);
             return null;
         }
 
-        final String key = line.substring(0, separatorIndex);
+        String key = line.substring(0, separatorIndex);
+        if (key.endsWith(":")) key = key.substring(0, key.length() - 1);
         final String value = line.substring(separatorIndex + 1);
         return Pair.of(trimQuotes(key), trimQuotes(value));
     }
@@ -358,14 +233,14 @@ public class YarnLockAdapter {
 
         int separatorIndex = line.lastIndexOf("@");
         if (separatorIndex == -1) {
-            LOG.error("Cannot parse " + line);
+            log.error("Cannot parse " + line);
             return null;
         }
 
         final String key = line.substring(0, separatorIndex);
 
         if (StringUtils.isEmpty(key)) {
-            LOG.error("Cannot parse " + line);
+            log.error("Cannot parse " + line);
         }
 
         final String value = line.substring(separatorIndex + 1);
@@ -373,11 +248,14 @@ public class YarnLockAdapter {
         return Pair.of(trimQuotes(key), trimQuotes(value));
     }
 
-    private String trimQuotes(String key) {
-        if (key.startsWith("\"") && key.endsWith("\"")) {
-            key = key.substring(1, key.length() - 1);
+    private String trimQuotes(String string) {
+        if (string.endsWith(":")) {
+            string = string.substring(0, string.length() - 1);
         }
-        return key;
+        if (string.startsWith("\"") && string.endsWith("\"")) {
+            string = string.substring(1, string.length() - 1);
+        }
+        return string;
     }
 
     /**
@@ -398,6 +276,230 @@ public class YarnLockAdapter {
             }
         }
         return entry;
+    }
+
+    protected List<YarnInfoBlock> parseYarnLock(File file) throws IOException {
+        final List<String> lines = FileUtils.readLines(file, StandardCharsets.UTF_8);
+
+        // yarn.lock files are organized in blocks.
+        // a block starts with a line without indentation
+        // # are used to comment
+
+        YarnInfoBlock currentBlock = null;
+        List<String> currentBlockLines = null;
+
+        List<YarnInfoBlock> parsedBlocks = new ArrayList<>();
+
+        for (String line : lines) {
+            if (StringUtils.isBlank(line)) continue;
+            if (line.startsWith("#") || line.startsWith("\t") || line.startsWith(" ")) {
+                if (currentBlockLines != null) {
+                    currentBlockLines.add(line);
+                }
+                continue;
+            }
+
+            // here we have identified a first or new block
+
+            if (currentBlock != null) {
+                currentBlock.parse(currentBlockLines);
+                parsedBlocks.add(currentBlock);
+            }
+
+            // a block may have a single name or many names seperated by ", "
+            String[] blockNames = YarnInfoBlock.trimKey(line).split(", *");
+
+            // start a new block
+            currentBlock = new YarnInfoBlock(blockNames);
+            currentBlockLines = new ArrayList<>();
+        }
+
+        if (currentBlock != null) {
+            currentBlock.parse(currentBlockLines);
+            parsedBlocks.add(currentBlock);
+        }
+
+        return parsedBlocks;
+    }
+
+    @Data
+    public static final class YarnInfoBlock {
+
+       final private List<String> blockNames;
+
+       private String name;
+
+       private String version;
+       private String resolved;
+       private String resolution;
+       private String languageName;
+       private String linkType;
+       private String checksum;
+       private String integrity;
+
+        /**
+         * Dependencies are stored as pair of name and version
+         */
+        private List<Pair<String, String>> dependencies;
+        private List<Pair<String, String>> dependenciesMeta;
+        private List<Pair<String, String>> peerDependencies;
+        private List<Pair<String, String>> peerDependenciesMeta;
+        private List<Pair<String, String>> bin;
+        private List<Pair<String, String>> conditions;
+        private List<Pair<String, String>> optionalDependencies;
+
+        public YarnInfoBlock(String[] names) {
+            this.blockNames = Arrays.stream(names).map(YarnInfoBlock::trimKey).collect(Collectors.toList());
+
+            String name = this.blockNames.get(0);
+            int atIndex = name.lastIndexOf("@");
+            if (atIndex == -1) {
+                this.name = name;
+            } else {
+                this.name = name.substring(0, atIndex);
+            }
+        }
+
+        public void parse(List<String> currentBlockLines) {
+
+            boolean parsingDependencies = false;
+            boolean parsingDependenciesMeta = false;
+            boolean parsingOptionalDependencies = false;
+            boolean parsingPeerDependencies = false;
+            boolean parsingPeerDependenciesMeta = false;
+            boolean parsingBin = false;
+            boolean parsingConditions = false;
+
+            for (String line : currentBlockLines) {
+
+                // a line is either a list-key or a key-value pair
+                // as delimiter either " " or ": " are used
+
+                // a line starts either with "  " or "    " (list element)
+
+                if (line.startsWith("    ")) {
+                    final Pair<String, String> keyValuePair = parseKeyValuePair(line);
+                    if (parsingDependencies) {
+                        dependencies.add(keyValuePair);
+                    } else if (parsingDependenciesMeta) {
+                        dependenciesMeta.add(keyValuePair);
+                    } else if (parsingPeerDependencies) {
+                        peerDependencies.add(keyValuePair);
+                    } else if (parsingPeerDependenciesMeta) {
+                        peerDependenciesMeta.add(keyValuePair);
+                    } else if (parsingBin) {
+                        bin.add(keyValuePair);
+                    } else if (parsingConditions) {
+                        conditions.add(keyValuePair);
+                    } else if (parsingOptionalDependencies) {
+                        optionalDependencies.add(keyValuePair);
+                    } else {
+                        log.warn("Cannot extract from: " + keyValuePair);
+                    }
+                } else if (line.startsWith("  ")) {
+                    parsingDependencies = false;
+                    parsingDependenciesMeta = false;
+                    parsingPeerDependencies = false;
+                    parsingPeerDependenciesMeta = false;
+                    parsingBin = false;
+                    parsingConditions = false;
+                    parsingOptionalDependencies = false;
+
+                    final Pair<String, String> keyValuePair = parseKeyValuePair(line);
+                    if (keyValuePair.getRight() == null) {
+                        // list key
+
+                        if (keyValuePair.getLeft().equals("dependencies")) {
+                            this.dependencies = new ArrayList<>();
+                            parsingDependencies = true;
+                        } else if (keyValuePair.getLeft().equals("dependenciesMeta")) {
+                            this.dependenciesMeta = new ArrayList<>();
+                            parsingDependenciesMeta = true;
+                        } else if (keyValuePair.getLeft().equals("peerDependencies")) {
+                            this.peerDependencies = new ArrayList<>();
+                            parsingPeerDependencies = true;
+                        } else if (keyValuePair.getLeft().equals("peerDependenciesMeta")) {
+                            this.peerDependenciesMeta = new ArrayList<>();
+                            parsingPeerDependenciesMeta = true;
+                        } else if (keyValuePair.getLeft().equals("bin")) {
+                            this.bin = new ArrayList<>();
+                            parsingBin = true;
+                        } else if (keyValuePair.getLeft().equals("conditions")) {
+                            this.conditions = new ArrayList<>();
+                            parsingConditions = true;
+                        } else if (keyValuePair.getLeft().equals("optionalDependencies")) {
+                            this.optionalDependencies = new ArrayList<>();
+                            parsingOptionalDependencies = true;
+                        } else {
+                            log.warn("Cannot extract from list-key: " + keyValuePair);
+                        }
+                    } else {
+                        // key value pair
+
+                        if (keyValuePair.getLeft().equals("version")) {
+                            this.version = keyValuePair.getRight();
+                        } else if (keyValuePair.getLeft().equals("resolved")) {
+                            this.resolved = keyValuePair.getRight();
+                        } else if (keyValuePair.getLeft().equals("resolution")) {
+                            this.resolution = keyValuePair.getRight();
+                        } else if (keyValuePair.getLeft().equals("checksum")) {
+                            this.checksum = keyValuePair.getRight();
+                        } else if (keyValuePair.getLeft().equals("integrity")) {
+                            this.integrity = keyValuePair.getRight();
+                        } else if (keyValuePair.getLeft().equals("languageName")) {
+                            this.languageName = keyValuePair.getRight();
+                        } else if (keyValuePair.getLeft().equals("linkType")) {
+                            this.linkType = keyValuePair.getRight();
+                        } else {
+                            log.warn("Cannot extract from key-value pair: " + keyValuePair);
+                        }
+                    }
+                }
+            }
+
+            log.info("{}", this);
+
+        }
+
+        private Pair<String, String> parseKeyValuePair(String line) {
+            String internalLine = line.trim();
+
+            int separatorIndex = internalLine.indexOf(" ");
+
+            String key;
+            String value;
+
+            if (separatorIndex == -1) {
+                key = internalLine;
+                value = null;
+            } else {
+                key = internalLine.substring(0, separatorIndex);
+                value = internalLine.substring(separatorIndex + 1);
+            }
+
+            if (StringUtils.isBlank(value)) value = null;
+
+            key = trimKey(key);
+            value = trimQuotes(value);
+
+            return Pair.of(key, value);
+        }
+
+        private static String trimKey(String key) {
+            // remove trailing colon
+            if (key.endsWith(":")) {
+                key = key.substring(0, key.length() - 1);
+            }
+            return trimQuotes(key);
+        }
+
+        private static String trimQuotes(String string) {
+            if (string == null) return null;
+            if (string.startsWith("\"") && string.endsWith("\"")) {
+                string = string.substring(1, string.length() - 1);
+            }
+            return string;
+        }
     }
 
 }

@@ -19,7 +19,7 @@ import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.WebModuleComponentPatternContributor.WebModuleDependency;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,7 +128,7 @@ public class BowerLockAdapter {
                 
                 String assetId = "AID-" + depArtifact.getId();
                 if (isDev || (depInfo != null && depInfo.isDevDependency())) {
-                    depArtifact.set(assetId, Constants.MARKER_DEVELOPMENT);
+                    depArtifact.set(assetId, Constants.MARKER_DEVELOPMENT_DEPENDENCY);
                 }
                 
                 inventory.getArtifacts().add(depArtifact);

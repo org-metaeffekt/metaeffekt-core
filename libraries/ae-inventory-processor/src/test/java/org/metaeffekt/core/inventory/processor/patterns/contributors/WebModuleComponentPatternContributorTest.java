@@ -18,30 +18,38 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriterTest;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 
 public class WebModuleComponentPatternContributorTest {
 
-    final WebModuleComponentPatternContributor contributor = new WebModuleComponentPatternContributor();
+    final NpmWebModuleComponentPatternContributor npm = new NpmWebModuleComponentPatternContributor();
+
+    final BowerWebModuleComponentPatternContributor bower = new BowerWebModuleComponentPatternContributor();
+
+    final ComposerWebModuleComponentPatternContributor composer = new ComposerWebModuleComponentPatternContributor();
 
     @Test
-    public void testVariant001() {
+    public void testNpm001() throws IOException {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-001");
-        final String relativeAnchorePath = "info/package-lock.json";
-        final File anchorFile = new File(baseDir, relativeAnchorePath);
+        final String relativeAnchorPath = "info/package.json";
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
 
         if (!anchorFile.exists()) {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
-                relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
+                relativeAnchorPath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);
 
@@ -53,25 +61,28 @@ public class WebModuleComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(3950);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1535);
         inventory.getArtifacts().forEach(artifact -> {
             if (artifact.getId().contains("rimraf")){
                 assertThat(artifact.getVersion()).isIn("3.0.2", "5.0.7");
             }
         });
+
+        new InventoryWriter().writeInventory(inventory, new File("target/npm-001-inventory.xlsx"));
+
     }
 
     @Test
-    public void testVariant002() {
+    public void testNpm002() {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-002");
-        final String relativeAnchorePath = "web-app/package-lock.json";
+        final String relativeAnchorePath = "web-app/package.json";
         final File anchorFile = new File(baseDir, relativeAnchorePath);
 
         if (!anchorFile.exists()) {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);
@@ -88,17 +99,17 @@ public class WebModuleComponentPatternContributorTest {
     }
 
     @Test
-    public void testVariant003_onlyLockFile() {
+    public void testNpm003_onlyLockFile() {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-003");
-        final String relativeAnchorePath = "web-app/package-lock.json";
-        final File anchorFile = new File(baseDir, relativeAnchorePath);
+        final String relativeAnchorPath = "web-app/package-lock.json";
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
 
         if (!anchorFile.exists()) {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
-                relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
+                relativeAnchorPath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);
 
@@ -114,7 +125,7 @@ public class WebModuleComponentPatternContributorTest {
     }
 
     @Test
-    public void testVariant004_onlyPackageFile() {
+    public void testNpm004_onlyPackageFile() {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-004");
         final String relativeAnchorePath = "web-app/package.json";
         final File anchorFile = new File(baseDir, relativeAnchorePath);
@@ -123,7 +134,7 @@ public class WebModuleComponentPatternContributorTest {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
         assertThat(cpdList.size()).isEqualTo(1);
@@ -139,7 +150,57 @@ public class WebModuleComponentPatternContributorTest {
     }
 
     @Test
-    public void testVariant005_bowerFile() {
+    public void testNpm005() {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-005");
+        final String relativeAnchorePath = "dashboard/package.json";
+        final File anchorFile = new File(baseDir, relativeAnchorePath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
+                relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
+
+        assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("ae-npm-vulnerability-assessment-dashboard-0.1.0");
+        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("ae-npm-vulnerability-assessment-dashboard");
+        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("0.1.0");
+        assertThat(cpd.get("Release")).isNull();
+
+        final Inventory inventory = cpd.getExpansionInventorySupplier().get();
+        assertThat(inventory.getArtifacts().size()).isEqualTo(56);
+    }
+
+    @Test
+    public void testNpm006() {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-006");
+        final String relativeAnchorePath = "example-angular/package.json";
+        final File anchorFile = new File(baseDir, relativeAnchorePath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
+                relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
+
+        assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("intern-angular-1.0.0");
+        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("intern-angular");
+        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("1.0.0");
+        assertThat(cpd.get("Release")).isNull();
+
+        final Inventory inventory = cpd.getExpansionInventorySupplier().get();
+        assertThat(inventory.getArtifacts().size()).isEqualTo(28);
+    }
+
+    @Test
+    public void testBower001() {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/bower-001");
         final String relativeAnchorePath = "bower.json";
         final File anchorFile = new File(baseDir, relativeAnchorePath);
@@ -148,7 +209,7 @@ public class WebModuleComponentPatternContributorTest {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
+        final List<ComponentPatternData> cpdList = bower.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
 
@@ -157,7 +218,7 @@ public class WebModuleComponentPatternContributorTest {
     }
 
     @Test
-    public void testVariant005_dotBowerFileOnly() {
+    public void testBower002_dotBowerFileOnly() {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/bower-002");
         final String relativeAnchorePath = ".bower.json";
         final File anchorFile = new File(baseDir, relativeAnchorePath);
@@ -166,7 +227,7 @@ public class WebModuleComponentPatternContributorTest {
             throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
         }
 
-        final List<ComponentPatternData> cpdList = contributor.contribute(baseDir,
+        final List<ComponentPatternData> cpdList = bower.contribute(baseDir,
                 relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
 
 
@@ -180,5 +241,31 @@ public class WebModuleComponentPatternContributorTest {
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
         assertThat(inventory.getArtifacts().size()).isEqualTo(12);
+    }
+
+    @Test
+    public void testComposer001() {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/composer-001");
+        final String relativeAnchorePath = "composer.json";
+        final File anchorFile = new File(baseDir, relativeAnchorePath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        final List<ComponentPatternData> cpdList = composer.contribute(baseDir,
+                relativeAnchorePath, FileUtils.computeMD5Checksum(anchorFile));
+
+
+        assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("composer-test-3.15.0");
+        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("composer-test");
+        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("3.15.0");
+
+        final Inventory inventory = cpd.getExpansionInventorySupplier().get();
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(257);
     }
 }

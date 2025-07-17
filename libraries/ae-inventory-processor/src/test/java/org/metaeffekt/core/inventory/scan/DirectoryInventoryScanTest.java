@@ -167,8 +167,8 @@ public class DirectoryInventoryScanTest {
     @Ignore
     @Test
     public void testScanExtractedFiles_External() throws IOException {
-        File inputDir = new File("<project.dir>/external-resources");
-        File scanDir = new File("<project.dir>/target/scan");
+        File inputDir = new File("/Users/kklein/Downloads/tmp/input");
+        File scanDir = new File("/Users/kklein/Downloads/tmp/scan");
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{"--none--"};
         File inventoryFile = new File("<project.baseDir>/inventory/src/main/resources/inventory/artifact-inventory.xls");
@@ -221,8 +221,8 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
         // inputs
-        final File scanInputDir = new File("<path-to-input>");
-        final File scanDir = new File("<path-to-scan>");
+        final File scanInputDir = new File("/Users/kklein/Downloads/tmp/input");
+        final File scanDir = new File("/Users/kklein/Downloads/tmp/scan");
 
         // other sources
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
@@ -242,7 +242,7 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG_Aggregate() throws IOException {
         // inputs
-        final File scanDir = new File("<path-to-scan>");
+        final File scanDir = new File("/Users/kklein/Downloads/tmp/input");
 
         // other sources
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");

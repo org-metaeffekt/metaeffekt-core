@@ -131,9 +131,15 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_WEB_MODULE = "web-module";
 
     public static final String MARKER_CROSS = "x";
+
     public static final String MARKER_CONTAINS = "c";
-    public static final String MARKER_DEVELOPMENT = "d";
+
+    public static final String MARKER_RUNTIME_DEPENDENCY = "r";
+
+    public static final String MARKER_DEVELOPMENT_DEPENDENCY = "d";
+
     public static final String MARKER_PEER_DEPENDENCY = "p";
+
     public static final String MARKER_OPTIONAL_DEPENDENCY = "o";
 
     public static final String PACKAGE_JSON = "package.json";

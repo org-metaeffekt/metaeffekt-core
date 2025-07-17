@@ -15,18 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.WebModuleComponentPatternContributor;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 import org.metaeffekt.core.util.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,273 +32,266 @@ import java.util.*;
 /**
  * Extracts an inventory for production npm modules based on a package-lock.json file.
  */
+@Slf4j
 public class NpmPackageLockAdapter {
-
-    private static final Logger LOG = LoggerFactory.getLogger(NpmPackageLockAdapter.class);
 
     /**
      * @param packageLockJsonFile The package-lock.json file to parse.
      * @param relPath The relative path to the file from the relevant basedir.
-     * @param projectName The name of the project for which to extract data.
-     * @param dependencies The list of dependencies from package.json.
+     * @param webModule The webModule for which to extract data.
      *
      * @return An inventory populated with the runtime modules defined in the package json file.
      *
      * @throws IOException May throw {@link IOException} when accessing and parsing the packageLockJsonFile.
      */
-    public Inventory createInventoryFromPackageLock(File packageLockJsonFile, String relPath, String projectName, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) throws IOException {
+    public Inventory createInventoryFromPackageLock(File packageLockJsonFile, String relPath, WebModule webModule) throws IOException {
+
+        // parse dependency tree from lock; may use the webModule name for filtering (project in workspace)
+        final Map<String, NpmModule> modules = parseModules(packageLockJsonFile, webModule);
+
+        // merge web module direct dependency information
+        for (WebModuleDependency wmd : webModule.getDirectDependencies()) {
+            final String queryName = "node_modules/" + wmd.getName();
+            final NpmModule npmModule = modules.get(queryName);
+            if (npmModule != null) {
+                // module dependency attributes in the context
+                npmModule.setRuntimeDependency(wmd.isRuntimeDependency());
+                npmModule.setDevDependency(wmd.isDevDependency());
+                npmModule.setPeerDependency(wmd.isPeerDependency());
+                npmModule.setOptionalDependency(wmd.isOptionalDependency());
+            } else {
+                log.warn("Module [{}] not found.", queryName);
+            }
+        }
+
+        // populate data into inventory
         final Inventory inventory = new Inventory();
-
-        populateInventory(packageLockJsonFile, inventory, relPath, projectName, dependencies);
-
+        populateInventory(inventory, relPath, webModule, modules);
         return inventory;
     }
 
-    @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-    @Getter
-    public static final class NpmModule {
-        final String name;
-        final String path;
-
-        @EqualsAndHashCode.Include
-        final String id;
-
-        @Setter
-        String version;
-
-        @Setter
-        String url;
-
-        @Setter
-        String hash;
-
-        @Setter
-        boolean resolved;
-
-        @Setter
-        boolean devDependency;
-
-        @Setter
-        boolean peerDependency;
-
-        @Setter
-        boolean optionalDependency;
-
-        public NpmModule(String name, String path) {
-            this.name = name;
-            this.path = path;
-
-            this.id = path + name;
-        }
-    }
-
-    private void populateInventory(File packageLockJsonFile, Inventory inventory, String path, String name, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) throws IOException {
+    private Map<String, NpmModule> parseModules(File packageLockJsonFile, WebModule webModule) throws IOException {
         final String json = FileUtils.readFileToString(packageLockJsonFile, FileUtils.ENCODING_UTF_8);
-        final JSONObject obj = new JSONObject(json);
+        JSONObject allPackages = new JSONObject(json);
 
-        // support old versions, where the dependencies were listed top-level.
-        addDependencies(packageLockJsonFile, obj, inventory, path, "dependencies", dependencies);
+        // detect format variant; the one with packages has an additional upper level.
+        JSONObject packages = allPackages.optJSONObject("packages");
+        JSONObject specificPackage = null;
 
-        // in case a name is not provided, take all packages into account
-        if (name == null) {
-            addDependencies(packageLockJsonFile, obj, inventory, path, "packages", dependencies);
+        if (packages == null) {
+            log.info("Single package found in [{}].", packageLockJsonFile.getAbsolutePath());
         } else {
-            // name provided
-            final JSONObject packages = obj.optJSONObject("packages");
-            if (packages != null) {
-                final JSONObject project = packages.optJSONObject(name);
+            // change level
+            allPackages = packages;
 
-                // if project with the given name was not found; fallback to all packages
-                if (project == null) {
-                    addDependencies(packageLockJsonFile, obj, inventory, path, "packages", dependencies);
-                } else {
-                    // otherwise parse project dependencies, only
-                    parseProjectDependencies(inventory, path, project, packages);
+            // in this case we may want to filter / select a package
+            log.info("Multiple packages found in [{}].", packageLockJsonFile.getAbsolutePath());
+
+            if (StringUtils.isNotBlank(webModule.getName())) {
+                specificPackage = packages.optJSONObject(webModule.getName());
+
+                if (specificPackage != null) {
+                    log.info("Found matching package in [{}] with name [{}].", packageLockJsonFile.getAbsolutePath(), webModule.getName());
                 }
             }
         }
-    }
 
-    private static void parseProjectDependencies(Inventory inventory, String path, JSONObject project, JSONObject packages) {
-        final Set<NpmModule> modules = collectModules(project.optJSONObject("dependencies"), "node_modules/", null);
-        // dev dependencies
-        modules.addAll(collectModules(project.optJSONObject("devDependencies"), "node_modules/", "devDependencies"));
-        // optional dependencies
-        modules.addAll(collectModules(project.optJSONObject("optionalDependencies"), "node_modules/", "optionalDependencies"));
-        // peer dependencies
-        modules.addAll(collectModules(project.optJSONObject("peerDependencies"), "node_modules/", "peerDependencies"));
+        // here allPackages indicates the level where all packages are provided
+        // here specificPackage is either null or points to an object/module
 
-        boolean changed;
-        do {
-            changed = false;
-            for (NpmModule module : new HashSet<>(modules)) {
-                if (module.isResolved()) continue;
+        // build map with all modules covered by the lock file
+        final String prefix = "node_modules/";
+        final Map<String, NpmModule> npmModuleMap = new HashMap<>();
 
-                final String effectiveModuleId = resolveModuleId(module, packages, module.getId());
-                final JSONObject moduleObject = packages.getJSONObject(effectiveModuleId);
+        for (String key : allPackages.keySet()) {
+            String module = key;
 
-                module.setUrl(moduleObject.optString("resolved"));
-                module.setHash(moduleObject.optString("integrity"));
-                module.setVersion(moduleObject.optString("version"));
-
-                module.setDevDependency(moduleObject.optBoolean("dev"));
-                module.setPeerDependency(moduleObject.optBoolean("peer"));
-                module.setOptionalDependency(moduleObject.optBoolean("optional"));
-
-                changed |= modules.addAll(collectModules(
-                        moduleObject.optJSONObject("dependencies"), effectiveModuleId + "/node_modules/", null));
-
-                module.setResolved(true);
+            int index = module.lastIndexOf(prefix);
+            if (index != -1) {
+                module = module.substring(index + prefix.length());
             }
-        } while (changed);
 
-        populateInventory(inventory, path, modules);
+            final JSONObject jsonObject = allPackages.getJSONObject(key);
 
+            final NpmModule npmModule = new NpmModule(module, key);
+            parseModuleContent(npmModule, jsonObject);
+
+            if (StringUtils.isNotBlank(npmModule.getVersion())) {
+                npmModuleMap.put(key, npmModule);
+            }
+        }
+        return npmModuleMap;
     }
 
-    public static void populateInventory(Inventory inventory, String path, Collection<NpmModule> modules) {
-        for (NpmModule module : modules) {
-            Artifact artifact = new Artifact();
+    private void parseModuleContent(NpmModule npmModule, JSONObject specificPackage) {
+        npmModule.setUrl(specificPackage.optString("resolved"));
+        npmModule.setHash(specificPackage.optString("integrity"));
+        npmModule.setVersion(specificPackage.optString("version"));
+
+        npmModule.setDevDependency(specificPackage.optBoolean("dev"));
+        npmModule.setPeerDependency(specificPackage.optBoolean("peer"));
+        npmModule.setOptionalDependency(specificPackage.optBoolean("optional"));
+
+        npmModule.setRuntimeDependencies(collectModuleMap(specificPackage, "dependencies"));
+        npmModule.setDevDependencies(collectModuleMap(specificPackage, "devDependencies"));
+        npmModule.setPeerDependencies(collectModuleMap(specificPackage, "peerDependencies"));
+        npmModule.setOptionalDependencies(collectModuleMap(specificPackage, "optionalDependencies"));
+    }
+
+    private Map<String, String> collectModuleMap(JSONObject specificPackage, String dependencies) {
+        Map<String, String> nameVersionMap = new HashMap<>();
+        if (dependencies != null) {
+            JSONObject jsonObject = specificPackage.optJSONObject(dependencies);
+            if (jsonObject != null) {
+                Map<String, Object> map = jsonObject.toMap();
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    nameVersionMap.put(entry.getKey(), (String) entry.getValue());
+                }
+            }
+        }
+        return nameVersionMap;
+    }
+
+    private void populateInventory(Inventory inventory, String path, WebModule webModule, Map<String, NpmModule> nameModuleMap) {
+
+        final Map<String, Artifact> moduleNameArtifactMap = new HashMap<>();
+        final Map<NpmModule, Artifact> npmModuleArtifactMap = new HashMap<>();
+
+        Stack<NpmModule> stack = new Stack<>();
+
+        Set<NpmModule> topLevelModules = new HashSet<>();
+        Set<NpmModule> addedModules = new HashSet<>();
+
+        for (WebModuleDependency webModuleDependency : webModule.getDirectDependencies()) {
+            String name = webModuleDependency.getName();
+            NpmModule npmModule = nameModuleMap.get("node_modules/" + name);
+            log.info("{}", npmModule);
+            stack.push(npmModule);
+            topLevelModules.add(npmModule);
+        }
+
+        while (!stack.isEmpty()) {
+            final NpmModule module = stack.pop();
+            if (module == null) continue;
+
+            final Artifact artifact = new Artifact();
+            System.out.println(module.getName());
+
+
             artifact.setId(module.getName() + "-" + module.getVersion());
+
+            // determine component name
             String componentName = module.getName();
             int slashIndex = componentName.indexOf("/");
             if (slashIndex > 0) {
                 componentName = componentName.substring(0, slashIndex);
             }
             artifact.setComponent(componentName);
+
+            // contribute other attributes
             artifact.setVersion(module.getVersion());
             artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
             artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
             artifact.set("Source Archive - URL", module.getUrl());
-            artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getId() + "]");
+            artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + module.getPath() + "]");
 
-         String assetId = "AID-" + artifact.getId();
-            if (module.isDevDependency()) {
-                artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
-            } else if (module.isPeerDependency()) {
-                artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
-            } else if (module.isOptionalDependency()) {
-                artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
-            }
-
-            // NOTE: do not populate ARTIFACT_ROOT_PATHS; a rrot path is not known in this case
-
-            String purl = buildPurl(module.getName(), module.getVersion());
+            final String purl = buildPurl(module.getName(), module.getVersion());
             artifact.set(Artifact.Attribute.PURL, purl);
 
-            inventory.getArtifacts().add(artifact);
-        }
-    }
+            // add relationship to asset table
+            final String assetId = "AID-" + webModule.getName() + "-" + webModule.getVersion();
 
-    private static String resolveModuleId(NpmModule module, JSONObject packages, String effectiveModuleId) {
-        JSONObject moduleObject = packages.optJSONObject(module.getId());
-        while (moduleObject == null) {
-            String alternativeId = effectiveModuleId;
-            alternativeId = alternativeId.substring(0, alternativeId.lastIndexOf("/node_modules"));
-            alternativeId = alternativeId.substring(0, alternativeId.lastIndexOf("/node_modules") + 14);
-            alternativeId = alternativeId + module.getName();
-            effectiveModuleId = alternativeId;
-            moduleObject = packages.optJSONObject(effectiveModuleId);
-        }
-        return effectiveModuleId;
-    }
-
-    private static Set<NpmModule> collectModules(JSONObject dependencies, String path, String dependencyTag) {
-        Set<NpmModule> modules = new HashSet<>();
-        if (dependencies != null) {
-            Map<String, Object> map = dependencies.toMap();
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                NpmModule module = new NpmModule(entry.getKey(), path);
-                if ("devDependencies".equals(dependencyTag)) {
-                    module.setDevDependency(true);
-                } else if ("peerDependencies".equals(dependencyTag)) {
-                    module.setPeerDependency(true);
-                } else if ("optionalDependencies".equals(dependencyTag)) {
-                    module.setOptionalDependency(true);
+            if (topLevelModules.contains(module)) {
+                if (module.isDevDependency()) {
+                    artifact.set(assetId, Constants.MARKER_DEVELOPMENT_DEPENDENCY);
+                } else if (module.isRuntimeDependency()) {
+                    artifact.set(assetId, Constants.MARKER_RUNTIME_DEPENDENCY);
+                } else if (module.isPeerDependency()) {
+                    artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
+                } else if (module.isOptionalDependency()) {
+                    artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
                 }
-                modules.add(module);
+            } else {
+                if (module.isDevDependency()) {
+                    artifact.set(assetId, "(" + Constants.MARKER_DEVELOPMENT_DEPENDENCY + ")");
+                } else if (module.isRuntimeDependency()) {
+                    artifact.set(assetId, "(" + Constants.MARKER_RUNTIME_DEPENDENCY + ")");
+                } else if (module.isPeerDependency()) {
+                    artifact.set(assetId, "(" + Constants.MARKER_PEER_DEPENDENCY + ")");
+                } else if (module.isOptionalDependency()) {
+                    artifact.set(assetId, "(" + Constants.MARKER_OPTIONAL_DEPENDENCY + ")");
+                }
+            }
+            // in the else case the module is not in a direct relationship (rather a transitive dependency)
+
+            // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
+
+            inventory.getArtifacts().add(artifact);
+
+            npmModuleArtifactMap.put(module, artifact);
+            moduleNameArtifactMap.put(artifact.getId(), artifact);
+
+            pushDependencies(module, module.getRuntimeDependencies(), Constants.MARKER_RUNTIME_DEPENDENCY, nameModuleMap, stack, npmModuleArtifactMap);
+            pushDependencies(module, module.getDevDependencies(), Constants.MARKER_DEVELOPMENT_DEPENDENCY, nameModuleMap, stack, npmModuleArtifactMap);
+            pushDependencies(module, module.getPeerDependencies(), Constants.MARKER_PEER_DEPENDENCY, nameModuleMap, stack, npmModuleArtifactMap);
+            pushDependencies(module, module.getOptionalDependencies(), Constants.MARKER_OPTIONAL_DEPENDENCY, nameModuleMap, stack, npmModuleArtifactMap);
+        }
+
+        // fill in transitive dependency information
+        // step 1:
+        for (NpmModule module : npmModuleArtifactMap.keySet()) {
+            apply(module, module.getRuntimeDependencies(), npmModuleArtifactMap, nameModuleMap, Constants.MARKER_RUNTIME_DEPENDENCY);
+            apply(module, module.getDevDependencies(), npmModuleArtifactMap, nameModuleMap, Constants.MARKER_DEVELOPMENT_DEPENDENCY);
+            apply(module, module.getPeerDependencies(), npmModuleArtifactMap, nameModuleMap, Constants.MARKER_PEER_DEPENDENCY);
+            apply(module, module.getOptionalDependencies(), npmModuleArtifactMap, nameModuleMap, Constants.MARKER_OPTIONAL_DEPENDENCY);
+        }
+
+
+        // step 2: transitive evaluation by module
+        for (Map.Entry<NpmModule, Artifact> entry : npmModuleArtifactMap.entrySet()) {
+            NpmModule module = entry.getKey();
+
+            // TODO: build edge-pairs, evaluate edge-pairs (evaluatable first), fill inventory
+        }
+
+    }
+
+    private void pushDependencies(NpmModule dependentNpmModule, Map<String, String> dependencyMap, String dependencyType, Map<String, NpmModule> nameModuleMap, Stack<NpmModule> stack, Map<NpmModule, Artifact> npmModuleArtifactMap) {
+        for  (Map.Entry<String, String> entry : dependencyMap.entrySet()) {
+            final String path = "node_modules/" + entry.getKey();
+            final NpmModule dependencyModule = nameModuleMap.get(path);
+            if (dependencyModule == null) {
+                log.warn("Module [{}] not resolved using path [{}]. Potentially an optional dependency of [{}].", entry.getKey() + "@" + entry.getValue(), path, dependentNpmModule.getName());
+            } else {
+                // manage dependent modules
+                if (!dependencyModule.getDependentModules().contains(dependentNpmModule)) {
+                    dependencyModule.getDependentModules().add(dependentNpmModule);
+                }
+                // manage stack; add in case not already processed
+                if (!npmModuleArtifactMap.containsKey(dependencyModule)) {
+                    stack.push(dependencyModule);
+                }
             }
         }
-        return modules;
     }
 
-    private void addDependencies(File file, JSONObject obj, Inventory inventory, String path, String dependencyTag, List<WebModuleComponentPatternContributor.WebModuleDependency> dependencies) {
-        final String prefix = "node_modules/";
+    private static void apply(NpmModule npmModule, Map<String, String> dependencyMap, Map<NpmModule, Artifact> npmModuleArtifactMap, Map<String, NpmModule> nameModuleMap, String dependencyType) {
+        final Artifact dependendArtifact = npmModuleArtifactMap.get(npmModule);
+        if (dependendArtifact == null) throw new IllegalStateException("No artifact found for module: " + npmModule);
 
-        if (obj.has(dependencyTag)) {
-            final JSONObject dependenciesObject = obj.getJSONObject(dependencyTag);
-            for (String key : dependenciesObject.keySet()) {
-                if (StringUtils.isBlank(key)) continue;
-                final JSONObject dep = dependenciesObject.getJSONObject(key);
-
-                String module = key;
-                int index = module.lastIndexOf(prefix);
-                if (index != -1) {
-                    module = module.substring(index + prefix.length());
-                }
-
-                String version = dep.optString("version");
-                String url = dep.optString("resolved");
-                if (!dependencies.isEmpty()) {
-                    for (WebModuleComponentPatternContributor.WebModuleDependency dependency : dependencies) {
-                        if (module.equals(dependency.getName())) {
-                            Artifact artifact = new Artifact();
-                            if (version == null) {
-                                version = dependency.getVersion();
-                            }
-                            artifact.setId(dependency.getName() + "-" + version);
-                            artifact.setComponent(dependency.getName());
-                            artifact.setVersion(dependency.getVersion());
-                            artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
-                            artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
-                            artifact.setUrl(url);
-                            artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
-
-                            // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
-
-                            String assetId = "AID-" + artifact.getId();
-
-                            // Set dependency type marker based on the dependency type
-                            if (dependency.isDevDependency()) {
-                                // mark as development dependency
-                                artifact.set(assetId, Constants.MARKER_DEVELOPMENT);
-                            } else if (dependency.isPeerDependency()) {
-                                // mark as peer dependency
-                                artifact.set(assetId, Constants.MARKER_PEER_DEPENDENCY);
-                            } else if (dependency.isOptionalDependency()) {
-                                // mark as optional dependency
-                                artifact.set(assetId, Constants.MARKER_OPTIONAL_DEPENDENCY);
-                            }
-                            // production dependencies don't need a special marker
-
-                            String purl = buildPurl(dependency.getName(), dependency.getVersion());
-                            artifact.set(Artifact.Attribute.PURL, purl);
-
-                            inventory.getArtifacts().add(artifact);
-                            addDependencies(file, dep, inventory, path, dependencyTag, dependencies);
-                        }
+        for  (Map.Entry<String, String> entry : dependencyMap.entrySet()) {
+            final String path = "node_modules/" + entry.getKey();
+            final NpmModule dependencyModule = nameModuleMap.get(path);
+            if (dependencyModule == null) {
+                log.warn("Module [{}] not resolved using path [{}]. Potentially an optional dependency of [{}].", entry.getKey() + "@" + entry.getValue(), path, npmModule.getName());
+            } else {
+                final Artifact dependencyArtifact = npmModuleArtifactMap.get(dependencyModule);
+                if (dependencyArtifact != null) {
+                    if (dependencyArtifact != dependendArtifact) {
+                        dependencyArtifact.set("AID-" + dependendArtifact.getId(), dependencyType);
                     }
                 } else {
-                    if (version != null) {
-                        Artifact artifact = new Artifact();
-                        artifact.setId(module + "-" + version);
-                        artifact.setComponent(module);
-                        artifact.setVersion(version);
-                        artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
-                        artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
-                        artifact.setUrl(url);
-                        artifact.set(Constants.KEY_PATH_IN_ASSET, path + "[" + key + "]");
-
-                        String purl = buildPurl(module, version);
-                        artifact.set(Artifact.Attribute.PURL, purl);
-
-                        inventory.getArtifacts().add(artifact);
-
-                    }
-                }
-
-                if (version == null) {
-                    LOG.warn("Missing version information in [{}] parse package-lock.json file as expected: {}", key, file.getAbsolutePath());
+                    log.warn("Unable to find dependency for module '" + npmModule.getName() + "'.");
                 }
             }
         }
