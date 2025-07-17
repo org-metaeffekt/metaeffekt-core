@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Rubyzip_2_3_2 extends AbstractCompositionAnalysisTest{
 
@@ -60,6 +61,9 @@ public class Rubyzip_2_3_2 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "2.3.2"),
                         attributeValue(PURL, "pkg:gem/rubyzip@2.3.2"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }
 

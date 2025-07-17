@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Adressable_2_8_7 extends AbstractCompositionAnalysisTest{
 
@@ -60,5 +61,8 @@ public class Adressable_2_8_7 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "2.8.7"),
                         attributeValue(PURL, "pkg:gem/addressable@2.8.7"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(1);
     }
+
 }

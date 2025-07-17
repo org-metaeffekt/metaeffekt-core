@@ -26,6 +26,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
 
@@ -92,5 +93,8 @@ public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
                     attributeValue(PURL, "pkg:cocoapods/RxBlocking@6.7.0"),
                     attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(5);
     }
 }

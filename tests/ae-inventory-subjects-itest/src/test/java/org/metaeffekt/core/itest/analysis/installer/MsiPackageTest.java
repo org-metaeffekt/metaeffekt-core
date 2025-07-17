@@ -54,15 +54,17 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
     @Test
     public void analyse() throws Exception {
         Assert.assertTrue(testSetup.rebuildInventory());
-
-        ArtifactList artifactList = getAnalysis().selectArtifacts();
-        artifactList.logListWithAllAttributes();
     }
 
     @Test
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
         Analysis analysis = new Analysis(inventory);
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
 
         final int size = analysis.selectArtifacts(containsToken(COMPONENT_SOURCE_TYPE, "exe")).getItemList().size();
 

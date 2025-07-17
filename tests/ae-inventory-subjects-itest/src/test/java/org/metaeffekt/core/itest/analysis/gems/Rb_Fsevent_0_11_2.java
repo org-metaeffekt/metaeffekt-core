@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Rb_Fsevent_0_11_2 extends AbstractCompositionAnalysisTest{
 
@@ -60,5 +61,8 @@ public class Rb_Fsevent_0_11_2 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "0.11.2"),
                         attributeValue(PURL, "pkg:gem/rb-fsevent@0.11.2"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

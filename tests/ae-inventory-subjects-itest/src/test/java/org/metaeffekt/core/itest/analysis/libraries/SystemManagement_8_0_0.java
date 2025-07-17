@@ -26,6 +26,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class SystemManagement_8_0_0 extends AbstractCompositionAnalysisTest{
 
@@ -61,7 +62,11 @@ public class SystemManagement_8_0_0 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "8.0.0"),
                         attributeValue(Artifact.Attribute.ROOT_PATHS, "system.management.8.0.0.nupkg"),
                         attributeValue(PURL, "pkg:nuget/System.Management@8.0.0"),
-                        attributeValue(PATH_IN_ASSET, "system.management.8.0.0.nupkg"))
+                        attributeValue(PATH_IN_ASSET, "[system.management.8.0.0.nupkg]"),
+                        attributeValue(TYPE, "package"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nupkg-archive")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "nuget")).hasSizeOf(1);
     }
 }
