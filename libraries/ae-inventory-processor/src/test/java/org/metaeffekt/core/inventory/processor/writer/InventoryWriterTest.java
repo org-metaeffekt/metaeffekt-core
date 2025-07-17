@@ -45,4 +45,15 @@ public class InventoryWriterTest {
         new InventoryWriter().writeInventory(inventory, outputInventoryFile);
     }
 
+    @Test
+    public void testCustomTempFileCreationStrategy() throws IOException {
+        final File inputInventoryFile = new File("src/test/resources/test-inventory-keycloak/keycloak-25.0.4-scanned.xlsx");
+        final File outputInventoryFile = new File("target/inventory-writer-test/customTempFileCreationStrategy.xlsx");
+
+        FileUtils.forceMkdirParent(outputInventoryFile);
+
+        final Inventory inventory = new InventoryReader().readInventory(inputInventoryFile);
+        new InventoryWriter().writeInventory(inventory, outputInventoryFile);
+    }
+
 }
