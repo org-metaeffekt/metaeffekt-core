@@ -94,11 +94,17 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
                 stylers.headerStyleColumnNameAssetId,
                 stylers.headerStyleColumnNameIncompleteMatch,
                 stylers.headerStyleColumnNameErrors,
+                stylers.createArtifactHeaderCellStyler(inventory.getSerializationContext()),
+                stylers.headerStyleBinaryArtifact,
+                stylers.headerStyleSourceArtifact,
+                stylers.headerStyleSourceArchive,
+                stylers.headerStyleDescriptor,
                 stylers.headerStyleDefault,
         };
 
         final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
                 stylers.contentStyleColumnNameAssetId,
+                stylers.createArtifactsCellStyler(inventory.getSerializationContext()),
                 stylers.contentStyleColumnNameIncompleteMatch,
         };
 

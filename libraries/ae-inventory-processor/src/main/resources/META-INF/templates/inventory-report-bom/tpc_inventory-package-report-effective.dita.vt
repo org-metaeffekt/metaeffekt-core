@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_packages-$reportContext.id">
-    #set($title = $utils.getText("general.short.packages"))
-    <title>$reportContext.combinedTitle("$title", true)</title>
+    <title>$utils.getText("general.short.packages")</title>
     <body>
         #set($components=$inventory.evaluateComponentsInContext("package"))
         #set($licensesInEffect=$inventory.evaluateLicenses(false))
@@ -49,22 +48,21 @@
                                 <lines>#if($addParagraph)
                                     <line>
                                     </line>#end
-                                    <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
-                                    <line>
+                                    <line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i>
                                         <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>
                                     </line>
                                 </lines>#else
                                 <codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph>#end
                                 #set($addParagraph=true)#end
                             </entry>
-                            #set($licenses=$inventory.getEffectiveLicenses($name.get(0)))
-                            #set($licensesAsString=$inventory.getEffectiveLicense($name.get(0)))
-                            #if($licenses.isEmpty())
+                            #set($effectiveLicenses=$inventory.getEffectiveLicenses($name.get(0)))
+                            #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+                            #if($effectiveLicensesRepresented.isEmpty())
                                 <entry>&nbsp;</entry>
                             #else
                                 <entry>
                                     ## preserve formating to achive proper line-breaks
-                                    <lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))
+                                    <lines>#foreach($license in $effectiveLicensesRepresented)#if($licensesInEffect.contains($license))
                                         <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)"
                                               type="topic">$report.xmlEscapeLicense($license)</xref>
                                     #else$report.xmlEscapeLicense($license)

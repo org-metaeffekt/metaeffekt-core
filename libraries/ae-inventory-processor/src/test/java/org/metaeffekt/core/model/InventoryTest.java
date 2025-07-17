@@ -576,12 +576,19 @@ public class InventoryTest {
         serializationContext.put("licensedata.header.[License].width", 50);
         serializationContext.put("licensedata.column.[License].centered", true);
 
+        // Populate serializationContext
+        serializationContext.put("artifact.header.[Version].fg", "224,153,255");
+        serializationContext.put("artifact.header.[Version].width", 50);
+        serializationContext.put("artifact.column.[Version].centered", true);
+
         final Artifact artifact = new Artifact();
         artifact.setId("test.jar");
         artifact.set("TEST", longString);
+        artifact.set("Version", "1.2.3");
         artifact.set("CID-ASSET-ID", longString);
         artifact.set("Incomplete Match", "Yes");
         artifact.set("Errors", "None");
+        artifact.set("Binary Artifact - Path", "Test");
         initialInventory.getArtifacts().add(artifact);
 
         final VulnerabilityMetaData vmd = new VulnerabilityMetaData();

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_notices-$reportContext.id" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
-    <title>$reportContext.combinedTitle($utils.getText("inventory-report-bom.short.license-notices"), true)</title>
+    <title>$utils.getText("inventory-report-bom.short.license-notices")</title>
     #set($componentNoticeList=$inventory.evaluateComponentNotices())
     #set($licensesInEffect=$inventory.evaluateLicenses(false))
 
@@ -84,16 +84,16 @@
                                         <entry>
                                             <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
                                         </entry>
-                                        #set($licenses=$inventory.getEffectiveLicenses($artifact))
-                                        #set($licensesAsString=$inventory.getEffectiveLicense($artifact))
-                                        #if($licenses.isEmpty())
-                                            <entry>&nbsp;</entry>
+                                        #set($effectiveLicenses=$inventory.getEffectiveLicenses($artifact))
+                                        #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
+                                        #if($effectiveLicensesRepresented.isEmpty())
+                                          <entry>&nbsp;</entry>
                                         #else
                                             <entry>
-## preserve formating to achive proper line-breaks
-<lines>#foreach($license in $licenses)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
-#else$report.xmlEscapeLicense($license)
-#end#end</lines>
+                                                ## preserve formating to achive proper line-breaks
+                                              <lines>#foreach($license in $effectiveLicensesRepresented)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                                              #else$report.xmlEscapeLicense($license)
+                                              #end#end</lines>
                                             </entry>
                                         #end
                                     </row>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="package">
+    <glossterm>Package</glossterm>
+    <glossdef>
+        <p>
+            A package consists of a set of files that are installed as a whole. A package can be part of a component
+            that is represented by one or more packages.
+        </p>
+        <p>
+            See also: <abbreviated-form keyref="artifact"/>
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>packages</glossSurfaceForm>
+    </glossBody>
+</glossentry>

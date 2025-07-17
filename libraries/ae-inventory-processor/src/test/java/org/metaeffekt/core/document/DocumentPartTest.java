@@ -45,8 +45,7 @@ public class DocumentPartTest {
         DocumentDescriptor documentDescriptor = new DocumentDescriptor();
 
         Inventory inventory = new Inventory();
-        Inventory referencedInventory = new Inventory();
-        InventoryContext inventoryContext = new InventoryContext(inventory, referencedInventory, "test", "test", "test", "1.0");
+        InventoryContext inventoryContext = new InventoryContext(inventory, "test", "test", null, null);
         List<InventoryContext> contexts = new ArrayList<>();
         contexts.add(inventoryContext);
         Map<String, String> partParams = new HashMap<>();

@@ -22,7 +22,6 @@ import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.AntPathMatcher;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,8 +45,6 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static final String ENCODING_UTF_8 = "UTF-8";
 
     private static final String VAR_CHECKSUM = "checksum";
-
-    private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
     public static final String SEPARATOR_SLASH = "/";
     public static final String SEPARATOR_COMMA = ",";
@@ -136,13 +133,15 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     public static String asRelativePath(String workingDirPath, String filePath) {
-        try {
-            File file = new File(filePath).getCanonicalFile();
-            File workingDirFile = new File(workingDirPath).getCanonicalFile();
-            return asRelativePath(workingDirFile, file);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot compute relative path for " + filePath + ".", e);
-        }
+        File file = new File(FileUtils.canonicalizeLinuxPath(FileUtils.normalizePathToLinux(filePath)));
+        File workingDirFile = new File(FileUtils.canonicalizeLinuxPath(FileUtils.normalizePathToLinux(workingDirPath)));
+        return asRelativePath(workingDirFile, file);
+    }
+
+    public static String asRelativePath(FileRef workingDirPath, FileRef filePath) {
+        File file = new File(FileUtils.canonicalizeLinuxPath(filePath.getPath()));
+        File workingDirFile = new File(FileUtils.canonicalizeLinuxPath(workingDirPath.getPath()));
+        return asRelativePath(workingDirFile, file);
     }
 
     public static String asRelativePath(File workingDirFile, File file) {
@@ -193,94 +192,31 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return relativePath;
     }
 
-
+    // FIXME: further harmonize with PatternSetMatcher; move method; rename to differentiate from PSM.matches()
     public static boolean matches(final String normalizedPattern, final String normalizedPath) {
         if (normalizedPattern == null) return true;
         if (normalizedPath == null) return false;
 
         if (!normalizedPattern.contains(SEPARATOR_COMMA)) {
             final String trimmedPattern = normalizedPattern.trim();
-            return internalMatching(normalizedPath, trimmedPattern);
+            return PatternSetMatcher.internalMatching(normalizedPath, trimmedPattern);
         }
 
         final String[] patterns = normalizedPattern.split(SEPARATOR_COMMA);
         for (final String pattern : patterns) {
             final String trimmedPattern = pattern.trim();
-            if (internalMatching(normalizedPath, trimmedPattern)) {
+            if (PatternSetMatcher.internalMatching(normalizedPath, trimmedPattern)) {
                 return true;
             }
         }
         return false;
     }
 
-    /**
-     * The AntPathMatcher has the unexpected behavior to treat absolute paths differently. These would only match in
-     * case the pattern is also absolute. This method adapts pattern and path to reach the anticipated results.
-     *
-     * @param normalizedPath Normalized path to match.
-     * @param normalizedPattern Normalized pattern to match.
-     *
-     * @return <code>true</code> in case the pattern matches the path.
-     */
-    private static boolean internalMatching(final String normalizedPath, final String normalizedPattern) {
-
-        // match on string equals level when no wildcard is contained
-        if (!normalizedPattern.contains("*")) {
-            return normalizedPath.equals(normalizedPattern);
-        }
-
-        if (normalizedPattern.startsWith(SEPARATOR_SLASH)) {
-            // matching absolute path; check whether this is at all needed; i.e. by static defined component patterns
-
-            if (!normalizedPath.contains(":")) {
-                final Boolean matched = matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
-                if (matched != null) return matched;
-            }
-
-            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
-                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
-            } else {
-                return ANT_PATH_MATCHER.match(normalizedPattern.substring(1), normalizedPath);
-            }
-        } else {
-
-            if (!normalizedPath.contains(":")) {
-                if (normalizedPattern.startsWith("**/")) {
-                    final String subPattern = normalizedPattern.substring(2);
-                    if (!subPattern.contains("*") && !subPattern.contains(":")) {
-                        return normalizedPath.endsWith(subPattern);
-                    }
-                } else {
-                    final Boolean matched = matchStandardPatternAnyFileInPath(normalizedPath, normalizedPattern);
-                    if (matched != null) return matched;
-                }
-            }
-
-            if (normalizedPath.startsWith(SEPARATOR_SLASH)) {
-                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath.substring(1));
-            } else {
-                return ANT_PATH_MATCHER.match(normalizedPattern, normalizedPath);
-            }
-        }
-    }
-
-    private static Boolean matchStandardPatternAnyFileInPath(String normalizedPath, String normalizedPattern) {
-        if (normalizedPattern.endsWith("/**/*")) {
-            final String subPattern = normalizedPattern.substring(0, normalizedPattern.length() - 4);
-            if (!subPattern.contains("*") && !subPattern.contains(":")) {
-                return normalizedPath.startsWith(subPattern);
-            }
-        }
-
-        // return null to indicate that match was not evaluated
-        return null;
-    }
-
     public static boolean matches(final Set<String> normalizedPatternSet, final String normalizedPath) {
         if (normalizedPath == null) return false;
         for (final String pattern : normalizedPatternSet) {
             final String trimmedPattern = pattern.trim();
-            if (internalMatching(normalizedPath, trimmedPattern)) {
+            if (PatternSetMatcher.internalMatching(normalizedPath, trimmedPattern)) {
                 return true;
             }
         }
@@ -372,6 +308,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return path;
     }
 
+    @Deprecated // use PatternSetMatcher instead
     public static String[] scanDirectoryForFolders(File targetDir, String... includes) {
         DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(targetDir);
@@ -410,8 +347,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static void createDirectoryContentChecksumFile(File baseDir, File targetContentChecksumFile) throws IOException {
         final StringBuilder checksumSequence = new StringBuilder();
+        
+        // NOTE: could be moved to FileSystemMap; current impl may be more efficient
         final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
-
+        // FIXME: we can save the normalizePathToLinux operation when the FileSystemMap could produce FileRef; revise
         Arrays.stream(files).map(FileUtils::normalizePathToLinux).sorted(String::compareTo).forEach(fileName -> {
             final File file = new File(baseDir, fileName);
             try {

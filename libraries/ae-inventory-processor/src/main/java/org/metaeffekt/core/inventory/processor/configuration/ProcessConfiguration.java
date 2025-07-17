@@ -77,54 +77,63 @@ public abstract class ProcessConfiguration {
         return id;
     }
 
+    public void debugLogConfiguration() {
+        final Map<String, Object> configuration = getProperties();
+
+        if (!configuration.isEmpty()) {
+            LOG.debug("Configuration [{}]:", getId());
+            logConfiguration(configuration, 1, LOG::debug);
+        }
+    }
+
     public void logConfiguration() {
         final Map<String, Object> configuration = getProperties();
 
         if (!configuration.isEmpty()) {
             LOG.info("Configuration [{}]:", getId());
-            logConfiguration(configuration, 1);
+            logConfiguration(configuration, 1, LOG::info);
         }
     }
 
-    private void logConfiguration(List<Object> configuration, int indent) {
+    private void logConfiguration(List<Object> configuration, int indent, Consumer<String> logLevel) {
         if (!configuration.isEmpty()) {
             configuration.forEach(value -> {
                 final StringBuilder sb = new StringBuilder();
                 sb.append(IntStream.range(0, indent).mapToObj(i -> "  ").reduce("", String::concat));
                 if (value instanceof LinkedHashMap) {
-                    LOG.info(sb.toString());
-                    logConfiguration((LinkedHashMap<String, Object>) value, indent + 1);
+                    logLevel.accept(sb.toString());
+                    logConfiguration((LinkedHashMap<String, Object>) value, indent + 1, logLevel);
                 } else if (value instanceof List) {
-                    LOG.info(sb.toString());
-                    logConfiguration((List) value, indent + 1);
+                    logLevel.accept(sb.toString());
+                    logConfiguration((List) value, indent + 1, logLevel);
                 } else if (value instanceof ProcessConfiguration) {
-                    logConfiguration(((ProcessConfiguration) value).getProperties(), indent + 1);
+                    logConfiguration(((ProcessConfiguration) value).getProperties(), indent + 1, logLevel);
                 } else {
                     sb.append(value);
-                    LOG.info(sb.toString());
+                    logLevel.accept(sb.toString());
                 }
             });
         }
     }
 
-    private void logConfiguration(Map<String, Object> configuration, int indent) {
+    private void logConfiguration(Map<String, Object> configuration, int indent, Consumer<String> logLevel) {
         if (!configuration.isEmpty()) {
             configuration.forEach((key, value) -> {
                 final StringBuilder sb = new StringBuilder();
                 sb.append(IntStream.range(0, indent).mapToObj(i -> "  ").reduce("", String::concat))
                         .append(key).append(": ");
                 if (value instanceof LinkedHashMap) {
-                    LOG.info(sb.toString());
-                    logConfiguration((LinkedHashMap<String, Object>) value, indent + 1);
+                    logLevel.accept(sb.toString());
+                    logConfiguration((LinkedHashMap<String, Object>) value, indent + 1, logLevel);
                 } else if (value instanceof List) {
-                    LOG.info(sb.toString());
-                    logConfiguration((List) value, indent + 1);
+                    logLevel.accept(sb.toString());
+                    logConfiguration((List) value, indent + 1, logLevel);
                 } else if (value instanceof ProcessConfiguration) {
-                    LOG.info(sb.toString());
-                    logConfiguration(((ProcessConfiguration) value).getProperties(), indent + 1);
+                    logLevel.accept(sb.toString());
+                    logConfiguration(((ProcessConfiguration) value).getProperties(), indent + 1, logLevel);
                 } else {
                     sb.append(value);
-                    LOG.info(sb.toString());
+                    logLevel.accept(sb.toString());
                 }
             });
         }

@@ -5,6 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ae-core-tools</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <parent>

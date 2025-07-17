@@ -542,13 +542,66 @@ public final class Cvss4P0 extends CvssVector {
         return exploitMaturity != ExploitMaturity.NOT_DEFINED;
     }
 
-    @Override
-    public double getOverallScore() {
-        return getBaseScore();
+    private void clearEnvironmental() {
+        this.modifiedAttackVector = ModifiedAttackVector.NOT_DEFINED;
+        this.modifiedAttackComplexity = ModifiedAttackComplexity.NOT_DEFINED;
+        this.modifiedAttackRequirements = ModifiedAttackRequirements.NOT_DEFINED;
+        this.modifiedPrivilegesRequired = ModifiedPrivilegesRequired.NOT_DEFINED;
+        this.modifiedUserInteraction = ModifiedUserInteraction.NOT_DEFINED;
+        this.modifiedVulnConfidentialityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedVulnIntegrityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedVulnAvailabilityImpact = ModifiedVulnerabilityCia.NOT_DEFINED;
+        this.modifiedSubConfidentialityImpact = ModifiedSubsequentConfidentiality.NOT_DEFINED;
+        this.modifiedSubIntegrityImpact = ModifiedSubsequentIntegrityAvailability.NOT_DEFINED;
+        this.modifiedSubAvailabilityImpact = ModifiedSubsequentIntegrityAvailability.NOT_DEFINED;
+    }
+
+    private void clearThreat() {
+        this.exploitMaturity = ExploitMaturity.NOT_DEFINED;
     }
 
     @Override
     public double getBaseScore() {
+        if (isAnyEnvironmentalDefined() || isAnyThreatDefined()) {
+            final Cvss4P0 vector = this.clone();
+            vector.clearEnvironmental();
+            vector.clearThreat();
+            return vector.getOverallScore();
+        }
+
+        return this.getOverallScore();
+    }
+
+    public double getEnvironmentalScore() {
+        if (isAnyEnvironmentalDefined()) {
+            if (isAnyThreatDefined()) {
+                final Cvss4P0 vector = this.clone();
+                vector.clearThreat();
+                return vector.getOverallScore();
+            } else {
+                return getOverallScore();
+            }
+        }
+
+        return Double.NaN;
+    }
+
+    public double getThreatScore() {
+        if (isAnyThreatDefined()) {
+            if (isAnyEnvironmentalDefined()) {
+                final Cvss4P0 vector = this.clone();
+                vector.clearEnvironmental();
+                return vector.getOverallScore();
+            } else {
+                return getOverallScore();
+            }
+        }
+
+        return Double.NaN;
+    }
+
+    @Override
+    public double getOverallScore() {
         // check if base is undefined
         if (!isBaseFullyDefined()) {
             return 0.0;
@@ -903,61 +956,68 @@ public final class Cvss4P0 extends CvssVector {
     }
 
     @Override
-    public String toString() {
+    public String toString(boolean filterUndefinedProperties) {
         final StringBuilder vector = new StringBuilder();
         vector.append(getName()).append("/");
 
+        boolean appendAnyways = !filterUndefinedProperties;
+
         // Base Metrics: Exploitability Metrics
-        appendIfNotDefault(vector, "AV", attackVector, AttackVector.NOT_DEFINED);
-        appendIfNotDefault(vector, "AC", attackComplexity, AttackComplexity.NOT_DEFINED);
-        appendIfNotDefault(vector, "AT", attackRequirements, AttackRequirements.NOT_DEFINED);
-        appendIfNotDefault(vector, "PR", privilegesRequired, PrivilegesRequired.NOT_DEFINED);
-        appendIfNotDefault(vector, "UI", userInteraction, UserInteraction.NOT_DEFINED);
+        appendIfNotDefault(vector, "AV", attackVector, AttackVector.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AC", attackComplexity, AttackComplexity.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AT", attackRequirements, AttackRequirements.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "PR", privilegesRequired, PrivilegesRequired.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "UI", userInteraction, UserInteraction.NOT_DEFINED, appendAnyways);
 
         // Base Metrics: Vulnerable System Impact Metrics
-        appendIfNotDefault(vector, "VC", vulnConfidentialityImpact, VulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "VI", vulnIntegrityImpact, VulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "VA", vulnAvailabilityImpact, VulnerabilityCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "VC", vulnConfidentialityImpact, VulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "VI", vulnIntegrityImpact, VulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "VA", vulnAvailabilityImpact, VulnerabilityCia.NOT_DEFINED, appendAnyways);
 
         // Base Metrics: Subsequent System Impact Metrics
-        appendIfNotDefault(vector, "SC", subConfidentialityImpact, SubsequentCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "SI", subIntegrityImpact, SubsequentCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "SA", subAvailabilityImpact, SubsequentCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "SC", subConfidentialityImpact, SubsequentCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "SI", subIntegrityImpact, SubsequentCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "SA", subAvailabilityImpact, SubsequentCia.NOT_DEFINED, appendAnyways);
 
         // Threat Metrics
-        appendIfNotDefault(vector, "E", exploitMaturity, ExploitMaturity.NOT_DEFINED);
+        appendIfNotDefault(vector, "E", exploitMaturity, ExploitMaturity.NOT_DEFINED, appendAnyways);
 
         // Environmental (Security Requirements)
-        appendIfNotDefault(vector, "CR", confidentialityRequirement, RequirementsCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "IR", integrityRequirement, RequirementsCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "AR", availabilityRequirement, RequirementsCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "CR", confidentialityRequirement, RequirementsCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "IR", integrityRequirement, RequirementsCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AR", availabilityRequirement, RequirementsCia.NOT_DEFINED, appendAnyways);
 
         // Environmental (Modified Base Metrics): Exploitability Metrics
-        appendIfNotDefault(vector, "MAV", modifiedAttackVector, ModifiedAttackVector.NOT_DEFINED);
-        appendIfNotDefault(vector, "MAC", modifiedAttackComplexity, ModifiedAttackComplexity.NOT_DEFINED);
-        appendIfNotDefault(vector, "MAT", modifiedAttackRequirements, ModifiedAttackRequirements.NOT_DEFINED);
-        appendIfNotDefault(vector, "MPR", modifiedPrivilegesRequired, ModifiedPrivilegesRequired.NOT_DEFINED);
-        appendIfNotDefault(vector, "MUI", modifiedUserInteraction, ModifiedUserInteraction.NOT_DEFINED);
+        appendIfNotDefault(vector, "MAV", modifiedAttackVector, ModifiedAttackVector.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MAC", modifiedAttackComplexity, ModifiedAttackComplexity.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MAT", modifiedAttackRequirements, ModifiedAttackRequirements.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MPR", modifiedPrivilegesRequired, ModifiedPrivilegesRequired.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MUI", modifiedUserInteraction, ModifiedUserInteraction.NOT_DEFINED, appendAnyways);
 
         // Environmental (Modified Base Metrics): Vulnerable System Impact Metrics
-        appendIfNotDefault(vector, "MVC", modifiedVulnConfidentialityImpact, ModifiedVulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "MVI", modifiedVulnIntegrityImpact, ModifiedVulnerabilityCia.NOT_DEFINED);
-        appendIfNotDefault(vector, "MVA", modifiedVulnAvailabilityImpact, ModifiedVulnerabilityCia.NOT_DEFINED);
+        appendIfNotDefault(vector, "MVC", modifiedVulnConfidentialityImpact, ModifiedVulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MVI", modifiedVulnIntegrityImpact, ModifiedVulnerabilityCia.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MVA", modifiedVulnAvailabilityImpact, ModifiedVulnerabilityCia.NOT_DEFINED, appendAnyways);
 
         // Environmental (Modified Base Metrics): Subsequent System Impact Metrics
-        appendIfNotDefault(vector, "MSC", modifiedSubConfidentialityImpact, ModifiedSubsequentConfidentiality.NOT_DEFINED);
-        appendIfNotDefault(vector, "MSI", modifiedSubIntegrityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED);
-        appendIfNotDefault(vector, "MSA", modifiedSubAvailabilityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED);
+        appendIfNotDefault(vector, "MSC", modifiedSubConfidentialityImpact, ModifiedSubsequentConfidentiality.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MSI", modifiedSubIntegrityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "MSA", modifiedSubAvailabilityImpact, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED, appendAnyways);
 
         // Supplemental Metrics
-        appendIfNotDefault(vector, "S", safety, Safety.NOT_DEFINED);
-        appendIfNotDefault(vector, "AU", automatable, Automatable.NOT_DEFINED);
-        appendIfNotDefault(vector, "R", recovery, Recovery.NOT_DEFINED);
-        appendIfNotDefault(vector, "V", valueDensity, ValueDensity.NOT_DEFINED);
-        appendIfNotDefault(vector, "RE", vulnerabilityResponseEffort, VulnerabilityResponseEffort.NOT_DEFINED);
-        appendIfNotDefault(vector, "U", providerUrgency, ProviderUrgency.NOT_DEFINED);
+        appendIfNotDefault(vector, "S", safety, Safety.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "AU", automatable, Automatable.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "R", recovery, Recovery.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "V", valueDensity, ValueDensity.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "RE", vulnerabilityResponseEffort, VulnerabilityResponseEffort.NOT_DEFINED, appendAnyways);
+        appendIfNotDefault(vector, "U", providerUrgency, ProviderUrgency.NOT_DEFINED, appendAnyways);
 
         return TRAILING_SLASH_PATTERN.matcher(vector.toString()).replaceAll("");
+    }
+
+    @Override
+    public String toString() {
+        return toString(true);
     }
 
     private static final Pattern TRAILING_SLASH_PATTERN = Pattern.compile("/$");
@@ -1023,8 +1083,8 @@ public final class Cvss4P0 extends CvssVector {
         return array.toString();
     }
 
-    private <T extends Cvss4P0Attribute> void appendIfNotDefault(StringBuilder vector, String partName, T currentValue, T defaultValue) {
-        if (currentValue != defaultValue) {
+    private <T extends Cvss4P0Attribute> void appendIfNotDefault(StringBuilder vector, String partName, T currentValue, T defaultValue, boolean appendAnyways) {
+        if (appendAnyways || currentValue != defaultValue) {
             vector.append(partName).append(":").append(currentValue.getShortIdentifier()).append("/");
         }
     }
@@ -1910,6 +1970,10 @@ public final class Cvss4P0 extends CvssVector {
                 return defaultValue;
             }
         }
+
+        default boolean isSet() {
+            return !getIdentifier().equals(VALUE_NOT_DEFINED) && !getIdentifier().equals(VALUE_NULL);
+        }
     }
 
     // getters/setters
@@ -2178,5 +2242,100 @@ public final class Cvss4P0 extends CvssVector {
         }
 
         return Optional.of(new Cvss4P0(vector));
+    }
+
+    public final static List<Set<Cvss4P0Attribute>> ATTRIBUTE_SEVERITY_ORDER = Arrays.<Set<Cvss4P0Attribute>>asList(
+            // AttackRequirements
+            setOf(AttackRequirements.PRESENT, ModifiedAttackRequirements.PRESENT),
+            setOf(AttackRequirements.NONE, ModifiedAttackRequirements.NONE),
+            setOf(AttackRequirements.NOT_DEFINED, ModifiedAttackRequirements.NOT_DEFINED),
+
+            // Safety
+            Collections.singleton(Safety.NOT_DEFINED),
+            Collections.singleton(Safety.NEGLIGIBLE),
+            Collections.singleton(Safety.PRESENT),
+
+            // Automatable
+            Collections.singleton(Automatable.NOT_DEFINED),
+            Collections.singleton(Automatable.NO),
+            Collections.singleton(Automatable.YES),
+
+            // ValueDensity
+            Collections.singleton(ValueDensity.NOT_DEFINED),
+            Collections.singleton(ValueDensity.DIFFUSE),
+            Collections.singleton(ValueDensity.CONCENTRATED),
+
+            // AttackComplexity
+            setOf(AttackComplexity.HIGH, ModifiedAttackComplexity.HIGH),
+            setOf(AttackComplexity.LOW, ModifiedAttackComplexity.LOW),
+            setOf(AttackComplexity.NOT_DEFINED, ModifiedAttackComplexity.NOT_DEFINED),
+
+            // PrivilegesRequired
+            setOf(PrivilegesRequired.HIGH, ModifiedPrivilegesRequired.HIGH),
+            setOf(PrivilegesRequired.LOW, ModifiedPrivilegesRequired.LOW),
+            setOf(PrivilegesRequired.NONE, ModifiedPrivilegesRequired.NONE),
+            setOf(PrivilegesRequired.NOT_DEFINED, ModifiedPrivilegesRequired.NOT_DEFINED),
+
+            // UserInteraction
+            setOf(UserInteraction.ACTIVE, ModifiedUserInteraction.ACTIVE),
+            setOf(UserInteraction.PASSIVE, ModifiedUserInteraction.PASSIVE),
+            setOf(UserInteraction.NONE, ModifiedUserInteraction.NONE),
+            setOf(UserInteraction.NOT_DEFINED, ModifiedUserInteraction.NOT_DEFINED),
+
+            // VulnerabilityCia
+            setOf(VulnerabilityCia.NOT_DEFINED, ModifiedVulnerabilityCia.NOT_DEFINED),
+            setOf(VulnerabilityCia.NONE, ModifiedVulnerabilityCia.NONE),
+            setOf(VulnerabilityCia.LOW, ModifiedVulnerabilityCia.LOW),
+            setOf(VulnerabilityCia.HIGH, ModifiedVulnerabilityCia.HIGH),
+
+            // Subsequent CIA metrics
+            setOf(ModifiedSubsequentConfidentiality.NOT_DEFINED, ModifiedSubsequentIntegrityAvailability.NOT_DEFINED, SubsequentCia.NOT_DEFINED),
+            setOf(ModifiedSubsequentConfidentiality.NEGLIGIBLE, ModifiedSubsequentIntegrityAvailability.NEGLIGIBLE, SubsequentCia.NONE),
+            setOf(ModifiedSubsequentConfidentiality.LOW, ModifiedSubsequentIntegrityAvailability.LOW, SubsequentCia.LOW),
+            setOf(ModifiedSubsequentConfidentiality.HIGH, ModifiedSubsequentIntegrityAvailability.HIGH, SubsequentCia.HIGH),
+            setOf(ModifiedSubsequentIntegrityAvailability.SAFETY, SubsequentCia.SAFETY),
+
+            // RequirementsCia
+            Collections.singleton(RequirementsCia.LOW),
+            Collections.singleton(RequirementsCia.MEDIUM),
+            Collections.singleton(RequirementsCia.HIGH),
+            Collections.singleton(RequirementsCia.NOT_DEFINED),
+
+            // ExploitMaturity
+            Collections.singleton(ExploitMaturity.UNREPORTED),
+            Collections.singleton(ExploitMaturity.POC),
+            Collections.singleton(ExploitMaturity.ATTACKED),
+            Collections.singleton(ExploitMaturity.NOT_DEFINED),
+
+            // Recovery
+            Collections.singleton(Recovery.NOT_DEFINED),
+            Collections.singleton(Recovery.AUTOMATIC),
+            Collections.singleton(Recovery.USER),
+            Collections.singleton(Recovery.IRRECOVERABLE),
+
+            // VulnerabilityResponseEffort
+            Collections.singleton(VulnerabilityResponseEffort.NOT_DEFINED),
+            Collections.singleton(VulnerabilityResponseEffort.LOW),
+            Collections.singleton(VulnerabilityResponseEffort.MODERATE),
+            Collections.singleton(VulnerabilityResponseEffort.HIGH),
+
+            // ProviderUrgency
+            Collections.singleton(ProviderUrgency.NOT_DEFINED),
+            Collections.singleton(ProviderUrgency.CLEAR),
+            Collections.singleton(ProviderUrgency.GREEN),
+            Collections.singleton(ProviderUrgency.AMBER),
+            Collections.singleton(ProviderUrgency.RED),
+
+            // AttackVector
+            setOf(AttackVector.NOT_DEFINED, ModifiedAttackVector.NOT_DEFINED),
+            setOf(AttackVector.PHYSICAL, ModifiedAttackVector.PHYSICAL),
+            setOf(AttackVector.LOCAL, ModifiedAttackVector.LOCAL),
+            setOf(AttackVector.ADJACENT_NETWORK, ModifiedAttackVector.ADJACENT_NETWORK),
+            setOf(AttackVector.NETWORK, ModifiedAttackVector.NETWORK)
+    );
+
+    private static <T> Set<T> setOf(T... values) {
+        return new HashSet<>(Arrays.asList(values));
+
     }
 }

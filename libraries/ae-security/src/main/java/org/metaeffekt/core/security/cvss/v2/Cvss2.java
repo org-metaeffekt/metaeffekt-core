@@ -85,7 +85,7 @@ public final class Cvss2 extends MultiScoreCvssVector {
     }
 
     @Override
-    protected boolean applyVectorArgument(String identifier, String value) {
+    public boolean applyVectorArgument(String identifier, String value) {
         switch (identifier) {
             case "AV": // base
                 accessVector = AccessVector.fromString(value);
@@ -93,8 +93,8 @@ public final class Cvss2 extends MultiScoreCvssVector {
             case "AC":
                 accessComplexity = AccessComplexity.fromString(value);
                 break;
-            case "AU":
             case "Au":
+            case "AU":
                 authentication = Authentication.fromString(value);
                 break;
             case "C":
@@ -146,6 +146,7 @@ public final class Cvss2 extends MultiScoreCvssVector {
             case "AC":
                 return accessComplexity;
             case "Au":
+            case "AU":
                 return authentication;
             case "C":
                 return confidentialityImpact;
@@ -600,23 +601,25 @@ public final class Cvss2 extends MultiScoreCvssVector {
     }
 
     @Override
-    public String toString() {
+    public String toString(boolean filterUndefinedProperties) {
         final StringBuilder vector = new StringBuilder();
 
-        appendIfValid(vector, "AV", accessVector.shortIdentifier);
-        appendIfValid(vector, "AC", accessComplexity.shortIdentifier);
-        appendIfValid(vector, "Au", authentication.shortIdentifier);
-        appendIfValid(vector, "C", confidentialityImpact.shortIdentifier);
-        appendIfValid(vector, "I", integrityImpact.shortIdentifier);
-        appendIfValid(vector, "A", availabilityImpact.shortIdentifier);
-        appendIfValid(vector, "E", exploitability.shortIdentifier);
-        appendIfValid(vector, "RL", remediationLevel.shortIdentifier);
-        appendIfValid(vector, "RC", reportConfidence.shortIdentifier);
-        appendIfValid(vector, "CDP", collateralDamagePotential.shortIdentifier);
-        appendIfValid(vector, "TD", targetDistribution.shortIdentifier);
-        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier);
-        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier);
-        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier);
+        boolean appendAnyways = !filterUndefinedProperties;
+
+        appendIfValid(vector, "AV", accessVector.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "AC", accessComplexity.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "Au", authentication.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "C", confidentialityImpact.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "I", integrityImpact.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "A", availabilityImpact.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "E", exploitability.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "RL", remediationLevel.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "RC", reportConfidence.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "CDP", collateralDamagePotential.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "TD", targetDistribution.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier, appendAnyways);
+        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier, appendAnyways);
 
         if (vector.length() > 0 && vector.charAt(vector.length() - 1) == '/') {
             vector.setLength(vector.length() - 1);
@@ -625,8 +628,13 @@ public final class Cvss2 extends MultiScoreCvssVector {
         return vector.toString();
     }
 
-    private void appendIfValid(StringBuilder builder, String prefix, String value) {
-        if (value != null && !value.equals("X")) {
+    @Override
+    public String toString() {
+        return toString(true);
+    }
+
+    private void appendIfValid(StringBuilder builder, String prefix, String value, boolean appendAnyways) {
+        if (value != null && (appendAnyways || !(value.equals("X") || value.equals("ND")))) {
             if (builder.length() > 0) {
                 builder.append('/');
             }
@@ -1044,6 +1052,10 @@ public final class Cvss2 extends MultiScoreCvssVector {
     private final static Map<Class<?>, Map<String, Object>> ATTRIBUTE_CACHE = new HashMap<>();
 
     public interface Cvss2Attribute extends CvssVectorAttribute {
+        default boolean isSet() {
+            return !getIdentifier().equals(VALUE_NOT_DEFINED) && !getIdentifier().equals(VALUE_NULL);
+        }
+
         static <T extends Cvss2Attribute> T fromString(String part, Class<T> clazz, T defaultValue) {
             final Map<String, Object> cache;
             if (ATTRIBUTE_CACHE.containsKey(clazz)) {
@@ -1069,4 +1081,59 @@ public final class Cvss2 extends MultiScoreCvssVector {
             }
         }
     }
+
+    public final static List<Cvss2Attribute> ATTRIBUTE_SEVERITY_ORDER = Arrays.asList(
+            AccessVector.NULL,
+            AccessComplexity.NULL,
+            Authentication.NULL,
+            CIAImpact.NULL,
+            CIAImpact.NONE,
+            Exploitability.NULL,
+            RemediationLevel.NULL,
+            ReportConfidence.NULL,
+            CollateralDamagePotential.NULL,
+            CollateralDamagePotential.NONE,
+            CollateralDamagePotential.NOT_DEFINED,
+            TargetDistribution.NULL,
+            TargetDistribution.NONE,
+            CIARequirement.NULL,
+
+            CollateralDamagePotential.LOW,
+            TargetDistribution.LOW,
+            CIAImpact.PARTIAL,
+            CollateralDamagePotential.LOW_MEDIUM,
+            AccessComplexity.HIGH,
+            AccessVector.LOCAL,
+            CollateralDamagePotential.MEDIUM_HIGH,
+            Authentication.MULTIPLE,
+            CollateralDamagePotential.HIGH,
+            Authentication.SINGLE,
+            AccessComplexity.MEDIUM,
+            AccessVector.ADJACENT_NETWORK,
+            CIAImpact.COMPLETE,
+            Authentication.NONE,
+            AccessComplexity.LOW,
+            TargetDistribution.MEDIUM,
+            Exploitability.UNPROVEN,
+            RemediationLevel.OFFICIAL,
+            Exploitability.PROOF_OF_CONCEPT,
+            RemediationLevel.TEMPORARY,
+            RemediationLevel.WORKAROUND,
+            ReportConfidence.UNCONFIRMED,
+            ReportConfidence.UNCORROBORATED,
+            AccessVector.NETWORK,
+            Exploitability.FUNCTIONAL,
+            Exploitability.HIGH,
+            Exploitability.NOT_DEFINED,
+            RemediationLevel.UNAVAILABLE,
+            RemediationLevel.NOT_DEFINED,
+            ReportConfidence.CONFIRMED,
+            ReportConfidence.NOT_DEFINED,
+            TargetDistribution.HIGH,
+            TargetDistribution.NOT_DEFINED,
+            CIARequirement.LOW,
+            CIARequirement.MEDIUM,
+            CIARequirement.NOT_DEFINED,
+            CIARequirement.HIGH
+    );
 }

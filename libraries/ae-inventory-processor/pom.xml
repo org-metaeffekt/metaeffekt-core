@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>ae-inventory-processor</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <build>
@@ -136,6 +137,10 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
         </dependency>
 
         <dependency>
@@ -346,9 +351,9 @@
 
             <dependencies>
                 <dependency>
-                    <groupId>org.metaeffekt.dita</groupId>
+                    <groupId>org.metaeffekt.core</groupId>
                     <artifactId>ae-common-content</artifactId>
-                    <version>${ae.dita.version}</version>
+                    <version>${ae.core.version}</version>
                     <classifier>doc</classifier>
                 </dependency>
             </dependencies>

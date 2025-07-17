@@ -113,8 +113,8 @@ public class ComponentPatternContributorRunner {
                     if (matcher.find()) {
                         for (ComponentPatternContributor contributor : collect) {
                             try {
-                                List<ComponentPatternData> componentPatterns = contributor.contribute(
-                                        baseDir, relativeAnchorFilePath, checksum, context);
+                                List<ComponentPatternData> componentPatterns =
+                                        contributor.contribute(baseDir, relativeAnchorFilePath, checksum, context);
 
                                 componentPatterns.forEach(cpd -> cpd.setContext(contributor.getClass().getName()));
 

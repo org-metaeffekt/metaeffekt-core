@@ -16,10 +16,7 @@
 package org.metaeffekt.core.inventory.processor.reader;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaInventoryAttribute;
 import org.slf4j.Logger;
@@ -34,6 +31,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
 
@@ -94,6 +92,10 @@ public abstract class AbstractInventoryReader {
         }
     }
 
+    protected void update(AssetMetaData assetMetaData) {
+        resolveRename(assetMetaData, "Role", AssetMetaData.Attribute.AUDIENCE.getKey());
+    }
+
     protected void update(VulnerabilityMetaData vulnerabilityMetaData) {
         // compensate rename of attributes
         mapContent(vulnerabilityMetaData, "Referenced Content IDs", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
@@ -139,6 +141,7 @@ public abstract class AbstractInventoryReader {
         inventory.getVulnerabilityMetaDataContexts().forEach(
                 context -> inventory.getVulnerabilityMetaData(context).forEach(this::update)
         );
+        inventory.getAssetMetaData().forEach(this::update);
     }
 
     protected static class ParsingContext {
@@ -228,6 +231,19 @@ public abstract class AbstractInventoryReader {
             return numericCellDataFormatter.format(cell.getNumericCellValue());
         } else {
             return baseCellDataFormatter.formatCellValue(cell);
+        }
+    }
+
+    protected void populateSerializationContextHeaders(Inventory inventory, Sheet sheet, String contextKey, ParsingContext pc) {
+        final List<String> headerList = pc.columns;
+        final List<String> filteredHeaderList = headerList.stream().filter(col -> !this.isSplitColumn(col)).collect(Collectors.toList());
+
+        final InventorySerializationContext serializationContext = inventory.getSerializationContext();
+        serializationContext.put(contextKey + ".columnlist", filteredHeaderList);
+        for (int i = 0; i < headerList.size(); i++) {
+            if (!filteredHeaderList.contains(headerList.get(i))) continue;
+            final int width = sheet.getColumnWidth(i);
+            serializationContext.put(contextKey + ".column[" + i + "].width", width);
         }
     }
 }

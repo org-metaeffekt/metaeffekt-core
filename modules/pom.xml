@@ -12,10 +12,12 @@
     </parent>
 
     <artifactId>ae-modules</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <modules>
         <module>ae-commons-annotation</module>
+        <module>ae-common-content</module>
     </modules>
 
     <build>

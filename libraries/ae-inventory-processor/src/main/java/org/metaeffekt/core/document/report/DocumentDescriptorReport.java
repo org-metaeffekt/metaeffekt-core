@@ -144,7 +144,48 @@ public class DocumentDescriptorReport {
         extraContext.put("partBookMaps", partBookMaps);
 
         // Call the unified produceBookMapDita() method.
-        produceBookMapDita(documentDescriptor,
+        produceDita(documentDescriptor,
+                null,
+                new DocumentDescriptorReportAdapters(),
+                templateResourcePath,
+                targetFile,
+                extraContext);
+    }
+
+    protected void createImprint(DocumentDescriptor documentDescriptor) throws IOException {
+
+        // collect asset names and asset versions from documentParts
+        Map<String, TreeSet<String>> assetMap = new HashMap<>();
+
+        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
+                String assetName = inventoryContext.getAssetName();
+                String assetVersion = inventoryContext.getAssetVersion();
+
+                // Skip if assetName or version is null
+                if (assetName == null || assetVersion == null) continue;
+
+                assetMap
+                        .computeIfAbsent(assetName, k -> new TreeSet<>())
+                        .add(assetVersion);
+            }
+        }
+
+        String templateResourcePath = TEMPLATES_BASE_DIR + "/imprint/tpc_imprint.dita.vt";
+        File targetFile = new File(this.targetReportDir + "/imprint", "tpc_imprint.dita");
+
+        log.info("Producing Dita for template [{}]", templateResourcePath);
+
+        Map<String, Object> extraContext = new HashMap<>();
+        extraContext.put("assetMap", assetMap);
+
+        boolean excludeAssetsFromImprint = false;
+        if (documentDescriptor.getParams() != null) {
+            excludeAssetsFromImprint = Boolean.parseBoolean(documentDescriptor.getParams().get("excludeAssetsFromImprint"));
+        }
+        extraContext.put("excludeAssetsFromImprint", excludeAssetsFromImprint);
+
+        produceDita(documentDescriptor,
                 null,
                 new DocumentDescriptorReportAdapters(),
                 templateResourcePath,
@@ -244,9 +285,9 @@ public class DocumentDescriptorReport {
             }
 
             File relPath = new File(path.replace("/" + templateGroup + "/", "")).getParentFile();
-            final File targetReportPath = new File(this.targetReportDir, new File(relPath, targetFileName).toString());
+            final File targetReportPath = new File(this.targetReportDir + "/parts", new File(relPath, targetFileName).toString());
 
-            produceBookMapDita(documentDescriptor, documentPart, adapters, filePath, targetReportPath);
+            produceDita(documentDescriptor, documentPart, adapters, filePath, targetReportPath);
         }
     }
 
@@ -260,12 +301,12 @@ public class DocumentDescriptorReport {
      * @param documentPart the part of the document for which the bookMap will be generated
      * @throws IOException if there is an error during the report generation process
      */
-    private void produceBookMapDita(DocumentDescriptor documentDescriptor,
-                                    DocumentPart documentPart,
-                                    DocumentDescriptorReportAdapters adapters,
-                                    String templateResourcePath,
-                                    File target,
-                                    Map<String, Object> extraContext) throws IOException {
+    private void produceDita(DocumentDescriptor documentDescriptor,
+                             DocumentPart documentPart,
+                             DocumentDescriptorReportAdapters adapters,
+                             String templateResourcePath,
+                             File target,
+                             Map<String, Object> extraContext) throws IOException {
 
         log.info("Producing Dita for template [{}]", templateResourcePath);
         final Properties properties = new Properties();
@@ -279,12 +320,15 @@ public class DocumentDescriptorReport {
         final Template template = velocityEngine.getTemplate(templateResourcePath);
         final StringWriter sw = new StringWriter();
         final VelocityContext context = new VelocityContext();
+        final ReportUtils reportUtils = new ReportUtils();
+        reportUtils.setContext(context);
+        reportUtils.setLang(documentDescriptor.getLanguage());
 
         // Add common context entries.
         context.put("targetReportDir", this.targetReportDir);
         context.put("StringEscapeUtils", org.apache.commons.lang.StringEscapeUtils.class);
         context.put("RegExUtils", RegExUtils.class);
-        context.put("utils", new ReportUtils());
+        context.put("utils", reportUtils);
         context.put("Double", Double.class);
         context.put("Float", Float.class);
         context.put("String", String.class);
@@ -316,12 +360,12 @@ public class DocumentDescriptorReport {
      * @param templateResourcePath the path to the Velocity template resource
      * @param target the file where the generated report will be saved
      */
-    private void produceBookMapDita(DocumentDescriptor documentDescriptor,
-                                    DocumentPart documentPart,
-                                    DocumentDescriptorReportAdapters adapters,
-                                    String templateResourcePath,
-                                    File target) throws IOException {
-        produceBookMapDita(documentDescriptor, documentPart, adapters, templateResourcePath, target, Collections.emptyMap());
+    private void produceDita(DocumentDescriptor documentDescriptor,
+                             DocumentPart documentPart,
+                             DocumentDescriptorReportAdapters adapters,
+                             String templateResourcePath,
+                             File target) throws IOException {
+        produceDita(documentDescriptor, documentPart, adapters, templateResourcePath, target, Collections.emptyMap());
     }
 }
 
