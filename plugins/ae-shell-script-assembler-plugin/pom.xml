@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>ae-shell-script-assembler-plugin</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
     <properties>

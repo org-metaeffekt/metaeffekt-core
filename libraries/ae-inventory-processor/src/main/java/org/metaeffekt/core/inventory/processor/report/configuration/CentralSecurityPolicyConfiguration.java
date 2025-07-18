@@ -93,6 +93,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_INITIAL}
      */
     private String initialCvssSelector = CVSS_SELECTOR_INITIAL.toJson().toString();
+
     /**
      * contextCvssSelector &rarr; cachedContextCvssSelector<br>
      * <code>String &rarr; JSONObject &rarr; CvssSelector</code><p>
@@ -100,10 +101,12 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_CONTEXT}
      */
     private String contextCvssSelector = CVSS_SELECTOR_CONTEXT.toJson().toString();
+
     /**
      * See {@link CentralSecurityPolicyConfiguration#initialCvssSelector}.
      */
     private CvssSelector cachedInitialCvssSelector;
+
     /**
      * See {@link CentralSecurityPolicyConfiguration#contextCvssSelector}.
      */
@@ -870,9 +873,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MSRC),
+
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
@@ -886,8 +891,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // CERT-SEI
                     new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // any other, but not assessment
                     new SourceSelectorEntry(
                             Arrays.asList(new SourceSelectorEntryEntry<>(KnownCvssEntities.ASSESSMENT, true)),

@@ -5,7 +5,9 @@
     http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
+
     <artifactId>ae-core-poms</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <parent>

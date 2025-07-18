@@ -53,7 +53,7 @@ public class CspLoader {
         try {
             return this.loadConfigurationInternal();
         } catch (IOException e) {
-            throw new RuntimeException("Central security policy loader failed to create CCentral security policy instance from parameters.", e);
+            throw new RuntimeException("Central security policy loader failed to create Central security policy instance from parameters.", e);
         }
     }
 

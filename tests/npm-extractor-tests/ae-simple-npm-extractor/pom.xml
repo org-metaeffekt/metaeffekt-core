@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>ae-simple-npm-extractor</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <build>

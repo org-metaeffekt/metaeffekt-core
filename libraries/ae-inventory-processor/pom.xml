@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>ae-inventory-processor</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <build>

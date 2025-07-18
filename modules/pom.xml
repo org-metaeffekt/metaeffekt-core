@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>ae-modules</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <modules>
