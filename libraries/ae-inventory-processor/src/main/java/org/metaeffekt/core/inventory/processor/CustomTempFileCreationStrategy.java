@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
+import org.apache.poi.util.TempFile;
 import org.apache.poi.util.TempFileCreationStrategy;
 
 import java.io.File;
@@ -29,6 +30,32 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.poi.util.TempFile.JAVA_IO_TMPDIR;
 
+/**
+ * Custom implementation of the {@link TempFileCreationStrategy} used by {@link TempFile}:
+ * Files are collected into one directory.
+ * You can define the system property {@link #DELETE_FILES_ON_EXIT} if you want to
+ * delete any stray files on clean JVM exit (any non-empty value means add the deleteOnExit flag).
+ * Files can be deleted prior to JVM exit by calling removeCreatedTempFiles().
+ *
+ * The POI code should tidy up temp files when it no longer needs them.
+ * The temporary directory is not deleted after the JVM exits.
+ * Files that are created in the poifiles directory outside
+ * the control of DefaultTempFileCreationStrategy are not deleted.
+ * See {@link TempFileCreationStrategy} for better strategies for long-running
+ * processes or limited temporary storage.
+ *
+ * Original Work:
+ * Apache POI
+ * Copyright 2003-2025 The Apache Software Foundation (<a href="https://www.apache.org/">...</a>).
+ *
+ * Modifications:
+ * Jonas Fuegen, {metaeffekt} GmbH (<a href="https://metaeffekt.com">...</a>).
+ * <ul>
+ *     <li>Used {@link org.apache.poi.util.DefaultTempFileCreationStrategy as a template for this class}.</li>
+ *     <li>Modified createTempFile() and createTempDirectory() methods.</li>
+ *     <li>Modified comments and JavaDoc.</li>
+ * </ul>
+ */
 public class CustomTempFileCreationStrategy implements TempFileCreationStrategy {
 
     /** Name of POI files directory in temporary directory. */
@@ -71,7 +98,6 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
 
         tempFiles.add(newFile);
 
-        // Set the delete on exit flag if sys prop is set
         if (System.getProperty(DELETE_FILES_ON_EXIT) != null) {
             newFile.deleteOnExit();
         }
@@ -106,10 +132,12 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
         }
     }
 
-    // Create our temp dir only once by double-checked locking
-    // The directory is not deleted, even if it was created by this TempFileCreationStrategy
+    /**
+     * Create our temp dir only once by double-checked locking. The directory is not deleted,
+     * even if it was created by this TempFileCreationStrategy.
+     * @throws IOException thrown if the directory does not exist or can not be created due to lack of permissions.
+     */
     private void createPOIFilesDirectoryIfNecessary() throws IOException {
-        // First make sure we recreate the directory if it was not somehow removed by a third party
         if (dir != null && !dir.exists()) {
             dir = null;
         }
