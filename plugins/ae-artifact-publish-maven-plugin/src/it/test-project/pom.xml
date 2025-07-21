@@ -4,7 +4,7 @@
 
     <groupId>org.metaeffekt.core</groupId>
     <artifactId>test-project</artifactId>
-    <name>test-project</name>
+    <name>${project.artifactId}</name>
     <version>@project.version@</version>
 
     <properties>

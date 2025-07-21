@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>ae-container-extractor-container-tests</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <properties>

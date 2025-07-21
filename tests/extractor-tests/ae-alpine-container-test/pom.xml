@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>ae-alpine-container-test</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>jar</packaging>
 
     <properties>
