@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.inventory.processor.writer.InventoryWriterTest;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 
 public class WebModuleComponentPatternContributorTest {
@@ -61,7 +59,7 @@ public class WebModuleComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(1535);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1128);
         inventory.getArtifacts().forEach(artifact -> {
             if (artifact.getId().contains("rimraf")){
                 assertThat(artifact.getVersion()).isIn("3.0.2", "5.0.7");

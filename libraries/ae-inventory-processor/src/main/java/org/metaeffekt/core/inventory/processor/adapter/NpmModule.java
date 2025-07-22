@@ -67,4 +67,10 @@ public class NpmModule extends Module {
         this.path = path;
     }
 
+    public String deriveQualifier() {
+        if (version != null) {
+            return name + "-" + version;
+        }
+        return name;
+    }
 }
