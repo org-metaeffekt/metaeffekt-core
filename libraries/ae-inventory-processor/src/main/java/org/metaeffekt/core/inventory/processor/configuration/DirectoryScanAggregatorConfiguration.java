@@ -462,10 +462,11 @@ public class DirectoryScanAggregatorConfiguration {
                 }
 
                 ArchiveUtils.zipAnt(tmpContentDir, zipFile);
+
                 if (!zipFile.exists()) {
-                    // protocol as error and continue
-                    throw new IllegalStateException("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "]");
+                    LOG.warn("Failed to create zip file for artifact: [" + mapper.getArtifact().getId() + "].");
                 }
+
             }
         } catch (IOException e) {
             LOG.error("Error processing artifact: [{}] with following error: [{}]", mapper.getArtifact().getId(), e.getMessage());

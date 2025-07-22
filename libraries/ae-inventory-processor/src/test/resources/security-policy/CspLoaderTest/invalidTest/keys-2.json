@@ -1,0 +1,9 @@
+[
+  {
+    "id": "config d",
+    "configuration2": {
+      "insignificantThreshold": 7.8,
+      "includeAdvisoryTypes": ["alert"]
+    }
+  }
+]

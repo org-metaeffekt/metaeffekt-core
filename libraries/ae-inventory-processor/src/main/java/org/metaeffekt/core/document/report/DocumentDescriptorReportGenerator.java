@@ -166,7 +166,8 @@ public class DocumentDescriptorReportGenerator {
                         if (generateOverviewTablesForAdvisories != null) {
                             try {
                                 // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
-                                report.addGenerateOverviewTablesForAdvisoriesByMap(convertToJSONArray(generateOverviewTablesForAdvisories));
+                                //  YWI: check whether the implementation I provided works for you, the generateOverviewTablesForAdvisories are now a parameter in the security policy
+                                report.getSecurityPolicy().getGenerateOverviewTablesForAdvisories().putAll(convertToJSONArray(generateOverviewTablesForAdvisories));
                             } catch (Exception e) {
                                 throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
                             }

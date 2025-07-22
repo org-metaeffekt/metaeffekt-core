@@ -56,7 +56,6 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-
     @Test
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
@@ -75,4 +74,5 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(startsWith(ID, "http")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(ID, "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
     }
+
 }

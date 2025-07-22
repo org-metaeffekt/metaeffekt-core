@@ -93,6 +93,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_INITIAL}
      */
     private String initialCvssSelector = CVSS_SELECTOR_INITIAL.toJson().toString();
+
     /**
      * contextCvssSelector &rarr; cachedContextCvssSelector<br>
      * <code>String &rarr; JSONObject &rarr; CvssSelector</code><p>
@@ -100,10 +101,12 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_CONTEXT}
      */
     private String contextCvssSelector = CVSS_SELECTOR_CONTEXT.toJson().toString();
+
     /**
      * See {@link CentralSecurityPolicyConfiguration#initialCvssSelector}.
      */
     private CvssSelector cachedInitialCvssSelector;
+
     /**
      * See {@link CentralSecurityPolicyConfiguration#contextCvssSelector}.
      */
@@ -221,6 +224,31 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      */
     private final JSONArray includeAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all"));
+    /**
+     * generateOverviewTablesForAdvisories
+     * <p>
+     * Used by the <code>AbstractInventoryReportCreationMojo</code> in all the vulnerability PDF report generations.
+     * <p>
+     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
+     * The key "name" is mandatory and can optionally be combined with an "implementation" value. If the implementation
+     * is not specified, the name will be used as the implementation. Each list entry represents a single advisory type.
+     * <p>
+     * For every provider, an additional overview table will be generated
+     * only evaluating the vulnerabilities containing the respecting provider.
+     * If left empty, no additional table will be created.<br>
+     * See {@link org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore}
+     * or all available providers.
+     * <p>
+     * Example:
+     * <pre>
+     *     [{"name":"CERT_FR"},
+     *      {"name":"CERT_SEI"},
+     *      {"name":"RHSA","implementation":"CSAF"}]
+     * </pre>
+     * <p>
+     * Default: <code>[]</code>
+     */
+    private final JSONArray generateOverviewTablesForAdvisories = new JSONArray();
     /**
      * includeAdvisoryTypes<br>
      * <code>List&lt;String&gt;</code><p>
@@ -474,6 +502,26 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return includeAdvisoryProviders;
     }
 
+    public CentralSecurityPolicyConfiguration setGenerateOverviewTablesForAdvisories(JSONArray generateOverviewTablesForAdvisories) {
+        this.generateOverviewTablesForAdvisories.clear();
+        this.generateOverviewTablesForAdvisories.putAll(generateOverviewTablesForAdvisories);
+        return this;
+    }
+
+    public CentralSecurityPolicyConfiguration setGenerateOverviewTablesForAdvisories(Map<String, String> generateOverviewTablesForAdvisories) {
+        this.generateOverviewTablesForAdvisories.clear();
+        generateOverviewTablesForAdvisories.forEach((name, implementation) -> this.generateOverviewTablesForAdvisories.put(new JSONObject().put("name", name).put("implementation", StringUtils.isNotEmpty(implementation) ? implementation : name)));
+        return this;
+    }
+
+    public JSONArray getGenerateOverviewTablesForAdvisories() {
+        return generateOverviewTablesForAdvisories;
+    }
+
+    public List<AeaaAdvisoryTypeIdentifier<?>> getGenerateOverviewTablesForAdvisoriesInst() {
+        return AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(generateOverviewTablesForAdvisories);
+    }
+
     public CentralSecurityPolicyConfiguration setIncludeAdvisoryTypes(List<String> includeAdvisoryTypes) {
         this.includeAdvisoryTypes.clear();
         this.includeAdvisoryTypes.addAll(includeAdvisoryTypes);
@@ -563,6 +611,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
         configuration.put("includeVulnerabilitiesWithAdvisoryReviewStatus", includeVulnerabilitiesWithAdvisoryReviewStatus);
         configuration.put("includeAdvisoryProviders", includeAdvisoryProviders);
+        configuration.put("generateOverviewTablesForAdvisories", generateOverviewTablesForAdvisories);
         configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
         configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
         configuration.put("cvssVersionSelectionPolicy", cvssVersionSelectionPolicy);
@@ -588,6 +637,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadJsonArrayProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", this::setIncludeVulnerabilitiesWithAdvisoryProviders);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryReviewStatus", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryReviewStatus);
         super.loadJsonArrayProperty(properties, "includeAdvisoryProviders", this::setIncludeAdvisoryProviders);
+        super.loadJsonArrayProperty(properties, "generateOverviewTablesForAdvisories", this::setGenerateOverviewTablesForAdvisories);
         super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
         super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
         super.loadListProperty(properties, "cvssVersionSelectionPolicy", value -> CvssScoreVersionSelectionPolicy.valueOf(String.valueOf(value)), this::setCvssVersionSelectionPolicy);
@@ -672,6 +722,13 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             final JSONObject provider = includeAdvisoryProviders.optJSONObject(i, null);
             if (provider == null) {
                 misconfigurations.add(new ProcessMisconfiguration("includeAdvisoryProviders", "Advisory provider must not be null or is not a JSON object: " + includeAdvisoryProviders));
+            }
+        }
+
+        for (int i = 0; i < generateOverviewTablesForAdvisories.length(); i++) {
+            final JSONObject provider = generateOverviewTablesForAdvisories.optJSONObject(i, null);
+            if (provider == null) {
+                misconfigurations.add(new ProcessMisconfiguration("generateOverviewTablesForAdvisories", "Advisory provider must not be null or is not a JSON object: " + generateOverviewTablesForAdvisories));
             }
         }
 
@@ -764,7 +821,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return fromJson(effectiveApplyJson, jsonFile + " - " + effectiveApplyJson);
     }
 
-    private static CentralSecurityPolicyConfiguration fromJson(JSONObject jsonObject, String errorMessage) throws IOException {
+    public static CentralSecurityPolicyConfiguration fromJson(JSONObject jsonObject, String errorMessage) throws IOException {
         final CentralSecurityPolicyConfiguration configuration = new CentralSecurityPolicyConfiguration();
         final Map<String, Object> policyConfigurationMap = jsonObject.toMap();
         configuration.setProperties(new LinkedHashMap<>(policyConfigurationMap));
@@ -816,9 +873,11 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.NVD),
+
                     // MSRC
                     new SourceSelectorEntry(KnownCvssEntities.MSRC, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.MSRC),
+
                     // GHSA
                     new SourceSelectorEntry(KnownCvssEntities.GHSA, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
                     new SourceSelectorEntry(KnownCvssEntities.NVD, CvssIssuingEntityRole.CNA, KnownCvssEntities.GHSA),
@@ -832,8 +891,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
                     // other NVD
                     new SourceSelectorEntry(KnownCvssEntities.NVD, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // CERT-SEI
                     new SourceSelectorEntry(KnownCvssEntities.CERT_SEI, SourceSelectorEntry.ANY_ROLE, SourceSelectorEntry.ANY_ENTITY),
+
                     // any other, but not assessment
                     new SourceSelectorEntry(
                             Arrays.asList(new SourceSelectorEntryEntry<>(KnownCvssEntities.ASSESSMENT, true)),

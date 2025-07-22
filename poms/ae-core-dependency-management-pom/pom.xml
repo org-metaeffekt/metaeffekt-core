@@ -12,6 +12,7 @@
     </parent>
 
     <artifactId>ae-core-dependency-management-pom</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>pom</packaging>
 
     <modules>
@@ -30,6 +31,7 @@
         <commons.io.version>2.14.0</commons.io.version>
         <commons.codec.version>1.15</commons.codec.version>
         <commons.collections4.version>4.4</commons.collections4.version>
+        <commons.collections3.version>3.2.2</commons.collections3.version>
         <commons.exec.version>1.3</commons.exec.version>
         <commons.compress.version>1.26.1</commons.compress.version>
         <docker.java.client.version>3.3.5</docker.java.client.version>
@@ -386,6 +388,13 @@
                 <artifactId>commons-collections4</artifactId>
                 <version>${commons.collections4.version}</version>
                 <scope>compile</scope>
+            </dependency>
+
+            <dependency>
+                <!-- patch commons collections to the latest compatible version; required by velocity -->
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons.collections3.version}</version>
             </dependency>
 
             <dependency>

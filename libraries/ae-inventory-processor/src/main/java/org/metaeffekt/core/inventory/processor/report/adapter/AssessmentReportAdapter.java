@@ -143,6 +143,8 @@ public class AssessmentReportAdapter {
 
         AeaaVulnerabilityContextInventory vAssetInventory = AeaaVulnerabilityContextInventory.fromInventory(inventory, assetMetaData);
         vAssetInventory.calculateEffectiveCvssVectorsForVulnerabilities(securityPolicy);
+        // FIXME-YWI: taken over from 0.135.x; please review
+        // vAssetInventory.applyEffectiveVulnerabilityStatus(securityPolicy);
 
         // compute both effective and initial counts
         final VulnerabilityCounts effectiveCounts = computeCounts(true, vAssetInventory);

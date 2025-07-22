@@ -2,8 +2,11 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
+
     <artifactId>ae-jira-maven-plugin</artifactId>
+    <name>${project.artifactId}</name>
     <packaging>maven-plugin</packaging>
 
     <parent>
@@ -53,12 +56,6 @@
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity</artifactId>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <!-- patch commons collections to the latest compatible version; required by velocity -->
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>3.2.2</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>

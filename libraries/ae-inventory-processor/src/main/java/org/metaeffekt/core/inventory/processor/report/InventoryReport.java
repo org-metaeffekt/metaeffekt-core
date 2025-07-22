@@ -27,7 +27,6 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
-import org.json.JSONArray;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -38,9 +37,6 @@ import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityRepor
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.report.model.AssetData;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.util.FileUtils;
 import org.metaeffekt.core.util.RegExUtils;
@@ -143,12 +139,6 @@ public class InventoryReport {
      * Project name initialized with default value.
      */
     private String projectName = "local project";
-
-    /**
-     * For which advisory providers to generate additional tables in the overview section containing statistic data on
-     * which vulnerabilities have already been reviewed.
-     */
-    private final List<AeaaAdvisoryTypeIdentifier<?>> generateOverviewTablesForAdvisories = new ArrayList<>();
 
     private CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
@@ -717,6 +707,8 @@ public class InventoryReport {
         properties.put(Velocity.INPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.OUTPUT_ENCODING, FileUtils.ENCODING_UTF_8);
         properties.put(Velocity.SET_NULL_ALLOWED, true);
+        //https://velocity.apache.org/engine/1.7/developer-guide.html#velocimacro
+        properties.put("velocimacro.arguments.strict", true);
 
         final VelocityEngine velocityEngine = new VelocityEngine(properties);
         final Template template = velocityEngine.getTemplate(templateResourcePath);
@@ -1006,9 +998,9 @@ public class InventoryReport {
     }
 
     private void logConfiguration() {
-        LOG.info("Report configuration:");
+        LOG.debug("Report configuration:");
 
-        LOG.info("- Source/Target paths:");
+        LOG.debug("- Source/Target paths:");
         logConfigurationLogFile("referenceInventoryDir", referenceInventoryDir);
         logConfigurationLogToString("referenceInventoryIncludes", referenceInventoryIncludes);
         logConfigurationLogToString("referenceComponentPath", referenceComponentPath);
@@ -1021,31 +1013,30 @@ public class InventoryReport {
         logConfigurationLogFile("targetLicenseDir", targetLicenseDir);
         logConfigurationLogToString("relativeLicensePath", relativeLicensePath);
 
-        LOG.info("- Validation fail flags:");
-        LOG.info(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(),  configParams.isFailOnBanned(),  configParams.isFailOnDowngrade(),  configParams.isFailOnUnknown(),  configParams.isFailOnUnknownVersion(),  configParams.isFailOnDevelopment(),  configParams.isFailOnInternal());
-        LOG.info("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
+        LOG.debug("- Validation fail flags:");
+        LOG.debug(" - [failOnError: {}] [failOnBanned: {}] [failOnDowngrade: {}] [failOnUnknown: {}] [failOnUnknownVersion: {}] [failOnDevelopment: {}] [failOnInternal: {}]", configParams.isFailOnError(),  configParams.isFailOnBanned(),  configParams.isFailOnDowngrade(),  configParams.isFailOnUnknown(),  configParams.isFailOnUnknownVersion(),  configParams.isFailOnDevelopment(),  configParams.isFailOnInternal());
+        LOG.debug("   [failOnUpgrade: {}] [failOnMissingLicense: {}] [failOnMissingLicenseFile: {}] [failOnMissingNotice: {}] [failOnMissingComponentFiles: {}]",  configParams.isFailOnUpgrade(),  configParams.isFailOnMissingLicense(),  configParams.isFailOnMissingLicenseFile(),  configParams.isFailOnMissingNotice(),  configParams.isFailOnMissingComponentFiles());
 
-        LOG.info("- Data display settings:");
-        LOG.info(" - generateOverviewTablesForAdvisories: {}", generateOverviewTablesForAdvisories.stream().map(AeaaContentIdentifierStore.AeaaContentIdentifier::toExtendedString).collect(Collectors.toList()));
+        LOG.debug("- Data display settings:");
         logConfigurationLogToString("artifactFilter", artifactFilter);
         logConfigurationLogToString("filterVulnerabilitiesNotCoveredByArtifacts", configParams.isFilterVulnerabilitiesNotCoveredByArtifacts());
         logConfigurationLogToString("filterAdvisorySummary", configParams.isFilterAdvisorySummary());
 
-        LOG.info("- Template settings:");
-        LOG.info(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]",  configParams.isInventoryBomReportEnabled(),  configParams.isInventoryDiffReportEnabled(),  configParams.isInventoryPomEnabled(),  configParams.isInventoryVulnerabilityReportEnabled());
-        LOG.info("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]",  configParams.isInventoryVulnerabilityReportSummaryEnabled(),  configParams.isInventoryVulnerabilityStatisticsReportEnabled());
+        LOG.debug("- Template settings:");
+        LOG.debug(" - [inventoryBomReportEnabled: {}] [inventoryDiffReportEnabled: {}] [inventoryPomEnabled: {}] [inventoryVulnerabilityReportEnabled: {}]",  configParams.isInventoryBomReportEnabled(),  configParams.isInventoryDiffReportEnabled(),  configParams.isInventoryPomEnabled(),  configParams.isInventoryVulnerabilityReportEnabled());
+        LOG.debug("   [inventoryVulnerabilityReportSummaryEnabled: {}] [inventoryVulnerabilityStatisticsReportEnabled: {}]",  configParams.isInventoryVulnerabilityReportSummaryEnabled(),  configParams.isInventoryVulnerabilityStatisticsReportEnabled());
         logConfigurationLogToString("templateLanguageSelector", configParams.getReportLanguage());
 
-        LOG.info("- Addon data:");
+        LOG.debug("- Addon data:");
         if (addOnArtifacts == null) {
-            LOG.info(" - addOnArtifacts: <null>");
+            LOG.debug(" - addOnArtifacts: <null>");
         } else if (addOnArtifacts.isEmpty()) {
-            LOG.info(" - addOnArtifacts: <empty>");
+            LOG.debug(" - addOnArtifacts: <empty>");
         } else {
-            LOG.info(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
+            LOG.debug(" - addOnArtifacts: {}", addOnArtifacts.stream().map(Artifact::getId).collect(Collectors.toList()));
         }
 
-        securityPolicy.logConfiguration();
+        securityPolicy.debugLogConfiguration();
     }
 
     private void logConfigurationLogFile(String property, File file) {
@@ -1193,33 +1184,6 @@ public class InventoryReport {
 
     public File getGlobalInventoryDir() {
         return referenceInventoryDir;
-    }
-
-    public void addGenerateOverviewTablesForAdvisories(AeaaAdvisoryTypeIdentifier<?>... providers) {
-        if (providers == null || providers.length == 0) {
-            return;
-        }
-        this.addGenerateOverviewTablesForAdvisories(Arrays.asList(providers));
-    }
-
-    public void addGenerateOverviewTablesForAdvisories(Collection<AeaaAdvisoryTypeIdentifier<?>> providers) {
-        this.generateOverviewTablesForAdvisories.addAll(providers);
-    }
-
-    public void addGenerateOverviewTablesForAdvisoriesByMap(Map<String, String> providers) {
-        if (providers == null || providers.isEmpty()) {
-            return;
-        }
-        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromMapNamesAndImplementations(providers);
-        this.generateOverviewTablesForAdvisories.addAll(parsed);
-    }
-
-    public void addGenerateOverviewTablesForAdvisoriesByMap(JSONArray providers) {
-        if (providers == null || providers.isEmpty()) {
-            return;
-        }
-        final List<AeaaAdvisoryTypeIdentifier<?>> parsed = AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(providers);
-        this.generateOverviewTablesForAdvisories.addAll(parsed);
     }
 
     public AssetData getAssetData(Inventory inventory) {

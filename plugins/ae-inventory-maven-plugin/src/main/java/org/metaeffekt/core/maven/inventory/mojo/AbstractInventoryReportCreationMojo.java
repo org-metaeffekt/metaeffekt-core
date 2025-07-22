@@ -17,19 +17,18 @@ package org.metaeffekt.core.maven.inventory.mojo;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.json.JSONArray;
 import org.metaeffekt.core.common.kernel.util.ParameterConversionUtil;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Abstract mojo. Base class for reporting mojos.
@@ -229,25 +228,11 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
     // vulnerability report parameters
 
     /**
-     * @parameter
-     */
-    private CentralSecurityPolicyConfiguration securityPolicy;
-
-    /**
-     * If set, will overwrite the {@link #securityPolicy} with the contents of this file.<br>
-     * If the {@link #securityPolicyOverwriteJson} is set, the properties of both will be merged.
+     * The CspLoader instance that will provide the {@link CentralSecurityPolicyConfiguration} instance to use for report generation.
      *
      * @parameter
      */
-    private File securityPolicyFile;
-
-    /**
-     * If set, will overwrite the {@link #securityPolicy} with the contents of this JSON string.<br>
-     * If the {@link #securityPolicyFile} is set, the properties of both will be merged.
-     *
-     * @parameter
-     */
-    private String securityPolicyOverwriteJson;
+    private CspLoader securityPolicy = new CspLoader();
 
     /**
      * @parameter default-value="false"
@@ -258,28 +243,6 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
      * @parameter default-value="false"
      */
     private boolean filterAdvisorySummary;
-
-    /**
-     * Represents a {@link List}&lt;{@link Map}&lt;{@link String}, {@link String}&gt;&gt;.<br>
-     * The key "name" is mandatory and can optionally be combined with an "implementation" value. If the implementation
-     * is not specified, the name will be used as the implementation. Each list entry represents a single advisory type.
-     * <p>
-     * For every provider, an additional overview table will be generated
-     * only evaluating the vulnerabilities containing the respecting provider.
-     * If left empty, no additional table will be created.<br>
-     * See {@link org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore}
-     * or all available providers.
-     * <p>
-     * Example:
-     * <pre>
-     *     [{"name":"CERT_FR"},
-     *      {"name":"CERT_SEI"},
-     *      {"name":"RHSA","implementation":"CSAF"}]
-     * </pre>
-     *
-     * @parameter
-     */
-    private final String generateOverviewTablesForAdvisories = "[]";
 
     /**
      * @parameter default-value="false"
@@ -365,33 +328,17 @@ public abstract class AbstractInventoryReportCreationMojo extends AbstractProjec
         report.setTargetComponentDir(targetComponentDir);
 
         // vulnerability settings
-        try {
-            if (securityPolicyOverwriteJson != null) {
-                getLog().info("Reading security policy from securityPolicyOverwriteJson: " + securityPolicyOverwriteJson);
-            }
-            if (securityPolicyFile != null) {
-                getLog().info("Reading security policy from securityPolicyFile: file://" + securityPolicyFile.getCanonicalPath());
-            }
-            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to process security policy configuration: " + e.getMessage(), e);
-        }
+        final CentralSecurityPolicyConfiguration activeSecurityPolicy = this.securityPolicy.loadConfiguration();
 
         // log the security policy only when it fits the context -->
         if (enableAssessmentReport || enableVulnerabilityReport || enableVulnerabilityReportSummary || enableVulnerabilityStatisticsReport) {
-            getLog().info("");
-            getLog().info("-------------------< Security Policy Configuration >--------------------");
-            this.securityPolicy.logConfiguration();
-            getLog().info("");
+            getLog().debug("");
+            getLog().debug("-------------------< Security Policy Configuration >--------------------");
+            activeSecurityPolicy.debugLogConfiguration();
+            getLog().debug("");
         }
 
-        report.setSecurityPolicy(securityPolicy);
-
-        try {
-            report.addGenerateOverviewTablesForAdvisoriesByMap(new JSONArray(generateOverviewTablesForAdvisories));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
-        }
+        report.setSecurityPolicy(activeSecurityPolicy);
 
         // diff settings
         report.setDiffInventoryFile(diffInventoryFile);
