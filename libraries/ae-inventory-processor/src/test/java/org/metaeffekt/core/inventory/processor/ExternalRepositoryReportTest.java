@@ -19,6 +19,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.report.InventoryReport;
+import org.metaeffekt.core.inventory.processor.report.ReportContext;
+import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +81,49 @@ public class ExternalRepositoryReportTest {
 
         ValidateInventoryProcessor validateInventoryProcessor = new ValidateInventoryProcessor(properties);
         validateInventoryProcessor.process(inventory);
+    }
+
+    @Ignore
+    @Test
+    public void testFullReport() throws IOException {
+        final File inventoryDir = new File("src/test/resources/external-report-test");
+        final File reportDir = new File("target/external-full-report");
+
+        InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
+                .inventoryBomReportEnabled(true)
+                .inventoryDiffReportEnabled(true)
+                .inventoryPomEnabled(true)
+                .inventoryVulnerabilityReportEnabled(true)
+                .inventoryVulnerabilityReportSummaryEnabled(true)
+                .inventoryVulnerabilityStatisticsReportEnabled(true)
+                .assetBomReportEnabled(true)
+                .assessmentReportEnabled(true)
+                .build());
+
+        report.setReportContext(new ReportContext("test", "Test", "Test Context"));
+
+        report.setReferenceLicensePath("licenses");
+        report.setReferenceComponentPath("components");
+        report.setInventory(InventoryUtils.readInventory(inventoryDir, "*.xlsx"));
+        report.setTargetReportDir(new File(reportDir, "report"));
+
+        reportDir.mkdirs();
+
+        final File targetLicensesDir = new File(reportDir, "licenses");
+        final File targetComponentDir = new File(reportDir, "components");
+        report.setTargetLicenseDir(targetLicensesDir);
+        report.setTargetComponentDir(targetComponentDir);
+
+        report.setTargetInventoryDir(reportDir);
+        report.setTargetInventoryPath("result.xls");
+
+        report.createReport();
+
+        // copy bookmap
+        FileUtils.copyFileToDirectory(new File("src/test/resources/external-report-test/bm_test.ditamap"), reportDir);
+
+        // generate PDF using the following command from terminal:
+        // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/external-full-report'
     }
 
 }
