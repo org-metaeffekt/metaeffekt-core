@@ -104,7 +104,7 @@ public class ExternalRepositoryReportTest {
 
         report.setReferenceLicensePath("licenses");
         report.setReferenceComponentPath("components");
-        report.setInventory(InventoryUtils.readInventory(inventoryDir, "*.xlsx"));
+        report.setInventory(InventoryUtils.readInventory(inventoryDir, "*.xls"));
         report.setTargetReportDir(new File(reportDir, "report"));
 
         reportDir.mkdirs();
