@@ -125,5 +125,4 @@ public class ExternalRepositoryReportTest {
         // generate PDF using the following command from terminal:
         // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/external-full-report'
     }
-
 }

@@ -26,12 +26,9 @@ import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecur
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerability;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaVulnerabilityContextInventory;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaVulnerabilityAssessment;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaVulnerabilityAssessmentOperations;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.assessment.AeaaVulnerabilityAssessmentEvent;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatus;
-import org.metaeffekt.core.inventory.processor.report.model.aeaa.vulnerabilitystatus.AeaaVulnerabilityStatusHistoryEntry;
 import org.metaeffekt.core.security.cvss.CvssSeverityRanges;
 import org.metaeffekt.core.security.cvss.CvssSource;
 import org.metaeffekt.core.security.cvss.CvssVector;
@@ -291,7 +288,10 @@ public class StatisticsOverviewTableTest {
         }
 
         if (status != null) {
-            vulnerability.getOrCreateNewVulnerabilityStatus().addHistoryEntry(new AeaaVulnerabilityStatusHistoryEntry().setStatus(status));
+            final AeaaVulnerabilityAssessmentEvent event = new AeaaVulnerabilityAssessmentEvent();
+            event.setStatus(status);
+            event.setDate(new Date().getTime());
+            vulnerability.getAssessmentEvents().add(event);
         }
 
         if (advisoryProviders != null && advisoryProviders.length > 0) {
@@ -302,10 +302,6 @@ public class StatisticsOverviewTableTest {
                 vulnerability.addSecurityAdvisory(securityAdvisory);
             }
         }
-
-        final AeaaVulnerabilityStatus legacyAssessment = vulnerability.getOrCreateNewVulnerabilityStatus();
-        final AeaaVulnerabilityAssessment assessment = AeaaVulnerabilityAssessmentOperations.convertLegacyStatusToAssessment(legacyAssessment);
-        vulnerability.getAssessmentEvents().addAll(assessment.getEvents());
 
         return vulnerability;
     }
