@@ -82,22 +82,27 @@ public class FileSystemScanContext {
      */
     public void contribute(final Artifact artifact) {
 
+        boolean abstractArtifact = false;
+
         // check scan invariants
         String errorMsg = null;
         if (artifact == null) {
             errorMsg = "Artifact <null> contributed to scan inventory.";
         } else {
             if (StringUtils.isBlank(artifact.getId())) {
-                errorMsg = "Artifact with empty id contributed to scan inventory.";
+                abstractArtifact = true;
             }
+
         }
 
         if (errorMsg != null) {
             throw new IllegalStateException(errorMsg);
         }
 
-        synchronized (inventory) {
-            inventory.getArtifacts().add(artifact);
+        if (!abstractArtifact) {
+            synchronized (inventory) {
+                inventory.getArtifacts().add(artifact);
+            }
         }
     }
 

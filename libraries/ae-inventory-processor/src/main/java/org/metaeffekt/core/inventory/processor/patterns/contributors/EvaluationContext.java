@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class EvaluationContext {
 
-    private Set<Object> set = new HashSet<>();
+    private final Set<Object> set = new HashSet<>();
 
     public void registerProcessed(Object semaphore) {
         set.add(semaphore);

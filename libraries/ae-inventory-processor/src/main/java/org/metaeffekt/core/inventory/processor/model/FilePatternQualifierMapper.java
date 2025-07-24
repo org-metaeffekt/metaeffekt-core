@@ -85,6 +85,11 @@ public class FilePatternQualifierMapper {
     // FIXME: review and comment required.
     private Map<String, List<File>> subSetMap;
 
+    /**
+     * Used to prohibit mutual deletion.
+     */
+    private boolean locked;
+
     public FilePatternQualifierMapper() {
         this.files = new ArrayList<>();
         this.componentPatternDataList = new ArrayList<>();

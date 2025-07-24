@@ -124,6 +124,9 @@ public abstract class AbstractModelBase implements Serializable {
         if (StringUtils.isBlank(key)) {
             throw new IllegalStateException("Attribute key must be defined.");
         }
+
+        if (key.equals("AID-null")) throw new IllegalStateException("Attribute key must not be null.");
+
         if (StringUtils.isBlank(value)) {
             attributeMap.remove(key);
         } else {

@@ -94,8 +94,8 @@
                                     </patterns>
                                     <componentMirror>
                                         <mappings>
-                                            <map>^Bouncy Castle-.*:org/bouncycastle/$artifactId/$version/$artifactId-$version.$type</map>
-                                            <map>^bcpkix-jdk18on-([0-9]*\.[0-9]*).jar:org/bouncycastle/bcpkix-jdk18on/$1/bcpkix-jdk18on-$1.jar</map>
+                                            <map>^Bouncy Castle-.*:org/bouncycastle/$artifactId/$version/$artifactId-$version-sources.$type</map>
+                                            <map>^bcpkix-jdk18on-([0-9]*\.[0-9]*).jar:org/bouncycastle/bcpkix-jdk18on/$1/bcpkix-jdk18on-$1-sources.jar</map>
                                         </mappings>
                                         <mirrorUrls>
                                             <url>https://repo1.maven.org/maven2/</url>
