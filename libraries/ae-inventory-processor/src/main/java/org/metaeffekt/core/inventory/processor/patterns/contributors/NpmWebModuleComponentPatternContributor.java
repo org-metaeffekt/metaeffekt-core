@@ -19,19 +19,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.InventoryMergeUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
-import org.metaeffekt.core.inventory.processor.adapter.YarnLockAdapter;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableList;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
@@ -89,28 +89,68 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
     protected Inventory createSubcomponentInventory(String relativeAnchorPath, WebModule webModule) throws IOException {
         final List<Inventory> inventoriesFromLockFiles = new ArrayList<>();
         for (File lockFile : webModule.getLockFiles()) {
-            if (lockFile.toPath().endsWith("package-lock.json")) {
-                Inventory lockInventory = new NpmPackageLockAdapter().createInventoryFromPackageLock(lockFile, relativeAnchorPath, webModule);
-                if (lockInventory != null) {
-                    inventoriesFromLockFiles.add(lockInventory);
-                }
-            } else if (lockFile.toPath().endsWith("yarn.lock")) {
-                Inventory lockInventory = new YarnLockAdapter().extractInventory(lockFile, relativeAnchorPath, webModule);
-                if (lockInventory != null) {
-                    inventoriesFromLockFiles.add(lockInventory);
-                }
-            } else {
-                log.warn("Lock file not processed: " + lockFile.getAbsolutePath());
+            Inventory lockInventory = new NpmPackageLockAdapter().createInventoryFromPackageLock(lockFile, relativeAnchorPath, webModule);
+            if (lockInventory != null) {
+                inventoriesFromLockFiles.add(lockInventory);
             }
         }
 
         if (!inventoriesFromLockFiles.isEmpty()) {
             final Inventory inventory = new Inventory();
+
+            // condense inventory dependency details
+            for (Inventory inventoryFromLockFile : inventoriesFromLockFiles) {
+                condenseInventory(inventoryFromLockFile);
+            }
+
             new InventoryMergeUtils().mergeInventories(inventoriesFromLockFiles, inventory);
+
             return inventory;
         }
 
         return null;
+    }
+
+    private void condenseInventory(Inventory inventoryFromLockFile) {
+        // select primary assets
+        Set<String> primaryAssetIds = inventoryFromLockFile.getAssetMetaData().stream()
+                .filter(AssetMetaData::isPrimary)
+                .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
+                .collect(Collectors.toSet());
+
+        // eliminate all but primary asset columns in artifacts
+        Set<String> givenAssetIds = InventoryUtils.collectAssetIdsFromArtifacts(inventoryFromLockFile);
+        givenAssetIds.removeAll(primaryAssetIds);
+
+        givenAssetIds.forEach(aid -> InventoryUtils.removeArtifactAttribute(aid, inventoryFromLockFile));
+
+        // degrade primary assets as normal assets
+        inventoryFromLockFile.getAssetMetaData().forEach(amd -> amd.set(Constants.KEY_PRIMARY, null));
+
+        // filter artifacts that are neither (r) nor r on a primary asset
+        //filterInventory(inventoryFromLockFile, primaryAssetIds);
+    }
+
+    private static void filterInventory(Inventory inventoryFromLockFile, Set<String> primaryAssetIds) {
+        Set<Artifact> removableArtifacts = new HashSet<>();
+        for (Artifact artifact : inventoryFromLockFile.getArtifacts()) {
+            boolean remove = true;
+            for (String aid : primaryAssetIds) {
+                if ("(r)".equals(artifact.get(aid))) {
+                    remove = false;
+                    break;
+                }
+                if ("r".equals(artifact.get(aid))) {
+                    remove = false;
+                    break;
+                }
+            }
+            if (remove) {
+                removableArtifacts.add(artifact);
+            }
+        }
+
+        inventoryFromLockFile.getArtifacts().removeAll(removableArtifacts);
     }
 
     @Override
@@ -146,9 +186,8 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
         } else {
             componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
                     anchorParentDirName + "/.yarn-integrity," +
-                            anchorParentDirName + "/**/node_modules/**/*," +
-                            // FIXME-KKL: revise
-                            anchorParentDirName + "/**/bower_components/**/*");
+                    anchorParentDirName + "/**/node_modules/**/*," +
+                    anchorParentDirName + "/**/bower_components/**/*");
         }
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
@@ -189,30 +228,6 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
         try {
             final File anchorParentDir = anchorFile.getParentFile();
 
-            final String json = FileUtils.readFileToString(anchorFile, "UTF-8");
-            final JSONObject obj = new JSONObject(json);
-            webModule.setName(getString(obj, "name", webModule.getName()));
-            webModule.setLicense(getString(obj, "license", webModule.getLicense()));
-            webModule.setVersion(getVersion(obj));
-
-            // manage anchor
-            webModule.setAnchor(anchorFile);
-            webModule.setAnchorChecksum(FileUtils.computeChecksum(anchorFile));
-
-            if (anchorFile.getName().endsWith("package.json")) {
-                // see https://docs.npmjs.com/cli/v11/configuring-npm/package-json
-                mapDependencies(webModule, obj, "dependencies", d -> d.setRuntimeDependency(true));
-                mapDependencies(webModule, obj, "devDependencies", d -> d.setDevDependency(true));
-                mapDependencies(webModule, obj, "peerDependencies", d -> d.setPeerDependency(true));
-                mapDependencies(webModule, obj, "optionalDependencies", d -> d.setOptionalDependency(true));
-
-                // TODO: peerDependencyMeta are not evaluated; can be nested
-                // TODO: overwrites yet we can leave this to the lock
-
-                webModule.packageJsonFile = anchorFile;
-            }
-            // NOTE: nothing to do in the else branch; we leave the direct dependencies empty/unspecified for lock files
-
             // collect lock files for further analysis
             final File packageLockFile = new File(anchorParentDir, "package-lock.json");
             if (packageLockFile.exists()) {
@@ -223,6 +238,32 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
                 webModule.getLockFiles().add(yarnLockFile);
             }
 
+            // manage anchor
+            webModule.setAnchor(anchorFile);
+            webModule.setAnchorChecksum(FileUtils.computeChecksum(anchorFile));
+
+            if (!anchorFile.getName().equals("yarn.lock")) {
+                final String json = FileUtils.readFileToString(anchorFile, "UTF-8");
+                final JSONObject obj = new JSONObject(json);
+
+                webModule.setName(getString(obj, "name", webModule.getName()));
+                webModule.setLicense(getString(obj, "license", webModule.getLicense()));
+                webModule.setVersion(getVersion(obj));
+
+                if (anchorFile.getName().endsWith("package.json")) {
+                    // see https://docs.npmjs.com/cli/v11/configuring-npm/package-json
+                    mapDependencies(webModule, obj, "dependencies", d -> d.setRuntimeDependency(true));
+                    mapDependencies(webModule, obj, "devDependencies", d -> d.setDevDependency(true));
+                    mapDependencies(webModule, obj, "peerDependencies", d -> d.setPeerDependency(true));
+                    mapDependencies(webModule, obj, "optionalDependencies", d -> d.setOptionalDependency(true));
+
+                    // TODO: peerDependencyMeta are not evaluated; can be nested
+                    // TODO: overwrites not processed yet; we can leave this to the lock to resolve
+
+                    webModule.packageJsonFile = anchorFile;
+                }
+                // NOTE: nothing to do in the else branch; we leave the direct dependencies empty/unspecified for lock files
+            }
         } catch (Exception e) {
             log.warn("Cannot parse web module information: [{}]", anchorFile);
         }
@@ -236,5 +277,12 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
     @Override
     protected List<String> getDefinitionFiles() {
         return DEFINITION_FILES;
+    }
+
+    @Override
+    protected void processDefinitionFile(File definitionFile, WebModule webModule) throws IOException {
+        if (!definitionFile.getName().equals("yarn.lock")) {
+            super.processDefinitionFile(definitionFile, webModule);
+        }
     }
 }

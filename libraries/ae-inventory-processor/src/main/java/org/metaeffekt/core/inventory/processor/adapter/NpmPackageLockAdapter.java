@@ -15,17 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
+import org.metaeffekt.core.inventory.processor.adapter.npm.NpmLockParserFactory;
+import org.metaeffekt.core.inventory.processor.adapter.npm.PackageLockParser;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
-import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,191 +46,102 @@ public class NpmPackageLockAdapter {
      */
     public Inventory createInventoryFromPackageLock(File packageLockJsonFile, String relPath, WebModule webModule) throws IOException {
 
-        // parse dependency tree from lock; may use the webModule name for filtering (project in workspace)
-        final Map<String, NpmModule> pathModuleMap = parseModules(packageLockJsonFile, webModule);
+        final PackageLockParser packageLockParser = NpmLockParserFactory.createPackageLockParser(packageLockJsonFile);
 
-        // merge web module direct dependency information
-        for (WebModuleDependency wmd : webModule.getDirectDependencies()) {
-            NpmModule npmModule = pathModuleMap.get(wmd.getName());
-            if (npmModule == null) {
-                final String queryName = "node_modules/" + wmd.getName();
-                npmModule = pathModuleMap.get(queryName);
-            }
-            if (npmModule != null) {
-                // module dependency attributes in the context
-                npmModule.setRuntimeDependency(wmd.isRuntimeDependency());
-                npmModule.setDevDependency(wmd.isDevDependency());
-                npmModule.setPeerDependency(wmd.isPeerDependency());
-                npmModule.setOptionalDependency(wmd.isOptionalDependency());
-            } else {
-                log.warn("Module [{}] not found.", wmd.getName());
-            }
-        }
+        // parse dependency tree from lock; may use the webModule name for filtering (project in workspace)
+        packageLockParser.parseModules(webModule);
 
         // populate data into inventory
+        return createInventory(webModule, packageLockParser);
+    }
+
+    private Inventory createInventory(WebModule webModule, PackageLockParser packageLockParser) {
         final Inventory inventory = new Inventory();
-        populateInventory(inventory, relPath, webModule, pathModuleMap);
-        return inventory;
-    }
-
-    private Map<String, NpmModule> parseModules(File packageLockJsonFile, WebModule webModule) throws IOException {
-        final String json = FileUtils.readFileToString(packageLockJsonFile, FileUtils.ENCODING_UTF_8);
-        JSONObject allPackages = new JSONObject(json);
-
-        // detect format variant; the one with packages has an additional upper level.
-        JSONObject packages = allPackages.optJSONObject("packages");
-        JSONObject specificPackage = null;
-
-        final Map<String, NpmModule> pathModuleMap = new HashMap<>();
-        final Map<String, NpmModule> qualifierModuleMap = new HashMap<>();
-
-        if (packages == null) {
-            log.info("Single package found in [{}].", packageLockJsonFile.getAbsolutePath());
-        } else {
-            // change level
-            allPackages = packages;
-
-            // in this case we may want to filter / select a package
-            log.info("Multiple packages found in [{}].", packageLockJsonFile.getAbsolutePath());
-
-            if (StringUtils.isNotBlank(webModule.getName())) {
-                specificPackage = packages.optJSONObject(webModule.getName());
-                if (specificPackage == null) {
-                    log.warn("Matching package in [{}] with name [{}] not found.", packageLockJsonFile.getAbsolutePath(), webModule.getName());
-                } else {
-                    final NpmModule npmModule = new NpmModule(webModule.getName(), webModule.getName());
-                    parseModuleContent(npmModule, specificPackage);
-
-                    final String qualifier = npmModule.deriveQualifier();
-                    pathModuleMap.put(webModule.getName(), npmModule);
-                    qualifierModuleMap.put(qualifier, npmModule);
-                }
-            }
-        }
-
-        // build map with all modules covered by the lock file
-        final String prefix = "node_modules/";
-
-        for (String path : allPackages.keySet()) {
-            String name = path;
-
-            int index = name.lastIndexOf(prefix);
-            if (index != -1) {
-                name = name.substring(index + prefix.length());
-            }
-
-            final JSONObject jsonObject = allPackages.getJSONObject(path);
-
-            final NpmModule npmModule = new NpmModule(name, path);
-            parseModuleContent(npmModule, jsonObject);
-
-            if (StringUtils.isNotBlank(npmModule.getName())) {
-                final String qualifier = npmModule.deriveQualifier();
-                final NpmModule qualifiedModule = qualifierModuleMap.get(qualifier);
-                if (qualifiedModule == null) {
-                    pathModuleMap.put(path, npmModule);
-                    qualifierModuleMap.put(qualifier, npmModule);
-                } else {
-                    pathModuleMap.put(path, qualifiedModule);
-                }
-            }
-        }
-        return pathModuleMap;
-    }
-
-    private void parseModuleContent(NpmModule npmModule, JSONObject specificPackage) {
-        npmModule.setUrl(specificPackage.optString("resolved"));
-        npmModule.setHash(specificPackage.optString("integrity"));
-        npmModule.setVersion(specificPackage.optString("version"));
-
-        npmModule.setDevDependency(specificPackage.optBoolean("dev"));
-        npmModule.setPeerDependency(specificPackage.optBoolean("peer"));
-        npmModule.setOptionalDependency(specificPackage.optBoolean("optional"));
-
-        npmModule.setRuntimeDependencies(collectModuleMap(specificPackage, "dependencies"));
-        npmModule.setDevDependencies(collectModuleMap(specificPackage, "devDependencies"));
-        npmModule.setPeerDependencies(collectModuleMap(specificPackage, "peerDependencies"));
-        npmModule.setOptionalDependencies(collectModuleMap(specificPackage, "optionalDependencies"));
-    }
-
-    private Map<String, String> collectModuleMap(JSONObject specificPackage, String dependencies) {
-        Map<String, String> nameVersionMap = new HashMap<>();
-        if (dependencies != null) {
-            JSONObject jsonObject = specificPackage.optJSONObject(dependencies);
-            if (jsonObject != null) {
-                Map<String, Object> map = jsonObject.toMap();
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    nameVersionMap.put(entry.getKey(), (String) entry.getValue());
-                }
-            }
-        }
-        return nameVersionMap;
-    }
-
-    private void populateInventory(Inventory inventory, String path, WebModule webModule, Map<String, NpmModule> pathModuleMap) {
 
         final Map<NpmModule, Artifact> npmModuleArtifactMap = new HashMap<>();
-
-        Stack<NpmModule> stack = new Stack<>();
-
-        // Set<NpmModule> topLevelModules = new HashSet<>();
-
-        // push self onto stack first
-        final NpmModule npmModule = pathModuleMap.get(webModule.getName());
-        if (npmModule != null) {
-            stack.push(npmModule);
-        } else {
-            throw new IllegalStateException("Could not find artifact for [" + webModule.getName() + "] in dependency tree.");
-        }
+        final Stack<NpmModule> stack = new Stack<>();
 
         final Map<String, Artifact> qualifierArtifactMap = new HashMap<>();
+        final List<NpmModule> processedModules = new ArrayList<>();
+
+        // push self onto stack first
+        final Map<String, NpmModule> pathModuleMap = packageLockParser.getPathModuleMap();
+        final NpmModule rootNpmModule = pathModuleMap.get(webModule.getName());
+
+        if (rootNpmModule != null) {
+            stack.push(rootNpmModule);
+
+            final AssetMetaData assetMetaData = new AssetMetaData();
+            assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "AID-" + rootNpmModule.deriveQualifier());
+            assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH, webModule.getPath());
+            assetMetaData.set(AssetMetaData.Attribute.NAME, rootNpmModule.getName());
+            assetMetaData.set(AssetMetaData.Attribute.VERSION, rootNpmModule.getVersion());
+            assetMetaData.set(Constants.KEY_PRIMARY, Constants.MARKER_CROSS);
+
+            inventory.getAssetMetaData().add(assetMetaData);
+        } else {
+            pathModuleMap.values().forEach(stack::push);
+        }
 
         while (!stack.isEmpty()) {
             final NpmModule module = stack.pop();
-            if (module == null) continue;
 
-            String qualifier = module.deriveQualifier();
-            final Artifact artifact = qualifierArtifactMap.computeIfAbsent(qualifier, a -> new Artifact());
+            // only process a module once
+            if (npmModuleArtifactMap.containsKey(module)) continue;
 
-            artifact.setId(qualifier);
+            // remember that we processed this module
+            processedModules.add(module);
 
-            // determine component name
-            String componentName = module.getName();
-            int slashIndex = componentName.lastIndexOf("/");
-            if (slashIndex > 0) {
-                componentName = componentName.substring(0, slashIndex);
+            final String qualifier = module.deriveQualifier();
+            Artifact artifact = qualifierArtifactMap.get(qualifier);
+
+            if (artifact == null) {
+                artifact = new Artifact();
+                artifact.setId(qualifier);
+
+                // determine component name
+                String componentName = module.getName();
+                int slashIndex = componentName.lastIndexOf("/");
+                if (slashIndex > 0) {
+                    componentName = componentName.substring(0, slashIndex);
+                }
+                artifact.setComponent(componentName);
+
+                // contribute other attributes
+                artifact.setVersion(module.getVersion());
+                artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
+                artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
+                artifact.set("Source Archive - URL", module.getUrl());
+
+                final String purl = buildPurl(module.getName(), module.getVersion());
+                artifact.set(Artifact.Attribute.PURL, purl);
+                // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
+
+                inventory.getArtifacts().add(artifact);
+
+                qualifierArtifactMap.put(qualifier, artifact);
             }
-            artifact.setComponent(componentName);
 
-            // contribute other attributes
-            artifact.setVersion(module.getVersion());
-            artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
-            artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
-            artifact.set("Source Archive - URL", module.getUrl());
-
+            // extend the artifact with the additional path information
             artifact.append(Constants.KEY_PATH_IN_ASSET, "[" + module.getPath() + "]", Artifact.PATH_DELIMITER);
 
-            final String purl = buildPurl(module.getName(), module.getVersion());
-            artifact.set(Artifact.Attribute.PURL, purl);
-            // NOTE: do not populate ARTIFACT_ROOT_PATHS; a root path is not known in this case
-
-            inventory.getArtifacts().add(artifact);
+            // one artifact may be shared by several modules; (unresolved) modules may have a content
             npmModuleArtifactMap.put(module, artifact);
 
-            pushDependencies(module, module.getRuntimeDependencies(), pathModuleMap, stack, npmModuleArtifactMap);
-            pushDependencies(module, module.getDevDependencies(), pathModuleMap, stack, npmModuleArtifactMap);
-            pushDependencies(module, module.getPeerDependencies(), pathModuleMap, stack, npmModuleArtifactMap);
-            pushDependencies(module, module.getOptionalDependencies(), pathModuleMap, stack, npmModuleArtifactMap);
+            pushDependenciesToStack(module, module.getRuntimeDependencies(), stack, false, packageLockParser);
+            pushDependenciesToStack(module, module.getDevDependencies(), stack, false, packageLockParser);
+            pushDependenciesToStack(module, module.getOptionalDependencies(), stack, false, packageLockParser);
+            pushDependenciesToStack(module, module.getPeerDependencies(), stack, true, packageLockParser);
         }
 
         // fill in transitive dependency information and collect DependencyTuples
         // step 1:
         final Stack<DependencyTuple> dependencyTuples = new Stack<>();
-        for (NpmModule module : npmModuleArtifactMap.keySet()) {
-            apply(module, module.getRuntimeDependencies(), npmModuleArtifactMap, pathModuleMap, Constants.MARKER_RUNTIME_DEPENDENCY, dependencyTuples);
-            apply(module, module.getDevDependencies(), npmModuleArtifactMap, pathModuleMap, Constants.MARKER_DEVELOPMENT_DEPENDENCY, dependencyTuples);
-            apply(module, module.getPeerDependencies(), npmModuleArtifactMap, pathModuleMap, Constants.MARKER_PEER_DEPENDENCY, dependencyTuples);
-            apply(module, module.getOptionalDependencies(), npmModuleArtifactMap, pathModuleMap, Constants.MARKER_OPTIONAL_DEPENDENCY, dependencyTuples);
+        for (NpmModule module : processedModules) {
+            apply(module, module.getRuntimeDependencies(), npmModuleArtifactMap, Constants.MARKER_RUNTIME_DEPENDENCY, dependencyTuples, packageLockParser);
+            apply(module, module.getDevDependencies(), npmModuleArtifactMap, Constants.MARKER_DEVELOPMENT_DEPENDENCY, dependencyTuples, packageLockParser);
+            apply(module, module.getPeerDependencies(), npmModuleArtifactMap, Constants.MARKER_PEER_DEPENDENCY, dependencyTuples, packageLockParser);
+            apply(module, module.getOptionalDependencies(), npmModuleArtifactMap, Constants.MARKER_OPTIONAL_DEPENDENCY, dependencyTuples, packageLockParser);
         }
 
         // step 2: extend the DependencyTuples to all possible DependencyTriples and conclude dependency types
@@ -244,15 +153,12 @@ public class NpmPackageLockAdapter {
             final NpmModule bottomModule = dependencyTuple.getDependencyModule();
             final String middleToBottomDependencyType = dependencyTuple.getDependencyType();
 
-            final String tupleQualifier = deriveQualifier(middleModule, middleToBottomDependencyType, bottomModule);
-            if (processedTuples.contains(tupleQualifier)) continue;
-
-            processedTuples.add(tupleQualifier);
-
-            log.warn("Dependency Tuple: {} depends ({}) on {}.",
-                    middleModule.getName() + ":" + middleModule.getVersion(),
-                    middleToBottomDependencyType,
-                    bottomModule.getName() + ":" + middleModule.getVersion());
+            if (log.isDebugEnabled()) {
+                log.debug("Dependency Tuple: {} depends ({}) on {}.",
+                        middleModule.getName() + ":" + middleModule.getVersion(),
+                        middleToBottomDependencyType,
+                        bottomModule.getName() + ":" + middleModule.getVersion());
+            }
 
             for (NpmModule topModule : middleModule.getDependentModules()) {
                 final Artifact middleArtifact = npmModuleArtifactMap.get(middleModule);
@@ -262,22 +168,27 @@ public class NpmPackageLockAdapter {
                 final String topToMiddleDependencyType = middleArtifact.get(topAssetId);
                 final String topToBottomDependencyType = bottomArtifact.get(topAssetId);
 
-                final DependencyTriple dependencyTriple = new DependencyTriple(topModule, topToMiddleDependencyType, middleModule, middleToBottomDependencyType, bottomModule);
-
+                final DependencyTriple dependencyTriple = new DependencyTriple(
+                        topModule, topToMiddleDependencyType, middleModule, middleToBottomDependencyType, bottomModule);
+                String depType = topToBottomDependencyType;
                 if (topToBottomDependencyType == null) {
-                    bottomArtifact.set(topAssetId, dependencyTriple.getTopToBottomDependencyType());
+                    depType = dependencyTriple.getTopToBottomDependencyType();
+                    bottomArtifact.set(topAssetId, depType);
                 }
 
-                dependencyTuples.push(new DependencyTuple(dependencyTriple.getTopModule(), dependencyTriple.getTopToMiddleDependencyType(), dependencyTriple.getMiddleModule()));
+                final DependencyTuple derivedTuple = new DependencyTuple(
+                        dependencyTriple.getTopModule(), depType, dependencyTriple.getBottomModule());
+                final String tupleQualifier = derivedTuple.deriveQualifier();
+
+                // only add tuple in case it was not processed already
+                if (!processedTuples.contains(tupleQualifier)) {
+                    processedTuples.add(tupleQualifier);
+                    dependencyTuples.push(derivedTuple);
+                }
             }
         }
-    }
 
-    private static String deriveQualifier(NpmModule dependentModule, String dependencyType, NpmModule dependencyModule) {
-        String qualifier = dependentModule.getName() + dependentModule.getVersion();
-        qualifier += "=" + dependencyType;
-        qualifier += "=" + dependencyModule.getName() + dependencyModule.getVersion();
-        return qualifier;
+        return inventory;
     }
 
     @Getter
@@ -292,6 +203,12 @@ public class NpmPackageLockAdapter {
             this.dependencyType = dependencyType;
         }
 
+        public String deriveQualifier() {
+            String qualifier = dependentModule.getName() + dependentModule.getVersion();
+            qualifier += "=" + dependencyType;
+            qualifier += "=" + dependencyModule.getName() + dependencyModule.getVersion();
+            return qualifier;
+        }
     }
 
     @Getter
@@ -300,7 +217,7 @@ public class NpmPackageLockAdapter {
         private final NpmModule middleModule;
         private final NpmModule bottomModule;
 
-        private String topToMiddleDependencyType;
+        private final String topToMiddleDependencyType;
         private final String middleToBottomDependencyType;
 
         public DependencyTriple(NpmModule topModule, String topToMiddleDependencyType, NpmModule middleModule, String middleToBottomDependencyType, NpmModule bottomModule) {
@@ -311,102 +228,110 @@ public class NpmPackageLockAdapter {
             this.middleToBottomDependencyType = middleToBottomDependencyType;
         }
 
-        public void completeDependencyTypes() {
-            if (middleToBottomDependencyType == null) throw new IllegalStateException("The dependency type towards the leaf module must be set.");
-
-            if (topToMiddleDependencyType == null) {
-                if (middleToBottomDependencyType.startsWith("(")) {
-                    topToMiddleDependencyType = middleToBottomDependencyType;
-                } else {
-                    topToMiddleDependencyType = "(" +  middleToBottomDependencyType + ")";
-                }
-                System.out.println(topToMiddleDependencyType);
-            }
-
-        }
-
         public String getTopToBottomDependencyType() {
-            switch (topToMiddleDependencyType + middleToBottomDependencyType) {
-                case "dr" :
-                case "dd" :
-                case "dp" : return "(d)";
-                case "do" : return "(o)";
+            switch (deriveCombinedType()) {
+                case "-r": return "(r)";
+                case "-d": return "(d)";
+                case "-o": return "(o)";
+                case "-p": return "(p)";
 
-                case "rr" : return "(r)";
-                case "rd" : return "(d)";
-                case "rp" : return "(r)";
-                case "ro" : return "(o)";
+                case "d-r" :
+                case "d-d" :
+                case "d-p" : return "(d)";
+                case "d-o" : return "(o)";
 
-                case "pr" : return "(r)";
-                case "pd" : return "(d)";
-                case "pp" : return "(p)";
-                case "po" : return "(o)";
+                case "r-r" : return "(r)";
+                case "r-d" : return "(d)";
+                case "r-p" : return "(r)";
+                case "r-o" : return "(o)";
 
-                case "or" : return "(o)";
-                case "od" : return "(o)";
-                case "op" : return "(o)";
-                case "oo" : return "(o)";
+                case "p-r" : return "(r)";
+                case "p-d" : return "(d)";
+                case "p-p" : return "(p)";
+                case "p-o" : return "(o)";
 
-                case "ur" : return "(u)";
-                case "ud" : return "(u)";
-                case "up" : return "(u)";
-                case "uo" : return "(u)";
-                case "ru" : return "(u)";
-                case "du" : return "(u)";
-                case "pu" : return "(u)";
-                case "ou" : return "(u)";
+                case "o-r" :
+                case "o-d" :
+                case "o-p" :
+                case "o-o" : return "(o)";
 
                 default:
                     return "u";
             }
         }
+
+        private String deriveCombinedType() {
+            String topToMiddleType = topToMiddleDependencyType;
+            String middleToBottomType = middleToBottomDependencyType;
+
+            if (topToMiddleType == null) {
+                topToMiddleType = "";
+            } else if (topToMiddleType.startsWith("(")) {
+                topToMiddleType = topToMiddleType.substring(1, 2);
+            }
+
+            if (middleToBottomType == null) {
+                middleToBottomType = "";
+            } else if (middleToBottomType.startsWith("(")) {
+                middleToBottomType = middleToBottomType.substring(1, 2);
+            }
+
+            return topToMiddleType + "-" + middleToBottomType;
+        }
     }
 
-    private void pushDependencies(NpmModule dependentNpmModule, Map<String, String> dependencyMap,
-        Map<String, NpmModule> pathModuleMap, Stack<NpmModule> stack, Map<NpmModule, Artifact> npmModuleArtifactMap) {
+    private void pushDependenciesToStack(NpmModule dependentModule, Map<String, String> dependencyNameVersionRangeMap,
+         Stack<NpmModule> stack, boolean peerDependency, PackageLockParser packageLockParser) {
 
-        for  (Map.Entry<String, String> entry : dependencyMap.entrySet()) {
-            final String path = "node_modules/" + entry.getKey();
-            final NpmModule dependencyModule = pathModuleMap.get(path);
+        if (dependencyNameVersionRangeMap == null) return;
+
+        for  (Map.Entry<String, String> entry : dependencyNameVersionRangeMap.entrySet()) {
+            final String dependencyName = entry.getKey();
+            final String dependencyVersionRange = entry.getValue();
+            final NpmModule dependencyModule = packageLockParser.resolveNpmModule(dependentModule, dependencyName, dependencyVersionRange);
             if (dependencyModule == null) {
-                log.warn("Module [{}] not resolved using path [{}]. Potentially an optional dependency of [{}].",
-                        entry.getKey() + "@" + entry.getValue(), path, dependentNpmModule.getName());
+                reportMissingDependency(dependentModule, peerDependency, entry);
             } else {
-                // manage dependent modules
+                // manage dependent modules; add dependentModule to dependentModules list of dependency
                 final List<NpmModule> dependentModules = dependencyModule.getDependentModules();
-                if (!dependentModules.contains(dependentNpmModule)) {
-                    dependentModules.add(dependentNpmModule);
+                if (!dependentModules.contains(dependentModule)) {
+                    dependentModules.add(dependentModule);
                 }
-                // manage stack; add in case not already processed
-                if (!npmModuleArtifactMap.containsKey(dependencyModule)) {
-                    stack.push(dependencyModule);
-                }
+                // push onto stack for further downstream processing
+                stack.push(dependencyModule);
             }
         }
     }
 
-    private static void apply(NpmModule dependentModule, Map<String, String> dependencyMap,
-              Map<NpmModule, Artifact> npmModuleArtifactMap, Map<String, NpmModule> nameModuleMap,
-              String dependencyType, Stack<DependencyTuple> dependencyTuples) {
+    private void reportMissingDependency(NpmModule dependentNpmModule, boolean peerDependency, Map.Entry<String, String> entry) {
+        if (!peerDependency) {
+            log.warn("Module [{}] not resolved using path [{}]. Potentially an optional dependency of [{}].",
+                    entry.getKey() + "@" + entry.getValue(), entry.getKey(), dependentNpmModule.getName());
+        }
+    }
+
+    private void apply(NpmModule dependentModule, Map<String, String> dependencyMap,
+              Map<NpmModule, Artifact> npmModuleArtifactMap, String dependencyType,
+                       Stack<DependencyTuple> dependencyTuples, PackageLockParser packageLockParser) {
+
+        if (dependencyMap == null) return;
 
         final Artifact dependentArtifact = npmModuleArtifactMap.get(dependentModule);
         if (dependentArtifact == null) throw new IllegalStateException("No artifact found for module: " + dependentModule);
 
         for  (Map.Entry<String, String> entry : dependencyMap.entrySet()) {
-            final String path = "node_modules/" + entry.getKey();
-            final NpmModule dependencyModule = nameModuleMap.get(path);
+            final NpmModule dependencyModule = packageLockParser.resolveNpmModule(dependentModule, entry.getKey(), entry.getValue());
             if (dependencyModule == null) {
-                log.warn("Module [{}] not resolved using path [{}]. Potentially an optional dependency of [{}].", entry.getKey() + "@" + entry.getValue(), path, dependentModule.getName());
+                reportMissingDependency(dependentModule, Constants.MARKER_PEER_DEPENDENCY.equalsIgnoreCase(dependencyType), entry);
             } else {
                 final Artifact dependencyArtifact = npmModuleArtifactMap.get(dependencyModule);
                 if (dependencyArtifact != null) {
                     if (dependencyArtifact != dependentArtifact) {
                         dependencyArtifact.set("AID-" + dependentArtifact.getId(), dependencyType);
-
-                        dependencyTuples.add(new DependencyTuple(dependentModule, dependencyType, dependencyModule));
+                        dependencyTuples.push(new DependencyTuple(dependentModule, dependencyType, dependencyModule));
                     }
                 } else {
-                    log.warn("Unable to find dependency for module '" + dependentModule.getName() + "'.");
+                    log.warn("Unable to find dependency for module [{}].", dependentModule.getName());
                 }
             }
         }

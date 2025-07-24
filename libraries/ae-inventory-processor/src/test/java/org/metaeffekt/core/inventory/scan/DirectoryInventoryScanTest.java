@@ -235,7 +235,7 @@ public class DirectoryInventoryScanTest {
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
         new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
 
-   //     aggregateInventory(inventory, referenceInventoryDir, targetScanInventoryFile, scanDir, targetAggregationDir, targetAggregationInventoryFile);
+        aggregateInventory(inventory, referenceInventoryDir, targetScanInventoryFile, scanDir, targetAggregationDir, targetAggregationInventoryFile);
     }
 
     @Ignore

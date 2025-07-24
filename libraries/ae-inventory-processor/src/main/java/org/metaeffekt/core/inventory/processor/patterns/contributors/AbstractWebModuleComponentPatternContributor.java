@@ -31,27 +31,11 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * Abstract base class for WebModuleComponentPatternContributors. The class provides the general parts common to
- * all subclasses to unify the rather complex implementation on such contributors.
+ * Abstract base class for WebModuleComponentPatternContributors. The class provides general parts common to
+ * all subclasses to unify the rather complex implementation of such contributors.
  */
 @Slf4j
 public abstract class AbstractWebModuleComponentPatternContributor extends ComponentPatternContributor {
-
-    /**
-     * Definition files are all possible anchors and supplemental files.
-     *
-     * @return A priority ordered list of files paths that are expected.
-     */
-    protected abstract List<String> getDefinitionFiles();
-
-    // FIXME-KKL: revise
-    protected abstract Artifact createArtifact(WebModule webModule);
-
-    // FIXME-KKL: revise
-    protected abstract Inventory createSubcomponentInventory(String relativeAnchorPath, WebModule webModule) throws IOException;
-
-    // FIXME-KKL: revise
-    protected abstract ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir, String anchorChecksum, Artifact artifact, File contextBaseDir, Inventory inventoryFromLockFile);
 
     @Override
     public boolean applies(String pathInContext) {
@@ -66,10 +50,9 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
 
         // collect all relevant files
         final List<File> definitionFiles = collectDefinitionFiles(anchorParentDir);
-        final Map<String, File> definitionFileMap = buildDefinitionFileMap(anchorParentDir);
 
         // chose the primary anchor to use
-        final File representativeAnchorFile = selectRepresentativeAnchorFile(definitionFileMap, definitionFiles);
+        final File representativeAnchorFile = selectRepresentativeAnchorFile(definitionFiles);
 
         // we skip further evaluation in favor of the representative anchor file
         if (!anchorFile.getName().equals(representativeAnchorFile.getName())) {
@@ -87,12 +70,7 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
         }
 
         try {
-            final WebModule webModule = createWebModule(anchorFile, definitionFiles);
-
-            // in case the webModule ends up with too few data, we skip
-            if (!webModule.hasData()) {
-                return Collections.emptyList();
-            }
+            final WebModule webModule = createWebModule(anchorFile, relativeAnchorPath, anchorChecksum, definitionFiles);
 
             final Artifact artifact = createArtifact(webModule);
 
@@ -105,42 +83,17 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
 
             return Collections.singletonList(componentPatternData);
         } catch (IOException e) {
-            log.warn("Unable to parse web module parts: " + e.getMessage(), e);
+            log.warn("Unable to parse web module parts: {}", e.getMessage(), e);
             return Collections.emptyList();
         }
     }
 
     /**
-     * Builds a map of file paths/names to files. This implementation makes use of the order of getDefinitionFiles().
-     *
-     * @param parentDir The directory, which to inspect.
-     *
-     * @return A map of file paths/names to files.
-     */
-    protected Map<String, File> buildDefinitionFileMap(File parentDir) {
-        final Map<String, File> definitionFileMap = new HashMap<>();
-        for (String name : getDefinitionFiles()) {
-            final File definitionFile = new File(parentDir, name);
-            if (definitionFile.exists()) {
-                // store with original name; preserve subfolders context
-                definitionFileMap.put(name, definitionFile);
-
-                // store with filename only; do not preserve subfolders context; no not overwrite if exists already
-                String definitionFileName = definitionFile.getName();
-                if (definitionFileMap.containsKey(definitionFileName)) {
-                    definitionFileMap.put(definitionFileName, definitionFile);
-                }
-            }
-        }
-        return definitionFileMap;
-    }
-
-    /**
-     * Collects an ordered list of definition files. The methods uses the ordering as provided by getDefinitionFiles().
+     * Collects an ordered list of definition files. The method uses the ordering as provided by getDefinitionFiles().
      *
      * @param parentDir The folder to inspect.
      *
-     * @return A ordered list of files representing the definition files.
+     * @return An ordered list of files representing the definition files.
      */
     protected List<File> collectDefinitionFiles(File parentDir) {
         final List<File> definitionFiles = new ArrayList<>();
@@ -153,28 +106,69 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
         return definitionFiles;
     }
 
-    protected File selectRepresentativeAnchorFile(Map<String, File> definitionFileMap, List<File> definitionFiles) {
-        for (File definitionFile : definitionFiles) {
-            return definitionFile;
+    /**
+     * Select the representative anchor from the available definition files.
+     *
+     * @param definitionFiles The priority-ordered list of definition files.
+     *
+     * @return The selected representative definition file, which will be used as anchor.
+     */
+    protected File selectRepresentativeAnchorFile(List<File> definitionFiles) {
+        if (!definitionFiles.isEmpty()) {
+            return definitionFiles.get(0);
         }
         return null;
     }
-
 
     @Override
     public int getExecutionPhase() {
         return 1;
     }
 
-    protected WebModule getOrInitWebModule(String path, Map<String, WebModule> pathModuleMap) {
-        WebModule webModule = pathModuleMap.get(path);
-        if (webModule == null) {
-            webModule = new WebModule();
-            webModule.setPath(path);
-            pathModuleMap.put(path, webModule);
-        }
-        return webModule;
-    }
+    /**
+     * Definition files are all possible anchors and supplemental files. This method supplied all relevant definition
+     * files.
+     *
+     * @return A priority ordered list of files paths that are expected.
+     */
+    protected abstract List<String> getDefinitionFiles();
+
+    /**
+     * Creates an artifact from the given webModule.
+     *
+     * @param webModule The web module to create the artifact for.
+     *
+     * @return The implementation-specific, derived artifact.
+     */
+    protected abstract Artifact createArtifact(WebModule webModule);
+
+    /**
+     * Produces a subcomponent inventory.
+     *
+     * @param relativeAnchorPath Relative anchor path.
+     * @param webModule The web module.
+     *
+     * @return An inventory containing all artifacts identified on subcomponent level.
+     *
+     * @throws IOException The implementation may involve further parsing of files and may throw IOException.
+     */
+    protected abstract Inventory createSubcomponentInventory(String relativeAnchorPath, WebModule webModule) throws IOException;
+
+    /**
+     * Implementation-specific creation of a ComponentPatternData representing the component.
+     *
+     * @param anchorFile Anchor file.
+     * @param anchorParentDir Parent dir of the anchor.
+     * @param anchorChecksum Checksum of the anchor.
+     * @param artifact The artifact on which the ComponentPatternData is based.
+     * @param contextBaseDir The context base directory.
+     * @param inventoryFromLockFile The subcomponent inventory in case available.
+     *
+     * @return The specific ComponentPatternData instance representing the collection details.
+     */
+    protected abstract ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir,
+           String anchorChecksum, Artifact artifact, File contextBaseDir, Inventory inventoryFromLockFile);
+
 
     protected String getVersion(JSONObject obj) {
         if (obj.has("version")) {
@@ -189,8 +183,8 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
         return null;
     }
 
-    protected WebModule createWebModule(File anchorFile, List<File> definitionFiles) throws IOException {
-        WebModule webModule = new WebModule();
+    protected WebModule createWebModule(File anchorFile, String relAnchorPath, String anchorChecksum, List<File> definitionFiles) throws IOException {
+        final WebModule webModule = new WebModule();
 
         // check if there is a package.json or composer.json or bower.json
 
@@ -202,6 +196,14 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
             if (!definitionFile.equals(anchorFile)) {
                 processDefinitionFile(definitionFile, webModule);
             }
+        }
+
+        if (webModule.getName() == null) {
+            webModule.setName(relAnchorPath);
+        }
+
+        if (webModule.getVersion() == null) {
+            webModule.setVersion(anchorChecksum);
         }
 
         return webModule;
@@ -225,9 +227,9 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
      */
     protected void processDefinitionFile(File definitionFile, WebModule webModule) throws IOException {
         if (definitionFile.exists()) {
-            final String json = FileUtils.readFileToString(definitionFile, "UTF-8");
-            JSONObject obj = new JSONObject(json);
             try {
+                final String json = FileUtils.readFileToString(definitionFile, "UTF-8");
+                JSONObject obj = new JSONObject(json);
                 if (StringUtils.isBlank(webModule.getVersion())) {
                     webModule.setVersion(getString(obj, "version", webModule.getVersion()));
                 }
@@ -247,15 +249,7 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
         return obj.has(key) ? obj.getString(key) : defaultValue;
     }
 
-    /**
-     * FIXME-KKL
-     *
-     * @param webModule
-     * @param obj
-     * @param dependencyType
-     * @param consumer
-     */
-    protected static void mapDependencies(WebModule webModule, JSONObject obj, String dependencyType, Consumer<WebModuleDependency> consumer) {
+    protected void mapDependencies(WebModule webModule, JSONObject obj, String dependencyType, Consumer<WebModuleDependency> consumer) {
         if (obj.has(dependencyType)) {
             final JSONObject dependencies = obj.getJSONObject(dependencyType);
             for (String dependencyName : dependencies.keySet()) {
@@ -267,8 +261,5 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
             }
         }
     }
-
-
-
 
 }

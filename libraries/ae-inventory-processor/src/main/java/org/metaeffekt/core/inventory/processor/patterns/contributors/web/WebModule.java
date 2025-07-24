@@ -41,12 +41,6 @@ public class WebModule implements Comparable<WebModule> {
         return path.compareToIgnoreCase(o.path);
     }
 
-    public boolean hasData() {
-//        if (StringUtils.isBlank(name)) return false;
-        if (StringUtils.isBlank(version)) return false;
-        return anchor != null;
-    }
-
     /**
      * Direct dependencies detected for the web module. An empty list means not specified.
      */
