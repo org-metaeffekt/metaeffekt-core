@@ -59,6 +59,7 @@ public class NpmModule extends Module {
     @Setter
     private Map<String, String> optionalDependencies;
 
+    @ToString.Exclude
     @Setter
     private List<NpmModule> dependentModules = new ArrayList<>();
 
