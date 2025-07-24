@@ -33,11 +33,8 @@ import static org.apache.poi.util.TempFile.JAVA_IO_TMPDIR;
 /**
  * Custom implementation of the {@link TempFileCreationStrategy} used by {@link TempFile}:
  * Files are collected into one directory.
- * You can define the system property {@link #DELETE_FILES_ON_EXIT} if you want to
- * delete any stray files on clean JVM exit (any non-empty value means add the deleteOnExit flag).
- * Files can be deleted prior to JVM exit by calling removeCreatedTempFiles().
+ * Files are deleted when removeCreatedTempFiles() is called.
  *
- * The POI code should tidy up temp files when it no longer needs them.
  * The temporary directory is not deleted after the JVM exits.
  * Files that are created in the poifiles directory outside
  * the control of DefaultTempFileCreationStrategy are not deleted.
