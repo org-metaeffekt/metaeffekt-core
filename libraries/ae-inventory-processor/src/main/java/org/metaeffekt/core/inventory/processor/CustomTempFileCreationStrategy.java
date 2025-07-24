@@ -64,10 +64,8 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
     /** The directory where the temporary files will be created (<code>null</code> to use the default directory). */
     private volatile File dir;
 
-    /** The directory where that was passed to the constructor (<code>null</code> to use the default directory). */
+    /** The directory that was passed to the constructor (<code>null</code> to use the default directory). */
     private final File initDir;
-
-    public static final String DELETE_FILES_ON_EXIT = "poi.delete.tmp.files.on.exit";
 
     /** The lock to make dir initialized only once. */
     private final Lock dirLock = new ReentrantLock();
@@ -95,12 +93,7 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
     public File createTempFile(String prefix, String suffix) throws IOException {
         createPOIFilesDirectoryIfNecessary();
         File newFile = Files.createTempFile(dir.toPath(), prefix, suffix).toFile();
-
         tempFiles.add(newFile);
-
-        if (System.getProperty(DELETE_FILES_ON_EXIT) != null) {
-            newFile.deleteOnExit();
-        }
 
         return newFile;
     }
@@ -108,12 +101,7 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
     @Override
     public File createTempDirectory(String prefix) throws IOException {
         createPOIFilesDirectoryIfNecessary();
-
-        File newTempDirectory = Files.createTempDirectory(dir.toPath(), prefix).toFile();
-
-        newTempDirectory.deleteOnExit();
-
-        return newTempDirectory;
+        return Files.createTempDirectory(dir.toPath(), prefix).toFile();
     }
 
     protected String getJavaIoTmpDir() throws IOException {
