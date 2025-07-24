@@ -98,22 +98,17 @@ public class ComposerWebModuleComponentPatternContributor extends AbstractWebMod
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDirName + "/**/*");
 
         // set excludes
-        if ("node_modules".equalsIgnoreCase(anchorParentDirName)) {
-            // we are already in the node_modules directory; in this case omit the parent dir;
-            // this may happen when we have identified a .package-lock.json file in the node_modules folder;
-            // we have to make sure we do not include the complete node_modules folder with all modules
-            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                    ".yarn-integrity," +
-                            "**/node_modules/**/*," +
-                            // FIXME-KKL: revise
-                            "**/bower_components/**/*");
-        } else {
-            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                    anchorParentDirName + "/.yarn-integrity," +
-                            anchorParentDirName + "/**/node_modules/**/*," +
-                            // FIXME-KKL: revise
-                            anchorParentDirName + "/**/bower_components/**/*");
-        }
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+            anchorParentDirName + "/.yarn-integrity," +
+            anchorParentDirName + "/**/node_modules/**/*," +
+            anchorParentDirName + "/**/bower_components/**/*," +
+            anchorParentDirName + "/**/.package-lock.json," +
+            anchorParentDirName + "/**/yarn.lock," +
+            anchorParentDirName + "/**/bower.json," +
+            anchorParentDirName + "/**/.bower.json," +
+            anchorParentDirName + "/**/package.json," +
+            anchorParentDirName + "/**/package-lock.json"
+        );
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");

@@ -235,33 +235,29 @@ public class DirectoryInventoryScanTest {
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
         new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
 
-        aggregateInventory(inventory, referenceInventoryDir, targetScanInventoryFile, scanDir, targetAggregationDir, targetAggregationInventoryFile);
+        aggregateArchives(scanDir, targetScanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
     }
 
     @Ignore
     @Test
     public void testScanExtractedFiles_ExternalNG_Aggregate() throws IOException {
         // inputs
-        final File scanDir = new File("/Users/kklein/Downloads/tmp/input");
-
-        // other sources
+        final File scanDir = new File("/Users/kklein/Downloads/tmp/scan");
+        final File scanInventoryFile = new File("target/scan-inventory.xlsx");
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
         // outputs
-        final File targetScanInventoryFile = new File("target/scan-inventory.xlsx");
         final File targetAggregationDir = new File("target/aggregation");
         final File targetAggregationInventoryFile = new File("target/aggregated-inventory.xlsx");
 
-        aggregateArchives(targetScanInventoryFile, referenceInventoryDir, scanDir, targetAggregationDir, targetAggregationInventoryFile);
+        aggregateArchives(scanDir, scanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
     }
 
-    private void aggregateArchives(File targetScanInventoryFile, File referenceInventoryDir, File scanDir, File targetAggregationDir, File targetAggregationInventoryFile) throws IOException {
-        final Inventory inventory = new InventoryReader().readInventory(targetScanInventoryFile);
-        aggregateInventory(inventory, referenceInventoryDir, targetScanInventoryFile, scanDir, targetAggregationDir, targetAggregationInventoryFile);
-    }
+    private void aggregateArchives(File scanDir, File scanInventoryFile, File referenceInventoryDir, File targetAggregationInventoryFile, File targetAggregationDir) throws IOException {
+        final Inventory scanInventory = new InventoryReader().readInventory(scanInventoryFile);
 
-    private void aggregateInventory(Inventory inventory, File referenceInventoryDir, File targetScanInventoryFile, File scanDir, File targetAggregationDir, File targetAggregationInventoryFile) throws IOException {
-        for (Artifact artifact : inventory.getArtifacts()) {
+        log.info("Initializing aggregation of [{}] artifacts.", scanInventory.getArtifacts().size());
+        for (Artifact artifact : scanInventory.getArtifacts()) {
             final String pathInAsset = artifact.get(Artifact.Attribute.PATH_IN_ASSET);
             if (StringUtils.isBlank(pathInAsset)) {
                 throw new IllegalStateException("Attribute [Path in Asset] must be available after scan.");
@@ -270,14 +266,15 @@ public class DirectoryInventoryScanTest {
 
         final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls");
 
-        final Inventory aggregationInventory = new InventoryReader().readInventory(targetScanInventoryFile);
-
+        log.info("Building aggregator configuration...");
         final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
-                new DirectoryScanAggregatorConfiguration(referenceInventory, aggregationInventory, scanDir);
+                new DirectoryScanAggregatorConfiguration(referenceInventory, scanInventory, scanDir);
 
+        log.info("Aggregating files to [{}].", targetAggregationDir.getAbsolutePath());
         directoryScanAggregatorConfiguration.aggregateFiles(targetAggregationDir);
 
-        new InventoryWriter().writeInventory(aggregationInventory, targetAggregationInventoryFile);
+        log.info("Writing results to [{}].", targetAggregationInventoryFile.getAbsolutePath());
+        new InventoryWriter().writeInventory(scanInventory, targetAggregationInventoryFile);
     }
 
     private static Inventory scan(File referenceInventoryDir, File scanInputDir, File scanDir, String... postScanExcludes) throws IOException {

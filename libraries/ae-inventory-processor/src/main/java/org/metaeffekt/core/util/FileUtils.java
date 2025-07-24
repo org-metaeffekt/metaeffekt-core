@@ -230,7 +230,14 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static String normalizePathToLinux(String path) {
         if (path == null) return null;
-        return path.replace('\\', SEPARATOR_SLASH_CHAR);
+        path = path.replace('\\', SEPARATOR_SLASH_CHAR);
+        if (path.length() > 2 && path.endsWith("/.")) {
+            path = path.substring(0, path.length() - 2);
+        }
+        if (path.equals("./")) {
+            path = ".";
+        }
+        return path;
     }
 
     public static String normalizePathToLinux(File file) {

@@ -187,7 +187,12 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
             componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
                     anchorParentDirName + "/.yarn-integrity," +
                     anchorParentDirName + "/**/node_modules/**/*," +
-                    anchorParentDirName + "/**/bower_components/**/*");
+                    anchorParentDirName + "/**/bower_components/**/*," +
+                    anchorParentDirName + "/**/bower.json," +
+                    anchorParentDirName + "/**/.bower.json," +
+                    anchorParentDirName + "/**/composer.json," +
+                    anchorParentDirName + "/**/composer.lock"
+            );
         }
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
