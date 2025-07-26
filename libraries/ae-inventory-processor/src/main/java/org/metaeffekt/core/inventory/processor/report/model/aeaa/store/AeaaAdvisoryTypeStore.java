@@ -95,7 +95,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_ALSA =
             createOsvIdentifier("ALSA", "AlmaLinux Security Advisory",
-                    Pattern.compile("ALSA-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
+                    Pattern.compile("ALSA-\\d{4}:[A0123456789]{4,5}", Pattern.CASE_INSENSITIVE));
     /**
      * Advisory IDs from the <b>AlmaLinux Bug Advisories</b>.
      * Details on bug fixes and updates for AlmaLinux.
@@ -393,6 +393,15 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_MGASA =
             createOsvIdentifier("MGASA", "Mageia Security Advisory",
                     Pattern.compile("(MGASA|MGAA)-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
+
+    /**
+     * Advisory IDs from the <b>Minimus Security Advisory</b>.
+     * Official security advisories for Minimus Linux.
+     * <a href="https://docs.minimus.io/remediate/advisories/">Minumus Security Advisories</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_MINI =
+            createOsvIdentifier("MINI", "Minimus Security Advisory",
+                    Pattern.compile("MINI(-[23456789cfghjmpqrvwx]{4}){3}", Pattern.CASE_INSENSITIVE));
     
     // CSAF
     public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_GENERIC_IDENTIFIER = new AeaaAdvisoryTypeIdentifier<>(
@@ -500,7 +509,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                 OSV_DTSA, OSV_RUSTSEC, OSV_CGA, OSV_BIT, OSV_UVI, OSV_CAN, OSV_RSEC, OSV_GSD, OSV_USN, OSV_PUB_A, OSV_ASB_A,
                 OSV_HSEC, OSV_RLSA, OSV_RXSA, OSV_CURL_CVE, OSV_PSF, OSV_PSF_CVE,
                 OSV_SUSE_SU, OSV_SUSE_RU, OSV_SUSE_FU, OSV_SUSE_OU, OSV_OPENSUSE_SU,
-                OSV_RHBA, OSV_RHEA, OSV_RHSA, OSV_MGASA,
+                OSV_RHBA, OSV_RHEA, OSV_RHSA, OSV_MGASA, OSV_MINI,
                 // CSAF
                 CSAF_GENERIC_IDENTIFIER, CSAF_BSI, CSAF_REDHAT, CSAF_SIEMENS, CSAF_CISA, CSAF_INTEVATION, CSAF_NOZOMI,
                 CSAF_SICK, CSAF_OPEN_XCHANGE,
