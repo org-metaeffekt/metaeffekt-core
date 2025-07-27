@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Request_Store_1_7_0 extends AbstractCompositionAnalysisTest{
 
@@ -60,5 +61,8 @@ public class Request_Store_1_7_0 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "1.7.0"),
                         attributeValue(PURL, "pkg:gem/request_store@1.7.0"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

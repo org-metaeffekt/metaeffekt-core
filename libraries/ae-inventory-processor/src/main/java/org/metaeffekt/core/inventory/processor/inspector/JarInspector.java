@@ -111,6 +111,9 @@ public class JarInspector extends AbstractJarInspector {
         String packaging = pomProperties.getProperty("packaging");
         dummyArtifact.setGroupId(groupId);
         dummyArtifact.setVersion(version);
+        dummyArtifact.setName(artifactId);
+
+        // very little change about how its written
 
         dummyArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         dummyArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
@@ -557,9 +560,15 @@ public class JarInspector extends AbstractJarInspector {
                 artifact.setArtifactId(null);
 
                 deriveVersionIfNotSet(artifact);
+
                 deriveTypeIfNotSet(artifact);
 
+
                 artifact.deriveArtifactId();
+
+                artifact.set(Artifact.Attribute.CLASSIFIER, artifact.inferClassifierFromFileNameAndVersion());
+
+                deriveNameIfNotSet(artifact);
 
                 addPurlIfMissing(artifact);
 
@@ -588,6 +597,40 @@ public class JarInspector extends AbstractJarInspector {
                 artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
             }
         }
+    }
+
+    private void deriveNameIfNotSet(Artifact artifact) {
+        if (StringUtils.isBlank(artifact.get(Constants.KEY_NAME))) {
+            String fileName = artifact.get(Artifact.Attribute.FILE_NAME);
+            String version = artifact.getVersion();
+            if (fileName != null && fileName.toLowerCase(Locale.US).endsWith(".jar")) {
+                String name = fileName.substring(0, fileName.lastIndexOf("."));
+                String classifier = artifact.get(Artifact.Attribute.CLASSIFIER);
+                if (StringUtils.isNotBlank(classifier)  && name.endsWith("-" + classifier)) {
+                    name += "-" + classifier;
+                }
+                if (name.endsWith("-" + version)) {
+
+                }
+                artifact.set(Constants.KEY_NAME, name);
+                artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+            }
+        }
+        else if (StringUtils.isBlank(artifact.get(Constants.KEY_NAME)) && (Artifact.Attribute.ID != null)) {
+                String id = artifact.getId();
+                if (id != null && id.toLowerCase(Locale.US).endsWith(".jar")) {
+                    String name = id.substring(0, id.lastIndexOf("."));
+                    String classifier = artifact.get(Artifact.Attribute.CLASSIFIER);
+                    if (StringUtils.isNotBlank(classifier) && name.endsWith("-" + classifier)) {
+                        name += "-" + classifier;
+                    }
+                    artifact.set(Constants.KEY_NAME, name);
+                    artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+                }
+
+            }
+
+
     }
 
     private void addPurlIfMissing(Artifact artifact) {

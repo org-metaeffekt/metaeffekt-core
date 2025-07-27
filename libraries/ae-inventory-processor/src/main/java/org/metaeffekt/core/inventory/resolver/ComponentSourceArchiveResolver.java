@@ -72,7 +72,7 @@ public class ComponentSourceArchiveResolver extends AbstractMirrorSourceArchiveR
             replacement = replacement.replace("$groupIdSlash", replacementValue(artifact.getGroupId()).replace(".", "/"));
             replacement = replacement.replace("$groupId", replacementValue(artifact.getGroupId()));
             replacement = replacement.replace("$component", replacementValue(artifact.getComponent()));
-            replacement = replacement.replace("$classifier", replacementValue(artifact.getClassifier()));
+            replacement = replacement.replace("$classifier", replacementValue(artifact.inferClassifierFromFileNameAndVersion()));
             replacement = replacement.replace("$type", replacementValue(artifact.getType()));
 
             // the replacement may still contain further groups ($1 ...), by using replaceAll the groups can be bound

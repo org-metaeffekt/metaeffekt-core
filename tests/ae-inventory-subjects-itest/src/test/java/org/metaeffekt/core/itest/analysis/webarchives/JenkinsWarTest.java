@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -36,6 +37,7 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*
 import static org.metaeffekt.core.itest.common.predicates.AttributeExists.withAttribute;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysFalse;
 import static org.metaeffekt.core.itest.common.predicates.BooleanPredicate.alwaysTrue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.IdMismatchesVersion.idMismatchesVersion;
 import static org.metaeffekt.core.itest.common.predicates.Not.not;
 import static org.metaeffekt.core.itest.common.predicates.TokenStartsWith.getTokenAtPosition;
@@ -90,7 +92,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
          getAnalysis()
                 .selectArtifacts(withAttribute(VERSION))
                 .assertNotEmpty()
-                .logListWithAllAttributes()
+                .logList()
                 .assertEmpty(idMismatchesVersion());
     }
 
@@ -146,7 +148,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
 
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5 );
 
         analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
         analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
@@ -169,5 +171,17 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         analysis.selectComponentPatterns().hasSizeOf(2);
         ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
         componentPatternList.logListWithAllAttributes();
+    }
+
+
+    @Test
+    public void assertContent() throws Exception {
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(129);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "web-app")).hasSizeOf(1);
+        artifactList.hasSizeOf(131);
     }
 }

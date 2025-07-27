@@ -41,15 +41,6 @@ public abstract class AbstractXlsxInventoryWriter extends AbstractInventoryWrite
         return collection.isEmpty();
     }
 
-    protected int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
-        if (attributesSet.contains(key)) {
-            orderedAttributesList.remove(key);
-            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
-            insertIndex++;
-        }
-        return insertIndex;
-    }
-
     protected <AMB extends AbstractModelBase, CR extends SXSSFRow, HC extends CellBase> int populateSheetWithModelData(
             Collection<AMB> models, Collection<String> columnHeaders,
             Function<Integer, HC> headerCellSupplier, Function<Integer, CR> contentRowSupplier,

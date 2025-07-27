@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.itest.analysis.archives;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -22,19 +23,16 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
+import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PURL;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
-
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
     @BeforeClass
     public static void prepare() {
@@ -60,10 +58,9 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
-        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
+        inventory.deriveArtifactQualifiers();
 
         Analysis analysis = new Analysis(inventory);
-
         analysis.selectArtifacts().logListWithAllAttributes();
 
         // expect that the substructure is visible
@@ -73,6 +70,26 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(startsWith(ID, "commons")).hasSizeOf(2);
         analysis.selectArtifacts(startsWith(ID, "http")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(ID, "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
+
+        Artifact keycloakAdminCli = analysis.selectArtifacts(attributeValue(NAME, "keycloak-admin-cli")).getItemList().get(0);
+        Assertions.assertThat(keycloakAdminCli.get(FILE_NAME)).as("detected jars must have a File Name").isEqualTo("keycloak-admin-cli-23.0.1.jar");
+
+        Artifact jansiWindows = analysis.selectArtifacts(attributeValue(NAME, "jansi-windows32")).getItemList().get(0);
+        Assertions.assertThat(jansiWindows.get(FILE_NAME)).as("embedded jars must not have a File Name").isNull();
+
+        analysis.selectArtifacts().filter(a -> a.get(FILE_NAME) == null).as("File Name is null").hasSizeOf(21);
+
+    }
+
+    @Test
+    public void assertContent_Types() throws Exception {
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
+
+        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
+        jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
     }
 
 }
