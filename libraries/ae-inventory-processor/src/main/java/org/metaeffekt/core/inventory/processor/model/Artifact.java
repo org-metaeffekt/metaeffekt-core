@@ -32,6 +32,10 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
+    private static final Pattern PATH_DELIMITER_REGEXP = Pattern.compile("\\|\n");
+
+    public static final String PATH_DELIMITER = "|\n";
+
     /**
      * Core attributes to support component patterns.
      */
@@ -204,7 +208,12 @@ public class Artifact extends AbstractModelBase {
     }
 
     public Set<String> getRootPaths() {
-        return getSet(Attribute.ROOT_PATHS);
+        final String pathsString = get(Attribute.ROOT_PATHS);
+        if (StringUtils.isEmpty(pathsString)) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(PATH_DELIMITER_REGEXP.split(pathsString)).
+                map(String::trim).collect(Collectors.toSet());
     }
 
     public void setRootPaths(Set<String> paths) {

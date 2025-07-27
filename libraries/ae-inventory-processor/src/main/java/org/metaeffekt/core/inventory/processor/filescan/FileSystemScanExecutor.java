@@ -357,20 +357,20 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         for (Artifact scannedArtifact : artifactsWithScanClassification) {
             final String assetId = "AID-" + scannedArtifact.getId() + "-" + scannedArtifact.getChecksum();
 
-            final File pathInAsset = new File(scannedArtifact.get(Artifact.Attribute.PATH_IN_ASSET));
+            File pathInAsset = new File(scannedArtifact.get(Artifact.Attribute.PATH_IN_ASSET));
             final String name = pathInAsset.getName();
-            final File extractedPathInAsset = new File(pathInAsset.getParentFile(), "[" + name + "]");
+            File extractedPathInAsset = new File(pathInAsset.getParentFile(), "[" + name + "]");
 
-            final String qualifier = scannedArtifact.getId() + "/" + extractedPathInAsset.getPath();
+            String qualifier = scannedArtifact.getId() + "/" + extractedPathInAsset.getPath();
 
-            final Set<Artifact> toBeDeleted = new HashSet<>();
+            Set<Artifact> toBeDeleted = new HashSet<>();
             for (Artifact artifact : inventory.getArtifacts()) {
                 final String q = deriveContainedArtifactQualifier(artifact);
                 if (qualifier.equals(q)) {
                     if ("c".equalsIgnoreCase(artifact.get(assetId))) {
                         // manage attributes that should not be merged
                         artifact.set(assetId, null);
-                        artifact.setRootPaths(Collections.emptySet());
+                        artifact.setRootPaths(Collections.EMPTY_SET);
 
                         // merge contained artifact into scanned
                         scannedArtifact.merge(artifact);

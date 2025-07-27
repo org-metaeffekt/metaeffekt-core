@@ -91,7 +91,6 @@ public class DirectoryScanAggregatorConfiguration {
 
             // iterate found component patterns for artifact
             if (componentPatternMatches.list != null) {
-
                 final Map<Boolean, List<File>> booleanListMap = mapCoveredFilesByDuplicateStatus(artifact, componentPatternMatches, filePatternQualifierMapper, fileSystemMap);
                 final Map<Boolean, List<File>> duplicateToComponentPatternFilesMap = new HashMap<>(booleanListMap);
 
@@ -113,10 +112,6 @@ public class DirectoryScanAggregatorConfiguration {
 
             // add mapper
             filePatternQualifierMapperList.add(filePatternQualifierMapper);
-
-            if (!filePatternQualifierMapper.getFiles().isEmpty()) {
-                LOG.debug("Artifact [{}] mapped to [{}] files.", artifact.deriveQualifier(), filePatternQualifierMapper.getFiles().size());
-            }
         }
 
         return filePatternQualifierMapperList;
@@ -207,15 +202,15 @@ public class DirectoryScanAggregatorConfiguration {
 
         int count = 0;
 
-        // extend the patterns to include unwrapped path
         if (!includePatternSet.relativePatterns.isEmpty()) {
+            // extend the patterns to include unwrapped path
             for (String normalizedInclude : new HashSet<>(includePatternSet.relativePatterns)) {
                 final String bloatedNormalizedInclude = ContributorUtils.extendArchivePattern(normalizedInclude);
-                if (bloatedNormalizedInclude != null) {
-                    includePatternSet.relativePatterns.add(bloatedNormalizedInclude);
+                if (bloatedNormalizedInclude == null) {
+                    continue;
                 }
+                includePatternSet.relativePatterns.add(bloatedNormalizedInclude);
             }
-
             final String[] relativeCoveredFiles = fileSystemMap.scanDirectoryForFiles(componentBaseDir,
                     includePatternSet.relativePatterns, excludePatternSet.relativePatterns);
             aggregateFiles(componentBaseDir, relativeCoveredFiles, componentPatternCoveredFiles);
@@ -361,7 +356,6 @@ public class DirectoryScanAggregatorConfiguration {
             // post-processing steps
 
             // evaluate component patterns
-            LOG.debug("Evaluating component patterns...");
             final List<FilePatternQualifierMapper> filePatternQualifierMappers = evaluateComponentPatterns();
 
             // aggregate files (atomic and component patterns)
@@ -815,12 +809,8 @@ public class DirectoryScanAggregatorConfiguration {
         final FilePatternQualifierMapper childMapper = qualifierToMapperMap.get(childQualifier);
         final Map<String, List<File>> subsetMap = new HashMap<>();
 
-        if (parentMapper != null && !childMapper.isLocked()) {
-
+        if (parentMapper != null) {
             LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
-
-            // the lock prevents that files symmetrically being part of two components are bidirectionally removed
-            parentMapper.setLocked(true);
 
             subsetMap.put(childQualifier, new ArrayList<>(childFileSet));
 

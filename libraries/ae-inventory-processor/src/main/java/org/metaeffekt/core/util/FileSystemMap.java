@@ -81,6 +81,7 @@ public class FileSystemMap {
                         }
                     }
                 }
+
                 if (attrs.isSymbolicLink()) {
                     return FileVisitResult.SKIP_SUBTREE;
                 }
@@ -97,7 +98,7 @@ public class FileSystemMap {
 
     public String[] scanDirectoryForFiles(File scanBaseDir, Set<String> includes, Set<String> excludes) {
         final File absoluteScanBaseDir = scanBaseDir.getAbsoluteFile();
-        String basePath = normalizePathToLinux(absoluteScanBaseDir.getPath());
+        final String basePath = normalizePathToLinux(absoluteScanBaseDir.getPath());
 
         final FolderContent baseFolderContent = absolutePathToContentMap.get(basePath);
         if (baseFolderContent == null) return new String[0];
