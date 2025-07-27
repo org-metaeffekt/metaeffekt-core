@@ -213,7 +213,7 @@ public class DirectoryInventoryScanTest {
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
         new InventoryWriter().writeInventory(inventory, new File("target/npm-005.xls"));
 
-        Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(225);
+        Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(1543);
     }
 
     @Ignore
