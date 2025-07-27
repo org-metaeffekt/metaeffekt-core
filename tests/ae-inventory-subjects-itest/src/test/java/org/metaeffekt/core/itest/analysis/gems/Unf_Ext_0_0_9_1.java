@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Unf_Ext_0_0_9_1 extends AbstractCompositionAnalysisTest{
 
@@ -60,5 +61,8 @@ public class Unf_Ext_0_0_9_1 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "0.0.9.1"),
                         attributeValue(PURL, "pkg:gem/unf_ext@0.0.9.1"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

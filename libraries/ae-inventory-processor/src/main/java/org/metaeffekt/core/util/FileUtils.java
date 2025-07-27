@@ -128,6 +128,10 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return computeChecksum(file, "SHA-256");
     }
 
+    public static String computeSHA512Hash(File file) {
+        return computeChecksum(file, "SHA-512");
+    }
+
     public static String asRelativePath(String workingDirPath, String filePath) {
         File file = new File(FileUtils.canonicalizeLinuxPath(FileUtils.normalizePathToLinux(filePath)));
         File workingDirFile = new File(FileUtils.canonicalizeLinuxPath(FileUtils.normalizePathToLinux(workingDirPath)));
