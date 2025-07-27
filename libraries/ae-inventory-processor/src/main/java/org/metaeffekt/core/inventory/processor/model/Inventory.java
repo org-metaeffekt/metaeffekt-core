@@ -1107,7 +1107,7 @@ public class Inventory implements Serializable {
         final String id = normalize(artifact.getId());
         final String artifactId = normalize(artifact.getArtifactId());
         final String groupId = normalize(artifact.getGroupId());
-        final String classifier = normalize(artifact.getClassifier());
+        final String classifier = normalize(artifact.inferClassifierFromFileNameAndVersion());
         final String type = normalize(artifact.getType());
 
         // find current only works for artifacts, which have a proper artifact id
@@ -1121,7 +1121,7 @@ public class Inventory implements Serializable {
                 if (candidateClassification.contains(CLASSIFICATION_CURRENT)) {
                     final String candidateGroupId = normalize(candidate.getGroupId());
                     final String candidateArtifactId = normalize(candidate.getArtifactId());
-                    final String candidateClassifier = normalize(candidate.getClassifier());
+                    final String candidateClassifier = normalize(candidate.inferClassifierFromFileNameAndVersion());
                     final String candidateType = normalize(candidate.getType());
                     if (groupId.equals(candidateGroupId)) {
                         if (artifactId.equals(candidateArtifactId)) {
@@ -1142,7 +1142,7 @@ public class Inventory implements Serializable {
         final String id = normalize(artifact.getId());
         final String artifactId = normalize(artifact.getArtifactId());
         final String groupId = normalize(artifact.getGroupId());
-        final String classifier = normalize(artifact.getClassifier());
+        final String classifier = normalize(artifact.inferClassifierFromFileNameAndVersion());
         final String type = normalize(artifact.getType());
 
         // find current only works for artifacts, which have a proper artifact id
@@ -1154,7 +1154,7 @@ public class Inventory implements Serializable {
             if (candidate != artifact) {
                 final String candidateGroupId = normalize(candidate.getGroupId());
                 final String candidateArtifactId = normalize(candidate.getArtifactId());
-                final String candidateClassifier = normalize(candidate.getClassifier());
+                final String candidateClassifier = normalize(candidate.inferClassifierFromFileNameAndVersion());
                 final String candidateType = normalize(candidate.getType());
                 if (groupId.equals(candidateGroupId)) {
                     if (artifactId.equals(candidateArtifactId)) {

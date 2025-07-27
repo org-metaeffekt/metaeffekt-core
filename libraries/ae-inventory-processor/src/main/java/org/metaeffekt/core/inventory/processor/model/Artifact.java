@@ -456,9 +456,9 @@ public class Artifact extends AbstractModelBase {
         if (getVersion() != null) {
             artifactRepresentation.append(getVersion());
         }
-        if (getClassifier() != null) {
+        if (inferClassifierFromFileNameAndVersion() != null) {
             artifactRepresentation.append(DELIMITER_COLON);
-            artifactRepresentation.append(getClassifier());
+            artifactRepresentation.append(inferClassifierFromFileNameAndVersion());
         }
         artifactRepresentation.append(DELIMITER_COLON);
         // skip type if no information was derived
@@ -659,7 +659,7 @@ public class Artifact extends AbstractModelBase {
     }
 
     @Deprecated
-    public String getClassifier() {
+    public String getClassifierxxx() {
         return get(Attribute.CLASSIFIER);
     }
 
