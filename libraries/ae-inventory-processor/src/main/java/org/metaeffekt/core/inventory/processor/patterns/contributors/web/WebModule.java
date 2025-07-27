@@ -28,12 +28,12 @@ import java.util.List;
 @Data
 public class WebModule implements Comparable<WebModule> {
 
-    public File packageJsonFile;
-    public File composerJsonFile;
-
-    // TODO
+    /**
+     * The path here on WebModule level specifies the anchor file from which the WebModule was derived. Please note,
+     * that is contrast to paths in NpmModule this path does not represent the path under which the module can
+     * be resolved.
+     */
     private String path;
-    private String folder;
 
     // the anchor may be any file that belongs to the module
     private File anchor;

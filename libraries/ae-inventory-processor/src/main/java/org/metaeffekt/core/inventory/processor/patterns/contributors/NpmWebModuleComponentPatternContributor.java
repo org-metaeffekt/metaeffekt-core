@@ -37,7 +37,7 @@ import static java.util.Collections.unmodifiableList;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 /**
- * TODO: create bower and composer variants to cover the existing setup; WebModuleContributors are Package-Manager-specific
+ * Separate WebModuleComponentPatternContributor for NPM.
  */
 @Slf4j
 public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleComponentPatternContributor {
@@ -256,7 +256,6 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
                     // TODO: peerDependencyMeta are not evaluated; can be nested
                     // TODO: overwrites not processed yet; we can leave this to the lock to resolve
 
-                    webModule.packageJsonFile = anchorFile;
                 }
                 // NOTE: nothing to do in the else branch; we leave the direct dependencies empty/unspecified for lock files
             }

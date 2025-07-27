@@ -34,7 +34,7 @@ import java.util.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 /**
- * TODO: create bower and composer variants to cover the existing setup; WebModuleContributors are Package-Manager-specific
+ * Separate WebModuleComponentPatternContributor for Composer.
  */
 @Slf4j
 public class ComposerWebModuleComponentPatternContributor extends AbstractWebModuleComponentPatternContributor {
@@ -227,8 +227,6 @@ public class ComposerWebModuleComponentPatternContributor extends AbstractWebMod
                         webModule.getDirectDependencies().add(dependency);
                     }
                 }
-
-                webModule.composerJsonFile = anchorFile;
 
                 // check for adjacent composer.lock
                 final File file = new File(anchorFile.getParentFile(), "composer.lock");

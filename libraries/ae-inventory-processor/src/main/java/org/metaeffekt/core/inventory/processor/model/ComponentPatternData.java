@@ -49,8 +49,7 @@ public class ComponentPatternData extends AbstractModelBase {
         validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR.getKey(), get(Attribute.VERSION_ANCHOR));
         validateNotEmptyOrNull(context, Attribute.VERSION_ANCHOR_CHECKSUM.getKey(), get(Attribute.VERSION_ANCHOR_CHECKSUM));
 
-        // NOTE abstract CPDs neither have a COMPONENT_PART nor COMPONENT_NAME
-        //validateNotEmptyOrNull(context, Attribute.COMPONENT_PART.getKey(), get(Attribute.COMPONENT_PART));
+        // NOTE: abstract CPDs neither have a COMPONENT_PART nor COMPONENT_NAME; these attributes cannot be validated here
     }
 
     public void validate() {

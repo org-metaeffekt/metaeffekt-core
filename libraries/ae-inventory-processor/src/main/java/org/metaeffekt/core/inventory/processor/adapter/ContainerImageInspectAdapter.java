@@ -71,7 +71,7 @@ public class ContainerImageInspectAdapter {
                     LOG.info("Skipping asset identification on [{}]. Appears not to be a container manifest.", containerInspectionFile);
                 }
             } else {
-                LOG.warn("Container image inspect file at [{}] shows unexpected content.", containerInspectionFile);
+                LOG.debug("Container image inspect file at [{}] shows unexpected content.", containerInspectionFile);
             }
         } catch (IllegalArgumentException e) {
             // we must expect that other .json files are found. Therefore, only log problems in parsing to debug.

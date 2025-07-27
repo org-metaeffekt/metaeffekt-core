@@ -34,7 +34,7 @@ import java.util.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
 /**
- * TODO: create bower and composer variants to cover the existing setup; WebModuleContributors are Package-Manager-specific
+ * Separate WebModuleComponentPatternContributor for Bower.
  */
 @Slf4j
 public class BowerWebModuleComponentPatternContributor extends AbstractWebModuleComponentPatternContributor {

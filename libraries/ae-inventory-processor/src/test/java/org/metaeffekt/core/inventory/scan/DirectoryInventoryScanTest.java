@@ -167,8 +167,8 @@ public class DirectoryInventoryScanTest {
     @Ignore
     @Test
     public void testScanExtractedFiles_External() throws IOException {
-        File inputDir = new File("/Users/kklein/Downloads/tmp/input");
-        File scanDir = new File("/Users/kklein/Downloads/tmp/scan");
+        File inputDir = new File("<project.baseDir>/input");
+        File scanDir = new File("<project.baseDir>/scan");
         String[] scanIncludes = new String[]{"**/*"};
         String[] scanExcludes = new String[]{"--none--"};
         File inventoryFile = new File("<project.baseDir>/inventory/src/main/resources/inventory/artifact-inventory.xls");
