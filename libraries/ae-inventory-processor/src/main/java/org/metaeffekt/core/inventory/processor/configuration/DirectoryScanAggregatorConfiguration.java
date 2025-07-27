@@ -361,7 +361,7 @@ public class DirectoryScanAggregatorConfiguration {
             // post-processing steps
 
             // evaluate component patterns
-            LOG.info("Evaluating component patterns...");
+            LOG.debug("Evaluating component patterns...");
             final List<FilePatternQualifierMapper> filePatternQualifierMappers = evaluateComponentPatterns();
 
             // aggregate files (atomic and component patterns)
@@ -618,9 +618,6 @@ public class DirectoryScanAggregatorConfiguration {
 
             // manage intersections and overlaps
             manageIntersectionsAndContainment(qualifierToMapperMap);
-
-            //
-            LOG.info("Built [{}] file pattern mappers.",  filePatternQualifierMapperList.size());
 
             return filePatternQualifierMapperList;
         } catch (IOException e) {
