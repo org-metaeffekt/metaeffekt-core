@@ -20,13 +20,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Charts_4_1_0 extends AbstractCompositionAnalysisTest {
 
@@ -62,14 +60,5 @@ public class Charts_4_1_0 extends AbstractCompositionAnalysisTest {
                         attributeValue(PURL, "pkg:cocoapods/Charts@4.1.0"),
                         attributeValue(PATH_IN_ASSET, "[v4.1.0.zip]/Charts-4.1.0"))
                 .assertNotEmpty();
-
-        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
-                .selectArtifacts()
-                .filter(a -> a.getVersion() != null);
-
-        artifactList.logListWithAllAttributes();
-
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(1);
     }
 }

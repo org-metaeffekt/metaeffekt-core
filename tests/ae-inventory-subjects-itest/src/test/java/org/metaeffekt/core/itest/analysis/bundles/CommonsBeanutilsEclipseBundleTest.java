@@ -22,15 +22,14 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
@@ -68,17 +67,8 @@ public class CommonsBeanutilsEclipseBundleTest extends AbstractCompositionAnalys
 
         inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
 
-        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
-
-        artifactList.logListWithAllAttributes();
-
         analysis.selectArtifacts(attributeValue(ID, "org.apache.commons.collections_3.2.0.v201005080500.jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "3.2.0.v201005080500")).hasSizeOf(1);
-
-        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
-        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
-
-        analysis.selectArtifacts().filter(a -> a.get(FILE_NAME) == null).as("File Name is null").hasSizeOf(0);
 
         analysis.selectArtifacts().hasSizeOf(1);
     }

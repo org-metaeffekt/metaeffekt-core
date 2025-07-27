@@ -37,8 +37,4 @@ public class ArtifactList extends BaseList<Artifact>
     public ArtifactList createNewInstance(List<Artifact> filteredList) {
         return new ArtifactList(filteredList, this.description);
     }
-
-    public int size() {
-        return getItemList().size();
-    }
 }

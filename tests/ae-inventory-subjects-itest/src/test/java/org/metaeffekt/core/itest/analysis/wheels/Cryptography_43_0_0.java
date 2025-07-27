@@ -26,7 +26,6 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
 
@@ -58,14 +57,16 @@ public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
 
         artifactList.logListWithAllAttributes();
 
+        artifactList.with(attributeValue(ID, "System.Numerics.Vectors-4.5.0"),
+                        attributeValue(VERSION, "4.5.0"),
+                        attributeValue(Artifact.Attribute.ROOT_PATHS, "[system.numerics.vectors.4.5.0.nupkg]"),
+                        attributeValue(PATH_IN_ASSET, "[system.numerics.vectors.4.5.0.nupkg]"))
+                .assertNotEmpty();
+
         artifactList.with(attributeValue(ID, "cryptography-43.0.0"),
                         attributeValue(VERSION, "43.0.0"),
                         attributeValue(Artifact.Attribute.ROOT_PATHS, "cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl"),
-                        attributeValue(PATH_IN_ASSET, "[cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl]"))
+                        attributeValue(PATH_IN_ASSET, "cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl"))
                 .assertNotEmpty();
-
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "whl-archive")).hasSizeOf(1);
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "python-library")).hasSizeOf(1);
-        artifactList.hasSizeOf(2);
     }
 }

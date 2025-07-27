@@ -203,9 +203,6 @@ public class InventorySerializationContext {
      */
     private final static Artifact.Attribute[] ARTIFACT_COLUMN_ORDER = new Artifact.Attribute[]{
             Artifact.Attribute.ID,
-            Artifact.Attribute.NAME,
-            Artifact.Attribute.FILE_NAME,
-            Artifact.Attribute.CLASSIFIER,
             Artifact.Attribute.CHECKSUM,
             Artifact.Attribute.COMPONENT,
             Artifact.Attribute.GROUPID,

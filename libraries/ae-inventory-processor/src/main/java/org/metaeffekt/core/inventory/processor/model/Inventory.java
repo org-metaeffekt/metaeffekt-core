@@ -1107,7 +1107,7 @@ public class Inventory implements Serializable {
         final String id = normalize(artifact.getId());
         final String artifactId = normalize(artifact.getArtifactId());
         final String groupId = normalize(artifact.getGroupId());
-        final String classifier = normalize(artifact.inferClassifierFromFileNameAndVersion());
+        final String classifier = normalize(artifact.getClassifier());
         final String type = normalize(artifact.getType());
 
         // find current only works for artifacts, which have a proper artifact id
@@ -1121,7 +1121,7 @@ public class Inventory implements Serializable {
                 if (candidateClassification.contains(CLASSIFICATION_CURRENT)) {
                     final String candidateGroupId = normalize(candidate.getGroupId());
                     final String candidateArtifactId = normalize(candidate.getArtifactId());
-                    final String candidateClassifier = normalize(candidate.inferClassifierFromFileNameAndVersion());
+                    final String candidateClassifier = normalize(candidate.getClassifier());
                     final String candidateType = normalize(candidate.getType());
                     if (groupId.equals(candidateGroupId)) {
                         if (artifactId.equals(candidateArtifactId)) {
@@ -1142,7 +1142,7 @@ public class Inventory implements Serializable {
         final String id = normalize(artifact.getId());
         final String artifactId = normalize(artifact.getArtifactId());
         final String groupId = normalize(artifact.getGroupId());
-        final String classifier = normalize(artifact.inferClassifierFromFileNameAndVersion());
+        final String classifier = normalize(artifact.getClassifier());
         final String type = normalize(artifact.getType());
 
         // find current only works for artifacts, which have a proper artifact id
@@ -1154,7 +1154,7 @@ public class Inventory implements Serializable {
             if (candidate != artifact) {
                 final String candidateGroupId = normalize(candidate.getGroupId());
                 final String candidateArtifactId = normalize(candidate.getArtifactId());
-                final String candidateClassifier = normalize(candidate.inferClassifierFromFileNameAndVersion());
+                final String candidateClassifier = normalize(candidate.getClassifier());
                 final String candidateType = normalize(candidate.getType());
                 if (groupId.equals(candidateGroupId)) {
                     if (artifactId.equals(candidateArtifactId)) {
@@ -2109,25 +2109,18 @@ public class Inventory implements Serializable {
 
         final Map<String, Integer> rearrangedAttributeWidths = logModelRearrangeAttributes(attributeWidths);
         // header and separator
-
-        List<String> columns = new ArrayList<>(rearrangedAttributeWidths.keySet());
-        columns = Artifact.orderAttributes(columns, null, Artifact.ARTIFACT_COLUMN_ORDER_LIST);
-
-        final String header = columns.stream()
-                .map(entry -> StringUtils.rightPad(entry, rearrangedAttributeWidths.get(entry)))
+        final String header = rearrangedAttributeWidths.entrySet().stream()
+                .map(entry -> StringUtils.rightPad(entry.getKey(), entry.getValue()))
                 .collect(Collectors.joining(" | ", "| ", " |"));
-
-        final String separator = columns.stream()
-                .map(c -> rearrangedAttributeWidths.get(c))
+        final String separator = rearrangedAttributeWidths.values().stream()
                 .map(integer -> StringUtils.repeat("-", integer + 2))
                 .collect(Collectors.joining("|", "|", "|"));
-
         LOG.info(header);
         LOG.info(separator);
 
         // logging each model's attributes
         for (AbstractModelBase model : models) {
-            String row = columns.stream()
+            String row = rearrangedAttributeWidths.keySet().stream()
                     .map(key -> StringUtils.rightPad(model.get(key) != null ? model.get(key).replace("\n", "<br>") : "", rearrangedAttributeWidths.get(key)))
                     .collect(Collectors.joining(" | ", "| ", " |"));
             LOG.info(row);
@@ -2206,47 +2199,6 @@ public class Inventory implements Serializable {
         }
 
         return table;
-    }
-
-    public void deriveArtifactQualifiers() {
-        for (Artifact artifact : getArtifacts()) {
-
-            String qualifier = "";
-            if (StringUtils.isNotBlank(artifact.getGroupId())) {
-                qualifier += artifact.getGroupId();
-                qualifier += "/";
-            }
-
-            if (StringUtils.isNotBlank((artifact.getName()))) {
-                qualifier += artifact.getName();
-            }
-
-            if (StringUtils.isNotBlank((artifact.getVersion())) && StringUtils.isNotBlank(artifact.getName())) {
-                qualifier += "-";
-                qualifier += artifact.getVersion();
-            }
-            if (StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isBlank(artifact.getName())) {
-                qualifier += artifact.getVersion();
-            }
-
-            if (StringUtils.isNotBlank(artifact.getRelease())) {
-                qualifier += "-";
-                qualifier += artifact.getRelease();
-            }
-
-            if (StringUtils.isNotBlank(artifact.inferClassifierFromFileNameAndVersion())) {
-                qualifier += "-";
-                qualifier += artifact.inferClassifierFromFileNameAndVersion();
-
-            }
-
-            artifact.set(Artifact.Attribute.QUALIFIER, qualifier);
-
-        }
-
-        // set qualifiers for all artifacts
-        // how the qualifier is build
-
     }
 
     /**

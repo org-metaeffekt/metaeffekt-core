@@ -58,42 +58,32 @@ public class ArtifactTest {
         {
             Artifact artifact = new Artifact();
             artifact.setId("guava-25.1-jre.jar");
-            artifact.set(Artifact.Attribute.FILE_NAME, "guava-25.1-jre.jar");
             artifact.setVersion("25.1");
-            String classifier = artifact.inferClassifierFromFileNameAndVersion();
-            Assert.assertEquals("jre", classifier);
+            Assert.assertEquals("jre", artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("guava-25.1-jre.jar");
-            artifact.set(Artifact.Attribute.FILE_NAME, "guava-25.1-jre.jar");
             artifact.setVersion("25.1-jre");
-            String classifier = artifact.inferClassifierFromFileNameAndVersion();
-            Assert.assertNull(classifier);
+            Assert.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId--classifier.txt");
-            artifact.set(Artifact.Attribute.FILE_NAME, "artifactId--classifier.txt");
             artifact.setVersion("");
-            String classifier = artifact.inferClassifierFromFileNameAndVersion();
-            Assert.assertNull(classifier);
+            Assert.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId-null-classifier.txt");
-            artifact.set(Artifact.Attribute.FILE_NAME, "artifactId-null-classifier.txt");
             artifact.setVersion(null);
-            String classifier = artifact.inferClassifierFromFileNameAndVersion();
-            Assert.assertNull(classifier);
+            Assert.assertNull(artifact.getClassifier());
         }
         {
             Artifact artifact = new Artifact();
             artifact.setId("artifactId-X-classifier.txt");
-            artifact.set(Artifact.Attribute.FILE_NAME, "artifactId-X-classifier.txt");
             artifact.setVersion("X");
-            String classifier = artifact.inferClassifierFromFileNameAndVersion();
-            Assert.assertEquals("classifier", classifier);
+            Assert.assertEquals("classifier", artifact.getClassifier());
         }
     }
 
@@ -174,12 +164,10 @@ public class ArtifactTest {
         Artifact a = new Artifact();
         a.setId("a.b.c.d-1.0.0-xyz.jar");
         a.setGroupId("a.b.c");
-        a.set(Artifact.Attribute.FILE_NAME, "a.b.c.d-1.0.0-xyz.jar");
         a.setVersion("1.0.0");
         a.deriveArtifactId();
         Assert.assertEquals("d", a.getArtifactId());
-        String classifier = a.inferClassifierFromFileNameAndVersion();
-        Assert.assertEquals("xyz", classifier);
+        Assert.assertEquals("xyz", a.getClassifier());
     }
 
     @Test
