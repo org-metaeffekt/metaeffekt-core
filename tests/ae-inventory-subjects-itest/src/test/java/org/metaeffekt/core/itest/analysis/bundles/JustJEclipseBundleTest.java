@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
@@ -35,6 +36,7 @@ import java.io.File;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
@@ -65,6 +67,8 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
     @Test
     public void assertStructure() throws Exception{
+        LOG.info(testSetup.getInventory().toString());
+
         final File scanBaseDir =  new File("target/.test/scan/analysis/bundles/JustJEclipseBundleTest");
 
         {
@@ -87,18 +91,31 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
     @Test
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
-        final Analysis analysis = new Analysis(inventory);
+        Analysis analysis = new Analysis(inventory);
 
-        analysis.selectArtifacts().logListWithAllAttributes();
+        analysis.selectArtifacts().logList();
+
+        inventory.getArtifacts().stream().map(Artifact::deriveQualifier).forEach(LOG::info);
+
+
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
+                .selectArtifacts();
+
+        artifactList.logListWithAllAttributes();
 
         analysis.selectArtifacts(attributeValue(ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.2.v20220201-1208.jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2.v20220201-1208")).hasSizeOf(1);
 
         // FIXME: this is not of interest; snapshots contributions should be handled as secondary contribution; or be disabled (no value)
+        analysis.selectArtifacts(attributeValue(ID, "org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(GROUPID, "org.eclipse.justj")).hasSizeOf(1);
+        analysis.selectArtifacts(attributeValue(PURL, "pkg:maven/org.eclipse.justj/openjdk.hotspot.jre.full.win32.x86_64@17.0.2-SNAPSHOT?type=jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2-SNAPSHOT")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(ID, "temurin-jdk-17.0.2")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(VERSION, "17.0.2")).hasSizeOf(1);
+
+        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
+        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(1);
 
         final int size = analysis.selectArtifacts().getItemList().size();
 

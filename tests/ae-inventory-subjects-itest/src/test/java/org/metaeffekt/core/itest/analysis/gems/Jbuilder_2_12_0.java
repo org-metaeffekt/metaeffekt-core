@@ -25,6 +25,7 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
+import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Jbuilder_2_12_0 extends AbstractCompositionAnalysisTest{
 
@@ -60,5 +61,8 @@ public class Jbuilder_2_12_0 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "2.12.0"),
                         attributeValue(PURL, "pkg:gem/jbuilder@2.12.0"))
                 .assertNotEmpty();
+
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(1);
     }
 }

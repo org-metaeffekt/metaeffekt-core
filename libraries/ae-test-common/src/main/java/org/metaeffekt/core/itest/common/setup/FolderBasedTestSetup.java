@@ -69,6 +69,10 @@ public class FolderBasedTestSetup extends AbstractTestSetup {
 
         final Inventory inventory = scan.createScanInventory();
 
+        // introduces artifact Qualifiers for test
+
+        inventory.deriveArtifactQualifiers();
+
         new File(getInventoryFolder()).mkdirs();
         new InventoryWriter().writeInventory(inventory, new File(getInventoryFolder() + "scan-inventory.xlsx"));
         new InventoryWriter().writeInventory(inventory, new File(inventoryfile));
