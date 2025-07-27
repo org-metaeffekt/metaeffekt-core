@@ -15,10 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.adapter.npm;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.math3.util.Pair;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
+import org.metaeffekt.core.inventory.processor.adapter.ModuleData;
 import org.metaeffekt.core.inventory.processor.adapter.NpmModule;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 
@@ -31,6 +33,11 @@ import java.util.function.Predicate;
 @Slf4j
 public class PackageLockParser1 extends PackageLockParser {
 
+    /**
+     * This can be activated on test level to verify the invariants during computation.
+     */
+    public static boolean CHECK_INVARIANTS = false;
+
     @Getter
     private final JSONObject object;
 
@@ -39,73 +46,125 @@ public class PackageLockParser1 extends PackageLockParser {
         this.object = object;
     }
 
+    @Data
+    public static class ResolvedModuleData {
+        private final String path;
+        private final String name;
+        private final JSONObject jsonObject;
+    }
+
     @Override
     public void parseModules(WebModule webModule) {
         final Map<String, NpmModule> pathModuleMap = new HashMap<>();
 
-        Stack<Pair<String, JSONObject>> stack = new Stack<>();
+        final Stack<ResolvedModuleData> resolvedModuleDataStack = new Stack<>();
 
-        final NpmModule rootNpmModule = new NpmModule(webModule.getName(), webModule.getName());
-        parseModuleContent(rootNpmModule, object, stack, pathModuleMap);
-        pathModuleMap.put(rootNpmModule.getName(), rootNpmModule);
+        final NpmModule rootNpmModule = new NpmModule(webModule.getName(), "");
+        parseModuleContent(rootNpmModule, object, resolvedModuleDataStack);
+        pathModuleMap.put(rootNpmModule.getPath(), rootNpmModule);
+        pathModuleMap.put(rootNpmModule.getPath(), rootNpmModule);
 
-        while (!stack.isEmpty()) {
-            Pair<String, JSONObject> pair = stack.pop();
+        // qualify root module
+        setRootModule(rootNpmModule);
 
-            String name = pair.getKey();
-            JSONObject jsonObject = pair.getValue();
+        while (!resolvedModuleDataStack.isEmpty()) {
+            final ResolvedModuleData moduleData = resolvedModuleDataStack.pop();
 
-            final NpmModule npmModule = new NpmModule(name, jsonObject.getString("version"));
-            parseModuleContent(npmModule, jsonObject, stack, pathModuleMap);
-            pathModuleMap.put(name, npmModule);
+            final NpmModule npmModule = new NpmModule(moduleData.getName(), moduleData.getPath());
+            parseModuleContent(npmModule, moduleData.getJsonObject(), resolvedModuleDataStack);
+
+            pathModuleMap.put(moduleData.getPath(), npmModule);
         }
 
         setPathModuleMap(pathModuleMap);
+
+        if (CHECK_INVARIANTS) {
+            verifyPathModuleMapInvariants(webModule);
+        }
     }
 
-    private void parseModuleContent(NpmModule npmModule, JSONObject specificPackage, Stack<Pair<String, JSONObject>> stack, Map<String, NpmModule> pathModuleMap) {
-        npmModule.setUrl(specificPackage.optString("resolved"));
-        npmModule.setHash(specificPackage.optString("integrity"));
-        npmModule.setVersion(specificPackage.optString("version"));
+    private void parseModuleContent(NpmModule dependentModule, JSONObject specificPackage, Stack<ResolvedModuleData> stack) {
+         dependentModule.setUrl(specificPackage.optString("resolved"));
+         dependentModule.setHash(specificPackage.optString("integrity"));
+         dependentModule.setVersion(specificPackage.optString("version"));
 
-        npmModule.setDevDependency(specificPackage.optBoolean("dev"));
-        npmModule.setPeerDependency(specificPackage.optBoolean("peer"));
-        npmModule.setOptionalDependency(specificPackage.optBoolean("optional"));
+        dependentModule.setDevDependency(specificPackage.optBoolean("dev"));
+        dependentModule.setPeerDependency(specificPackage.optBoolean("peer"));
+        dependentModule.setOptionalDependency(specificPackage.optBoolean("optional"));
 
-        final Map<String, String> required = collectModuleMap(specificPackage, "required", stack, null);
-        final Map<String, String> development = collectModuleMap(specificPackage, "dependencies", stack, o -> o.optBoolean("dev"));
-        final Map<String, String> runtime = collectModuleMap(specificPackage, "dependencies", stack, o -> !o.optBoolean("dev"));
+        // requires uses a name to version range map
+        final Map<String, ModuleData> required = collectNameVersionRangeMap(specificPackage, "requires");
+
+        final Map<String, ModuleData> development = collectResolvedModuleMap(specificPackage, "dependencies", stack, o -> o.optBoolean("dev"), dependentModule);
+        final Map<String, ModuleData> runtime = collectResolvedModuleMap(specificPackage, "dependencies", stack, o -> !o.optBoolean("dev"), dependentModule);
 
         // combine required and runtime
         runtime.putAll(required);
 
-        npmModule.setRuntimeDependencies(runtime);
-        npmModule.setDevDependencies(development);
+        dependentModule.setRuntimeDependencies(runtime);
+        dependentModule.setDevDependencies(development);
     }
 
-    protected Map<String, String> collectModuleMap(JSONObject specificPackage, String dependencies, Stack<Pair<String, JSONObject>> stack, Predicate<JSONObject> filter) {
-        final Map<String, String> nameVersionMap = new HashMap<>();
-        if (dependencies != null) {
-            JSONObject jsonObject = specificPackage.optJSONObject(dependencies);
-            if (jsonObject != null) {
-                for (String path : jsonObject.keySet()) {
-                    JSONObject dependency = jsonObject.getJSONObject(path);
-                    String version = dependency.optString("version");
-                    if (version != null) {
-                        if (filter == null || filter.test(dependency)) {
-                            nameVersionMap.put(path, version);
-                            final Pair<String, JSONObject> pair = Pair.create(path, dependency);
-
-                            // only push those that pass the filter (location) and have not been put on the stack yet
-                            if (!stack.contains(pair)) {
-                                stack.push(pair);
-                            }
+    protected Map<String, ModuleData> collectResolvedModuleMap(JSONObject specificPackage, String attribute, Stack<ResolvedModuleData> stack, Predicate<JSONObject> filter, NpmModule dependentModule) {
+        final Map<String, ModuleData> pathVersionMap = new HashMap<>();
+        final JSONObject jsonObject = specificPackage.optJSONObject(attribute);
+        if (jsonObject != null) {
+            for (String name : jsonObject.keySet()) {
+                final JSONObject dependency = jsonObject.getJSONObject(name);
+                final String version = dependency.optString("version");
+                if (version != null) {
+                    if (filter == null || filter.test(dependency)) {
+                        String fullPath = buildFullPath(dependentModule, name);
+                        pathVersionMap.put(fullPath, new ModuleData(name, fullPath, null, version));
+                        final ResolvedModuleData moduleData = new ResolvedModuleData(fullPath, name, dependency);
+                        // only push those that pass the filter (location) and have not been put on the stack yet
+                        if (!stack.contains(moduleData)) {
+                            stack.push(moduleData);
                         }
                     }
                 }
             }
         }
-        return nameVersionMap;
+        return pathVersionMap;
+    }
+
+    private static String buildFullPath(NpmModule dependentModule, String path) {
+        final String dependentModulePath = dependentModule.getPath();
+        if (StringUtils.isNotBlank(dependentModulePath)) {
+            return dependentModule.getPath() + "/npm_modules/" + path;
+        } else {
+            return path;
+        }
+    }
+
+    @Override
+    public NpmModule resolveNpmModule(NpmModule dependentModule, String path, String versionRange) {
+        NpmModule npmModule = resolveNpmModule(path);
+        if (npmModule != null) return npmModule;
+
+        final String dependentModulePath = dependentModule.getPath();
+        if (StringUtils.isNotBlank(dependentModulePath)) {
+
+            String queryPath = dependentModulePath + "/npm_modules/" + path;
+            npmModule = resolveNpmModule(queryPath);
+            if (npmModule != null) return npmModule;
+
+            queryPath = dependentModule.getName() + "/npm_modules/" + path;
+            npmModule = resolveNpmModule(queryPath);
+            if (npmModule != null) return npmModule;
+
+            // search one level up
+            int slashIndex = dependentModulePath.lastIndexOf("/npm_modules/");
+            if (slashIndex != -1) {
+                String parentModulePath = dependentModulePath.substring(0, slashIndex);
+                queryPath = parentModulePath + "/npm_modules/" + path;
+                log.info(queryPath);
+                npmModule = resolveNpmModule(queryPath);
+                if (npmModule != null) return npmModule;
+            }
+        }
+
+        return npmModule;
     }
 
 }

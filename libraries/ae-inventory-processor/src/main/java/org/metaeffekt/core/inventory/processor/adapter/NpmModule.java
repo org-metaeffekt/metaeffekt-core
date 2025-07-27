@@ -25,7 +25,7 @@ import java.util.Map;
 
 @ToString
 @Getter
-public class NpmModule extends Module {
+public class NpmModule {
 
     /**
      * Name of the module.
@@ -63,16 +63,16 @@ public class NpmModule extends Module {
     private boolean isOptionalDependency;
 
     @Setter
-    private Map<String, String> devDependencies;
+    private Map<String, ModuleData> devDependencies;
 
     @Setter
-    private Map<String, String> runtimeDependencies;
+    private Map<String, ModuleData> runtimeDependencies;
 
     @Setter
-    private Map<String, String> peerDependencies;
+    private Map<String, ModuleData> peerDependencies;
 
     @Setter
-    private Map<String, String> optionalDependencies;
+    private Map<String, ModuleData> optionalDependencies;
 
     @ToString.Exclude
     @Setter
@@ -81,6 +81,10 @@ public class NpmModule extends Module {
     public NpmModule(String name, String path) {
         this.name = name;
         this.path = path;
+
+        if (name.startsWith("27.5.1")) throw  new IllegalArgumentException("NpmModule name cannot start with 27.5.1");
+        // if (path.length() > 0 && name.length() > path.length()) throw new IllegalStateException();
+
     }
 
     public String deriveQualifier() {

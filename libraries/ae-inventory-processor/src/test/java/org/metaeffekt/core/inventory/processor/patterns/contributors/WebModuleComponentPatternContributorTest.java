@@ -15,7 +15,11 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.adapter.npm.PackageLockParser1;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -23,9 +27,11 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.computeMD5Checksum;
 
@@ -60,7 +66,12 @@ public class WebModuleComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1504);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-project-a-0.0.1-SNAPSHOT"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(92);
+
         inventory.getArtifacts().forEach(artifact -> {
             if (artifact.getId().contains("rimraf")){
                 assertThat(artifact.getVersion()).isIn("3.0.2", "5.0.7");
@@ -123,6 +134,10 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-002-inventory.xlsx"));
 
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1163);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-web-app-1.0.0-SNAPSHOT"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(84);
     }
 
@@ -151,11 +166,17 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-002-lock-inventory.xlsx"));
 
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1163);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-web-app-1.0.0-SNAPSHOT"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(84);
     }
 
     @Test
     public void testNpm003() throws IOException {
+        PackageLockParser1.CHECK_INVARIANTS = true;
+
         final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-003");
         final String relativeAnchorPath = "sample/package.json";
         final File anchorFile = new File(baseDir, relativeAnchorPath);
@@ -179,7 +200,11 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-003-inventory.xlsx"));
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(283);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1306);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-sample-1.1.14"));
+        assertThat(inventory.getArtifacts().size()).isEqualTo(348);
     }
 
     @Test
@@ -207,7 +232,11 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-003-lock-inventory.xlsx"));
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(283);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1306);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-sample-1.1.14"));
+        assertThat(inventory.getArtifacts().size()).isEqualTo(348);
     }
 
 
@@ -261,7 +290,38 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-005-inventory.xlsx"));
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(218);
+        // assert specific content
+
+        final String rootAssetId = "AID-ae-npm-vulnerability-assessment-dashboard-0.1.0";
+
+        // the inventory must have two versions 3.0.3 and 2.0.11 of unist
+        final Artifact unist3 = inventory.findArtifact("@types/unist-3.0.3");
+        Assertions.assertThat(unist3).isNotNull();
+        Assertions.assertThat(unist3.get(Artifact.Attribute.VERSION)).isEqualTo("3.0.3");
+        Assertions.assertThat(unist3.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
+        Assertions.assertThat(unist3.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
+        Assertions.assertThat(unist3.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@types/unist@3.0.3");
+        Assertions.assertThat(unist3.get(Artifact.Attribute.COMPONENT)).isEqualTo("@types/unist");
+        Assertions.assertThat(unist3.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("dashboard/package.json[@types/unist@3.0.3]");
+
+        final Artifact unist2 = inventory.findArtifact("@types/unist-2.0.11");
+        Assertions.assertThat(unist2).isNotNull();
+        Assertions.assertThat(unist2.get(Artifact.Attribute.COMPONENT)).isEqualTo("@types/unist");
+        Assertions.assertThat(unist2.get(Artifact.Attribute.VERSION)).isEqualTo("2.0.11");
+        Assertions.assertThat(unist2.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
+        Assertions.assertThat(unist2.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
+        Assertions.assertThat(unist2.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("dashboard/package.json[@types/unist@2.0.11]");
+        Assertions.assertThat(unist2.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@types/unist@2.0.11");
+
+        // both are transitive via react-markdown as direct dependency
+        Assertions.assertThat(unist2.get(rootAssetId)).isEqualTo("(r)");
+        Assertions.assertThat(unist3.get(rootAssetId)).isEqualTo("(r)");
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1542);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-ae-npm-vulnerability-assessment-dashboard-0.1.0"));
+        assertThat(inventory.getArtifacts().size()).isEqualTo(224);
     }
 
     @Test
@@ -289,7 +349,11 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-005-lock-inventory.xlsx"));
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(218);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1542);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-ae-npm-vulnerability-assessment-dashboard-0.1.0"));
+        assertThat(inventory.getArtifacts().size()).isEqualTo(224);
     }
 
     @Test
@@ -317,6 +381,10 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-006-inventory.xlsx"));
 
+        assertThat(inventory.getArtifacts().size()).isEqualTo(520);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-intern-angular-1.0.0"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(16);
     }
 
@@ -345,6 +413,10 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-006-lock-inventory.xlsx"));
 
+        assertThat(inventory.getArtifacts().size()).isEqualTo(520);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-intern-angular-1.0.0"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(16);
     }
 
@@ -373,6 +445,10 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/yarn-001-inventory.xlsx"));
 
+        assertThat(inventory.getArtifacts().size()).isEqualTo(343);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-example-yarn-package-1.0.0"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(14);
     }
 
@@ -401,6 +477,10 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/yarn-002-inventory.xlsx"));
 
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1362);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-test/package.json-v4.4.0"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(235);
     }
 

@@ -46,6 +46,8 @@ public class ComposerLockAdapter {
      * @param dependencies The list of dependencies from composer.json
      *
      * @return An inventory populated with the modules defined in the composer.lock file
+     *
+     * @throws IOException May be thrown on file access.
      */
     public Inventory extractInventory(File composerLock, String relativePath, List<WebModuleDependency> dependencies) throws IOException {
         final Map<String, WebModuleDependency> dependencyMap = buildDependencyLookupMap(dependencies);
@@ -125,6 +127,8 @@ public class ComposerLockAdapter {
      * @param relativePath The relative path to the file from the relevant basedir.
      *
      * @return An inventory populated with the modules defined in the composer.lock file
+     *
+     * @throws IOException May be thrown on file access.
      */
     public Inventory extractInventory(File composerLock, String relativePath) throws IOException {
         return extractInventory(composerLock, relativePath, Collections.emptyList());

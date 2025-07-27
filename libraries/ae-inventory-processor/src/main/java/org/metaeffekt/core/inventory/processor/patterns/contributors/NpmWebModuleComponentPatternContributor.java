@@ -113,13 +113,13 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
 
     private void condenseInventory(Inventory inventoryFromLockFile) {
         // select primary assets
-        Set<String> primaryAssetIds = inventoryFromLockFile.getAssetMetaData().stream()
+        final Set<String> primaryAssetIds = inventoryFromLockFile.getAssetMetaData().stream()
                 .filter(AssetMetaData::isPrimary)
                 .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
                 .collect(Collectors.toSet());
 
         // eliminate all but primary asset columns in artifacts
-        Set<String> givenAssetIds = InventoryUtils.collectAssetIdsFromArtifacts(inventoryFromLockFile);
+        final Set<String> givenAssetIds = InventoryUtils.collectAssetIdsFromArtifacts(inventoryFromLockFile);
         givenAssetIds.removeAll(primaryAssetIds);
 
         givenAssetIds.forEach(aid -> InventoryUtils.removeArtifactAttribute(aid, inventoryFromLockFile));
@@ -127,20 +127,12 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
         // degrade primary assets as normal assets
         inventoryFromLockFile.getAssetMetaData().forEach(amd -> amd.set(Constants.KEY_PRIMARY, null));
 
-        // filter artifacts that are neither (r) nor r on a primary asset
-        //filterInventory(inventoryFromLockFile, primaryAssetIds);
-    }
-
-    private static void filterInventory(Inventory inventoryFromLockFile, Set<String> primaryAssetIds) {
-        Set<Artifact> removableArtifacts = new HashSet<>();
+        // do not include root module (already subject to contributor)
+        final Set<Artifact> removableArtifacts = new HashSet<>();
         for (Artifact artifact : inventoryFromLockFile.getArtifacts()) {
             boolean remove = true;
             for (String aid : primaryAssetIds) {
-                if ("(r)".equals(artifact.get(aid))) {
-                    remove = false;
-                    break;
-                }
-                if ("r".equals(artifact.get(aid))) {
+                if (StringUtils.isNotBlank(artifact.get(aid))) {
                     remove = false;
                     break;
                 }
@@ -149,7 +141,6 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
                 removableArtifacts.add(artifact);
             }
         }
-
         inventoryFromLockFile.getArtifacts().removeAll(removableArtifacts);
     }
 

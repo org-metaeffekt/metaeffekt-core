@@ -44,5 +44,12 @@ public class WebModuleDependency {
     private boolean isTestDependency;
     private boolean isOverwriteDependency;
 
+    public String deriveQualifier() {
+        if (resolvedVersion != null) {
+            return name + "-" + resolvedVersion;
+        }
+        return name;
+    }
+
     // NOTE: here no dependency tree is covered
 }

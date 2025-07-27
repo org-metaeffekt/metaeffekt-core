@@ -216,7 +216,6 @@ public class DirectoryInventoryScanTest {
         Assertions.assertThat(inventory.getArtifacts().size()).isEqualTo(225);
     }
 
-
     @Ignore
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {

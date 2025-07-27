@@ -21,13 +21,16 @@ import org.metaeffekt.core.inventory.processor.adapter.npm.NpmLockParserFactory;
 import org.metaeffekt.core.inventory.processor.adapter.npm.PackageLockParser;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
+import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
  * Extracts an inventory for production npm modules based on a package-lock.json file.
@@ -65,22 +68,21 @@ public class NpmPackageLockAdapter {
         final List<NpmModule> processedModules = new ArrayList<>();
 
         // push self onto stack first
-        final Map<String, NpmModule> pathModuleMap = packageLockParser.getPathModuleMap();
-        final NpmModule rootNpmModule = pathModuleMap.get(webModule.getName());
+        NpmModule rootModule = packageLockParser.getRootModule();
 
-        if (rootNpmModule != null) {
-            stack.push(rootNpmModule);
+        if (rootModule != null) {
+            stack.push(rootModule);
 
             final AssetMetaData assetMetaData = new AssetMetaData();
-            assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "AID-" + rootNpmModule.deriveQualifier());
+            assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "AID-" + rootModule.deriveQualifier());
             assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH, webModule.getPath());
-            assetMetaData.set(AssetMetaData.Attribute.NAME, rootNpmModule.getName());
-            assetMetaData.set(AssetMetaData.Attribute.VERSION, rootNpmModule.getVersion());
-            assetMetaData.set(Constants.KEY_PRIMARY, Constants.MARKER_CROSS);
+            assetMetaData.set(AssetMetaData.Attribute.NAME, rootModule.getName());
+            assetMetaData.set(AssetMetaData.Attribute.VERSION, rootModule.getVersion());
+            assetMetaData.set(KEY_PRIMARY, MARKER_CROSS);
 
             inventory.getAssetMetaData().add(assetMetaData);
         } else {
-            pathModuleMap.values().forEach(stack::push);
+            packageLockParser.getPathModuleMap().values().forEach(stack::push);
         }
 
         while (!stack.isEmpty()) {
@@ -99,18 +101,14 @@ public class NpmPackageLockAdapter {
                 artifact = new Artifact();
                 artifact.setId(qualifier);
 
-                // determine component name
+                // determine component name; currently rather atomic
                 String componentName = module.getName();
-                int slashIndex = componentName.lastIndexOf("/");
-                if (slashIndex > 0) {
-                    componentName = componentName.substring(0, slashIndex);
-                }
                 artifact.setComponent(componentName);
 
                 // contribute other attributes
                 artifact.setVersion(module.getVersion());
-                artifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
-                artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
+                artifact.set(KEY_TYPE, ARTIFACT_TYPE_WEB_MODULE);
+                artifact.set(KEY_COMPONENT_SOURCE_TYPE, "npm-module");
                 artifact.set("Source Archive - URL", module.getUrl());
 
                 final String purl = buildPurl(module.getName(), module.getVersion());
@@ -123,7 +121,11 @@ public class NpmPackageLockAdapter {
             }
 
             // extend the artifact with the additional path information
-            artifact.append(Constants.KEY_PATH_IN_ASSET, "[" + module.getPath() + "]", Artifact.PATH_DELIMITER);
+            final Set<String> set = artifact.getSet(KEY_PATH_IN_ASSET);
+            final String rootPath = webModule.getPath() + "[" + module.getName() + "@" + module.getVersion() + "]";
+            if (!set.contains(rootPath)) {
+                artifact.append(KEY_PATH_IN_ASSET, rootPath, Artifact.PATH_DELIMITER);
+            }
 
             // one artifact may be shared by several modules; (unresolved) modules may have a content
             npmModuleArtifactMap.put(module, artifact);
@@ -138,10 +140,10 @@ public class NpmPackageLockAdapter {
         // step 1:
         final Stack<DependencyTuple> dependencyTuples = new Stack<>();
         for (NpmModule module : processedModules) {
-            apply(module, module.getRuntimeDependencies(), npmModuleArtifactMap, Constants.MARKER_RUNTIME_DEPENDENCY, dependencyTuples, packageLockParser);
-            apply(module, module.getDevDependencies(), npmModuleArtifactMap, Constants.MARKER_DEVELOPMENT_DEPENDENCY, dependencyTuples, packageLockParser);
-            apply(module, module.getPeerDependencies(), npmModuleArtifactMap, Constants.MARKER_PEER_DEPENDENCY, dependencyTuples, packageLockParser);
-            apply(module, module.getOptionalDependencies(), npmModuleArtifactMap, Constants.MARKER_OPTIONAL_DEPENDENCY, dependencyTuples, packageLockParser);
+            apply(module, module.getRuntimeDependencies(), npmModuleArtifactMap, MARKER_RUNTIME_DEPENDENCY, dependencyTuples, packageLockParser);
+            apply(module, module.getDevDependencies(), npmModuleArtifactMap, MARKER_DEVELOPMENT_DEPENDENCY, dependencyTuples, packageLockParser);
+            apply(module, module.getPeerDependencies(), npmModuleArtifactMap, MARKER_PEER_DEPENDENCY, dependencyTuples, packageLockParser);
+            apply(module, module.getOptionalDependencies(), npmModuleArtifactMap, MARKER_OPTIONAL_DEPENDENCY, dependencyTuples, packageLockParser);
         }
 
         // step 2: extend the DependencyTuples to all possible DependencyTriples and conclude dependency types
@@ -188,7 +190,56 @@ public class NpmPackageLockAdapter {
             }
         }
 
+        reviseDirectDependencyMarker(webModule, rootModule, npmModuleArtifactMap, packageLockParser);
+
         return inventory;
+    }
+
+    /**
+     * The look file may be inaccurate in the sense that some dependencies are treated as direct dependencies, while
+     * these are not listed in the package.json. Instead of artificially modifying the dependency tree for such cases
+     * this method cures the result and managed incorrectly derived direct dependencies to indirect dependencies.
+     *
+     * @param webModule The web module.
+     * @param rootNpmModule The root NpmModule.
+     * @param npmModuleArtifactMap The NpmModule to Artifact map.
+     * @param packageLockParser The PackageLockParser holding parsing information.
+     */
+    private void reviseDirectDependencyMarker(WebModule webModule, NpmModule rootNpmModule, Map<NpmModule, Artifact> npmModuleArtifactMap, PackageLockParser packageLockParser) {
+        // revise derived markers and correct false-direct dependencies to indirect dependencies
+        if (rootNpmModule != null) {
+            final List<WebModuleDependency> directDependencies = webModule.getDirectDependencies();
+
+            if (directDependencies != null && !directDependencies.isEmpty()) {
+                final Map<String, WebModuleDependency> qualifierDependencyMap = new HashMap<>();
+                for (WebModuleDependency wmd : directDependencies) {
+                    NpmModule npmModule = packageLockParser.getPathModuleMap().get(wmd.getName());
+                    if (npmModule != null) {
+                        qualifierDependencyMap.put(npmModule.deriveQualifier(), wmd);
+                    }
+                }
+
+                final String rootAssetId = "AID-" + rootNpmModule.getName() + "-" + rootNpmModule.getVersion();
+
+                for (Map.Entry<NpmModule, Artifact> entry : npmModuleArtifactMap.entrySet()) {
+                    final Artifact artifact = entry.getValue();
+                    final String currentMark = artifact.get(rootAssetId);
+                    if (currentMark != null && !currentMark.startsWith("(")) {
+
+                        final NpmModule npmModule = entry.getKey();
+                        final WebModuleDependency webModuleDependency = qualifierDependencyMap.get(npmModule.deriveQualifier());
+
+                        if (webModuleDependency == null) {
+                            String newMark = "(" + currentMark + ")";
+                            if (log.isDebugEnabled()) {
+                                log.debug("Managing indirect dependency of [{}] from [{}] to [{}].", npmModule.deriveQualifier(), currentMark, newMark);
+                            }
+                            artifact.set(rootAssetId, newMark);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Getter
@@ -280,17 +331,17 @@ public class NpmPackageLockAdapter {
         }
     }
 
-    private void pushDependenciesToStack(NpmModule dependentModule, Map<String, String> dependencyNameVersionRangeMap,
+    private void pushDependenciesToStack(NpmModule dependentModule, Map<String, ModuleData> dependencyNameVersionRangeMap,
          Stack<NpmModule> stack, boolean peerDependency, PackageLockParser packageLockParser) {
 
         if (dependencyNameVersionRangeMap == null) return;
 
-        for  (Map.Entry<String, String> entry : dependencyNameVersionRangeMap.entrySet()) {
+        for  (Map.Entry<String, ModuleData> entry : dependencyNameVersionRangeMap.entrySet()) {
             final String dependencyName = entry.getKey();
-            final String dependencyVersionRange = entry.getValue();
+            final String dependencyVersionRange = entry.getValue().getVersionRange();
             final NpmModule dependencyModule = packageLockParser.resolveNpmModule(dependentModule, dependencyName, dependencyVersionRange);
             if (dependencyModule == null) {
-                reportMissingDependency(dependentModule, peerDependency, entry);
+                reportMissingDependency(dependentModule, peerDependency, entry, packageLockParser);
             } else {
                 // manage dependent modules; add dependentModule to dependentModules list of dependency
                 final List<NpmModule> dependentModules = dependencyModule.getDependentModules();
@@ -303,14 +354,21 @@ public class NpmPackageLockAdapter {
         }
     }
 
-    private void reportMissingDependency(NpmModule dependentNpmModule, boolean peerDependency, Map.Entry<String, String> entry) {
+    private void reportMissingDependency(NpmModule dependentNpmModule, boolean peerDependency, Map.Entry<String, ModuleData> entry, PackageLockParser packageLockParser) {
         if (!peerDependency) {
+            String qualifier = entry.getKey() + "@" + entry.getValue();
             log.warn("Module [{}] not resolved using path [{}]. Potentially an optional dependency of [{}].",
-                    entry.getKey() + "@" + entry.getValue(), entry.getKey(), dependentNpmModule.getName());
+                    qualifier, entry.getKey(), dependentNpmModule.getPath());
+
+            List<String> options = packageLockParser.getPathModuleMap().keySet().stream().filter(a -> a.contains(entry.getKey())).collect(Collectors.toList());
+            if (!options.isEmpty()) {
+                log.warn("Options:");
+                options.forEach(log::warn);
+            }
         }
     }
 
-    private void apply(NpmModule dependentModule, Map<String, String> dependencyMap,
+    private void apply(NpmModule dependentModule, Map<String, ModuleData> dependencyMap,
               Map<NpmModule, Artifact> npmModuleArtifactMap, String dependencyType,
                        Stack<DependencyTuple> dependencyTuples, PackageLockParser packageLockParser) {
 
@@ -319,10 +377,10 @@ public class NpmPackageLockAdapter {
         final Artifact dependentArtifact = npmModuleArtifactMap.get(dependentModule);
         if (dependentArtifact == null) throw new IllegalStateException("No artifact found for module: " + dependentModule);
 
-        for  (Map.Entry<String, String> entry : dependencyMap.entrySet()) {
-            final NpmModule dependencyModule = packageLockParser.resolveNpmModule(dependentModule, entry.getKey(), entry.getValue());
+        for  (Map.Entry<String, ModuleData> entry : dependencyMap.entrySet()) {
+            final NpmModule dependencyModule = packageLockParser.resolveNpmModule(dependentModule, entry.getKey(), entry.getValue().getVersionRange());
             if (dependencyModule == null) {
-                reportMissingDependency(dependentModule, Constants.MARKER_PEER_DEPENDENCY.equalsIgnoreCase(dependencyType), entry);
+                reportMissingDependency(dependentModule, MARKER_PEER_DEPENDENCY.equalsIgnoreCase(dependencyType), entry, packageLockParser);
             } else {
                 final Artifact dependencyArtifact = npmModuleArtifactMap.get(dependencyModule);
                 if (dependencyArtifact != null) {

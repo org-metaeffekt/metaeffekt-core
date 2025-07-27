@@ -19,9 +19,9 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.metaeffekt.core.inventory.processor.adapter.ModuleData;
 import org.metaeffekt.core.inventory.processor.adapter.NpmModule;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
-import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
@@ -79,62 +79,30 @@ public class YarnLockParser extends PackageLockParser {
         if (rootModule == null) {
             if (StringUtils.isNotBlank(webModule.getName())) {
                 // FIXME-KKL: unify creation from webmodule
-                rootModule = new NpmModule(webModule.getName(), webModule.getName());
+                rootModule = new NpmModule(webModule.getName(), "");
                 rootModule.setVersion(webModule.getVersion());
                 rootModule.setUrl(webModule.getUrl());
             } else {
+                // in any case we add dummy; to be revised
                 rootModule = new NpmModule("dummy", "dummy");
             }
-            pathModuleMap.put(rootModule.getName(), rootModule);
-        }
 
-        Map<String, String> runtimeDependencies = new HashMap<>();
-        Map<String, String> devDependencies = new HashMap<>();
-        Map<String, String> peerDependencies = new HashMap<>();
-        Map<String, String> optionalDependencies = new HashMap<>();
+            pathModuleMap.put(rootModule.getName(), rootModule);
+            setRootModule(rootModule);
+        }
 
         // fill dependency information from package.json
-        for (WebModuleDependency wmd : webModule.getDirectDependencies()) {
-            final NpmModule dependencyModule = resolveNpmModule(rootModule, wmd.getName(), wmd.getVersionRange());
-            if (dependencyModule != null) {
-                // module dependency attributes in the context
-                dependencyModule.setRuntimeDependency(wmd.isRuntimeDependency());
-                dependencyModule.setDevDependency(wmd.isDevDependency());
-                dependencyModule.setOptionalDependency(wmd.isOptionalDependency());
-                dependencyModule.setPeerDependency(wmd.isPeerDependency());
-
-                if (wmd.isRuntimeDependency()) {
-                    runtimeDependencies.put(wmd.getName(), wmd.getVersionRange());
-                }
-                if (wmd.isDevDependency()) {
-                    devDependencies.put(wmd.getName(), wmd.getVersionRange());
-                }
-                if (wmd.isPeerDependency()) {
-                    peerDependencies.put(wmd.getName(), wmd.getVersionRange());
-                }
-                if (wmd.isOptionalDependency()) {
-                    optionalDependencies.put(wmd.getName(), wmd.getVersionRange());
-                }
-
-            } else {
-                log.warn("Module [{}] not found using version range [{}].", wmd.getName(), wmd.getVersionRange());
-            }
-        }
-
-        rootModule.setRuntimeDependencies(runtimeDependencies);
-        rootModule.setDevDependencies(devDependencies);
-        rootModule.setPeerDependencies(peerDependencies);
-        rootModule.setOptionalDependencies(optionalDependencies);
+        propagateDependencyDetails(webModule);
     }
 
-    private static void applyDependencies(List<Pair<String, String>> depList, Consumer<Map<String, String>> consumer) {
+    private static void applyDependencies(List<Pair<String, String>> depList, Consumer<Map<String, ModuleData>> consumer) {
         if (depList != null) {
-            Map<String, String> depMap = new HashMap<>();
+            Map<String, ModuleData> depMap = new HashMap<>();
             for (Pair<String, String> dep : depList) {
                 // for yarn the path is <name>@<version>
                 String path = dep.getKey();
                 String versionRange = dep.getValue();
-                depMap.put(path, versionRange);
+                depMap.put(path, new ModuleData(path, path, versionRange, null));
             }
             consumer.accept(depMap);
         }
@@ -362,16 +330,16 @@ public class YarnLockParser extends PackageLockParser {
         }
     }
 
-    public NpmModule resolveNpmModule(NpmModule dependentModule, String name, String versionRange) {
+    public NpmModule resolveNpmModule(NpmModule dependentModule, String path, String versionRange) {
         NpmModule npmModule;
 
-        npmModule = getPathModuleMap().get(name + "@npm:" + versionRange);
+        npmModule = getPathModuleMap().get(path + "@npm:" + versionRange);
         if (npmModule != null) return npmModule;
 
-        npmModule = getPathModuleMap().get(name + "@" + versionRange);
+        npmModule = getPathModuleMap().get(path + "@" + versionRange);
         if (npmModule != null) return npmModule;
 
-        npmModule = getPathModuleMap().get(name);
+        npmModule = getPathModuleMap().get(path);
         if (npmModule != null) return npmModule;
 
         return npmModule;

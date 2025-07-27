@@ -206,6 +206,8 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
             webModule.setVersion(anchorChecksum);
         }
 
+        webModule.setPath(relAnchorPath);
+
         return webModule;
     }
 
@@ -215,6 +217,8 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
      * @param anchorFile The anchor file.
      *
      * @param webModule The web module to contribute to.
+     *
+     * @throws IOException May be thrown on file access.
      */
     protected abstract void processAnchorFile(File anchorFile, WebModule webModule) throws IOException;
 
@@ -224,6 +228,8 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
      *
      * @param definitionFile The definition file.
      * @param webModule The web module to contribute to.
+     *
+     * @throws IOException May be thrown on file access.
      */
     protected void processDefinitionFile(File definitionFile, WebModule webModule) throws IOException {
         if (definitionFile.exists()) {

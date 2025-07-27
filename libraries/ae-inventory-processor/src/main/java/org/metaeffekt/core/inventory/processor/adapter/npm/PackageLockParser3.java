@@ -51,22 +51,30 @@ public class PackageLockParser3 extends PackageLockParser {
             allPackages = packages;
 
             if (StringUtils.isNotBlank(webModule.getName())) {
-                specificPackage = packages.optJSONObject("");
-                if (!webModule.getName().equals(specificPackage.optString("name"))) {
-                    specificPackage = null;
-                }
+
+                // check whether the package is resolvable by its name, first
+                specificPackage = packages.optJSONObject(webModule.getName());
+
+                // check resolve via anonymous package
                 if (specificPackage == null) {
-                    specificPackage = packages.optJSONObject(webModule.getName());
+                    JSONObject anonymousModule = packages.optJSONObject("");
+                    String anonymousModuleName = anonymousModule.optString("name");
+                    if (webModule.getName().equals(anonymousModuleName)) {
+                        specificPackage = anonymousModule;
+                    }
                 }
+
                 if (specificPackage == null) {
                     log.warn("Matching package in [{}] with name [{}] not found.", getFile().getAbsolutePath(), webModule.getName());
                 } else {
-                    final NpmModule npmModule = new NpmModule(webModule.getName(), webModule.getName());
-                    parseModuleContent(npmModule, specificPackage);
+                    final NpmModule rootModule = new NpmModule(webModule.getName(), "");
+                    parseModuleContent(rootModule, specificPackage);
 
-                    final String qualifier = npmModule.deriveQualifier();
-                    pathModuleMap.put(webModule.getName(), npmModule);
-                    qualifierModuleMap.put(qualifier, npmModule);
+                    final String qualifier = rootModule.deriveQualifier();
+                    pathModuleMap.put(webModule.getName(), rootModule);
+                    qualifierModuleMap.put(qualifier, rootModule);
+
+                    setRootModule(rootModule);
                 }
             }
         }
@@ -100,6 +108,9 @@ public class PackageLockParser3 extends PackageLockParser {
         }
 
         setPathModuleMap(pathModuleMap);
+
+        if (getRootModule() == null) throw new IllegalStateException("Root module not identified for [" +  getFile().getAbsolutePath() + "].");
+
     }
 
     private void parseModuleContent(NpmModule npmModule, JSONObject specificPackage) {
@@ -111,24 +122,10 @@ public class PackageLockParser3 extends PackageLockParser {
         npmModule.setPeerDependency(specificPackage.optBoolean("peer"));
         npmModule.setOptionalDependency(specificPackage.optBoolean("optional"));
 
-        npmModule.setRuntimeDependencies(collectModuleMap(specificPackage, "dependencies"));
-        npmModule.setDevDependencies(collectModuleMap(specificPackage, "devDependencies"));
-        npmModule.setPeerDependencies(collectModuleMap(specificPackage, "peerDependencies"));
-        npmModule.setOptionalDependencies(collectModuleMap(specificPackage, "optionalDependencies"));
-    }
-
-    protected Map<String, String> collectModuleMap(JSONObject specificPackage, String dependencies) {
-        final Map<String, String> nameVersionMap = new HashMap<>();
-        if (dependencies != null) {
-            JSONObject jsonObject = specificPackage.optJSONObject(dependencies);
-            if (jsonObject != null) {
-                Map<String, Object> map = jsonObject.toMap();
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    nameVersionMap.put(entry.getKey(), (String) entry.getValue());
-                }
-            }
-        }
-        return nameVersionMap;
+        npmModule.setRuntimeDependencies(collectNameVersionRangeMap(specificPackage, "dependencies"));
+        npmModule.setDevDependencies(collectNameVersionRangeMap(specificPackage, "devDependencies"));
+        npmModule.setPeerDependencies(collectNameVersionRangeMap(specificPackage, "peerDependencies"));
+        npmModule.setOptionalDependencies(collectNameVersionRangeMap(specificPackage, "optionalDependencies"));
     }
 
 }
