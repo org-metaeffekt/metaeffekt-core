@@ -149,8 +149,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
 
-        // FIXME: a jar is created from the war; this needs to be resolved
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5 + 1);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5 );
 
         analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
         analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
@@ -182,8 +181,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(138);
+        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(128);
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "web-app")).hasSizeOf(1);
-        artifactList.hasSizeOf(139);
+        artifactList.hasSizeOf(130);
     }
 }

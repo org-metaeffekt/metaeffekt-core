@@ -59,6 +59,8 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
 
+        inventory.deriveArtifactQualifiers();
+
         Analysis analysis = new Analysis(inventory);
         analysis.selectArtifacts().logListWithAllAttributes();
 
@@ -70,10 +72,10 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         analysis.selectArtifacts(startsWith(ID, "http")).hasSizeOf(2);
         analysis.selectArtifacts(attributeValue(ID, "keycloak-admin-cli-23.0.1.jar")).hasSizeOf(1);
 
-        Artifact keycloakAdminCli = analysis.selectArtifacts(attributeValue(NAME, "keycloak-admin-cli-23.0.1")).getItemList().get(0);
+        Artifact keycloakAdminCli = analysis.selectArtifacts(attributeValue(NAME, "keycloak-admin-cli")).getItemList().get(0);
         Assertions.assertThat(keycloakAdminCli.get(FILE_NAME)).as("detected jars must have a File Name").isEqualTo("keycloak-admin-cli-23.0.1.jar");
 
-        Artifact jansiWindows = analysis.selectArtifacts(attributeValue(NAME, "jansi-windows32-1.8")).getItemList().get(0);
+        Artifact jansiWindows = analysis.selectArtifacts(attributeValue(NAME, "jansi-windows32")).getItemList().get(0);
         Assertions.assertThat(jansiWindows.get(FILE_NAME)).as("embedded jars must not have a File Name").isNull();
 
         analysis.selectArtifacts().filter(a -> a.get(FILE_NAME) == null).as("File Name is null").hasSizeOf(21);

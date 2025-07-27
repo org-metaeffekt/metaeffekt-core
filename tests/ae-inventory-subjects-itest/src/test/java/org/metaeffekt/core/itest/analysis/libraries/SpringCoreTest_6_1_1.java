@@ -20,6 +20,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -55,6 +56,8 @@ public class SpringCoreTest_6_1_1 extends AbstractCompositionAnalysisTest {
 
     @Test
     public void assertContent() throws Exception {
+        final Inventory inventory = testSetup.getInventory(); // for the qualifier to be in the table
+        inventory.deriveArtifactQualifiers();
         getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .logListWithAllAttributes()

@@ -88,6 +88,9 @@ public class Artifact extends AbstractModelBase {
 
         PATH_IN_ASSET("Path in Asset"),
 
+        // is a mix of many information in one
+        QUALIFIER("Qualifier"),
+
         /**
          * An artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated.  In this
          * case the path points to a folder. In case of an artifact being represented by a single file, the Artifact
@@ -136,6 +139,7 @@ public class Artifact extends AbstractModelBase {
      * Defines a default order.
      */
     public static Artifact.Attribute[] ARTIFACT_ATTRIBUTE_LIST = new Artifact.Attribute[] {
+            Attribute.QUALIFIER,
             Attribute.ID,
             Attribute.GROUPID,
             Attribute.NAME,
@@ -238,6 +242,10 @@ public class Artifact extends AbstractModelBase {
         set(Attribute.ID, id);
     }
 
+    public String getName() {return get(Attribute.NAME);}
+
+    public void setName(String name) {set(Attribute.NAME, name);}
+
     public String getVersion() {
         return get(Attribute.VERSION);
     }
@@ -277,6 +285,14 @@ public class Artifact extends AbstractModelBase {
     public void setPathInAsset(String pathInAsset) {
         set(Attribute.PATH_IN_ASSET, pathInAsset);
     }
+
+    public String getQualifier() {return get(Attribute.QUALIFIER);}
+
+    public void setQualifier(String qualifier) {set(Attribute.QUALIFIER, qualifier);}
+
+    public String getRelease() {return get(Attribute.RELEASE);}
+
+    public void setRelease(String release) {set(Attribute.RELEASE, release);}
 
     @Deprecated
     public boolean isVerified() {

@@ -2208,6 +2208,47 @@ public class Inventory implements Serializable {
         return table;
     }
 
+    public void deriveArtifactQualifiers() {
+        for (Artifact artifact : getArtifacts()) {
+
+            String qualifier = "";
+            if (StringUtils.isNotBlank(artifact.getGroupId())) {
+                qualifier += artifact.getGroupId();
+                qualifier += "/";
+            }
+
+            if (StringUtils.isNotBlank((artifact.getName()))) {
+                qualifier += artifact.getName();
+            }
+
+            if (StringUtils.isNotBlank((artifact.getVersion())) && StringUtils.isNotBlank(artifact.getName())) {
+                qualifier += "-";
+                qualifier += artifact.getVersion();
+            }
+            if (StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isBlank(artifact.getName())) {
+                qualifier += artifact.getVersion();
+            }
+
+            if (StringUtils.isNotBlank(artifact.getRelease())) {
+                qualifier += "-";
+                qualifier += artifact.getRelease();
+            }
+
+            if (StringUtils.isNotBlank(artifact.inferClassifierFromFileNameAndVersion())) {
+                qualifier += "-";
+                qualifier += artifact.inferClassifierFromFileNameAndVersion();
+
+            }
+
+            artifact.set(Artifact.Attribute.QUALIFIER, qualifier);
+
+        }
+
+        // set qualifiers for all artifacts
+        // how the qualifier is build
+
+    }
+
     /**
      * Component data. Please note that the component per-se does not have a version, but a license.
      * Artifacts (with various versions) can be added to the component. When evaluating the
