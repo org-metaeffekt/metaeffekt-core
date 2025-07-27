@@ -86,6 +86,7 @@ public abstract class KnownCvssEntities {
     public final static CvssEntity SUSE = ENTITIES_BY_KEYNAME.get("SUSE");
     public final static CvssEntity PSF = ENTITIES_BY_KEYNAME.get("PSF");
     public final static CvssEntity RHEL = ENTITIES_BY_KEYNAME.get("RHEL");
+    public final static CvssEntity MINI = ENTITIES_BY_KEYNAME.get("MINI");
 
     public final static CvssEntity CSAF = ENTITIES_BY_KEYNAME.get("CSAF");
     public final static CvssEntity CERT_SEI = ENTITIES_BY_KEYNAME.get("CERT_SEI");

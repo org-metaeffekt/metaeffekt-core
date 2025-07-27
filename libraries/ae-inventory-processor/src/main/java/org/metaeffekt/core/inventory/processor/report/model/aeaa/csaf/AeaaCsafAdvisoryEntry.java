@@ -16,13 +16,65 @@
 
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.csaf;
 
+import lombok.Setter;
+import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaReference;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaAdvisoryEntry;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class AeaaCsafAdvisoryEntry extends AeaaAdvisoryEntry {
+
+    protected final static Set<String> CONVERSION_KEYS_AMB = new HashSet<String>(AeaaAdvisoryEntry.CONVERSION_KEYS_AMB) {{
+    }};
+
+    protected final static Set<String> CONVERSION_KEYS_MAP = new HashSet<String>(AeaaAdvisoryEntry.CONVERSION_KEYS_MAP) {{
+        add("vulnerabilityDescriptions");
+        add("csafType");
+    }};
+
+    @Setter private String csafType;
 
 
     public AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeIdentifier<?> source) {
         super(source);
+    }
+
+    @Override
+    public String getUrl() {
+        AeaaReference reference = references.stream().filter(f -> f.getTags().contains("SELF") && f.getUrl().endsWith(".json")).findFirst().orElse(null);
+        if (reference != null) {
+            return reference.getUrl();
+        }
+        return "";
+    }
+
+    @Override
+    public String getType() {
+        return csafType.replace("csaf_", "");
+    }
+
+    @Override
+    protected Set<String> conversionKeysAmb() {
+        return CONVERSION_KEYS_AMB;
+    }
+
+    @Override
+    protected Set<String> conversionKeysMap() {
+        return CONVERSION_KEYS_MAP;
+    }
+
+    @Override
+    public void appendToBaseModel(AdvisoryMetaData amd) {
+        super.appendToBaseModel(amd);
+        amd.set("csafType", csafType);
+    }
+
+    @Override
+    public void appendFromBaseModel(AdvisoryMetaData amd) {
+        super.appendFromBaseModel(amd);
+        this.setCsafType(amd.get("csafType"));
     }
 }
