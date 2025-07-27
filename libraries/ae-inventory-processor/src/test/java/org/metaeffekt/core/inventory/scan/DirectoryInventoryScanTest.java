@@ -220,8 +220,8 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
         // inputs
-        final File scanInputDir = new File("/Users/kklein/Downloads/tmp/input");
-        final File scanDir = new File("/Users/kklein/Downloads/tmp/scan");
+        final File scanInputDir = new File("<project.baseDir>/input");
+        final File scanDir = new File("<project.baseDir>/scan");
 
         // other sources
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
@@ -241,13 +241,13 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG_Aggregate() throws IOException {
         // inputs
-        final File scanDir = new File("/Users/kklein/Downloads/tmp/scan");
-        final File scanInventoryFile = new File("target/scan-inventory.xlsx");
+        final File scanDir = new File("<project.baseDir>/scan");
+        final File scanInventoryFile = new File("<project.baseDir>/results/scan-inventory.xlsx");
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
         // outputs
-        final File targetAggregationDir = new File("target/aggregation");
-        final File targetAggregationInventoryFile = new File("target/aggregated-inventory.xlsx");
+        final File targetAggregationDir = new File("<project.baseDir>/results/aggregation");
+        final File targetAggregationInventoryFile = new File("<project.baseDir>/results/aggregated-inventory.xlsx");
 
         aggregateArchives(scanDir, scanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
     }
