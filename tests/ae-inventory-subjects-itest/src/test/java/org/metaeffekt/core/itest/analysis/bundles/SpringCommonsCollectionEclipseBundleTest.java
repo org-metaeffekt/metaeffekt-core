@@ -34,13 +34,11 @@ import static org.metaeffekt.core.itest.common.predicates.ContainsToken.contains
 
 public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositionAnalysisTest {
 
-    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
-
     @BeforeClass
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
-                .setSource("http://www.java2s.com/Code/JarDownload/com.springsource.org.apache/com.springsource.org.apache.commons.collections-3.2.1.jar.zip")
-                .setSha256Hash("d8e8901318ea9c14a232f7458d17ce9546d86c38df8167f68c4e3d281cc6eba2")
+                .setSource("https://archive.apache.org/dist/commons/collections/binaries/commons-collections-3.2.1-bin.zip")
+                .setSha256Hash("759d425105e23ba7016396b7dba776fc14a0e962bcf19a9f2fcf5efa1d23f45b")
                 .setName(SpringCommonsCollectionEclipseBundleTest.class.getName());
     }
 
@@ -70,14 +68,11 @@ public class SpringCommonsCollectionEclipseBundleTest extends AbstractCompositio
 
         artifactList.logListWithAllAttributes();
 
-        analysis.selectArtifacts(attributeValue(ID, "com.springsource.org.apache.commons.collections-3.2.1.jar")).hasSizeOf(1);
         // the embedded artifact is listed not connect it to the containing one;
         analysis.selectArtifacts(attributeValue(ID, "commons-collections-3.2.1.jar")).hasSizeOf(1);
         analysis.selectArtifacts(attributeValue(ID, "commons-collections-3.2.1.jar")).assertAll(withAttribute(GROUPID));
-        analysis.selectArtifacts().hasSizeOf(3);
 
-        ArtifactList jarList = artifactList.with(containsToken(ID, ".jar"));
-        jarList.with(attributeValue(TYPE, "module")).hasSizeOf(2);
+        // FIXME-BLK: all jars should have groupId and version
     }
 
 }

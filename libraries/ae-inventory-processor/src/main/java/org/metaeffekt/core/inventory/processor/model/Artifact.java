@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
@@ -31,7 +32,8 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
-    public static final String PATH_DELIMITER_REGEXP = "\\|\n";
+    private static final Pattern PATH_DELIMITER_REGEXP = Pattern.compile("\\|\n");
+
     public static final String PATH_DELIMITER = "|\n";
 
     /**
@@ -210,12 +212,12 @@ public class Artifact extends AbstractModelBase {
         if (StringUtils.isEmpty(pathsString)) {
             return Collections.emptySet();
         }
-        return Arrays.stream(pathsString.split(PATH_DELIMITER_REGEXP)).
+        return Arrays.stream(PATH_DELIMITER_REGEXP.split(pathsString)).
                 map(String::trim).collect(Collectors.toSet());
     }
 
     public void setRootPaths(Set<String> paths) {
-        set(Attribute.ROOT_PATHS, paths.stream().collect(Collectors.joining(PATH_DELIMITER)));
+        set(Attribute.ROOT_PATHS, String.join(PATH_DELIMITER, paths));
     }
 
     public String getComponent() {
