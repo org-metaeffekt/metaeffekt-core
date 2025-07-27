@@ -268,8 +268,8 @@ public class ArtifactUnwrapTask extends ScanTask {
     private void addChecksumsAndHashes(FileRef fileRef) {
         final File file = fileRef.getFile();
         artifact.setChecksum(FileUtils.computeChecksum(file));
-        artifact.set(Constants.KEY_HASH_SHA256, FileUtils.computeSHA256Hash(file));
         artifact.set(Constants.KEY_HASH_SHA1, FileUtils.computeSHA1Hash(file));
+        artifact.set(Constants.KEY_HASH_SHA256, FileUtils.computeSHA256Hash(file));
         artifact.set(Constants.KEY_HASH_SHA512, FileUtils.computeSHA512Hash(file));
     }
 

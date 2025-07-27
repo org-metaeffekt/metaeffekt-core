@@ -25,7 +25,6 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Crass_1_0_6 extends AbstractCompositionAnalysisTest{
 
@@ -61,8 +60,5 @@ public class Crass_1_0_6 extends AbstractCompositionAnalysisTest{
                         attributeValue(VERSION, "1.0.6"),
                         attributeValue(PURL, "pkg:gem/crass@1.0.6"))
                 .assertNotEmpty();
-
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

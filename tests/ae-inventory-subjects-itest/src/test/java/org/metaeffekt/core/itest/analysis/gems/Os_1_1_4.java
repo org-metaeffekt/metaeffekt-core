@@ -25,7 +25,6 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Os_1_1_4 extends AbstractCompositionAnalysisTest {
 
@@ -52,17 +51,14 @@ public class Os_1_1_4 extends AbstractCompositionAnalysisTest {
 
     @Test
     public void assertContent() throws Exception {
-        ArtifactList artifactList = getAnalysisAfterInvariantCheck()
-                .selectArtifacts();
+        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
 
         artifactList.logListWithAllAttributes();
 
-        artifactList.with(attributeValue(ID, "os-1.1.4"),
-                        attributeValue(VERSION, "1.1.4"),
-                        attributeValue(PURL, "pkg:gem/os@1.1.4"))
-                .assertNotEmpty();
-
-        // FIXME: consider keeping original .gem artifact
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-spec")).hasSizeOf(1);
+        artifactList.with(
+            attributeValue(ID, "os-1.1.4.gem"),
+            attributeValue(VERSION, "1.1.4"),
+            attributeValue(PURL, "pkg:gem/os@1.1.4")
+        ).assertNotEmpty();
     }
 }

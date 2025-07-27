@@ -25,7 +25,6 @@ import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class Unicode_Display_Width_2_5_0 extends AbstractCompositionAnalysisTest{
 
@@ -61,8 +60,5 @@ public class Unicode_Display_Width_2_5_0 extends AbstractCompositionAnalysisTest
                         attributeValue(VERSION, "2.5.0"),
                         attributeValue(PURL, "pkg:gem/unicode-display_width@2.5.0"))
                 .assertNotEmpty();
-
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
     }
 }

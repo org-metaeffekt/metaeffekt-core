@@ -32,29 +32,14 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
-    private static final Pattern PATH_DELIMITER_REGEXP = Pattern.compile("\\|\n");
-
-    public static final String PATH_DELIMITER = "|\n";
-
     /**
      * Core attributes to support component patterns.
      */
     public enum Attribute implements AbstractModelBase.Attribute {
         ID("Id"),
-        NAME("Name"),
         COMPONENT("Component"),
-        COMPONENT_TYPE("Component Type"),
-
         CHECKSUM("Checksum"),
         VERSION("Version"),
-        RELEASE("Release"),
-        CLASSIFIER("Classifier"),
-        ARCHITECTURE("Architecture"),
-        DISTRO("Distro"),
-        FILE_NAME("File Name"),
-        FILE_TYPE("File Type"),
-        SPECIFIC_FILE_TYPE("Specific File Type"),
-        PACKAGING("Packaging"),
 
         // latest available version
         LATEST_VERSION("Latest Version"),
@@ -83,15 +68,10 @@ public class Artifact extends AbstractModelBase {
 
         VERIFIED("Verified"),
         ERRORS("Errors"),
-
-        HASH_SHA1("Hash (SHA-1)"),
         HASH_SHA256("Hash (SHA-256)"),
+        HASH_SHA1("Hash (SHA1)"),
         HASH_SHA512("Hash (SHA-512)"),
-
         PATH_IN_ASSET("Path in Asset"),
-
-        // is a mix of many information in one
-        QUALIFIER("Qualifier"),
 
         /**
          * An artifact Root Path is the topmost path in which parts of a logical artifact can be aggregated.  In this
@@ -137,45 +117,6 @@ public class Artifact extends AbstractModelBase {
         }
     }
 
-    /**
-     * Defines a default order.
-     */
-    public static Artifact.Attribute[] ARTIFACT_ATTRIBUTE_LIST = new Artifact.Attribute[] {
-            Attribute.QUALIFIER,
-            Attribute.ID,
-            Attribute.GROUPID,
-            Attribute.NAME,
-            Attribute.VERSION,
-            Attribute.RELEASE,
-            Attribute.CLASSIFIER,
-            Attribute.ARCHITECTURE,
-            Attribute.DISTRO,
-            Attribute.PURL,
-            Attribute.FILE_NAME,
-            Attribute.CHECKSUM,
-            Attribute.HASH_SHA1,
-            Attribute.HASH_SHA256,
-            Attribute.HASH_SHA512,
-            Attribute.FILE_TYPE,
-            Attribute.SPECIFIC_FILE_TYPE,
-            Attribute.PACKAGING,
-            Attribute.COMPONENT,
-            Attribute.COMPONENT_TYPE,
-            Attribute.ROOT_PATHS,
-            Attribute.PATH_IN_ASSET,
-            Attribute.LATEST_VERSION,
-            Attribute.LICENSE,
-            Attribute.CLASSIFICATION,
-            Attribute.SECURITY_RELEVANT,
-            Attribute.SECURITY_CATEGORY,
-            Attribute.VULNERABILITY,
-            Attribute.COMMENT,
-            Attribute.URL,
-            Attribute.VERIFIED
-    };
-
-    public static List<String> ARTIFACT_COLUMN_ORDER_LIST =
-            Arrays.stream(ARTIFACT_ATTRIBUTE_LIST).map(a -> a.key).collect(Collectors.toList());
 
     // artifact id (derived from id and version)
     private transient String artifactId;
@@ -208,12 +149,7 @@ public class Artifact extends AbstractModelBase {
     }
 
     public Set<String> getRootPaths() {
-        final String pathsString = get(Attribute.ROOT_PATHS);
-        if (StringUtils.isEmpty(pathsString)) {
-            return Collections.emptySet();
-        }
-        return Arrays.stream(PATH_DELIMITER_REGEXP.split(pathsString)).
-                map(String::trim).collect(Collectors.toSet());
+        return getSet(Attribute.ROOT_PATHS);
     }
 
     public void setRootPaths(Set<String> paths) {
@@ -243,10 +179,6 @@ public class Artifact extends AbstractModelBase {
     public void setId(String id) {
         set(Attribute.ID, id);
     }
-
-    public String getName() {return get(Attribute.NAME);}
-
-    public void setName(String name) {set(Attribute.NAME, name);}
 
     public String getVersion() {
         return get(Attribute.VERSION);
@@ -287,14 +219,6 @@ public class Artifact extends AbstractModelBase {
     public void setPathInAsset(String pathInAsset) {
         set(Attribute.PATH_IN_ASSET, pathInAsset);
     }
-
-    public String getQualifier() {return get(Attribute.QUALIFIER);}
-
-    public void setQualifier(String qualifier) {set(Attribute.QUALIFIER, qualifier);}
-
-    public String getRelease() {return get(Attribute.RELEASE);}
-
-    public void setRelease(String release) {set(Attribute.RELEASE, release);}
 
     @Deprecated
     public boolean isVerified() {
@@ -353,7 +277,6 @@ public class Artifact extends AbstractModelBase {
         super.merge(a);
 
         deriveArtifactId();
-        set(Attribute.CLASSIFIER, inferClassifierFromFileNameAndVersion());
     }
 
     private void mergeRootPaths(Artifact a) {
@@ -458,9 +381,9 @@ public class Artifact extends AbstractModelBase {
         if (getVersion() != null) {
             artifactRepresentation.append(getVersion());
         }
-        if (inferClassifierFromFileNameAndVersion() != null) {
+        if (getClassifier() != null) {
             artifactRepresentation.append(DELIMITER_COLON);
-            artifactRepresentation.append(inferClassifierFromFileNameAndVersion());
+            artifactRepresentation.append(getClassifier());
         }
         artifactRepresentation.append(DELIMITER_COLON);
         // skip type if no information was derived
@@ -474,7 +397,7 @@ public class Artifact extends AbstractModelBase {
         String type = null;
         String id = getId();
         if (id != null) {
-            String classifier = inferClassifierFromFileNameAndVersion();
+            String classifier = inferClassifierFromId();
             String version = getVersion();
 
             if (version == null) {
@@ -579,40 +502,9 @@ public class Artifact extends AbstractModelBase {
         return null;
     }
 
-    public String inferClassifierFromFileNameAndVersion() {
-        final String fileName = get(Attribute.FILE_NAME);
-        final String version = getVersion();
-        if (StringUtils.isNotBlank(fileName) && StringUtils.isNotBlank(version)) {
-            // get rid of anything right to version
-            final String queryString = DELIMITER_DASH + version + DELIMITER_DASH;
-            final int versionIndex = fileName.indexOf(queryString);
-            if (versionIndex < 0) {
-                // no '-<version>-' part, no classifier
-                return null;
-            }
-            final int beginIndex = versionIndex + queryString.length();
-            final String classifierAndType = fileName.substring(beginIndex);
-            // get rid of trailing .{type}
-            final int index = classifierAndType.indexOf(DELIMITER_DOT);
-            if (index != -1) {
-                final String classifier = classifierAndType.substring(0, index).trim();
-                if (StringUtils.isNotBlank(classifier)) {
-                    return classifier;
-                }
-            }
-        }
-        return null;
-    }
-
     public String createCompareStringRepresentation() {
         StringBuffer artifactRepresentation = new StringBuffer();
         artifactRepresentation.append(normalize(getId()));
-        artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(get(Attribute.NAME)));
-        artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(get(Attribute.FILE_NAME)));
-        artifactRepresentation.append(DELIMITER_COLON);
-        artifactRepresentation.append(normalize(get(Attribute.CLASSIFIER)));
         artifactRepresentation.append(DELIMITER_COLON);
         artifactRepresentation.append(normalize(getChecksum()));
         artifactRepresentation.append(DELIMITER_COLON);
@@ -660,9 +552,8 @@ public class Artifact extends AbstractModelBase {
         return inferTypeFromId();
     }
 
-    @Deprecated
-    public String getClassifierxxx() {
-        return get(Attribute.CLASSIFIER);
+    public String getClassifier() {
+        return inferClassifierFromId();
     }
 
     public boolean isEnabledForDistribution() {
@@ -864,32 +755,6 @@ public class Artifact extends AbstractModelBase {
         }
 
         return false;
-    }
-
-    public static List<String> orderAttributes(Collection<String> attributes, List<String> contextColumnList, List<String> artifactColumnOrder) {
-        // impose context or default order
-        final List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-        int insertIndex = 0;
-        if (contextColumnList != null) {
-            for (String key : contextColumnList) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        } else {
-            for (String key : artifactColumnOrder) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        }
-        return ordered;
-    }
-
-    private static int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Collection<String> attributesSet) {
-        if (attributesSet.contains(key)) {
-            orderedAttributesList.remove(key);
-            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
-            insertIndex++;
-        }
-        return insertIndex;
     }
 
 }

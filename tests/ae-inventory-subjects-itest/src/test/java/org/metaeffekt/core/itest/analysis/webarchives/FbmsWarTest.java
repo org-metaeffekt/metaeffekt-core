@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
-import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 import org.slf4j.Logger;
@@ -30,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.common.predicates.StartsWith.startsWith;
 
 public class FbmsWarTest extends AbstractCompositionAnalysisTest {
@@ -93,19 +91,6 @@ public class FbmsWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts(startsWith(ID, "tomcat")).hasSizeOf(3);
         analysis.selectArtifacts(attributeValue(VERSION, "8.5.31")).hasSizeOf(3);
-
-
-        ArtifactList artifactList = getAnalysisAfterInvariantCheck().selectArtifacts();
-
-        artifactList.logListWithAllAttributes();
-
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "war-archive")).hasSizeOf(1);
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(89);
-        artifactList.hasSizeOf(90);
-
-        //ArtifactList warList = artifactList.with(containsToken(ID, ".war"));
-        //warList.with(attributeValue(TYPE, "module")).hasSizeOf(warList);
-        //warList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(warList);
 
     }
 

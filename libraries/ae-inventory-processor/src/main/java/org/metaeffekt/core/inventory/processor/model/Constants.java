@@ -63,7 +63,6 @@ public final class Constants {
 
     // Artifact and Asset base keys
     public static final String KEY_ID = "Id";
-    public static final String KEY_NAME = "Name";
     public static final String KEY_ASSET_ID = "Asset Id";
     public static final String KEY_URL = "URL";
     public static final String KEY_VERSION = "Version";
@@ -132,8 +131,16 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_WEB_MODULE = "web-module";
 
     public static final String MARKER_CROSS = "x";
+
     public static final String MARKER_CONTAINS = "c";
-    public static final String MARKER_DEVELOPMENT = "d";
+
+    public static final String MARKER_RUNTIME_DEPENDENCY = "r";
+
+    public static final String MARKER_DEVELOPMENT_DEPENDENCY = "d";
+
+    public static final String MARKER_PEER_DEPENDENCY = "p";
+
+    public static final String MARKER_OPTIONAL_DEPENDENCY = "o";
 
     public static final String PACKAGE_JSON = "package.json";
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";

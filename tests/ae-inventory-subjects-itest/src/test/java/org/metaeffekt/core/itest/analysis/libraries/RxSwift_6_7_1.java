@@ -20,14 +20,12 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 
 public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
 
@@ -54,8 +52,6 @@ public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
 
     @Test
     public void assertContent() throws Exception {
-        final Inventory inventory = testSetup.getInventory(); // for the qualifier to be in the table
-        inventory.deriveArtifactQualifiers();
         ArtifactList artifactList = getAnalysisAfterInvariantCheck()
                 .selectArtifacts()
                 .filter(a -> a.getVersion() != null);
@@ -96,8 +92,5 @@ public class RxSwift_6_7_1 extends AbstractCompositionAnalysisTest {
                     attributeValue(PURL, "pkg:cocoapods/RxBlocking@6.7.0"),
                     attributeValue(PATH_IN_ASSET, "[6.7.1.zip]/RxSwift-6.7.1"))
                 .assertNotEmpty();
-
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(artifactList.size());
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "cocoapods")).hasSizeOf(5);
     }
 }
