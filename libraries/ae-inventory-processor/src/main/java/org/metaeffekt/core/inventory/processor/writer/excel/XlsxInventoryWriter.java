@@ -34,6 +34,11 @@ import java.util.*;
 
 public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
+    private static final CustomTempFileCreationStrategy CUSTOM_TEMP_FILE_CREATION_STRATEGY = new CustomTempFileCreationStrategy();
+    static {
+        TempFile.setTempFileCreationStrategy(CUSTOM_TEMP_FILE_CREATION_STRATEGY);
+    }
+
     /**
      * Defines a default order.
      * <p>
@@ -59,9 +64,6 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     };
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
-        CustomTempFileCreationStrategy customTempFileCreationStrategy = new CustomTempFileCreationStrategy();
-        TempFile.setTempFileCreationStrategy(customTempFileCreationStrategy);
-
         final SXSSFWorkbook workbook = new SXSSFWorkbook();
         final XlsxXSSFInventorySheetCellStylers stylers = new XlsxXSSFInventorySheetCellStylers(workbook);
 
@@ -85,8 +87,9 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         } finally {
             out.flush();
             out.close();
+
             // removes temp files after each written inventory
-            customTempFileCreationStrategy.removeCreatedTempFiles();
+            CUSTOM_TEMP_FILE_CREATION_STRATEGY.removeCreatedTempFiles();
         }
     }
 

@@ -59,7 +59,8 @@ public class AssetMetaData extends AbstractModelBase {
 
         CHECKSUM("Checksum"),
 
-        HASH_SHA1("Hash (SHA-1)"),
+        HASH_SHA1("Hash (SHA1)"),
+
         HASH_SHA256("Hash (SHA-256)"),
         HASH_SHA512("Hash (SHA-512)"),
 

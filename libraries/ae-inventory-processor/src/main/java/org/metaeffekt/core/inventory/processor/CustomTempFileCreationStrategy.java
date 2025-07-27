@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor;
 
 import org.apache.poi.util.TempFile;
 import org.apache.poi.util.TempFileCreationStrategy;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
     /** The lock to make dir initialized only once. */
     private final Lock dirLock = new ReentrantLock();
 
-    private Set<File> tempFiles = new HashSet<>();
+    private final ThreadLocal<Set<File>> tempFiles = new ThreadLocal<>();
 
     public CustomTempFileCreationStrategy() {
         this(null);
@@ -82,15 +83,25 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
     }
 
     public void removeCreatedTempFiles() {
-        tempFiles.forEach(File::delete);
-        tempFiles.clear();
+        Set<File> files = tempFiles.get();
+        if (files != null) {
+            files.forEach(FileUtils::deleteQuietly);
+            tempFiles.set(null);
+        }
     }
 
     @Override
     public File createTempFile(String prefix, String suffix) throws IOException {
         createPOIFilesDirectoryIfNecessary();
         File newFile = Files.createTempFile(dir.toPath(), prefix, suffix).toFile();
-        tempFiles.add(newFile);
+
+        Set<File> files = tempFiles.get();
+        if (files == null) {
+            files = new HashSet<>();
+            tempFiles.set(files);
+        }
+
+        files.add(newFile);
 
         return newFile;
     }
@@ -120,6 +131,7 @@ public class CustomTempFileCreationStrategy implements TempFileCreationStrategy 
     /**
      * Create our temp dir only once by double-checked locking. The directory is not deleted,
      * even if it was created by this TempFileCreationStrategy.
+     *
      * @throws IOException thrown if the directory does not exist or can not be created due to lack of permissions.
      */
     private void createPOIFilesDirectoryIfNecessary() throws IOException {
