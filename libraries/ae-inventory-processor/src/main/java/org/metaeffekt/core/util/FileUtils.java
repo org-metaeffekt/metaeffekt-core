@@ -234,7 +234,14 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static String normalizePathToLinux(String path) {
         if (path == null) return null;
-        return path.replace('\\', SEPARATOR_SLASH_CHAR);
+        path = path.replace('\\', SEPARATOR_SLASH_CHAR);
+        if (path.length() > 2 && path.endsWith("/.")) {
+            path = path.substring(0, path.length() - 2);
+        }
+        if (path.equals("./")) {
+            path = ".";
+        }
+        return path;
     }
 
     public static String normalizePathToLinux(File file) {
@@ -347,7 +354,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     public static void createDirectoryContentChecksumFile(File baseDir, File targetContentChecksumFile) throws IOException {
         final StringBuilder checksumSequence = new StringBuilder();
-        
+
         // NOTE: could be moved to FileSystemMap; current impl may be more efficient
         final String[] files = FileUtils.scanDirectoryForFiles(baseDir, new String[]{"**/*"}, new String[]{"**/.DS_Store*"});
         // FIXME: we can save the normalizePathToLinux operation when the FileSystemMap could produce FileRef; revise

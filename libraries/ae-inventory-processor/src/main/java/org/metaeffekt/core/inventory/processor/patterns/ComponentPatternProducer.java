@@ -25,7 +25,6 @@ import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.*;
 import org.metaeffekt.core.util.FileUtils;
-import org.metaeffekt.core.util.PatternSetMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -249,6 +248,7 @@ public class ComponentPatternProducer {
     }
 
     private void deriveAddonArtifactsFromMatchResult(List<MatchResult> componentPatterns, FileSystemScanContext fileSystemScanContext) {
+        // track used suppliers to not apply multiple times
         final Set<Object> consumedObjects = new HashSet<>();
 
         for (MatchResult matchResult : componentPatterns) {
@@ -274,19 +274,17 @@ public class ComponentPatternProducer {
                     managedAssetId = true;
                 }
 
-                final String checksum = derivedArtifact.getChecksum();
-                final String assetId = "AID-" + derivedArtifact.getId() + (StringUtils.isEmpty(checksum) ? "" : "-" + checksum);
-
-                if (!managedAssetId) {
-                    derivedArtifact.set(assetId, Constants.MARKER_CROSS);
-                }
+                final String assetId = deriveParentAssetId(derivedArtifact, managedAssetId);
 
                 // expand when there are artifacts contained
                 if (!inventory.getArtifacts().isEmpty()) {
                     for (Artifact artifact : inventory.getArtifacts()) {
                         if (!managedAssetId) {
                             artifact.set(ATTRIBUTE_KEY_ASSET_ID_CHAIN, matchResult.assetIdChain);
-                            artifact.set(assetId, Constants.MARKER_CONTAINS);
+
+                            if (assetId != null) {
+                                artifact.set(assetId, Constants.MARKER_CONTAINS);
+                            }
                         }
                         fileSystemScanContext.contribute(artifact);
                     }
@@ -296,6 +294,21 @@ public class ComponentPatternProducer {
             }
 
         }
+    }
+
+    private static String deriveParentAssetId(Artifact derivedArtifact, boolean managedAssetId) {
+        final String derivedArtifactId = derivedArtifact.getId();
+        final String derivedArtifactChecksum = derivedArtifact.getChecksum();
+
+        if (derivedArtifactId != null) {
+            final String assetId = "AID-" + derivedArtifactId + (StringUtils.isEmpty(derivedArtifactChecksum) ? "" : "-" + derivedArtifactChecksum);
+            if (!managedAssetId) {
+                derivedArtifact.set(assetId, Constants.MARKER_CROSS);
+            }
+            return assetId;
+        }
+
+        return null;
     }
 
     private void markFilesCoveredByComponentPatterns(List<MatchResult> matchedComponentDataOnAnchor,
@@ -602,12 +615,12 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new ContainerAssetContributor());
         contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
         contributorRunnerBuilder.add(new ContainerInspectAssetContributor());
-        contributorRunnerBuilder.add(new WebModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new NpmWebModuleComponentPatternContributor());
+        contributorRunnerBuilder.add(new ComposerWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());
         contributorRunnerBuilder.add(new PythonModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new JarModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new NextcloudAppInfoContributor());
-        contributorRunnerBuilder.add(new ComposerLockContributor());
         contributorRunnerBuilder.add(new XWikiExtensionComponentPatternContributor());
         contributorRunnerBuilder.add(new NodeRuntimeComponentPatternContributor());
         contributorRunnerBuilder.add(new NordeckAppComponentPatternContributor());

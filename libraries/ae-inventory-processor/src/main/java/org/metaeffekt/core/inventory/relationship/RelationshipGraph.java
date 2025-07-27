@@ -122,7 +122,7 @@ public class RelationshipGraph {
                 if (Constants.MARKER_CROSS.equals(relationshipMarker)) {
                     addRelationship(DOCUMENT, artifact.getId(), RelationshipType.DESCRIBES);
 
-                } else if (Constants.MARKER_CONTAINS.equals(relationshipMarker) || Constants.MARKER_DEVELOPMENT.equals(relationshipMarker)) {
+                } else if (Constants.MARKER_CONTAINS.equals(relationshipMarker) || Constants.MARKER_DEVELOPMENT_DEPENDENCY.equals(relationshipMarker)) {
                     RelationshipType relationshipType =
                             Constants.MARKER_CONTAINS.equals(relationshipMarker)
                                     ? RelationshipType.CONTAINS
