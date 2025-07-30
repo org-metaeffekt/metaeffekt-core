@@ -192,13 +192,4 @@ public class InventoryReportAdapter {
         return ""; // everything else is treated as blank
     }
 
-
-    public void printOnConsole(Object object) {
-        if (object == null) {
-            System.out.println("An Object was null!");
-        } else {
-            System.out.println("An Object was:" + object.toString());
-        }
-    }
-
 }

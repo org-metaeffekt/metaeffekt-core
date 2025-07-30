@@ -99,19 +99,19 @@ public class ComposerWebModuleComponentPatternContributor extends AbstractWebMod
 
         // set excludes
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-            anchorParentDirName + "/.yarn-integrity," +
-            anchorParentDirName + "/**/node_modules/**/*," +
-            anchorParentDirName + "/**/bower_components/**/*," +
-            anchorParentDirName + "/**/.package-lock.json," +
-            anchorParentDirName + "/**/yarn.lock," +
-            anchorParentDirName + "/**/bower.json," +
-            anchorParentDirName + "/**/.bower.json," +
-            anchorParentDirName + "/**/package.json," +
-            anchorParentDirName + "/**/package-lock.json"
+            "**/node_modules/**/*," +
+            "**/bower_components/**/*," +
+            "**/.package-lock.json," +
+            "**/bower.json," +
+            "**/.bower.json," +
+            "**/package.json," +
+            "**/package-lock.json," +
+            "**/yarn-integrity," +
+            "**/yarn.lock"
         );
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
-        componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
+        componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "php-module");
         componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json");
 
         if (inventoryFromLockFile != null) {
@@ -127,51 +127,19 @@ public class ComposerWebModuleComponentPatternContributor extends AbstractWebMod
 
         for (File lockFile : webModule.getLockFiles()) {
             if (lockFile.toPath().endsWith("composer.lock")) {
-                inventoryFromLockFile = new ComposerLockAdapter().extractInventory(lockFile, relativeAnchorPath, null);
+                inventoryFromLockFile = new ComposerLockAdapter().extractInventory(lockFile, webModule);
+                condenseInventory(inventoryFromLockFile);
             } else {
                 log.warn("Lock file not processed: " + lockFile.getAbsolutePath());
             }
         }
+
         return inventoryFromLockFile;
     }
 
     @Override
     public List<String> getSuffixes() {
         return SUFFIXES;
-    }
-
-    protected void parseDetails(Artifact artifact, String project, WebModule webModule, File baseDir) throws IOException {
-        final File projectDir = new File(baseDir, project);
-        final File packageJsonFile = new File(projectDir, artifact.getId());
-        if (packageJsonFile.exists()) {
-            final String json = FileUtils.readFileToString(packageJsonFile, "UTF-8");
-            JSONObject obj = new JSONObject(json);
-            try {
-                if (webModule.getVersion() == null) {
-                    webModule.setVersion(getString(obj, "version", webModule.getVersion()));
-                    webModule.setAnchor(packageJsonFile);
-                }
-                if (webModule.getVersion() == null) {
-                    webModule.setVersion(getString(obj, "_release", webModule.getVersion()));
-                    webModule.setAnchor(packageJsonFile);
-                }
-                webModule.setName(getString(obj, "name", webModule.getName()));
-
-                if (webModule.getAnchor() != null) {
-                    webModule.setAnchorChecksum(FileUtils.computeChecksum(webModule.getAnchor()));
-                }
-
-                // eliminate trailing v on version
-                final String version = webModule.getVersion();
-                if (version != null && version.matches("v[0-9].*")) {
-                    webModule.setVersion(version.substring(1));
-                }
-
-                webModule.setLicense(getString(obj, "license", webModule.getLicense()));
-            } catch (Exception e) {
-                log.warn("Cannot parse web module information: [{}]", packageJsonFile);
-            }
-        }
     }
 
     protected void processAnchorFile(File anchorFile, WebModule webModule) {
@@ -199,30 +167,24 @@ public class ComposerWebModuleComponentPatternContributor extends AbstractWebMod
             }
 
             if (anchorFile.getName().endsWith("composer.json")) {
-                JSONObject dependencies = obj.getJSONObject("require");
-                for (String key : dependencies.keySet()) {
-                    WebModuleDependency dependency = new WebModuleDependency();
-                    dependency.setName(key);
-                    String version = dependencies.getString(key);
-                    if (version.contains("||")) {
-                        dependency.setVersionRange(version);
-                    } else {
-                        dependency.setResolvedVersion(version);
-                    }
-                    dependency.setDevDependency(false);
-                    webModule.getDirectDependencies().add(dependency);
-                }
-                if (obj.has("require-dev")) {
-                    dependencies = obj.getJSONObject("require-dev");
+                JSONObject dependencies = obj.optJSONObject("require");
+                if (dependencies != null) {
                     for (String key : dependencies.keySet()) {
                         WebModuleDependency dependency = new WebModuleDependency();
                         dependency.setName(key);
                         String version = dependencies.getString(key);
-                        if (version.contains("||")) {
-                            dependency.setVersionRange(version);
-                        } else {
-                            dependency.setResolvedVersion(version);
-                        }
+                        dependency.setVersionRange(version);
+                        dependency.setRuntimeDependency(true);
+                        webModule.getDirectDependencies().add(dependency);
+                    }
+                }
+                dependencies = obj.optJSONObject("require-dev");
+                if (dependencies != null) {
+                    for (String key : dependencies.keySet()) {
+                        WebModuleDependency dependency = new WebModuleDependency();
+                        dependency.setName(key);
+                        String version = dependencies.getString(key);
+                        dependency.setVersionRange(version);
                         dependency.setDevDependency(true);
                         webModule.getDirectDependencies().add(dependency);
                     }

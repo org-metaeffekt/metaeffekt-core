@@ -19,8 +19,8 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.metaeffekt.core.inventory.processor.adapter.ModuleData;
-import org.metaeffekt.core.inventory.processor.adapter.NpmModule;
+import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -40,7 +40,7 @@ public class YarnLockParser extends PackageLockParser {
     
     @Override
     public void parseModules(WebModule webModule) throws IOException {
-        final Map<String, NpmModule> pathModuleMap = new HashMap<>();
+        final Map<String, ResolvedModule> pathModuleMap = new HashMap<>();
 
         final List<YarnInfoBlock> yarnInfoBlocks = parseYarnLock(getFile());
 
@@ -50,8 +50,8 @@ public class YarnLockParser extends PackageLockParser {
             // __metadata is not a module
             if (moduleName != null && moduleName.startsWith("__metadata")) continue;
 
-            final NpmModule module = new NpmModule(moduleName, getFile().getName());
-            module.setUrl(yarnInfoBlock.resolved);
+            final ResolvedModule module = new ResolvedModule(moduleName, getFile().getName());
+            module.setSourceArchiveUrl(yarnInfoBlock.resolved);
             module.setHash(yarnInfoBlock.integrity);
             if (module.getHash() != null) {
                 module.setHash(yarnInfoBlock.checksum);
@@ -73,18 +73,18 @@ public class YarnLockParser extends PackageLockParser {
         setPathModuleMap(pathModuleMap);
 
         // merge web module direct dependency information; this is not required, but the check is good
-        NpmModule rootModule = resolveNpmModule(null, webModule.getName(), webModule.getVersion());
+        ResolvedModule rootModule = resolveNpmModule(null, webModule.getName(), webModule.getVersion());
 
         // the yarn lock may not include the root modules; therefore we add it
         if (rootModule == null) {
             if (StringUtils.isNotBlank(webModule.getName())) {
                 // FIXME-KKL: unify creation from webmodule
-                rootModule = new NpmModule(webModule.getName(), "");
+                rootModule = new ResolvedModule(webModule.getName(), "");
                 rootModule.setVersion(webModule.getVersion());
                 rootModule.setUrl(webModule.getUrl());
             } else {
                 // in any case we add dummy; to be revised
-                rootModule = new NpmModule("dummy", "dummy");
+                rootModule = new ResolvedModule("dummy", "dummy");
             }
 
             pathModuleMap.put(rootModule.getName(), rootModule);
@@ -95,14 +95,14 @@ public class YarnLockParser extends PackageLockParser {
         propagateDependencyDetails(webModule);
     }
 
-    private static void applyDependencies(List<Pair<String, String>> depList, Consumer<Map<String, ModuleData>> consumer) {
+    private static void applyDependencies(List<Pair<String, String>> depList, Consumer<Map<String, UnresolvedModule>> consumer) {
         if (depList != null) {
-            Map<String, ModuleData> depMap = new HashMap<>();
+            Map<String, UnresolvedModule> depMap = new HashMap<>();
             for (Pair<String, String> dep : depList) {
                 // for yarn the path is <name>@<version>
                 String path = dep.getKey();
                 String versionRange = dep.getValue();
-                depMap.put(path, new ModuleData(path, path, versionRange, null));
+                depMap.put(path, new UnresolvedModule(path, path, versionRange));
             }
             consumer.accept(depMap);
         }
@@ -200,7 +200,6 @@ public class YarnLockParser extends PackageLockParser {
             boolean parsingPeerDependencies = false;
             boolean parsingPeerDependenciesMeta = false;
             boolean parsingBin = false;
-            boolean parsingConditions = false;
 
             for (String line : currentBlockLines) {
 
@@ -232,7 +231,6 @@ public class YarnLockParser extends PackageLockParser {
                     parsingPeerDependencies = false;
                     parsingPeerDependenciesMeta = false;
                     parsingBin = false;
-                    parsingConditions = false;
                     parsingOptionalDependencies = false;
 
                     final Pair<String, String> keyValuePair = parseKeyValuePair(line);
@@ -330,19 +328,19 @@ public class YarnLockParser extends PackageLockParser {
         }
     }
 
-    public NpmModule resolveNpmModule(NpmModule dependentModule, String path, String versionRange) {
-        NpmModule npmModule;
+    public ResolvedModule resolveNpmModule(ResolvedModule dependentModule, String path, String versionRange) {
+        ResolvedModule resolvedModule;
 
-        npmModule = getPathModuleMap().get(path + "@npm:" + versionRange);
-        if (npmModule != null) return npmModule;
+        resolvedModule = getPathModuleMap().get(path + "@npm:" + versionRange);
+        if (resolvedModule != null) return resolvedModule;
 
-        npmModule = getPathModuleMap().get(path + "@" + versionRange);
-        if (npmModule != null) return npmModule;
+        resolvedModule = getPathModuleMap().get(path + "@" + versionRange);
+        if (resolvedModule != null) return resolvedModule;
 
-        npmModule = getPathModuleMap().get(path);
-        if (npmModule != null) return npmModule;
+        resolvedModule = getPathModuleMap().get(path);
+        if (resolvedModule != null) return resolvedModule;
 
-        return npmModule;
+        return resolvedModule;
     }
 
 }

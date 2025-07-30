@@ -19,7 +19,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.adapter.NpmModule;
+import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 
 import java.io.File;
@@ -43,8 +43,8 @@ public class PackageLockParser3 extends PackageLockParser {
         JSONObject packages = object.optJSONObject("packages");
         JSONObject specificPackage = null;
 
-        final Map<String, NpmModule> pathModuleMap = new HashMap<>();
-        final Map<String, NpmModule> qualifierModuleMap = new HashMap<>();
+        final Map<String, ResolvedModule> pathModuleMap = new HashMap<>();
+        final Map<String, ResolvedModule> qualifierModuleMap = new HashMap<>();
 
         if (packages != null) {
             // change level
@@ -67,7 +67,7 @@ public class PackageLockParser3 extends PackageLockParser {
                 if (specificPackage == null) {
                     log.warn("Matching package in [{}] with name [{}] not found.", getFile().getAbsolutePath(), webModule.getName());
                 } else {
-                    final NpmModule rootModule = new NpmModule(webModule.getName(), "");
+                    final ResolvedModule rootModule = new ResolvedModule(webModule.getName(), "");
                     parseModuleContent(rootModule, specificPackage);
 
                     final String qualifier = rootModule.deriveQualifier();
@@ -92,15 +92,15 @@ public class PackageLockParser3 extends PackageLockParser {
 
             final JSONObject jsonObject = allPackages.getJSONObject(path);
 
-            final NpmModule npmModule = new NpmModule(name, path);
-            parseModuleContent(npmModule, jsonObject);
+            final ResolvedModule resolvedModule = new ResolvedModule(name, path);
+            parseModuleContent(resolvedModule, jsonObject);
 
-            if (StringUtils.isNotBlank(npmModule.getName())) {
-                final String qualifier = npmModule.deriveQualifier();
-                final NpmModule qualifiedModule = qualifierModuleMap.get(qualifier);
+            if (StringUtils.isNotBlank(resolvedModule.getName())) {
+                final String qualifier = resolvedModule.deriveQualifier();
+                final ResolvedModule qualifiedModule = qualifierModuleMap.get(qualifier);
                 if (qualifiedModule == null) {
-                    pathModuleMap.put(path, npmModule);
-                    qualifierModuleMap.put(qualifier, npmModule);
+                    pathModuleMap.put(path, resolvedModule);
+                    qualifierModuleMap.put(qualifier, resolvedModule);
                 } else {
                     pathModuleMap.put(path, qualifiedModule);
                 }
@@ -113,19 +113,19 @@ public class PackageLockParser3 extends PackageLockParser {
 
     }
 
-    private void parseModuleContent(NpmModule npmModule, JSONObject specificPackage) {
-        npmModule.setUrl(specificPackage.optString("resolved"));
-        npmModule.setHash(specificPackage.optString("integrity"));
-        npmModule.setVersion(specificPackage.optString("version"));
+    private void parseModuleContent(ResolvedModule resolvedModule, JSONObject specificPackage) {
+        resolvedModule.setSourceArchiveUrl(specificPackage.optString("resolved"));
+        resolvedModule.setHash(specificPackage.optString("integrity"));
+        resolvedModule.setVersion(specificPackage.optString("version"));
 
-        npmModule.setDevDependency(specificPackage.optBoolean("dev"));
-        npmModule.setPeerDependency(specificPackage.optBoolean("peer"));
-        npmModule.setOptionalDependency(specificPackage.optBoolean("optional"));
+        resolvedModule.setDevDependency(specificPackage.optBoolean("dev"));
+        resolvedModule.setPeerDependency(specificPackage.optBoolean("peer"));
+        resolvedModule.setOptionalDependency(specificPackage.optBoolean("optional"));
 
-        npmModule.setRuntimeDependencies(collectNameVersionRangeMap(specificPackage, "dependencies"));
-        npmModule.setDevDependencies(collectNameVersionRangeMap(specificPackage, "devDependencies"));
-        npmModule.setPeerDependencies(collectNameVersionRangeMap(specificPackage, "peerDependencies"));
-        npmModule.setOptionalDependencies(collectNameVersionRangeMap(specificPackage, "optionalDependencies"));
+        resolvedModule.setRuntimeDependencies(collectNameVersionRangeMap(specificPackage, "dependencies"));
+        resolvedModule.setDevDependencies(collectNameVersionRangeMap(specificPackage, "devDependencies"));
+        resolvedModule.setPeerDependencies(collectNameVersionRangeMap(specificPackage, "peerDependencies"));
+        resolvedModule.setOptionalDependencies(collectNameVersionRangeMap(specificPackage, "optionalDependencies"));
     }
 
 }

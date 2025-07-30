@@ -25,7 +25,7 @@ import java.util.Map;
 
 @ToString
 @Getter
-public class NpmModule {
+public class ResolvedModule {
 
     /**
      * Name of the module.
@@ -37,7 +37,6 @@ public class NpmModule {
      */
     final String path;
 
-    // FIXME-KKL: is this the resolved version; check usage
     @Setter
     String version;
 
@@ -47,6 +46,12 @@ public class NpmModule {
     @Setter
     String hash;
 
+    @Setter
+    String sourceArchiveUrl;
+
+    /**
+     * Flag indicating that the module was actively resolved by the package manager.
+     */
     @Setter
     boolean resolved;
 
@@ -63,28 +68,24 @@ public class NpmModule {
     private boolean isOptionalDependency;
 
     @Setter
-    private Map<String, ModuleData> devDependencies;
+    private Map<String, UnresolvedModule> devDependencies;
 
     @Setter
-    private Map<String, ModuleData> runtimeDependencies;
+    private Map<String, UnresolvedModule> runtimeDependencies;
 
     @Setter
-    private Map<String, ModuleData> peerDependencies;
+    private Map<String, UnresolvedModule> peerDependencies;
 
     @Setter
-    private Map<String, ModuleData> optionalDependencies;
+    private Map<String, UnresolvedModule> optionalDependencies;
 
     @ToString.Exclude
     @Setter
-    private List<NpmModule> dependentModules = new ArrayList<>();
+    private List<ResolvedModule> dependentModules = new ArrayList<>();
 
-    public NpmModule(String name, String path) {
+    public ResolvedModule(String name, String path) {
         this.name = name;
         this.path = path;
-
-        if (name.startsWith("27.5.1")) throw  new IllegalArgumentException("NpmModule name cannot start with 27.5.1");
-        // if (path.length() > 0 && name.length() > path.length()) throw new IllegalStateException();
-
     }
 
     public String deriveQualifier() {

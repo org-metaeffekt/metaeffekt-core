@@ -815,8 +815,7 @@ public class DirectoryScanAggregatorConfiguration {
         final FilePatternQualifierMapper childMapper = qualifierToMapperMap.get(childQualifier);
         final Map<String, List<File>> subsetMap = new HashMap<>();
 
-        if (parentMapper != null && !childMapper.isLocked()) {
-
+        if (parentMapper != null && childMapper != null && !childMapper.isLocked()) {
             LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
 
             // the lock prevents that files symmetrically being part of two components are bidirectionally removed
@@ -828,11 +827,11 @@ public class DirectoryScanAggregatorConfiguration {
             parentMapperFileList_false.removeAll(childFileSet);
 
             parentMapper.setSubSetMap(subsetMap);
-            if (childMapper != null) {
-                final String assetId = "AID-" + parentMapper.getArtifact().getId() + "-" + parentMapper.getArtifact().getChecksum();
-                childMapper.getArtifact().set(assetId, Constants.MARKER_CONTAINS);
-                parentMapper.getArtifact().set(assetId, Constants.MARKER_CROSS);
-            }
+            final String assetId = "AID-" + parentMapper.getArtifact().getId() + "-" + parentMapper.getArtifact().getChecksum();
+            childMapper.getArtifact().set(assetId, Constants.MARKER_CONTAINS);
+            parentMapper.getArtifact().set(assetId, Constants.MARKER_CROSS);
+        } else if (childMapper != null && childMapper.isLocked()) {
+            LOG.info("Skipping removal of child qualifier [{}] from parent qualifier [{}]. Child qualifier is locked.", childQualifier, parentQualifier);
         }
     }
 

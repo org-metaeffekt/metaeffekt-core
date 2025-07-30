@@ -20,8 +20,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.adapter.ModuleData;
-import org.metaeffekt.core.inventory.processor.adapter.NpmModule;
+import org.metaeffekt.core.inventory.processor.adapter.UnresolvedModule;
+import org.metaeffekt.core.inventory.processor.adapter.ResolvedModule;
+import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 
 import java.io.File;
@@ -55,25 +56,25 @@ public class PackageLockParser1 extends PackageLockParser {
 
     @Override
     public void parseModules(WebModule webModule) {
-        final Map<String, NpmModule> pathModuleMap = new HashMap<>();
+        final Map<String, ResolvedModule> pathModuleMap = new HashMap<>();
 
         final Stack<ResolvedModuleData> resolvedModuleDataStack = new Stack<>();
 
-        final NpmModule rootNpmModule = new NpmModule(webModule.getName(), "");
-        parseModuleContent(rootNpmModule, object, resolvedModuleDataStack);
-        pathModuleMap.put(rootNpmModule.getPath(), rootNpmModule);
-        pathModuleMap.put(rootNpmModule.getPath(), rootNpmModule);
+        final ResolvedModule rootResolvedModule = new ResolvedModule(webModule.getName(), "");
+        parseModuleContent(rootResolvedModule, object, resolvedModuleDataStack);
+        pathModuleMap.put(rootResolvedModule.getPath(), rootResolvedModule);
+        pathModuleMap.put(rootResolvedModule.getPath(), rootResolvedModule);
 
         // qualify root module
-        setRootModule(rootNpmModule);
+        setRootModule(rootResolvedModule);
 
         while (!resolvedModuleDataStack.isEmpty()) {
             final ResolvedModuleData moduleData = resolvedModuleDataStack.pop();
 
-            final NpmModule npmModule = new NpmModule(moduleData.getName(), moduleData.getPath());
-            parseModuleContent(npmModule, moduleData.getJsonObject(), resolvedModuleDataStack);
+            final ResolvedModule resolvedModule = new ResolvedModule(moduleData.getName(), moduleData.getPath());
+            parseModuleContent(resolvedModule, moduleData.getJsonObject(), resolvedModuleDataStack);
 
-            pathModuleMap.put(moduleData.getPath(), npmModule);
+            pathModuleMap.put(moduleData.getPath(), resolvedModule);
         }
 
         setPathModuleMap(pathModuleMap);
@@ -83,8 +84,8 @@ public class PackageLockParser1 extends PackageLockParser {
         }
     }
 
-    private void parseModuleContent(NpmModule dependentModule, JSONObject specificPackage, Stack<ResolvedModuleData> stack) {
-         dependentModule.setUrl(specificPackage.optString("resolved"));
+    private void parseModuleContent(ResolvedModule dependentModule, JSONObject specificPackage, Stack<ResolvedModuleData> stack) {
+         dependentModule.setSourceArchiveUrl(specificPackage.optString("resolved"));
          dependentModule.setHash(specificPackage.optString("integrity"));
          dependentModule.setVersion(specificPackage.optString("version"));
 
@@ -93,10 +94,10 @@ public class PackageLockParser1 extends PackageLockParser {
         dependentModule.setOptionalDependency(specificPackage.optBoolean("optional"));
 
         // requires uses a name to version range map
-        final Map<String, ModuleData> required = collectNameVersionRangeMap(specificPackage, "requires");
+        final Map<String, UnresolvedModule> required = collectNameVersionRangeMap(specificPackage, "requires");
 
-        final Map<String, ModuleData> development = collectResolvedModuleMap(specificPackage, "dependencies", stack, o -> o.optBoolean("dev"), dependentModule);
-        final Map<String, ModuleData> runtime = collectResolvedModuleMap(specificPackage, "dependencies", stack, o -> !o.optBoolean("dev"), dependentModule);
+        final Map<String, UnresolvedModule> development = collectResolvedModuleMap(specificPackage, "dependencies", stack, o -> o.optBoolean("dev"), dependentModule);
+        final Map<String, UnresolvedModule> runtime = collectResolvedModuleMap(specificPackage, "dependencies", stack, o -> !o.optBoolean("dev"), dependentModule);
 
         // combine required and runtime
         runtime.putAll(required);
@@ -105,8 +106,8 @@ public class PackageLockParser1 extends PackageLockParser {
         dependentModule.setDevDependencies(development);
     }
 
-    protected Map<String, ModuleData> collectResolvedModuleMap(JSONObject specificPackage, String attribute, Stack<ResolvedModuleData> stack, Predicate<JSONObject> filter, NpmModule dependentModule) {
-        final Map<String, ModuleData> pathVersionMap = new HashMap<>();
+    protected Map<String, UnresolvedModule> collectResolvedModuleMap(JSONObject specificPackage, String attribute, Stack<ResolvedModuleData> stack, Predicate<JSONObject> filter, ResolvedModule dependentModule) {
+        final Map<String, UnresolvedModule> pathVersionMap = new HashMap<>();
         final JSONObject jsonObject = specificPackage.optJSONObject(attribute);
         if (jsonObject != null) {
             for (String name : jsonObject.keySet()) {
@@ -115,7 +116,7 @@ public class PackageLockParser1 extends PackageLockParser {
                 if (version != null) {
                     if (filter == null || filter.test(dependency)) {
                         String fullPath = buildFullPath(dependentModule, name);
-                        pathVersionMap.put(fullPath, new ModuleData(name, fullPath, null, version));
+                        pathVersionMap.put(fullPath, new UnresolvedModule(name, fullPath, version));
                         final ResolvedModuleData moduleData = new ResolvedModuleData(fullPath, name, dependency);
                         // only push those that pass the filter (location) and have not been put on the stack yet
                         if (!stack.contains(moduleData)) {
@@ -128,7 +129,7 @@ public class PackageLockParser1 extends PackageLockParser {
         return pathVersionMap;
     }
 
-    private static String buildFullPath(NpmModule dependentModule, String path) {
+    private static String buildFullPath(ResolvedModule dependentModule, String path) {
         final String dependentModulePath = dependentModule.getPath();
         if (StringUtils.isNotBlank(dependentModulePath)) {
             return dependentModule.getPath() + "/npm_modules/" + path;
@@ -138,33 +139,32 @@ public class PackageLockParser1 extends PackageLockParser {
     }
 
     @Override
-    public NpmModule resolveNpmModule(NpmModule dependentModule, String path, String versionRange) {
-        NpmModule npmModule = resolveNpmModule(path);
-        if (npmModule != null) return npmModule;
+    public ResolvedModule resolveNpmModule(ResolvedModule dependentModule, String path, String versionRange) {
+        ResolvedModule resolvedModule = resolveNpmModule(path);
+        if (resolvedModule != null) return resolvedModule;
 
         final String dependentModulePath = dependentModule.getPath();
         if (StringUtils.isNotBlank(dependentModulePath)) {
 
             String queryPath = dependentModulePath + "/npm_modules/" + path;
-            npmModule = resolveNpmModule(queryPath);
-            if (npmModule != null) return npmModule;
+            resolvedModule = resolveNpmModule(queryPath);
+            if (resolvedModule != null) return resolvedModule;
 
             queryPath = dependentModule.getName() + "/npm_modules/" + path;
-            npmModule = resolveNpmModule(queryPath);
-            if (npmModule != null) return npmModule;
+            resolvedModule = resolveNpmModule(queryPath);
+            if (resolvedModule != null) return resolvedModule;
 
             // search one level up
             int slashIndex = dependentModulePath.lastIndexOf("/npm_modules/");
             if (slashIndex != -1) {
                 String parentModulePath = dependentModulePath.substring(0, slashIndex);
                 queryPath = parentModulePath + "/npm_modules/" + path;
-                log.info(queryPath);
-                npmModule = resolveNpmModule(queryPath);
-                if (npmModule != null) return npmModule;
+                resolvedModule = resolveNpmModule(queryPath);
+                if (resolvedModule != null) return resolvedModule;
             }
         }
 
-        return npmModule;
+        return resolvedModule;
     }
 
 }

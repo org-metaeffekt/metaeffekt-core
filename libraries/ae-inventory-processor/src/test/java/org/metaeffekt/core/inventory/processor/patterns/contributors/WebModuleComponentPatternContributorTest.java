@@ -66,7 +66,7 @@ public class WebModuleComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(1504);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1590);
 
         // filter runtime artifacts
         InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-project-a-0.0.1-SNAPSHOT"));
@@ -102,7 +102,7 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-001-lock-inventory.xlsx"));
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(0);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1400);
 
         // FIX outline:
         // - enable detection of case "" --> workspace
@@ -134,7 +134,7 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-002-inventory.xlsx"));
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(1163);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1316);
 
         // filter runtime artifacts
         InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-web-app-1.0.0-SNAPSHOT"));
@@ -166,7 +166,7 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/npm-002-lock-inventory.xlsx"));
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(1163);
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1316);
 
         // filter runtime artifacts
         InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-web-app-1.0.0-SNAPSHOT"));
@@ -477,11 +477,32 @@ public class WebModuleComponentPatternContributorTest {
 
         new InventoryWriter().writeInventory(inventory, new File("target/yarn-002-inventory.xlsx"));
 
+        final Artifact artifact001 = inventory.findArtifact("@cesium/engine-15.0.0");
+        Assertions.assertThat(artifact001).isNotNull();
+        Assertions.assertThat(artifact001.get(Artifact.Attribute.COMPONENT)).isEqualTo("@cesium/engine");
+        Assertions.assertThat(artifact001.get(Artifact.Attribute.VERSION)).isEqualTo("15.0.0");
+        Assertions.assertThat(artifact001.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
+        Assertions.assertThat(artifact001.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
+        Assertions.assertThat(artifact001.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("test/package.json[@cesium/engine@15.0.0]");
+        Assertions.assertThat(artifact001.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@cesium/engine@15.0.0");
+        Assertions.assertThat(artifact001.get("AID-test/package.json-v4.4.0")).isEqualTo("r");
+
+        final Artifact artifact002 = inventory.findArtifact("@babel/core-7.26.10");
+        Assertions.assertThat(artifact002).isNotNull();
+        Assertions.assertThat(artifact002.get(Artifact.Attribute.COMPONENT)).isEqualTo("@babel/core");
+        Assertions.assertThat(artifact002.get(Artifact.Attribute.VERSION)).isEqualTo("7.26.10");
+        Assertions.assertThat(artifact002.get(Artifact.Attribute.TYPE)).isEqualTo("web-module");
+        Assertions.assertThat(artifact002.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
+        Assertions.assertThat(artifact002.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("test/package.json[@babel/core@7.26.10]");
+        Assertions.assertThat(artifact002.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@babel/core@7.26.10");
+        Assertions.assertThat(artifact002.get("AID-test/package.json-v4.4.0")).isEqualTo("d");
+
         assertThat(inventory.getArtifacts().size()).isEqualTo(1362);
 
         // filter runtime artifacts
         InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-test/package.json-v4.4.0"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(235);
+
     }
 
     @Test
@@ -528,7 +549,7 @@ public class WebModuleComponentPatternContributorTest {
     }
 
     @Test
-    public void testComposer001() {
+    public void testComposer001() throws IOException {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/composer-001");
         final String relativeAnchorPath = "composer.json";
         final File anchorFile = new File(baseDir, relativeAnchorPath);
@@ -549,7 +570,14 @@ public class WebModuleComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
-        assertThat(inventory.getArtifacts().size()).isEqualTo(257);
+        new InventoryWriter().writeInventory(inventory, new File("target/composer-001-inventory.xlsx"));
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(328);
+
+        // filter runtime artifacts
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-composer-test-3.15.0"));
+        assertThat(inventory.getArtifacts().size()).isEqualTo(214);
+
     }
 
 }

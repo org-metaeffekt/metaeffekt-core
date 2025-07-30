@@ -29,6 +29,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.DirectoryInventoryScan;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -220,16 +221,21 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
         // inputs
-        final File scanInputDir = new File("<project.baseDir>/input");
-        final File scanDir = new File("<project.baseDir>/scan");
+        final File projectBaseDir = new File("<project.baseDir>");
+        final File scanInputDir = new File(projectBaseDir, "input");
+        final File scanDir = new File(projectBaseDir, "scan");
 
         // other sources
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
         // outputs
-        final File targetScanInventoryFile = new File("target/scan-inventory.xlsx");
-        final File targetAggregationDir = new File("target/aggregation");
-        final File targetAggregationInventoryFile = new File("target/aggregated-inventory.xlsx");
+        final File resultsDir = new File(projectBaseDir, "results");
+        final File targetAggregationDir = new File(resultsDir, "aggregation");
+        final File targetAggregationInventoryFile = new File(resultsDir, "aggregated-inventory.xlsx");
+        final File targetScanInventoryFile = new File(resultsDir, "scan-inventory.xlsx");
+
+        FileUtils.forceMkdir(resultsDir);
+        FileUtils.forceMkdir(targetAggregationDir);
 
         final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
         new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);

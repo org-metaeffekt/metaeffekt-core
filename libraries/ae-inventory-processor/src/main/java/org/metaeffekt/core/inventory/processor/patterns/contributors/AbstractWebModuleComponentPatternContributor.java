@@ -18,9 +18,8 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
 import org.metaeffekt.core.util.FileUtils;
@@ -29,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Abstract base class for WebModuleComponentPatternContributors. The class provides general parts common to
@@ -267,5 +267,43 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
             }
         }
     }
+
+    protected void condenseInventory(Inventory inventory) {
+        // select primary assets
+        final Set<String> primaryAssetIds = inventory.getAssetMetaData().stream()
+                .filter(AssetMetaData::isPrimary)
+                .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
+                .collect(Collectors.toSet());
+
+        if (primaryAssetIds.isEmpty()) {
+            throw new IllegalStateException("No primary asset identified.");
+        }
+
+        // eliminate all but primary asset columns in artifacts
+        final Set<String> givenAssetIds = InventoryUtils.collectAssetIdsFromArtifacts(inventory);
+        givenAssetIds.removeAll(primaryAssetIds);
+
+        givenAssetIds.forEach(aid -> InventoryUtils.removeArtifactAttribute(aid, inventory));
+
+        // degrade primary assets as normal assets
+        inventory.getAssetMetaData().forEach(amd -> amd.set(Constants.KEY_PRIMARY, null));
+
+        // do not include root module (already subject to contributor)
+        final Set<Artifact> removableArtifacts = new HashSet<>();
+        for (Artifact artifact : inventory.getArtifacts()) {
+            boolean remove = true;
+            for (String aid : primaryAssetIds) {
+                if (StringUtils.isNotBlank(artifact.get(aid))) {
+                    remove = false;
+                    break;
+                }
+            }
+            if (remove) {
+                removableArtifacts.add(artifact);
+            }
+        }
+        inventory.getArtifacts().removeAll(removableArtifacts);
+    }
+
 
 }

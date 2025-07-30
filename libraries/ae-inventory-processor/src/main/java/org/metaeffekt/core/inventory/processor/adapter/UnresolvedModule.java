@@ -18,11 +18,10 @@ package org.metaeffekt.core.inventory.processor.adapter;
 import lombok.Data;
 
 @Data
-public class ModuleData {
+public class UnresolvedModule {
 
     private final String name;
     private final String path;
     private final String versionRange;
-    private final String version;
 
 }

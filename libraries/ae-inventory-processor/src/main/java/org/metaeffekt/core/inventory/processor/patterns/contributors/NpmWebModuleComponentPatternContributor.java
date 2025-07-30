@@ -89,7 +89,7 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
     protected Inventory createSubcomponentInventory(String relativeAnchorPath, WebModule webModule) throws IOException {
         final List<Inventory> inventoriesFromLockFiles = new ArrayList<>();
         for (File lockFile : webModule.getLockFiles()) {
-            Inventory lockInventory = new NpmPackageLockAdapter().createInventoryFromPackageLock(lockFile, relativeAnchorPath, webModule);
+            Inventory lockInventory = new NpmPackageLockAdapter().createInventoryFromPackageLock(lockFile, webModule);
             if (lockInventory != null) {
                 inventoriesFromLockFiles.add(lockInventory);
             }
@@ -109,39 +109,6 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
         }
 
         return null;
-    }
-
-    private void condenseInventory(Inventory inventoryFromLockFile) {
-        // select primary assets
-        final Set<String> primaryAssetIds = inventoryFromLockFile.getAssetMetaData().stream()
-                .filter(AssetMetaData::isPrimary)
-                .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
-                .collect(Collectors.toSet());
-
-        // eliminate all but primary asset columns in artifacts
-        final Set<String> givenAssetIds = InventoryUtils.collectAssetIdsFromArtifacts(inventoryFromLockFile);
-        givenAssetIds.removeAll(primaryAssetIds);
-
-        givenAssetIds.forEach(aid -> InventoryUtils.removeArtifactAttribute(aid, inventoryFromLockFile));
-
-        // degrade primary assets as normal assets
-        inventoryFromLockFile.getAssetMetaData().forEach(amd -> amd.set(Constants.KEY_PRIMARY, null));
-
-        // do not include root module (already subject to contributor)
-        final Set<Artifact> removableArtifacts = new HashSet<>();
-        for (Artifact artifact : inventoryFromLockFile.getArtifacts()) {
-            boolean remove = true;
-            for (String aid : primaryAssetIds) {
-                if (StringUtils.isNotBlank(artifact.get(aid))) {
-                    remove = false;
-                    break;
-                }
-            }
-            if (remove) {
-                removableArtifacts.add(artifact);
-            }
-        }
-        inventoryFromLockFile.getArtifacts().removeAll(removableArtifacts);
     }
 
     @Override
@@ -166,25 +133,14 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, anchorParentDirName + "/**/*");
 
         // set excludes
-        if ("node_modules".equalsIgnoreCase(anchorParentDirName)) {
-            // we are already in the node_modules directory; in this case omit the parent dir;
-            // this may happen when we have identified a .package-lock.json file in the node_modules folder;
-            // we have to make sure we do not include the complete node_modules folder with all modules
-            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                    ".yarn-integrity," +
-                    "**/node_modules/**/*," +
-                    "**/bower_components/**/*");
-        } else {
-            componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                    anchorParentDirName + "/.yarn-integrity," +
-                    anchorParentDirName + "/**/node_modules/**/*," +
-                    anchorParentDirName + "/**/bower_components/**/*," +
-                    anchorParentDirName + "/**/bower.json," +
-                    anchorParentDirName + "/**/.bower.json," +
-                    anchorParentDirName + "/**/composer.json," +
-                    anchorParentDirName + "/**/composer.lock"
-            );
-        }
+        componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
+                "**/.yarn-integrity," +
+                "**/node_modules/**/*," +
+                "**/bower_components/**/*," +
+                "**/bower.json," +
+                "**/.bower.json," +
+                "**/composer.json," +
+                "**/composer.lock");
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");

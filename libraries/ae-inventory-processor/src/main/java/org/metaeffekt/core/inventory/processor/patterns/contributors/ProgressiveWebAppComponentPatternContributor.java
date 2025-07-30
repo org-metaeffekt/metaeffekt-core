@@ -66,7 +66,7 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             try {
                 name = jsonObject.getString("name");
             } catch (JSONException e) {
-                LOG.info("Could not find name in manifest.json. Trying to find name in contribute.json file: [{}]", contributeFile.getAbsolutePath());
+                LOG.debug("Could not find name in manifest.json. Trying to find name in contribute.json file: [{}]", contributeFile.getAbsolutePath());
                 if (contributeFile.exists()) {
                     final String contributeContent = FileUtils.readFileToString(contributeFile, FileUtils.ENCODING_UTF_8);
                     final JSONObject contributeJsonObject = new JSONObject(contributeContent);
@@ -77,18 +77,19 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             try {
                 version = jsonObject.getString("version");
             } catch (Exception e) {
-                File versionFile = new File(parentPath.toFile(), "version");
-                LOG.info("Could not find version in manifest.json. Trying to find version in version file: [{}]", versionFile.getAbsolutePath());
+                final File versionFile = new File(parentPath.toFile(), "version");
                 if (versionFile.exists() && versionFile.isFile()) {
-                    Stream<String> lines = Files.lines(versionFile.toPath());
-                    for (String line : lines.collect(Collectors.toList())) {
-                        if (!line.isEmpty()) {
-                            version = line;
-                            break;
+                    LOG.debug("Could not find version in manifest.json. Trying to find version in version file: [{}]", versionFile.getAbsolutePath());
+                    try (Stream<String> lines = Files.lines(versionFile.toPath())) {
+                        for (String line : lines.collect(Collectors.toList())) {
+                            if (!line.isEmpty()) {
+                                version = line;
+                                break;
+                            }
                         }
                     }
                 } else {
-                    LOG.warn("Unable to parse progressive web application version [{}]: {}", anchorFile.getAbsolutePath(), e.getMessage());
+                    LOG.debug("Unable to parse progressive web application version [{}]: {}", anchorFile.getAbsolutePath(), e.getMessage());
                     return Collections.emptyList();
                 }
             }
@@ -96,7 +97,7 @@ public class ProgressiveWebAppComponentPatternContributor extends ComponentPatte
             try {
                 license = jsonObject.getString("license");
             } catch (Exception e) {
-                LOG.info("Could not find license in manifest.json. Trying to find license in contribute.json file: [{}]", contributeFile.getAbsolutePath());
+                LOG.debug("Could not find license in manifest.json. Trying to find license in contribute.json file: [{}]", contributeFile.getAbsolutePath());
                 if (contributeFile.exists()) {
                     final String contributeContent = FileUtils.readFileToString(contributeFile, FileUtils.ENCODING_UTF_8);
                     final JSONObject contributeJsonObject = new JSONObject(contributeContent);
