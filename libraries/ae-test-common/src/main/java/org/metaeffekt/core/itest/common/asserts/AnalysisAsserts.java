@@ -29,7 +29,7 @@ public interface AnalysisAsserts {
 
     default void assertInvariants() {
         assertAtLeastOneArtifact();
-        // TODO Type detection not stable / available for all artifatcs
+        // TODO Type detection not stable / available for all artifacts
         //assertNoMissingTypes(analysis);
         assertNoErrors();
     }
