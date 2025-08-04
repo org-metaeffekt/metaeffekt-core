@@ -69,6 +69,9 @@ public class ArchiveUtils {
     private static final Set<String> allExtensions = new HashSet<>();
 
     static {
+        // in case no extension is avaiable we still attempt to unzip
+        zipExtensions.add("");
+
         zipExtensions.add("war");
         // zip: regular zip archives
         zipExtensions.add("zip");
