@@ -414,7 +414,10 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            issues.add("Cannot unzip " + archiveFile.getAbsolutePath());
+            // only report an issue, in case the extension was non-blank
+            if (!StringUtils.isBlank(extension)) {
+                issues.add("Cannot unzip " + archiveFile.getAbsolutePath());
+            }
             return false;
         }
 
