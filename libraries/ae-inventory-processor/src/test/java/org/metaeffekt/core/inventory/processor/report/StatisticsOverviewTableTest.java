@@ -299,7 +299,7 @@ public class StatisticsOverviewTableTest {
             for (AeaaAdvisoryTypeIdentifier<?> advisoryProvider : advisoryProviders) {
                 final AeaaAdvisoryEntry securityAdvisory = advisoryProvider.getAdvisoryFactory().get();
                 securityAdvisory.setId(advisoryProvider.name() + "-" + random.nextInt(100000));
-                vulnerability.addSecurityAdvisory(securityAdvisory);
+                vulnerability.addSecurityAdvisoryUnmanaged(securityAdvisory);
             }
         }
 
