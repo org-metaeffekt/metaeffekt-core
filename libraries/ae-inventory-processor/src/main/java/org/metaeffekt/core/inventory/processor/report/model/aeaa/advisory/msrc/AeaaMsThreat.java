@@ -15,13 +15,12 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.msrc;
 
+import lombok.NonNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Mirrors structure of <code>com.metaeffekt.mirror.contents.msrcdata.MsThreat</code>
@@ -111,5 +110,48 @@ public class AeaaMsThreat implements Comparable<AeaaMsThreat> {
     public int compareTo(AeaaMsThreat o) {
         if (o == null) return 1;
         return ID_TYPE_DESC_COMPARATOR.compare(this, o);
+    }
+
+    /**
+     * Deduplicates a collection of MsThreat objects in-place based on their productId.
+     * <p>
+     * For each unique productId, it keeps only the threat that has the most
+     * information, defined by the number of non-empty fields.
+     *
+     * @param threats The collection of threat objects to update. It is modified directly.
+     */
+    public static void deduplicateByProductId(Collection<AeaaMsThreat> threats) {
+        if (threats == null || threats.isEmpty()) return;
+
+        final Set<String> uniqueKeys = new HashSet<>();
+        boolean hasDuplicate = false;
+        for (AeaaMsThreat threat : threats) {
+            if (threat == null || StringUtils.isEmpty(threat.getProductId())) continue;
+            if (!uniqueKeys.add(threat.getProductId() + "-" + threat.getType())) {
+                hasDuplicate = true;
+                break;
+            }
+        }
+        if (!hasDuplicate) return;
+
+        final Map<String, AeaaMsThreat> bestThreatsMap = new LinkedHashMap<>();
+        for (AeaaMsThreat threat : threats) {
+            if (threat == null || StringUtils.isEmpty(threat.getProductId())) continue;
+            bestThreatsMap.merge(threat.getProductId() + "-" + threat.getType(), threat, (existing, replacement) -> calculateInformationScore(replacement) >= calculateInformationScore(existing) ? replacement : existing);
+        }
+
+        threats.clear();
+        threats.addAll(bestThreatsMap.values());
+    }
+
+    /**
+     * Calculates a score for a threat based on how many of its fields contain text.
+     * The score is the sum of points for each populated field (type, description).
+     *
+     * @param threat The AeaaMsThreat object to score. Must not be null.
+     * @return An integer score representing the amount of information in the threat.
+     */
+    private static int calculateInformationScore(@NonNull AeaaMsThreat threat) {
+        return (StringUtils.hasText(threat.getType()) ? 1 : 0) + (StringUtils.hasText(threat.getDescription()) ? 1 : 0);
     }
 }

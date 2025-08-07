@@ -15,12 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.msrc;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.AeaaReference;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Mirrors structure of <code>com.metaeffekt.mirror.contents.msrcdata.MsrcRemediation</code>
@@ -136,5 +139,102 @@ public class AeaaMsrcRemediation implements Comparable<AeaaMsrcRemediation> {
     public int compareTo(AeaaMsrcRemediation o) {
         return Comparator.comparing((AeaaMsrcRemediation msrcRemediation) -> msrcRemediation == null ? "" : msrcRemediation.getDescription())
                 .compare(this, o);
+    }
+
+    /**
+     * Consolidates a collection of MsrcRemediation objects in-place.
+     * <p>
+     * This method groups remediations by a logical identifier and merges them.
+     * It is designed to be generic: it distinguishes between numeric identifiers (like
+     * KB articles) and non-numeric ones (like software components) to create the
+     * correct grouping key without using hard-coded names.
+     *
+     * @param remediations The collection of MsrcRemediation objects to update.
+     */
+    public static void mergeRemediations(Collection<AeaaMsrcRemediation> remediations) {
+        if (remediations == null || remediations.isEmpty()) {
+            return;
+        }
+
+        final Map<String, AeaaMsrcRemediation> consolidatedMap = new LinkedHashMap<>();
+
+        for (AeaaMsrcRemediation remediation : remediations) {
+            if (remediation == null) continue;
+
+            final String key = generateDeduplicationKey(remediation);
+            if (key == null) continue;
+
+            consolidatedMap.merge(key, remediation, AeaaMsrcRemediation::merge);
+        }
+
+        remediations.clear();
+        remediations.addAll(consolidatedMap.values());
+    }
+
+    /**
+     * Generates a key for grouping. For non-numeric identifiers (components),
+     * it creates a composite key with the fixed build to differentiate versions.
+     *
+     * @param remediation The remediation to generate a key for.
+     * @return The key string, or null if no identifier can be found.
+     */
+    private static String generateDeduplicationKey(AeaaMsrcRemediation remediation) {
+        final String identifier = StringUtils.hasText(remediation.getDescription()) ?
+                remediation.getDescription() :
+                remediation.getSubType();
+        if (identifier == null) return null;
+
+        // non-numeric identifier with a fixed build is a versioned component.
+        if (!identifier.matches("\\d+") && StringUtils.hasText(remediation.getFixedBuild())) {
+            return identifier + "#" + remediation.getFixedBuild();
+        }
+
+        return identifier;
+    }
+
+    private static AeaaMsrcRemediation merge(AeaaMsrcRemediation existing, AeaaMsrcRemediation replacement) {
+        final AeaaMsrcRemediation primary = getRemediationTypePriority(existing) >= getRemediationTypePriority(replacement) ? existing : replacement;
+        final AeaaMsrcRemediation secondary = primary == existing ? replacement : existing;
+
+        final Set<String> combinedProductIds = Stream.concat(
+                primary.getAffectedProductIds().stream(),
+                secondary.getAffectedProductIds().stream()
+        ).collect(Collectors.toSet());
+
+        final AeaaReference reference = (primary.getUrl() == null || StringUtils.isEmpty(primary.getUrl().getUrl())) ? secondary.getUrl() : primary.getUrl();
+
+        return new AeaaMsrcRemediation(
+                primary.getType(),
+                primary.getSubType(),
+                isEmptyDescription(primary.getDescription()) ? secondary.getDescription() : primary.getDescription(),
+                reference,
+                combinedProductIds,
+                ObjectUtils.firstNonNull(primary.getFixedBuild(), secondary.getFixedBuild()),
+                primary.getSupercedence()
+        );
+    }
+
+    private static boolean isEmptyDescription(String description) {
+        if (StringUtils.isEmpty(description)) return true;
+        if ("No description provided.".equals(description)) return true;
+        return false;
+    }
+
+    private static int getRemediationTypePriority(AeaaMsrcRemediation remediation) {
+        if (remediation == null || !StringUtils.hasText(remediation.getType())) {
+            return 0;
+        }
+        switch (remediation.getType()) {
+            case "Vendor Fix":
+                return 4;
+            case "Security Update":
+                return 3;
+            case "Known Issue":
+                return 2;
+            case "Release Notes":
+                return 1;
+            default:
+                return 0;
+        }
     }
 }
