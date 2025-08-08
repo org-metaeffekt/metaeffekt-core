@@ -196,7 +196,9 @@ public class AeaaMsrcAdvisorEntry extends AeaaAdvisoryEntry {
 
         this.addAffectedProducts(msrcAdvisorEntry.getAffectedProducts());
         this.addMsThreats(msrcAdvisorEntry.getMsThreats());
+        AeaaMsThreat.deduplicateByProductId(this.msThreats);
         this.addMsRemediations(msrcAdvisorEntry.getMsRemediations());
+        AeaaMsrcRemediation.mergeRemediations(this.msrcRemediations);
     }
 
     @Override
