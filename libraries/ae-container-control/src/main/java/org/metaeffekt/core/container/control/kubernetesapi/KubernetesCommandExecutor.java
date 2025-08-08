@@ -188,15 +188,14 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 .build();
 
         /*
-        not sure whether this is the same object from earlier so we use the returned one.
-
-        wait until the pod for this image is actually ready for use instead of potentially crashing on
-        a later command (which may have shorter timeouts).
+        NOTE: not sure whether this is the same object from earlier, so we use the returned one.
          */
-//        Pod pod = client.pods().resource(podPrototype).create();
-
         final Pod pod = client.pods().resource(podPrototype).create();
 
+        /*
+        NOTE: we wait until the pod for this image is actually ready for use instead of potentially crashing on
+        a later command (which may have different timeouts that don't include creation).
+         */
         // ugly little warning mechanism in case pod creation takes suspiciously long time
         final AtomicBoolean shouldLog = new AtomicBoolean(true);
         final long startTime = System.currentTimeMillis();
