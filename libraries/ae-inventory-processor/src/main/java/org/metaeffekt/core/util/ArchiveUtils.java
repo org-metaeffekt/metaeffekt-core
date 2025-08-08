@@ -69,6 +69,9 @@ public class ArchiveUtils {
     private static final Set<String> allExtensions = new HashSet<>();
 
     static {
+        // in case no extension is avaiable we still attempt to unzip
+        zipExtensions.add("");
+
         zipExtensions.add("war");
         // zip: regular zip archives
         zipExtensions.add("zip");
@@ -411,7 +414,10 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            issues.add("Cannot unzip " + archiveFile.getAbsolutePath());
+            // only report an issue, in case the extension was non-blank
+            if (!StringUtils.isBlank(extension)) {
+                issues.add("Cannot unzip " + archiveFile.getAbsolutePath());
+            }
             return false;
         }
 
