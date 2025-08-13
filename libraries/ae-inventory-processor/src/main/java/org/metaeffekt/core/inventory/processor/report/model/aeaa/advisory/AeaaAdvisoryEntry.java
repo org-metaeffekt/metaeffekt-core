@@ -61,7 +61,8 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
                 AdvisoryMetaData.Attribute.UPDATE_DATE_FORMATTED.getKey(),
                 AdvisoryMetaData.Attribute.MATCHING_SOURCE.getKey(),
                 AdvisoryMetaData.Attribute.DATA_SOURCE.getKey(),
-                AdvisoryMetaData.Attribute.CVSS_VECTORS.getKey()
+                AdvisoryMetaData.Attribute.CVSS_VECTORS.getKey(),
+                AeaaInventoryAttribute.NVD_EQUIVALENT.getKey()
         ));
     }};
 
@@ -69,7 +70,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
         addAll(Arrays.asList(
                 "id", "url", "summary", "description", "threat", "recommendations", "workarounds",
                 "references", "acknowledgements", "keywords", "createDate", "updateDate",
-                "cvss"
+                "cvss", "nvdEquivalent"
         ));
     }};
 

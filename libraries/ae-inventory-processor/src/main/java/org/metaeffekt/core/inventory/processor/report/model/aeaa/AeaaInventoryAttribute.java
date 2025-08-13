@@ -97,7 +97,10 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     EOL_RATING("EOL Rating"),
 
     ADVISOR_OSV_GHSA_REVIEWED_STATE("GHSA Reviewed State"),
-    ADVISOR_OSV_GHSA_REVIEWED_DATE("GHSA Reviewed Date");
+    ADVISOR_OSV_GHSA_REVIEWED_DATE("GHSA Reviewed Date"),
+    NVD_EQUIVALENT("NVD Equivalent"),
+    NVD_EQUIVALENT_ADVISORIES("NVD Equivalent Advisories"),
+    ;
 
     private final String key;
 
