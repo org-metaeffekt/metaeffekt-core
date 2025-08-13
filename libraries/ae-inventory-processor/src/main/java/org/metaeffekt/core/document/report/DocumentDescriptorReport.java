@@ -218,28 +218,39 @@ public class DocumentDescriptorReport {
     private void addPropertiesToAdapter(DocumentDescriptor documentDescriptor, DocumentDescriptorReportAdapters adapters){
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                if (documentPart.getDocumentPartType() == DocumentPartType.ANNEX){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/inventory-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
+                String propertiesFilename = null;
+                switch (documentPart.getDocumentPartType()) {
+                    case INITIAL_LICENSE_DOCUMENTATION:
+                        propertiesFilename = "asset-report.properties";
+                        break;
+
+                    // ANNEX and LICENSE_DOCUMENTATION share the same part
+                    case ANNEX:
+                    case LICENSE_DOCUMENTATION:
+                        propertiesFilename = "inventory-report.properties";
+                        break;
+
+                    case VULNERABILITY_REPORT:
+                        propertiesFilename = "vulnerability-report.properties";
+                        break;
+
+                    case VULNERABILITY_SUMMARY_REPORT:
+                        propertiesFilename = "vulnerability-summary.properties";
+                        break;
+
+                    // these do not provide properties
+                    case VULNERABILITY_STATISTICS_REPORT:
+                        break;
+
+                    default:
+                        // enforce this list is completed for new part types
+                        throw new IllegalStateException("Unknown document part type. Cannot map properties.");
                 }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_REPORT){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_STATISTICS_REPORT){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-statistics-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.VULNERABILITY_SUMMARY_REPORT){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/vulnerability-summary-report.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
-                    adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
-                }
-                if (documentPart.getDocumentPartType() == DocumentPartType.LICENSE_DOCUMENTATION){
-                    Properties properties = PropertiesUtils.loadPropertiesFile(new File (targetReportDir + "/" + inventoryContext.getIdentifier() + "/initial-license-documentation.properties"));
+
+                if (propertiesFilename != null) {
+                    final File targetDir = new File(targetReportDir, inventoryContext.getIdentifier());
+                    final File propertiesFile = new File(targetDir, propertiesFilename);
+                    final Properties properties = PropertiesUtils.loadPropertiesFile(propertiesFile, true);
                     adapters.getPropertiesMap().put(inventoryContext.getIdentifier(), properties);
                 }
             }
