@@ -19,13 +19,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import static org.junit.Assert.*;
 @Ignore("Requires a local Kubernetes (minikube or similar) instance.")
 public class KubernetesCommandExecutorTest {
 
@@ -77,5 +74,27 @@ public class KubernetesCommandExecutorTest {
                 assertEquals(536870912, output.length);
             }
         }
+    }
+
+    public static String getUuidChars() {
+        return UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", "");
+    }
+
+    @Test
+    public void testContainerCreationWithInvalidImageIdentifier() {
+
+        // accept any exception as long as it's thrown in the correct place
+        assertThrows(
+                "Should throw due to pod creation timing out.", Exception.class,
+                () -> {
+                    try (KubernetesCommandExecutor exec = new KubernetesCommandExecutor(
+                            "test-" + getUuidChars(),
+                            "IDoNotExist-" + getUuidChars() + ":" + getUuidChars()
+                    )) {
+                        System.err.println("Exec object " + exec + " should have failed construction");
+                        fail("Should have thrown during creation of exec.");
+                    }
+                }
+        );
     }
 }

@@ -19,7 +19,7 @@
                 <colspec colname="COLSPEC2" colnum="3" colwidth="35*"/>
                 <thead>
                 <row>
-                    <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.components")</entry>
+                    <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>
                     <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.installation-packages")</entry>
                     <entry colname="COLSPEC2" valign="top">$utils.getText(
                         "inventory-report-bom.short.effective-licenses")</entry>

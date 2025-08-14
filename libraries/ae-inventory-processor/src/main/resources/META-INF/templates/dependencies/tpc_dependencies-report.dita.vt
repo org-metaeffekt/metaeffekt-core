@@ -29,7 +29,7 @@
                     <colspec colname="COLSPEC1" colnum="2" colwidth="60*" />
                     <thead>
                         <row>
-                            <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.components")</entry>
+                            <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>
                             <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.group-id")/ $utils.getText("general.short.artifact-id")</entry>
                         </row>
                     </thead>
