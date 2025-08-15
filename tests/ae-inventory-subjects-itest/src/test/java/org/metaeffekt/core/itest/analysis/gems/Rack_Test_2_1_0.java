@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
@@ -51,6 +52,10 @@ public class Rack_Test_2_1_0 extends AbstractCompositionAnalysisTest{
 
     @Test
     public void assertContent() throws Exception {
+        final Inventory inventory = testSetup.getInventory();
+
+        inventory.deriveArtifactQualifiers();
+
         ArtifactList artifactList = getAnalysisAfterInvariantCheck()
                 .selectArtifacts();
 

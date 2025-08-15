@@ -54,6 +54,8 @@ public class MatchResult {
         final Artifact derivedArtifact = new Artifact();
 
         derivedArtifact.setId(componentPatternData.get(COMPONENT_PART));
+        derivedArtifact.setName(componentPatternData.get(COMPONENT_PART_NAME));
+
         derivedArtifact.setComponent(componentPatternData.get(COMPONENT_NAME));
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
 

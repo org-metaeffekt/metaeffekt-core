@@ -71,6 +71,7 @@ public class ComponentPatternData extends AbstractModelBase {
 
         COMPONENT_NAME("Component Name"),
         COMPONENT_PART("Component Part"),
+        COMPONENT_PART_NAME("Component Part - Name"),
         COMPONENT_VERSION("Component Version"),
 
         /**

@@ -94,6 +94,7 @@ public class GemMetadataContributor extends ComponentPatternContributor {
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, folderName);
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART_NAME, name);
 
                 componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
                 componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
