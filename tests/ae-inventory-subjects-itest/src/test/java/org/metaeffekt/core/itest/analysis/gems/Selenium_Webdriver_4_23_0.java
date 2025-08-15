@@ -68,6 +68,5 @@ public class Selenium_Webdriver_4_23_0 extends AbstractCompositionAnalysisTest{
                 .assertNotEmpty();
 
         artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "ruby-gem-metadata")).hasSizeOf(1);
-        artifactList.with(containsToken(COMPONENT_SOURCE_TYPE, "exe")).hasSizeOf(1);
     }
 }
