@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
@@ -31,20 +32,18 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
 
-    public static final String PATH_DELIMITER_REGEXP = "\\|\n";
-    public static final String PATH_DELIMITER = "|\n";
-
     /**
      * Core attributes to support component patterns.
      */
     public enum Attribute implements AbstractModelBase.Attribute {
         ID("Id"),
         NAME("Name"),
+        VERSION("Version"),
         COMPONENT("Component"),
         COMPONENT_TYPE("Component Type"),
 
         CHECKSUM("Checksum"),
-        VERSION("Version"),
+
         RELEASE("Release"),
         CLASSIFIER("Classifier"),
         ARCHITECTURE("Architecture"),
@@ -81,11 +80,9 @@ public class Artifact extends AbstractModelBase {
 
         VERIFIED("Verified"),
         ERRORS("Errors"),
-
-        HASH_SHA1("Hash (SHA-1)"),
         HASH_SHA256("Hash (SHA-256)"),
+        HASH_SHA1("Hash (SHA1)"),
         HASH_SHA512("Hash (SHA-512)"),
-
         PATH_IN_ASSET("Path in Asset"),
 
         // is a mix of many information in one
@@ -206,16 +203,11 @@ public class Artifact extends AbstractModelBase {
     }
 
     public Set<String> getRootPaths() {
-        final String pathsString = get(Attribute.ROOT_PATHS);
-        if (StringUtils.isEmpty(pathsString)) {
-            return Collections.emptySet();
-        }
-        return Arrays.stream(pathsString.split(PATH_DELIMITER_REGEXP)).
-                map(String::trim).collect(Collectors.toSet());
+        return getSet(Attribute.ROOT_PATHS);
     }
 
     public void setRootPaths(Set<String> paths) {
-        set(Attribute.ROOT_PATHS, paths.stream().collect(Collectors.joining(PATH_DELIMITER)));
+        set(Attribute.ROOT_PATHS, String.join(PATH_DELIMITER, paths));
     }
 
     public String getComponent() {

@@ -17,9 +17,11 @@ package org.metaeffekt.core.inventory.processor.writer.excel;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.util.TempFile;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.metaeffekt.core.inventory.processor.CustomTempFileCreationStrategy;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.AbstractInventoryReader;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.InventorySheetCellStyler;
@@ -33,6 +35,9 @@ import java.util.*;
 public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
+        CustomTempFileCreationStrategy customTempFileCreationStrategy = new CustomTempFileCreationStrategy();
+        TempFile.setTempFileCreationStrategy(customTempFileCreationStrategy);
+
         final SXSSFWorkbook workbook = new SXSSFWorkbook();
         final XlsxXSSFInventorySheetCellStylers stylers = new XlsxXSSFInventorySheetCellStylers(workbook);
 
@@ -50,11 +55,14 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         writeInventoryInfo(inventory, workbook, stylers);
 
         final FileOutputStream out = new FileOutputStream(file);
+
         try {
             workbook.write(out);
         } finally {
             out.flush();
             out.close();
+            // removes temp files after each written inventory
+            customTempFileCreationStrategy.removeCreatedTempFiles();
         }
     }
 

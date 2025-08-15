@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.writer;
 
+import org.apache.poi.util.DefaultTempFileCreationStrategy;
+import org.apache.poi.util.TempFile;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -23,6 +25,8 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InventoryWriterTest {
 
@@ -45,4 +49,29 @@ public class InventoryWriterTest {
         new InventoryWriter().writeInventory(inventory, outputInventoryFile);
     }
 
+    @Test
+    public void testCustomTempFileCreationStrategy() throws IOException {
+        final File inputInventoryFile = new File("src/test/resources/test-inventory-keycloak/keycloak-25.0.4-scanned.xlsx");
+        final File defaultStrategyOutputFile = new File("target/inventory-writer-test/defaultFileCreationStrategy.xlsx");
+        final File customStrategyOutputFile = new File("target/inventory-writer-test/customTempFileCreationStrategy.xlsx");
+
+        FileUtils.forceMkdirParent(defaultStrategyOutputFile);
+        FileUtils.forceMkdirParent(customStrategyOutputFile);
+
+        final Inventory inventory = new InventoryReader().readInventory(inputInventoryFile);
+
+        new InventoryWriter().writeInventory(inventory, customStrategyOutputFile);
+
+        TempFile.setTempFileCreationStrategy(new DefaultTempFileCreationStrategy());
+        new InventoryWriter().writeInventory(inventory, defaultStrategyOutputFile);
+
+        Inventory defaultStrategyInventory = new InventoryReader().readInventory(defaultStrategyOutputFile);
+        Inventory customStrategyInventory = new InventoryReader().readInventory(customStrategyOutputFile);
+
+        assertThat(defaultStrategyInventory.getArtifacts().containsAll(customStrategyInventory.getArtifacts()))
+                .isEqualTo(customStrategyInventory.getArtifacts().containsAll(defaultStrategyInventory.getArtifacts()));
+
+        assertThat(defaultStrategyInventory.getAssetMetaData().containsAll(customStrategyInventory.getAssetMetaData()))
+                .isEqualTo(customStrategyInventory.getAssetMetaData().containsAll(defaultStrategyInventory.getAssetMetaData()));
+    }
 }

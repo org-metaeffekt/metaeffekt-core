@@ -28,6 +28,13 @@ import static org.metaeffekt.core.util.FileUtils.toAbsoluteOrReferencePath;
 public class FileUtilsTest {
 
     @Test
+    public void normalizeLinuxPathTest() {
+        assertEquals("test", FileUtils.normalizePathToLinux("test/."));
+        assertEquals(".", FileUtils.normalizePathToLinux("."));
+        assertEquals(".", FileUtils.normalizePathToLinux("./"));
+    }
+
+    @Test
     public void canonicalizeLinuxPathTest() {
         assertEquals("test", FileUtils.canonicalizeLinuxPath("test"));
         assertEquals("test", FileUtils.canonicalizeLinuxPath("./test"));

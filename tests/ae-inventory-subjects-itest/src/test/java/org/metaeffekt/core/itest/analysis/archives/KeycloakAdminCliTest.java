@@ -54,7 +54,6 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         Assert.assertTrue(testSetup.rebuildInventory());
     }
 
-
     @Test
     public void assertContent() throws Exception {
         final Inventory inventory = testSetup.getInventory();
@@ -92,4 +91,5 @@ public class KeycloakAdminCliTest extends AbstractCompositionAnalysisTest {
         jarList.with(attributeValue(TYPE, "module")).hasSizeOf(jarList);
         jarList.with(attributeValue(COMPONENT_SOURCE_TYPE, "jar-module")).hasSizeOf(jarList);
     }
+
 }
