@@ -109,7 +109,9 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
     }
 
     public Set<String> getWellFormedDataSources() {
-        return dataSources.stream()
+        final Set<AeaaContentIdentifierStore.AeaaContentIdentifier> sources = new HashSet<>(dataSources);
+        sources.add(getSourceIdentifier());
+        return sources.stream()
                 .map(AeaaContentIdentifierStore.AeaaContentIdentifier::getWellFormedName)
                 .collect(Collectors.toSet());
     }
