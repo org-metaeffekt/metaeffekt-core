@@ -85,13 +85,12 @@
                                             <codeph>$report.xmlEscapeGAV($artifact.getVersion())</codeph>
                                         </entry>
                                         #set($effectiveLicenses=$inventory.getEffectiveLicenses($artifact))
-                                        #set($effectiveLicensesRepresented=$inventory.getRepresentedLicenses($effectiveLicenses))
-                                        #if($effectiveLicensesRepresented.isEmpty())
+                                        #if($effectiveLicenses.isEmpty())
                                           <entry>&nbsp;</entry>
                                         #else
                                             <entry>
                                                 ## preserve formating to achive proper line-breaks
-                                              <lines>#foreach($license in $effectiveLicensesRepresented)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                                              <lines>#foreach($license in $effectiveLicenses)#if($licensesInEffect.contains($license))<xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
                                               #else$report.xmlEscapeLicense($license)
                                               #end#end</lines>
                                             </entry>

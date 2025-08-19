@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,16 +24,23 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+@Slf4j
 public abstract class PropertiesUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PropertiesUtils.class);
+    public static Properties loadPropertiesFile(File propertiesFile) {
+        return loadPropertiesFile(propertiesFile, false);
+    }
 
-    public static Properties loadPropertiesFile(File anchorFile) {
+    public static Properties loadPropertiesFile(File file, boolean escalateException) {
         final Properties p = new Properties();
-        try (final FileReader reader = new FileReader(anchorFile)) {
+        try (final FileReader reader = new FileReader(file)) {
             p.load(reader);
         } catch (IOException e) {
-            LOG.warn("Cannot load properties file [{}].", anchorFile.getAbsolutePath());
+            if (escalateException) {
+                throw new IllegalStateException(e);
+            } else {
+                log.warn("Cannot load properties file [{}].", file.getAbsolutePath());
+            }
         }
         return p;
     }
