@@ -77,12 +77,14 @@ public final class Constants {
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
      * supplier (CycloneDX).
      */
-    public static final String KEY_ORGANIZATION = "Organization";
+    @Deprecated // use Artifact.Attribute.ORGANIZATION
+    public static final String KEY_ORGANIZATION = Artifact.Attribute.ORGANIZATION.getKey();
 
     /**
      * Organization URL key. Maven uses two distinct attributes for an organization.
      */
-    public static final String KEY_ORGANIZATION_URL = "Organization URL";
+    @Deprecated // use Artifact.Attribute.ORGANIZATION_URL
+    public static final String KEY_ORGANIZATION_URL = Artifact.Attribute.ORGANIZATION_URL.getKey();
 
     public static final String KEY_SUMMARY = "Summary";
     public static final String KEY_DESCRIPTION = "Description";

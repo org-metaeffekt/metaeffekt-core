@@ -56,7 +56,9 @@ public class NodeModuleInventoryExtractionMojo extends AbstractInventoryExtracti
     public static final String INVENTORY_ATTRIBUTE_LICENSE_FILE = "License File";
     public static final String INVENTORY_ATTRIBUTE_EXTRACTED_COPYRIGHT_LICENSE_CHECKER = "Extracted Copyright (license-checker)";
     public static final String INVENTORY_ATTRIBUTE_DERIVED_LICENSE_LICENSE_CHECKER = "Derived License (license-checker)";
-    public static final String INVENTORY_ATTRIBUTE_PUBLISHER = "Publisher";
+
+    @Deprecated // use Artifact.Attribute.PUBLISHER
+    public static final String INVENTORY_ATTRIBUTE_PUBLISHER = Artifact.Attribute.PUBLISHER.getKey();
 
     public static final String SEPARATOR_DASH = "-";
 

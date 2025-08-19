@@ -100,9 +100,36 @@ public class Artifact extends AbstractModelBase {
         // FIXME: consolidate
         SOURCE("Source"),
 
-        // FIXME: consolidate
+        /**
+         * The organization that provides/produces the artifact.
+         * We stick to the terminology of maven; in other context this is the vendor (CVE) or manufacturer (CycloneDx).
+         */
         ORGANIZATION("Organization"),
+
+        /**
+         * The Organization URL identifies the organisation and not necessarily the artifact.
+         */
+        ORGANIZATION_URL("Organization URL"),
+
+        /**
+         * The importer, distributor of the artifacts.
+         */
         SUPPLIER("Supplier"),
+
+        /**
+         * The Supplier URL identifies the supplier and not necessarily the artifact.
+         */
+        SUPPLIER_URL("Supplier URL"),
+
+        /**
+         * The publisher of the artifact.
+         */
+        PUBLISHER("Publisher"),
+
+        /**
+         * The Publisher URL primarily identifies the publisher and not necessarily the artifact.
+         */
+        PUBLISHER_URL("Publisher URL"),
 
         ARCHIVE("Archive"),
         STRUCTURED("Structured"),
@@ -118,7 +145,6 @@ public class Artifact extends AbstractModelBase {
             return key;
         }
     }
-
 
     // artifact id (derived from id and version)
     private transient String artifactId;
