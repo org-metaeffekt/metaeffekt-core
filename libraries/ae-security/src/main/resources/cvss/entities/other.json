@@ -189,6 +189,13 @@
     "url": "https://docs.minimus.io/scanning/scanning#osv-security-feed",
     "country": "US"
   },
+  "OSV_BELL": {
+    "name": "Bell Software Alpaquita Linux",
+    "description": "Alpaquita Linux Security Advisories",
+    "email": "info@bell-sw.com",
+    "url": "https://docs.bell-sw.com/security/search/",
+    "country": "US"
+  },
   "CSAF": {
     "name": "CSAF",
     "description": "Common Security Advisory Framework",
