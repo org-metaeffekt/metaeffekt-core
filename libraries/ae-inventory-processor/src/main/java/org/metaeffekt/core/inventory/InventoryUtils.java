@@ -419,4 +419,31 @@ public abstract class InventoryUtils {
         return assetMetaDataToArtifactsMap;
     }
 
+    /**
+     * Preview implementation for removing non-runtime from the inventory.
+     *
+     * @param inventory The inventory to filter
+     * @param primaryAssetIds The ids of the primary assets for which the filter is applied.
+     */
+    public static void filterInventoryForRuntimeArtifacts(Inventory inventory, Collection<String> primaryAssetIds) {
+        final Set<Artifact> removableArtifacts = new HashSet<>();
+        for (Artifact artifact : inventory.getArtifacts()) {
+            boolean remove = true;
+            for (String aid : primaryAssetIds) {
+                if ("(r)".equals(artifact.get(aid))) {
+                    remove = false;
+                    break;
+                }
+                if ("r".equals(artifact.get(aid))) {
+                    remove = false;
+                    break;
+                }
+            }
+            if (remove) {
+                removableArtifacts.add(artifact);
+            }
+        }
+        inventory.getArtifacts().removeAll(removableArtifacts);
+    }
+
 }

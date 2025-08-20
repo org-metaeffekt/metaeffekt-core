@@ -77,12 +77,14 @@ public final class Constants {
      * Organization key. We stick to the terminology of maven; in other context this is the vendor (CVE) or
      * supplier (CycloneDX).
      */
-    public static final String KEY_ORGANIZATION = "Organization";
+    @Deprecated // use Artifact.Attribute.ORGANIZATION
+    public static final String KEY_ORGANIZATION = Artifact.Attribute.ORGANIZATION.getKey();
 
     /**
      * Organization URL key. Maven uses two distinct attributes for an organization.
      */
-    public static final String KEY_ORGANIZATION_URL = "Organization URL";
+    @Deprecated // use Artifact.Attribute.ORGANIZATION_URL
+    public static final String KEY_ORGANIZATION_URL = Artifact.Attribute.ORGANIZATION_URL.getKey();
 
     public static final String KEY_SUMMARY = "Summary";
     public static final String KEY_DESCRIPTION = "Description";
@@ -131,8 +133,21 @@ public final class Constants {
     public static final String ARTIFACT_TYPE_WEB_MODULE = "web-module";
 
     public static final String MARKER_CROSS = "x";
+
     public static final String MARKER_CONTAINS = "c";
-    public static final String MARKER_DEVELOPMENT = "d";
+    public static final String MARKER_CONTAINS_TRANSITIVE = "(c)";
+
+    public static final String MARKER_RUNTIME_DEPENDENCY = "r";
+    public static final String MARKER_RUNTIME_DEPENDENCY_TRANSITIVE = "(r)";
+
+    public static final String MARKER_DEVELOPMENT_DEPENDENCY = "d";
+    public static final String MARKER_DEVELOPMENT_DEPENDENCY_TRANSITIVE = "(d)";
+
+    public static final String MARKER_PEER_DEPENDENCY = "p";
+    public static final String MARKER_PEER_DEPENDENCY_TRANSITIVE = "(p)";
+
+    public static final String MARKER_OPTIONAL_DEPENDENCY = "o";
+    public static final String MARKER_OPTIONAL_DEPENDENCY_TRANSITIVE = "(o)";
 
     public static final String PACKAGE_JSON = "package.json";
     public static final String PACKAGE_LOCK_JSON = "package-lock.json";

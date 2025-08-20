@@ -69,6 +69,9 @@ public class ArchiveUtils {
     private static final Set<String> allExtensions = new HashSet<>();
 
     static {
+        // in case no extension is avaiable we still attempt to unzip
+        zipExtensions.add("");
+
         zipExtensions.add("war");
         // zip: regular zip archives
         zipExtensions.add("zip");
@@ -306,7 +309,6 @@ public class ArchiveUtils {
             }
             unpackAndClose(xzIn, targetDir);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new IOException("Could not untar file [" + file.getAbsolutePath() + "]", e);
         }
     }
@@ -412,7 +414,10 @@ public class ArchiveUtils {
             }
         } catch (Exception e) {
             if (mkdir) FileUtils.deleteDirectoryQuietly(targetDir);
-            issues.add("Cannot unzip " + archiveFile.getAbsolutePath());
+            // only report an issue, in case the extension was non-blank
+            if (!StringUtils.isBlank(extension)) {
+                issues.add("Cannot unzip " + archiveFile.getAbsolutePath());
+            }
             return false;
         }
 
@@ -504,7 +509,7 @@ public class ArchiveUtils {
         final File jmodExecutable = new File(jdkPath, "bin/jmod");
         if (jmodExecutable.exists()) {
             final String[] commandParts = new String[] { jmodExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
-            executeExtraction(commandParts, file, targetFile, true);
+            executeExtraction(commandParts, file, targetFile, true, false);
         } else {
             LOG.error("Cannot unpack jmod executable: " + jmodExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
@@ -526,7 +531,7 @@ public class ArchiveUtils {
         final File jImageExecutable = new File(jdkPath, "bin/jimage");
         if (jImageExecutable.exists()) {
             final String[] commandParts = new String[] { jImageExecutable.getAbsolutePath(), "extract", file.getAbsolutePath() };
-            executeExtraction(commandParts, file, targetFile, true);
+            executeExtraction(commandParts, file, targetFile, true, false);
         } else {
             LOG.error("Cannot unpack jimage executable: " + jImageExecutable +
                     ". Ensure property jdk.path is set and points to a JDK with version > 11.0.");
@@ -537,9 +542,9 @@ public class ArchiveUtils {
         // this requires 7zip to perform the extraction
         final File sevenZipBinaryFile = SevenZipExecutableUtils.getBinaryFile();
         if (sevenZipBinaryFile.exists()) {
-            final String[] commandParts = {sevenZipBinaryFile.getAbsolutePath(), "x",
-                    file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath()};
-            return executeExtraction(commandParts, file, targetFile, throwExceptionOnError);
+            final String[] commandParts = { sevenZipBinaryFile.getAbsolutePath(), "x",
+                    file.getAbsolutePath(), "-aoa", "-o" + targetFile.getAbsolutePath() };
+            return executeExtraction(commandParts, file, targetFile, throwExceptionOnError, true);
         } else {
             LOG.error("Cannot unpack file: " + file.getAbsolutePath() + " with 7zip. Ensure 7zip is installed at [" + sevenZipBinaryFile.getAbsolutePath() + "].");
             throw new IOException("Could not execute command due to missing binary.");
@@ -572,10 +577,10 @@ public class ArchiveUtils {
         String[] commandParts = new String[] {
                 "tar", "-x", "-f", file.getAbsolutePath(),
                 "--no-same-permissions", "-C", targetFile.getAbsolutePath() };
-        executeExtraction(commandParts, file, targetFile, true);
+        executeExtraction(commandParts, file, targetFile, true, false);
     }
 
-    private static ExecMonitor executeExtraction(String[] commandParts, File file, File targetFile, boolean throwExceptionOnError) throws IOException {
+    private static ExecMonitor executeExtraction(String[] commandParts, File file, File targetFile, boolean throwExceptionOnError, boolean sevenZipContext) throws IOException {
 
         final ExecUtils.ExecParam execParam = new ExecUtils.ExecParam(commandParts);
 
@@ -586,7 +591,9 @@ public class ArchiveUtils {
         execParam.timeoutAfter(EXTRACT_DURATION, EXTRACT_DURATION_TIMEOUT_UNIT);
 
         ExecMonitor execMonitor = throwExceptionOnError ? executeAndThrowIOExceptionOnFailure(execParam): executeCommand(execParam);
-        attemptUnpackingIntermediateArchive(targetFile);
+        if (sevenZipContext) {
+            attemptUnpackingIntermediateArchive(targetFile);
+        }
         return execMonitor;
     }
 

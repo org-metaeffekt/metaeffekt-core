@@ -183,6 +183,12 @@
     "url": "https://ubuntu.com/security/notices",
     "country": "UK"
   },
+  "OSV_MINI": {
+    "name": "Mini",
+    "description": "Minimus Security Notice",
+    "url": "https://docs.minimus.io/scanning/scanning#osv-security-feed",
+    "country": "US"
+  },
   "CSAF": {
     "name": "CSAF",
     "description": "Common Security Advisory Framework",

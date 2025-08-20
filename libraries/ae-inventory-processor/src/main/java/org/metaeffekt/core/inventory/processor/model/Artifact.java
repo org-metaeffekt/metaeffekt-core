@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
@@ -30,9 +31,6 @@ public class Artifact extends AbstractModelBase {
     private static final char DELIMITER_DOT = '.';
     private static final char DELIMITER_COLON = ':';
     private static final String DELIMITER_UNDERSCORE = "_";
-
-    public static final String PATH_DELIMITER_REGEXP = "\\|\n";
-    public static final String PATH_DELIMITER = "|\n";
 
     /**
      * Core attributes to support component patterns.
@@ -70,9 +68,11 @@ public class Artifact extends AbstractModelBase {
 
         VERIFIED("Verified"),
         ERRORS("Errors"),
-        HASH_SHA256("Hash (SHA-256)"),
+
         HASH_SHA1("Hash (SHA1)"),
+        HASH_SHA256("Hash (SHA-256)"),
         HASH_SHA512("Hash (SHA-512)"),
+
         PATH_IN_ASSET("Path in Asset"),
 
         /**
@@ -100,9 +100,36 @@ public class Artifact extends AbstractModelBase {
         // FIXME: consolidate
         SOURCE("Source"),
 
-        // FIXME: consolidate
+        /**
+         * The organization that provides/produces the artifact.
+         * We stick to the terminology of maven; in other context this is the vendor (CVE) or manufacturer (CycloneDx).
+         */
         ORGANIZATION("Organization"),
+
+        /**
+         * The Organization URL identifies the organisation and not necessarily the artifact.
+         */
+        ORGANIZATION_URL("Organization URL"),
+
+        /**
+         * The importer, distributor of the artifacts.
+         */
         SUPPLIER("Supplier"),
+
+        /**
+         * The Supplier URL identifies the supplier and not necessarily the artifact.
+         */
+        SUPPLIER_URL("Supplier URL"),
+
+        /**
+         * The publisher of the artifact.
+         */
+        PUBLISHER("Publisher"),
+
+        /**
+         * The Publisher URL primarily identifies the publisher and not necessarily the artifact.
+         */
+        PUBLISHER_URL("Publisher URL"),
 
         ARCHIVE("Archive"),
         STRUCTURED("Structured"),
@@ -118,7 +145,6 @@ public class Artifact extends AbstractModelBase {
             return key;
         }
     }
-
 
     // artifact id (derived from id and version)
     private transient String artifactId;
@@ -151,16 +177,11 @@ public class Artifact extends AbstractModelBase {
     }
 
     public Set<String> getRootPaths() {
-        final String pathsString = get(Attribute.ROOT_PATHS);
-        if (StringUtils.isEmpty(pathsString)) {
-            return Collections.emptySet();
-        }
-        return Arrays.stream(pathsString.split(PATH_DELIMITER_REGEXP)).
-                map(String::trim).collect(Collectors.toSet());
+        return getSet(Attribute.ROOT_PATHS);
     }
 
     public void setRootPaths(Set<String> paths) {
-        set(Attribute.ROOT_PATHS, paths.stream().collect(Collectors.joining(PATH_DELIMITER)));
+        set(Attribute.ROOT_PATHS, String.join(PATH_DELIMITER, paths));
     }
 
     public String getComponent() {
@@ -558,7 +579,6 @@ public class Artifact extends AbstractModelBase {
     public String getType() {
         return inferTypeFromId();
     }
-
 
     public String getClassifier() {
         return inferClassifierFromId();

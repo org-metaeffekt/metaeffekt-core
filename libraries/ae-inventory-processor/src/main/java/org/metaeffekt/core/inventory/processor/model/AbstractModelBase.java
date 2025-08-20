@@ -20,10 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Abstract model base class. Support associating key and values as generic concept. Keys can be bound to enums specified
@@ -32,6 +31,10 @@ import java.util.Set;
 public abstract class AbstractModelBase implements Serializable {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractModelBase.class);
+
+    private static final Pattern PATH_DELIMITER_REGEXP = Pattern.compile("\\|\n");
+
+    public static final String PATH_DELIMITER = "|\n";
 
     // Maximize compatibility with serialized inventories
     private static final long serialVersionUID = 1L;
@@ -324,4 +327,21 @@ public abstract class AbstractModelBase implements Serializable {
             LOG.info("| {} | {}", StringUtils.rightPad(attribute, keyIndent), valueIndent == -1 ? get(attribute) : StringUtils.rightPad(get(attribute), valueIndent) + " |");
         }
     }
+
+    public Set<String> getSet(Artifact.Attribute attribute) {
+        return createSetForKey(get(attribute));
+    }
+
+    public Set<String> getSet(String key) {
+        return createSetForKey(get(key));
+    }
+
+    private Set<String> createSetForKey(String pathsString) {
+        if (StringUtils.isEmpty(pathsString)) {
+            return Collections.emptySet();
+        }
+        return Arrays.stream(PATH_DELIMITER_REGEXP.split(pathsString)).
+                map(String::trim).collect(Collectors.toSet());
+    }
+
 }

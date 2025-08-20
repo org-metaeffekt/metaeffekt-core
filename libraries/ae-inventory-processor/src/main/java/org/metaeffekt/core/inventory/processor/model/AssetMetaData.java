@@ -56,10 +56,14 @@ public class AssetMetaData extends AbstractModelBase {
         ROLE("Audience"),
         AUDIENCE("Audience"),
         ASSESSMENT("Assessment"),
+
         CHECKSUM("Checksum"),
-        HASH_SHA256("Hash (SHA-256)"),
+
         HASH_SHA1("Hash (SHA1)"),
+
+        HASH_SHA256("Hash (SHA-256)"),
         HASH_SHA512("Hash (SHA-512)"),
+
         URL("URL"),
         SOURCE_CODE_URL("Source Code URL"),
         SUPPLIER("Supplier"),
