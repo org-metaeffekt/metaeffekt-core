@@ -27,6 +27,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -237,6 +238,16 @@ public class Inventory implements Serializable {
     }
 
     public void mergeDuplicates() {
+        mergeDuplicates(null);
+    }
+
+    /**
+     * Merges the artifacts in an inventory recognized as duplicates.
+     *
+     * @param artifactPostProcessor The processor processed the artifacts before and after merge. It may be used
+     *                              to establish consistency or to apply adjustments. May be <code>null</code>.
+     */
+    public void mergeDuplicates(Consumer<Artifact> artifactPostProcessor) {
         final Map<String, Set<Artifact>> artifactMap = new HashMap<>();
 
         for (Artifact artifact : artifacts) {
@@ -261,6 +272,12 @@ public class Inventory implements Serializable {
                     set = new HashSet<>();
                 }
                 set.add(artifact);
+
+                // postprocess incoming
+                if (artifactPostProcessor != null) {
+                    artifactPostProcessor.accept(artifact);
+                }
+
                 artifactMap.put(key, set);
             }
         }
@@ -271,13 +288,18 @@ public class Inventory implements Serializable {
                 final Iterator<Artifact> it = set.iterator();
 
                 // skip first
-                final Artifact ref = it.next();
+                final Artifact referenceArtifact = it.next();
 
                 while (it.hasNext()) {
                     Artifact a = it.next();
 
                     // merge content before removing
-                    ref.merge(a);
+                    referenceArtifact.merge(a);
+
+                    // postprocess merged
+                    if (artifactPostProcessor != null) {
+                        artifactPostProcessor.accept(referenceArtifact);
+                    }
 
                     // remove
                     artifacts.remove(a);
