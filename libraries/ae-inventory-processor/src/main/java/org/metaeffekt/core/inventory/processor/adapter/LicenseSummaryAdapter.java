@@ -37,7 +37,7 @@ public class LicenseSummaryAdapter {
      *
      * @return An inventory with artifacts parsed from the file.
      *
-     * @throws IOException TODO: Missing description
+     * @throws IOException Thrown in case access to file system is failing.
      */
     public Inventory createInventoryFromLicenseSummary(File licenseSummaryFile, String relPath) throws IOException {
         final String content = FileUtils.readFileToString(licenseSummaryFile, FileUtils.ENCODING_UTF_8);
@@ -113,7 +113,7 @@ public class LicenseSummaryAdapter {
         switch (String.valueOf(originalKey)) {
             case "Name": return "Id";
             case "Version": return "Version";
-            case "License": return "Package Specified Licenses";
+            case "License": return "Package Specified License";
             case "URL": return "URL";
             case "VendorUrl": return "Vendor URL";
             case "VendorName": return "Vendor";
