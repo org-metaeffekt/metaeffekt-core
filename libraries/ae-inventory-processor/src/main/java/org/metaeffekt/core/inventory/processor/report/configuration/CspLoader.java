@@ -131,16 +131,16 @@ public class CspLoader {
         log.info("Merging [{}] configurations into effective configuration", activeEntries.size());
         final JSONObject mergedConfig = new JSONObject();
         for (CspLoaderEntry entry : activeEntries) {
-            log.info("[{}]: {}", entry.getId(), entry.getConfiguration());
+            log.debug("[{}]: {}", entry.getId(), entry.getConfiguration());
             mergeJson(mergedConfig, entry.getConfiguration());
         }
 
         if (inlineOverwriteJson != null && !inlineOverwriteJson.trim().isEmpty()) {
-            log.info("inline overwrite: {}", inlineOverwriteJson);
+            log.debug("inline overwrite: {}", inlineOverwriteJson);
             mergeJson(mergedConfig, new JSONObject(inlineOverwriteJson));
         }
 
-        log.info("  ↳ {}", mergedConfig);
+        log.debug("  ↳ {}", mergedConfig);
         return CentralSecurityPolicyConfiguration.fromJson(mergedConfig, "Central security policy failed to parse effective security policy configuration");
     }
 
