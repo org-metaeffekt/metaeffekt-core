@@ -90,7 +90,7 @@ public class AssessmentReportAdapterTest {
 
         final AssessmentReportAdapter adapter = new AssessmentReportAdapter(testInventory, new CentralSecurityPolicyConfiguration());
 
-        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true);
+        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true, true);
 
         /*for (AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts group : grouped) {
             group.log();
@@ -187,7 +187,7 @@ Total Counts: AssessmentReportAdapter.VulnerabilityCounts(criticalCounter=0, hig
 
         final AssessmentReportAdapter adapter = new AssessmentReportAdapter(testInventory, new CentralSecurityPolicyConfiguration());
 
-        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true);
+        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true, false);
 
         Assert.assertEquals(1, grouped.size());
         Assert.assertEquals("Default", grouped.get(0).getAssetGroupDisplayName());

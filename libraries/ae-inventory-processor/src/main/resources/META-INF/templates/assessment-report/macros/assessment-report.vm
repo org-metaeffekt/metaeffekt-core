@@ -1,8 +1,8 @@
 ## do not insert blank lines in between macros. as this document is loaded before the XML tag of the main document,
 ## this will result in the empty lines appearing at the head of the document, which is not allowed in XML.
 ##
-#macro (assetAssessmentSummary $id $assets, $useModifiedSeverity)
-    #set ($assetGroups = $assessmentReportAdapter.groupAssetsByAssetGroup($assets, $useModifiedSeverity))
+#macro (assetAssessmentSummary $id $assets, $useModifiedSeverity, $enableSingleAssetGroups)
+    #set ($assetGroups = $assessmentReportAdapter.groupAssetsByAssetGroup($assets, $useModifiedSeverity, $enableSingleAssetGroups))
     #foreach ($group in $assetGroups)
         #assetAssessmentSummaryTable($id $group)
     #end
@@ -41,10 +41,13 @@
         #foreach ($groupedAssetCounts in $groupedAssetVulnerabilityCounts)
             #set ($counts = $groupedAssetCounts.totalCounts)
             #set ($assetDisplayName = $groupedAssetCounts.assetDisplayName)
+            #set ($assetVersion = $groupedAssetCounts.assetVersion)
             #set ($assetPath = $groupedAssetCounts.assetPath)
             <row>
                 <entry align="center"><lines>#if ($vulnerabilityAdapter.notNull($assetPath))<i>$assetPath</i>
-#end$assetDisplayName</lines></entry>
+#end$assetDisplayName#if ($assetVersion)
+
+$assetVersion#end</lines></entry>
                 <entry>$counts.criticalCounter</entry>
                 <entry>$counts.highCounter</entry>
                 <entry>$counts.mediumCounter</entry>
