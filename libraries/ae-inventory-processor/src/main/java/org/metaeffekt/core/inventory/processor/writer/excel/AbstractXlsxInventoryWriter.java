@@ -24,8 +24,6 @@ import org.metaeffekt.core.inventory.processor.writer.AbstractInventoryWriter;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.InventorySheetCellStyler;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 public abstract class AbstractXlsxInventoryWriter extends AbstractInventoryWriter {
@@ -39,15 +37,6 @@ public abstract class AbstractXlsxInventoryWriter extends AbstractInventoryWrite
     protected boolean isEmpty(Collection<?> collection) {
         if (collection == null) return true;
         return collection.isEmpty();
-    }
-
-    protected int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
-        if (attributesSet.contains(key)) {
-            orderedAttributesList.remove(key);
-            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
-            insertIndex++;
-        }
-        return insertIndex;
     }
 
     protected <AMB extends AbstractModelBase, CR extends SXSSFRow, HC extends CellBase> int populateSheetWithModelData(

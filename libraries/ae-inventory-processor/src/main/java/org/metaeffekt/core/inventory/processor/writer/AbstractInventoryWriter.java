@@ -48,6 +48,16 @@ public abstract class AbstractInventoryWriter {
         }
     }
 
+    protected int reinsert(int insertIndex, String key, List<String> orderedAttributesList, Set<String> attributesSet) {
+        if (attributesSet.contains(key)) {
+            orderedAttributesList.remove(key);
+            orderedAttributesList.add(Math.min(insertIndex, orderedAttributesList.size()), key);
+            insertIndex++;
+        }
+        return insertIndex;
+    }
+
+    // FIXME: must be moved more centrally; InventoryUtils?
     protected static boolean isAssetId(String key) {
         return key.startsWith("CID-") ||
                 key.startsWith("AID-") ||
