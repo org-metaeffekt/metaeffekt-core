@@ -18,7 +18,7 @@
         #else
         <p>$utils.getText("assessment-report.vuln-table-descr")</p>
         <p>$utils.getText("assessment-report.vuln-table-descr-unmodified")</p>
-            #assetAssessmentSummary("asset-assessment-summary-associated", $assets, false)
+            #assetAssessmentSummary("asset-assessment-summary-associated", $assets, false, $configParams.isEnableSingleAssetGroups())
         #end
     </body>
 </topic>
