@@ -65,6 +65,18 @@ public class ReportConfigurationParameters {
     @Builder.Default
     private boolean filterAdvisorySummary = false;
 
+    /**
+     * Controls whether the Summary Report will collapse the Asset Groups with only one Asset into a group
+     * {@link org.metaeffekt.core.inventory.processor.report.adapter.AssessmentReportAdapter#DEFAULT_ASSET_GROUP_NAME}
+     * that will be displayed instead.
+     * <p>
+     * Setting it to <code>true</code> will NOT group the assets, even if there are some groups with only one asset,
+     * <code>false</code> will group them if present.
+     * Defaults to <code>false</code>.
+     */
+    @Builder.Default
+    private boolean enableSingleAssetGroups = false;
+
     // fail behaviour section
 
     @Builder.Default

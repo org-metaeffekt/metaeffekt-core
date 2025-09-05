@@ -25,6 +25,8 @@ import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecur
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -90,7 +92,7 @@ public class AssessmentReportAdapterTest {
 
         final AssessmentReportAdapter adapter = new AssessmentReportAdapter(testInventory, new CentralSecurityPolicyConfiguration());
 
-        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true);
+        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true, true);
 
         /*for (AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts group : grouped) {
             group.log();
@@ -187,7 +189,7 @@ Total Counts: AssessmentReportAdapter.VulnerabilityCounts(criticalCounter=0, hig
 
         final AssessmentReportAdapter adapter = new AssessmentReportAdapter(testInventory, new CentralSecurityPolicyConfiguration());
 
-        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true);
+        final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true, false);
 
         Assert.assertEquals(1, grouped.size());
         Assert.assertEquals("Default", grouped.get(0).getAssetGroupDisplayName());
@@ -208,6 +210,86 @@ Total Counts: AssessmentReportAdapter.VulnerabilityCounts(criticalCounter=0, hig
         Assert.assertEquals(2, totalCounts.noneCounter);
         Assert.assertEquals(3, totalCounts.assessedCounter);
         Assert.assertEquals(3, totalCounts.totalCounter);
+    }
+
+    @Test
+    public void testEnableSingleAssetGroupsParameter() {
+        final Inventory testInventory = new Inventory();
+
+        final String[][] assetsData = {
+                {"Asset Id 1", "001", "GROUP A", "Asset 1 - Version 1"},
+                {"Asset Id 2", "002", "GROUP B", "Asset 2 - Version 2"},
+                {"Asset Id 3", "003", "GROUP C", "Asset 3 - Version 3"},
+                {"Asset Id 4", "004", "GROUP D", "Asset 4-Version 4"},
+                {"Asset Id 5", "005", "GROUP E", "Asset 5 - Version 5"},
+                {"Asset Id 6", "006", "GROUP F", "Asset 6"},
+                {"Asset Id 7", "007", "GROUP G", "Asset 7"},
+                {"Asset Id 8", "008", "GROUP G", "Asset 8"},
+        };
+
+        for (String[] assetData : assetsData) {
+            final AssetMetaData asset = new AssetMetaData();
+            asset.set(AssetMetaData.Attribute.ASSET_ID, assetData[0]);
+            asset.set(AssetMetaData.Attribute.ASSESSMENT, assetData[1]);
+            asset.set("Asset Group", assetData[2]);
+            asset.set(AssetMetaData.Attribute.NAME, assetData[3]);
+            testInventory.getAssetMetaData().add(asset);
+            testInventory.getVulnerabilityMetaData(assetData[1]).add(constructVulnerability("critical", "applicable"));
+        }
+
+        final AssessmentReportAdapter adapter = new AssessmentReportAdapter(testInventory, new CentralSecurityPolicyConfiguration());
+
+        // enableSingleAssetGroups = false
+        // single-asset groups should be merged into the "Default" group
+        {
+            final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true, false);
+
+            Assert.assertEquals(2, grouped.size());
+
+            final Map<String, AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> groupMap = grouped.stream()
+                    .collect(Collectors.toMap(AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts::getAssetGroupDisplayName, Function.identity()));
+
+            Assert.assertTrue(groupMap.containsKey("GROUP G"));
+            Assert.assertTrue(groupMap.containsKey("Default"));
+
+            final AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts groupG = groupMap.get("GROUP G");
+            Assert.assertEquals(2, groupG.getGroupedAssetVulnerabilityCounts().size());
+            final List<String> groupGAssetNames = groupG.getGroupedAssetVulnerabilityCounts().stream()
+                    .map(AssessmentReportAdapter.GroupedAssetVulnerabilityCounts::getAsset)
+                    .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
+                    .collect(Collectors.toList());
+            Assert.assertTrue(groupGAssetNames.containsAll(Arrays.asList("Asset Id 7", "Asset Id 8")));
+
+            final AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts defaultGroup = groupMap.get("Default");
+            Assert.assertEquals(6, defaultGroup.getGroupedAssetVulnerabilityCounts().size());
+            final List<String> defaultGroupAssetNames = defaultGroup.getGroupedAssetVulnerabilityCounts().stream()
+                    .map(AssessmentReportAdapter.GroupedAssetVulnerabilityCounts::getAsset)
+                    .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
+                    .collect(Collectors.toList());
+            Assert.assertTrue(defaultGroupAssetNames.containsAll(Arrays.asList("Asset Id 1", "Asset Id 2", "Asset Id 3", "Asset Id 4", "Asset Id 5", "Asset Id 6")));
+        }
+
+        // enableSingleAssetGroups = true
+        // all asset groups should be preserved
+        {
+            final List<AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> grouped = adapter.groupAssetsByAssetGroup(testInventory.getAssetMetaData(), true, true);
+            Assert.assertEquals(7, grouped.size());
+
+            final Map<String, AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts> groupMap = grouped.stream()
+                    .collect(Collectors.toMap(AssessmentReportAdapter.GroupedAssetsVulnerabilityCounts::getAssetGroupDisplayName, Function.identity()));
+
+            Assert.assertTrue(groupMap.containsKey("GROUP A"));
+            Assert.assertTrue(groupMap.containsKey("GROUP B"));
+            Assert.assertTrue(groupMap.containsKey("GROUP C"));
+            Assert.assertTrue(groupMap.containsKey("GROUP D"));
+            Assert.assertTrue(groupMap.containsKey("GROUP E"));
+            Assert.assertTrue(groupMap.containsKey("GROUP F"));
+            Assert.assertTrue(groupMap.containsKey("GROUP G"));
+
+            Assert.assertEquals(1, groupMap.get("GROUP A").getGroupedAssetVulnerabilityCounts().size());
+            Assert.assertEquals(1, groupMap.get("GROUP B").getGroupedAssetVulnerabilityCounts().size());
+            Assert.assertEquals(2, groupMap.get("GROUP G").getGroupedAssetVulnerabilityCounts().size());
+        }
     }
 
     private static int vulnerabilityCount = 0;
