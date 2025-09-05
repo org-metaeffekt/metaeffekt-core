@@ -41,6 +41,12 @@ public class InventorySerializationContext {
     public static final String CONTEXT_LICENSEDATA_COLUMN_LIST = "licensedata.columnlist";
 
     /**
+     * Key for context map. Stores the VulnerabilityData column names in the order that is used when writing the
+     * inventory.
+     */
+    public static final String CONTEXT_VULNERABILITIES_COLUMN_LIST = "vulnerability.columnlist";
+
+    /**
      * The context map stores metadata on excel file level, including
      * <ul>
      *     <li>order of columns in a sheet</li>
@@ -156,8 +162,7 @@ public class InventorySerializationContext {
         }
 
         final InventorySerializationContext serializationContext = inventory.getSerializationContext();
-        final List<String> contextColumnList = serializationContext.
-                get(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST);
+        final List<String> contextColumnList = serializationContext.get(CONTEXT_ARTIFACT_COLUMN_LIST);
         if (contextColumnList != null) {
             attributes.addAll(contextColumnList);
         }
@@ -182,7 +187,7 @@ public class InventorySerializationContext {
             }
         }
 
-        serializationContext.put(InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST, ordered);
+        serializationContext.put(CONTEXT_ARTIFACT_COLUMN_LIST, ordered);
 
         return ordered;
     }

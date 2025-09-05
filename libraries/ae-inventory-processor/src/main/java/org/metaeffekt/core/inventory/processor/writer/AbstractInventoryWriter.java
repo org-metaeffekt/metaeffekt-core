@@ -48,6 +48,7 @@ public abstract class AbstractInventoryWriter {
         }
     }
 
+    // FIXME: must be moved more centrally; InventoryUtils?
     protected static boolean isAssetId(String key) {
         return key.startsWith("CID-") ||
                 key.startsWith("AID-") ||
