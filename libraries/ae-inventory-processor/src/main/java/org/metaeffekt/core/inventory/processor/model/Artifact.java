@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
 
@@ -144,6 +142,48 @@ public class Artifact extends AbstractModelBase {
         public String getKey() {
             return key;
         }
+    }
+
+    public final static List<String> CORE_ATTRIBUTES = new ArrayList<>();
+    static {
+        CORE_ATTRIBUTES.add(Attribute.ID.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.CHECKSUM.getKey());
+        CORE_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.GROUPID.getKey());
+        CORE_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.LATEST_VERSION.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.LICENSE.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.CLASSIFICATION.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.SECURITY_RELEVANT.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.SECURITY_CATEGORY.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.VULNERABILITY.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.COMMENT.getKey());
+        CORE_ATTRIBUTES.add(Attribute.URL.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.ROOT_PATHS.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.VERIFIED.getKey());
+        CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
+        // CORE_ATTRIBUTES.add(Attribute.COMPONENT_SOURCE_TYPE.getKey());
+    }
+
+    public final static List<String> ORDERED_ATTRIBUTES = new ArrayList<>();
+    static {
+        ORDERED_ATTRIBUTES.add(Attribute.ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.CHECKSUM.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.GROUPID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.LATEST_VERSION.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.LICENSE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.CLASSIFICATION.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SECURITY_RELEVANT.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SECURITY_CATEGORY.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.VULNERABILITY.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.COMMENT.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.URL.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.ROOT_PATHS.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.VERIFIED.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.TYPE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.COMPONENT_SOURCE_TYPE.getKey());
     }
 
     // artifact id (derived from id and version)

@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.metaeffekt.core.inventory.processor.model.InventorySerializationContext.CONTEXT_ARTIFACT_COLUMN_LIST;
+import static org.metaeffekt.core.inventory.processor.model.InventorySerializationContext.CONTEXT_ARTIFACT_DATA_COLUMN_LIST;
 
 /**
  * Utilities for dealing with Inventories.
@@ -131,7 +131,7 @@ public abstract class InventoryUtils {
 
     public static void removeArtifactAttribute(String key, Inventory inventory) {
         final ArrayList<String> list = inventory.getSerializationContext().
-                get(CONTEXT_ARTIFACT_COLUMN_LIST);
+                get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
 
         for (Artifact artifact : inventory.getArtifacts()) {
             artifact.set(key, null);
@@ -144,7 +144,7 @@ public abstract class InventoryUtils {
 
     public static void removeArtifactAttributeContaining(String substring, Inventory inventory) {
         final ArrayList<String> list = inventory.getSerializationContext().
-                get(CONTEXT_ARTIFACT_COLUMN_LIST);
+                get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
 
         for (Artifact artifact : inventory.getArtifacts()) {
             for (String key : new HashSet<>(artifact.getAttributes())) {
@@ -310,7 +310,7 @@ public abstract class InventoryUtils {
         // evaluate attributes managed in the serialization context
         final InventorySerializationContext serializationContext = inventory.getSerializationContext();
         if (serializationContext != null) {
-            final List<String> serializedAttributes = serializationContext.get(CONTEXT_ARTIFACT_COLUMN_LIST);
+            final List<String> serializedAttributes = serializationContext.get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
             if (serializedAttributes != null) {
                 attributes.addAll(serializedAttributes);
             }
@@ -325,7 +325,7 @@ public abstract class InventoryUtils {
     }
 
     public static void removeArtifactAttributeStartingWith(Inventory inventory, String prefix) {
-        final ArrayList<String> list = inventory.getSerializationContext().get(CONTEXT_ARTIFACT_COLUMN_LIST);
+        final ArrayList<String> list = inventory.getSerializationContext().get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
 
         for (Artifact artifact : inventory.getArtifacts()) {
             for (String attribute : new HashSet<>(artifact.getAttributes())) {
@@ -341,7 +341,7 @@ public abstract class InventoryUtils {
 
     protected static void removeAttributes(Inventory inventory, Collection<String> keys) {
         final ArrayList<String> list = inventory.getSerializationContext().
-                get(CONTEXT_ARTIFACT_COLUMN_LIST);
+                get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
 
         for (Artifact artifact : inventory.getArtifacts()) {
             for (String attribute : new HashSet<>(artifact.getAttributes())) {

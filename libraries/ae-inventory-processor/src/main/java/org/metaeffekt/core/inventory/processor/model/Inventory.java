@@ -1830,6 +1830,7 @@ public class Inventory implements Serializable {
         this.vulnerabilityMetaData.put(context, vulnerabilityMetaData);
     }
 
+    // FIXME: rename to getVulnerabilityAssessmentContexts()
     public List<String> getVulnerabilityMetaDataContexts() {
         return new ArrayList<>(vulnerabilityMetaData.keySet());
     }

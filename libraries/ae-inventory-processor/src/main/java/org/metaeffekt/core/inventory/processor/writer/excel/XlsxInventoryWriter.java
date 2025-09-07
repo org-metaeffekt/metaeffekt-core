@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.metaeffekt.core.inventory.processor.model.InventorySerializationContext.*;
 
@@ -41,30 +40,6 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     static {
         TempFile.setTempFileCreationStrategy(CUSTOM_TEMP_FILE_CREATION_STRATEGY);
     }
-
-    /**
-     * Defines a default order.
-     * <p>
-     * FIXME: column-metadata
-     */
-    private final Artifact.Attribute[] artifactColumnOrder = new Artifact.Attribute[]{
-            Artifact.Attribute.ID,
-            Artifact.Attribute.CHECKSUM,
-            Artifact.Attribute.COMPONENT,
-            Artifact.Attribute.GROUPID,
-            Artifact.Attribute.VERSION,
-            Artifact.Attribute.LATEST_VERSION,
-            Artifact.Attribute.LICENSE,
-            Artifact.Attribute.CLASSIFICATION,
-            Artifact.Attribute.SECURITY_RELEVANT,
-            Artifact.Attribute.SECURITY_CATEGORY,
-            Artifact.Attribute.VULNERABILITY,
-            Artifact.Attribute.COMMENT,
-            Artifact.Attribute.URL,
-            Artifact.Attribute.PURL,
-            Artifact.Attribute.ROOT_PATHS,
-            Artifact.Attribute.VERIFIED
-    };
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
         final SXSSFWorkbook workbook = new SXSSFWorkbook();
@@ -108,14 +83,8 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         final SXSSFSheet sheet = createAMDSheet(workbook, AbstractInventoryReader.WORKSHEET_NAME_ARTIFACT_DATA);
         final SXSSFRow headerRow = sheet.createRow(0);
 
-        final List<String> defaultAttributes = new ArrayList<>();
-
-        defaultAttributes.add(Artifact.Attribute.ID.getKey());
-        defaultAttributes.add(Artifact.Attribute.COMPONENT.getKey());
-        defaultAttributes.add(Artifact.Attribute.VERSION.getKey());
-
-        final List<String> orderedList = determineOrder(inventory, () -> inventory.getArtifacts(),
-                CONTEXT_ARTIFACT_COLUMN_LIST, defaultAttributes);
+        final List<String> orderedList = determineOrder(inventory, inventory::getArtifacts,
+                CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.CORE_ATTRIBUTES, Artifact.ORDERED_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
@@ -141,37 +110,6 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
                 headerCellStylers, dataCellStylers);
 
         sheet.setAutoFilter(new CellRangeAddress(0, 65000, 0, columnCount - 1));
-    }
-
-    private List<String> determineOrder(Inventory inventory, Supplier<List<? extends AbstractModelBase>> supplier,
-                    String columnKeyList, List<String> defaultAttributes) {
-
-        // create columns for key / value map content
-        final Set<String> attributeSet = new HashSet<>(defaultAttributes);
-        for (final AbstractModelBase obj : supplier.get()) {
-            attributeSet.addAll(obj.getAttributes());
-        }
-
-        final List<String> contextColumnList = inventory.getSerializationContext().get(columnKeyList);
-        if (contextColumnList != null) {
-            attributeSet.addAll(contextColumnList);
-        }
-
-        // impose context or default order
-        final List<String> ordered = new ArrayList<>(attributeSet);
-        Collections.sort(ordered);
-        int insertIndex = 0;
-        if (contextColumnList != null) {
-            for (String key : contextColumnList) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributeSet);
-            }
-        } else {
-            for (Artifact.Attribute a : artifactColumnOrder) {
-                String key = a.getKey();
-                insertIndex = reinsert(insertIndex, key, ordered, attributeSet);
-            }
-        }
-        return ordered;
     }
 
     private void writeComponentPatterns(Inventory inventory, SXSSFWorkbook workbook, XlsxXSSFInventorySheetCellStylers stylers) {
@@ -220,13 +158,8 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         final SXSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new LinkedHashSet<>(LicenseMetaData.CORE_ATTRIBUTES);
-        final Set<String> orderedOtherAttributes = new TreeSet<>();
-        for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
-            orderedOtherAttributes.addAll(licenseMetaData.getAttributes());
-        }
-        attributes.addAll(orderedOtherAttributes);
+        final List<String> orderedList = determineOrder(inventory, inventory::getLicenseMetaData,
+                CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.CORE_ATTRIBUTES, LicenseMetaData.ORDERED_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleDefault
@@ -236,7 +169,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getLicenseMetaData(), attributes,
+                inventory.getLicenseMetaData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -258,7 +191,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         final SXSSFRow headerRow = sheet.createRow(0);
 
         final List<String> orderedList = determineOrder(inventory, () -> inventory.getVulnerabilityMetaData(assessmentContext),
-                CONTEXT_VULNERABILITIES_COLUMN_LIST, VulnerabilityMetaData.CORE_ATTRIBUTES);
+                CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.CORE_ATTRIBUTES, VulnerabilityMetaData.ORDERED_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleDefault,
@@ -284,19 +217,8 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         final SXSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new HashSet<>();
-        for (AdvisoryMetaData am : inventory.getAdvisoryMetaData()) {
-            attributes.addAll(am.getAttributes());
-        }
-
-        AdvisoryMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
-
-        final List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-
-        final List<String> finalOrder = new ArrayList<>(AdvisoryMetaData.CORE_ATTRIBUTES);
-        finalOrder.addAll(ordered);
+        final List<String> orderedList = determineOrder(inventory, inventory::getAdvisoryMetaData,
+                CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.CORE_ATTRIBUTES, AdvisoryMetaData.ORDERED_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleDefault,
@@ -307,7 +229,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getAdvisoryMetaData(), finalOrder,
+                inventory.getAdvisoryMetaData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -357,34 +279,10 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         final SXSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new HashSet<>();
-        for (LicenseData vmd : inventory.getLicenseData()) {
-            attributes.addAll(vmd.getAttributes());
-        }
-
         final InventorySerializationContext serializationContext = inventory.getSerializationContext();
-        final List<String> contextColumnList = serializationContext.get(CONTEXT_LICENSEDATA_COLUMN_LIST);
-        if (contextColumnList != null) {
-            attributes.addAll(contextColumnList);
-        }
 
-        // add minimum columns
-        attributes.addAll(LicenseData.ORDERED_ATTRIBUTES);
-
-        // impose context or default order
-        final List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-        int insertIndex = 0;
-        if (contextColumnList != null) {
-            for (String key : contextColumnList) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        } else {
-            for (String key : LicenseData.ORDERED_ATTRIBUTES) {
-                insertIndex = reinsert(insertIndex, key, ordered, attributes);
-            }
-        }
+        final List<String> orderedList = determineOrder(inventory, inventory::getLicenseData,
+                CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.CORE_ATTRIBUTES, LicenseData.ORDERED_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
@@ -401,7 +299,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getLicenseData(), ordered,
+                inventory.getLicenseData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -415,14 +313,8 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
 
         final SXSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new HashSet<>();
-        for (AssetMetaData amd : inventory.getAssetMetaData()) {
-            attributes.addAll(amd.getAttributes());
-        }
-
-        // remove core attributes
-        final List<String> finalOrder = deriveOrder(attributes, AssetMetaData.CORE_ATTRIBUTES);
+        final List<String> orderedList = determineOrder(inventory, inventory::getAssetMetaData,
+                CONTEXT_ASSET_DATA_COLUMN_LIST, AssetMetaData.CORE_ATTRIBUTES, AssetMetaData.ORDERED_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleColumnNameAssetId,
@@ -436,7 +328,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getAssetMetaData(), finalOrder,
+                inventory.getAssetMetaData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 

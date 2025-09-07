@@ -54,7 +54,7 @@ public class AdvisoryMetaData extends AbstractModelBase {
      */
     public enum Attribute implements AbstractModelBase.Attribute {
         NAME("Name"),
-        URL("Url"),
+        URL("URL"),
         SUMMARY("Summary"),
         SOURCE("Source"),
         SOURCE_IMPLEMENTATION("Source-Implementation"),
@@ -104,7 +104,6 @@ public class AdvisoryMetaData extends AbstractModelBase {
     }
 
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
-
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.NAME.getKey());
@@ -112,9 +111,19 @@ public class AdvisoryMetaData extends AbstractModelBase {
         CORE_ATTRIBUTES.add(Attribute.SUMMARY.getKey());
         CORE_ATTRIBUTES.add(Attribute.SOURCE.getKey());
         CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
-        CORE_ATTRIBUTES.add(Attribute.CREATE_DATE.getKey());
-        CORE_ATTRIBUTES.add(Attribute.UPDATE_DATE.getKey());
-        CORE_ATTRIBUTES.add(Attribute.REVIEW_STATUS.getKey());
+    }
+
+    public static ArrayList<String> ORDERED_ATTRIBUTES = new ArrayList<>();
+    static {
+        // fix selection and order
+        ORDERED_ATTRIBUTES.add(Attribute.NAME.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.URL.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SUMMARY.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SOURCE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.TYPE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.CREATE_DATE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.UPDATE_DATE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.REVIEW_STATUS.getKey());
     }
 
     /**

@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.metaeffekt.core.inventory.processor.model.InventorySerializationContext.*;
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
 
 public abstract class AbstractInventoryReader {
@@ -75,49 +76,110 @@ public abstract class AbstractInventoryReader {
 
     public abstract Inventory readInventory(InputStream in) throws IOException;
 
-    protected void update(Artifact artifact) {
-        resolveRename(artifact, "Component / Group", Artifact.Attribute.COMPONENT.getKey());
+    private void updateArtifacts(Inventory inventory, InventorySerializationContext serializationContext) {
+        final List<String> attributeList = serializationContext.get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
+        final List<Artifact> artifacts = inventory.getArtifacts();
+
+        // apply modification operations
+        resolveRename(artifacts, attributeList, "Component / Group", Artifact.Attribute.COMPONENT.getKey());
     }
 
-    protected void update(LicenseMetaData licenseMetaData) {
-        resolveRename(licenseMetaData, "Text", LicenseMetaData.Attribute.NOTICE.getKey());
+    private void updateLicenseMetaData(Inventory inventory, InventorySerializationContext serializationContext) {
+        final List<String> attributeList = serializationContext.get(CONTEXT_LICENSE_DATA_COLUMN_LIST);
+        final List<LicenseMetaData> lmdList = inventory.getLicenseMetaData();
+
+        // apply modification operations
+        resolveRename(lmdList, attributeList, "Text", LicenseMetaData.Attribute.NOTICE.getKey());
     }
 
-    protected void resolveRename(AbstractModelBase item, String oldKey, String newKey) {
-        final String oldKeyValue = item.get(oldKey);
-        final String newKeyValue = item.get(newKey);
+    private void updateAssetMetaData(Inventory inventory, InventorySerializationContext serializationContext) {
+        final List<String> attributeList = serializationContext.get(CONTEXT_ASSET_DATA_COLUMN_LIST);
+        final List<AssetMetaData> lmdList = inventory.getAssetMetaData();
 
-        if (org.apache.commons.lang3.StringUtils.isEmpty(newKeyValue)) {
-            item.set(newKey, oldKeyValue);
+        // apply modification operations
+        resolveRename(lmdList, attributeList, "Role", AssetMetaData.Attribute.AUDIENCE.getKey());
+    }
+
+    private void updateVulnerabilityMetaData(Inventory inventory, InventorySerializationContext serializationContext) {
+        final List<String> attributeList = serializationContext.get(CONTEXT_VULNERABILITY_DATA_COLUMN_LIST);
+        for (String assessmentContext : inventory.getVulnerabilityMetaDataContexts()) {
+            final List<VulnerabilityMetaData> vmdList = inventory.getVulnerabilityMetaData(assessmentContext);
+
+            mergeContent(vmdList, attributeList, "Referenced Content IDs", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
+            mergeContent(vmdList, attributeList, "Referenced Content Ids", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
+
+            resolveRename(vmdList, attributeList, "Url", VulnerabilityMetaData.Attribute.URL.getKey());
         }
     }
 
-    protected void update(AssetMetaData assetMetaData) {
-        resolveRename(assetMetaData, "Role", AssetMetaData.Attribute.AUDIENCE.getKey());
+    private void updateAdvisoryMetaData(Inventory inventory, InventorySerializationContext serializationContext) {
+        final List<String> attributeList = serializationContext.get(CONTEXT_ADVISORY_DATA_COLUMN_LIST);
+        final List<AdvisoryMetaData> list = inventory.getAdvisoryMetaData();
+
+        // apply modification operations
+        resolveRename(list, attributeList, "Url", AdvisoryMetaData.Attribute.URL.getKey());
+    }
+
+    private void mergeContent(List<? extends AbstractModelBase> objects, List<String> attributeList, String oldKey, AbstractModelBase.Attribute attribute) {
+        objects.forEach(a -> mapContent(a, oldKey, attribute));
+        if (attributeList != null) {
+            if (!attributeList.contains(attribute.getKey())) {
+                int i = attributeList.indexOf(oldKey);
+                if (i != -1) {
+                    attributeList.set(i, attribute.getKey());
+                }
+            }
+
+            attributeList.remove(oldKey);
+        }
     }
 
     protected void update(VulnerabilityMetaData vulnerabilityMetaData) {
         // compensate rename of attributes
         mapContent(vulnerabilityMetaData, "Referenced Content IDs", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
         mapContent(vulnerabilityMetaData, "Referenced Content Ids", AeaaInventoryAttribute.VULNERABILITY_REFERENCED_CONTENT_IDS);
+
+        resolveRename(vulnerabilityMetaData, "Url", VulnerabilityMetaData.Attribute.URL.getKey());
     }
 
-    private void mapContent(final VulnerabilityMetaData vulnerabilityMetaData,
+    protected void resolveRename(List<? extends AbstractModelBase> objects, List<String> attributeList, String oldKey, String newKey) {
+        objects.forEach(a -> resolveRename(a, oldKey, newKey));
+
+        // replace the name in the attribute list
+        if (attributeList != null) {
+            int i = attributeList.indexOf(oldKey);
+            if (i != -1) {
+                attributeList.set(i, newKey);
+            }
+        }
+    }
+
+    protected void resolveRename(AbstractModelBase object, String oldKey, String newKey) {
+        final String oldKeyValue = object.get(oldKey);
+        final String newKeyValue = object.get(newKey);
+
+        if (StringUtils.isEmpty(newKeyValue)) {
+            object.set(newKey, oldKeyValue);
+            object.set(oldKey, null);
+        }
+    }
+
+    private void mapContent(final AbstractModelBase object,
                             final String originalKey, final AbstractModelBase.Attribute updatedAttribute) {
 
         // read the original content
-        final String originalKeyContent = vulnerabilityMetaData.get(originalKey);
+        final String originalKeyContent = object.get(originalKey);
 
         // check if there is original content
         if (StringUtils.isNotBlank(originalKeyContent)) {
 
             // read updated attribute content
-            final String updatedAttributeContent = vulnerabilityMetaData.get(updatedAttribute);
+            final String updatedAttributeContent = object.get(updatedAttribute);
 
             if (!StringUtils.isNotBlank(updatedAttributeContent)) {
                 // original content available; no updated content: transfer and delete
-                vulnerabilityMetaData.set(updatedAttribute, originalKeyContent);
-                vulnerabilityMetaData.set(originalKey, null);
+                object.set(updatedAttribute, originalKeyContent);
+                object.set(originalKey, null);
             } else {
                 // original content and updated content available
                 if (!originalKeyContent.equals(updatedAttributeContent)) {
@@ -125,23 +187,24 @@ public abstract class AbstractInventoryReader {
                     // warn in case the values differ
                     LOG.warn("Vulnerability metadata inconsistent: " +
                                     "[{}] shows different content in attributes [{}] and [{}]. Please consolidate to [{}].",
-                            vulnerabilityMetaData.get(VulnerabilityMetaData.Attribute.NAME), originalKey,
+                            object.get(VulnerabilityMetaData.Attribute.NAME), originalKey,
                             updatedAttribute.getKey(), updatedAttribute.getKey());
                 }
 
                 // values are identical or we warned the consumer: remove the obsolete original key value
-                vulnerabilityMetaData.set(originalKey, null);
+                object.set(originalKey, null);
             }
         }
     }
 
     protected void applyModificationsForCompatibility(Inventory inventory) {
-        inventory.getArtifacts().forEach(this::update);
-        inventory.getLicenseMetaData().forEach(this::update);
-        inventory.getVulnerabilityMetaDataContexts().forEach(
-                context -> inventory.getVulnerabilityMetaData(context).forEach(this::update)
-        );
-        inventory.getAssetMetaData().forEach(this::update);
+        final InventorySerializationContext serializationContext = inventory.getSerializationContext();
+
+        updateArtifacts(inventory, serializationContext);
+        updateAssetMetaData(inventory, serializationContext);
+        updateLicenseMetaData(inventory, serializationContext);
+        updateVulnerabilityMetaData(inventory, serializationContext);
+        updateAdvisoryMetaData(inventory, serializationContext);
     }
 
     protected static class ParsingContext {
@@ -246,4 +309,5 @@ public abstract class AbstractInventoryReader {
             serializationContext.put(contextKey + ".column[" + i + "].width", width);
         }
     }
+
 }

@@ -22,21 +22,18 @@ import org.apache.poi.ss.usermodel.Row;
 import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.excel.style.InventorySheetCellStyler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData.VULNERABILITY_ASSESSMENT_CONTEXT_DEFAULT;
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.SINGLE_VULNERABILITY_ASSESSMENT_WORKSHEET;
 import static org.metaeffekt.core.inventory.processor.writer.InventoryWriter.VULNERABILITY_ASSESSMENT_WORKSHEET_PREFIX;
 
 public abstract class AbstractInventoryWriter {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractInventoryWriter.class);
 
     public abstract void writeInventory(Inventory inventory, File file) throws IOException;
 
@@ -219,7 +216,37 @@ public abstract class AbstractInventoryWriter {
             }
         }
 
-
         return columnHeadersWithSplitColumnInformation.values().stream().mapToInt(List::size).sum();
     }
+
+    protected List<String> determineOrder(Inventory inventory, Supplier<List<? extends AbstractModelBase>> supplier,
+                        String columnKeyList, List<String> coreAttributes, List<String> orderedAttributes) {
+
+        // create columns for key / value map content
+        final Set<String> attributeSet = new HashSet<>(coreAttributes);
+        for (final AbstractModelBase obj : supplier.get()) {
+            attributeSet.addAll(obj.getAttributes());
+        }
+
+        final List<String> contextColumnList = inventory.getSerializationContext().get(columnKeyList);
+        if (contextColumnList != null) {
+            attributeSet.addAll(contextColumnList);
+        }
+
+        // impose context or default order
+        final List<String> ordered = new ArrayList<>(attributeSet);
+        Collections.sort(ordered);
+        int insertIndex = 0;
+        if (contextColumnList != null) {
+            for (String key : contextColumnList) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributeSet);
+            }
+        } else {
+            for (String key : orderedAttributes) {
+                insertIndex = reinsert(insertIndex, key, ordered, attributeSet);
+            }
+        }
+        return ordered;
+    }
+
 }

@@ -237,7 +237,6 @@ public class LicenseMetaData extends AbstractModelBase {
     }
 
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
-
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
@@ -247,6 +246,18 @@ public class LicenseMetaData extends AbstractModelBase {
         CORE_ATTRIBUTES.add(Attribute.SOURCE_CATEGORY.getKey());
         CORE_ATTRIBUTES.add(Attribute.NOTICE.getKey());
         CORE_ATTRIBUTES.add(Attribute.COMMENT.getKey());
+    }
+
+    public static ArrayList<String> ORDERED_ATTRIBUTES = new ArrayList<>();
+    static {
+        // fix selection and order
+        ORDERED_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.LICENSE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.LICENSE_IN_EFFECT.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SOURCE_CATEGORY.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.NOTICE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.COMMENT.getKey());
     }
 
     public enum Attribute implements AbstractModelBase.Attribute {

@@ -49,4 +49,5 @@ public abstract class AbstractXlsInventoryWriter extends AbstractInventoryWriter
                 headerCellSupplier, contentRowSupplier, HSSFRichTextString::new,
                 headerCellStyler, dataCellStyler);
     }
+
 }

@@ -65,6 +65,8 @@ public class AssetMetaData extends AbstractModelBase {
         HASH_SHA512("Hash (SHA-512)"),
 
         URL("URL"),
+
+        // FIXME: consolidate
         SOURCE_CODE_URL("Source Code URL"),
         SUPPLIER("Supplier"),
         TYPE("Type");
@@ -81,10 +83,28 @@ public class AssetMetaData extends AbstractModelBase {
     }
 
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
-
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.ASSET_ID.getKey());
+    }
+
+    public static ArrayList<String> ORDERED_ATTRIBUTES = new ArrayList<>();
+    static {
+        // fix selection and order
+        ORDERED_ATTRIBUTES.add(Attribute.ASSET_ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.NAME.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.TYPE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.ASSET_PATH.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.ASSESSMENT_ID.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.ASSESSMENT.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.AUDIENCE.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.CHECKSUM.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.HASH_SHA1.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.HASH_SHA256.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.HASH_SHA512.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.URL.getKey());
+        ORDERED_ATTRIBUTES.add(Attribute.SUPPLIER.getKey());
     }
 
     public String deriveAssessmentId(Inventory inventory) {
