@@ -176,11 +176,11 @@ public class InventorySerializationContext {
     }
 
     public static void initializeSerializationContext(Inventory inventory) {
-        initializeSerializationContext(inventory, inventory.getArtifacts(), CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.ORDERED_ATTRIBUTES);
-        initializeSerializationContext(inventory, inventory.getAdvisoryMetaData(), CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.ORDERED_ATTRIBUTES);
-        initializeSerializationContext(inventory, Collections.emptyList(), CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.ORDERED_ATTRIBUTES);
-        initializeSerializationContext(inventory, inventory.getLicenseData(), CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.ORDERED_ATTRIBUTES);
-        initializeSerializationContext(inventory, inventory.getLicenseMetaData(), CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.ORDERED_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getArtifacts(), CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.CORE_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getAdvisoryMetaData(), CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.CORE_ATTRIBUTES);
+        initializeSerializationContext(inventory, Collections.emptyList(), CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.CORE_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getLicenseData(), CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.CORE_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getLicenseMetaData(), CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.CORE_ATTRIBUTES);
     }
 
 }
