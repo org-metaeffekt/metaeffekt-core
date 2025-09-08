@@ -129,6 +129,7 @@ public abstract class InventoryUtils {
         return String.join("|", licenses);
     }
 
+    @Deprecated // use SheetSerializationContext instead
     public static void removeArtifactAttribute(String key, Inventory inventory) {
         final ArrayList<String> list = inventory.getSerializationContext().
                 get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
@@ -142,6 +143,7 @@ public abstract class InventoryUtils {
         }
     }
 
+    @Deprecated // use SheetSerializationContext instead
     public static void removeArtifactAttributeContaining(String substring, Inventory inventory) {
         final ArrayList<String> list = inventory.getSerializationContext().
                 get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
@@ -158,6 +160,7 @@ public abstract class InventoryUtils {
         }
     }
 
+    @Deprecated // use SheetSerializationContext instead
     public static void removeLicenseDataAttributeContaining(String substring, Inventory inventory) {
         for (LicenseData licenseData : inventory.getLicenseData()) {
             for (String key : new HashSet<>(licenseData.getAttributes())) {
@@ -168,6 +171,7 @@ public abstract class InventoryUtils {
         }
     }
 
+    @Deprecated // use SheetSerializationContext instead
     public static void removeAssetAttribute(String key, Inventory inventory) {
         for (AssetMetaData assetMetaData : inventory.getAssetMetaData()) {
             if (assetMetaData != null) {
@@ -303,6 +307,7 @@ public abstract class InventoryUtils {
         return null;
     }
 
+    @Deprecated // use SheetSerializationContext instead
     public static Set<String> collectArtifactAttributes(Inventory inventory) {
         // the attributes are aggregated in a hash set
         final Set<String> attributes = new HashSet<>();
@@ -324,6 +329,7 @@ public abstract class InventoryUtils {
         return attributes;
     }
 
+    @Deprecated // use SheetSerializationContext instead
     public static void removeArtifactAttributeStartingWith(Inventory inventory, String prefix) {
         final ArrayList<String> list = inventory.getSerializationContext().get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
 
@@ -339,6 +345,7 @@ public abstract class InventoryUtils {
         }
     }
 
+    @Deprecated // use SheetSerializationContext instead
     protected static void removeAttributes(Inventory inventory, Collection<String> keys) {
         final ArrayList<String> list = inventory.getSerializationContext().
                 get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
