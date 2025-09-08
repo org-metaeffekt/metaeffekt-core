@@ -68,7 +68,6 @@ public class LicenseData extends AbstractModelBase {
     static {
         MIN_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
         MIN_ATTRIBUTES.add(Attribute.ID.getKey());
-        MIN_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
         MIN_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
     }
 
