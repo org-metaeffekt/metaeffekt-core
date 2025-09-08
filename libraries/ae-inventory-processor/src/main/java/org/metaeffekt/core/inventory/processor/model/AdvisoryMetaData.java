@@ -103,27 +103,31 @@ public class AdvisoryMetaData extends AbstractModelBase {
         }
     }
 
+    /**
+     * Defines the minimum set of attributes for serialization. The order is not relevant.
+     */
+    public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
+    static {
+        MIN_ATTRIBUTES.add(Attribute.NAME.getKey());
+        MIN_ATTRIBUTES.add(Attribute.URL.getKey());
+        MIN_ATTRIBUTES.add(Attribute.SUMMARY.getKey());
+        MIN_ATTRIBUTES.add(Attribute.SOURCE.getKey());
+        MIN_ATTRIBUTES.add(Attribute.TYPE.getKey());
+    }
+
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
     static {
-        // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.URL.getKey());
         CORE_ATTRIBUTES.add(Attribute.SUMMARY.getKey());
         CORE_ATTRIBUTES.add(Attribute.SOURCE.getKey());
         CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
-    }
-
-    public static ArrayList<String> ORDERED_ATTRIBUTES = new ArrayList<>();
-    static {
-        // fix selection and order
-        ORDERED_ATTRIBUTES.add(Attribute.NAME.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.URL.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.SUMMARY.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.SOURCE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.TYPE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.CREATE_DATE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.UPDATE_DATE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.REVIEW_STATUS.getKey());
+        CORE_ATTRIBUTES.add(Attribute.CREATE_DATE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.UPDATE_DATE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.REVIEW_STATUS.getKey());
     }
 
     /**

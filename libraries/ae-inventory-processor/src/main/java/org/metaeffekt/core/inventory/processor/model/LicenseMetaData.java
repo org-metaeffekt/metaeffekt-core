@@ -236,6 +236,22 @@ public class LicenseMetaData extends AbstractModelBase {
         return sb.toString();
     }
 
+    /**
+     * Defines the minimum set of attributes for serialization. The order is not relevant.
+     */
+    public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
+    static {
+        // fix selection and order
+        MIN_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        MIN_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        MIN_ATTRIBUTES.add(Attribute.LICENSE.getKey());
+        MIN_ATTRIBUTES.add(Attribute.LICENSE_IN_EFFECT.getKey());
+        MIN_ATTRIBUTES.add(Attribute.NOTICE.getKey());
+    }
+
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
     static {
         // fix selection and order
@@ -246,18 +262,6 @@ public class LicenseMetaData extends AbstractModelBase {
         CORE_ATTRIBUTES.add(Attribute.SOURCE_CATEGORY.getKey());
         CORE_ATTRIBUTES.add(Attribute.NOTICE.getKey());
         CORE_ATTRIBUTES.add(Attribute.COMMENT.getKey());
-    }
-
-    public static ArrayList<String> ORDERED_ATTRIBUTES = new ArrayList<>();
-    static {
-        // fix selection and order
-        ORDERED_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.VERSION.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.LICENSE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.LICENSE_IN_EFFECT.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.SOURCE_CATEGORY.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.NOTICE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.COMMENT.getKey());
     }
 
     public enum Attribute implements AbstractModelBase.Attribute {

@@ -82,29 +82,33 @@ public class AssetMetaData extends AbstractModelBase {
         }
     }
 
-    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+    /**
+     * Defines the minimum set of attributes for serialization. The order is not relevant.
+     */
+    public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
     static {
-        // fix selection and order
-        CORE_ATTRIBUTES.add(Attribute.ASSET_ID.getKey());
+        MIN_ATTRIBUTES.add(Attribute.ASSET_ID.getKey());
     }
 
-    public static ArrayList<String> ORDERED_ATTRIBUTES = new ArrayList<>();
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
+    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
     static {
-        // fix selection and order
-        ORDERED_ATTRIBUTES.add(Attribute.ASSET_ID.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.NAME.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.TYPE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.ASSET_PATH.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.VERSION.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.ASSESSMENT_ID.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.ASSESSMENT.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.AUDIENCE.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.CHECKSUM.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.HASH_SHA1.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.HASH_SHA256.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.HASH_SHA512.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.URL.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.SUPPLIER.getKey());
+        CORE_ATTRIBUTES.add(Attribute.ASSET_ID.getKey());
+        CORE_ATTRIBUTES.add(Attribute.NAME.getKey());
+        CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.ASSET_PATH.getKey());
+        CORE_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        CORE_ATTRIBUTES.add(Attribute.ASSESSMENT_ID.getKey());
+        CORE_ATTRIBUTES.add(Attribute.ASSESSMENT.getKey());
+        CORE_ATTRIBUTES.add(Attribute.AUDIENCE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.CHECKSUM.getKey());
+        CORE_ATTRIBUTES.add(Attribute.HASH_SHA1.getKey());
+        CORE_ATTRIBUTES.add(Attribute.HASH_SHA256.getKey());
+        CORE_ATTRIBUTES.add(Attribute.HASH_SHA512.getKey());
+        CORE_ATTRIBUTES.add(Attribute.URL.getKey());
+        CORE_ATTRIBUTES.add(Attribute.SUPPLIER.getKey());
     }
 
     public String deriveAssessmentId(Inventory inventory) {

@@ -61,25 +61,27 @@ public class LicenseData extends AbstractModelBase {
         }
     }
 
-    public static List<String> CORE_ATTRIBUTES = new ArrayList<>();
-
+    /**
+     * Defines the minimum set of attributes for serialization. The order is not relevant.
+     */
+    public static List<String> MIN_ATTRIBUTES = new ArrayList<>();
     static {
-        // fix selection for string representation
+        MIN_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
+        MIN_ATTRIBUTES.add(Attribute.ID.getKey());
+        MIN_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
+        MIN_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
+    }
+
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
+    public static List<String> CORE_ATTRIBUTES = new ArrayList<>();
+    static {
         CORE_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
+        CORE_ATTRIBUTES.add(Attribute.SCANCODE_IDS.getKey());
         CORE_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
-    }
-
-    public static List<String> ORDERED_ATTRIBUTES = new ArrayList<>();
-
-    static {
-        // fix order for serialization
-        ORDERED_ATTRIBUTES.add(Attribute.CANONICAL_NAME.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.ID.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.SPDX_ID.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.SCANCODE_IDS.getKey());
-        ORDERED_ATTRIBUTES.add(Attribute.REPRESENTED_AS.getKey());
     }
 
     /**

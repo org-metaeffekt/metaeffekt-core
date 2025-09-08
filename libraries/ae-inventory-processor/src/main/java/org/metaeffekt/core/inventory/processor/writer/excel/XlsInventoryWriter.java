@@ -74,7 +74,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final HSSFRow headerRow = sheet.createRow(0);
 
         final List<String> orderedList = determineOrder(inventory, inventory::getArtifacts,
-                CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.CORE_ATTRIBUTES, Artifact.ORDERED_ATTRIBUTES);
+                CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.MIN_ATTRIBUTES, Artifact.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
@@ -149,7 +149,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final HSSFRow headerRow = sheet.createRow(0);
 
         final List<String> orderedList = determineOrder(inventory, inventory::getLicenseMetaData,
-                CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.CORE_ATTRIBUTES, LicenseMetaData.ORDERED_ATTRIBUTES);
+                CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.MIN_ATTRIBUTES, LicenseMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleDefault
@@ -181,7 +181,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final HSSFRow headerRow = sheet.createRow(0);
 
         final List<String> orderedList = determineOrder(inventory, () -> inventory.getVulnerabilityMetaData(assessmentContext),
-                CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.CORE_ATTRIBUTES, VulnerabilityMetaData.ORDERED_ATTRIBUTES);
+                CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.MIN_ATTRIBUTES, VulnerabilityMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleDefault,
@@ -208,7 +208,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final HSSFRow headerRow = sheet.createRow(0);
 
         final List<String> orderedList = determineOrder(inventory, inventory::getAdvisoryMetaData,
-                CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.CORE_ATTRIBUTES, AdvisoryMetaData.ORDERED_ATTRIBUTES);
+                CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.MIN_ATTRIBUTES, AdvisoryMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleDefault,
@@ -272,7 +272,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final InventorySerializationContext serializationContext = inventory.getSerializationContext();
 
         final List<String> orderedList = determineOrder(inventory, inventory::getLicenseData,
-                CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.CORE_ATTRIBUTES, LicenseData.ORDERED_ATTRIBUTES);
+                CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.MIN_ATTRIBUTES, LicenseData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
@@ -304,7 +304,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         final HSSFRow headerRow = sheet.createRow(0);
 
         final List<String> orderedList = determineOrder(inventory, inventory::getAssetMetaData,
-                CONTEXT_ASSET_DATA_COLUMN_LIST, AssetMetaData.CORE_ATTRIBUTES, AssetMetaData.ORDERED_ATTRIBUTES);
+                CONTEXT_ASSET_DATA_COLUMN_LIST, AssetMetaData.MIN_ATTRIBUTES, AssetMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleColumnNameAssetId,

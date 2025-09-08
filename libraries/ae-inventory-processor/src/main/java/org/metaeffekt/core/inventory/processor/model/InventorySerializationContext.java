@@ -176,11 +176,27 @@ public class InventorySerializationContext {
     }
 
     public static void initializeSerializationContext(Inventory inventory) {
-        initializeSerializationContext(inventory, inventory.getArtifacts(), CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.CORE_ATTRIBUTES);
-        initializeSerializationContext(inventory, inventory.getAdvisoryMetaData(), CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.CORE_ATTRIBUTES);
-        initializeSerializationContext(inventory, Collections.emptyList(), CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.CORE_ATTRIBUTES);
-        initializeSerializationContext(inventory, inventory.getLicenseData(), CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.CORE_ATTRIBUTES);
-        initializeSerializationContext(inventory, inventory.getLicenseMetaData(), CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.CORE_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getArtifacts(), CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.MIN_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getAdvisoryMetaData(), CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.MIN_ATTRIBUTES);
+        initializeSerializationContext(inventory, Collections.emptyList(), CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.MIN_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getLicenseData(), CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.MIN_ATTRIBUTES);
+        initializeSerializationContext(inventory, inventory.getLicenseMetaData(), CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.MIN_ATTRIBUTES);
+    }
+
+    public SheetSerializationContext createArtifactSerializationContext(Inventory inventory) {
+        return new SheetSerializationContext(inventory, CONTEXT_KEY_ARTIFACT_DATA, inventory::getArtifacts);
+    }
+
+    public SheetSerializationContext createAssetSerializationContext(Inventory inventory) {
+        return new SheetSerializationContext(inventory, CONTEXT_KEY_ASSET_DATA, inventory::getAssetMetaData);
+    }
+
+    public SheetSerializationContext createAdvisorySerializationContext(Inventory inventory) {
+        return new SheetSerializationContext(inventory, CONTEXT_KEY_ADVISORY_DATA, inventory::getAdvisoryMetaData);
+    }
+
+    public SheetSerializationContext createVulnerabilitySerializationContext(Inventory inventory, String assessmentContext) {
+        return new SheetSerializationContext(inventory, CONTEXT_KEY_VULNERABILITY_DATA, () -> inventory.getVulnerabilityMetaData(assessmentContext));
     }
 
 }
