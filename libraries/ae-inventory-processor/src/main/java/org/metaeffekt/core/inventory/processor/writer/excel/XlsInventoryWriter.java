@@ -30,6 +30,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+import static org.metaeffekt.core.inventory.processor.model.InventorySerializationContext.*;
+
 public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
@@ -71,8 +73,8 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final HSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final List<String> ordered = InventorySerializationContext.initializeArtifactSerializationContext(inventory);
+        final List<String> orderedList = determineOrder(inventory, inventory::getArtifacts,
+                CONTEXT_ARTIFACT_DATA_COLUMN_LIST, Artifact.MIN_ATTRIBUTES, Artifact.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
@@ -93,7 +95,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getArtifacts(), ordered,
+                inventory.getArtifacts(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -146,13 +148,8 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final HSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new LinkedHashSet<>(LicenseMetaData.CORE_ATTRIBUTES);
-        final Set<String> orderedOtherAttributes = new TreeSet<>();
-        for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
-            orderedOtherAttributes.addAll(licenseMetaData.getAttributes());
-        }
-        attributes.addAll(orderedOtherAttributes);
+        final List<String> orderedList = determineOrder(inventory, inventory::getLicenseMetaData,
+                CONTEXT_LICENSE_NOTICE_DATA_COLUMN_LIST, LicenseMetaData.MIN_ATTRIBUTES, LicenseMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleDefault
@@ -162,7 +159,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getLicenseMetaData(), attributes,
+                inventory.getLicenseMetaData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -183,19 +180,8 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final HSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new HashSet<>();
-        for (VulnerabilityMetaData vmd : inventory.getVulnerabilityMetaData(assessmentContext)) {
-            attributes.addAll(vmd.getAttributes());
-        }
-
-        VulnerabilityMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
-
-        final List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-
-        final List<String> finalOrder = new ArrayList<>(VulnerabilityMetaData.CORE_ATTRIBUTES);
-        finalOrder.addAll(ordered);
+        final List<String> orderedList = determineOrder(inventory, () -> inventory.getVulnerabilityMetaData(assessmentContext),
+                CONTEXT_VULNERABILITY_DATA_COLUMN_LIST, VulnerabilityMetaData.MIN_ATTRIBUTES, VulnerabilityMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleDefault,
@@ -207,7 +193,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getVulnerabilityMetaData(assessmentContext), finalOrder,
+                inventory.getVulnerabilityMetaData(assessmentContext), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -221,30 +207,19 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final HSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new HashSet<>();
-        for (AdvisoryMetaData am : inventory.getAdvisoryMetaData()) {
-            attributes.addAll(am.getAttributes());
-        }
+        final List<String> orderedList = determineOrder(inventory, inventory::getAdvisoryMetaData,
+                CONTEXT_ADVISORY_DATA_COLUMN_LIST, AdvisoryMetaData.MIN_ATTRIBUTES, AdvisoryMetaData.CORE_ATTRIBUTES);
 
-        AdvisoryMetaData.CORE_ATTRIBUTES.forEach(attributes::remove);
-
-        final List<String> ordered = new ArrayList<>(attributes);
-        Collections.sort(ordered);
-
-        final List<String> finalOrder = new ArrayList<>(AdvisoryMetaData.CORE_ATTRIBUTES);
-        finalOrder.addAll(ordered);
-
-        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
+        final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleDefault,
         };
 
-        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[]{
+        final InventorySheetCellStyler[] dataCellStylers = new InventorySheetCellStyler[] {
                 stylers.contentStyleUrlValue,
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getAdvisoryMetaData(), finalOrder,
+                inventory.getAdvisoryMetaData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -296,7 +271,8 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final InventorySerializationContext serializationContext = inventory.getSerializationContext();
 
-        final List<String> ordered = InventorySerializationContext.initializeLicenseDataSerializationContext(inventory);
+        final List<String> orderedList = determineOrder(inventory, inventory::getLicenseData,
+                CONTEXT_LICENSE_DATA_COLUMN_LIST, LicenseData.MIN_ATTRIBUTES, LicenseData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[]{
                 stylers.headerStyleColumnNameAssetId,
@@ -313,7 +289,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getLicenseData(), ordered,
+                inventory.getLicenseData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 
@@ -327,14 +303,8 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
 
         final HSSFRow headerRow = sheet.createRow(0);
 
-        // create columns for key / value map content
-        final Set<String> attributes = new HashSet<>();
-        for (AssetMetaData amd : inventory.getAssetMetaData()) {
-            attributes.addAll(amd.getAttributes());
-        }
-
-        // remove core attributes
-        final List<String> finalOrder = deriveOrder(attributes, AssetMetaData.CORE_ATTRIBUTES);
+        final List<String> orderedList = determineOrder(inventory, inventory::getAssetMetaData,
+                CONTEXT_ASSET_DATA_COLUMN_LIST, AssetMetaData.MIN_ATTRIBUTES, AssetMetaData.CORE_ATTRIBUTES);
 
         final InventorySheetCellStyler[] headerCellStylers = new InventorySheetCellStyler[] {
                 stylers.headerStyleColumnNameAssetId,
@@ -348,7 +318,7 @@ public class XlsInventoryWriter extends AbstractXlsInventoryWriter {
         };
 
         final int columnCount = super.populateSheetWithModelData(
-                inventory.getAssetMetaData(), finalOrder,
+                inventory.getAssetMetaData(), orderedList,
                 headerRow::createCell, sheet::createRow,
                 headerCellStylers, dataCellStylers);
 

@@ -54,7 +54,7 @@ public class AdvisoryMetaData extends AbstractModelBase {
      */
     public enum Attribute implements AbstractModelBase.Attribute {
         NAME("Name"),
-        URL("Url"),
+        URL("URL"),
         SUMMARY("Summary"),
         SOURCE("Source"),
         SOURCE_IMPLEMENTATION("Source-Implementation"),
@@ -103,10 +103,23 @@ public class AdvisoryMetaData extends AbstractModelBase {
         }
     }
 
-    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
-
+    /**
+     * Defines the minimum set of attributes for serialization. The order is not relevant.
+     */
+    public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
     static {
-        // fix selection and order
+        MIN_ATTRIBUTES.add(Attribute.NAME.getKey());
+        MIN_ATTRIBUTES.add(Attribute.URL.getKey());
+        MIN_ATTRIBUTES.add(Attribute.SUMMARY.getKey());
+        MIN_ATTRIBUTES.add(Attribute.SOURCE.getKey());
+        MIN_ATTRIBUTES.add(Attribute.TYPE.getKey());
+    }
+
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
+    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+    static {
         CORE_ATTRIBUTES.add(Attribute.NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.URL.getKey());
         CORE_ATTRIBUTES.add(Attribute.SUMMARY.getKey());

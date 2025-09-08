@@ -62,10 +62,11 @@ public class ReportData extends AbstractModelBase {
         }
     }
 
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
-
     static {
-        // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
         CORE_ATTRIBUTES.add(Attribute.CAUSE.getKey());

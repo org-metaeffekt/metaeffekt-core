@@ -19,8 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
 
@@ -144,6 +142,40 @@ public class Artifact extends AbstractModelBase {
         public String getKey() {
             return key;
         }
+    }
+
+    /**
+     * Defines the minimum set of attributes for serialization. The order is not relevant.
+     */
+    public final static List<String> MIN_ATTRIBUTES = new ArrayList<>();
+    static {
+        MIN_ATTRIBUTES.add(Attribute.ID.getKey());
+        MIN_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        MIN_ATTRIBUTES.add(Attribute.VERSION.getKey());
+    }
+
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
+    public final static List<String> CORE_ATTRIBUTES = new ArrayList<>();
+    static {
+        CORE_ATTRIBUTES.add(Attribute.ID.getKey());
+        CORE_ATTRIBUTES.add(Attribute.CHECKSUM.getKey());
+        CORE_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        CORE_ATTRIBUTES.add(Attribute.GROUPID.getKey());
+        CORE_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        CORE_ATTRIBUTES.add(Attribute.LATEST_VERSION.getKey());
+        CORE_ATTRIBUTES.add(Attribute.LICENSE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.CLASSIFICATION.getKey());
+        CORE_ATTRIBUTES.add(Attribute.SECURITY_RELEVANT.getKey());
+        CORE_ATTRIBUTES.add(Attribute.SECURITY_CATEGORY.getKey());
+        CORE_ATTRIBUTES.add(Attribute.VULNERABILITY.getKey());
+        CORE_ATTRIBUTES.add(Attribute.COMMENT.getKey());
+        CORE_ATTRIBUTES.add(Attribute.URL.getKey());
+        CORE_ATTRIBUTES.add(Attribute.ROOT_PATHS.getKey());
+        CORE_ATTRIBUTES.add(Attribute.VERIFIED.getKey());
+        CORE_ATTRIBUTES.add(Attribute.TYPE.getKey());
+        CORE_ATTRIBUTES.add(Attribute.COMPONENT_SOURCE_TYPE.getKey());
     }
 
     // artifact id (derived from id and version)

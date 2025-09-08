@@ -236,8 +236,23 @@ public class LicenseMetaData extends AbstractModelBase {
         return sb.toString();
     }
 
-    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
+    /**
+     * Defines the minimum set of attributes for serialization. The order is not relevant.
+     */
+    public static ArrayList<String> MIN_ATTRIBUTES = new ArrayList<>();
+    static {
+        // fix selection and order
+        MIN_ATTRIBUTES.add(Attribute.COMPONENT.getKey());
+        MIN_ATTRIBUTES.add(Attribute.VERSION.getKey());
+        MIN_ATTRIBUTES.add(Attribute.LICENSE.getKey());
+        MIN_ATTRIBUTES.add(Attribute.LICENSE_IN_EFFECT.getKey());
+        MIN_ATTRIBUTES.add(Attribute.NOTICE.getKey());
+    }
 
+    /**
+     * Defines the core attributes. Used for logging and ordering.
+     */
+    public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.COMPONENT.getKey());

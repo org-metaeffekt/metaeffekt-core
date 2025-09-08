@@ -34,7 +34,7 @@ public class LicenseDataTest {
 
         assertEquals("GNU Lesser General Public License 2.1-LGPL-2.1",
                 ld.deriveQualifier());
-        assertEquals("GNU Lesser General Public License 2.1:LGPL-2.1:LGPL-2.1-only:",
+        assertEquals("GNU Lesser General Public License 2.1:LGPL-2.1:LGPL-2.1-only::",
                 ld.createCompareStringRepresentation());
 
         assertTrue(ld.isAtomic());
@@ -52,7 +52,7 @@ public class LicenseDataTest {
 
         assertEquals("GNU Lesser General Public License 2.1 (or any later version)-LGPL-2.1+",
                 ld.deriveQualifier());
-        assertEquals("GNU Lesser General Public License 2.1 (or any later version):LGPL-2.1+:LGPL-2.1-or-later:",
+        assertEquals("GNU Lesser General Public License 2.1 (or any later version):LGPL-2.1+:LGPL-2.1-or-later::",
                 ld.createCompareStringRepresentation());
 
         assertTrue(ld.isAtomic());
@@ -67,7 +67,7 @@ public class LicenseDataTest {
 
         assertEquals("BSD 3-Clause License + GNU General Public License 3.0-BSD-3-Clause + GPL-3.0+",
                 ld.deriveQualifier());
-        assertEquals("BSD 3-Clause License + GNU General Public License 3.0:BSD-3-Clause + GPL-3.0+::",
+        assertEquals("BSD 3-Clause License + GNU General Public License 3.0:BSD-3-Clause + GPL-3.0+:::",
                 ld.createCompareStringRepresentation());
 
         assertFalse(ld.isAtomic());

@@ -105,7 +105,6 @@ public class ComponentPatternData extends AbstractModelBase {
     }
 
     public static ArrayList<String> CORE_ATTRIBUTES = new ArrayList<>();
-
     static {
         // fix selection and order
         CORE_ATTRIBUTES.add(Attribute.INCLUDE_PATTERN.getKey());
