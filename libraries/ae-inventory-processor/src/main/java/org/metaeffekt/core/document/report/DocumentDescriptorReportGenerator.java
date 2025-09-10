@@ -27,6 +27,7 @@ import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.slf4j.Logger;
@@ -156,24 +157,7 @@ public class DocumentDescriptorReportGenerator {
                 InventoryReport report = new InventoryReport(configParams);
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
 
-                switch (documentPart.getDocumentPartType()) {
-                    case ANNEX:
-                        setPolicy(mergedParams, report);
-                        break;
-                    case VULNERABILITY_REPORT:
-                        setPolicy(mergedParams, report);
-                        String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
-                        if (generateOverviewTablesForAdvisories != null) {
-                            try {
-                                // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
-                                //  YWI: check whether the implementation I provided works for you, the generateOverviewTablesForAdvisories are now a parameter in the security policy
-                                report.getSecurityPolicy().getGenerateOverviewTablesForAdvisories().putAll(convertToJSONArray(generateOverviewTablesForAdvisories));
-                            } catch (Exception e) {
-                                throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
-                            }
-                            break;
-                        }
-                }
+                setPolicy(mergedParams, report);
 
                 if (inventoryContext.getReferenceInventoryContext() != null) {
                     report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
@@ -251,16 +235,13 @@ public class DocumentDescriptorReportGenerator {
     }
 
     private static void setPolicy(Map<String, String> params, InventoryReport report) throws IOException {
-        if (params != null && (params.containsKey("securityPolicyFile") || params.containsKey("securityPolicyOverwriteJson"))) {
+        if (params != null && (params.containsKey("securityPolicyFile"))) {
             String securityPolicyFilePath = params.get("securityPolicyFile");
             File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
 
-            String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
-
-            CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
-            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
-
-            report.setSecurityPolicy(securityPolicy);
+            CspLoader securityPolicyLoader = new CspLoader();
+            securityPolicyLoader.setFile(securityPolicyFile);
+            report.setSecurityPolicy(securityPolicyLoader.loadConfiguration());
         }
         log.info("no securityPolicyFile provided");
     }
