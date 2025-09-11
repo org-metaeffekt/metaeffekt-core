@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class is responsible for orchestrating the generation of reports for a given {@link DocumentDescriptor}.
@@ -239,9 +240,27 @@ public class DocumentDescriptorReportGenerator {
             String securityPolicyFilePath = params.get("securityPolicyFile");
             File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
 
-            CspLoader securityPolicyLoader = new CspLoader();
-            securityPolicyLoader.setFile(securityPolicyFile);
-            report.setSecurityPolicy(securityPolicyLoader.loadConfiguration());
+            CspLoader securityPolicy = new CspLoader();
+            securityPolicy.setFile(securityPolicyFile);
+
+            if (params.containsKey("securityPolicyActiveIds")) {
+                String activeIds = params.get("securityPolicyActiveIds");
+                if (activeIds != null && !activeIds.trim().isEmpty()) {
+                    List<String> activeIdsList = Arrays.stream(activeIds.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList());
+
+                    if (activeIds.isEmpty()) {
+                        throw new IOException("No valid active security policy IDs found in 'securityPolicyActiveIds'. Please provided IDs as a comma-separated list.");
+                    }
+
+                    securityPolicy.setActiveIds(activeIdsList);
+                } else {
+                    throw new IOException("No active security policy IDs specified for parameter 'securityPolicyActiveIds'. Please provided IDs as a comma-separated list.");
+                }
+            }
+            report.setSecurityPolicy(securityPolicy.loadConfiguration());
         }
         log.info("no securityPolicyFile provided");
     }
