@@ -46,7 +46,6 @@ public class RelationshipGraph {
      */
     public static final String DOCUMENT = "DOCUMENT";
 
-
     @Getter
     private final Map<String, RelationshipGraphNode> nodes;
     private final List<RelationshipGraphEdge> relationships;
@@ -54,7 +53,7 @@ public class RelationshipGraph {
     public RelationshipGraph(Inventory inventory) {
         this.nodes = new HashMap<>();
         this.relationships = new ArrayList<>();
-        mapRelationships(inventory, getAssetToArtifactMap(inventory));
+        mapRelationships(inventory, createAssetToArtifactMap(inventory));
     }
 
     public void addRelationship(String fromId, String toId, RelationshipType relationshipType) {
@@ -110,18 +109,16 @@ public class RelationshipGraph {
      */
 
     private void mapMainRelationships(List<Artifact> artifactList, List<AssetMetaData> assetMetaDataList, Map<AssetMetaData, Artifact> assetToArtifactMap) {
-        for (Artifact artifact : artifactList) {
-            for (AssetMetaData assetMetaData : assetMetaDataList) {
-                String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+        for (AssetMetaData assetMetaData : assetMetaDataList) {
+            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+            for (Artifact artifact : artifactList) {
                 String relationshipMarker = artifact.get(assetId);
-
                 if (StringUtils.isBlank(relationshipMarker)) {
                     continue;
                 }
 
                 if (Constants.MARKER_CROSS.equals(relationshipMarker)) {
                     addRelationship(DOCUMENT, artifact.getId(), RelationshipType.DESCRIBES);
-
                 } else if (Constants.MARKER_CONTAINS.equals(relationshipMarker) || Constants.MARKER_DEVELOPMENT_DEPENDENCY.equals(relationshipMarker)) {
                     RelationshipType relationshipType =
                             Constants.MARKER_CONTAINS.equals(relationshipMarker)
@@ -185,18 +182,22 @@ public class RelationshipGraph {
         }
     }
 
-    public static Map<AssetMetaData, Artifact> getAssetToArtifactMap(Inventory inventory) {
-        Map<AssetMetaData, Artifact> assetToArtifactMap = new HashMap<>();
-        List<Artifact> artifacts = inventory.getArtifacts();
-        List<AssetMetaData> assetMetaDataList = inventory.getAssetMetaData();
-        for (Artifact artifact : artifacts) {
-            for (AssetMetaData assetMetaData : assetMetaDataList) {
-                String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
-                if (artifact.get(assetId) != null && artifact.get(assetId).equals(Constants.MARKER_CROSS)) {
+    private static Map<AssetMetaData, Artifact> createAssetToArtifactMap(Inventory inventory) {
+        final Map<AssetMetaData, Artifact> assetToArtifactMap = new HashMap<>();
+        final List<Artifact> artifacts = inventory.getArtifacts();
+        final List<AssetMetaData> assetMetaDataList = inventory.getAssetMetaData();
+
+        // FIXME-KKL: in case relationship between artifact and asset is not distinct, we should raise an issue
+        for (AssetMetaData assetMetaData : assetMetaDataList) {
+            final String assetId = assetMetaData.get(AssetMetaData.Attribute.ASSET_ID);
+            for (Artifact artifact : artifacts) {
+                final String s = artifact.get(assetId);
+                if (s != null && s.equals(Constants.MARKER_CROSS)) {
                     assetToArtifactMap.put(assetMetaData, artifact);
                 }
             }
         }
         return assetToArtifactMap;
     }
+
 }
