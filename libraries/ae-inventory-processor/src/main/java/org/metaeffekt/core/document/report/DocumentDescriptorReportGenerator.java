@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -158,7 +160,7 @@ public class DocumentDescriptorReportGenerator {
                 InventoryReport report = new InventoryReport(configParams);
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
 
-                setPolicy(mergedParams, report);
+                setPolicy(mergedParams, report, documentDescriptor);
 
                 if (inventoryContext.getReferenceInventoryContext() != null) {
                     report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
@@ -235,9 +237,9 @@ public class DocumentDescriptorReportGenerator {
         return jsonArray;
     }
 
-    private static void setPolicy(Map<String, String> params, InventoryReport report) throws IOException {
+    private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
         if (params != null && (params.containsKey("securityPolicyFile"))) {
-            String securityPolicyFilePath = params.get("securityPolicyFile");
+            String securityPolicyFilePath = resolveAgainstBasePath(params.get("securityPolicyFile"), documentDescriptor.getBasePath());
             File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
 
             CspLoader securityPolicy = new CspLoader();
@@ -270,6 +272,18 @@ public class DocumentDescriptorReportGenerator {
         mergedParams.putAll(partParams);
 
         return mergedParams;
+    }
+
+    private static String resolveAgainstBasePath(String filePath, String basePath) {
+        if (filePath == null) {
+            return null;
+        }
+
+        Path resolvedFilePath = basePath != null
+                ? Paths.get(basePath).normalize().toAbsolutePath().resolve(filePath).normalize().toAbsolutePath()
+                : Paths.get(filePath).normalize().toAbsolutePath();
+
+        return resolvedFilePath.toString();
     }
 
     private static ReportConfigurationParameters buildReportConfiguration(
