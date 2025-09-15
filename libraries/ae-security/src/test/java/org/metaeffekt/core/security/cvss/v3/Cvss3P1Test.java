@@ -252,4 +252,12 @@ public class Cvss3P1Test {
         Assert.assertEquals(input, cvss.toString(true));
         Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/IR:X/AR:X/MAV:A/MAC:H/MPR:X/MUI:X/MS:C/MC:N/MI:L/MA:N", cvss.toString(false));
     }
+
+    @Test
+    public void rearrangeMetricsOrderTest() {
+        final String input = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/MAV:A/MAC:H/MS:C/MC:N/MI:L/MA:N/CR:H";
+        final Cvss3P1 cvss = new Cvss3P1(input);
+        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/IR:X/AR:X/MAV:A/MAC:H/MPR:X/MUI:X/MS:C/MC:N/MI:L/MA:N", cvss.toString(false));
+        Assert.assertEquals("CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H/E:U/RL:W/RC:R/CR:H/MAV:A/MAC:H/MS:C/MC:N/MI:L/MA:N", cvss.toString(true));
+    }
 }
