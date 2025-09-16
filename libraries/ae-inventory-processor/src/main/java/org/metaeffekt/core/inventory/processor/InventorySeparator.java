@@ -23,9 +23,7 @@ import org.metaeffekt.core.inventory.relationship.RelationshipGraph;
 import org.metaeffekt.core.inventory.relationship.RelationshipGraphEdge;
 import org.metaeffekt.core.inventory.relationship.RelationshipGraphNode;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -52,7 +50,28 @@ public class InventorySeparator {
             return Collections.singletonList(inventory);
         }
 
-        return splitInventory(inventory);
+        final List<Inventory> inventories = splitInventory(inventory);
+
+        validateArtifactsCoveredByInventories(inventory, inventories);
+
+        return inventories;
+    }
+
+    /**
+     * Validates that all artifacts have been distributed. No artifact has been left out.
+     *
+     * @param inventory The inventory with the original artifacts.
+     * @param inventories The inventories that have been split from inventory.
+     */
+    private static void validateArtifactsCoveredByInventories(Inventory inventory, List<Inventory> inventories) {
+        final Set<String> remainingArtifacts = new HashSet<>();
+
+        inventory.getArtifacts().forEach(a -> remainingArtifacts.add(a.deriveQualifier()));
+        inventories.forEach(i -> i.getArtifacts().forEach(a -> remainingArtifacts.remove(a.deriveQualifier())));
+
+        if (!remainingArtifacts.isEmpty()) {
+            throw new IllegalStateException("Found " + remainingArtifacts.size() + " remaining artifacts after split. Please check inventory integrity: " + remainingArtifacts);
+        }
     }
 
     private static void validateInventory(Inventory inventory) {
@@ -60,20 +79,21 @@ public class InventorySeparator {
             throw new IllegalArgumentException("Inventory to separate cannot be null");
         }
 
-        if (!allArtifactsContainedInPrimaries(inventory)) {
-            throw new IllegalArgumentException("Not all artifacts in inventory are contained in primary assets: " + inventory);
+        final List<String> unmatchedQualifiers = collectArtifactQualifiersWithoutPrimaryAsset(inventory);
+        if (!unmatchedQualifiers.isEmpty()) {
+            throw new IllegalArgumentException("Not all artifacts in inventory are contained in primary assets: " + unmatchedQualifiers);
         }
     }
 
     private static List<Inventory> splitInventory(Inventory inventory) {
-        List<String> primaryAssetIds = getPrimaryAssetIds(inventory);
-        RelationshipGraph relationshipGraph = new RelationshipGraph(inventory);
+        final Set<String> primaryAssetIds = getPrimaryAssetIds(inventory);
+        final RelationshipGraph relationshipGraph = new RelationshipGraph(inventory);
 
-        List<RelationshipGraphEdge> relevantRelationships =
+        final List<RelationshipGraphEdge> relevantRelationships =
                 relationshipGraph.getAllRelationships()
-                        .stream()
-                        .filter(relationship -> primaryAssetIds.contains(relationship.getFromNode().getId()))
-                        .collect(Collectors.toList());
+                    .stream()
+                    .filter(relationship -> primaryAssetIds.contains(relationship.getFromNode().getId()))
+                    .collect(Collectors.toList());
 
         return relevantRelationships.stream()
                 .map(edge -> createSeparateInventory(inventory, edge))
@@ -127,14 +147,22 @@ public class InventorySeparator {
         }
     }
 
-    private static boolean allArtifactsContainedInPrimaries(Inventory inventory) {
-        List<String> primaryAssetIds = getPrimaryAssetIds(inventory);
+    private static List<String> collectArtifactQualifiersWithoutPrimaryAsset(Inventory inventory) {
+        final Set<String> primaryAssetIds = getPrimaryAssetIds(inventory);
+        final List<String> unmatchedArtifactQualifier = new ArrayList<>();
 
-        return inventory.getArtifacts()
-                .stream()
-                .allMatch(artifact -> primaryAssetIds
-                        .stream()
-                        .anyMatch(primaryAssetId -> StringUtils.isNotBlank(artifact.get(primaryAssetId))));
+        // NOTE: this requires that the dependencies are fully provided; no evaluation of transitivity
+
+        // NOTE: the current implementation checks for any marker
+        for (Artifact artifact : inventory.getArtifacts()) {
+            boolean matchedPrimaryAsset = primaryAssetIds.stream()
+                    .anyMatch(assetId -> StringUtils.isNotBlank(artifact.get(assetId)));
+            if (!matchedPrimaryAsset) {
+                unmatchedArtifactQualifier.add(artifact.deriveQualifier());
+            }
+        }
+
+        return unmatchedArtifactQualifier;
     }
 
     private static boolean hasOnlyOnePrimary(Inventory inventory) {
@@ -144,12 +172,12 @@ public class InventorySeparator {
                 .count() == 1;
     }
 
-    private static List<String> getPrimaryAssetIds(Inventory inventory) {
+    private static Set<String> getPrimaryAssetIds(Inventory inventory) {
         return inventory.getAssetMetaData()
                 .stream()
                 .filter(AssetMetaData::isPrimary)
                 .map(asset -> asset.get(AssetMetaData.Attribute.ASSET_ID))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 }
 
