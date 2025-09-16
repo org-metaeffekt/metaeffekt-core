@@ -797,6 +797,9 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         appendIfValid(vector, "E", exploitCodeMaturity.shortIdentifier, filterUndefinedProperties);
         appendIfValid(vector, "RL", remediationLevel.shortIdentifier, filterUndefinedProperties);
         appendIfValid(vector, "RC", reportConfidence.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier, filterUndefinedProperties);
+        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier, filterUndefinedProperties);
         appendIfValid(vector, "MAV", modifiedAttackVector.shortIdentifier, filterUndefinedProperties);
         appendIfValid(vector, "MAC", modifiedAttackComplexity.shortIdentifier, filterUndefinedProperties);
         appendIfValid(vector, "MPR", modifiedPrivilegesRequired.shortIdentifier, filterUndefinedProperties);
@@ -805,9 +808,6 @@ public abstract class Cvss3 extends MultiScoreCvssVector {
         appendIfValid(vector, "MC", modifiedConfidentialityImpact.shortIdentifier, filterUndefinedProperties);
         appendIfValid(vector, "MI", modifiedIntegrityImpact.shortIdentifier, filterUndefinedProperties);
         appendIfValid(vector, "MA", modifiedAvailabilityImpact.shortIdentifier, filterUndefinedProperties);
-        appendIfValid(vector, "CR", confidentialityRequirement.shortIdentifier, filterUndefinedProperties);
-        appendIfValid(vector, "IR", integrityRequirement.shortIdentifier, filterUndefinedProperties);
-        appendIfValid(vector, "AR", availabilityRequirement.shortIdentifier, filterUndefinedProperties);
 
         if (vector.length() > 0 && vector.charAt(vector.length() - 1) == '/') {
             vector.setLength(vector.length() - 1);

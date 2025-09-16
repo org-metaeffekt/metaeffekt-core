@@ -328,7 +328,7 @@ public class CvssVectorTest {
         Assert.assertEquals("AV:A/CDP:L", CvssVector.parseVector("AV:A/CDP:L", true).toString());
         Assert.assertEquals("AV:A/AC:X/Au:X/C:X/I:X/A:X/E:X/RL:X/RC:X/CDP:L/TD:ND/CR:ND/IR:ND/AR:ND", CvssVector.parseVector("AV:A/CDP:L", true).toString(false));
         Assert.assertEquals("CVSS:3.1/AV:L/MAV:L", CvssVector.parseVector("CVSS:3.1/AV:L/MAV:L", true).toString());
-        Assert.assertEquals("CVSS:3.1/AV:L/AC:X/PR:X/UI:X/S:X/C:X/I:X/A:X/E:X/RL:X/RC:X/MAV:L/MAC:X/MPR:X/MUI:X/MS:X/MC:X/MI:X/MA:X/CR:X/IR:X/AR:X", CvssVector.parseVector("CVSS:3.1/AV:L/MAV:L", true).toString(false));
+        Assert.assertEquals("CVSS:3.1/AV:L/AC:X/PR:X/UI:X/S:X/C:X/I:X/A:X/E:X/RL:X/RC:X/CR:X/IR:X/AR:X/MAV:L/MAC:X/MPR:X/MUI:X/MS:X/MC:X/MI:X/MA:X", CvssVector.parseVector("CVSS:3.1/AV:L/MAV:L", true).toString(false));
         Assert.assertEquals("CVSS:4.0/AV:L/MAV:L", CvssVector.parseVector("CVSS:4.0/AV:L/MAV:L", true).toString());
         Assert.assertEquals("CVSS:4.0/AV:L/AC:X/AT:X/PR:X/UI:X/VC:X/VI:X/VA:X/SC:X/SI:X/SA:X/E:X/CR:X/IR:X/AR:X/MAV:L/MAC:X/MAT:X/MPR:X/MUI:X/MVC:X/MVI:X/MVA:X/MSC:X/MSI:X/MSA:X/S:X/AU:X/R:X/V:X/RE:X/U:X", CvssVector.parseVector("CVSS:4.0/AV:L/MAV:L", true).toString(false));
     }
