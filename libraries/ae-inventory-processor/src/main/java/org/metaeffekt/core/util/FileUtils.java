@@ -415,12 +415,32 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      * @return The constructed PathRef instance.
      */
     public static FileRef toAbsoluteOrReferencePath(String filePath, File baseDir) {
+        final boolean isAbsoluteWindowsPath = isAbsoluteWindowsPath(filePath);
         final String normalizePathToLinux = normalizePathToLinux(filePath);
-        if (normalizePathToLinux.startsWith(SEPARATOR_SLASH)) {
+        if (isAbsoluteWindowsPath) {
             return new FileRef(canonicalizeLinuxPath(normalizePathToLinux));
         }
+        final boolean isAbsoluteLinuxPath = normalizePathToLinux.startsWith(SEPARATOR_SLASH);
+        if (isAbsoluteLinuxPath) {
+            return new FileRef(canonicalizeLinuxPath(normalizePathToLinux));
+        }
+
+        // filePath is a relative path
         final String baseDirRelativePath = normalizePathToLinux(baseDir) + "/" + normalizePathToLinux;
         return new FileRef(canonicalizeLinuxPath(baseDirRelativePath));
+    }
+
+    /**
+     * Determines whether a given path string is an absolute windows path.
+     *
+     * @param path The path to evaluate.
+     *
+     * @return Returns <code>true</code> when the path is evaluated as absolute windows path.
+     */
+    public static boolean isAbsoluteWindowsPath(String path) {
+        // check pattern '<single-drive-letter>:\<path-string>' anticipate that '\' was already replaced by '/'
+        return path.length() > 3 && path.charAt(0) != '\\' && path.charAt(1) == ':' &&
+                (path.charAt(2) == '/' || path.charAt(2) == '\\');
     }
 
     /**
