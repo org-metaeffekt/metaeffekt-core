@@ -105,10 +105,17 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
 
         // as a first attempt, use the name AND implementation to find matching content identifiers
         final Optional<T> byNameAndImplementation = contentIdentifiers.stream()
-                .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && effectiveImplementation.equals(ci.getImplementation()))
+                .filter(ci -> name.equals(ci.getName()) && effectiveImplementation.equals(ci.getImplementation()))
                 .findFirst();
         if (byNameAndImplementation.isPresent()) {
             return byNameAndImplementation.get();
+        }
+
+        final Optional<T> byNameAndImplementationWellFormed = contentIdentifiers.stream()
+                .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && effectiveImplementation.equals(ci.getImplementation()))
+                .findFirst();
+        if (byNameAndImplementationWellFormed.isPresent()) {
+            return byNameAndImplementationWellFormed.get();
         }
 
         final Optional<T> byName = contentIdentifiers.stream()
