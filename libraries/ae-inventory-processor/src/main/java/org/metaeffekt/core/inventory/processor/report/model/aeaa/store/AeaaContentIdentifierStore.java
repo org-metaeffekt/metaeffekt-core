@@ -28,6 +28,7 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Lock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -121,8 +122,8 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
     }
 
     public T fromNameAndImplementation(String name, String implementation) {
-        final boolean hasName = !StringUtils.isEmpty(name);
         final boolean hasImplementation = !StringUtils.isEmpty(implementation);
+        final boolean hasName = !StringUtils.isEmpty(name);
 
         if (!hasName) {
             throw new IllegalArgumentException("Name must not be blank or null for content identifier in " + this.getClass().getSimpleName());
@@ -135,10 +136,17 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         try {
             // as a first attempt, use the name AND implementation to find matching content identifiers
             final Optional<T> byNameAndImplementation = contentIdentifiers.stream()
-                    .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && effectiveImplementation.equals(ci.getImplementation()))
+                    .filter(ci -> name.equals(ci.getName()) && effectiveImplementation.equals(ci.getImplementation()))
                     .findFirst();
             if (byNameAndImplementation.isPresent()) {
                 return byNameAndImplementation.get();
+            }
+
+            final Optional<T> byNameAndImplementationWellFormed = contentIdentifiers.stream()
+                    .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && effectiveImplementation.equals(ci.getImplementation()))
+                    .findFirst();
+            if (byNameAndImplementationWellFormed.isPresent()) {
+                return byNameAndImplementationWellFormed.get();
             }
 
             final Optional<T> byName = contentIdentifiers.stream()
