@@ -443,7 +443,13 @@ public class DirectoryScanAggregatorConfiguration {
                     final String filePath = FileUtils.normalizePathToLinux(file.getAbsolutePath());
                     final String relativePath = FileUtils.asRelativePath(commonRootPath, filePath);
                     if (file.exists() && !file.isDirectory()) {
-                        FileUtils.copyFile(file, new File(tmpContentDir, relativePath));
+                        try {
+                            FileUtils.copyFile(file, new File(tmpContentDir, relativePath));
+                        } catch (IllegalArgumentException e) {
+                            if (FileUtils.isSymlink(file)) {
+                                LOG.warn("Cannot copy symlink: " + file.getAbsolutePath());
+                            }
+                        }
                     }
                     contentDetected = true;
                 }

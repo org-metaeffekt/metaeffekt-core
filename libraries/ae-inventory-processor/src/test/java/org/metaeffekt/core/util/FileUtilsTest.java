@@ -117,6 +117,17 @@ public class FileUtilsTest {
 
         assertThat(toAbsoluteOrReferencePath("relative/path","test/x/..////").getPath())
                 .isEqualTo("test/relative/path");
+
+        assertThat(toAbsoluteOrReferencePath("C:/absolute/path","c:/test/x").getPath())
+                .isEqualTo("C:/absolute/path");
+
+        assertThat(toAbsoluteOrReferencePath("C:\\absolute\\path","D:\\test\\x").getPath())
+                .isEqualTo("C:/absolute/path");
+
+        // the colon maybe escaped; at the moment we cannot handle this properly
+        assertThat(toAbsoluteOrReferencePath("c:test","basedir").getPath())
+                .isEqualTo("basedir/c:test");
+
     }
 
 }
