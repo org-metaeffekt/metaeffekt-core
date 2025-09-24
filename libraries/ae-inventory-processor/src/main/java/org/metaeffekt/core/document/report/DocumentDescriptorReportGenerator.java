@@ -263,8 +263,9 @@ public class DocumentDescriptorReportGenerator {
                 }
             }
             report.setSecurityPolicy(securityPolicy.loadConfiguration());
+        } else {
+            log.info("no securityPolicyFile provided");
         }
-        log.info("no securityPolicyFile provided");
     }
 
     private static Map<String, String> mergeParams(Map<String, String> globalParams, Map<String, String> partParams) {
