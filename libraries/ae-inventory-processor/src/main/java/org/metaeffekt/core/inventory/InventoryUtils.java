@@ -435,19 +435,41 @@ public abstract class InventoryUtils {
     public static void filterInventoryForRuntimeArtifacts(Inventory inventory, Collection<String> primaryAssetIds) {
         final Set<Artifact> removableArtifacts = new HashSet<>();
         for (Artifact artifact : inventory.getArtifacts()) {
-            boolean remove = true;
-            for (String aid : primaryAssetIds) {
-                if ("(r)".equals(artifact.get(aid))) {
-                    remove = false;
-                    break;
+            String type = artifact.get(Artifact.Attribute.TYPE);
+            if (type == null) continue;
+            if (type.equals("web-module") || type.equals("nodejs-module")) {
+                boolean remove = true;
+
+                // hasMarker tracks whether an artifact has markers within primaryAssetIds; in case not, nothing is removed
+                boolean hasMarker = false;
+                for (String aid : primaryAssetIds) {
+                    final String assetMarker = artifact.get(aid);
+                    if (StringUtils.isNotBlank(assetMarker)) {
+                        hasMarker = true;
+                    }
+                    if ("(r)".equals(assetMarker)) {
+                        remove = false;
+                        break;
+                    }
+                    if ("r".equals(assetMarker)) {
+                        remove = false;
+                        break;
+                    }
+
+                    // contains implies runtime (also considers old/imprecise markers)
+                    if ("c".equals(assetMarker)) {
+                        remove = false;
+                        break;
+                    }
+                    // consider old/imprecise markers; cross marker was used for any type of relationship
+                    if ("x".equals(assetMarker)) {
+                        remove = false;
+                        break;
+                    }
                 }
-                if ("r".equals(artifact.get(aid))) {
-                    remove = false;
-                    break;
+                if (remove && hasMarker) {
+                    removableArtifacts.add(artifact);
                 }
-            }
-            if (remove) {
-                removableArtifacts.add(artifact);
             }
         }
         inventory.getArtifacts().removeAll(removableArtifacts);
