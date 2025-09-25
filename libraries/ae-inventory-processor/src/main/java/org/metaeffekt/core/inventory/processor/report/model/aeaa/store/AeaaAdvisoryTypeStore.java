@@ -132,6 +132,18 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                     Pattern.compile("(OSV-)?CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
+     * Advisory IDs from <b>Debian Security</b>.
+     * Provides information on CVE specific security vulnerabilities in Debian packages.
+     * Debian Security not only creates security advisories, but also mirrors in part
+     * CVE-specific information from the NVD and displays the vulnerable and fixed states of
+     * the packages in the various debian releases.
+     * <a href="https://www.debian.org/security/">Debian Security</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_DEBIAN =
+            createOsvIdentifier("DEBIAN", "Debian Security",
+                    Pattern.compile("DEBIAN-CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
+
+    /**
      * Advisory IDs from the <b>Debian Security Advisories</b>.
      * Provides information on security vulnerabilities in Debian packages.
      * <a href="https://www.debian.org/security/">Debian Security Advisories</a>.
