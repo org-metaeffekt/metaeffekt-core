@@ -488,7 +488,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     }
 
     protected AeaaAdvisoryTypeStore() {
-        super(AeaaAdvisoryTypeIdentifier.class);
+        super((Class<AeaaAdvisoryTypeIdentifier<?>>) (Class<?>) AeaaAdvisoryTypeIdentifier.class);
     }
 
     @Override
