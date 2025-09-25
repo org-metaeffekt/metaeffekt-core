@@ -20,7 +20,6 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,6 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.Lock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -50,7 +48,7 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
 
     protected abstract T createIdentifier(String name, String implementation);
 
-    protected List<T> createDefaultIdentifiers(Class implementation) {
+    protected List<T> createDefaultIdentifiers(Class<T> implementation) {
         return Arrays.stream(this.getClass().getFields()).filter(a -> a.getType().isAssignableFrom(implementation)).map(a -> {
             try {
                 return (T) a.get(null);
@@ -60,8 +58,8 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         }).collect(Collectors.toList());
     }
 
-    protected AeaaContentIdentifierStore(Class instance) {
-        contentIdentifiers = new ArrayList<>(this.createDefaultIdentifiers(instance));
+    protected AeaaContentIdentifierStore(Class<T> instance) {
+        this.contentIdentifiers = new ArrayList<>(this.createDefaultIdentifiers(instance));
     }
 
     public List<T> values() {
