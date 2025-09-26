@@ -74,6 +74,11 @@ public class DocumentDescriptor {
     private File targetReportDir;
 
     /**
+     * The basepath specified in the asset-descriptor for resolving paths of inventories and other files.
+     */
+    private String basePath;
+
+    /**
      * A documentDescriptor must be validated with basic integrity checks (e.g. check for missing inventoryId, missing
      * documentType etc.) before a document can be generated with it.
      */

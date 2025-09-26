@@ -49,7 +49,6 @@ public class DocumentPartTest {
         List<InventoryContext> contexts = new ArrayList<>();
         contexts.add(inventoryContext);
         Map<String, String> partParams = new HashMap<>();
-        partParams.put("generateOverviewTablesForAdvisories", "CERT_EU");
 
         List<DocumentPart> parts = new ArrayList<>();
 

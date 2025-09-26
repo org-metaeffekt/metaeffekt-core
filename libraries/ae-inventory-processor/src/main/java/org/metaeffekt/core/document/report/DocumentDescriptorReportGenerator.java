@@ -21,19 +21,25 @@ import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.InventorySeparator;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
+import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class is responsible for orchestrating the generation of reports for a given {@link DocumentDescriptor}.
@@ -156,24 +162,7 @@ public class DocumentDescriptorReportGenerator {
                 InventoryReport report = new InventoryReport(configParams);
                 report.setReportContext(new ReportContext(inventoryContext.getIdentifier(), inventoryContext.getAssetName(), inventoryContext.getAssetName()));
 
-                switch (documentPart.getDocumentPartType()) {
-                    case ANNEX:
-                        setPolicy(mergedParams, report);
-                        break;
-                    case VULNERABILITY_REPORT:
-                        setPolicy(mergedParams, report);
-                        String generateOverviewTablesForAdvisories = mergedParams.get("generateOverviewTablesForAdvisories");
-                        if (generateOverviewTablesForAdvisories != null) {
-                            try {
-                                // FIXME-RTU: discuss with Karsten how we want to pass the list of providers & how to list them in the yaml
-                                //  YWI: check whether the implementation I provided works for you, the generateOverviewTablesForAdvisories are now a parameter in the security policy
-                                report.getSecurityPolicy().getGenerateOverviewTablesForAdvisories().putAll(convertToJSONArray(generateOverviewTablesForAdvisories));
-                            } catch (Exception e) {
-                                throw new RuntimeException("Failed to parse generateOverviewTablesForAdvisories, must be a valid content identifier JSONArray: " + generateOverviewTablesForAdvisories, e);
-                            }
-                            break;
-                        }
-                }
+                setPolicy(mergedParams, report, documentDescriptor);
 
                 if (inventoryContext.getReferenceInventoryContext() != null) {
                     report.setReferenceInventory(inventoryContext.getReferenceInventoryContext().getInventory());
@@ -250,19 +239,35 @@ public class DocumentDescriptorReportGenerator {
         return jsonArray;
     }
 
-    private static void setPolicy(Map<String, String> params, InventoryReport report) throws IOException {
-        if (params != null && (params.containsKey("securityPolicyFile") || params.containsKey("securityPolicyOverwriteJson"))) {
-            String securityPolicyFilePath = params.get("securityPolicyFile");
+    private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
+        if (params != null && (params.containsKey("securityPolicyFile"))) {
+            String securityPolicyFilePath = resolveAgainstBasePath(params.get("securityPolicyFile"), documentDescriptor.getBasePath());
             File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
 
-            String securityPolicyOverwriteJson = params.getOrDefault("securityPolicyOverwriteJson", "");
+            CspLoader securityPolicy = new CspLoader();
+            securityPolicy.setFile(securityPolicyFile);
 
-            CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
-            securityPolicy = CentralSecurityPolicyConfiguration.fromConfiguration(securityPolicy, securityPolicyFile, securityPolicyOverwriteJson);
+            if (params.containsKey("securityPolicyActiveIds")) {
+                String activeIds = params.get("securityPolicyActiveIds");
+                if (activeIds != null && !activeIds.trim().isEmpty()) {
+                    List<String> activeIdsList = Arrays.stream(activeIds.split(","))
+                            .map(String::trim)
+                            .filter(s -> !s.isEmpty())
+                            .collect(Collectors.toList());
 
-            report.setSecurityPolicy(securityPolicy);
+                    if (activeIds.isEmpty()) {
+                        log.warn("No activeIds contained in 'securityPolicyActiveIds'. Please provide Ids as a comma-separated list.");
+                    }
+
+                    securityPolicy.setActiveIds(activeIdsList);
+                } else {
+                    throw new IOException("No activeIds specified for parameter 'securityPolicyActiveIds'. Please provided Ids as a comma-separated list.");
+                }
+            }
+            report.setSecurityPolicy(securityPolicy.loadConfiguration());
+        } else {
+            log.info("no securityPolicyFile provided");
         }
-        log.info("no securityPolicyFile provided");
     }
 
     private static Map<String, String> mergeParams(Map<String, String> globalParams, Map<String, String> partParams) {
@@ -270,6 +275,18 @@ public class DocumentDescriptorReportGenerator {
         mergedParams.putAll(partParams);
 
         return mergedParams;
+    }
+
+    private static String resolveAgainstBasePath(String filePath, String basePath) {
+        if (filePath == null) {
+            return null;
+        }
+
+        FileRef resolvedFilePath = (basePath != null)
+                ? FileUtils.toAbsoluteOrReferencePath(filePath, basePath)
+                : FileUtils.toAbsoluteOrReferencePath(filePath, new File(".").getAbsolutePath());
+
+        return resolvedFilePath.getPath();
     }
 
     private static ReportConfigurationParameters buildReportConfiguration(
