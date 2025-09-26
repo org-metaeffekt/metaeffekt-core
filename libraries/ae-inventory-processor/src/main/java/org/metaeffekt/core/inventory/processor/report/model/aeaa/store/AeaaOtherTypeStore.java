@@ -29,6 +29,12 @@ public class AeaaOtherTypeStore extends AeaaContentIdentifierStore<AeaaOtherType
             Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE));
     public final static AeaaOtherTypeIdentifier ASSESSMENT_STATUS = new AeaaOtherTypeIdentifier("ASSESSMENT_STATUS", "Assessment Status", "",
             Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE));
+    public final static AeaaOtherTypeIdentifier EOL = new AeaaOtherTypeIdentifier("EOL", "endoflife.date", "",
+            Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE));
+    public final static AeaaOtherTypeIdentifier EPSS = new AeaaOtherTypeIdentifier("EPSS", "EPSS", "",
+            Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE));
+    public final static AeaaOtherTypeIdentifier KEV = new AeaaOtherTypeIdentifier("KEV", "KEV", "",
+            Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE));
 
     private final static AeaaOtherTypeStore INSTANCE = new AeaaOtherTypeStore();
 
@@ -37,6 +43,7 @@ public class AeaaOtherTypeStore extends AeaaContentIdentifierStore<AeaaOtherType
     }
 
     protected AeaaOtherTypeStore() {
+        super(AeaaOtherTypeIdentifier.class);
     }
 
     @Override
@@ -44,10 +51,4 @@ public class AeaaOtherTypeStore extends AeaaContentIdentifierStore<AeaaOtherType
         return new AeaaOtherTypeIdentifier(name, AeaaContentIdentifierStore.AeaaContentIdentifier.deriveWellFormedName(name), implementation, Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE));
     }
 
-    @Override
-    protected Collection<AeaaOtherTypeIdentifier> createDefaultIdentifiers() {
-        return Arrays.asList(
-                CWE, CPE, NVD, ASSESSMENT_STATUS
-        );
-    }
 }

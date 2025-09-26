@@ -39,28 +39,28 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
 
     public final static AeaaAdvisoryTypeIdentifier<AeaaCertFrAdvisorEntry> CERT_FR = new AeaaAdvisoryTypeIdentifier<>(
-            "CERT_FR", "CERT-FR", "",
-            Pattern.compile("((?:CERTFR|CERTA)-\\d+-(?:ACT|AVI|ALE|INF)-\\d+(?:-\\d+)?)", Pattern.CASE_INSENSITIVE),
+            "CERT_FR", "CERT-FR", "CERT_FR",
+            Pattern.compile("((?:CERT-?FR|CERTA)-\\d+-(?:ACT|AVI|ALE|INF)-\\d+(?:-\\d+)?)", Pattern.CASE_INSENSITIVE),
             AeaaCertFrAdvisorEntry.class, AeaaCertFrAdvisorEntry::new);
     public final static AeaaAdvisoryTypeIdentifier<AeaaCertSeiAdvisorEntry> CERT_SEI = new AeaaAdvisoryTypeIdentifier<>(
-            "CERT_SEI", "CERT-SEI", "",
+            "CERT_SEI", "CERT-SEI", "CERT_SEI",
             Pattern.compile("(VU#(\\d+))", Pattern.CASE_INSENSITIVE),
             AeaaCertSeiAdvisorEntry.class, AeaaCertSeiAdvisorEntry::new);
     public final static AeaaAdvisoryTypeIdentifier<AeaaCertEuAdvisorEntry> CERT_EU = new AeaaAdvisoryTypeIdentifier<>(
-            "CERT_EU", "CERT-EU", "",
+            "CERT_EU", "CERT-EU", "CERT_EU",
             Pattern.compile("(CERT-EU-(\\d+))", Pattern.CASE_INSENSITIVE),
             AeaaCertEuAdvisorEntry.class, AeaaCertEuAdvisorEntry::new);
     public final static AeaaAdvisoryTypeIdentifier<AeaaMsrcAdvisorEntry> MSRC = new AeaaAdvisoryTypeIdentifier<>(
-            "MSRC", "MSRC", "",
+            "MSRC", "MSRC", "MSRC",
             Pattern.compile("(MSRC-(?:CVE|CAN)-([0-9]{4})-([0-9]{4,})|ADV(\\d+))", Pattern.CASE_INSENSITIVE),
             AeaaMsrcAdvisorEntry.class, AeaaMsrcAdvisorEntry::new);
     /**
      * <a href="https://github.com/github/advisory-database">Pattern source</a>.
      */
-    public final static AeaaAdvisoryTypeIdentifier<AeaaGhsaAdvisorEntry> GHSA = new AeaaAdvisoryTypeIdentifier<>(
-            "GHSA", "GHSA", "",
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> GHSA = new AeaaAdvisoryTypeIdentifier<>(
+            "GHSA", "GHSA", "GHSA",
             Pattern.compile("GHSA(-[23456789cfghjmpqrvwx]{4}){3}"),
-            AeaaGhsaAdvisorEntry.class, AeaaGhsaAdvisorEntry::new);
+            AeaaOsvAdvisorEntry.class, AeaaOsvAdvisorEntry::new);
 
     // OSV DATA SOURCES
 
@@ -68,7 +68,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
      * Generic OSV-Type Identifier will be used if no other known Identifier matches is matched.
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_GENERIC_IDENTIFIER =
-            createOsvIdentifier("OSV", "OSV",
+            createOsvIdentifier("OSV-UNKNOWN", "OSV",
                     Pattern.compile("UNKNOWN", Pattern.CASE_INSENSITIVE));
 
     /**
@@ -130,6 +130,18 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_CVE =
             createOsvIdentifier("OSV-CVE", "National Vulnerability Database",
                     Pattern.compile("(OSV-)?CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
+
+    /**
+     * Advisory IDs from <b>Debian Security</b>.
+     * Provides information on CVE specific security vulnerabilities in Debian packages.
+     * Debian Security not only creates security advisories, but also mirrors in part
+     * CVE-specific information from the NVD and displays the vulnerable and fixed states of
+     * the packages in the various debian releases.
+     * <a href="https://www.debian.org/security/">Debian Security</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_DEBIAN =
+            createOsvIdentifier("DEBIAN", "Debian Security",
+                    Pattern.compile("DEBIAN-CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
     /**
      * Advisory IDs from the <b>Debian Security Advisories</b>.
@@ -253,7 +265,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_RLSA =
             createOsvIdentifier("RLSA", "Rocky Linux Security Advisory",
-                    Pattern.compile("RLSA-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
+                    Pattern.compile("RLSA-\\d{4}:\\d{4,5}", Pattern.CASE_INSENSITIVE));
     /**
      * Advisory IDs from the <b>Rocky Linux Extra Security Advisories</b>.
      * Additional security advisories for Rocky Linux.
@@ -392,7 +404,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
      */
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_MGASA =
             createOsvIdentifier("MGASA", "Mageia Security Advisory",
-                    Pattern.compile("(MGASA|MGAA)-\\d{4}:\\d{4}", Pattern.CASE_INSENSITIVE));
+                    Pattern.compile("(MGASA|MGAA)-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE));
 
     /**
      * Advisory IDs from the <b>Minimus Security Advisory</b>.
@@ -402,7 +414,26 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_MINI =
             createOsvIdentifier("MINI", "Minimus Security Advisory",
                     Pattern.compile("MINI(-[23456789cfghjmpqrvwx]{4}){3}", Pattern.CASE_INSENSITIVE));
-    
+
+    /**
+     * Advisory IDs from the <b>BellSoft Security Advisory</b>.
+     * Official security advisories for Alpaquite Linux.
+     * <a href="https://docs.bell-sw.com/security/search/">BellSoft Security Advisories</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_BELL =
+            createOsvIdentifier("BELL", "Bellsoft Alpaquita Linux",
+                    Pattern.compile("BELL-CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
+
+    /**
+     * Advisory IDs from the <b>Open Euler Advisory</b>.
+     * Official security advisories for Open Euler Linux.
+     * <a href="https://www.openeuler.org/en/security/security-bulletins/">Open Euler Advisories</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_OESA =
+            createOsvIdentifier("OESA", "Open Euler Linux",
+                    Pattern.compile("OESA-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
+
+
     // CSAF
     public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_GENERIC_IDENTIFIER = new AeaaAdvisoryTypeIdentifier<>(
             "CSAF", "CSAF", "CSAF",
@@ -449,6 +480,11 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             Pattern.compile("OXAS-ADV-\\d{4}-\\d{4}", Pattern.CASE_INSENSITIVE),
             AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("OPEN_XCHANGE", "CSAF")));
 
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_STACKABLE = new AeaaAdvisoryTypeIdentifier<>(
+            "https://www.stackable.tech/", "Stackable GmbH", "CSAF",
+            Pattern.compile("STACKSA_\\d{4}_\\d{4}_\\d{4}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("STACKABLE", "CSAF")));
+
     // ANY IDENTIFIER
     public final static AeaaAdvisoryTypeIdentifier<AeaaGeneralAdvisorEntry> ANY_ADVISORY_FILTER_WILDCARD = new AeaaAdvisoryTypeIdentifier<>(
             "any", "any", "any",
@@ -464,6 +500,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     }
 
     protected AeaaAdvisoryTypeStore() {
+        super((Class<AeaaAdvisoryTypeIdentifier<?>>) (Class<?>) AeaaAdvisoryTypeIdentifier.class);
     }
 
     @Override
@@ -499,24 +536,6 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
                 () -> new AeaaGeneralAdvisorEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation(name, implementation)));
     }
 
-    @Override
-    protected Collection<AeaaAdvisoryTypeIdentifier<?>> createDefaultIdentifiers() {
-        return Arrays.asList(
-                CERT_FR, CERT_SEI, CERT_EU, MSRC, GHSA,
-                // OSV DATA SOURCES
-                OSV_GENERIC_IDENTIFIER,
-                OSV_CVE, OSV_MAL, OSV_PYSEC, OSV_GHSA, OSV_OSV, OSV_ALSA, OSV_ALEA, OSV_ALBA, OSV_GO, OSV_DSA, OSV_DLA,
-                OSV_DTSA, OSV_RUSTSEC, OSV_CGA, OSV_BIT, OSV_UVI, OSV_CAN, OSV_RSEC, OSV_GSD, OSV_USN, OSV_PUB_A, OSV_ASB_A,
-                OSV_HSEC, OSV_RLSA, OSV_RXSA, OSV_CURL_CVE, OSV_PSF, OSV_PSF_CVE,
-                OSV_SUSE_SU, OSV_SUSE_RU, OSV_SUSE_FU, OSV_SUSE_OU, OSV_OPENSUSE_SU,
-                OSV_RHBA, OSV_RHEA, OSV_RHSA, OSV_MGASA, OSV_MINI,
-                // CSAF
-                CSAF_GENERIC_IDENTIFIER, CSAF_BSI, CSAF_REDHAT, CSAF_SIEMENS, CSAF_CISA, CSAF_INTEVATION, CSAF_NOZOMI,
-                CSAF_SICK, CSAF_OPEN_XCHANGE,
-                // OTHER
-                ANY_ADVISORY_FILTER_WILDCARD
-        );
-    }
 
     @Override
     public AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>> fromJsonNameAndImplementation(JSONObject json) {
@@ -548,7 +567,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
         if (StringUtils.isEmpty(source)) {
             // this should never happen, but let's catch it anyway.
             // the only other option is to check if the name is somehow recognized by any of the patterns.
-            final Optional<AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>>> result = fromEntryIdentifier(entryId);
+            final Optional<AeaaSingleContentIdentifierParseResult<AeaaAdvisoryTypeIdentifier<?>>> result = this.fromEntryIdentifier(entryId);
             if (result.isPresent()) {
                 return result.get();
             }
@@ -595,8 +614,16 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
     }
 
     public List<AeaaAdvisoryTypeIdentifier<?>> osvValues() {
+        return valuesByImplementation(OSV_GENERIC_IDENTIFIER.getImplementation());
+    }
+
+    public List<AeaaAdvisoryTypeIdentifier<?>> csafValues() {
+        return valuesByImplementation("CSAF");
+    }
+
+    public List<AeaaAdvisoryTypeIdentifier<?>> valuesByImplementation(String implementation) {
         return this.values().stream()
-                .filter(c -> c.getImplementation().equals("OSV"))
+                .filter(c -> c.getImplementation().equals(implementation))
                 .collect(Collectors.toList());
     }
 }

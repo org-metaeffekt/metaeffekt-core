@@ -20,11 +20,13 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -39,51 +41,75 @@ import java.util.stream.Collectors;
  * @param <T> the type of ContentIdentifier stored in this ContentIdentifierStore
  */
 public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifierStore.AeaaContentIdentifier> {
+    private final ReadWriteLock accessContentIdentifierLock = new ReentrantReadWriteLock();
+    private static final Logger LOG = LoggerFactory.getLogger(AeaaContentIdentifierStore.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(Inventory.class);
-
-    private final List<T> contentIdentifiers = new ArrayList<>();
-
-    protected AeaaContentIdentifierStore() {
-        this.contentIdentifiers.addAll(this.createDefaultIdentifiers());
-    }
+    private final List<T> contentIdentifiers;
 
     protected abstract T createIdentifier(String name, String implementation);
 
-    protected abstract Collection<T> createDefaultIdentifiers();
+    protected List<T> createDefaultIdentifiers(Class<T> implementation) {
+        return Arrays.stream(this.getClass().getFields()).filter(a -> a.getType().isAssignableFrom(implementation)).map(a -> {
+            try {
+                return (T) a.get(null);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }).collect(Collectors.toList());
+    }
 
+    protected AeaaContentIdentifierStore(Class<T> instance) {
+        this.contentIdentifiers = new ArrayList<>(this.createDefaultIdentifiers(instance));
+    }
 
     public List<T> values() {
-        return this.contentIdentifiers;
+        return Collections.unmodifiableList(this.contentIdentifiers);
     }
 
     public T registerIdentifier(T contentIdentifier) {
-        if (contentIdentifier == null) {
-            LOG.warn("Skipping registration of null content identifier in {}", this.getClass().getSimpleName());
-            return null;
-
-        } else if (contentIdentifier.getName() == null) {
-            LOG.warn("Skipping registration of content identifier with null name in {}", this.getClass().getSimpleName());
-            return null;
-
-        } else if (contentIdentifier.getWellFormedName() == null) {
-            contentIdentifier.setWellFormedName(AeaaContentIdentifier.deriveWellFormedName(contentIdentifier.getName()));
-            LOG.warn("Deriving missing well-formed name for content identifier with name {} in {}: {}",
-                    contentIdentifier.getName(), this.getClass().getSimpleName(), contentIdentifier.getWellFormedName());
-        }
-
-        final T existing = contentIdentifiers.stream()
-                .filter(ci -> ci.getName().equals(contentIdentifier.getName()) && ci.getImplementation().equals(contentIdentifier.getImplementation()))
-                .findFirst().orElse(null);
-        if (existing != null) {
-            LOG.warn("Skipping registration of content identifier with name {}, already present in {}->{}: {}",
-                    contentIdentifier.getName(),
-                    this.getClass().getSimpleName(), contentIdentifier.getClass().getSimpleName(),
+        final Lock readLock = accessContentIdentifierLock.readLock();
+        readLock.lock();
+        try {
+            if (contentIdentifier == null) {
+                LOG.warn("Skipping registration of content identifier [null] in {}: {}", this.getClass().getSimpleName(),
                     contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
-            return existing;
+                return null;
+
+            } else if (contentIdentifier.getName() == null) {
+                LOG.warn("Skipping registration of content identifier [null] in {}->{}: {}", this.getClass().getSimpleName(),
+                        contentIdentifier.getClass().getSimpleName(),
+                        contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
+                return null;
+
+            } else if (contentIdentifier.getWellFormedName() == null) {
+                contentIdentifier.setWellFormedName(AeaaContentIdentifier.deriveWellFormedName(contentIdentifier.getName()));
+                LOG.warn("Deriving missing well-formed name for content identifier [{}] in {}->{}: {}", contentIdentifier.getName(),
+                        this.getClass().getSimpleName(), contentIdentifier.getClass().getSimpleName(),
+                        contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
+            }
+
+            final T existing = contentIdentifiers.stream()
+                    .filter(ci -> ci.getName().equals(contentIdentifier.getName()) && ci.getImplementation().equals(contentIdentifier.getImplementation()))
+                    .findFirst().orElse(null);
+            if (existing != null) {
+                LOG.debug("Skipping registration of content identifier with name {}, already present in {}->{}: {}",
+                        contentIdentifier.getName(),
+                        this.getClass().getSimpleName(), contentIdentifier.getClass().getSimpleName(),
+                        contentIdentifiers.stream().map(AeaaContentIdentifier::getName).collect(Collectors.toList()));
+                return existing;
+            }
+        } finally {
+            readLock.unlock();
         }
 
-        contentIdentifiers.add(contentIdentifier);
+        final Lock writeLock = accessContentIdentifierLock.writeLock();
+        writeLock.lock();
+        try {
+            contentIdentifiers.add(contentIdentifier);
+        } finally {
+            writeLock.unlock();
+        }
+
         return contentIdentifier;
     }
 
@@ -103,30 +129,54 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
 
         final String effectiveImplementation = hasImplementation ? implementation : name;
 
-        // as a first attempt, use the name AND implementation to find matching content identifiers
-        final Optional<T> byNameAndImplementation = contentIdentifiers.stream()
-                .filter(ci -> name.equals(ci.getName()) && effectiveImplementation.equals(ci.getImplementation()))
-                .findFirst();
-        if (byNameAndImplementation.isPresent()) {
-            return byNameAndImplementation.get();
-        }
+        final Lock readLock = accessContentIdentifierLock.readLock();
+        readLock.lock();
+        try {
+            // as a first attempt, use the name AND implementation to find matching content identifiers
+            final Optional<T> byNameAndImplementation = contentIdentifiers.stream()
+                    .filter(ci -> name.equals(ci.getName()) && effectiveImplementation.equals(ci.getImplementation()))
+                    .findFirst();
+            if (byNameAndImplementation.isPresent()) {
+                return byNameAndImplementation.get();
+            }
 
-        final Optional<T> byNameAndImplementationWellFormed = contentIdentifiers.stream()
-                .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && effectiveImplementation.equals(ci.getImplementation()))
-                .findFirst();
-        if (byNameAndImplementationWellFormed.isPresent()) {
-            return byNameAndImplementationWellFormed.get();
-        }
+            final Optional<T> byNameAndImplementationWellFormed = contentIdentifiers.stream()
+                    .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && effectiveImplementation.equals(ci.getImplementation()))
+                    .findFirst();
+            if (byNameAndImplementationWellFormed.isPresent()) {
+                return byNameAndImplementationWellFormed.get();
+            }
 
-        final Optional<T> byName = contentIdentifiers.stream()
-                .filter(ci -> name.equals(ci.getName()) || name.equals(ci.getWellFormedName()))
-                .findFirst();
-        if (byName.isPresent()) {
-            return byName.get();
+            final Optional<T> byName = contentIdentifiers.stream()
+                    .filter(ci -> name.equals(ci.getName()) || name.equals(ci.getWellFormedName()))
+                    .findFirst();
+            if (byName.isPresent()) {
+                return byName.get();
+            }
+        } finally {
+            readLock.unlock();
         }
 
         // otherwise the identifier does not exist yet, register a new content identifier
         return this.registerIdentifier(this.createIdentifier(name, effectiveImplementation));
+    }
+
+    public List<T> allFromImplementation(String implementation) {
+        final boolean hasImplementation = !StringUtils.isEmpty(implementation);
+
+        if (!hasImplementation) {
+            throw new IllegalArgumentException("Implementation must not be blank or null for content identifier in " + this.getClass().getSimpleName());
+        }
+
+        final Lock readLock = accessContentIdentifierLock.readLock();
+        readLock.lock();
+        try {
+            return contentIdentifiers.stream()
+                    .filter(ci -> implementation.equals(ci.getImplementation()))
+                    .collect(Collectors.toList());
+        } finally {
+            readLock.unlock();
+        }
     }
 
     public T fromNameWithoutCreation(String name) {
@@ -136,11 +186,17 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             throw new IllegalArgumentException("Name must not be blank or null for content identifier in " + this.getClass().getSimpleName());
         }
 
-        final Optional<T> byName = contentIdentifiers.stream()
-                .filter(ci -> name.equals(ci.getName()) || name.equals(ci.getWellFormedName()))
-                .findFirst();
+        final Lock readLock = accessContentIdentifierLock.readLock();
+        readLock.lock();
+        try {
+            final Optional<T> byName = contentIdentifiers.stream()
+                    .filter(ci -> name.equals(ci.getName()) || name.equals(ci.getWellFormedName()))
+                    .findFirst();
 
-        return byName.orElse(null);
+            return byName.orElse(null);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     public T fromNameAndImplementationWithoutCreation(String name, String implementation) {
@@ -151,16 +207,22 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             throw new IllegalArgumentException("Name must not be blank or null for content identifier in " + this.getClass().getSimpleName());
         }
 
-        final Optional<T> byName = contentIdentifiers.stream()
-                // returns true if:
-                // - the name matches the name of the content identifier AND the implementation matches the implementation of the content identifier
-                // - the name matches the name of the content identifier AND the implementation is not provided
-                // - the name matches the well-formed name of the content identifier AND the implementation matches the implementation of the content identifier
-                // - the name matches the well-formed name of the content identifier AND the implementation is not provided
-                .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && (!hasImplementation || implementation.equals(ci.getImplementation())))
-                .findFirst();
+        final Lock readLock = accessContentIdentifierLock.readLock();
+        readLock.lock();
+        try {
+            final Optional<T> byName = contentIdentifiers.stream()
+                    // returns true if:
+                    // - the name matches the name of the content identifier AND the implementation matches the implementation of the content identifier
+                    // - the name matches the name of the content identifier AND the implementation is not provided
+                    // - the name matches the well-formed name of the content identifier AND the implementation matches the implementation of the content identifier
+                    // - the name matches the well-formed name of the content identifier AND the implementation is not provided
+                    .filter(ci -> (name.equals(ci.getName()) || name.equals(ci.getWellFormedName())) && (!hasImplementation || implementation.equals(ci.getImplementation())))
+                    .findFirst();
 
-        return byName.orElse(null);
+            return byName.orElse(null);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     public Optional<T> fromId(String id) {
@@ -168,9 +230,15 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             throw new IllegalArgumentException("Id must not be blank or null for content identifier in " + this.getClass().getSimpleName());
         }
 
-        return contentIdentifiers.stream()
-                .filter(ci -> ci.patternMatchesId(id))
-                .findFirst();
+        final Lock readLock = accessContentIdentifierLock.readLock();
+        readLock.lock();
+        try {
+            return contentIdentifiers.stream()
+                    .filter(ci -> ci.patternMatchesId(id))
+                    .findFirst();
+        } finally {
+            readLock.unlock();
+        }
     }
 
     public AeaaSingleContentIdentifierParseResult<T> fromJsonNameAndImplementation(JSONObject json) {
@@ -188,8 +256,17 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
 
         for (int i = 0; i < json.length(); i++) {
             final JSONObject jsonObject = json.getJSONObject(i);
-            final AeaaSingleContentIdentifierParseResult<T> pair = fromJsonNameAndImplementation(jsonObject);
-            identifiers.add(pair.getIdentifier());
+            final String name = ObjectUtils.firstNonNull(jsonObject.optString("source", null), jsonObject.optString("name", null), "unknown");
+
+            if (name.equals("*")) {
+                // return all known identifiers of implementation
+                final String implementation = jsonObject.optString("implementation", null);
+                return allFromImplementation(implementation);
+            } else {
+                // find exact match of name and implementation
+                final AeaaSingleContentIdentifierParseResult<T> pair = fromJsonNameAndImplementation(jsonObject);
+                identifiers.add(pair.getIdentifier());
+            }
         }
 
         return identifiers;
