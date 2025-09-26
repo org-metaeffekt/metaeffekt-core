@@ -21,6 +21,7 @@ import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.InventorySeparator;
+import org.metaeffekt.core.inventory.processor.filescan.FileRef;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
@@ -30,6 +31,7 @@ import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecur
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -254,12 +256,12 @@ public class DocumentDescriptorReportGenerator {
                             .collect(Collectors.toList());
 
                     if (activeIds.isEmpty()) {
-                        throw new IOException("No valid active security policy IDs found in 'securityPolicyActiveIds'. Please provided IDs as a comma-separated list.");
+                        log.warn("No activeIds contained in 'securityPolicyActiveIds'. Please provide Ids as a comma-separated list.");
                     }
 
                     securityPolicy.setActiveIds(activeIdsList);
                 } else {
-                    throw new IOException("No active security policy IDs specified for parameter 'securityPolicyActiveIds'. Please provided IDs as a comma-separated list.");
+                    throw new IOException("No activeIds specified for parameter 'securityPolicyActiveIds'. Please provided Ids as a comma-separated list.");
                 }
             }
             report.setSecurityPolicy(securityPolicy.loadConfiguration());
@@ -280,11 +282,11 @@ public class DocumentDescriptorReportGenerator {
             return null;
         }
 
-        Path resolvedFilePath = basePath != null
-                ? Paths.get(basePath).normalize().toAbsolutePath().resolve(filePath).normalize().toAbsolutePath()
-                : Paths.get(filePath).normalize().toAbsolutePath();
+        FileRef resolvedFilePath = (basePath != null)
+                ? FileUtils.toAbsoluteOrReferencePath(filePath, basePath)
+                : FileUtils.toAbsoluteOrReferencePath(filePath, new File(".").getAbsolutePath());
 
-        return resolvedFilePath.toString();
+        return resolvedFilePath.getPath();
     }
 
     private static ReportConfigurationParameters buildReportConfiguration(
