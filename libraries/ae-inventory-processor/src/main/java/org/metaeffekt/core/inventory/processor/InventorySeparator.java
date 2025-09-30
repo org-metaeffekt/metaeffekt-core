@@ -16,12 +16,9 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
-import org.metaeffekt.core.inventory.relationship.RelationshipGraph;
-import org.metaeffekt.core.inventory.relationship.RelationshipGraphEdge;
-import org.metaeffekt.core.inventory.relationship.RelationshipGraphNode;
+import org.apache.commons.math3.analysis.function.Constant;
+import org.metaeffekt.core.inventory.processor.model.*;
+import org.metaeffekt.core.inventory.relationship.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -85,66 +82,63 @@ public class InventorySeparator {
         }
     }
 
+    /**
+     * Splits an inventory into multiple inventories by its primary assets
+     *
+     * @param inventory the initial input inventory
+     * @return a list of inventories split by primary assets
+     */
     private static List<Inventory> splitInventory(Inventory inventory) {
-        final Set<String> primaryAssetIds = getPrimaryAssetIds(inventory);
-        final RelationshipGraph relationshipGraph = new RelationshipGraph(inventory);
-
-        final List<RelationshipGraphEdge> relevantRelationships =
-                relationshipGraph.getAllRelationships()
-                    .stream()
-                    .filter(relationship -> primaryAssetIds.contains(relationship.getFromNode().getId()))
-                    .collect(Collectors.toList());
-
-        return relevantRelationships.stream()
-                .map(edge -> createSeparateInventory(inventory, edge))
-                .collect(Collectors.toList());
-    }
-
-    private static Inventory createSeparateInventory(Inventory originalInventory, RelationshipGraphEdge relationshipGraphEdge) {
-        Inventory separateInventory = new Inventory(originalInventory);
-        removeIrrelevantAssets(separateInventory, relationshipGraphEdge);
-        removeIrrelevantArtifacts(separateInventory, relationshipGraphEdge);
-        return separateInventory;
-    }
-
-    private static void removeIrrelevantAssets(Inventory inventory, RelationshipGraphEdge relationshipGraphEdge) {
-        List<String> allOriginalAssetIds = inventory.getAssetMetaData()
-                .stream()
-                .map(asset -> asset.get(AssetMetaData.Attribute.ASSET_ID))
+        List<Inventory> resultingInventories = new ArrayList<>();
+        final List<AssetMetaData> primaryAssets = inventory.getAssetMetaData()
+                .stream().
+                filter(AssetMetaData::isPrimary)
                 .collect(Collectors.toList());
 
-        String targetAssetId = relationshipGraphEdge.getFromNode().getId();
+        final RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
+        relationshipRegistry.buildFromInventory(inventory);
 
-        inventory.getAssetMetaData().removeIf(assetMetaData ->!assetMetaData.get(AssetMetaData.Attribute.ASSET_ID).equals(targetAssetId));
-        removeDanglingHierarchyEntries(inventory, allOriginalAssetIds);
-    }
+        for (AssetMetaData primaryAsset : primaryAssets) {
+            Inventory splitInventory = new Inventory();
+            splitInventory.getAssetMetaData().add(primaryAsset);
 
-    private static void removeIrrelevantArtifacts(Inventory inventory, RelationshipGraphEdge relationshipGraphEdge) {
-        Set<String> containedArtifactIds = relationshipGraphEdge.getToNodes()
-                .stream()
-                .map(RelationshipGraphNode::getId)
-                .collect(Collectors.toSet());
-
-        inventory.getArtifacts().removeIf(artifact -> !containedArtifactIds.contains(artifact.getId()));
-    }
-
-    private static void removeDanglingHierarchyEntries(Inventory inventory, List<String> allOriginalAssetIds) {
-        Set<String> currentAssetIds = inventory.getAssetMetaData()
-                .stream()
-                .map(asset -> asset.get(AssetMetaData.Attribute.ASSET_ID))
-                .collect(Collectors.toSet());
-
-        Set<String> removedAssetIds = allOriginalAssetIds.stream()
-                .filter(assetId -> !currentAssetIds.contains(assetId))
-                .collect(Collectors.toSet());
-
-        for (Artifact artifact : inventory.getArtifacts()) {
-            for (String assetId : removedAssetIds) {
-                if (StringUtils.isNotBlank(artifact.get(assetId))) {
-                    artifact.set(assetId, null);
+            for (Relationship<?, ?> relationship : relationshipRegistry.getRelationshipsByObject(primaryAsset)) {
+                if (!relationship.getType().equals(RelationshipType.DESCRIBES)) {
+                    for (RelationshipEntity<?> relationshipEntity : relationship.getToEntities()) {
+                        if (relationshipEntity.getEntity() instanceof Artifact) {
+                            Artifact artifactCopy = new Artifact((Artifact) relationshipEntity.getEntity());
+                            splitInventory.getArtifacts().add(artifactCopy);
+                        }
+                    }
                 }
             }
+
+            removeDanglingAssetEntries(splitInventory, primaryAsset, inventory.getAssetMetaData());
+            resultingInventories.add(splitInventory);
         }
+        return resultingInventories;
+    }
+
+    private static void removeDanglingAssetEntries(Inventory inventory, AssetMetaData primaryAsset, List<AssetMetaData> allAssets) {
+        String primaryAssetId = primaryAsset.get(AssetMetaData.Attribute.ASSET_ID);
+
+
+        List<String> assetIds = allAssets.stream()
+                .map(assetMetaData ->  assetMetaData.get(AssetMetaData.Attribute.ASSET_ID))
+                .collect(Collectors.toList());
+
+        List<String> attributesToRemove = inventory.getArtifacts().stream()
+                .flatMap(artifact -> artifact.getAttributes().stream())
+                .distinct()
+                .filter(attribute -> !attribute.equals(primaryAssetId) && assetIds.contains(attribute))
+                .collect(Collectors.toList());
+
+       for (Artifact artifact : inventory.getArtifacts()) {
+           attributesToRemove.forEach(artifact.getAttributes()::remove);
+       }
+
+       inventory.getArtifacts().removeIf(artifact -> artifact.get(primaryAssetId) == null
+                || Objects.equals(artifact.get(primaryAssetId), Constants.MARKER_CROSS));
     }
 
     private static List<String> collectArtifactQualifiersWithoutPrimaryAsset(Inventory inventory) {

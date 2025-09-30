@@ -21,8 +21,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
-import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
@@ -60,7 +60,6 @@ public class PomReportCreationNewMojo extends AbstractProjectAwareConfiguredMojo
 
     @Parameter(property = "ae.create.pom.inventory.targetInventory", defaultValue = "false")
     private File targetInventoryFile;
-
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -106,9 +105,24 @@ public class PomReportCreationNewMojo extends AbstractProjectAwareConfiguredMojo
             addArtifactIfNecessary(inventory, mavenArtifact, includePlugins);
         }
 
+        createAssetFromPom(inventory);
         inventory.mergeDuplicates();
 
         return inventory;
+    }
+
+    private void createAssetFromPom(Inventory inventory) {
+        AssetMetaData assetMetaData = new AssetMetaData();
+
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "AID-" + getProject().getGroupId() + "-" + getProject().getArtifactId());
+        assetMetaData.set(AssetMetaData.Attribute.NAME, getProject().getName());
+        assetMetaData.set(Constants.KEY_DESCRIPTION, getProject().getDescription());
+        assetMetaData.set(AssetMetaData.Attribute.VERSION, getProject().getVersion());
+        assetMetaData.set(AssetMetaData.Attribute.TYPE, "pom");
+
+        inventory.getAssetMetaData().add(assetMetaData);
+
+        inventory.getArtifacts().forEach(artifact -> artifact.set(assetMetaData.get(AssetMetaData.Attribute.ASSET_ID), Constants.MARKER_CONTAINS));
     }
 
     protected void addArtifactIfNecessary(Inventory inventory,
