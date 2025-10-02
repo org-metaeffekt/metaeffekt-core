@@ -118,8 +118,10 @@ public class LicenseMetaData extends AbstractModelBase {
 
     public String deriveQualifier() {
         StringBuilder sb = new StringBuilder(getComponent()).append("-").append(getLicense());
-        if (!ASTERISK.equalsIgnoreCase(getVersion().trim())) {
-            sb.append("-").append(getVersion());
+        if (getVersion() != null) {
+            if (!ASTERISK.equalsIgnoreCase(getVersion().trim())) {
+                sb.append("-").append(getVersion());
+            }
         }
         return sb.toString();
     }
@@ -213,9 +215,8 @@ public class LicenseMetaData extends AbstractModelBase {
     }
 
     public boolean isValid() {
-        if (StringUtils.isEmpty(getComponent()))
-            return false;
-        return !StringUtils.isEmpty(getVersion());
+        if (StringUtils.isEmpty(getComponent())) return false;
+        return !StringUtils.isEmpty(getLicense());
     }
 
     public void set(Attribute attribute, String value) {
