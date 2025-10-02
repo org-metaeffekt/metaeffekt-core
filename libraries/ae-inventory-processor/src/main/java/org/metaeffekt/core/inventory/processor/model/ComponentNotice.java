@@ -49,7 +49,7 @@ public class ComponentNotice {
     }
 
     public boolean add(Artifact artifact, LicenseMetaData licenseMetaData) {
-        String notice = licenseMetaData.getCompleteNotice();
+        String notice = licenseMetaData.getNotice();
         if (notice == null) notice = "";
 
         ArtifactNotice artifactNotice = noticeArtifactNoticeMap.get(notice);

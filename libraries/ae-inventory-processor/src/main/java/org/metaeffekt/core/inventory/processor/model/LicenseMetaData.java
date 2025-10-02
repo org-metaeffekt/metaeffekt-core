@@ -140,9 +140,11 @@ public class LicenseMetaData extends AbstractModelBase {
         set(Attribute.COMMENT, comment);
     }
 
-    // FIXME: limitation of excel
+    @Deprecated
     public String getCompleteNotice() {
-        StringBuilder sb = new StringBuilder(get(Attribute.NOTICE));
+        String notice = get(Attribute.NOTICE);
+        if (notice == null) return null;
+        StringBuilder sb = new StringBuilder(notice);
         int index = 1;
         while (get("Notice (split-" + index + ")") != null) {
             String s = get("Notice (split-" + index + ")");

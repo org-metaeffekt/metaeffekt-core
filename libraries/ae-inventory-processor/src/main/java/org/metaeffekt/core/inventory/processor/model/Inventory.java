@@ -770,7 +770,6 @@ public class Inventory implements Serializable {
                     componentNotices.add(componentNotice);
                 }
                 componentNotice.add(artifact);
-
             }
         }
 
@@ -830,7 +829,7 @@ public class Inventory implements Serializable {
         String qualifier = "";
         if (StringUtils.isNotBlank(component)) qualifier += component;
         qualifier += "|";
-        if (StringUtils.isNotBlank(component)) qualifier += version;
+        if (StringUtils.isNotBlank(version)) qualifier += version;
         qualifier += "|";
         qualifier += normalizedLicenseExpression;
         return qualifier;
@@ -856,15 +855,18 @@ public class Inventory implements Serializable {
 
             // NOTE: for artifacts with VERSION_PLACEHOLDER we expect that the license metadata is provided with ASTERISK.
 
-            if (lmd.getLicense().equals(license) &&
-                    (lmd.getVersion().equals(version) || lmd.getVersion().equals(ASTERISK)) &&
-                    (lmd.getComponent().equals(component) || lmd.getComponent().equals(ASTERISK))) {
+            if (Objects.equals(lmd.getLicense(), license) &&
+                    (Objects.equals(lmd.getVersion(), version) || Objects.equals(lmd.getVersion(), ASTERISK)) &&
+                    (Objects.equals(lmd.getComponent(), component) || Objects.equals(lmd.getComponent(), ASTERISK))) {
+
+                // check whether we have a second match
                 if (match != null) {
                     // in case match is not null we have found two matching license meta data elements
                     // this means that the license data is inconsistent and has overlaps. This must
                     // be resolved in the underlying meta data.
-                    throw new IllegalStateException(String.format("Multiple matches for component:version:license: %s|%s|%s." +
-                            " Meta data inconsistent. Please correct license meta data to resolve inconsistencies.", component, version, license));
+                    throw new IllegalStateException(String.format("Multiple matches for component:version:license: %s." +
+                            " Meta data inconsistent. Please correct license meta data to resolve inconsistencies.",
+                            computeQualifier(component, version, license)));
                 }
                 match = lmd;
             }
@@ -1888,11 +1890,10 @@ public class Inventory implements Serializable {
 
         // return the associated licenses as effective licenses if required attributes for LMD are not set
         if (StringUtils.isEmpty(artifact.getComponent())) return effectiveLicense;
-        if (StringUtils.isEmpty(artifact.getVersion())) return effectiveLicense;
         if (StringUtils.isEmpty(artifact.getLicense())) return effectiveLicense;
 
         // use LMD to derive effective licenses
-        LicenseMetaData licenseMetaData = findMatchingLicenseMetaData(artifact);
+        final LicenseMetaData licenseMetaData = findMatchingLicenseMetaData(artifact);
         if (licenseMetaData == null) return effectiveLicense;
 
         effectiveLicense = licenseMetaData.deriveLicenseInEffect();

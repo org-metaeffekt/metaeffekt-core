@@ -870,6 +870,7 @@ public class InventoryReport {
                             // when (unresolved) version placeholders are used
                             (version != null && version.startsWith(VERSION_PLACHOLDER_PREFIX) &&
                                     version.endsWith(VERSION_PLACHOLDER_SUFFIX));
+            boolean isUndefinedVersion = artifact.getVersion() == null;
 
             // try to resolve component license meta data if available
             final LicenseMetaData matchingLicenseMetaData = projectInventory.
@@ -893,11 +894,12 @@ public class InventoryReport {
 
             // determine source path on license meta data level the version in wildcard; we derived all versions
             // have the same license; one notice for all; one source folder for all
-            final String sourcePath = (isMetaDataVersionWildcard || isArtifactVersionWildcard) ?
+            final String sourcePath = (isMetaDataVersionWildcard || isArtifactVersionWildcard || isUndefinedVersion) ?
                     versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
             // determine target path (always artifact version centric; no information may be available)
-            final String targetPath = isArtifactVersionWildcard ? versionUnspecificComponentFolder : versionSpecificComponentFolder;
+            final String targetPath = isArtifactVersionWildcard || isUndefinedVersion ?
+                    versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
             // copy touched components to target component folder
             if (targetComponentDir != null) {
