@@ -127,7 +127,7 @@
                 <entry>
                     <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
                         #set($countForAsset=$assetData.countAssetsWithRepresentedAssociatedLicense($license, true))
-                        #if(!$countForAsset==0)
+                        #if($countForAsset != 0)
                             <codeph>$countForAsset</codeph>
                         #else
                             <codeph>$inventory.countComponents($license)</codeph>

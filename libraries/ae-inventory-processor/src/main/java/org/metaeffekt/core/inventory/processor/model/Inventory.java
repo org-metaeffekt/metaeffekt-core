@@ -1905,6 +1905,14 @@ public class Inventory implements Serializable {
         return effectiveLicense;
     }
 
+    public List<List<String>> getEffectiveLicensesForArtifactGroup(List<Artifact> artifactGroup) {
+        List<List<String>> effectiveLicenses = new ArrayList<>();
+        for (Artifact artifact : artifactGroup) {
+            effectiveLicenses.add(InventoryUtils.tokenizeLicense(getEffectiveLicense(artifact), true, true));
+        }
+        return effectiveLicenses;
+    }
+
     public List<String> getEffectiveLicenses(Artifact artifact) {
         String effectiveLicense = getEffectiveLicense(artifact);
         return InventoryUtils.tokenizeLicense(effectiveLicense, true, true);
@@ -1933,6 +1941,20 @@ public class Inventory implements Serializable {
 
         // return original license
         return license;
+    }
+
+
+    public List<String> getRepresentedLicensesForArtifactGroup(List<List<String>> artifactGroupEffectiveLicenses) {
+        List<String> representedLicenses = new ArrayList<>();
+
+        for (List<String> licenses : artifactGroupEffectiveLicenses) {
+            representedLicenses.addAll(licenses.stream()
+                    .map(this::getRepresentedLicenseName)
+                    .sorted()
+                    .distinct()
+                    .collect(Collectors.toList()));
+        }
+        return representedLicenses.stream().distinct().collect(Collectors.toList());
     }
 
     public List<String> getRepresentedLicenses(List<String> effectiveLicenses) {
