@@ -13,23 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.relationship;
-
-import lombok.Getter;
-import lombok.Setter;
-
 /**
- * This class serves as a node of the RelationshipGraph class and holds information on either inventory
- * artifacts or assets.
+ * This package contains utilities and data models enabling the mapping of complex many-to-many relationships
+ * in the {@link org.metaeffekt.core.inventory.processor.model.Inventory} or cyclonedx and spdx sboms.
  */
-@Getter
-@Setter
-public class RelationshipGraphNode {
-
-    private String id;
-
-    public RelationshipGraphNode(String id) {
-        this.id = id;
-    }
-
-}
+package org.metaeffekt.core.inventory.relationship;
