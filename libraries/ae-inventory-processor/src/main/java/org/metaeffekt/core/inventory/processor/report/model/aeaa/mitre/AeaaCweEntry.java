@@ -19,12 +19,10 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 @Setter
@@ -36,6 +34,7 @@ public class AeaaCweEntry {
     private String abstraction;
     private AeaaMitre.Status status;
     private String description;
+    private ArrayList<String> extendedDescription = new ArrayList<>();
     private final Map<AeaaMitre.Relation, List<String>> relatedWeaknesses = new HashMap<>();
     private final Map<String, List<Map<String, String>>> applicablePlatforms = new HashMap<>();
     private final Map<String, String> alternateTerms = new HashMap<>();
@@ -72,6 +71,7 @@ public class AeaaCweEntry {
                 .put("name", this.name)
                 .put("abstraction", this.abstraction)
                 .put("description", this.description)
+                .put("extendedDescription", new JSONArray(this.extendedDescription))
                 .put("alternateTerms", new JSONObject(this.alternateTerms));
 
         if (getStatus() != null) json.put("status", getStatus().toString());
@@ -134,6 +134,13 @@ public class AeaaCweEntry {
         cweEntry.setAbstraction(jsonObject.optString("abstraction"));
         cweEntry.setStatus(AeaaMitre.Status.of(jsonObject.optString("status", "Unknown")));
         cweEntry.setDescription(jsonObject.optString("description"));
+
+        JSONArray extendedDescription = jsonObject.optJSONArray("extendedDescription");
+        if (extendedDescription != null) {
+            for (int i = 0; i < extendedDescription.length(); i++) {
+                cweEntry.getExtendedDescription().add(extendedDescription.optString(i));
+            }
+        }
 
         JSONObject relatedWeaknesses = jsonObject.optJSONObject("relatedWeaknesses");
         relatedWeaknesses.keySet().forEach(key -> {
