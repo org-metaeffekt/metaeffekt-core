@@ -64,13 +64,9 @@
                                 <entry>
                                     #foreach($license in $representedLicenses)
                                         #if($representedLicensesInEffect.contains($license))
-                                            #if($inventory.isSubstructureRequired($license, $representedLicenses))
-                                                <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
-                                            #else
-                                                <lines><xref href="tpc_inventory-license-usage.dita#tpc_associated_license_details_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
-                                            #end
+                                            <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
                                         #else
-                                        $report.xmlEscapeLicense($license)
+                                            $report.xmlEscapeLicense($license)
                                         #end
                                     #end
                                 </entry>
