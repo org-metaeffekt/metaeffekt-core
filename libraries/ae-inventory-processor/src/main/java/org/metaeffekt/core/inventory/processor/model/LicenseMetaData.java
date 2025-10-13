@@ -118,8 +118,10 @@ public class LicenseMetaData extends AbstractModelBase {
 
     public String deriveQualifier() {
         StringBuilder sb = new StringBuilder(getComponent()).append("-").append(getLicense());
-        if (!ASTERISK.equalsIgnoreCase(getVersion().trim())) {
-            sb.append("-").append(getVersion());
+        if (getVersion() != null) {
+            if (!ASTERISK.equalsIgnoreCase(getVersion().trim())) {
+                sb.append("-").append(getVersion());
+            }
         }
         return sb.toString();
     }
@@ -140,9 +142,11 @@ public class LicenseMetaData extends AbstractModelBase {
         set(Attribute.COMMENT, comment);
     }
 
-    // FIXME: limitation of excel
+    @Deprecated
     public String getCompleteNotice() {
-        StringBuilder sb = new StringBuilder(get(Attribute.NOTICE));
+        String notice = get(Attribute.NOTICE);
+        if (notice == null) return null;
+        StringBuilder sb = new StringBuilder(notice);
         int index = 1;
         while (get("Notice (split-" + index + ")") != null) {
             String s = get("Notice (split-" + index + ")");
@@ -211,9 +215,8 @@ public class LicenseMetaData extends AbstractModelBase {
     }
 
     public boolean isValid() {
-        if (StringUtils.isEmpty(getComponent()))
-            return false;
-        return !StringUtils.isEmpty(getVersion());
+        if (StringUtils.isEmpty(getComponent())) return false;
+        return !StringUtils.isEmpty(getLicense());
     }
 
     public void set(Attribute attribute, String value) {

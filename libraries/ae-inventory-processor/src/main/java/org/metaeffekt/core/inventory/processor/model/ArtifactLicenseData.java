@@ -16,6 +16,8 @@
 package org.metaeffekt.core.inventory.processor.model;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,12 +68,15 @@ public class ArtifactLicenseData {
     }
 
     public String deriveComponentQualifierForCounting() {
-        // in case name and version are available we use this as unique component qualifer
-        if (componentName != null && componentVersion != null) {
-            return componentName + "|" + componentVersion;
-        } else {
-            // if one or the other misses we use the full qualifier for grouping and counting
+        // in case name and/or version are available we use this as unique component qualifier
+        if (StringUtils.isBlank(componentName)) {
             return qualifier;
         }
+
+        // compose qualifier of name and version (while version may be empty)
+        String qualifier = componentName;
+        qualifier += "|";
+        if (StringUtils.isNotBlank(componentVersion)) qualifier += componentVersion;
+        return qualifier;
     }
 }

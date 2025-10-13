@@ -530,7 +530,7 @@ public class ValidateInventoryProcessor extends AbstractInventoryProcessor {
 
         // validate license notice content
         for (LicenseMetaData licenseMetaData : inventory.getLicenseMetaData()) {
-            String notice = licenseMetaData.getCompleteNotice();
+            String notice = licenseMetaData.getNotice();
             if (StringUtils.isBlank(notice)) {
                 log(format("%04d: Empty license notice for '%s'.", index++, licenseMetaData.deriveQualifier()));
                 log(format("      Proposal: validate/add license notice content."));
