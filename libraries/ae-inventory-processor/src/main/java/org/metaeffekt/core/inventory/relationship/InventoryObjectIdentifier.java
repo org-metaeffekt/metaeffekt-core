@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.inventory.relationship;
 
-import com.sun.tools.javac.util.List;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +26,7 @@ import java.util.Map;
  * Contains all known strategies for identifer creation or extraction as well as provides method to interact
  * with the identifiers.
  */
+@SuppressWarnings("unchecked")
 public class InventoryObjectIdentifier {
 
     private static final Map<Class<?>, IdentifierStrategy<?>> strategies = new HashMap<>();
@@ -33,11 +34,11 @@ public class InventoryObjectIdentifier {
     static {
         // artifact identifier creation strategy
         strategies.put(Artifact.class, new IdentifierStrategy<Artifact>(
-                List.of(
+                listOf(
                         Artifact.Attribute.ID.getKey(),
                         Artifact.Attribute.VERSION.getKey(),
                         Artifact.Attribute.CHECKSUM.getKey()),
-                List.of(
+                listOf(
                         (Artifact a) -> a.get(Artifact.Attribute.ID),
                         (Artifact a) -> a.get(Artifact.Attribute.VERSION),
                         (Artifact a) -> a.get(Artifact.Attribute.CHECKSUM)
@@ -46,11 +47,11 @@ public class InventoryObjectIdentifier {
 
         // asset identifier creation strategy
         strategies.put(AssetMetaData.class, new IdentifierStrategy<AssetMetaData>(
-                List.of(
+                listOf(
                         AssetMetaData.Attribute.ASSET_ID.getKey(),
                         AssetMetaData.Attribute.VERSION.getKey(),
                         AssetMetaData.Attribute.CHECKSUM.getKey()),
-                List.of(
+                listOf(
                         a -> a.get(AssetMetaData.Attribute.ASSET_ID),
                         a -> a.get(AssetMetaData.Attribute.VERSION),
                         a -> a.get(AssetMetaData.Attribute.CHECKSUM)
@@ -65,7 +66,6 @@ public class InventoryObjectIdentifier {
      * @param <T> class type generic
      * @return the identifier as a string
      */
-    @SuppressWarnings("unchecked")
     public static <T> String createIdentifier(T object) {
         IdentifierStrategy<T> strategy = (IdentifierStrategy<T>) strategies.get(object.getClass());
         if (strategy == null) {
@@ -83,12 +83,16 @@ public class InventoryObjectIdentifier {
      * @return a map of present attributes to values
      * @param <T> class type generic
      */
-    @SuppressWarnings("unchecked")
     public static <T> Map<String, String> parseIdentifier(Class<T> type, String identifier) {
         final IdentifierStrategy<T> strategy = (IdentifierStrategy<T>) strategies.get(type);
         if (strategy == null) {
             throw new IllegalArgumentException("No identifier strategy for " + type);
         }
         return strategy.parseIdentifier(identifier);
+    }
+
+
+    private static <T> java.util.List<T> listOf(T... objects) {
+        return Arrays.asList(objects);
     }
 }

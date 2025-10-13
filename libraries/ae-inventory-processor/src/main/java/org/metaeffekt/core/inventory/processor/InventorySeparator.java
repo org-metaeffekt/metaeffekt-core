@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math3.analysis.function.Constant;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.relationship.*;
 
