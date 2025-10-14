@@ -28,8 +28,8 @@
                 <tbody>
 
                     #foreach($component in $components)
-                        #set($groups=$inventory.evaluateComponent($component))
-                        #foreach($name in $groups)
+                        #set($artifactGroups=$inventory.evaluateComponent($component))
+                        #foreach($artifactGroup in $artifactGroups)
                             #set($hasNotice=$inventory.hasNotice($component))
                         <row>
                             #if($hasNotice)
@@ -44,7 +44,7 @@
                             #end
                           #set($addEmptyLine=false)
                           <entry>
-                                #foreach($artifact in $name)
+                                #foreach($artifact in $artifactGroup)
                                     #if($addEmptyLine)<lines><line>&nbsp;</line></lines>#end
                                     #if($artifact.getGroupId())<lines><line><i>$artifact.getGroupId() / $artifact.getArtifactId()</i></line>
                                       <line><codeph>$report.xmlEscapeArtifactId($artifact.getId())</codeph></line></lines>
@@ -55,19 +55,21 @@
                                 #end
                             </entry>
 
-                            #set($effectiveLicenses=$inventory.getEffectiveLicenses($name.get(0)))
-                            #set($representedLicenses=$inventory.getRepresentedLicenses($effectiveLicenses))
+                                                        #set($effectiveLicenses=$inventory.getEffectiveLicensesForArtifactGroup($artifactGroup))
+                            #set($representedLicenses=$inventory.getRepresentedLicensesForArtifactGroup($effectiveLicenses))
+                            #set($representedLicensesInEffect=$inventory.getRepresentedLicenses($licensesInEffect))
 
                             #if($representedLicenses.isEmpty())
                                 <entry>&nbsp;</entry>
                             #else
                                 <entry>
-                                    ## preserve formating to achive proper line-breaks
-                                    <lines>#foreach($license in $representedLicenses)#if($licensesInEffect.contains($license))
-                                        <xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)"
-                                              type="topic">$report.xmlEscapeLicense($license)</xref>
-                                    #else$report.xmlEscapeLicense($license)
-                                    #end#end</lines>
+                                    #foreach($license in $representedLicenses)
+                                        #if($representedLicensesInEffect.contains($license))
+                                            <lines><xref href="tpc_inventory-license-usage.dita#tpc_effective_license_$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref></lines>
+                                        #else
+                                            $report.xmlEscapeLicense($license)
+                                        #end
+                                    #end
                                 </entry>
                             #end
                         </row>

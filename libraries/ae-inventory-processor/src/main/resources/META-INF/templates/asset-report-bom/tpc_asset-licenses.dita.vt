@@ -19,9 +19,9 @@
         #end
 
 
-#if (!$singleLicenses.isEmpty())
-    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", "AssociatedLicenses", "Asset Licenses", $singleLicenses, true, "")
-#end
+    #if (!$singleLicenses.isEmpty())
+        #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", "AssociatedLicenses", "Asset Licenses", $singleLicenses, true, "")
+    #end
 
     #if (!$licenseExpressions.isEmpty())
         <table id="AssociatedLicenseExpressions" otherprops="wide">
