@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-plugins</artifactId>
-        <version>0.146.0</version>
+        <version>HEAD-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
