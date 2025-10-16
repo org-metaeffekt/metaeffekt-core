@@ -199,7 +199,8 @@ public class CvssSeverityRanges {
     public static final CvssSeverityRanges PRIORITY_SCORE_SEVERITY_RANGES = new CvssSeverityRanges(
             "escalate:strong-red:9.0:," +
                     "due:strong-dark-orange:7.0:8.9," +
-                    "elevated:strong-light-orange::6.9"
+                    "elevated:strong-light-orange:4.0:6.9," +
+                    "none:pastel-gray::3.9"
     );
     public static final CvssSeverityRanges EPSS_SCORE_SEVERITY_RANGES = new CvssSeverityRanges(
             ">0.8:strong-red:0.8:," +
