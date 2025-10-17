@@ -27,7 +27,6 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
-import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.metaeffekt.core.inventory.processor.report.configuration.CspLoader;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
@@ -36,8 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -301,21 +298,24 @@ public class DocumentDescriptorReportGenerator {
                 builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
                 builder.inventoryBomReportEnabled(true);
                 break;
-            case VULNERABILITY_STATISTICS_REPORT:
-                builder.inventoryVulnerabilityStatisticsReportEnabled(true);
-                break;
-            case VULNERABILITY_SUMMARY_REPORT:
-                builder.inventoryVulnerabilityReportSummaryEnabled(true);
-                break;
-            case VULNERABILITY_REPORT:
-                builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
-                builder.inventoryVulnerabilityReportEnabled(true);
-                break;
             case INITIAL_LICENSE_DOCUMENTATION:
                 builder.assetBomReportEnabled(true);
                 break;
             case LICENSE_DOCUMENTATION:
                 builder.inventoryBomReportEnabled(true);
+                break;
+            case VULNERABILITY_REPORT:
+                builder.filterVulnerabilitiesNotCoveredByArtifacts(Boolean.parseBoolean(mergedParams.getOrDefault("vulnerabilitiesNotCoveredByArtifacts", "false")));
+                builder.inventoryVulnerabilityReportEnabled(true);
+                break;
+            case VULNERABILITY_STATISTICS_REPORT:
+                builder.inventoryVulnerabilityStatisticsReportEnabled(true);
+                break;
+            case VULNERABILITY_SUMMARY_PART:
+                builder.inventoryVulnerabilityReportSummaryEnabled(true);
+                break;
+            case VULNERABILITY_SUMMARY_REPORT:
+                builder.assessmentReportEnabled(true);
                 break;
         }
 
