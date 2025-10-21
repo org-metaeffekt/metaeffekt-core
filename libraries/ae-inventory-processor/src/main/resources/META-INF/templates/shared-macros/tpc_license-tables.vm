@@ -52,89 +52,92 @@
         #foreach($license in $filteredLicenseList)
             #if(!$license.contains("+"))
             #set($licenseData=$inventory.findMatchingLicenseData($license))
-            <row>
-                #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
-                    <entry>
-                        <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
-                        <xref href="#$topicId/represented-licenses-fn" type="fn"/>
-                    </entry>
-                    <entry>
-                        #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
-                            $report.xmlEscapeString($licenseData.get('SPDX Id'))
-                        #else
-                            &nbsp;
-                        #end
-                    </entry>
-                    <entry>
-                        #if ($licenseData)
-                            #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
-                            #if ($mappedStatus)
-                                $mappedStatus<xref href="#$topicId/represented-licenses-fn" type="fn"/>
-                            #end
-                        #else
-                            &nbsp;
-                        #end
-                    </entry>
-                    #if($configParams.enableOpenCodeStatus)
-                        <entry>
-                            #if ($licenseData)
-                                #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
-                                #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
-                                    $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)
-                                    <xref href="#$topicId/id-opencode-similar-fn" type="fn"/> <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
-                                #elseif ($mappedStatus)
-                                    $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils) <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+            #set($assetData=$report.getAssetData($inventory))
+            #set($countForAsset=$assetData.countAssetsWithRepresentedAssociatedLicense($license, true))
+
+                #if ($countForAsset != 0 || $inventory.countComponents($license) != 0)
+                    <row>
+                        #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
+                            <entry>
+                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">$report.xmlEscapeLicense($license)</xref>
+                                <xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                            </entry>
+                            <entry>
+                                #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
+                                    $report.xmlEscapeString($licenseData.get('SPDX Id'))
+                                #else
+                                    &nbsp;
                                 #end
-                            #else
-                                &nbsp;
-                            #end
-                        </entry>
-                    #end
-                #else
-                    <entry>
-                        <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic"> $report.xmlEscapeLicense($license)</xref>
-                    </entry>
-                    <entry>
-                        #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
-                            $report.xmlEscapeString($licenseData.get('SPDX Id'))
-                        #else
-                            &nbsp;
-                        #end
-                    </entry>
-                    <entry>
-                        #if ($licenseData)
-                            $reportContext.map($licenseData.get("OSI Status"), $osiStatusMap,"&nbsp;")
-                        #else
-                            &nbsp;
-                        #end
-                    </entry>
-                    #if($configParams.enableOpenCodeStatus)
-                        <entry>
-                            #if ($licenseData)
-                                #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
-                                #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
-                                    $mappedStatus <xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
-                                #elseif ($mappedStatus)
-                                    $mappedStatus
+                            </entry>
+                            <entry>
+                                #if ($licenseData)
+                                    #set($mappedStatus=$reportContext.map($licenseData.get("OSI Status"), $osiStatusMap))
+                                    #if ($mappedStatus)
+                                        $mappedStatus<xref href="#$topicId/represented-licenses-fn" type="fn"/>
+                                    #end
+                                #else
+                                    &nbsp;
                                 #end
-                            #else
-                                &nbsp;
+                            </entry>
+                            #if($configParams.enableOpenCodeStatus)
+                                <entry>
+                                    #if ($licenseData)
+                                        #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                                        #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
+                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils)
+                                            <xref href="#$topicId/id-opencode-similar-fn" type="fn"/> <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                        #elseif ($mappedStatus)
+                                            $inventoryReportAdapter.getOpenCodeStatusForRepresentedLicense($license, $utils) <xref href="#$topicId/id-opencode-represented-fn" type="fn"/>
+                                        #end
+                                    #else
+                                        &nbsp;
+                                    #end
+                                </entry>
                             #end
+                        #else
+                            <entry>
+                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic"> $report.xmlEscapeLicense($license)</xref>
+                            </entry>
+                            <entry>
+                                #if ($licenseData && $utils.notEmpty($licenseData.get('SPDX Id')))
+                                    $report.xmlEscapeString($licenseData.get('SPDX Id'))
+                                #else
+                                    &nbsp;
+                                #end
+                            </entry>
+                            <entry>
+                                #if ($licenseData)
+                                    $reportContext.map($licenseData.get("OSI Status"), $osiStatusMap,"&nbsp;")
+                                #else
+                                    &nbsp;
+                                #end
+                            </entry>
+                            #if($configParams.enableOpenCodeStatus)
+                                <entry>
+                                    #if ($licenseData)
+                                        #set($mappedStatus=$reportContext.map($licenseData.get("Open CoDE Status"), $openCoDEStatusMap))
+                                        #if ($mappedStatus && $licenseData.get("Open CoDE Status")=="(approved)")
+                                            $mappedStatus <xref href="#$topicId/id-opencode-similar-fn" type="fn"/>
+                                        #elseif ($mappedStatus)
+                                            $mappedStatus
+                                        #end
+                                    #else
+                                        &nbsp;
+                                    #end
+                                </entry>
+                            #end
+                        #end
+                        <entry>
+                            <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
+                                #if($countForAsset != 0)
+                                    <codeph>$countForAsset</codeph>
+                                #else
+                                    <codeph>$inventory.countComponents($license)</codeph>
+                                #end
+                            </xref>
                         </entry>
-                    #end
+                    </row>
                 #end
-                #set($assetData=$report.getAssetData($inventory))
-                <entry>
-                    <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
-                        #set($countForAsset=$assetData.countAssetsWithRepresentedAssociatedLicense($license, true))
-                        #if($countForAsset != 0)
-                            <codeph>$countForAsset</codeph>
-                        #else
-                            <codeph>$inventory.countComponents($license)</codeph>
-                        #end
-                    </xref>
-                </entry>
-            </row>
             #end
         #end
     </tbody>
