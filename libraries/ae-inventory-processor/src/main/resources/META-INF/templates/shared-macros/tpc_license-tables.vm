@@ -1,4 +1,4 @@
-#macro (insertLicenseTable $topicId $id $title $licenseList $useRepresentedLicenses $optionalRefPrefix)
+#macro (insertLicenseTable $topicId $id $title $licenseList $useRepresentedLicenses $optionalRefPrefix $onlyCountAssets)
 <table id="$id">
     <title>$title$reportContext.withTitle()</title>
     #if($configParams.enableOpenCodeStatus)
@@ -52,10 +52,9 @@
         #foreach($license in $filteredLicenseList)
             #if(!$license.contains("+"))
             #set($licenseData=$inventory.findMatchingLicenseData($license))
-            #set($assetData=$report.getAssetData($inventory))
-            #set($countForAsset=$assetData.countAssetsWithRepresentedAssociatedLicense($license, true))
+            #set($count = $inventory.countComponentsForSingleLicense($license, $onlyCountAssets))
 
-                #if ($countForAsset != 0 || $inventory.countComponents($license) != 0)
+                #if ($count != 0)
                     <row>
                         #if ($inventoryReportAdapter.isRepresentedLicense($license) && $useRepresentedLicenses)
                             <entry>
@@ -94,6 +93,15 @@
                                     #end
                                 </entry>
                             #end
+                            <entry>
+                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
+                                    #if($useRepresentedLicenses)
+                                        <codeph>$inventory.countComponentsForRepresentedLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
+                                    #else
+                                        <codeph>$inventory.countComponentsForSingleLicense($inventory.getRepresentedLicenseName($license), $onlyCountAssets)</codeph>
+                                    #end
+                                </xref>
+                            </entry>
                         #else
                             <entry>
                                 <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic"> $report.xmlEscapeLicense($license)</xref>
@@ -126,16 +134,10 @@
                                     #end
                                 </entry>
                             #end
+                            <entry>
+                                <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic"><codeph>$count</codeph></xref>
+                            </entry>
                         #end
-                        <entry>
-                            <xref href="$refPrefix$inventory.deriveLicenseId($license)" type="topic">
-                                #if($countForAsset != 0)
-                                    <codeph>$countForAsset</codeph>
-                                #else
-                                    <codeph>$inventory.countComponents($license)</codeph>
-                                #end
-                            </xref>
-                        </entry>
                     </row>
                 #end
             #end

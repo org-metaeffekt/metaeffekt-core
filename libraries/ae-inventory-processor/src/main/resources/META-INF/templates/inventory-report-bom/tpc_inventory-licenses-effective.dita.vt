@@ -38,7 +38,7 @@
                 <tbody>
                     #foreach($licenseData in $termsWithOptions)
                         #set($license=$licenseData.get("Canonical Name"))
-                        #set($componentCount=$inventory.countComponents($license))
+                        #set($componentCount=$inventory.countComponentsForSingleLicense($license, false))
                         <row>
                             #if ($inventory.isLicenseSubstructureRequired($license, $effectiveLicensesRepresented))
                                 <entry>
@@ -71,7 +71,8 @@
         $utils.getText("inventory-report-bom.short.licenses-in-effect"),
         $effectiveLicenses,
         true,
-        "tpc_inventory-license-usage.dita#tpc_effective_license_")
+        "tpc_inventory-license-usage.dita#tpc_effective_license_",
+        false)
 
 </body>
 </topic>

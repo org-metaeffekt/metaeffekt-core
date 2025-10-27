@@ -23,7 +23,13 @@
 
                 #set($licensesRepresentedBy=$inventory.getLicensesRepresentedBy($license))
 
-                #insertLicenseTable("tpc_effective_license_$reportContext.id", $license,"Inventory Licenses", $licensesRepresentedBy, false, "")
+                #insertLicenseTable(
+                    "tpc_effective_license_$reportContext.id",
+                    $license,"Inventory Licenses",
+                    $licensesRepresentedBy,
+                    false,
+                    "#tpc_effective_license_",
+                    false)
             </body>
           <body>
                 #foreach($effLicense in $licensesRepresentedBy)
