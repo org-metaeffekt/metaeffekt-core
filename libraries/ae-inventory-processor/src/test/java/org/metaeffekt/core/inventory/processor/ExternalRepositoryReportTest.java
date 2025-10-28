@@ -89,8 +89,8 @@ public class ExternalRepositoryReportTest {
     @Ignore
     @Test
     public void testFullReport() throws IOException {
-        final File inventoryDir = new File("/Users/jfuegen/Desktop/inventory-for-JFU");
-        final File reportDir = new File("/Users/jfuegen/Desktop/inventory-for-JFU");
+        final File inventoryDir = new File("");
+        final File reportDir = new File("");
 
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
                 .inventoryBomReportEnabled(true)
