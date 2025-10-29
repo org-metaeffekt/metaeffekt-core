@@ -15,9 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.metaeffekt.core.inventory.processor.adapter.MavenPomAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -25,11 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 public class MavenProjectSourcesComponentPatternContributor extends ComponentPatternContributor {
 
@@ -50,73 +46,46 @@ public class MavenProjectSourcesComponentPatternContributor extends ComponentPat
         final File anchorFile = new File(baseDir, relativeAnchorPath);
         final List<ComponentPatternData> components = new ArrayList<>();
 
-        try (FileInputStream fis = new FileInputStream(anchorFile)) {
-            MavenXpp3Reader reader = new MavenXpp3Reader();
-            Model model = reader.read(fis);
+        try {
+            MavenPomAdapter mavenPomAdapter = new MavenPomAdapter(anchorFile);
 
-            Properties properties = model.getProperties();
+            final String artifactId = mavenPomAdapter.resolveArtifactId();
+            final String groupId = mavenPomAdapter.resolveGroupId();
+            final String version = mavenPomAdapter.resolveVersion();
 
-            String groupId = resolveProperty(model.getGroupId(), properties, model);
-            String artifactId = model.getArtifactId();
-            String version = resolveProperty(model.getVersion(), properties, model);
+            final String purl = MavenPomAdapter.buildPurl(groupId, artifactId, version);
 
-            String purl = buildPurl(groupId, artifactId, version);
-
-            ComponentPatternData cpd = new ComponentPatternData();
+            final ComponentPatternData cpd = new ComponentPatternData();
             cpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifactId);
+            cpd.set(ComponentPatternData.Attribute.COMPONENT_GROUP_ID, groupId);
             cpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-            cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, artifactId + "-" + version);
+            if (artifactId != null && version != null) {
+                cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, artifactId + "-" + version);
+            } else {
+                cpd.set(ComponentPatternData.Attribute.COMPONENT_PART, artifactId);
+            }
+
+            cpd.set(Artifact.Attribute.PURL, purl);
+
             cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
             cpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
             cpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
             cpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
+
             cpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MAVEN_PROJECT_SOURCE_TYPE);
-            cpd.set(Artifact.Attribute.PURL, purl);
+
             components.add(cpd);
 
-            // Add dependencies
-            List<Dependency> dependencies = model.getDependencies();
-            for (Dependency dependency : dependencies) {
-                String depGroupId = resolveProperty(dependency.getGroupId(), properties, model);
-                String depArtifactId = dependency.getArtifactId();
-                String depVersion = resolveProperty(dependency.getVersion(), properties, model);
-                String depPurl = buildPurl(depGroupId, depArtifactId, depVersion);
-                String depScope = dependency.getScope();
-
-                ComponentPatternData depCpd = new ComponentPatternData();
-                depCpd.set(ComponentPatternData.Attribute.COMPONENT_NAME, depArtifactId);
-                depCpd.set(ComponentPatternData.Attribute.COMPONENT_VERSION, depVersion);
-                depCpd.set(ComponentPatternData.Attribute.COMPONENT_PART, depArtifactId + "-" + depVersion);
-                depCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR, new File(relativeAnchorPath).getName());
-                depCpd.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
-                depCpd.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
-                depCpd.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_PACKAGE);
-                depCpd.set(Constants.KEY_COMPONENT_SOURCE_TYPE, MAVEN_PROJECT_SOURCE_TYPE);
-                depCpd.set(Constants.KEY_SCOPE, depScope);
-                depCpd.set(Artifact.Attribute.PURL, depPurl);
-                components.add(depCpd);
-            }
+            // NOTE: evaluation of dependencies is not performed during the
+            //   extraction phase. Interpretation and evaluation of the Maven POM
+            //   is subject to the resolver phase (where access to parent-poms is
+            //   more likely.
 
         } catch (Exception e) {
-            LOG.warn("Unable to parse maven project source [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
+            LOG.warn("Unable to parse maven project model [{}]: [{}]", anchorFile.getAbsolutePath(), e.getMessage());
         }
 
         return components;
-    }
-
-    private String resolveProperty(String value, Properties properties, Model model) {
-        if (value == null) {
-            return null;
-        }
-        if (value.startsWith("${") && value.endsWith("}")) {
-            String key = value.substring(2, value.length() - 1);
-            return properties.getOrDefault(key, model.getProperties().getProperty(key)).toString();
-        }
-        return value;
-    }
-
-    private String buildPurl(String groupId, String artifactId, String version) {
-        return String.format("pkg:maven/%s/%s@%s", groupId, artifactId, version);
     }
 
     @Override

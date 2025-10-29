@@ -199,4 +199,8 @@ public class InventorySerializationContext {
         return new SheetSerializationContext(inventory, CONTEXT_KEY_VULNERABILITY_DATA, () -> inventory.getVulnerabilityMetaData(assessmentContext));
     }
 
+    public void clear() {
+        contextMap.clear();
+    }
+
 }

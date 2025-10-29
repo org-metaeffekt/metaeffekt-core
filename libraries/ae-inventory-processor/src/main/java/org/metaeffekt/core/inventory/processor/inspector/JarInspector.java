@@ -43,8 +43,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.COMPONENT;
 import static org.metaeffekt.core.inventory.processor.model.AssetMetaData.Attribute.ASSET_ID;
-import static org.metaeffekt.core.inventory.processor.model.Constants.KEY_CHECKSUM;
+import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
  * General JAR-level {@link ArtifactInspector}. The inspector uses common resources (maven poms, osgi manifests,
@@ -112,8 +113,8 @@ public class JarInspector extends AbstractJarInspector {
         dummyArtifact.setGroupId(groupId);
         dummyArtifact.setVersion(version);
 
-        dummyArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
-        dummyArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+        dummyArtifact.set(KEY_TYPE, ARTIFACT_TYPE_MODULE);
+        dummyArtifact.set(KEY_COMPONENT_SOURCE_TYPE, "jar-module");
 
         dummyArtifact.set(ATTRIBUTE_KEY_ARTIFACT_ID, artifactId);
 
@@ -158,7 +159,7 @@ public class JarInspector extends AbstractJarInspector {
                 }
             }
 
-            dummyArtifact.set(Constants.KEY_ORGANIZATION, mainAttributes.getValue("Implementation-Vendor"));
+            dummyArtifact.set(KEY_ORGANIZATION, mainAttributes.getValue("Implementation-Vendor"));
             dummyArtifact.set("Organization Id", mainAttributes.getValue("Implementation-Vendor-Id"));
 
             if (StringUtils.isBlank(dummyArtifact.getVersion())) {
@@ -246,14 +247,15 @@ public class JarInspector extends AbstractJarInspector {
             // NOTE: the information may not be part of the pom, but provided in the parent pom. However, if the
             // information is available, it is included in the artifact
             if (model.getOrganization() != null) {
-                dummyArtifact.set(Constants.KEY_ORGANIZATION, model.getOrganization().getName());
-                dummyArtifact.set(Constants.KEY_ORGANIZATION_URL, model.getOrganization().getUrl());
+                dummyArtifact.set(KEY_ORGANIZATION, model.getOrganization().getName());
+                dummyArtifact.set(KEY_ORGANIZATION_URL, model.getOrganization().getUrl());
             }
 
             dummyArtifact.set(ATTRIBUTE_KEY_EMBEDDED_PATH, deriveEmbeddedPath(artifact, embeddedPath));
 
-            dummyArtifact.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
-            dummyArtifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+            dummyArtifact.set(KEY_TYPE, ARTIFACT_TYPE_MODULE);
+            dummyArtifact.set(KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+            dummyArtifact.set(COMPONENT, model.getArtifactId());
 
             // NOTE: the current mode is identification. POM specified licenses are not subject to identification
             // Furthermore, the leaf-pom may not include license information.
@@ -581,11 +583,11 @@ public class JarInspector extends AbstractJarInspector {
     }
 
     private void deriveTypeIfNotSet(Artifact artifact) {
-        if (StringUtils.isBlank(artifact.get(Constants.KEY_TYPE))) {
+        if (StringUtils.isBlank(artifact.get(KEY_TYPE))) {
             String id = artifact.getId();
             if (id != null && id.toLowerCase(Locale.US).endsWith(".jar")) {
-                artifact.set(Constants.KEY_TYPE, "module");
-                artifact.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");
+                artifact.set(KEY_TYPE, "module");
+                artifact.set(KEY_COMPONENT_SOURCE_TYPE, "jar-module");
             }
         }
     }
@@ -682,7 +684,7 @@ public class JarInspector extends AbstractJarInspector {
 
             // construct asset metadata for containing artifacts (e.g. shaded jars)
             final AssetMetaData assetMetaData = new AssetMetaData();
-            assetMetaData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_COMPOSITE);
+            assetMetaData.set(KEY_TYPE, Constants.ARTIFACT_TYPE_COMPOSITE);
 
             assetMetaData.set(ASSET_ID, assetId);
             assetMetaData.set(AssetMetaData.Attribute.ASSET_PATH.getKey(), parentArtifactPath);

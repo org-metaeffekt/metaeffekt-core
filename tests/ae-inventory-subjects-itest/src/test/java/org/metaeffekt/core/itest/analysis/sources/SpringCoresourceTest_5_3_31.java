@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
 public class SpringCoresourceTest_5_3_31 extends AbstractCompositionAnalysisTest {

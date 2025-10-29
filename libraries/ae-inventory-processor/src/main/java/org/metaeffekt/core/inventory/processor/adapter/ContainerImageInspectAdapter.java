@@ -39,7 +39,7 @@ public class ContainerImageInspectAdapter {
             final ImageInspectData imageInspectElements = ImageInspectReader.dataFromJson(containerInspectionFile);
             if (imageInspectElements.size() == 1) {
                 final ImageInspectElement element = imageInspectElements.get(0);
-                final String imageId = String.valueOf(element.getId());
+                final String imageId = element.getId() == null ? null : String.valueOf(element.getId());
 
                 if (imageId != null) {
                    final AssetMetaData assetMetaData = new AssetMetaData();

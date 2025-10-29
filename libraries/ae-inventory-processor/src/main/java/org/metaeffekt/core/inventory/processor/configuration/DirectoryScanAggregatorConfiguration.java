@@ -410,11 +410,9 @@ public class DirectoryScanAggregatorConfiguration {
     private Set<Artifact> aggregateFilesForMapper(FilePatternQualifierMapper mapper, String canonicalScanBaseDir, File targetDir) {
         final Set<Artifact> coveredArtifacts = new HashSet<>();
 
-        // the checksum must not be included in the archive; separate the two location
-        final File tmpBaseDir = FileUtils.initializeTmpFolder(targetDir);
-        final File tmpContentDir = new File(tmpBaseDir, "content");
-
-        tmpContentDir.mkdirs();
+        // the checksum must not be included in the archive; separate the two location (content and root)
+        final File tmpFolder = FileUtils.ensureEmptyFolder(new File(targetDir, ".tmp"));
+        final File tmpContentDir = FileUtils.ensureEmptyFolder(new File(tmpFolder, "content"));
 
         // FIXME: why isn't that always the mapper.artifact
         final Artifact foundArtifact = resultInventory.getArtifacts().stream()
@@ -457,7 +455,7 @@ public class DirectoryScanAggregatorConfiguration {
 
             // in case content was detected we create the content checksum and pack the files into a zip
             if (contentDetected) {
-                final File contentChecksumFile = new File(tmpBaseDir, determineArchiveFileName(mapper) + ".content.md5");
+                final File contentChecksumFile = new File(tmpFolder, determineArchiveFileName(mapper) + ".content.md5");
                 FileUtils.createDirectoryContentChecksumFile(tmpContentDir, contentChecksumFile);
 
                 // set the content checksum
@@ -484,7 +482,7 @@ public class DirectoryScanAggregatorConfiguration {
             LOG.error("Error processing artifact: [{}] with following error: [{}]", mapper.getArtifact().getId(), e.getMessage());
         } finally {
             // ensure the tmp folder is deleted (content and checksum file)
-            FileUtils.deleteDirectoryQuietly(tmpBaseDir);
+            FileUtils.deleteDirectoryQuietly(tmpFolder);
         }
 
         return coveredArtifacts;
@@ -833,7 +831,9 @@ public class DirectoryScanAggregatorConfiguration {
             parentMapperFileList_false.removeAll(childFileSet);
 
             parentMapper.setSubSetMap(subsetMap);
-            final String assetId = "AID-" + parentMapper.getArtifact().getId() + "-" + parentMapper.getArtifact().getChecksum();
+            String checksum = parentMapper.getArtifact().getChecksum();
+            final String assetId = "AID-" + parentMapper.getArtifact().getId() +
+                    (checksum != null ? "-" + checksum : "");
             childMapper.getArtifact().set(assetId, Constants.MARKER_CONTAINS);
             parentMapper.getArtifact().set(assetId, Constants.MARKER_CROSS);
         } else if (childMapper != null && childMapper.isLocked()) {

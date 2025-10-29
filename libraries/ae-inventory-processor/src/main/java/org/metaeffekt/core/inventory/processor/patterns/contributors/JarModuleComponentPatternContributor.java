@@ -172,7 +172,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
                 FileUtils.asRelativePath(contextBaseDir, anchorFile));
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.deriveArtifactId());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
@@ -190,7 +190,7 @@ public class JarModuleComponentPatternContributor extends ComponentPatternContri
         componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, includePattern);
 
         // contribute groupid (consider also other attributes)
-        componentPatternData.set("Group Id", artifact.getGroupId());
+        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_GROUP_ID, artifact.getGroupId());
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "jar-module");

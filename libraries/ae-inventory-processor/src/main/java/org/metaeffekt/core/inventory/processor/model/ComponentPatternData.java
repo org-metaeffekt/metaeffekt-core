@@ -70,8 +70,10 @@ public class ComponentPatternData extends AbstractModelBase {
         EXCLUDE_PATTERN("Exclude Pattern"),
 
         COMPONENT_NAME("Component Name"),
+        COMPONENT_GROUP_ID("Component Group Id"),
         COMPONENT_PART("Component Part"),
         COMPONENT_VERSION("Component Version"),
+        COMPONENT_CHECKSUM("Component Checksum"),
 
         /**
          * The version anchor may be relative to an upper folder to better capture the component part. When composing
@@ -111,7 +113,9 @@ public class ComponentPatternData extends AbstractModelBase {
         CORE_ATTRIBUTES.add(Attribute.EXCLUDE_PATTERN.getKey());
         CORE_ATTRIBUTES.add(Attribute.COMPONENT_NAME.getKey());
         CORE_ATTRIBUTES.add(Attribute.COMPONENT_PART.getKey());
+        CORE_ATTRIBUTES.add(Attribute.COMPONENT_GROUP_ID.getKey());
         CORE_ATTRIBUTES.add(Attribute.COMPONENT_VERSION.getKey());
+        CORE_ATTRIBUTES.add(Attribute.COMPONENT_CHECKSUM.getKey());
         CORE_ATTRIBUTES.add(Attribute.VERSION_ANCHOR.getKey());
         CORE_ATTRIBUTES.add(Attribute.VERSION_ANCHOR_CHECKSUM.getKey());
     }
