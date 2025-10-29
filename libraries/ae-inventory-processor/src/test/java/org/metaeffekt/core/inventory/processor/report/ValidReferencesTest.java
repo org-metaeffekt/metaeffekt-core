@@ -84,10 +84,10 @@ public class ValidReferencesTest {
                 .anyMatch(l -> l.contains("<topic id=\"tpc_effective_license_a-license\">"))).isTrue();
 
         assertThat(Files.lines(originTemplateFile.toPath())
-                .anyMatch(l -> l.contains("href=\"tpc_inventory-license-usage.dita#tpc_effective_license_g-license\""))).isTrue();
+                .anyMatch(l -> l.contains("href=\"tpc_inventory-license-usage.dita#tpc_effective_license_b-license\""))).isTrue();
 
         assertThat(Files.lines(targetTemplateFile.toPath())
-                .anyMatch(l -> l.contains("<topic id=\"tpc_effective_license_g-license\">"))).isTrue();
+                .anyMatch(l -> l.contains("<topic id=\"tpc_effective_license_b-license\">"))).isTrue();
 
     }
 

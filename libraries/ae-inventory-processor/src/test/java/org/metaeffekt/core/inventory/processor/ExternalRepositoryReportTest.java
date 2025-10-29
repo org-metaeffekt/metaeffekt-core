@@ -124,11 +124,11 @@ public class ExternalRepositoryReportTest {
 
         DitaTemplateLinkValidator ditaTemplateLinkValidator = new DitaTemplateLinkValidator();
         List<String> errors = ditaTemplateLinkValidator.validateDir(new File(reportDir, "report"));
-        assertThat(errors).isEmpty();
 
         // copy bookmap
         FileUtils.copyFileToDirectory(new File("src/test/resources/external-report-test/bm_test.ditamap"), reportDir);
 
+        assertThat(errors).isEmpty();
         // generate PDF using the following command from terminal:
         // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/external-full-report'
     }
