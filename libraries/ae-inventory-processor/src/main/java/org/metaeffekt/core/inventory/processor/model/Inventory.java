@@ -18,6 +18,7 @@ package org.metaeffekt.core.inventory.processor.model;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.report.model.AssetData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1999,15 +2000,28 @@ public class Inventory implements Serializable {
         }
     }
 
-    public int countComponents(String representedNameLicense) {
-        final Set<String> componentQualifiers = new HashSet<>();
+    public int countComponentsForRepresentedLicense(String license, boolean onlyCountAssets) {
 
-        for (String effectiveLicense : getLicensesRepresentedBy(representedNameLicense)) {
-            evaluateComponents(effectiveLicense).stream()
-                    .forEach(ald -> componentQualifiers.add(ald.deriveComponentQualifierForCounting()));
+        List<String> singleEffectiveLicenses = getLicensesRepresentedBy(license);
+        int count = 0;
+
+        for (String singleEffectiveLicense : singleEffectiveLicenses) {
+            count += countComponentsForSingleLicense(singleEffectiveLicense, onlyCountAssets);
         }
+        return count;
+    }
 
-        return componentQualifiers.size();
+    public int countComponentsForSingleLicense(String license, boolean onlyCountAssets) {
+        if (onlyCountAssets) {
+            return AssetData.fromInventory(this)
+                    .countAssetsWithRepresentedAssociatedLicense(license, true);
+        } else {
+            final Set<String> componentQualifiers = new HashSet<>();
+
+            evaluateComponents(license).stream()
+                    .forEach(ald -> componentQualifiers.add(ald.deriveComponentQualifierForCounting()));
+            return componentQualifiers.size();
+        }
     }
 
     public boolean isFootnoteRequired(List<String> effectiveLicenses, List<String> representedEffectiveLicenses) {
