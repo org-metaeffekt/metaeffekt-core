@@ -36,12 +36,14 @@ public class MavenProjectSourceComponentPatternContributorTest {
         final List<ComponentPatternData> cpdList = contributor.contribute(file.getParentFile(),
                 "pom.xml", FileUtils.computeMD5Checksum(file));
 
-        assertThat(cpdList.size()).isEqualTo(2);
+        assertThat(cpdList.size()).isEqualTo(1);
 
-        final ComponentPatternData cpd = cpdList.get(1);
-        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("javafx-controls-21");
-        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("21");
-        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("javafx-controls");
+        // NOTE: dependencies will not be handled on extraction (too few information available in case; deferred to resolver)
+        final ComponentPatternData cpd = cpdList.get(0);
+        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("hellofx-1.0-SNAPSHOT");
+        assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("1.0-SNAPSHOT");
+        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("hellofx");
+
     }
 
 }

@@ -70,7 +70,15 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         scan.setEnableImplicitUnpack(true);
         scan.setEnableDetectComponentPatterns(true);
 
+        if (!scanInputDir.exists()) {
+            throw new IllegalStateException("Scan input dir does not exist.");
+        }
+
         final Inventory inventory = scan.createScanInventory();
+
+        if (inventory.getArtifacts().isEmpty()) {
+            throw new IllegalStateException("Scanner did not reveal any results.");
+        }
 
         new File(getInventoryFolder()).mkdirs();
         new InventoryWriter().writeInventory(inventory, new File(getInventoryFolder() + "scan-inventory.xlsx"));
@@ -102,7 +110,7 @@ public class UrlBasedTestSetup extends AbstractTestSetup {
         String[] filenameParts = url.split("/");
         String filename = filenameParts[filenameParts.length - 1];
         String artifactFile = getDownloadFolder() + filename;
-        if (overwrite || !new File(artifactFile).exists()) {
+        if (overwrite || !new File(artifactFile).exists() || new File(artifactFile).length() == 0) {
             if (url.startsWith("http")) {
                 FileUtils.forceMkdir(new File(getDownloadFolder()));
                 httpDownload(artifactFile);

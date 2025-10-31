@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
+import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
+
 public class XWikiExtensionComponentPatternContributor extends ComponentPatternContributor {
 
     private static final Logger LOG = LoggerFactory.getLogger(XWikiExtensionComponentPatternContributor.class);
@@ -85,15 +87,15 @@ public class XWikiExtensionComponentPatternContributor extends ComponentPatternC
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath);
             componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
 
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-            componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifactId + "-" + version + "." + type);
-            componentPatternData.set(Artifact.Attribute.GROUPID.getKey(), groupId);
+            componentPatternData.set(COMPONENT_NAME, name);
+            componentPatternData.set(COMPONENT_VERSION, version);
+            componentPatternData.set(COMPONENT_PART, artifactId + "-" + version + "." + type);
+            componentPatternData.set(COMPONENT_GROUP_ID, groupId);
 
             componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, patterns.toString());
 
             if (subjectFile.exists()) {
-                componentPatternData.set("Component Checksum", FileUtils.computeChecksum(subjectFile));
+                componentPatternData.set(COMPONENT_CHECKSUM, FileUtils.computeChecksum(subjectFile));
             }
 
             // NOTE: potentially a mapping is required

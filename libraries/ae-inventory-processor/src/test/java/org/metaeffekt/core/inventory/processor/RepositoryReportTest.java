@@ -176,7 +176,7 @@ public class RepositoryReportTest {
         Assert.assertEquals(6, inventory.getComponentPatternData().size());
 
         Assert.assertEquals("org/metaeffekt/core/**/*-org/metaeffekt.core/Inventory.class-ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).deriveQualifier());
-        Assert.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes:0.21.0:org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
+        Assert.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes::0.21.0::org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
 
         File targetFile = new File("target/test-inventory.xls");
         new InventoryWriter().writeInventory(inventory, targetFile);

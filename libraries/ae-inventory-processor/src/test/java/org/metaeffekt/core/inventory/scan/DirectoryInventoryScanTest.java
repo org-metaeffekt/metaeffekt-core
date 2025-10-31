@@ -220,17 +220,20 @@ public class DirectoryInventoryScanTest {
     @Ignore
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
+
+        final String caseString = "case-001";
+
         // inputs
-        final File projectBaseDir = new File("<project.baseDir>");
-        final File scanInputDir = new File(projectBaseDir, "input");
-        final File scanDir = new File(projectBaseDir, "scan");
+        final File projectBaseDir = new File("<path>");
+        final File scanInputDir = new File(projectBaseDir, caseString);
+        final File scanDir = new File(projectBaseDir, caseString + "-scan");
 
         // other sources
         final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
 
         // outputs
-        final File resultsDir = new File(projectBaseDir, "results");
-        final File targetAggregationDir = new File(resultsDir, "aggregation");
+        final File resultsDir = new File(projectBaseDir, caseString + "-results");
+        final File targetAggregationDir = new File(resultsDir, caseString + "-aggregation");
         final File targetAggregationInventoryFile = new File(resultsDir, "aggregated-inventory.xlsx");
         final File targetScanInventoryFile = new File(resultsDir, "scan-inventory.xlsx");
 
@@ -341,8 +344,10 @@ public class DirectoryInventoryScanTest {
         final String[] scanExcludes = new String[]{"--none--"};
 
         final Inventory inventory = new Inventory();
-        final DirectoryInventoryScan scan =
-                new DirectoryInventoryScan(inputDir, scanDir, scanIncludes, scanExcludes, inventory);
+        final DirectoryInventoryScan scan = new DirectoryInventoryScan(
+                inputDir, scanDir,
+                scanIncludes, scanExcludes,
+                inventory);
         scan.setEnableImplicitUnpack(true);
         scan.setEnableDetectComponentPatterns(true);
 

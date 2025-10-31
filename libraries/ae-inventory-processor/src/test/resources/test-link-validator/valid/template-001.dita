@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="local-target">
+    <body>
+        <xref href="#local-target" type="topic">link</xref>
+        <xref href="#local-target/local-nested-target" type="topic">link</xref>
+        <xref href="template-002.dita#external-target" type="topic">link</xref>
+        <xref href="template-002.dita#external-target/external-nested-target" type="topic">link</xref>
+    </body>
+    <topic id="local-nested-target"></topic>
+</topic>
+

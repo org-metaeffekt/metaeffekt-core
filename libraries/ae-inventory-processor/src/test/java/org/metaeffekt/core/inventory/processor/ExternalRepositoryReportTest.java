@@ -19,6 +19,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.report.DitaTemplateLinkValidator;
 import org.metaeffekt.core.inventory.processor.report.InventoryReport;
 import org.metaeffekt.core.inventory.processor.report.ReportContext;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
@@ -26,8 +27,10 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.metaeffekt.core.inventory.processor.model.Constants.STRING_TRUE;
 
 @Ignore
@@ -86,8 +89,8 @@ public class ExternalRepositoryReportTest {
     @Ignore
     @Test
     public void testFullReport() throws IOException {
-        final File inventoryDir = new File("src/test/resources/external-report-test");
-        final File reportDir = new File("target/external-full-report");
+        final File inventoryDir = new File("");
+        final File reportDir = new File("");
 
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
                 .inventoryBomReportEnabled(true)
@@ -104,7 +107,7 @@ public class ExternalRepositoryReportTest {
 
         report.setReferenceLicensePath("licenses");
         report.setReferenceComponentPath("components");
-        report.setInventory(InventoryUtils.readInventory(inventoryDir, "*.xls"));
+        report.setInventory(InventoryUtils.readInventory(inventoryDir, "*.xlsx"));
         report.setTargetReportDir(new File(reportDir, "report"));
 
         reportDir.mkdirs();
@@ -119,9 +122,13 @@ public class ExternalRepositoryReportTest {
 
         report.createReport();
 
+        DitaTemplateLinkValidator ditaTemplateLinkValidator = new DitaTemplateLinkValidator();
+        List<String> errors = ditaTemplateLinkValidator.validateDir(new File(reportDir, "report"));
+
         // copy bookmap
         FileUtils.copyFileToDirectory(new File("src/test/resources/external-report-test/bm_test.ditamap"), reportDir);
 
+        assertThat(errors).isEmpty();
         // generate PDF using the following command from terminal:
         // 'mvn initialize -Pgenerate-dita -Dphase.inventory.check=DISABLED -Ddita.source.dir=target/external-full-report'
     }

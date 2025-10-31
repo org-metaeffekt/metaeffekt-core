@@ -56,6 +56,8 @@ public class MatchResult {
         derivedArtifact.setId(componentPatternData.get(COMPONENT_PART));
         derivedArtifact.setComponent(componentPatternData.get(COMPONENT_NAME));
         derivedArtifact.setVersion(componentPatternData.get(COMPONENT_VERSION));
+        derivedArtifact.setGroupId(componentPatternData.get(COMPONENT_GROUP_ID));
+        derivedArtifact.setChecksum(componentPatternData.get(COMPONENT_CHECKSUM));
 
         final String relativePath = asRelativePath(scanRootDir.getPath(), FileUtils.normalizePathToLinux(versionAnchorRootDir));
         final String virtualRootPath = asRelativePath(scanRootDir.getPath(), versionAnchorRootDir.getPath());
@@ -87,10 +89,6 @@ public class MatchResult {
         derivedArtifact.set(Constants.KEY_SCOPE, componentPatternData.get(Constants.KEY_SCOPE));
         derivedArtifact.set(Artifact.Attribute.URL, componentPatternData.get(Artifact.Attribute.URL.getKey()));
         derivedArtifact.set(Artifact.Attribute.PURL, componentPatternData.get(Artifact.Attribute.PURL.getKey()));
-
-        // also the group id
-        derivedArtifact.setGroupId(componentPatternData.get("Group Id"));
-        derivedArtifact.setChecksum(componentPatternData.get("Component Checksum"));
 
         derivedArtifact.set(FileSystemScanConstants.ATTRIBUTE_KEY_COMPONENT_PATTERN_MARKER, Constants.MARKER_CROSS);
 

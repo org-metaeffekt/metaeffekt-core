@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
 
 
 public class BouncyCastleTest extends AbstractCompositionAnalysisTest {

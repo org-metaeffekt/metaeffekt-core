@@ -20,7 +20,14 @@
 
 
     #if (!$singleLicenses.isEmpty())
-        #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", "AssociatedLicenses", "Asset Licenses", $singleLicenses, true, "")
+        #insertLicenseTable(
+            "tpc_asset-license-summary-$reportContext.id",
+            "AssociatedLicenses",
+            "Asset Licenses",
+            $singleLicenses,
+            true,
+            "",
+            true)
     #end
 
     #if (!$licenseExpressions.isEmpty())
@@ -79,7 +86,13 @@
                     $utils.getText("general.license-detail-notice")
                 </p>
                 <p>
-                    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id", $license, $utils.getText("general.short.license-variants"), $licenseList, false, "")
+                    #insertLicenseTable("tpc_asset-license-summary-$reportContext.id",
+                        $license,
+                        $utils.getText("general.short.license-variants"),
+                        $licenseList,
+                        false,
+                        "",
+                        true)
                 </p>
 
                 #foreach($associatedLicense in $licenseList)

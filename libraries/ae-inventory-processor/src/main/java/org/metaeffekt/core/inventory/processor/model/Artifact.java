@@ -378,7 +378,7 @@ public class Artifact extends AbstractModelBase {
         return sb.toString();
     }
 
-    public void deriveArtifactId() {
+    public String deriveArtifactId() {
         if (artifactId == null) {
             String artifactId = extractArtifactId(getId(), getVersion(), getGroupId());
             if (artifactId == null) {
@@ -386,6 +386,7 @@ public class Artifact extends AbstractModelBase {
             }
             this.setArtifactId(artifactId);
         }
+        return artifactId;
     }
 
     /**

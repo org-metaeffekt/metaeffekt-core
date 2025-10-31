@@ -168,9 +168,10 @@ public class ArtifactType {
     @Deprecated
     public static final ArtifactType NODEJS_MODULE = new ArtifactType("nodejs-module", "nodejs module");
     public static final ArtifactType WEB_MODULE = new ArtifactType("web-module", "web module", NODEJS_MODULE);
+    public static final ArtifactType RUBY_GEM = new ArtifactType("ruby-gem", "ruby gem");
 
     public static final ArtifactType CATEGORY_SOFTWARE_LIBRARY = new ArtifactType("software library", null,
-            LINUX_PACKAGE, PYTHON_MODULE, WEB_MODULE, NODEJS_MODULE
+            LINUX_PACKAGE, PYTHON_MODULE, WEB_MODULE, NODEJS_MODULE, RUBY_GEM
     );
 
     public static final ArtifactType OPERATING_SYSTEM = new ArtifactType("operating system", null);

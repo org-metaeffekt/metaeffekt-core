@@ -24,7 +24,8 @@ import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.ID;
+import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.VERSION;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
 public class Erubis_2_7_0 extends AbstractCompositionAnalysisTest {

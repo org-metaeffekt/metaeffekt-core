@@ -24,7 +24,6 @@ import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
 
 import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.*;
-import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.PATH_IN_ASSET;
 import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attributeValue;
 
 public class Flutter_1_16_3 extends AbstractCompositionAnalysisTest{

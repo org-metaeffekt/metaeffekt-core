@@ -391,17 +391,32 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         }
     }
 
-    public static File initializeTmpFolder(File targetDir) {
-        final File tmpFolder = new File(targetDir.getParentFile(), ".tmp");
-        if (tmpFolder.exists()) {
+    /**
+     * Ensures that the given folder specified by dir is empty and recreated
+     *
+     * @param dir Specifies the folder.
+     *
+     * @return Returns dir.
+     */
+    public static File ensureEmptyFolder(File dir) {
+        // automated file indexing may cause issues while deleting; compensation via iteration
+        int maxIteration = 1000;
+        Throwable t = null;
+        while (dir.exists() && maxIteration-- > 0) {
             try {
-                FileUtils.deleteDirectory(tmpFolder);
+                System.out.println("Deleting " + dir);
+                FileUtils.forceDelete(dir);
             } catch (IOException e) {
-                LOG.error("Failed to delete tmp folder.", e);
+                t = e;
             }
         }
-        tmpFolder.mkdirs();
-        return tmpFolder;
+        if (dir.exists()) {
+            LOG.error("Failed to delete tmp folder: {}", dir.getAbsolutePath(), t);
+        }
+
+        // recreate empty folder
+        dir.mkdirs();
+        return dir;
     }
 
     /**
