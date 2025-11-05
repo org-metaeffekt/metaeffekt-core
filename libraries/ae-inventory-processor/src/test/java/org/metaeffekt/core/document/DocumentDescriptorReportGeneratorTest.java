@@ -88,6 +88,50 @@ public class DocumentDescriptorReportGeneratorTest {
     }
 
     @Test
+    public void testInitialLicenseDocumentationTemplates () throws IOException {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/initial-license-documentation");
+
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("", "");
+        DocumentPartType partType = DocumentPartType.INITIAL_LICENSE_DOCUMENTATION;
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.INITIAL_LICENSE_DOCUMENTATION);
+
+        documentDescriptorReportGenerator.generate(documentDescriptor);
+
+        File expectedFile01 = new File(targetReportDir, "parts/map_test-initial-license-documentation.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+    }
+
+    @Test
+    public void testLicenseDocumentationTemplates() throws IOException {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/license-documentation");
+
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("", "");
+        DocumentPartType partType = DocumentPartType.LICENSE_DOCUMENTATION;
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.LICENSE_DOCUMENTATION);
+
+        documentDescriptorReportGenerator.generate(documentDescriptor);
+
+        File expectedFile01 = new File(targetReportDir, "parts/map_test-license-documentation.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+    }
+
+    @Test
     public void testVulnerabilityReportTemplates () throws IOException {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-report");
 
@@ -132,8 +176,30 @@ public class DocumentDescriptorReportGeneratorTest {
     }
 
     @Test
+    public void testVulnerabilitySummaryPartTemplates () throws IOException {
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-summary-part");
+
+        Map<String, String> partParams = new HashMap<>();
+        partParams.put("securityPolicyFile", "security-policy-report.json");
+        DocumentPartType partType = DocumentPartType.VULNERABILITY_SUMMARY_PART;
+        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
+        documentParts.add(documentPart);
+
+        documentDescriptor.setDocumentParts(documentParts);
+        documentDescriptor.setTargetReportDir(targetReportDir);
+        documentDescriptor.setDocumentType(DocumentType.VULNERABILITY_REPORT);
+
+        documentDescriptorReportGenerator.generate(documentDescriptor);
+
+        File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-summary-part.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
+        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+    }
+
+    @Test
     public void testVulnerabilitySummaryReportTemplates () throws IOException {
-        File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-summary-report");
+        File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-summary-part");
 
         Map<String, String> partParams = new HashMap<>();
         partParams.put("securityPolicyFile", "security-policy-report.json");
@@ -153,49 +219,6 @@ public class DocumentDescriptorReportGeneratorTest {
         assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
     }
 
-    @Test
-    public void testInitialLicenseDocumentationTemplates () throws IOException {
-        File targetReportDir = new File("target/test-document-descriptor-report-generator/initial-license-documentation");
-
-        Map<String, String> partParams = new HashMap<>();
-        partParams.put("", "");
-        DocumentPartType partType = DocumentPartType.INITIAL_LICENSE_DOCUMENTATION;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
-        documentParts.add(documentPart);
-
-        documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
-        documentDescriptor.setDocumentType(DocumentType.INITIAL_LICENSE_DOCUMENTATION);
-
-        documentDescriptorReportGenerator.generate(documentDescriptor);
-
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-initial-license-documentation.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
-        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
-    }
-
-    @Test
-    public void testlicenseDocumentationTemplates () throws IOException {
-        File targetReportDir = new File("target/test-document-descriptor-report-generator/license-documentation");
-
-        Map<String, String> partParams = new HashMap<>();
-        partParams.put("", "");
-        DocumentPartType partType = DocumentPartType.LICENSE_DOCUMENTATION;
-        DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
-        documentParts.add(documentPart);
-
-        documentDescriptor.setDocumentParts(documentParts);
-        documentDescriptor.setTargetReportDir(targetReportDir);
-        documentDescriptor.setDocumentType(DocumentType.LICENSE_DOCUMENTATION);
-
-        documentDescriptorReportGenerator.generate(documentDescriptor);
-
-        File expectedFile01 = new File(targetReportDir, "parts/map_test-license-documentation.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
-        File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
-    }
 
     public void cleanUpTargetTestDir() throws IOException {
         if (targetTestDir.exists()) {
