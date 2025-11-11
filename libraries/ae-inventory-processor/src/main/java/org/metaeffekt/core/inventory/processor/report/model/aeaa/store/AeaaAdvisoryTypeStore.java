@@ -485,6 +485,16 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             Pattern.compile("STACKSA_\\d{4}_\\d{4}_\\d{4}", Pattern.CASE_INSENSITIVE),
             AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("STACKABLE", "CSAF")));
 
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_KUNBUS = new AeaaAdvisoryTypeIdentifier<>(
+            "https://www.kunbus.com", "KUNBUS", "CSAF",
+            Pattern.compile("kunbus-\\d{4}-\\d{7}", Pattern.CASE_INSENSITIVE),
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("KUNBUS", "CSAF")));
+
+    public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_ABB = new AeaaAdvisoryTypeIdentifier<>(
+            "https://global.abb/group/en/technology/cyber-security/alerts-and-notifications", "ABB", "CSAF",
+            null,
+            AeaaCsafAdvisoryEntry.class, () -> new AeaaCsafAdvisoryEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation("ABB", "CSAF")));
+
     // ANY IDENTIFIER
     public final static AeaaAdvisoryTypeIdentifier<AeaaGeneralAdvisorEntry> ANY_ADVISORY_FILTER_WILDCARD = new AeaaAdvisoryTypeIdentifier<>(
             "any", "any", "any",
