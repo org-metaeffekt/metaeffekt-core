@@ -297,6 +297,16 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         return new AeaaSingleContentIdentifierParseResult<>(identifier, id);
     }
 
+    public AeaaSingleContentIdentifierParseResult<T> fromMapWithoutCreation(Map<String, Object> map) {
+        final String name = ObjectUtils.firstNonNull(map.get("source"), map.get("name"), "unknown").toString();
+        final String implementation = ObjectUtils.firstNonNull(map.get("implementation"), name, "unknown").toString();
+        final T identifier = fromNameAndImplementationWithoutCreation(name, implementation);
+
+        final String id = map.get("id") == null ? null : map.get("id").toString();
+
+        return new AeaaSingleContentIdentifierParseResult<>(identifier, id);
+    }
+
     public Map<T, Set<String>> fromListMultipleReferencedIds(List<Map<String, Object>> map) {
         final Map<T, Set<String>> referencedIds = new HashMap<>();
 
@@ -315,15 +325,8 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
         final JSONArray jsonArray = new JSONArray();
 
         for (Map.Entry<T, Set<String>> entry : referencedIds.entrySet()) {
-            final String name = entry.getKey().getName();
-            final String implementation = entry.getKey().getImplementation();
-            final Set<String> ids = entry.getValue();
-
-            for (String id : ids) {
-                jsonArray.put(new JSONObject()
-                        .put("name", name)
-                        .put("implementation", implementation)
-                        .put("id", id));
+            for (String id : entry.getValue()) {
+                jsonArray.put(entry.getKey().toJson().put("id", id));
             }
         }
 
@@ -537,6 +540,12 @@ public abstract class AeaaContentIdentifierStore<T extends AeaaContentIdentifier
             } else {
                 return WordUtils.capitalize(name);
             }
+        }
+
+        public JSONObject toJson() {
+            return new JSONObject()
+                    .put("name", name)
+                    .put("implementation", implementation);
         }
     }
 }

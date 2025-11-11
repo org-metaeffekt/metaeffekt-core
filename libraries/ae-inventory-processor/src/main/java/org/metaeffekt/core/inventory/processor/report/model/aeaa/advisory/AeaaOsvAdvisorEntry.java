@@ -19,7 +19,6 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.ObjectUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
@@ -31,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -38,26 +39,6 @@ import java.util.*;
  * This class extends {@link AeaaAdvisoryEntry} and includes additional fields and methods
  * specific to OSV advisories, such as severity, GitHub review status, publication dates,
  * and affected software version ranges.
- *
- * <p>
- * Instances of this class can be constructed from various data sources including JSON objects,
- * maps, and Lucene documents. The class provides functionality to parse OSV-specific JSON
- * structures and integrate them into the advisory model.
- * </p>
- *
- * <p>
- * The class handles conversion of advisory data to and from different representations,
- * ensuring seamless integration with storage and processing systems.
- * </p>
- *
- * <p>
- * Example usage:
- * </p>
- * <pre>
- *     JSONObject osvJson = ...; // JSON object from OSV API
- *     String ecosystem = "npm";
- *     AeaaAdvisoryEntry entry = AeaaAdvisoryEntry.fromOsvDownloadJson(osvJson, ecosystem);
- * </pre>
  *
  * @see AeaaAdvisoryEntry
  */
@@ -89,9 +70,6 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
     @Setter
     private Set<String> affectedEcosystems = new HashSet<>();
 
-    @Getter
-    private final List<String> packageUrls = new ArrayList<>();
-    
     protected static final Set<String> CONVERSION_KEYS_AMB = Collections.unmodifiableSet(
             new HashSet<>(AeaaAdvisoryEntry.CONVERSION_KEYS_AMB));
 
@@ -103,6 +81,9 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
                 add("githubReviewed");
                 add("githubReviewedAt");
                 add("nvdPublishedAt");
+                add("vulnerableSoftware");
+                add("vulnerableSoftwareCpe");
+                add("vulnerableSoftwareConfigurations");
                 add("purls");
             }});
 
@@ -134,7 +115,11 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
         if (sourceIdentifier != null && sourceIdentifier.getName().equals("GHSA")) {
             return String.format("https://github.com/advisories/%s", id);
         }
-        return String.format("https://osv.dev/vulnerability/%s", id);
+        try {
+            return String.format("https://osv.dev/vulnerability/%s", URLEncoder.encode(id, "UTF-8").replace("+", "%20"));
+        } catch (UnsupportedEncodingException e) {
+            return String.format("https://osv.dev/vulnerability/%s", id);
+        }
     }
 
     @Override
@@ -153,17 +138,17 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
     }
 
     public static AeaaAdvisoryEntry fromAdvisoryMetaData(AdvisoryMetaData amd) {
-        return AeaaAdvisoryEntry.fromAdvisoryMetaData(amd, () -> new AeaaAdvisoryEntry(identifyidentifier(amd.get("id"))));
+        return AeaaAdvisoryEntry.fromAdvisoryMetaData(amd, () -> new AeaaAdvisoryEntry(guessAdvisoryProviderFromId(amd.get("id"))));
     }
 
     public static AeaaAdvisoryEntry fromInputMap(Map<String, Object> map) {
-        return AeaaAdvisoryEntry.fromInputMap(map, () -> new AeaaAdvisoryEntry(identifyidentifier((String) map.get("id"))));
+        return AeaaAdvisoryEntry.fromInputMap(map, () -> new AeaaAdvisoryEntry(guessAdvisoryProviderFromId((String) map.get("id"))));
     }
 
     public static AeaaAdvisoryEntry fromJson(JSONObject json) {
-        return AeaaAdvisoryEntry.fromJson(json, () -> new AeaaAdvisoryEntry(identifyidentifier(json.optString("id"))));
+        return AeaaAdvisoryEntry.fromJson(json, () -> new AeaaAdvisoryEntry(guessAdvisoryProviderFromId(json.optString("id"))));
     }
-    
+
     @Override
     public void appendFromBaseModel(AdvisoryMetaData amd) {
         super.appendFromBaseModel(amd);
@@ -175,9 +160,9 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
             this.setGithubReviewedAt(AeaaTimeUtils.tryParse(amd.get(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_DATE.getKey())));
         }
     }
+
     @Override
     public void appendToBaseModel(AdvisoryMetaData amd) {
-        super.appendToBaseModel(amd);
         super.appendToBaseModel(amd);
 
         amd.set(AeaaInventoryAttribute.ADVISOR_OSV_GHSA_REVIEWED_STATE.getKey(), String.valueOf(isGithubReviewed()));
@@ -195,7 +180,6 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
         this.setSeverity(osvAdvisorEntry.getSeverity());
         this.setGithubReviewed(osvAdvisorEntry.isGithubReviewed());
         this.setGithubReviewedAt(osvAdvisorEntry.getGithubReviewedAt());
-        this.packageUrls.addAll(osvAdvisorEntry.getPackageUrls());
     }
 
     /**
@@ -208,15 +192,11 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
         super.appendFromMap(map);
 
         this.setOriginEcosystem((String) map.getOrDefault("ecosystem", null));
-        this.setAffectedEcosystems((Set<String>) map.getOrDefault("affectedEcosystems",null));
+        this.setAffectedEcosystems((Set<String>) map.getOrDefault("affectedEcosystems", null));
         this.setSeverity((String) map.getOrDefault("severity", null));
         this.setGithubReviewed((boolean) map.getOrDefault("githubReviewed", false));
         this.setGithubReviewedAt(AeaaTimeUtils.tryParse(map.getOrDefault("githubReviewedAt", null)));
         this.setNvdPublishedAt(AeaaTimeUtils.tryParse(map.getOrDefault("nvdPublishedAt", null)));
-
-        List<String> purls = (List) map.getOrDefault("purls", null);
-        if (purls != null)
-            this.packageUrls.addAll(purls);
     }
 
     /**
@@ -236,12 +216,9 @@ public class AeaaOsvAdvisorEntry extends AeaaAdvisoryEntry {
                 ObjectUtils.defaultIfNull(githubReviewedAt == null ? null : githubReviewedAt.getTime(), JSONObject.NULL));
         json.put("nvdPublishedAt",
                 ObjectUtils.defaultIfNull(nvdPublishedAt == null ? null : nvdPublishedAt.getTime(), JSONObject.NULL));
-
-        final JSONArray purls = new JSONArray(packageUrls);
-        json.put("purls", purls);
     }
 
-    private static AeaaAdvisoryTypeIdentifier<?> identifyidentifier(String id){
+    private static AeaaAdvisoryTypeIdentifier<?> guessAdvisoryProviderFromId(String id) {
         return AeaaAdvisoryTypeStore.get().osvValues().stream()
                 .filter(identifier -> identifier.patternMatchesId(id))
                 .findFirst()
