@@ -100,6 +100,15 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
     ADVISOR_OSV_GHSA_REVIEWED_DATE("GHSA Reviewed Date"),
     NVD_EQUIVALENT("NVD Equivalent"),
     NVD_EQUIVALENT_ADVISORIES("NVD Equivalent Advisories"),
+    /**
+     * Package URLs derived from the artifact information.
+     */
+    DERIVED_PURLS("Derived PURLs"),
+    /**
+     * A CSV List of (partially or fully defined) PURLs that the artifact is not represented by.
+     */
+    INAPPLICABLE_PURLS("Inapplicable PURLs"),
+    RETAINED_VULNERABLE_SOFTWARE_CONFIGURATIONS("Version Ranges"),
     ;
 
     private final String key;
