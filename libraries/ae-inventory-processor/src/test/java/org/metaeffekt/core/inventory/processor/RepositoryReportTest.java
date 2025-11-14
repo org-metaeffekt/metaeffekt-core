@@ -46,7 +46,7 @@ public class RepositoryReportTest {
 
 
     private static final File INVENTORY_DIR = new File("src/test/resources/test-inventory-01");
-    private static final String INVENTORY_INCLUDES = "*.xls";
+    private static final String INVENTORY_INCLUDES = "*.xlsx,*.xls";
     private static final String LICENSES_PATH = "licenses";
     private static final String COMPONENTS_PATH = "components";
 
@@ -298,13 +298,19 @@ public class RepositoryReportTest {
         // copy bookmap to enable PDF generation testing
         FileUtils.copyFileToDirectory(new File("src/test/resources/test-inventory-01/bm_test.ditamap"), target);
 
-        File inventoryDir = new File("src/test/resources/test-inventory-04");
+        File inventoryDir = new File("/Users/ywittmann/workspace/metaeffekt-artifact-analysis-gh/modules/ae-html-report/ae-inventory-overview-html-report/src/test/resources/example-overview-report/overview/advisor");
         String inventoryIncludes = INVENTORY_INCLUDES;
 
         InventoryReport report = new InventoryReport(ReportConfigurationParameters.builder()
                 .failOnUnknown(false)
                 .failOnUnknownVersion(false)
                 .failOnMissingLicenseFile(false)
+                .failOnMissingLicense(false)
+                .inventoryVulnerabilityStatisticsReportEnabled(true)
+                .inventoryVulnerabilityReportEnabled(true)
+                .inventoryVulnerabilityReportSummaryEnabled(true)
+                .assetBomReportEnabled(false)
+                .assessmentReportEnabled(true)
                 .build());
 
         report.setReportContext(new ReportContext("test", "Test", "Test Context"));
