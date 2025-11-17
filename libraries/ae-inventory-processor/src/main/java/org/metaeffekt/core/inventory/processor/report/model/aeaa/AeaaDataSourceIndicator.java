@@ -26,14 +26,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Mirrors structure of <code>com.metaeffekt.mirror.contents.base.DataSourceIndicator</code> 
- * until separation of inventory report generation from ae core inventory processor.
- * <p>
  * A data structure to represent the matching source of a vulnerability or advisory.
  */
+@Getter
 public class AeaaDataSourceIndicator {
 
     private final static Logger LOG = LoggerFactory.getLogger(AeaaDataSourceIndicator.class);
@@ -46,14 +45,6 @@ public class AeaaDataSourceIndicator {
         this.matchReason = matchReason;
     }
 
-    public Reason getMatchReason() {
-        return matchReason;
-    }
-
-    public AeaaContentIdentifierStore.AeaaContentIdentifier getDataSource() {
-        return dataSource;
-    }
-
     public JSONObject toJson() {
         return new JSONObject()
                 .put("source", dataSource.name())
@@ -62,6 +53,9 @@ public class AeaaDataSourceIndicator {
     }
 
     public static AeaaDataSourceIndicator fromJson(JSONObject json) {
+        if (!json.has("source")) {
+            throw new IllegalArgumentException("Missing source attribute in reason JSON: " + json);
+        }
         final String source = json.getString("source");
         final String implementation = json.optString("implementation", null);
         final AeaaContentIdentifierStore.AeaaContentIdentifier parsedSource = sourceFromSourceAndImplementation(source, implementation);
@@ -78,8 +72,7 @@ public class AeaaDataSourceIndicator {
             final Object o = json.get(i);
             if (o instanceof JSONObject) {
                 JSONObject jsonObject = (JSONObject) o;
-                AeaaDataSourceIndicator fromJson = fromJson(jsonObject);
-                result.add(fromJson);
+                result.add(fromJson(jsonObject));
             } else {
                 LOG.warn("Unexpected JSON object in array on [{}#fromJson(JSONArray)]: {}", AeaaDataSourceIndicator.class, o);
             }
@@ -91,12 +84,17 @@ public class AeaaDataSourceIndicator {
         if (indicators == null || indicators.isEmpty()) {
             return new JSONArray();
         }
-        return new JSONArray(
-                indicators.stream()
-                        .filter(Objects::nonNull)
-                        .map(AeaaDataSourceIndicator::toJson)
-                        .collect(Collectors.toList())
-        );
+        try {
+            return new JSONArray(
+                    indicators.stream()
+                            .filter(Objects::nonNull)
+                            .map(AeaaDataSourceIndicator::toJson)
+                            .collect(Collectors.toList())
+            );
+        } catch (Exception e) {
+            LOG.error("Failed to convert indicators to JSON: {}", indicators, e);
+            return new JSONArray();
+        }
     }
 
     @Override
@@ -123,6 +121,117 @@ public class AeaaDataSourceIndicator {
         return AeaaAdvisoryTypeStore.get().fromNameAndImplementationWithoutCreation(source, implementation);
     }
 
+    @Getter
+    public abstract static class Reason {
+        protected final String type;
+
+        private static final Map<String, Function<JSONObject, Reason>> registry = new HashMap<>();
+
+        protected Reason(String type) {
+            this.type = type;
+        }
+
+        public JSONObject toJson() {
+            return new JSONObject().put("type", type);
+        }
+
+        public String overwriteSource() {
+            return null;
+        }
+
+        @Override
+        public String toString() {
+            return toJson().toString();
+        }
+
+        public static Reason fromJson(JSONObject json) {
+            if (!json.has("type")) {
+                throw new IllegalArgumentException("Missing type attribute in reason JSON: " + json);
+            }
+            final String type = json.getString("type");
+            Function<JSONObject, Reason> factory = registry.get(type);
+            if (factory == null) {
+                throw new IllegalArgumentException("Unknown reason type: " + type + "\nIn reason JSON:" + json);
+            }
+            return factory.apply(json);
+        }
+    }
+
+    static {
+        Reason.registry.put(VulnerabilityReason.TYPE, VulnerabilityReason::fromJson);
+        Reason.registry.put(ArtifactCpeReason.TYPE, ArtifactCpeReason::fromJson);
+        Reason.registry.put(MsrcProductReason.TYPE, MsrcProductReason::fromJson);
+        Reason.registry.put(ArtifactGhsaReason.TYPE, ArtifactGhsaReason::fromJson);
+        Reason.registry.put(ArtifactOsvReason.TYPE, ArtifactOsvReason::fromJson);
+        Reason.registry.put(ArtifactCsafReason.TYPE, ArtifactCsafReason::fromJson);
+        Reason.registry.put(AnyReason.TYPE, AnyReason::fromJson);
+        Reason.registry.put(AnyArtifactReason.TYPE, AnyArtifactReason::fromJson);
+        Reason.registry.put(AssessmentStatusReason.TYPE, AssessmentStatusReason::fromJson);
+        Reason.registry.put(AnyArtifactOverwriteSourceReason.TYPE, AnyArtifactOverwriteSourceReason::fromJson);
+    }
+
+    @Getter
+    public abstract static class ArtifactReason extends Reason {
+        protected final Artifact artifact;
+
+        protected final String artifactId;
+        protected final String artifactComponent;
+        protected final String artifactVersion;
+
+        protected ArtifactReason(String type, Artifact artifact) {
+            super(type);
+
+            this.artifact = artifact == null ? new Artifact() : artifact;
+            this.artifactId = this.artifact.getId();
+            this.artifactComponent = this.artifact.getComponent();
+            this.artifactVersion = this.artifact.getVersion();
+        }
+
+        protected ArtifactReason(String type, JSONObject artifactData) {
+            super(type);
+
+            this.artifact = null;
+            this.artifactId = artifactData.optString("artifactId", null);
+            this.artifactComponent = artifactData.optString("artifactComponent", null);
+            this.artifactVersion = artifactData.optString("artifactVersion", null);
+        }
+
+        public boolean hasArtifact() {
+            return artifact != null;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            return super.toJson()
+                    .put("artifactId", artifactId)
+                    .put("artifactComponent", artifactComponent)
+                    .put("artifactVersion", artifactVersion);
+        }
+
+        public Artifact findArtifact(Set<Artifact> artifacts) {
+            if (artifact != null) {
+                return artifact;
+            }
+            return artifacts.stream()
+                    .filter(this::isArtifact)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        public boolean isArtifact(Artifact artifact) {
+            if (artifact == null) {
+                return false;
+            }
+            if (this.artifact != null) {
+                return this.artifact.equals(artifact);
+            }
+            return Objects.equals(artifactId, artifact.getId()) &&
+                    Objects.equals(artifactComponent, artifact.getComponent()) &&
+                    Objects.equals(artifactVersion, artifact.getVersion());
+        }
+    }
+
+    @Getter
     public static class AssessmentStatusReason extends Reason {
         public final static String TYPE = "assessment-status";
 
@@ -133,8 +242,8 @@ public class AeaaDataSourceIndicator {
             this.originFile = originFile;
         }
 
-        public String getOriginFile() {
-            return originFile;
+        public static AssessmentStatusReason fromJson(JSONObject json) {
+            return new AssessmentStatusReason(json.optString("originFile", null));
         }
 
         public String getOriginFileName() {
@@ -151,6 +260,7 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    @Getter
     public static class VulnerabilityReason extends Reason {
         public final static String TYPE = "vulnerability";
 
@@ -162,12 +272,11 @@ public class AeaaDataSourceIndicator {
         }
 
         public VulnerabilityReason(AeaaVulnerability vulnerability) {
-            super(TYPE);
-            this.id = vulnerability.getId();
+            this(vulnerability.getId());
         }
 
-        public String getId() {
-            return id;
+        public static VulnerabilityReason fromJson(JSONObject json) {
+            return new VulnerabilityReason(json.getString("id"));
         }
 
         @Override
@@ -177,6 +286,7 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    @Getter
     public static class ArtifactGhsaReason extends ArtifactReason {
         public final static String TYPE = "artifact-ghsa";
 
@@ -192,8 +302,8 @@ public class AeaaDataSourceIndicator {
             this.coordinates = coordinates;
         }
 
-        public String getCoordinates() {
-            return coordinates;
+        public static ArtifactGhsaReason fromJson(JSONObject json) {
+            return new ArtifactGhsaReason(json, json.optString("coordinates", null));
         }
 
         @Override
@@ -228,6 +338,21 @@ public class AeaaDataSourceIndicator {
             this.helpers = helpers;
         }
 
+        public static ArtifactCsafReason fromJson(JSONObject json) {
+            final JSONObject helpersJson = json.getJSONObject("usedHelpers");
+            final Map<AeaaCsafEntryVulnerabilityStatus, Set<String>> helperStatusMapping = new HashMap<>();
+            for (String key : helpersJson.keySet()) {
+                final JSONArray helperJson = helpersJson.getJSONArray(key);
+                final Set<String> helpers = new HashSet<>();
+                for (int i = 0; i < helperJson.length(); i++) {
+                    final JSONObject jsonObject = helperJson.getJSONObject(i);
+                    helpers.add(jsonObject.toString());
+                }
+                helperStatusMapping.put(AeaaCsafEntryVulnerabilityStatus.fromString(key), helpers);
+            }
+            return new ArtifactCsafReason(json, json.getString("provider"), json.getString("document"), helperStatusMapping);
+        }
+
         @Override
         public JSONObject toJson() {
             JSONObject statusMappings = new JSONObject();
@@ -241,49 +366,47 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    @Getter
     public static class ArtifactOsvReason extends ArtifactReason {
         public final static String TYPE = "artifact-osv";
 
+        private final String purl;
         private final String coordinates;
+        private final String matchedEntry;
 
-        public ArtifactOsvReason(Artifact artifact, String coordinates) {
+        public ArtifactOsvReason(Artifact artifact, String purl, String coordinates, String matchedEntry) {
             super(TYPE, artifact);
+            this.purl = purl;
             this.coordinates = coordinates;
+            this.matchedEntry = matchedEntry;
         }
 
-        public String getCoordinates() {
-            return coordinates;
-        }
-
-        protected ArtifactOsvReason(JSONObject artifactData, String coordinates) {
+        public ArtifactOsvReason(JSONObject artifactData, String purl, String coordinates, String matchedEntry) {
             super(TYPE, artifactData);
+            this.purl = purl;
             this.coordinates = coordinates;
+            this.matchedEntry = matchedEntry;
+        }
+
+        public static ArtifactOsvReason fromJson(JSONObject json) {
+            return new ArtifactOsvReason(json, json.optString("purl", null), json.optString("coordinates", null), json.optString("matchedEntry", null));
         }
 
         @Override
         public JSONObject toJson() {
             return super.toJson()
+                    .put("purl", purl)
+                    .put("matchedEntry", matchedEntry)
                     .put("coordinates", coordinates);
         }
     }
 
+    @Getter
     public static class ArtifactCpeReason extends ArtifactReason {
         public final static String TYPE = "artifact-cpe";
 
         private final String cpe;
         private final String configuration;
-
-        public ArtifactCpeReason(Artifact artifact, String cpe) {
-            super(TYPE, artifact);
-            this.cpe = cpe;
-            this.configuration = null;
-        }
-
-        protected ArtifactCpeReason(JSONObject artifactData, String cpe) {
-            super(TYPE, artifactData);
-            this.cpe = cpe;
-            this.configuration = null;
-        }
 
         public ArtifactCpeReason(Artifact artifact, String cpe, String configuration) {
             super(TYPE, artifact);
@@ -297,12 +420,8 @@ public class AeaaDataSourceIndicator {
             this.configuration = configuration;
         }
 
-        public String getCpe() {
-            return cpe;
-        }
-
-        public String getConfiguration() {
-            return configuration;
+        public static ArtifactCpeReason fromJson(JSONObject json) {
+            return new ArtifactCpeReason(json, json.optString("cpe", null), json.optString("configuration", null));
         }
 
         @Override
@@ -313,13 +432,14 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    @Getter
     public static class MsrcProductReason extends ArtifactReason {
         public final static String TYPE = "msrc-product";
 
         private final String msrcProductId;
         private final String[] kbIds;
 
-        public MsrcProductReason(Artifact artifact, String msrcProductId, String[] kbIds) {
+        public MsrcProductReason(Artifact artifact, String msrcProductId, String... kbIds) {
             super(TYPE, artifact);
             this.msrcProductId = msrcProductId;
             this.kbIds = kbIds;
@@ -331,22 +451,20 @@ public class AeaaDataSourceIndicator {
             this.kbIds = kbIds;
         }
 
-        public String getMsrcProductId() {
-            return msrcProductId;
-        }
-
-        public String[] getKbIds() {
-            return kbIds;
+        public static MsrcProductReason fromJson(JSONObject json) {
+            String[] kbIds = json.getJSONArray("kbIds").toList().stream().map(Object::toString).toArray(String[]::new);
+            return new MsrcProductReason(json, json.optString("msrcProductId", null), kbIds);
         }
 
         @Override
         public JSONObject toJson() {
             return super.toJson()
                     .put("msrcProductId", msrcProductId)
-                    .put("kbIds", kbIds);
+                    .put("kbIds", new JSONArray(kbIds));
         }
     }
 
+    @Getter
     public static class AnyReason extends Reason {
         public final static String TYPE = "any";
 
@@ -357,8 +475,8 @@ public class AeaaDataSourceIndicator {
             this.description = description;
         }
 
-        public String getDescription() {
-            return description;
+        public static AnyReason fromJson(JSONObject json) {
+            return new AnyReason(json.optString("description", null));
         }
 
         @Override
@@ -368,6 +486,7 @@ public class AeaaDataSourceIndicator {
         }
     }
 
+    @Getter
     public static class AnyArtifactOverwriteSourceReason extends ArtifactReason {
         public final static String TYPE = "any-artifact-overwrite-source";
 
@@ -383,12 +502,12 @@ public class AeaaDataSourceIndicator {
             this.source = artifactData.optString("source", null);
         }
 
-        @Override
-        public String overwriteSource() {
-            return source;
+        public static AnyArtifactOverwriteSourceReason fromJson(JSONObject json) {
+            return new AnyArtifactOverwriteSourceReason(json);
         }
 
-        public String getSource() {
+        @Override
+        public String overwriteSource() {
             return source;
         }
 
@@ -410,168 +529,13 @@ public class AeaaDataSourceIndicator {
             super(TYPE, artifactData);
         }
 
+        public static AnyArtifactReason fromJson(JSONObject json) {
+            return new AnyArtifactReason(json);
+        }
+
         @Override
         public JSONObject toJson() {
             return super.toJson();
-        }
-    }
-
-    public abstract static class ArtifactReason extends Reason {
-        protected final Artifact artifact;
-
-        protected final String artifactId;
-        protected final String artifactComponent;
-        protected final String artifactVersion;
-
-        protected ArtifactReason(String type, Artifact artifact) {
-            super(type);
-            if (artifact == null) {
-                LOG.warn("Artifact is null in [{}#ArtifactReason(String, Artifact)], using empty artifact", AeaaDataSourceIndicator.class);
-                artifact = new Artifact();
-            }
-            this.artifact = artifact;
-            this.artifactId = artifact.getId();
-            this.artifactComponent = artifact.getComponent();
-            this.artifactVersion = artifact.getVersion();
-        }
-
-        protected ArtifactReason(String type, JSONObject artifactData) {
-            super(type);
-            this.artifact = null;
-            this.artifactId = artifactData.optString("artifactId", null);
-            this.artifactComponent = artifactData.optString("artifactComponent", null);
-            this.artifactVersion = artifactData.optString("artifactVersion", null);
-        }
-
-        public Artifact getArtifact() {
-            return artifact;
-        }
-
-        public boolean hasArtifact() {
-            return artifact != null;
-        }
-
-        public String getArtifactId() {
-            return artifactId;
-        }
-
-        public String getArtifactComponent() {
-            return artifactComponent;
-        }
-
-        public String getArtifactVersion() {
-            return artifactVersion;
-        }
-
-        @Override
-        public JSONObject toJson() {
-            return super.toJson()
-                    .put("artifactId", artifactId)
-                    .put("artifactComponent", artifactComponent)
-                    .put("artifactVersion", artifactVersion);
-        }
-
-        public Artifact findArtifact(Set<Artifact> artifacts) {
-            if (artifact != null) {
-                return artifact;
-            }
-            return artifacts.stream()
-                    .filter(this::isArtifact)
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        public boolean isArtifact(Artifact artifact) {
-            if (artifact == null) {
-                return false;
-            }
-            if (this.artifact != null) {
-                return this.artifact.equals(artifact);
-            }
-            return Objects.equals(artifactId, artifact.getId()) &&
-                    Objects.equals(artifactComponent, artifact.getComponent()) &&
-                    Objects.equals(artifactVersion, artifact.getVersion());
-        }
-    }
-
-    public abstract static class Reason {
-        protected final String type;
-
-        protected Reason(String type) {
-            this.type = type;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public JSONObject toJson() {
-            return new JSONObject().put("type", type);
-        }
-
-        public String overwriteSource() {
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return toJson().toString();
-        }
-
-        public static Reason fromJson(JSONObject json) {
-            if (!json.has("type")) throw new IllegalArgumentException("Missing type attribute in reason JSON: " + json);
-            final String type = json.getString("type");
-            switch (type) {
-                case VulnerabilityReason.TYPE:
-                    return new VulnerabilityReason(json.getString("id"));
-                case ArtifactCpeReason.TYPE:
-                    return new ArtifactCpeReason(
-                            json,
-                            json.optString("cpe", null),
-                            json.optString("configuration", null)
-                    );
-                case MsrcProductReason.TYPE:
-                    return new MsrcProductReason(
-                            json,
-                            json.optString("msrcProductId", null),
-                            json.getJSONArray("kbIds").toList().stream().map(Object::toString).toArray(String[]::new)
-                    );
-                case ArtifactGhsaReason.TYPE:
-                    return new ArtifactGhsaReason(
-                            json,
-                            json.optString("coordinates", null)
-                    );
-                case ArtifactOsvReason.TYPE:
-                    return new ArtifactOsvReason(
-                            json,
-                            json.optString("coordinates", null)
-                    );
-                case ArtifactCsafReason.TYPE:
-                    JSONObject helpersJson = json.getJSONObject("usedHelpers");
-                    Map<AeaaCsafEntryVulnerabilityStatus, Set<String>> helperStatusMapping = new HashMap<>();
-                    for (String key : helpersJson.keySet()) {
-                        JSONArray helperJson = helpersJson.getJSONArray(key);
-                        Set<String> helpers = new HashSet<>();
-                        for (int i = 0; i < helperJson.length(); i++) {
-                            final JSONObject jsonObject = helperJson.getJSONObject(i);
-                            helpers.add(jsonObject.toString());
-                        }
-                        helperStatusMapping.put(AeaaCsafEntryVulnerabilityStatus.fromString(key), helpers);
-                    }
-                    ArtifactCsafReason ArtifactCSafReason = new ArtifactCsafReason(json, json.getString("provider"),
-                            json.getString("document"), helperStatusMapping);
-                    return ArtifactCSafReason;
-                case AnyReason.TYPE:
-                    return new AnyReason(json.optString("description", null));
-                case AnyArtifactReason.TYPE:
-                    return new AnyArtifactReason(json);
-                case AssessmentStatusReason.TYPE:
-                    return new AssessmentStatusReason(json.optString("originFile", null));
-                case AnyArtifactOverwriteSourceReason.TYPE:
-                    return new AnyArtifactOverwriteSourceReason(json);
-                default:
-                    throw new IllegalArgumentException("Unknown reason type: " + type + "\nIn reason JSON:" + json);
-            }
         }
     }
 }

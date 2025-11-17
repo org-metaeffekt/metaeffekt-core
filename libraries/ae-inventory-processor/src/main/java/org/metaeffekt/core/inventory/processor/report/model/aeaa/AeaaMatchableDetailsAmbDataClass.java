@@ -47,6 +47,8 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         add(VulnerabilityMetaData.Attribute.REFERENCED_VULNERABILITIES.getKey());
         add(AdvisoryMetaData.Attribute.REFERENCED_OTHER.getKey());
         add(VulnerabilityMetaData.Attribute.REFERENCED_OTHER.getKey());
+
+        add(AeaaInventoryAttribute.RETAINED_VULNERABLE_SOFTWARE_CONFIGURATIONS.getKey());
     }};
 
     protected final static Set<String> CONVERSION_KEYS_MAP = new HashSet<String>(AeaaAmbDataClass.CONVERSION_KEYS_MAP) {{
@@ -58,6 +60,7 @@ public abstract class AeaaMatchableDetailsAmbDataClass<AMB extends AbstractModel
         add("referencedSecurityAdvisories");
         add("referencedVulnerabilities");
         add("referencedOtherIds");
+        add("retainedVulnerableSoftwareConfigurations");
     }};
 
     protected final Map<AeaaVulnerabilityTypeIdentifier<?>, Set<String>> referencedVulnerabilities = new HashMap<>();
