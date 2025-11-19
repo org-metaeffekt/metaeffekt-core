@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa;
 
 import org.metaeffekt.core.inventory.processor.model.AbstractModelBase;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.eol.export.AeaaExportedCycleState;
+import org.metaeffekt.core.inventory.processor.report.model.aeaa.score.AeaaCvssConditionAttributes;
 
 /**
  * Mirrors structure of <code>com.metaeffekt.artifact.analysis.vulnerability.enrichment.AeaaInventoryAttribute</code>
@@ -109,6 +110,15 @@ public enum AeaaInventoryAttribute implements AbstractModelBase.Attribute {
      */
     INAPPLICABLE_PURLS("Inapplicable PURLs"),
     RETAINED_VULNERABLE_SOFTWARE_CONFIGURATIONS("Version Ranges"),
+    /**
+     * Stores a JSON Object of arbitrary data which may be used to evaluate the applicability condition of CVSS vectors in {@code com.metaeffekt.mirror.contents.vulnerability.Vulnerability.isCvssVectorApplicable()}.
+     * <p>
+     * Currently known uses of this are:
+     * <ul>
+     *     <li> Stores the {@link AeaaInventoryAttribute#MS_PRODUCT_ID}s of referenced artifacts as a JSON Array using the {@link AeaaCvssConditionAttributes#MATCHES_ON_MS_PRODUCT_ID} key.</li>
+     * </ul>
+     */
+    CVSS_APPLICABILITY_CONDITION_ATTRIBUTES("CVSS Applicability Condition Attributes"),
     ;
 
     private final String key;
