@@ -26,14 +26,14 @@ public enum RelationshipType {
     DESCRIBES("describes", Constants.MARKER_CROSS),
     CONTAINS("contains", Constants.MARKER_CONTAINS),
     CONTAINS_TRANSITIVE("containsTransitive", Constants.MARKER_CONTAINS_TRANSITIVE),
-    HAS_DEPENDENCY("hasDependencies", Constants.MARKER_RUNTIME_DEPENDENCY),
-    HAS_DEPENDENCY_TRANSITIVE("hasDependencyTransitive", Constants.MARKER_RUNTIME_DEPENDENCY_TRANSITIVE),
     HAS_RUNTIME_DEPENDENCY("hasRuntimeDependencies", Constants.MARKER_RUNTIME_DEPENDENCY),
     HAS_RUNTIME_DEPENDENCY_TRANSITIVE("hasRuntimeDependencyTransitive", Constants.MARKER_RUNTIME_DEPENDENCY_TRANSITIVE),
     HAS_DEV_DEPENDENCY("hasDevDependencies", Constants.MARKER_DEVELOPMENT_DEPENDENCY),
     HAS_DEV_DEPENDENCY_TRANSITIVE("hasDevDependencyTransitive", Constants.MARKER_DEVELOPMENT_DEPENDENCY_TRANSITIVE),
     HAS_OPTIONAL_DEPENDENCY("hasOptionalDependencies", Constants.MARKER_OPTIONAL_DEPENDENCY),
-    HAS_OPTIONAL_DEPENDENCY_TRANSITIVE("hasOptionalDependencyTransitive", Constants.MARKER_OPTIONAL_DEPENDENCY_TRANSITIVE);
+    HAS_OPTIONAL_DEPENDENCY_TRANSITIVE("hasOptionalDependencyTransitive", Constants.MARKER_OPTIONAL_DEPENDENCY_TRANSITIVE),
+    HAS_PEER_DEPENDENCY("hasPeerDependency", Constants.MARKER_PEER_DEPENDENCY),
+    HAS_PEER_DEPENDENCY_TRANSITIVE("hasPeerDependencyTransitive", Constants.MARKER_PEER_DEPENDENCY_TRANSITIVE),;
 
     private final String name;
 
@@ -49,6 +49,12 @@ public enum RelationshipType {
     }
 
     public static RelationshipType fromInventoryConstant(String inventoryConstant) {
+        RelationshipType relationshipType = INVENTORY_CONSTANT_MAP.get(inventoryConstant);
+
+        if (relationshipType == null) {
+            return null;
+        }
+
         return INVENTORY_CONSTANT_MAP.get(inventoryConstant);
     }
 

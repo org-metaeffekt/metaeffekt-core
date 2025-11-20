@@ -277,19 +277,27 @@ public class RelationshipRegistry {
             for (Artifact artifact : inventory.getArtifacts()) {
 
                 String relationshipMarker = artifact.get(assetMetaData.get(AssetMetaData.Attribute.ASSET_ID));
+                RelationshipType relationshipType = RelationshipType.fromInventoryConstant(relationshipMarker);
 
-                if (relationshipMarker != null && !relationshipMarker.equals(Constants.MARKER_CROSS)) {
+                if (relationshipMarker != null && relationshipType == null) {
+                    log.warn("The inventory [{}] contains an artifact [{}] with an unknown relationship marker [{}]. " +
+                            "The affected artifact will not have it's relationships tracked unless the marker is fixed.",
+                            inventory, artifact.get(Artifact.Attribute.ID), relationshipMarker);
+                    continue;
+                }
+
+                if (relationshipType != null && !relationshipType.equals(RelationshipType.DESCRIBES)) {
                     Relationship<AssetMetaData, Artifact> relationship = new Relationship<>();
                     relationship.addFrom(new RelationshipEntity<>(assetMetaData, InventoryObjectIdentifier.createIdentifier(assetMetaData)));
                     relationship.addTo(artifact,  InventoryObjectIdentifier.createIdentifier(artifact));
-                    relationship.setType(RelationshipType.fromInventoryConstant(relationshipMarker));
+                    relationship.setType(relationshipType);
                     addRelationship(relationship);
 
-                } else if (relationshipMarker != null) {
+                } else if (relationshipType != null) {
                     Relationship<Artifact, AssetMetaData> relationship = new Relationship<>();
                     relationship.addTo(new RelationshipEntity<>(assetMetaData, InventoryObjectIdentifier.createIdentifier(assetMetaData)));
                     relationship.addFrom(artifact,  InventoryObjectIdentifier.createIdentifier(artifact));
-                    relationship.setType(RelationshipType.fromInventoryConstant(relationshipMarker));
+                    relationship.setType(relationshipType);
                     addRelationship(relationship);
                 }
             }
