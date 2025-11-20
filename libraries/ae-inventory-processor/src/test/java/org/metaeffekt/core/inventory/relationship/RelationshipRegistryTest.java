@@ -17,6 +17,8 @@ package org.metaeffekt.core.inventory.relationship;
 
 
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 
@@ -116,7 +118,7 @@ public class RelationshipRegistryTest {
 
 
     @Test
-    public void testBuildFromInventory() throws IOException {
+    public void testBuildFromValidInventory() throws IOException {
         File inventoryFile = new File("src/test/resources/relationships/testBuildFromInventory.xlsx");
         Inventory inventory = new InventoryReader().readInventory(inventoryFile);
 
@@ -144,6 +146,26 @@ public class RelationshipRegistryTest {
         assertThat(hasRelationship(relationships, RelationshipType.DESCRIBES,
                 Collections.singletonList("artifact-4"), Collections.singletonList("AID-asset-2"))).isTrue();
 
+    }
+
+    @Test
+    public void testBuildFromInventoryWIthInvalidRelationshipMarkers() {
+        Inventory inventory = new Inventory();
+
+        AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "test-asset");
+
+        Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "test-artifact");
+        artifact.set(assetMetaData.get(AssetMetaData.Attribute.ASSET_ID), "invalid");
+
+        inventory.getAssetMetaData().add(assetMetaData);
+        inventory.getArtifacts().add(artifact);
+
+        RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
+        relationshipRegistry.buildFromInventory(inventory);
+
+        assertThat(relationshipRegistry.getCopyOfRelationships()).isEmpty();
     }
 
     private static boolean hasRelationship(List<Relationship<?, ?>> relationships, RelationshipType relationshipType,
