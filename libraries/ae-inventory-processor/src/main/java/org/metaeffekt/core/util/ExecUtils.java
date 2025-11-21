@@ -84,7 +84,7 @@ public abstract class ExecUtils {
             // check timout condition
             if (maxMillis != TIMEOUT_NEVER) {
                 if (System.currentTimeMillis() > maxMillis) {
-                    // wait another iteration
+                    // wait another (last) iteration
                     waitIncrementForProcess(process);
 
                     // in case the process is still running
