@@ -574,7 +574,7 @@ public class InventoryReport {
         }
 
         // all vulnerability-related templates require to generate labels
-        if (configParams.isInventoryVulnerabilityReportEnabled() || configParams.isInventoryVulnerabilityStatisticsReportEnabled()) {
+        if (configParams.isInventoryVulnerabilityReportEnabled() || configParams.isInventoryVulnerabilityStatisticsReportEnabled() || configParams.isAssessmentReportEnabled()) {
             writeReports(projectInventory, filteredInventory, inventoryReportAdapters,
                     TEMPLATES_BASE_DIR, TEMPLATE_GROUP_LABELS_VULNERABILITY_ASSESSMENT, reportContext);
         }
