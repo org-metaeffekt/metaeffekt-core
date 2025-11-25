@@ -167,7 +167,10 @@ public class CspLoader {
 
             log.info("Loading file://{}", canonicalOrAbsolute(file));
             final List<CspLoaderEntry> entries = new ArrayList<>();
-            final String content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+            // in the past there was a case where there were multiple empty lines at the start of a file.
+            // it was therefore completely ignored by the if-else later in this method.
+            // we now strip the content and throw an exception if we cannot determine the type of the file.
+            final String content = StringUtils.strip(FileUtils.readFileToString(file, StandardCharsets.UTF_8));
 
             if (content.startsWith("[")) {
                 final JSONArray jsonArray = new JSONArray(content);
@@ -235,6 +238,7 @@ public class CspLoader {
 
                     entries.add(entry);
                 }
+
             } else if (content.startsWith("{")) {
                 final JSONObject json = new JSONObject(content);
                 final CspLoaderEntry entry = new CspLoaderEntry(file);
@@ -242,6 +246,10 @@ public class CspLoader {
                 entry.configuration = json;
                 entry.activeByDefault = true;
                 entries.add(entry);
+
+            } else {
+                throw new IllegalArgumentException("CSP file content must be a JSON Object or JSON Array: file://" + file.getAbsoluteFile() +
+                        "\nBut was: " + content);
             }
 
             return entries;
