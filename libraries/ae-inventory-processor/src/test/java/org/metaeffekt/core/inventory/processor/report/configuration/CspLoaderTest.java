@@ -71,4 +71,37 @@ public class CspLoaderTest {
             loader.loadConfiguration();
         });
     }
+
+    @Test
+    public void emptyWrapperContentTest() {
+        {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "emptyWrapperContentTest/file-a.json"));
+            Assert.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
+        }
+        {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "emptyWrapperContentTest/file-b.json"));
+            Assert.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
+        }
+    }
+
+    @Test
+    public void noJsonContentTest() {
+        Assert.assertThrows(RuntimeException.class, () -> {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "noJsonContentTest/file-a.json"));
+            loader.loadConfiguration();
+        });
+        Assert.assertThrows(RuntimeException.class, () -> {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "noJsonContentTest/file-b.json"));
+            loader.loadConfiguration();
+        });
+        {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "noJsonContentTest/file-c.json"));
+            Assert.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
+        }
+    }
 }
