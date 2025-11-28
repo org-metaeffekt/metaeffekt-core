@@ -5,7 +5,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
 <topic id="tpc_vulnerability-assets-$reportContext.id">
-    <title>$reportContext.combinedTitle($utils.getText("asset-report-bom.short.contained-components"), true)</title>
+    <title>$utils.getText("asset-report-bom.short.contained-components")</title>
 ##
     #set($assets = $assetAdapter.listAssets())
 ##
