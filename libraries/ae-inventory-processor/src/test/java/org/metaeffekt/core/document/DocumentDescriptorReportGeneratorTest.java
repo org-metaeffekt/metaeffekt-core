@@ -136,7 +136,7 @@ public class DocumentDescriptorReportGeneratorTest {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-report");
 
         Map<String, String> partParams = new HashMap<>();
-        partParams.put("securityPolicyFile", "security-policy-report.json");
+        partParams.put("securityPolicyFiles", "security-policy-report.json");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_REPORT;
         DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
@@ -158,7 +158,7 @@ public class DocumentDescriptorReportGeneratorTest {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-statistics-report");
 
         Map<String, String> partParams = new HashMap<>();
-        partParams.put("securityPolicyFile", "security-policy-report.json");
+        partParams.put("securityPolicyFiles", "security-policy-report.json");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_STATISTICS_REPORT;
         DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
@@ -180,7 +180,7 @@ public class DocumentDescriptorReportGeneratorTest {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-summary-part");
 
         Map<String, String> partParams = new HashMap<>();
-        partParams.put("securityPolicyFile", "security-policy-report.json");
+        partParams.put("securityPolicyFiles", "security-policy-report.json");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_SUMMARY_PART;
         DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
@@ -202,7 +202,7 @@ public class DocumentDescriptorReportGeneratorTest {
         File targetReportDir = new File("target/test-document-descriptor-report-generator/vulnerability-summary-part");
 
         Map<String, String> partParams = new HashMap<>();
-        partParams.put("securityPolicyFile", "security-policy-report.json");
+        partParams.put("securityPolicyFiles", "security-policy-report.json");
         DocumentPartType partType = DocumentPartType.VULNERABILITY_SUMMARY_REPORT;
         DocumentPart documentPart = new DocumentPart("test", inventoryContexts, partType, partParams);
         documentParts.add(documentPart);
