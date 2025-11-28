@@ -237,12 +237,31 @@ public class DocumentDescriptorReportGenerator {
     }
 
     private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
-        if (params != null && (params.containsKey("securityPolicyFile"))) {
-            String securityPolicyFilePath = resolveAgainstBasePath(params.get("securityPolicyFile"), documentDescriptor.getBasePath());
-            File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
+        if (params != null && params.containsKey("securityPolicyFiles")) {
+
+            String fileParam = params.get("securityPolicyFiles");
+
+            if (fileParam == null || fileParam.trim().isEmpty()) {
+                throw new IOException("Parameter 'securityPolicyFiles' is empty. Please provide at least one file.");
+            }
+
+            List<String> filePaths = Arrays.stream(fileParam.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+
+            List<File> files = filePaths.stream()
+                    .map(path -> resolveAgainstBasePath(path, documentDescriptor.getBasePath()))
+                    .map(resolved -> resolved != null ? new File(resolved) : null)
+                    .collect(Collectors.toList());
 
             CspLoader securityPolicy = new CspLoader();
-            securityPolicy.setFile(securityPolicyFile);
+            securityPolicy.setFiles(files);
+
+            if (filePaths.isEmpty()) {
+                throw new IOException("No file paths provided in 'securityPolicyFiles'. Please provide file paths as a comma-separated list.");
+            }
+
 
             if (params.containsKey("securityPolicyActiveIds")) {
                 String activeIds = params.get("securityPolicyActiveIds");
