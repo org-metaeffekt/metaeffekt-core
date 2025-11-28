@@ -236,35 +236,68 @@ public class DocumentDescriptorReportGenerator {
         return jsonArray;
     }
 
-    private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
-        if (params != null && (params.containsKey("securityPolicyFile"))) {
-            String securityPolicyFilePath = resolveAgainstBasePath(params.get("securityPolicyFile"), documentDescriptor.getBasePath());
-            File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
+    private static void setPolicy(Map<String, String> params,
+                                  InventoryReport report,
+                                  DocumentDescriptor documentDescriptor) throws IOException {
 
-            CspLoader securityPolicy = new CspLoader();
-            securityPolicy.setFile(securityPolicyFile);
-
-            if (params.containsKey("securityPolicyActiveIds")) {
-                String activeIds = params.get("securityPolicyActiveIds");
-                if (activeIds != null && !activeIds.trim().isEmpty()) {
-                    List<String> activeIdsList = Arrays.stream(activeIds.split(","))
-                            .map(String::trim)
-                            .filter(s -> !s.isEmpty())
-                            .collect(Collectors.toList());
-
-                    if (activeIds.isEmpty()) {
-                        log.warn("No activeIds contained in 'securityPolicyActiveIds'. Please provide Ids as a comma-separated list.");
-                    }
-
-                    securityPolicy.setActiveIds(activeIdsList);
-                } else {
-                    throw new IOException("No activeIds specified for parameter 'securityPolicyActiveIds'. Please provided Ids as a comma-separated list.");
-                }
-            }
-            report.setSecurityPolicy(securityPolicy.loadConfiguration());
-        } else {
-            log.info("no securityPolicyFile provided");
+        if (params == null) {
+            log.info("no securityPolicyFile or additionalSecurityPolicyFile provided");
+            return;
         }
+
+        boolean hasPrimary = params.containsKey("securityPolicyFile");
+        boolean hasAdditional = params.containsKey("additionalSecurityPolicyFile");
+
+        if (!hasPrimary && !hasAdditional) {
+            log.info("no securityPolicyFile or additionalSecurityPolicyFile provided");
+            return;
+        }
+
+        List<File> files = new ArrayList<>();
+
+        if (hasPrimary) {
+            String primaryPathStr = params.get("securityPolicyFile");
+            String resolvedPrimary = resolveAgainstBasePath(primaryPathStr, documentDescriptor.getBasePath());
+            File primaryFile = resolvedPrimary != null ? new File(resolvedPrimary) : null;
+
+            log.info("Using securityPolicyFile: " + resolvedPrimary);
+            files.add(primaryFile);
+        }
+
+        if (hasAdditional) {
+            String optionalPathStr = params.get("additionalSecurityPolicyFile");
+            String resolvedOptional = resolveAgainstBasePath(optionalPathStr, documentDescriptor.getBasePath());
+            File optionalFile = resolvedOptional != null ? new File(resolvedOptional) : null;
+
+            log.info("Using additionalSecurityPolicyFile: " + resolvedOptional);
+            files.add(optionalFile);
+        }
+
+        CspLoader securityPolicy = new CspLoader();
+        securityPolicy.setFiles(files);
+
+        if (params.containsKey("securityPolicyActiveIds")) {
+            String activeIds = params.get("securityPolicyActiveIds");
+
+            if (activeIds != null && !activeIds.trim().isEmpty()) {
+
+                List<String> activeIdsList = Arrays.stream(activeIds.split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList());
+
+                if (activeIdsList.isEmpty()) {
+                    log.warn("No activeIds contained in 'securityPolicyActiveIds'. Please provide Ids as a comma-separated list.");
+                }
+
+                securityPolicy.setActiveIds(activeIdsList);
+
+            } else {
+                throw new IOException("No activeIds specified for parameter 'securityPolicyActiveIds'. Please provided Ids as a comma-separated list.");
+            }
+        }
+
+        report.setSecurityPolicy(securityPolicy.loadConfiguration());
     }
 
     private static Map<String, String> mergeParams(Map<String, String> globalParams, Map<String, String> partParams) {
