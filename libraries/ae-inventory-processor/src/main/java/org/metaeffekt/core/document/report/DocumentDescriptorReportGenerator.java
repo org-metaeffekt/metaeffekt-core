@@ -223,15 +223,15 @@ public class DocumentDescriptorReportGenerator {
                                   DocumentDescriptor documentDescriptor) throws IOException {
 
         if (params == null) {
-            log.info("no securityPolicyFile or additionalSecurityPolicyFile provided");
+            log.info("no securityPolicyFile or secondarySecurityPolicyFile provided");
             return;
         }
 
         boolean hasPrimary = params.containsKey("securityPolicyFile");
-        boolean hasAdditional = params.containsKey("additionalSecurityPolicyFile");
+        boolean hasSecondary = params.containsKey("secondarySecurityPolicyFile");
 
-        if (!hasPrimary && !hasAdditional) {
-            log.info("no securityPolicyFile or additionalSecurityPolicyFile provided");
+        if (!hasPrimary && !hasSecondary) {
+            log.info("no securityPolicyFile or secondarySecurityPolicyFile provided");
             return;
         }
 
@@ -246,12 +246,12 @@ public class DocumentDescriptorReportGenerator {
             files.add(primaryFile);
         }
 
-        if (hasAdditional) {
-            String optionalPathStr = params.get("additionalSecurityPolicyFile");
+        if (hasSecondary) {
+            String optionalPathStr = params.get("secondarySecurityPolicyFile");
             String resolvedOptional = resolveAgainstBasePath(optionalPathStr, documentDescriptor.getBasePath());
             File optionalFile = resolvedOptional != null ? new File(resolvedOptional) : null;
 
-            log.info("Using additionalSecurityPolicyFile: {}", resolvedOptional);
+            log.info("Using secondarySecurityPolicyFile: {}", resolvedOptional);
             files.add(optionalFile);
         }
 
