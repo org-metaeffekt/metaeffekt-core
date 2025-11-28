@@ -15,8 +15,6 @@
  */
 package org.metaeffekt.core.document.report;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentType;
@@ -220,51 +218,68 @@ public class DocumentDescriptorReportGenerator {
         inventoryWriter.writeInventory(inventory, outputFile);
     }
 
-    private static JSONArray convertToJSONArray(String input) {
-        JSONArray jsonArray = new JSONArray();
+    private static void setPolicy(Map<String, String> params,
+                                  InventoryReport report,
+                                  DocumentDescriptor documentDescriptor) throws IOException {
 
-        // Split the input string by commas and trim whitespace
-        String[] names = input.split(",");
-
-        for (String name : names) {
-            // Create a JSONObject for each name and add it to the JSONArray
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("name", name.trim()); // Trim to remove extra spaces
-            jsonArray.put(jsonObject);
+        if (params == null) {
+            log.info("no securityPolicyFile or secondarySecurityPolicyFile provided");
+            return;
         }
 
-        return jsonArray;
-    }
+        boolean hasPrimary = params.containsKey("securityPolicyFile");
+        boolean hasSecondary = params.containsKey("secondarySecurityPolicyFile");
 
-    private static void setPolicy(Map<String, String> params, InventoryReport report, DocumentDescriptor documentDescriptor) throws IOException {
-        if (params != null && (params.containsKey("securityPolicyFile"))) {
-            String securityPolicyFilePath = resolveAgainstBasePath(params.get("securityPolicyFile"), documentDescriptor.getBasePath());
-            File securityPolicyFile = securityPolicyFilePath != null ? new File(securityPolicyFilePath) : null;
+        if (!hasPrimary && !hasSecondary) {
+            log.info("no securityPolicyFile or secondarySecurityPolicyFile provided");
+            return;
+        }
 
-            CspLoader securityPolicy = new CspLoader();
-            securityPolicy.setFile(securityPolicyFile);
+        List<File> files = new ArrayList<>();
 
-            if (params.containsKey("securityPolicyActiveIds")) {
-                String activeIds = params.get("securityPolicyActiveIds");
-                if (activeIds != null && !activeIds.trim().isEmpty()) {
-                    List<String> activeIdsList = Arrays.stream(activeIds.split(","))
-                            .map(String::trim)
-                            .filter(s -> !s.isEmpty())
-                            .collect(Collectors.toList());
+        if (hasPrimary) {
+            String primaryPathStr = params.get("securityPolicyFile");
+            String resolvedPrimary = resolveAgainstBasePath(primaryPathStr, documentDescriptor.getBasePath());
+            File primaryFile = resolvedPrimary != null ? new File(resolvedPrimary) : null;
 
-                    if (activeIds.isEmpty()) {
-                        log.warn("No activeIds contained in 'securityPolicyActiveIds'. Please provide Ids as a comma-separated list.");
-                    }
+            log.info("Using securityPolicyFile: {}", resolvedPrimary);
+            files.add(primaryFile);
+        }
 
-                    securityPolicy.setActiveIds(activeIdsList);
-                } else {
-                    throw new IOException("No activeIds specified for parameter 'securityPolicyActiveIds'. Please provided Ids as a comma-separated list.");
+        if (hasSecondary) {
+            String optionalPathStr = params.get("secondarySecurityPolicyFile");
+            String resolvedOptional = resolveAgainstBasePath(optionalPathStr, documentDescriptor.getBasePath());
+            File optionalFile = resolvedOptional != null ? new File(resolvedOptional) : null;
+
+            log.info("Using secondarySecurityPolicyFile: {}", resolvedOptional);
+            files.add(optionalFile);
+        }
+
+        CspLoader securityPolicy = new CspLoader();
+        securityPolicy.setFiles(files);
+
+        if (params.containsKey("securityPolicyActiveIds")) {
+            String activeIds = params.get("securityPolicyActiveIds");
+
+            if (activeIds != null && !activeIds.trim().isEmpty()) {
+
+                List<String> activeIdsList = Arrays.stream(activeIds.split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList());
+
+                if (activeIdsList.isEmpty()) {
+                    log.warn("No activeIds contained in 'securityPolicyActiveIds'. Please provide Ids as a comma-separated list.");
                 }
+
+                securityPolicy.setActiveIds(activeIdsList);
+
+            } else {
+                throw new IOException("No activeIds specified for parameter 'securityPolicyActiveIds'. Please provided Ids as a comma-separated list.");
             }
-            report.setSecurityPolicy(securityPolicy.loadConfiguration());
-        } else {
-            log.info("no securityPolicyFile provided");
         }
+
+        report.setSecurityPolicy(securityPolicy.loadConfiguration());
     }
 
     private static Map<String, String> mergeParams(Map<String, String> globalParams, Map<String, String> partParams) {
