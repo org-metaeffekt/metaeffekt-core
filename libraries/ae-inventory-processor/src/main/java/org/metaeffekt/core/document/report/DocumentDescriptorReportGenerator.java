@@ -15,8 +15,6 @@
  */
 package org.metaeffekt.core.document.report;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentType;
@@ -220,22 +218,6 @@ public class DocumentDescriptorReportGenerator {
         inventoryWriter.writeInventory(inventory, outputFile);
     }
 
-    private static JSONArray convertToJSONArray(String input) {
-        JSONArray jsonArray = new JSONArray();
-
-        // Split the input string by commas and trim whitespace
-        String[] names = input.split(",");
-
-        for (String name : names) {
-            // Create a JSONObject for each name and add it to the JSONArray
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("name", name.trim()); // Trim to remove extra spaces
-            jsonArray.put(jsonObject);
-        }
-
-        return jsonArray;
-    }
-
     private static void setPolicy(Map<String, String> params,
                                   InventoryReport report,
                                   DocumentDescriptor documentDescriptor) throws IOException {
@@ -260,7 +242,7 @@ public class DocumentDescriptorReportGenerator {
             String resolvedPrimary = resolveAgainstBasePath(primaryPathStr, documentDescriptor.getBasePath());
             File primaryFile = resolvedPrimary != null ? new File(resolvedPrimary) : null;
 
-            log.info("Using securityPolicyFile: " + resolvedPrimary);
+            log.info("Using securityPolicyFile: {}", resolvedPrimary);
             files.add(primaryFile);
         }
 
@@ -269,7 +251,7 @@ public class DocumentDescriptorReportGenerator {
             String resolvedOptional = resolveAgainstBasePath(optionalPathStr, documentDescriptor.getBasePath());
             File optionalFile = resolvedOptional != null ? new File(resolvedOptional) : null;
 
-            log.info("Using additionalSecurityPolicyFile: " + resolvedOptional);
+            log.info("Using additionalSecurityPolicyFile: {}", resolvedOptional);
             files.add(optionalFile);
         }
 
