@@ -15,7 +15,6 @@
  */
 package org.metaeffekt.core.container.control.kubernetesapi;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.*;
 import io.fabric8.kubernetes.client.Config;
@@ -25,8 +24,6 @@ import org.metaeffekt.core.container.control.exception.CommandExecutionFailed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -116,7 +113,7 @@ public class KubernetesCommandExecutor implements AutoCloseable {
                 client.close();
             }
 
-            throw new CommandExecutionFailed("Pod creation failed", e);
+            throw e;
         }
     }
 
