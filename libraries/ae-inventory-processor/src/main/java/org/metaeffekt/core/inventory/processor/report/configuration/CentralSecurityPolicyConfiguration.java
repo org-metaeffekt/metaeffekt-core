@@ -15,6 +15,9 @@
  */
 package org.metaeffekt.core.inventory.processor.report.configuration;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -53,6 +56,7 @@ import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole
  * inventory enrichment and finally the Vulnerability Assessment Dashboard and Inventory Report.<br>
  * Any filtering properties only apply at the last steps of the pipelines.
  */
+@Accessors(chain = true)
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
@@ -137,6 +141,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Therefore, if you use a version-specific selector, it is intended to end your list with a fallback strategy (like <code>LATEST</code>) to ensure a score is always selected.<p>
      * Default: <code>[LATEST]</code>
      */
+    @Getter @Setter
     private List<CvssScoreVersionSelectionPolicy> cvssVersionSelectionPolicy = new ArrayList<>(Collections.singletonList(CvssScoreVersionSelectionPolicy.LATEST));
 
     /**
@@ -144,6 +149,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * If a vulnerability has no manually assigned status, and its effective CVSS score is less than or equal to this value, it will automatically be assigned the status <code>insignificant</code>.<br/>
      * Otherwise, it will have the status <code>in review</code> assigned.
      */
+    @Getter @Setter
     private double insignificantThreshold = 7.0;
 
     /**
@@ -151,7 +157,16 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * All vulnerabilities with a score strictly lower than this value will be excluded from reports entirely.<br>
      * A value of <code>-1.0</code> disables this filter.
      */
+    @Getter @Setter
     private double includeScoreThreshold = -1.0;
+
+    /**
+     * Specifies a time period after which a vulnerability assessment is considered outdated and requires a re-review.<br>
+     * The value is a string like "3 months, 5 hours".
+     * If not set, no re-review based on time is triggered.
+     */
+    @Getter @Setter
+    private String assessmentReviewPeriod;
 
     /**
      * Configures how the process handles JSON Schema validation errors.<br>
@@ -167,6 +182,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * </ul>
      * Default: {@link JsonSchemaValidationErrorsHandling#STRICT} (from {@link CentralSecurityPolicyConfiguration#JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT})
      */
+    @Getter @Setter
     private JsonSchemaValidationErrorsHandling jsonSchemaValidationErrorsHandling = JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT;
 
     public final static JsonSchemaValidationErrorsHandling JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT = JsonSchemaValidationErrorsHandling.STRICT;
@@ -190,6 +206,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      *     <li><code>reviewed</code> - Advisory has been considered in the assessment.</li>
      * </ul>
      */
+    @Getter
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
     /**
      * Filters vulnerabilities based on the provider of their security advisory.<br>
@@ -206,6 +223,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      *      {"name":"RHSA","implementation":"CSAF"}]
      * </pre>
      */
+    @Getter
     private final JSONArray includeVulnerabilitiesWithAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all"));
     /**
@@ -217,6 +235,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * See {@link AeaaAdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
      */
+    @Getter
     private final JSONArray includeAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all"));
     /**
@@ -233,12 +252,14 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      *      {"name":"RHSA","implementation":"CSAF"}]
      * </pre>
      */
+    @Getter
     private final JSONArray generateOverviewTablesForAdvisories = new JSONArray();
     /**
      * Filters advisories based on their specific type identifier (e.g. <code>alert</code>, <code>notice</code>, <code>news</code>).<br>
      * If the advisory type does not appear in this list, it will not be included.
      * <code>all</code> can be used to include all advisories.<p>
      */
+    @Getter
     private final List<String> includeAdvisoryTypes = new ArrayList<>(Collections.singletonList("all"));
 
     /**
@@ -255,12 +276,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * vulnerabilityStatusDisplayMapperName &rarr; vulnerabilityStatusDisplayMapper<br>
      * <code>String &rarr; VulnerabilityStatusMapper</code>
      */
+    @Getter
     private String vulnerabilityStatusDisplayMapperName = "default";
     /**
      * See {@link CentralSecurityPolicyConfiguration#vulnerabilityStatusDisplayMapperName}.
      */
     private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT;
 
+    @Getter
+    @Setter
     private VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration = new VulnerabilityPriorityScoreConfiguration();
 
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
@@ -363,28 +387,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this.cachedContextCvssSelector;
     }
 
-    public void setCvssVersionSelectionPolicy(List<CvssScoreVersionSelectionPolicy> cvssVersionSelectionPolicy) {
-        this.cvssVersionSelectionPolicy = cvssVersionSelectionPolicy;
-    }
-
-    public List<CvssScoreVersionSelectionPolicy> getCvssVersionSelectionPolicy() {
-        return cvssVersionSelectionPolicy;
-    }
-
-    public CentralSecurityPolicyConfiguration setInsignificantThreshold(double insignificantThreshold) {
-        this.insignificantThreshold = insignificantThreshold;
-        return this;
-    }
-
-    public double getInsignificantThreshold() {
-        return this.insignificantThreshold;
-    }
-
-    public CentralSecurityPolicyConfiguration setIncludeScoreThreshold(double includeScoreThreshold) {
-        this.includeScoreThreshold = includeScoreThreshold;
-        return this;
-    }
-
     public boolean isVulnerabilityInsignificant(AeaaVulnerability vulnerability) {
         final double insignificantThreshold = this.getInsignificantThreshold();
         if (insignificantThreshold == -1.0) return true;
@@ -394,10 +396,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         } else {
             return vector.getOverallScore() < insignificantThreshold;
         }
-    }
-
-    public double getIncludeScoreThreshold() {
-        return this.includeScoreThreshold;
     }
 
     public boolean isVulnerabilityAboveIncludeScoreThreshold(AeaaVulnerability vulnerability) {
@@ -412,15 +410,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return score >= includeScoreThreshold;
     }
 
-    public CentralSecurityPolicyConfiguration setJsonSchemaValidationErrorsHandling(JsonSchemaValidationErrorsHandling jsonSchemaValidationErrorsHandling) {
-        this.jsonSchemaValidationErrorsHandling = jsonSchemaValidationErrorsHandling;
-        return this;
-    }
-
-    public JsonSchemaValidationErrorsHandling getJsonSchemaValidationErrorsHandling() {
-        return jsonSchemaValidationErrorsHandling;
-    }
-
     public CentralSecurityPolicyConfiguration setIncludeVulnerabilitiesWithAdvisoryProviders(Map<String, String> includeVulnerabilitiesWithAdvisoryProviders) {
         this.includeVulnerabilitiesWithAdvisoryProviders.clear();
         includeVulnerabilitiesWithAdvisoryProviders.forEach((name, implementation) -> this.includeVulnerabilitiesWithAdvisoryProviders.put(new JSONObject().put("name", name).put("implementation", StringUtils.isNotEmpty(implementation) ? implementation : name)));
@@ -431,10 +420,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         this.includeVulnerabilitiesWithAdvisoryProviders.clear();
         this.includeVulnerabilitiesWithAdvisoryProviders.putAll(includeVulnerabilitiesWithAdvisoryProviders);
         return this;
-    }
-
-    public JSONArray getIncludeVulnerabilitiesWithAdvisoryProviders() {
-        return includeVulnerabilitiesWithAdvisoryProviders;
     }
 
     public boolean isVulnerabilityIncludedRegardingAdvisoryProviders(AeaaVulnerability vulnerability) {
@@ -462,10 +447,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this;
     }
 
-    public List<String> getIncludeVulnerabilitiesWithAdvisoryReviewStatus() {
-        return includeVulnerabilitiesWithAdvisoryReviewStatus;
-    }
-
     public boolean isVulnerabilityIncludedRegardingAdvisoryReviewStatus(AeaaVulnerability vulnerability) {
         if (containsAny(includeVulnerabilitiesWithAdvisoryReviewStatus)) {
             return true;
@@ -488,10 +469,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this;
     }
 
-    public JSONArray getIncludeAdvisoryProviders() {
-        return includeAdvisoryProviders;
-    }
-
     public CentralSecurityPolicyConfiguration setGenerateOverviewTablesForAdvisories(JSONArray generateOverviewTablesForAdvisories) {
         this.generateOverviewTablesForAdvisories.clear();
         this.generateOverviewTablesForAdvisories.putAll(generateOverviewTablesForAdvisories);
@@ -504,10 +481,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this;
     }
 
-    public JSONArray getGenerateOverviewTablesForAdvisories() {
-        return generateOverviewTablesForAdvisories;
-    }
-
     public List<AeaaAdvisoryTypeIdentifier<?>> getGenerateOverviewTablesForAdvisoriesInst() {
         return AeaaAdvisoryTypeStore.get().fromJsonNamesAndImplementations(generateOverviewTablesForAdvisories);
     }
@@ -516,10 +489,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         this.includeAdvisoryTypes.clear();
         this.includeAdvisoryTypes.addAll(includeAdvisoryTypes);
         return this;
-    }
-
-    public List<String> getIncludeAdvisoryTypes() {
-        return includeAdvisoryTypes;
     }
 
     public boolean isSecurityAdvisoryIncludedRegardingEntrySourceType(AeaaAdvisoryEntry advisory) {
@@ -577,15 +546,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return this.vulnerabilityStatusDisplayMapper;
     }
 
-    public CentralSecurityPolicyConfiguration setPriorityScoreConfiguration(VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration) {
-        this.priorityScoreConfiguration = priorityScoreConfiguration;
-        return this;
-    }
-
-    public VulnerabilityPriorityScoreConfiguration getPriorityScoreConfiguration() {
-        return priorityScoreConfiguration;
-    }
-
     @Override
     public LinkedHashMap<String, Object> getProperties() {
         final LinkedHashMap<String, Object> configuration = new LinkedHashMap<>();
@@ -597,6 +557,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("contextCvssSelector", super.optionalConversion(getContextCvssSelector(), CvssSelector::toJson));
         configuration.put("insignificantThreshold", insignificantThreshold);
         configuration.put("includeScoreThreshold", includeScoreThreshold);
+        configuration.put("assessmentReviewPeriod", assessmentReviewPeriod);
         configuration.put("jsonSchemaValidationErrorsHandling", jsonSchemaValidationErrorsHandling);
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
         configuration.put("includeVulnerabilitiesWithAdvisoryReviewStatus", includeVulnerabilitiesWithAdvisoryReviewStatus);
@@ -624,6 +585,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadProperty(properties, "jsonSchemaValidationErrorsHandling", value -> JsonSchemaValidationErrorsHandling.valueOf(String.valueOf(value)), this::setJsonSchemaValidationErrorsHandling);
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
+        super.loadStringProperty(properties, "assessmentReviewPeriod", this::setAssessmentReviewPeriod);
         super.loadJsonArrayProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", this::setIncludeVulnerabilitiesWithAdvisoryProviders);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryReviewStatus", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryReviewStatus);
         super.loadJsonArrayProperty(properties, "includeAdvisoryProviders", this::setIncludeAdvisoryProviders);
