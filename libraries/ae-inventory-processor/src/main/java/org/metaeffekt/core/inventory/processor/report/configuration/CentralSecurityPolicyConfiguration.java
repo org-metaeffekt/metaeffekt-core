@@ -169,6 +169,19 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     private String assessmentReviewPeriod;
 
     /**
+     * Assessment Dashboard-exclusive property.
+     * <p>
+     * Specifies a pattern to identify whether assessments have been created for a certain context or for a foreign one (e.g. project or asset scope).<br>
+     * The pattern string follows the same rules as some properties from the dashboard API configuration, with variables being exposed using the <code>$[varname]</code> sequence.
+     * For example: <code>$[asset.current.Asset Id]/$[asset.current.Version]</code>
+     * <p>
+     * The string constructed from this will be written into the CreationContext.sourceAssessmentContext of assessments and assessment events created in a dashboard.
+     * Loaded assessments will be compared against the local string.
+     */
+    @Getter @Setter
+    private String sourceAssessmentContextPattern;
+
+    /**
      * Configures how the process handles JSON Schema validation errors.<br>
      * If set to {@link JsonSchemaValidationErrorsHandling#LENIENT}, certain known validation errors will be logged only, and the process will continue instead of failing.<p>
      * This currently includes the following validation errors:
@@ -558,6 +571,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         configuration.put("insignificantThreshold", insignificantThreshold);
         configuration.put("includeScoreThreshold", includeScoreThreshold);
         configuration.put("assessmentReviewPeriod", assessmentReviewPeriod);
+        configuration.put("sourceAssessmentContextPattern", sourceAssessmentContextPattern);
         configuration.put("jsonSchemaValidationErrorsHandling", jsonSchemaValidationErrorsHandling);
         configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
         configuration.put("includeVulnerabilitiesWithAdvisoryReviewStatus", includeVulnerabilitiesWithAdvisoryReviewStatus);
@@ -586,6 +600,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
         super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
         super.loadStringProperty(properties, "assessmentReviewPeriod", this::setAssessmentReviewPeriod);
+        super.loadStringProperty(properties, "sourceAssessmentContextPattern", this::setSourceAssessmentContextPattern);
         super.loadJsonArrayProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", this::setIncludeVulnerabilitiesWithAdvisoryProviders);
         super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryReviewStatus", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryReviewStatus);
         super.loadJsonArrayProperty(properties, "includeAdvisoryProviders", this::setIncludeAdvisoryProviders);
