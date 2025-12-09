@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="kev">
+    <glossterm>Known Exploitable Vulnerabilities</glossterm>
+    <glossdef>
+        Known Exploitable Vulnerabilities (KEV) is a database provided by <abbreviated-form keyref="cisa"/>
+        containing exploit information of known vulnerabilities. The catalog can be used to <i>review and monitor the KEV
+        catalog and prioritize remediation of the listed vulnerabilities to reduce the likelihood of compromise by
+        known threat actors</i>.
+        <p>
+            Please note that different KEV-derivatives exist. Here, CISA KEV is used.
+        </p>
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Known Exploitable Vulnerabilities (KEV)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>KEV</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>
