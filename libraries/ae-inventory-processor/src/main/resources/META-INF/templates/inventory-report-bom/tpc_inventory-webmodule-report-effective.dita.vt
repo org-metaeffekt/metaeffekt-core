@@ -14,15 +14,14 @@
         <p>
         <table otherprops="wide" id="table_web_modules">
             <tgroup cols="3">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
-                <colspec colname="COLSPEC1" colnum="2" colwidth="45*"/>
-                <colspec colname="COLSPEC2" colnum="3" colwidth="35*"/>
+                <colspec colname="COLSPEC0" colnum="1" colwidth="20*" align="left"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="45*" align="left"/>
+                <colspec colname="COLSPEC2" colnum="3" colwidth="35*" align="left"/>
                 <thead>
                 <row>
                     <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>
                     <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.web-modules")</entry>
-                    <entry colname="COLSPEC2" valign="top">$utils.getText(
-                        "inventory-report-bom.short.effective-licenses")</entry>
+                    <entry colname="COLSPEC2" valign="top">$utils.getText("inventory-report-bom.short.effective-licenses")</entry>
                 </row>
                 </thead>
 

@@ -412,4 +412,34 @@ public class StatisticsOverviewTable {
                     '}';
         }
     }
+
+    /**
+     * Used by the velocity templates to determine the dynamic width of columns.
+     *
+     * @param index index of the column. Starting with 1.
+     *
+     * @return Width string for use in dita columnspecs.
+     */
+    public String getColumnWidth(int index) {
+        if (index <= 0) return "1*";
+        if (index == 1) return "12*"; // Severity
+        if (index == getHeaders().size()) return "10*"; // Assessed
+        int width = 88 / (getHeaders().size() - 2);
+        return String.format("%d*", width);
+    }
+
+    /**
+     * Used by the velocity templates to determine the dynamic alignment of columns.
+     *
+     * @param index index of the column. Starting with 1.
+     *
+     * @return Alignment string for use in dita columnspecs.
+     */
+    public String getAlignment(int index) {
+        if (index <= 0) return "left";
+        if (index == 1) return "left";
+        if (index == getHeaders().size()) return "right";
+        return "center";
+    }
+
 }

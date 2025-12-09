@@ -17,9 +17,9 @@
                 <table otherprops="wide">
                     <title>$utils.getText("inventory-report-bom.short.components-under") $license.trim()$reportContext.withTitle()</title>
                     <tgroup cols="3">
-                        <colspec colname="COLSPEC0" colnum="1" colwidth="20*"/>
-                        <colspec colname="COLSPEC1" colnum="2" colwidth="60*"/>
-                        <colspec colname="COLSPEC2" colnum="3" colwidth="20*"/>
+                        <colspec colname="COLSPEC0" colnum="1" colwidth="20*" align="left"/>
+                        <colspec colname="COLSPEC1" colnum="2" colwidth="60*" align="left"/>
+                        <colspec colname="COLSPEC2" colnum="3" colwidth="20*" align="left"/>
                         <thead>
                             <row>
                                 <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>

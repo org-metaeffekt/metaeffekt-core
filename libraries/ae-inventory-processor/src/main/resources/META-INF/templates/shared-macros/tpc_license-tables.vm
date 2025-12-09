@@ -3,11 +3,11 @@
     <title>$title$reportContext.withTitle()</title>
     #if($configParams.enableOpenCodeStatus)
     <tgroup cols="5">
-        <colspec colname="COLSPEC0" colnum="1" colwidth="50*"/>
-        <colspec colname="COLSPEC1" colnum="2" colwidth="18*"/>
-        <colspec colname="COLSPEC2" colnum="3" colwidth="13*"/>
-        <colspec colname="COLSPEC3" colnum="4" colwidth="11*"/>
-        <colspec colname="COLSPEC4" colnum="5" colwidth="8*"/>
+        <colspec colname="COLSPEC0" colnum="1" colwidth="50*" align="left"/>
+        <colspec colname="COLSPEC1" colnum="2" colwidth="18*" align="left"/>
+        <colspec colname="COLSPEC2" colnum="3" colwidth="13*" align="left"/>
+        <colspec colname="COLSPEC3" colnum="4" colwidth="11*" align="left"/>
+        <colspec colname="COLSPEC4" colnum="5" colwidth="8*" align="right"/>
         <thead>
         <row>
             <entry colname="COLSPEC0" valign="top">$utils.getText("inventory-report-bom.license-overview-title")</entry>
@@ -19,10 +19,10 @@
         </thead>
     #else
     <tgroup cols="4">
-        <colspec colname="COLSPEC0" colnum="1" colwidth="53*" />
-        <colspec colname="COLSPEC1" colnum="2" colwidth="25*" />
-        <colspec colname="COLSPEC2" colnum="3" colwidth="10*" />
-        <colspec colname="COLSPEC3" colnum="4" colwidth="12*" />
+        <colspec colname="COLSPEC0" colnum="1" colwidth="53*" align="left"/>
+        <colspec colname="COLSPEC1" colnum="2" colwidth="25*" align="left"/>
+        <colspec colname="COLSPEC2" colnum="3" colwidth="10*" align="left"/>
+        <colspec colname="COLSPEC3" colnum="4" colwidth="12*" align="right" />
         <thead>
         <row>
             <entry colname="COLSPEC0" valign="top">$utils.getText("inventory-report-bom.short.licenses-in-effect")</entry>
@@ -167,9 +167,9 @@
         <p>
         <table otherprops="wide">
             <tgroup cols="3">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="10*"/>
-                <colspec colname="COLSPEC1" colnum="2" colwidth="70*"/>
-                <colspec colname="COLSPEC2" colnum="3" colwidth="20*"/>
+                <colspec colname="COLSPEC0" colnum="1" colwidth="10*" align="left"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="70*" align="left"/>
+                <colspec colname="COLSPEC2" colnum="3" colwidth="20*" align="left"/>
                 <thead>
                 <row>
                     <entry colname="COLSPEC0" valign="top">Type</entry>
