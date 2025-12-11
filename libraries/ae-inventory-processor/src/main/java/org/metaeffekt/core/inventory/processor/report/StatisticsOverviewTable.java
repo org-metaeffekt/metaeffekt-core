@@ -429,6 +429,20 @@ public class StatisticsOverviewTable {
     }
 
     /**
+     * Used by the velocity templates to determine the dynamic alignment of column headers.
+     *
+     * @param index index of the column. Starting with 1.
+     *
+     * @return Alignment string for use in dita columnspecs.
+     */
+    public String getHeaderAlignment(int index) {
+        if (index <= 0) return "left";
+        if (index == 1) return "left";
+        if (index == getHeaders().size()) return "right";
+        return "center";
+    }
+
+    /**
      * Used by the velocity templates to determine the dynamic alignment of columns.
      *
      * @param index index of the column. Starting with 1.
@@ -439,7 +453,7 @@ public class StatisticsOverviewTable {
         if (index <= 0) return "left";
         if (index == 1) return "left";
         if (index == getHeaders().size()) return "right";
-        return "center";
+        return "right";
     }
 
 }

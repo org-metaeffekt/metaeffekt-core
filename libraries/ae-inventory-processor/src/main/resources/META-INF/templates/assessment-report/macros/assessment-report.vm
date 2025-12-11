@@ -17,22 +17,22 @@
     <title>$utils.getText("general.short.asset-group") <i>$assetGroupDisplayName</i></title>
     <tgroup cols="8">
         <colspec colname="COLSPEC0" colnum="1" colwidth="27*" align="left"/>
-        <colspec colname="COLSPEC1" colnum="2" colwidth="11*" align="center"/>
-        <colspec colname="COLSPEC2" colnum="3" colwidth="11*" align="center"/>
-        <colspec colname="COLSPEC3" colnum="4" colwidth="11*" align="center"/>
-        <colspec colname="COLSPEC4" colnum="5" colwidth="11*" align="center"/>
-        <colspec colname="COLSPEC5" colnum="6" colwidth="11*" align="center"/>
-        <colspec colname="COLSPEC6" colnum="7" colwidth="9*" align="center"/>
+        <colspec colname="COLSPEC1" colnum="2" colwidth="11*" align="right"/>
+        <colspec colname="COLSPEC2" colnum="3" colwidth="11*" align="right"/>
+        <colspec colname="COLSPEC3" colnum="4" colwidth="11*" align="right"/>
+        <colspec colname="COLSPEC4" colnum="5" colwidth="11*" align="right"/>
+        <colspec colname="COLSPEC5" colnum="6" colwidth="11*" align="right"/>
+        <colspec colname="COLSPEC6" colnum="7" colwidth="9*" align="right"/>
         <colspec colname="COLSPEC7" colnum="8" colwidth="9*" align="right"/>
         <thead>
             <row valign="middle">
                 <entry colname="COLSPEC0">$utils.getText("general.short.asset-name")</entry>
-                <entry colname="COLSPEC1">#labelRef("Critical")</entry>
-                <entry colname="COLSPEC2">#labelRef("High")</entry>
-                <entry colname="COLSPEC3">#labelRef("Medium")</entry>
-                <entry colname="COLSPEC4">#labelRef("Low")</entry>
-                <entry colname="COLSPEC5">#labelRef("None")</entry>
-                <entry colname="COLSPEC6"><p>$utils.getText("general.short.total")</p></entry>
+                <entry colname="COLSPEC1" align="center">#labelRef("Critical")</entry>
+                <entry colname="COLSPEC2" align="center">#labelRef("High")</entry>
+                <entry colname="COLSPEC3" align="center">#labelRef("Medium")</entry>
+                <entry colname="COLSPEC4" align="center">#labelRef("Low")</entry>
+                <entry colname="COLSPEC5" align="center">#labelRef("None")</entry>
+                <entry colname="COLSPEC6" align="center"><p>$utils.getText("general.short.total")</p></entry>
                 <entry colname="COLSPEC7"><p>$utils.getText("general.short.assessed")</p></entry>
             </row>
         </thead>
