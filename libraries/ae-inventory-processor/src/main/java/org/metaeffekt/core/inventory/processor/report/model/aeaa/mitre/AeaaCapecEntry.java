@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,7 @@ import java.util.*;
 @Setter
 @Slf4j
 @EqualsAndHashCode
+@NoArgsConstructor
 public class AeaaCapecEntry {
 
     private String id;
@@ -47,6 +49,10 @@ public class AeaaCapecEntry {
     private final Map<String, ArrayList<AeaaTaxonomyMapping>> taxonomyMappings = new HashMap<>();
     private final List<String> references = new ArrayList<>();
     private final Map<String, Map<String, String>> referencesData = new HashMap<>();
+
+    public AeaaCapecEntry(String id) {
+        setId(id);
+    }
 
     public void setId(String id) {
         if (StringUtils.isEmpty(id)) {
@@ -101,6 +107,14 @@ public class AeaaCapecEntry {
         json.put("referenceData", referenceData);
 
         return json;
+    }
+
+    public static List<AeaaCapecEntry> fromJson(JSONArray json) {
+        final List<AeaaCapecEntry> entries = new ArrayList<>();
+        for (int i = 0; i < json.length(); i++) {
+            entries.add(AeaaCapecEntry.fromJson(json.getJSONObject(i)));
+        }
+        return entries;
     }
 
     public static AeaaCapecEntry fromJson(JSONObject json) {

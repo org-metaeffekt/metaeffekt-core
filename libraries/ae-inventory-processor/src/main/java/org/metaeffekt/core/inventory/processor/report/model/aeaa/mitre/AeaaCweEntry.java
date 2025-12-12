@@ -18,14 +18,19 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.mitre;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @EqualsAndHashCode
 public class AeaaCweEntry {
 
@@ -46,9 +51,6 @@ public class AeaaCweEntry {
     private final Map<String, ArrayList<AeaaTaxonomyMapping>> taxonomyMappings = new HashMap<>();
     private final List<String> relatedCapecs = new ArrayList<>();
     private final Map<String, Map <String, String>> referencesData = new HashMap<>();
-
-    public AeaaCweEntry() {
-    }
 
     public AeaaCweEntry(String id) {
         setId(id);
@@ -124,6 +126,14 @@ public class AeaaCweEntry {
         json.put("referenceData", referenceData);
 
         return json;
+    }
+
+    public static List<AeaaCweEntry> fromJson(JSONArray json) {
+        final List<AeaaCweEntry> entries = new ArrayList<>();
+        for (int i = 0; i < json.length(); i++) {
+            entries.add(AeaaCweEntry.fromJson(json.getJSONObject(i)));
+        }
+        return entries;
     }
 
     public static AeaaCweEntry fromJson(JSONObject jsonObject) {

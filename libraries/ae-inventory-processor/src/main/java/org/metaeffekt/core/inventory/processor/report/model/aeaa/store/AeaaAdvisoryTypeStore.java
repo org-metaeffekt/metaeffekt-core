@@ -433,6 +433,24 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
             createOsvIdentifier("OESA", "Open Euler Linux",
                     Pattern.compile("OESA-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
 
+    /**
+     * Advisory IDs from the <b>Alpine Linux Advisory</b>.
+     * Official security advisories for Alpine Linux.
+     * <a href="https://secdb.alpinelinux.org/">Alpine Linux</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_ALPINE =
+            createOsvIdentifier("ALPINE", "Alpine Linux",
+                    Pattern.compile("ALPINE-CVE-\\d{4}-\\d{4,}", Pattern.CASE_INSENSITIVE));
+
+    /**
+     * Advisory IDs from the <b>ECHO</b>.
+     * Official security advisories for echo containers.
+     * <a href="https://advisory.echohq.com/osv/all.json">echo HQ</a>.
+     */
+    public final static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> OSV_ECHO =
+            createOsvIdentifier("ECHO", "ECHO",
+                    Pattern.compile("ECHO(-[a-z\\d]{4}){3}"));
+
 
     // CSAF
     public final static AeaaAdvisoryTypeIdentifier<AeaaCsafAdvisoryEntry> CSAF_GENERIC_IDENTIFIER = new AeaaAdvisoryTypeIdentifier<>(
