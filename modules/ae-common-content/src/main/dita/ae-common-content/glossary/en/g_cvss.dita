@@ -3,8 +3,9 @@
 <glossentry id="cvss">
     <glossterm>Common Vulnerability Scoring System</glossterm>
     <glossdef>
-        The severity of security vulnerabilities is usually determined using the Common Vulnerability Scoring
-        System (CVSS). This uses individual metrics to measure various factors of a vulnerability.
+        The severity of vulnerabilities is commonly measured applying the Common Vulnerability Scoring System (CVSS)
+        scoring system.
+        The scheme uses several individual metrics to capture different aspects of a vulnerability.
     </glossdef>
     <glossBody>
         <glossSurfaceForm>Common Vulnerability Scoring System (CVSS)</glossSurfaceForm>

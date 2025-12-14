@@ -23,6 +23,8 @@ public class AeaaOtherTypeStore extends AeaaContentIdentifierStore<AeaaOtherType
 
     public final static AeaaOtherTypeIdentifier CWE = new AeaaOtherTypeIdentifier("CWE", "CWE", "",
             Pattern.compile("(CWE-\\d+)", Pattern.CASE_INSENSITIVE));
+    public final static AeaaOtherTypeIdentifier CAPEC = new AeaaOtherTypeIdentifier("CAPEC", "CAPEC", "",
+            Pattern.compile("(CAPEC-\\d+)", Pattern.CASE_INSENSITIVE));
     public final static AeaaOtherTypeIdentifier CPE = new AeaaOtherTypeIdentifier("CPE", "CPE", "",
             Pattern.compile("UNDEFINED", Pattern.CASE_INSENSITIVE));
     public final static AeaaOtherTypeIdentifier NVD = new AeaaOtherTypeIdentifier("NVD", "NVD", "",

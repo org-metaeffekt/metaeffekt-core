@@ -27,8 +27,8 @@
         <table id="LicenseOptions" otherprops="wide">
             <title>$utils.getText("general.short.license-options") $reportContext.withTitle()</title>
             <tgroup cols="2">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="88*" />
-                <colspec colname="COLSPEC1" colnum="2" colwidth="12*" />
+                <colspec colname="COLSPEC0" colnum="1" colwidth="88*" align="left"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="12*" align="right"/>
                 <thead>
                     <row>
                         <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.license-options")</entry>

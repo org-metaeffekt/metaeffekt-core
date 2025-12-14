@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary Entry//EN" "glossentry.dtd">
+<glossentry id="cisa">
+    <glossterm>Cybersecurity and Infrastructure Security Agency</glossterm>
+    <glossdef>
+        Cybersecurity and Infrastructure Security Agency (CISA) is a US agency mandated to protect critical
+        infrastructure.
+    </glossdef>
+    <glossBody>
+        <glossSurfaceForm>Cybersecurity and Infrastructure Security Agency (CISA)</glossSurfaceForm>
+        <glossAlt>
+            <glossAcronym>CISA</glossAcronym>
+        </glossAlt>
+    </glossBody>
+</glossentry>

@@ -66,6 +66,8 @@ public class WebModuleComponentPatternContributorTest {
 
         final Inventory inventory = cpd.getExpansionInventorySupplier().get();
 
+        new InventoryWriter().writeInventory(inventory, new File("target/npm-001-inventory.xlsx"));
+
         assertThat(inventory.getArtifacts().size()).isEqualTo(1590);
 
         // filter runtime artifacts
@@ -78,7 +80,6 @@ public class WebModuleComponentPatternContributorTest {
             }
         });
 
-        new InventoryWriter().writeInventory(inventory, new File("target/npm-001-inventory.xlsx"));
     }
 
     @Test

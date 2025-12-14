@@ -34,8 +34,8 @@
         <table id="AssociatedLicenseExpressions" otherprops="wide">
             <title>$utils.getText("asset-report-bom.short.asset-license-expressions") $reportContext.withTitle()</title>
             <tgroup cols="2">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="90*" />
-                <colspec colname="COLSPEC1" colnum="2" colwidth="10*" />
+                <colspec colname="COLSPEC0" colnum="1" colwidth="90*" align="left"/>
+                <colspec colname="COLSPEC1" colnum="2" colwidth="10*" align="left"/>
                 <thead>
                     <row>
                         <entry colname="COLSPEC0" valign="top">License Expression</entry>
