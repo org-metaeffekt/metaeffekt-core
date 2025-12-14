@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-core-plugin-management-pom</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.150.0</version>
         <relativePath>../../poms/ae-core-plugin-management-pom</relativePath>
     </parent>
 
