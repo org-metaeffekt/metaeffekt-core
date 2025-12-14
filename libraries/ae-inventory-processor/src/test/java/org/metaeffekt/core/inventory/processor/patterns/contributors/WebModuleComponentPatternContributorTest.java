@@ -421,6 +421,50 @@ public class WebModuleComponentPatternContributorTest {
     }
 
     @Test
+    public void testNpm007() throws IOException {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-007");
+        final String relativeAnchorPath = "ae-overview-gen3/package.json";
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
+                relativeAnchorPath, computeMD5Checksum(anchorFile));
+
+        assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+        final Inventory inventory = cpd.getExpansionInventorySupplier().get();
+        new InventoryWriter().writeInventory(inventory, new File("target/npm-007-inventory.xlsx"));
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(167);
+    }
+
+    @Test
+    public void testNpm008() throws IOException {
+        final File baseDir = new File("src/test/resources/component-pattern-contributor/npm-008");
+        final String relativeAnchorPath = "ae-vad_gen4/package.json";
+        final File anchorFile = new File(baseDir, relativeAnchorPath);
+
+        if (!anchorFile.exists()) {
+            throw new IllegalStateException("File does not exist: " + anchorFile.getAbsolutePath());
+        }
+
+        final List<ComponentPatternData> cpdList = npm.contribute(baseDir,
+                relativeAnchorPath, computeMD5Checksum(anchorFile));
+
+        assertThat(cpdList.size()).isEqualTo(1);
+
+        final ComponentPatternData cpd = cpdList.get(0);
+        final Inventory inventory = cpd.getExpansionInventorySupplier().get();
+        new InventoryWriter().writeInventory(inventory, new File("target/npm-008-inventory.xlsx"));
+
+        assertThat(inventory.getArtifacts().size()).isEqualTo(1627);
+    }
+
+    @Test
     public void testYarn001() throws IOException {
         final File baseDir = new File("src/test/resources/component-pattern-contributor/yarn-001");
         final String relativeAnchorPath = "test/package.json";

@@ -1,0 +1,30 @@
+{
+  "name": "ae-npm-inventory-overview-html-report",
+  "version": "1.0.0",
+  "description": "Code to be included with the com.metaeffekt.artifact.analysis:ae-inventory-overview-html-report to build a single-page HTML report.",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "{metæffekt}",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/bootstrap": "^5.2.10",
+    "@types/chart.js": "^2.9.41",
+    "@types/pako": "^2.0.3",
+    "css-loader": "^6.10.0",
+    "style-loader": "^3.3.4",
+    "svg-inline-loader": "^0.8.2",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.1",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.2",
+    "bootstrap-icons": "^1.11.3",
+    "chart.js": "^4.4.1"
+  }
+}
