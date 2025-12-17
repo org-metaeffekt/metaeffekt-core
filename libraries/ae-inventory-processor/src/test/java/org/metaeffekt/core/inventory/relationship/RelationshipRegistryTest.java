@@ -168,6 +168,54 @@ public class RelationshipRegistryTest {
         assertThat(relationshipRegistry.getCopyOfRelationships()).isEmpty();
     }
 
+    /**
+     * Tests whether the {@link RelationshipRegistry} can handle missing assets in the asset sheet
+     * even though they are present as a relationship in the artifact sheet (present in an artifact column)
+     */
+    @Test
+    public void testBuildFromInventoryWithOnlyMissingAssets() {
+        Inventory inventory = new Inventory();
+
+        Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "test-artifact");
+
+        artifact.set("test-asset", RelationshipType.CONTAINS.getInventoryConstant());
+        artifact.set("test-asset2", RelationshipType.DESCRIBES.getInventoryConstant());
+
+        inventory.getArtifacts().add(artifact);
+
+        RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
+        relationshipRegistry.buildFromInventory(inventory);
+
+        assertThat(relationshipRegistry.getCopyOfRelationships()).isEmpty();
+    }
+
+    /**
+     * Tests whether the {@link RelationshipRegistry} can handle partially missing assets in the asset sheet
+     * even though they are present as a relationship in the artifact sheet (present in an artifact column)
+     */
+    @Test
+    public void testBuildFromInventoryWithSomeMissingAssets() {
+        Inventory inventory = new Inventory();
+
+        Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "test-artifact");
+
+        AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "test-asset");
+
+        artifact.set(assetMetaData.get(AssetMetaData.Attribute.ASSET_ID), RelationshipType.CONTAINS.getInventoryConstant());
+        artifact.set("test-asset2", RelationshipType.DESCRIBES.getInventoryConstant());
+
+        inventory.getArtifacts().add(artifact);
+        inventory.getAssetMetaData().add(assetMetaData);
+
+        RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
+        relationshipRegistry.buildFromInventory(inventory);
+
+        assertThat(relationshipRegistry.getCopyOfRelationships().size()).isEqualTo(1);
+    }
+
     private static boolean hasRelationship(List<Relationship<?, ?>> relationships, RelationshipType relationshipType,
                                            List<String> fromNodes, List<String> toNodes) {
 
