@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
 
@@ -332,6 +333,7 @@ public class Artifact extends AbstractModelBase {
     public void merge(Artifact a) {
         // artifact root paths merge differently
         mergeRootPaths(a);
+        mergePathInAsset(a);
 
         // merge attributes
         super.merge(a);
@@ -343,6 +345,12 @@ public class Artifact extends AbstractModelBase {
         final Set<String> paths = new HashSet<>(getRootPaths());
         paths.addAll(a.getRootPaths());
         setRootPaths(paths);
+    }
+
+    private void mergePathInAsset(Artifact a) {
+        final Set<String> paths = getSet(Attribute.PATH_IN_ASSET);
+        paths.addAll(a.getSet(Attribute.PATH_IN_ASSET));
+        setPathInAsset(paths.stream().sorted().collect(Collectors.joining(PATH_DELIMITER)));
     }
 
     /**

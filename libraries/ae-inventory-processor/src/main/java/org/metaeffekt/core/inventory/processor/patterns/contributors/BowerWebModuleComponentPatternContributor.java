@@ -29,7 +29,9 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
@@ -91,7 +93,9 @@ public class BowerWebModuleComponentPatternContributor extends AbstractWebModule
     }
 
     @Override
-    protected ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir, String anchorChecksum, Artifact artifact, File contextBaseDir, Inventory inventoryFromLockFile) {
+    protected ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir, String anchorChecksum, WebModule webModule, File contextBaseDir, Inventory inventoryFromLockFile) {
+
+        Artifact artifact = createArtifact(webModule);
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
@@ -103,6 +107,9 @@ public class BowerWebModuleComponentPatternContributor extends AbstractWebModule
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
         componentPatternData.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, artifact.get("Module Specified License"));
+
+        // create purl
+        componentPatternData.set(Artifact.Attribute.PURL, buildPurl("bower", webModule.getName(), webModule.getVersion()));
 
         final String anchorParentDirName = anchorParentDir.getName();
 

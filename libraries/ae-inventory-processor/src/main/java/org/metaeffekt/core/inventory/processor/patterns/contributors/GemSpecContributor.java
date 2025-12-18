@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import org.metaeffekt.core.inventory.processor.filepatterns.FileMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -119,6 +120,13 @@ public class GemSpecContributor extends ComponentPatternContributor {
             String version = versionDerivedFromFileName;
             if (version == null) version = versionDerivedFromFolderName;
             if (version == null) version = versionDerivedFromGemspecContent;
+
+            if (version == null) {
+                FileMetaData fileMetaData = getFileComponentPatternProcessor().deriveFileMetaData(relativeAnchorPath);
+                if (fileMetaData != null) {
+                    version = fileMetaData.getVersion();
+                }
+            }
 
             String url = null;
 

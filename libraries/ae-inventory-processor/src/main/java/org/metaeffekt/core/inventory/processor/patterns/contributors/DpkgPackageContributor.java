@@ -374,9 +374,15 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
 
+        fileJoiner.add("usr/lib/" + entry.packageName + "/**/*");
+        fileJoiner.add("var/lib/" + entry.packageName + "/**/*");
+
         fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
         if ("tzdata".equals(entry.packageName)) {
             fileJoiner.add("usr/share/zoneinfo/**/*");
+        }
+        if ("shared-mime-info".equals(entry.packageName)) {
+            fileJoiner.add("usr/share/mime/**/*");
         }
 
         return fileJoiner;

@@ -61,7 +61,7 @@ public class ContributorUtils {
 
         String archivePath = path.substring(0, lastSlash);
 
-        final int lastDotIndex = archivePath.lastIndexOf(".");
+        final int lastDotIndex = archiveName.lastIndexOf(".");
 
         if (lastDotIndex > -1) {
             // apply square brackets only to archive name and extend with wildcard

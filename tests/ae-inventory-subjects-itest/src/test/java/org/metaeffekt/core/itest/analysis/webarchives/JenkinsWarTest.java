@@ -19,15 +19,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -146,7 +150,10 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
 
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5);
+        // NOTE: we accept current the duplicate on jenkins-war-2.479.2.war; there are two different evidences
+        //   for the artifact. It results in the same aggregated zip jenkins-war-2.479.2.war-bda1bc1293d9ae3da739f168dcb7e822.zip
+        // OPTION: The inventory could be filtered/merged post aggregation using the content checksum
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(6);
 
         analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
         analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
@@ -170,4 +177,31 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
         componentPatternList.logListWithAllAttributes();
     }
+
+    @Test
+    public void assertAggregation() throws Exception {
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        final File aggregationTargetDir = new File(testSetup.getInventoryFolder(), "aggregation");
+
+        FileUtils.deleteDirectoryQuietly(aggregationTargetDir);
+
+        final DirectoryScanAggregatorConfiguration aggregatorConfiguration =
+                new DirectoryScanAggregatorConfiguration(testSetup.readReferenceInventory(), testSetup.getInventory(), baseDir);
+
+        aggregatorConfiguration.aggregateFiles(aggregationTargetDir);
+
+        String[] testPaths = new String[] {
+
+        };
+
+        for (String testPath : testPaths) {
+            File file = new File(aggregationTargetDir, testPath);
+            FileUtils.validateExists(file);
+        }
+
+        final File aggregatedInventoryFile = new File(testSetup.getInventoryFolder(), "aggregated-inventory.xlsx");
+        new InventoryWriter().writeInventory(testSetup.getInventory(), aggregatedInventoryFile);
+    }
+
+
 }

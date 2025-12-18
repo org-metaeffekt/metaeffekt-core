@@ -53,7 +53,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
 
             final ReleasedPackageData rpd = parsePackageData(anchorFile);
 
-            if (StringUtils.isNotEmpty(rpd.componentPart)) {
+            if (StringUtils.isNotEmpty(rpd.componentPart) && StringUtils.isNotEmpty(rpd.version))  {
 
                 // construct component pattern
                 final ComponentPatternData componentPatternData = new ComponentPatternData();
@@ -185,7 +185,7 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
             }
 
             if (versionIndex > 0) {
-                prefix = extendedVersion.substring(0, versionIndex -1);
+                prefix = extendedVersion.substring(0, versionIndex - 1);
                 if (prefix.length() > 1) {
                     name = prefix;
                 }
@@ -195,7 +195,9 @@ public class JavaRuntimeComponentPatternContributor extends ComponentPatternCont
         data.componentPart = name.toLowerCase(OTHER_LOCALE).replace(" ", "-");
 
         data.componentPart += "-" + (evidenceForOpenJdk ? "open" : "") + data.type.toLowerCase(OTHER_LOCALE);
-        data.componentPart += "-" + data.version;
+        if (data.version != null) {
+            data.componentPart += "-" + data.version;
+        }
 
         data.componentName = data.implementor + " " + prefix;
         if (data.componentName.equals("Red Hat, Inc. Red_Hat")) {

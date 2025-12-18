@@ -537,6 +537,9 @@ public class JarInspector extends AbstractJarInspector {
 
     @Override
     public void run(Inventory inventory, Properties properties) {
+        // FIXME-KKL: this should be really only applied to java modules; how can we filter?
+        // FIXME-KKL: use FileComponentPatternProcessor to support version derivation
+
         // get params
         final ProjectPathParam projectPathParam = new ProjectPathParam(properties);
         final JarInspectionParam jarInspectionParam = new JarInspectionParam(properties);

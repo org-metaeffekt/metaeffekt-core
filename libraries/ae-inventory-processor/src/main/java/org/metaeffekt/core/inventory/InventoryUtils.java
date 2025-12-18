@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -23,6 +24,7 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,7 @@ import static org.metaeffekt.core.inventory.processor.model.InventorySerializati
 /**
  * Utilities for dealing with Inventories.
  */
+@Slf4j
 public abstract class InventoryUtils {
 
     /**
@@ -474,5 +477,45 @@ public abstract class InventoryUtils {
         }
         inventory.getArtifacts().removeAll(removableArtifacts);
     }
+
+    public static void mergeDuplicates(Inventory inventory, Function<Artifact, Set<String>> qualifierSupplier) {
+        // NOTE: the list may contain duplicates by reference; these must be removed to not lose data
+        final List<Artifact> artifacts = inventory.getArtifacts();
+        final LinkedHashSet<Artifact> artifactSet = new LinkedHashSet<>(artifacts);
+        if (artifactSet.size() != artifacts.size()) {
+            log.warn("Detected duplicates by reference in inventory. Ensure analysis does not produce referential duplicates. Applying compensation.");
+            artifacts.clear();
+            artifacts.addAll(artifactSet);
+        }
+
+        final Map<String, List<Artifact>> qualifierArtifactMap = buildQualifierArtifactMap(inventory, qualifierSupplier);
+
+        for (List<Artifact> list : qualifierArtifactMap.values()) {
+            final Artifact representativeArtifact = list.get(0);
+
+            for (int i = 1; i < list.size(); i++) {
+                final Artifact duplicateArtifact = list.get(i);
+                if (representativeArtifact == duplicateArtifact) {
+                    throw new IllegalStateException("Unresolved referential duplicate detected.");
+                }
+                artifacts.remove(duplicateArtifact);
+                representativeArtifact.merge(duplicateArtifact);
+            }
+        }
+    }
+
+    private static Map<String, List<Artifact>> buildQualifierArtifactMap(Inventory inventory, Function<Artifact, Set<String>> qualifierSupplier) {
+        final Map<String, List<Artifact>> qualifierArtifactMap = new LinkedHashMap<>();
+
+        for (final Artifact artifact : inventory.getArtifacts()) {
+            final Set<String> artifactQualifiers = qualifierSupplier.apply(artifact);
+            for (String qualifier : artifactQualifiers) {
+                final List<Artifact> artifacts = qualifierArtifactMap.computeIfAbsent(qualifier, a -> new ArrayList<>());
+                artifacts.add(artifact);
+            }
+        }
+        return qualifierArtifactMap;
+    }
+
 
 }

@@ -223,6 +223,20 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         return false;
     }
 
+    public static boolean matchesWithContext(final Set<String> normalizedPatternSet, String normalizedPath, final String relativeBasePath) {
+        if (normalizedPath == null) return false;
+        if (normalizedPath.startsWith(relativeBasePath)) {
+            normalizedPath = normalizedPath.substring(relativeBasePath.length() + 1);
+            for (final String pattern : normalizedPatternSet) {
+                final String trimmedPattern = pattern.trim();
+                if (PatternSetMatcher.internalMatching(normalizedPath, trimmedPattern)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static String[] normalizePatterns(String[] patterns) {
         if (patterns == null) return null;
         final String[] normalizedPatterns = new String[patterns.length];
