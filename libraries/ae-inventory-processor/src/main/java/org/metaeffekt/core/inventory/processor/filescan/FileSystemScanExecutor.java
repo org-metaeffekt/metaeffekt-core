@@ -402,13 +402,16 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         // id + gv + modulated PATH_IN_ASSET
         if (StringUtils.isNotBlank(artifact.getGroupId()) && StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isNotBlank(pathInAsset)) {
-            // compare JustJEclipseBundleTest the jar is detected (file) and then extracted to be detected (by pom); this qualifier prevents
-            // the creation of a duplicate.
-            int index = pathInAsset.lastIndexOf("/META-INF/");
-            if (index >= 0) {
-                pathInAsset = pathInAsset.substring(0, index);
+            final Set<String> set = artifact.getSet(Artifact.Attribute.PATH_IN_ASSET);
+            for (String path : set) {
+                // compare JustJEclipseBundleTest the jar is detected (file) and then extracted to be detected (by pom); this qualifier prevents
+                // the creation of a duplicate.
+                int index = path.lastIndexOf("/META-INF/");
+                if (index >= 0) {
+                    path = path.substring(0, index);
+                }
+                qualifiers.add("i:[" + id + "]-g:[" + artifact.getGroupId() + "]-v:[" + artifact.getVersion() + "]-p:[" + path + "]");
             }
-            qualifiers.add("i:[" + id + "]-g:[" + artifact.getGroupId() + "]-v:[" + artifact.getVersion() + "]-p:[" + pathInAsset + "]");
         }
 
         // id + gv + no ROOT_PATH; logical reference to the same maven artifact

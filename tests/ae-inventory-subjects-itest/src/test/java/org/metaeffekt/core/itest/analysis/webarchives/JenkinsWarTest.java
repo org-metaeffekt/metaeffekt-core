@@ -132,7 +132,6 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void checkInvariants() {
         getAnalysisAfterInvariantCheck();
-
     }
 
     @Test
@@ -150,10 +149,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
         analysis.selectArtifacts().hasSizeGreaterThan(1);
 
-        // NOTE: we accept current the duplicate on jenkins-war-2.479.2.war; there are two different evidences
-        //   for the artifact. It results in the same aggregated zip jenkins-war-2.479.2.war-bda1bc1293d9ae3da739f168dcb7e822.zip
-        // OPTION: The inventory could be filtered/merged post aggregation using the content checksum
-        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(6);
+        analysis.selectArtifacts(tokenStartsWith(ID, "jenkins", ",")).hasSizeOf(5);
 
         analysis.selectArtifacts(tokenStartsWith(ID, "spring")).hasSizeOf(9);
         analysis.selectArtifacts(tokenStartsWith(ID, "jakarta")).hasSizeOf(5);
