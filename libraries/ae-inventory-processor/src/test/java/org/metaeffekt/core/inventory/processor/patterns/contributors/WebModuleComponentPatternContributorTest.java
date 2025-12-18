@@ -23,7 +23,6 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
-import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
 import static org.metaeffekt.core.inventory.processor.model.ComponentPatternData.Attribute.*;
 import static org.metaeffekt.core.util.FileUtils.computeMD5Checksum;
 
@@ -513,8 +511,8 @@ public class WebModuleComponentPatternContributorTest {
         assertThat(cpdList.size()).isEqualTo(1);
 
         final ComponentPatternData cpd = cpdList.get(0);
-        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("test/package.json-v4.4.0");
-        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("test/package.json");
+        assertThat(cpd.get(COMPONENT_PART)).isEqualTo("test-v4.4.0");
+        assertThat(cpd.get(COMPONENT_NAME)).isEqualTo("test");
         assertThat(cpd.get(COMPONENT_VERSION)).isEqualTo("v4.4.0");
         assertThat(cpd.get("Release")).isNull();
 
@@ -530,7 +528,7 @@ public class WebModuleComponentPatternContributorTest {
         Assertions.assertThat(artifact001.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
         Assertions.assertThat(artifact001.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("test/package.json[@cesium/engine@15.0.0]");
         Assertions.assertThat(artifact001.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@cesium/engine@15.0.0");
-        Assertions.assertThat(artifact001.get("AID-test/package.json-v4.4.0")).isEqualTo("r");
+        Assertions.assertThat(artifact001.get("AID-test-v4.4.0")).isEqualTo("r");
 
         final Artifact artifact002 = inventory.findArtifact("@babel/core-7.26.10");
         Assertions.assertThat(artifact002).isNotNull();
@@ -540,12 +538,12 @@ public class WebModuleComponentPatternContributorTest {
         Assertions.assertThat(artifact002.get(Artifact.Attribute.COMPONENT_SOURCE_TYPE)).isEqualTo("npm-module");
         Assertions.assertThat(artifact002.get(Artifact.Attribute.PATH_IN_ASSET)).isEqualTo("test/package.json[@babel/core@7.26.10]");
         Assertions.assertThat(artifact002.get(Artifact.Attribute.PURL)).isEqualTo("pkg:npm/@babel/core@7.26.10");
-        Assertions.assertThat(artifact002.get("AID-test/package.json-v4.4.0")).isEqualTo("d");
+        Assertions.assertThat(artifact002.get("AID-test-v4.4.0")).isEqualTo("d");
 
         assertThat(inventory.getArtifacts().size()).isEqualTo(1362);
 
         // filter runtime artifacts
-        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-test/package.json-v4.4.0"));
+        InventoryUtils.filterInventoryForRuntimeArtifacts(inventory, Collections.singleton("AID-test-v4.4.0"));
         assertThat(inventory.getArtifacts().size()).isEqualTo(235);
 
     }

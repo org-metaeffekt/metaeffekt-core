@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors.web;
 
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,6 +49,8 @@ public class WebModule implements Comparable<WebModule> {
     private String license;
 
     private String url;
+
+    private boolean isIncomplete;
 
     @Override
     public int compareTo(WebModule o) {

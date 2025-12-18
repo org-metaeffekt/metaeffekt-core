@@ -28,6 +28,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
@@ -286,29 +288,9 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         modulateArtifactRootPaths(inventory);
 
-        // NOTE: the list may contain duplicates by reference; these must be removed to not lose data
-        final List<Artifact> artifacts = inventory.getArtifacts();
-        final LinkedHashSet<Artifact> artifactSet = new LinkedHashSet<>(artifacts);
-        if (artifactSet.size() != artifacts.size()) {
-            LOG.warn("Detected duplicates by reference in inventory. Ensure analysis does not produce referential duplicates. Applying compensation.");
-            artifacts.clear();
-            artifacts.addAll(artifactSet);
-        }
+        Function<Artifact, Set<String>> qualifierSupplier = a -> qualifiersOf(a);
 
-        final Map<String, List<Artifact>> qualifierArtifactMap = buildQualifierArtifactMap(inventory);
-
-        for (List<Artifact> list : qualifierArtifactMap.values()) {
-            final Artifact representativeArtifact = list.get(0);
-
-            for (int i = 1; i < list.size(); i++) {
-                final Artifact duplicateArtifact = list.get(i);
-                if (representativeArtifact == duplicateArtifact) {
-                    throw new IllegalStateException("Unresolved referential duplicate detected.");
-                }
-                artifacts.remove(duplicateArtifact);
-                representativeArtifact.merge(duplicateArtifact);
-            }
-        }
+        InventoryUtils.mergeDuplicates(inventory, qualifierSupplier);
 
         InventoryUtils.mergeDuplicateAssets(inventory);
 
@@ -388,19 +370,6 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
         return a.getId() + "/" + a.get(Artifact.Attribute.PATH_IN_ASSET);
     }
 
-    public Map<String, List<Artifact>> buildQualifierArtifactMap(Inventory inventory) {
-        final Map<String, List<Artifact>> qualifierArtifactMap = new LinkedHashMap<>();
-
-        for (final Artifact artifact : inventory.getArtifacts()) {
-            final Set<String> artifactQualifiers = qualifiersOf(artifact);
-            for (String qualifier : artifactQualifiers) {
-                final List<Artifact> artifacts = qualifierArtifactMap.computeIfAbsent(qualifier, a -> new ArrayList<>());
-                artifacts.add(artifact);
-            }
-        }
-        return qualifierArtifactMap;
-    }
-
     /**
      * Produces multiple qualifiers that - if matching - map the same artifacts and can be merged.
      *
@@ -413,32 +382,56 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         final String id = artifact.getId();
 
+        // RULES:
+        // - do not merge, when the artifacts is not based on the same evidence; each evidence may produce a different representation during aggregation
+        // - do not mask differentiating data
+        // - consider downstream processing; aggregation, scanning, result management
+
         // id + checksum
-        if (StringUtils.isNotBlank(artifact.getChecksum())) {
+        final String sha512Hash = artifact.get(Artifact.Attribute.HASH_SHA512);
+        if (StringUtils.isNotBlank(sha512Hash)) {
             // in case we have a checksum id and checksum are sufficient
-            qualifiers.add("i:[" + id + "]-c:[" + artifact.getChecksum() + "]");
+            qualifiers.add("i:[" + id + "]-h:[" + sha512Hash + "]");
         }
 
-        // id + gv
-        if (StringUtils.isNotBlank(artifact.getGroupId()) && StringUtils.isNotBlank(artifact.getVersion())) {
-            qualifiers.add("i:[" + id + "]-g:[" + artifact.getGroupId() + "]-v:[" + artifact.getVersion() + "]");
-        }
-
-        // id + PATH_IN_ASSET
-        final String pathInAsset = artifact.get(KEY_PATH_IN_ASSET);
+        // id + PATH_IN_ASSET (id from same context); may identify problematic contributors
+        String pathInAsset = artifact.get(KEY_PATH_IN_ASSET);
         if (StringUtils.isNotBlank(pathInAsset)) {
             // create qualifier
             qualifiers.add("i:[" + id + "]-p:[" + pathInAsset + "]");
         }
 
-        // id + version + purl
-        if (StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isNotBlank(artifact.get(Artifact.Attribute.PURL))) {
-            qualifiers.add("i:[" + id + "]-v:[" + artifact.getVersion() + "]-purl:[" + artifact.get(Artifact.Attribute.PURL) + "]");
+        // id + gv + modulated PATH_IN_ASSET
+        if (StringUtils.isNotBlank(artifact.getGroupId()) && StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isNotBlank(pathInAsset)) {
+            final Set<String> set = artifact.getSet(Artifact.Attribute.PATH_IN_ASSET);
+            for (String path : set) {
+                // compare JustJEclipseBundleTest the jar is detected (file) and then extracted to be detected (by pom); this qualifier prevents
+                // the creation of a duplicate.
+                path = FileUtils.normalizePathToLinux(path);
+                int index = path.lastIndexOf("/META-INF/");
+                if (index >= 0) {
+                    path = path.substring(0, index);
+                }
+                qualifiers.add("i:[" + id + "]-g:[" + artifact.getGroupId() + "]-v:[" + artifact.getVersion() + "]-p:[" + path + "]");
+            }
         }
 
-        // id + component + version + type
-        if (StringUtils.isNotBlank(artifact.getComponent()) && StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isNotBlank(artifact.getType())) {
-            qualifiers.add("i:[" + id + "]-c:[" + artifact.getComponent() + "]-v:[" + artifact.getVersion() + "]-t:[" + artifact.getType() + "]");
+        // id + gv + no ROOT_PATH; logical reference to the same maven artifact
+        String rootPath = artifact.get(KEY_ROOT_PATHS);
+        if (StringUtils.isNotBlank(artifact.getGroupId()) && StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isBlank(rootPath)) {
+            // NOTE:
+            //   - the missing root path causes the artifact to be interpreted as reference/pointer only. No files
+            //     will be aggregated. Therefore, we do not need to differentiate these.
+            qualifiers.add("i:[" + id + "]-g:[" + artifact.getGroupId() + "]-v:[" + artifact.getVersion() + "]-root:none");
+        }
+
+        // id + PURL + no ROOT_PATH; logical reference to the same artifact
+        String purl = artifact.get(Artifact.Attribute.PURL);
+        if (StringUtils.isNotBlank(artifact.getGroupId()) && StringUtils.isNotBlank(artifact.getVersion()) && StringUtils.isBlank(rootPath) && StringUtils.isNotBlank(purl)) {
+            // NOTE:
+            //   - the missing root path causes the artifact to be interpreted as reference/pointer only. No files
+            //     will be aggregated. Therefore, we do not need to differentiate these.
+            qualifiers.add("i:[" + id + "]-g:[" + artifact.getGroupId() + "]-v:[" + artifact.getVersion() + "]-root:none-[p:" + purl + "]");
         }
 
         return qualifiers;

@@ -615,6 +615,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new ContainerAssetContributor());
         contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
         contributorRunnerBuilder.add(new ContainerInspectAssetContributor());
+        contributorRunnerBuilder.add(new BowerWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new NpmWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new ComposerWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());

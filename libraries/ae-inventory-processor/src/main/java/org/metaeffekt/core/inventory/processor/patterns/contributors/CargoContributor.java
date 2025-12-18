@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.metaeffekt.core.inventory.processor.filepatterns.FileMetaData;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Constants;
@@ -28,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
@@ -68,8 +68,32 @@ public class CargoContributor extends ComponentPatternContributor {
                 final CargoMetadata cargoMetadata = new CargoMetadata(cargoTomlFile);
 
                 final CargoMetadata.Package cargoMetadataPackage = cargoMetadata.getPackage();
-                final String name = cargoMetadataPackage.getName();
-                final String version = cargoMetadataPackage.getVersion();
+                String name = cargoMetadataPackage.getName();
+                String version = cargoMetadataPackage.getVersion();
+
+                FileMetaData fileMetaData = getFileComponentPatternProcessor().deriveFileMetaData(relativeAnchorPath);
+
+                boolean incomplete = false;
+                if (name == null || version == null) {
+                    incomplete = true;
+                    if (fileMetaData != null) {
+                        if (name == null) {
+                            name = fileMetaData.getName();
+                        }
+                        if (version == null) {
+                            version = fileMetaData.getVersion();
+                        }
+                    }
+
+                    if (name == null) {
+                        File parent = anchorFile.getParentFile();
+                        if (parent != null) {
+                            name = parent.getName();
+                        } else {
+                            name = anchorFile.getName();
+                        }
+                    }
+                }
 
                 final ComponentPatternData componentPatternData = new ComponentPatternData();
 
@@ -78,13 +102,23 @@ public class CargoContributor extends ComponentPatternContributor {
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);
-                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
 
-                componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*.rs, **/cargo.lock, *");
+                if (fileMetaData != null) {
+                    componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, fileMetaData.getQualifier());
+                } else {
+                    if (version != null) {
+                        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name + "-" + version);
+                    } else {
+                        componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, name);
+                    }
+                }
+
+                // NOTE: we used to be more selective; yet er consider (until excluded) all to be part of the module
+                // componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*.rs, **/*_rs.so, **/cargo.lock, **/*");
+                componentPatternData.set(ComponentPatternData.Attribute.INCLUDE_PATTERN, "**/*");
                 componentPatternData.set(ComponentPatternData.Attribute.TYPE, ARTIFACT_TYPE_MODULE);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_SOURCE_TYPE, TYPE_CARGO_APP);
 
-                // FIXME: check whether this is intended
                 componentPatternData.set(Artifact.Attribute.PURL, buildPurl(name, version, null));
 
                 // manage cargoLockFile file
@@ -93,21 +127,28 @@ public class CargoContributor extends ComponentPatternContributor {
                     final String relativeLockFilePath = asRelativePath(baseDir, cargoLockFile);
 
                     // only add dependencies as included in the lock file; ignore toml dependencies
-                    componentPatternData.setExpansionInventorySupplier(cargoLockSupplier(cargoLock, relativeLockFilePath));
+                    Inventory inventory = cargoLockSupplier(cargoLock, relativeLockFilePath);
+                    if (inventory != null && inventory.getArtifacts().size() > 0) {
+                        incomplete = false;
+                    }
+                    componentPatternData.setExpansionInventorySupplier(() -> inventory);
                 } else {
                     // FIXME: add toml file dependencies as seeds
                     LOG.warn("Incomplete contributor implementation. No Cargo.lock file available for [{}].", cargoTomlFile.getAbsolutePath());
                 }
 
-                list.add(componentPatternData);
+                if (!incomplete) {
+                    list.add(componentPatternData);
+                }
             } else {
                 final File cargoLockFile = new File(baseDir, relativeAnchorPath);
                 final File cargoTomlFile = findSingleFile(cargoLockFile.getParentFile(), "Cargo.toml", "cargo.toml");
                 if (cargoTomlFile != null && cargoTomlFile.exists()) {
                     // skip this evaluation; toml file is detected separately
+                } else {
+                    // FIXME: no toml file; handle lock file individually
+                    LOG.warn("Incomplete contributor implementation. No Cargo.toml file available for [{}].", cargoLockFile.getAbsolutePath());
                 }
-                // FIXME: no toml file; handle lock file individually
-                LOG.warn("Incomplete contributor implementation. No Cargo.toml file available for [{}].", cargoLockFile.getAbsolutePath());
             }
 
             return list;
@@ -118,72 +159,71 @@ public class CargoContributor extends ComponentPatternContributor {
 
     }
 
-    private static Supplier<Inventory> cargoLockSupplier(CargoLock cargoLock, String relLockFilePath) {
-        return () -> {
-            final Inventory inventory = new Inventory();
+    private static Inventory cargoLockSupplier(CargoLock cargoLock, String relLockFilePath) {
+        final Inventory inventory = new Inventory();
 
-            final String lockFileVersion = cargoLock.getVersion();
-            LOG.debug("Parsing Cargo Lock file [{}] with version [{}].", relLockFilePath, lockFileVersion);
+        final String lockFileVersion = cargoLock.getVersion();
+        LOG.debug("Parsing Cargo Lock file [{}] with version [{}].", relLockFilePath, lockFileVersion);
 
-            // keep track of package name to artifact mapping
-            final Map<String, Artifact> nameArtifactMap = new HashMap<>();
+        // keep track of package name to artifact mapping
+        final Map<String, Artifact> nameArtifactMap = new HashMap<>();
 
-            final List<CargoLock.Package> packages = cargoLock.getPackages();
+        final List<CargoLock.Package> packages = cargoLock.getPackages();
 
-            // 1st pass; create artifacts from packages
-            for (CargoLock.Package pkg : packages) {
-                final String packageName = pkg.getName();
-                final String packageVersion = pkg.getVersion();
-                final String packageSource = pkg.getSource();
-                final String packageSha256Hash = pkg.getChecksum();
+        // 1st pass; create artifacts from packages
+        for (CargoLock.Package pkg : packages) {
+            final String packageName = pkg.getName();
+            final String packageVersion = pkg.getVersion();
+            final String packageSource = pkg.getSource();
+            final String packageSha256Hash = pkg.getChecksum();
 
-                final Artifact artifact = new Artifact();
+            final Artifact artifact = new Artifact();
 
-                artifact.set(Artifact.Attribute.ID, packageName + "-" + packageVersion);
-                artifact.set(Artifact.Attribute.COMPONENT, packageName);
-                artifact.set(Artifact.Attribute.VERSION, packageVersion);
-                artifact.set(KEY_CARGO_SOURCE_ID, packageSource);
+            artifact.set(Artifact.Attribute.ID, packageName + "-" + packageVersion);
+            artifact.set(Artifact.Attribute.COMPONENT, packageName);
+            artifact.set(Artifact.Attribute.VERSION, packageVersion);
+            artifact.set(KEY_CARGO_SOURCE_ID, packageSource);
 
-                // FIXME: move differentiation of representation to core
-                artifact.set("Source Artifact - " + KEY_HASH_SHA256, packageSha256Hash);
+            // FIXME: move differentiation of representation to core
+            artifact.set("Source Artifact - " + KEY_HASH_SHA256, packageSha256Hash);
 
-                artifact.set(Artifact.Attribute.COMPONENT_SOURCE_TYPE, TYPE_CARGO_CRATE);
-                artifact.set(Artifact.Attribute.PATH_IN_ASSET, relLockFilePath + "[" + packageName + "]");
+            artifact.set(Artifact.Attribute.TYPE, ARTIFACT_TYPE_MODULE);
+            artifact.set(Artifact.Attribute.COMPONENT_SOURCE_TYPE, TYPE_CARGO_CRATE);
+            artifact.set(Artifact.Attribute.PATH_IN_ASSET, relLockFilePath + "[" + packageName + "]");
 
-                artifact.set(Artifact.Attribute.PURL, buildPurl(packageName, packageVersion, packageSha256Hash));
+            artifact.set(Artifact.Attribute.PURL, buildPurl(packageName, packageVersion, packageSha256Hash));
 
-                inventory.getArtifacts().add(artifact);
+            inventory.getArtifacts().add(artifact);
 
-                // memorize mapping
-                nameArtifactMap.put(packageName, artifact);
-            }
+            // memorize mapping
+            nameArtifactMap.put(packageName, artifact);
+        }
 
-            // 2nd pass; mark relationships
-            for (CargoLock.Package pkg : packages) {
-                final String packageName = pkg.getName();
-                final List<String> dependencies = pkg.getDependencies();
+        // 2nd pass; mark relationships
+        for (CargoLock.Package pkg : packages) {
+            final String packageName = pkg.getName();
+            final List<String> dependencies = pkg.getDependencies();
 
-                if (dependencies != null && !dependencies.isEmpty()) {
-                    for (String dependencyName : dependencies) {
-                        final Artifact dependentArtifact = nameArtifactMap.get(packageName);
-                        final Artifact dependencyArtifact = nameArtifactMap.get(dependencyName);
+            if (dependencies != null && !dependencies.isEmpty()) {
+                for (String dependencyName : dependencies) {
+                    final Artifact dependentArtifact = nameArtifactMap.get(packageName);
+                    final Artifact dependencyArtifact = nameArtifactMap.get(dependencyName);
 
-                        if (dependentArtifact != null && dependencyArtifact != null) {
-                            String assetId = "AID-" + dependentArtifact.getId();
-                            final String dependentSha256Hash = dependentArtifact.get(Artifact.Attribute.HASH_SHA256);
-                            if (dependentSha256Hash != null) {
-                                assetId += "-" + dependentSha256Hash;
-                            }
-
-                            // we use the containment relationship here due to rusts' static-linking nature
-                            dependencyArtifact.set(assetId, Constants.MARKER_CONTAINS);
+                    if (dependentArtifact != null && dependencyArtifact != null) {
+                        String assetId = "AID-" + dependentArtifact.getId();
+                        final String dependentSha256Hash = dependentArtifact.get(Artifact.Attribute.HASH_SHA256);
+                        if (dependentSha256Hash != null) {
+                            assetId += "-" + dependentSha256Hash;
                         }
+
+                        // we use the containment relationship here due to rusts' static-linking nature
+                        dependencyArtifact.set(assetId, Constants.MARKER_CONTAINS);
                     }
                 }
             }
+        }
 
-            return inventory;
-        };
+        return inventory;
     }
 
     @Override
