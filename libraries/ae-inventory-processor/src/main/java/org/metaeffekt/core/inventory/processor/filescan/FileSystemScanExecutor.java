@@ -28,6 +28,7 @@ import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -406,6 +407,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
             for (String path : set) {
                 // compare JustJEclipseBundleTest the jar is detected (file) and then extracted to be detected (by pom); this qualifier prevents
                 // the creation of a duplicate.
+                path = FileUtils.normalizePathToLinux(path);
                 int index = path.lastIndexOf("/META-INF/");
                 if (index >= 0) {
                     path = path.substring(0, index);
