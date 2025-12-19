@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic PUBLIC "-//OASIS//DTD DITA Topic//EN" "http://docs.oasis-open.org/dita/v1.1/OS/dtd/topic.dtd">
+<topic id="tpc_import-export-information" xmlns:ditaarch="http://dita.oasis-open.org/architecture/2005/">
+    <title>Import / Export Informationen</title>
+    <body>
+        <p id="distribution-without-restricted-components-intro">
+            Das Land, in das die Softwaredistribution geliefert wird, kann Beschränkungen für den Import, den Besitz
+            und/oder die Nutzung der Software haben. Darüber hinaus kann der Export oder Re-Export der
+            Softwaredistribution in andere Länder eingeschränkt oder sogar verboten sein.
+        </p>
+        <p id="distribution-with-restricted-components-intro">
+            Diese Softwaredistribution enthält Komponenten, die Export- und Importkontrollen unterliegen.
+            Das Land, in das die Softwaredistribution geliefert wird, kann Beschränkungen für den Import, den Besitz
+            und/oder die Nutzung der Software haben. Darüber hinaus kann der Export oder Re-Export der
+            Softwaredistribution in andere Länder eingeschränkt oder sogar verboten sein.
+        </p>
+        <p id="distribution-of-restricted-components-hint">
+            Prüfen Sie vor der Nutzung oder dem Re-Export dieser Distribution die länderspezifischen Gesetze,
+            Vorschriften und Richtlinien. Weitere Informationen finden Sie auch unter  <xref href="http://www.wassenaar.org" format="html" scope="external" />.
+        </p>
+        <p id="distribution-with-restricted-components-table">
+            Die folgende Tabelle enthält Export-/Importdetails zu einer spezifischen Softwarekomponente, die in dieser
+            Softwaredistribution enthalten ist:
+        </p>
+        <p>
+            <table>
+                <title>Import / Export Klassifikation</title>
+                <tgroup cols="2">
+                    <colspec colname="1" colwidth="20" />
+                    <colspec colname="2" colwidth="80" />
+                    <thead>
+                        <row>
+                            <entry>Komponentenname</entry>
+                            <entry>Import/Export Klassifikationsdetails</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row id="cryptographic-component_bouncy-castle">
+                            <entry>Bouncy Castle</entry>
+                            <entry>
+                                Die Bouncy-Castle-Artefakte enthalten kryptografische Software und umfassen zusätzliche
+                                Krypto-Provider. Klassifizierungsdetails sind online verfügbar unter
+                                <xref href="http://www.bouncycastle.org/wiki/display/JA1/Frequently+Asked+Questions"
+                                      format="html" scope="external" />.
+                            </entry>
+                        </row>
+                        <row id="cryptographic-component_jasypt">
+                            <entry>Jasypt</entry>
+                            <entry>
+                                Die Java Simplified Encryption API (Jasypt) verwendet die Java Cryptography Extension API
+                                und unterliegt daher der Exportkontrolle.
+                                Details sind online verfügbar unter
+                                <xref href="http://www.jasypt.org/faq.html#what-is-jasypts-export-classification"
+                                      format="html" scope="external" />.
+                            </entry>
+                        </row>
+                        <row id="cryptographic-component_oracle-jre">
+                            <entry>Oracle JRE</entry>
+                            <entry>
+                                Das Oracle Java Runtime Environment (Oracle JRE) enthält kryptografische Software. Weitere
+                                Details entnehmen Sie bitte der Oracle Binary Code License Agreement unter
+                                <xref href="http://www.oracle.com/technetwork/java/javase/terms/license/index.html"
+                                      format="html" scope="external" />.
+                                Weitere Informationen zur Oracle Global Trade Compliance finden Sie unter
+                                <xref href="http://www.oracle.com/us/products/export/index.html"
+                                      format="html" scope="external" />.
+                            </entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </p>
+        <p id="distribution-without-restricted-components-claim">
+            Diese Softwaredistribution enthält keine Komponenten, die als export-/importbeschränkt klassifiziert sind.
+        </p>
+        <p id="distribution-of-restricted-components-disclaimer">
+            Bitte beachten Sie, dass ${organization.name} keine Verantwortung für die Richtigkeit, Aktualität und den
+            Inhalt der oben genannten externen Links übernimmt.
+        </p>
+    </body>
+</topic>
