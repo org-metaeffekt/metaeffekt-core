@@ -350,8 +350,7 @@ public abstract class InventoryUtils {
 
     @Deprecated // use SheetSerializationContext instead
     protected static void removeAttributes(Inventory inventory, Collection<String> keys) {
-        final ArrayList<String> list = inventory.getSerializationContext().
-                get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
+        final ArrayList<String> list = inventory.getSerializationContext().get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
 
         for (Artifact artifact : inventory.getArtifacts()) {
             for (String attribute : new HashSet<>(artifact.getAttributes())) {
@@ -440,39 +439,37 @@ public abstract class InventoryUtils {
         for (Artifact artifact : inventory.getArtifacts()) {
             String type = artifact.get(Artifact.Attribute.TYPE);
             if (type == null) continue;
-            if (type.equals("web-module") || type.equals("nodejs-module")) {
-                boolean remove = true;
+            boolean remove = true;
 
-                // hasMarker tracks whether an artifact has markers within primaryAssetIds; in case not, nothing is removed
-                boolean hasMarker = false;
-                for (String aid : primaryAssetIds) {
-                    final String assetMarker = artifact.get(aid);
-                    if (StringUtils.isNotBlank(assetMarker)) {
-                        hasMarker = true;
-                    }
-                    if ("(r)".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
-                    if ("r".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
+            // hasMarker tracks whether an artifact has markers within primaryAssetIds; in case not, nothing is removed
+            boolean hasMarker = false;
+            for (String aid : primaryAssetIds) {
+                final String assetMarker = artifact.get(aid);
+                if (StringUtils.isNotBlank(assetMarker)) {
+                    hasMarker = true;
+                }
+                if ("(r)".equals(assetMarker)) {
+                    remove = false;
+                    break;
+                }
+                if ("r".equals(assetMarker)) {
+                    remove = false;
+                    break;
+                }
 
-                    // contains implies runtime (also considers old/imprecise markers)
-                    if ("c".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
-                    // consider old/imprecise markers; cross marker was used for any type of relationship
-                    if ("x".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
+                // contains implies runtime (also considers old/imprecise markers)
+                if ("c".equals(assetMarker)) {
+                    remove = false;
+                    break;
                 }
-                if (remove && hasMarker) {
-                    removableArtifacts.add(artifact);
+                // consider old/imprecise markers; cross marker was used for any type of relationship
+                if ("x".equals(assetMarker)) {
+                    remove = false;
+                    break;
                 }
+            }
+            if (remove && hasMarker) {
+                removableArtifacts.add(artifact);
             }
         }
         inventory.getArtifacts().removeAll(removableArtifacts);
@@ -516,6 +513,5 @@ public abstract class InventoryUtils {
         }
         return qualifierArtifactMap;
     }
-
 
 }
