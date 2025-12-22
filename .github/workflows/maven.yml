@@ -24,4 +24,4 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - run: mvn -B package --file pom.xml
+      - run: mvn -B package --file pom.xml -Duser.timezone=Europe/Berlin
