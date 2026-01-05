@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.processor.patterns.contributors.web;
 
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,6 +49,8 @@ public class WebModule implements Comparable<WebModule> {
     private String license;
 
     private String url;
+
+    private boolean isIncomplete;
 
     @Override
     public int compareTo(WebModule o) {

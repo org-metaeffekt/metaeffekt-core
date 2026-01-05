@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -221,7 +223,12 @@ public class DirectoryInventoryScanTest {
     @Test
     public void testScanExtractedFiles_ExternalNG() throws IOException {
 
-        final String caseString = "case-001";
+        String caseString;
+        caseString = "case-002";
+        // caseString = "case-003";
+        // caseString = "case-004";
+        // caseString = "case-005";
+        // caseString = "case-006";
 
         // inputs
         final File projectBaseDir = new File("<path>");
@@ -229,21 +236,38 @@ public class DirectoryInventoryScanTest {
         final File scanDir = new File(projectBaseDir, caseString + "-scan");
 
         // other sources
-        final File referenceInventoryDir = new File("src/test/resources/test-inventory-01");
+        final File referenceInventoryDir = new File("src/test/resources/reference-inventory-01");
 
         // outputs
         final File resultsDir = new File(projectBaseDir, caseString + "-results");
         final File targetAggregationDir = new File(resultsDir, caseString + "-aggregation");
         final File targetAggregationInventoryFile = new File(resultsDir, "aggregated-inventory.xlsx");
         final File targetScanInventoryFile = new File(resultsDir, "scan-inventory.xlsx");
+        final File filteredTargetScanInventoryFile = new File(resultsDir, "scan-inventory_filtered.xlsx");
 
         FileUtils.forceMkdir(resultsDir);
         FileUtils.forceMkdir(targetAggregationDir);
 
-        final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
-        new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
+        // scan
+        if (true) {
+            final Inventory inventory = scan(referenceInventoryDir, scanInputDir, scanDir);
+            new InventoryWriter().writeInventory(inventory, targetScanInventoryFile);
+        }
 
-        aggregateArchives(scanDir, targetScanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
+        // filter
+        if (true) {
+            Inventory inventory = new InventoryReader().readInventory(targetScanInventoryFile);
+            InventoryUtils.filterInventoryForRuntimeArtifacts(inventory,
+                    inventory.getAssetMetaData().stream()
+                            .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
+                            .collect(Collectors.toList()));
+            new InventoryWriter().writeInventory(inventory, filteredTargetScanInventoryFile);
+        }
+
+        // aggregate (based on filtered)
+        if (true) {
+            aggregateArchives(scanDir, filteredTargetScanInventoryFile, referenceInventoryDir, targetAggregationInventoryFile, targetAggregationDir);
+        }
     }
 
     @Ignore
@@ -272,7 +296,7 @@ public class DirectoryInventoryScanTest {
             }
         }
 
-        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls");
+        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls, *.xlsx");
 
         log.info("Building aggregator configuration...");
         final DirectoryScanAggregatorConfiguration directoryScanAggregatorConfiguration =
@@ -291,7 +315,10 @@ public class DirectoryInventoryScanTest {
         };
         String[] scanExcludes = new String[] {
                 "**/.DS_Store", "**/._*" ,
-                "**/.git/**/*", "**/.git*", "**/.git*"
+                "**/.git/**/*", "**/.git*", "**/.git*",
+
+                "**/.bundle/cache/compact_index/rubygems.org*/**/*",
+                "**/.bundle/cache/compact_index/rubygems.org*"
         };
 
         String[] unwrapIncludes = new String[] {
@@ -299,7 +326,7 @@ public class DirectoryInventoryScanTest {
         };
 
         String[] unwrapExcludes = new String[] {
-                // suffixed known to be non-strucutural
+                // suffixed known to be non-structural
                 "**/*.js.gz", "**/*.js.map.gz", "**/*.css.gz",
                 "**/*.css.map.gz", "**/*.svg.gz", "**/*.json.gz",
                 "**/*.ttf.gz", "**/*.eot.gz",
@@ -317,7 +344,7 @@ public class DirectoryInventoryScanTest {
 
         // FIXME: at post-scan-filter (really; should the filter not apply after resolve/scan
 
-        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls");
+        final Inventory referenceInventory = InventoryUtils.readInventory(referenceInventoryDir, "*.xls,*.xlsx");
 
         final DirectoryInventoryScan scan = new DirectoryInventoryScan(
                 scanInputDir, scanDir,

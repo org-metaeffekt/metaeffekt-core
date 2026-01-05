@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.predicates.ContainsToken;
@@ -105,8 +106,8 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
         // check we do not lose the checksums on the exe files.
         exeArtifactList.filter(a -> a.getChecksum() == null).hasSizeOf(0);
     }
-    @Test
 
+    @Test
     public void assertAggregation() throws Exception {
         final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
         final File aggregationTargetDir = new File(testSetup.getInventoryFolder(), "aggregation");
@@ -128,6 +129,24 @@ public class JustJEclipseBundleTest extends AbstractCompositionAnalysisTest {
             File file = new File(aggregationTargetDir, testPath);
             FileUtils.validateExists(file);
         }
+
+        // NOTES 2025-12-18:
+        // - the results contains the exe files twice (original file and aggregated file); regarded a plus, since the content may differ
+        // - the org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64-17.0.2-SNAPSHOT.jar is currently not included as original; only
+        //   as aggregated archive;
+        // - the exe files have checksums (orignal) and content checksums (archive); this is a plus
+        // - the jar files does not have it's original checksum; this is a minus
+        // - the group id of the jar files differs (internal/external perspective) this is currently not reflected.
+        // --> it must be determined what the final outcome needs to be; proposal:
+        // - in case artifacts are detected both on physical and on logical (aggregated, no file representative) level
+        //   - the checksums must be preserved
+        //   - the original file and (!) the aggregated file must be referenced (two Root Paths)
+        //   - the scanner would not scan the original file (as a potential mix of different parts), but the aggregated;
+        //     to be validated; this would be fine from a decomposition point of view
+        //   - the original files would still be available in the aggregation directory for further treatment
+
+        final File aggregatedInventoryFile = new File(testSetup.getInventoryFolder(), "aggregated-inventory.xlsx");
+        new InventoryWriter().writeInventory(testSetup.getInventory(), aggregatedInventoryFile);
     }
 
 }

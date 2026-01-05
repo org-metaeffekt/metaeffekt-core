@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.metaeffekt.core.inventory;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -23,6 +24,7 @@ import org.metaeffekt.core.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,7 @@ import static org.metaeffekt.core.inventory.processor.model.InventorySerializati
 /**
  * Utilities for dealing with Inventories.
  */
+@Slf4j
 public abstract class InventoryUtils {
 
     /**
@@ -347,8 +350,7 @@ public abstract class InventoryUtils {
 
     @Deprecated // use SheetSerializationContext instead
     protected static void removeAttributes(Inventory inventory, Collection<String> keys) {
-        final ArrayList<String> list = inventory.getSerializationContext().
-                get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
+        final ArrayList<String> list = inventory.getSerializationContext().get(CONTEXT_ARTIFACT_DATA_COLUMN_LIST);
 
         for (Artifact artifact : inventory.getArtifacts()) {
             for (String attribute : new HashSet<>(artifact.getAttributes())) {
@@ -437,42 +439,92 @@ public abstract class InventoryUtils {
         for (Artifact artifact : inventory.getArtifacts()) {
             String type = artifact.get(Artifact.Attribute.TYPE);
             if (type == null) continue;
-            if (type.equals("web-module") || type.equals("nodejs-module")) {
-                boolean remove = true;
+            boolean remove = true;
 
-                // hasMarker tracks whether an artifact has markers within primaryAssetIds; in case not, nothing is removed
-                boolean hasMarker = false;
-                for (String aid : primaryAssetIds) {
-                    final String assetMarker = artifact.get(aid);
-                    if (StringUtils.isNotBlank(assetMarker)) {
-                        hasMarker = true;
-                    }
-                    if ("(r)".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
-                    if ("r".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
+            // hasMarker tracks whether an artifact has markers within primaryAssetIds; in case not, nothing is removed
+            boolean hasMarker = false;
+            for (String aid : primaryAssetIds) {
+                final String assetMarker = artifact.get(aid);
+                if (StringUtils.isNotBlank(assetMarker)) {
+                    hasMarker = true;
+                }
+                if ("(r)".equals(assetMarker)) {
+                    remove = false;
+                    break;
+                }
+                if ("r".equals(assetMarker)) {
+                    remove = false;
+                    break;
+                }
 
-                    // contains implies runtime (also considers old/imprecise markers)
-                    if ("c".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
-                    // consider old/imprecise markers; cross marker was used for any type of relationship
-                    if ("x".equals(assetMarker)) {
-                        remove = false;
-                        break;
-                    }
+                // contains implies runtime (also considers old/imprecise markers)
+                if ("c".equals(assetMarker)) {
+                    remove = false;
+                    break;
                 }
-                if (remove && hasMarker) {
-                    removableArtifacts.add(artifact);
+                // consider old/imprecise markers; cross marker was used for any type of relationship
+                if ("x".equals(assetMarker)) {
+                    remove = false;
+                    break;
                 }
+            }
+            if (remove && hasMarker) {
+                removableArtifacts.add(artifact);
             }
         }
         inventory.getArtifacts().removeAll(removableArtifacts);
+    }
+
+    public static void mergeDuplicates(Inventory inventory, Function<Artifact, Set<String>> qualifierSupplier) {
+        // NOTE: the list may contain duplicates by reference; these must be removed to not lose data
+        final List<Artifact> artifacts = inventory.getArtifacts();
+        final LinkedHashSet<Artifact> artifactSet = new LinkedHashSet<>(artifacts);
+        if (artifactSet.size() != artifacts.size()) {
+            log.warn("Detected duplicates by reference in inventory. Ensure analysis does not produce referential duplicates. Applying compensation.");
+            artifacts.clear();
+            artifacts.addAll(artifactSet);
+        }
+
+        final Map<String, List<Artifact>> qualifierArtifactMap = buildQualifierArtifactMap(inventory, qualifierSupplier);
+
+        for (List<Artifact> list : qualifierArtifactMap.values()) {
+            final Artifact representativeArtifact = list.get(0);
+
+            for (int i = 1; i < list.size(); i++) {
+                final Artifact duplicateArtifact = list.get(i);
+                if (representativeArtifact == duplicateArtifact) {
+                    throw new IllegalStateException("Unresolved referential duplicate detected.");
+                }
+                artifacts.remove(duplicateArtifact);
+                representativeArtifact.merge(duplicateArtifact);
+            }
+        }
+    }
+
+    private static Map<String, List<Artifact>> buildQualifierArtifactMap(Inventory inventory, Function<Artifact, Set<String>> qualifierSupplier) {
+        final Map<String, List<Artifact>> qualifierArtifactMap = new LinkedHashMap<>();
+
+        for (final Artifact artifact : inventory.getArtifacts()) {
+            final Set<String> artifactQualifiers = qualifierSupplier.apply(artifact);
+            for (String qualifier : artifactQualifiers) {
+                final List<Artifact> artifacts = qualifierArtifactMap.computeIfAbsent(qualifier, a -> new ArrayList<>());
+                artifacts.add(artifact);
+            }
+        }
+        return qualifierArtifactMap;
+    }
+
+    /**
+     * Duplicate merge based on ComponentPatternData.deriveQualifier.
+     *
+     * @param inventory The inventory to process.
+     */
+    public static void mergeDuplicateComponentPatterns(Inventory inventory) {
+        final Map<String, ComponentPatternData> qualifierCpdMap = new LinkedHashMap<>();
+        for (ComponentPatternData cpd : inventory.getComponentPatternData()) {
+            qualifierCpdMap.put(cpd.deriveQualifier(), cpd);
+        }
+        inventory.setComponentPatternData(new ArrayList<>(qualifierCpdMap.values()));
     }
 
 }

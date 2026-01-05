@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@ package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.InventoryMergeUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.adapter.NpmPackageLockAdapter;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
@@ -31,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableList;
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
@@ -111,7 +114,9 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
     }
 
     @Override
-    protected ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir, String anchorChecksum, Artifact artifact, File contextBaseDir, Inventory inventoryFromLockFile) {
+    protected ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir, String anchorChecksum, WebModule webModule, File contextBaseDir, Inventory inventoryFromLockFile) {
+
+        final Artifact artifact = createArtifact(webModule);
 
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
@@ -121,6 +126,8 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, artifact.getComponent());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, artifact.getVersion());
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
+
+        componentPatternData.set(Artifact.Attribute.PURL, buildPurl("npm", webModule.getName(), webModule.getVersion()));
 
         componentPatternData.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, artifact.get("Module Specified License"));
 
@@ -133,17 +140,26 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
 
         // set excludes
         componentPatternData.set(ComponentPatternData.Attribute.EXCLUDE_PATTERN,
-                "**/.yarn-integrity," +
-                "**/node_modules/**/*," +
-                "**/bower_components/**/*," +
-                "**/bower.json," +
-                "**/.bower.json," +
-                "**/composer.json," +
-                "**/composer.lock");
+            "**/.yarn-integrity," +
+            "**/node_modules/**/*," +
+            "**/bower_components/**/*," +
+
+            // bower and composer files within the same folder are included; those in deeper folders are excluded
+            // these files may not include a version; otherwise they are detected as well
+            anchorParentDirName + "/*/**/bower.json," +
+            anchorParentDirName + "/*/**/.bower.json," +
+            anchorParentDirName + "/*/**/composer.json," +
+            anchorParentDirName + "/*/**/composer.lock"
+        );
 
         componentPatternData.set(Constants.KEY_TYPE, Constants.ARTIFACT_TYPE_WEB_MODULE);
         componentPatternData.set(Constants.KEY_COMPONENT_SOURCE_TYPE, "npm-module");
-        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN, "**/apps/**/*.json");
+        componentPatternData.set(ComponentPatternData.Attribute.SHARED_INCLUDE_PATTERN,
+            anchorParentDirName + "/bower.json," +
+            anchorParentDirName + "/.bower.json," +
+            anchorParentDirName + "/composer.json," +
+            anchorParentDirName + "/composer.lock"
+        );
 
         if (inventoryFromLockFile != null) {
             final Inventory expansionInventory = inventoryFromLockFile;
@@ -151,27 +167,6 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
         }
 
         return componentPatternData;
-    }
-
-    public static String buildPurl(String packageManager, String name, String version) {
-        if (name == null || name.isEmpty()) {
-            return null;
-        }
-
-        String normalizedName = name.toLowerCase();
-        if (packageManager.equals("npm") && name.startsWith("@")) {
-            normalizedName = name;
-        }
-
-        if (version == null || version.isEmpty() || "unspecific".equalsIgnoreCase(version)) {
-            return String.format("pkg:%s/%s", packageManager.toLowerCase(), normalizedName);
-        }
-
-        if (version.startsWith("v")) {
-            version = version.substring(1);
-        }
-
-        return String.format("pkg:%s/%s@%s", packageManager.toLowerCase(), normalizedName, version);
     }
 
     @Override
@@ -198,7 +193,7 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
                 final JSONObject obj = new JSONObject(json);
 
                 webModule.setName(getString(obj, "name", webModule.getName()));
-                webModule.setLicense(getString(obj, "license", webModule.getLicense()));
+                webModule.setLicense(parseLicense(webModule, obj));
                 webModule.setVersion(getVersion(obj));
 
                 if (anchorFile.getName().endsWith("package.json")) {
@@ -210,13 +205,25 @@ public class NpmWebModuleComponentPatternContributor extends AbstractWebModuleCo
 
                     // TODO: peerDependencyMeta are not evaluated; can be nested
                     // TODO: overwrites not processed yet; we can leave this to the lock to resolve
-
                 }
                 // NOTE: nothing to do in the else branch; we leave the direct dependencies empty/unspecified for lock files
             }
         } catch (Exception e) {
             log.warn("Cannot parse web module information: [{}]", anchorFile);
         }
+    }
+
+    private String parseLicense(WebModule webModule, JSONObject obj) {
+        try {
+            return getString(obj, "license", webModule.getLicense());
+        } catch (Exception e) {
+        }
+        try {
+            JSONArray license = (JSONArray) obj.get("license");
+            return InventoryUtils.joinLicenses(license.toList().stream().map(o -> String.valueOf(o)).collect(Collectors.toList()));
+        } catch (Exception e) {
+        }
+        return null;
     }
 
     @Override

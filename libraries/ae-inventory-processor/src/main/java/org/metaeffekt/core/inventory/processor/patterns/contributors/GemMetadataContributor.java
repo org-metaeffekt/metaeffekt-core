@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class GemMetadataContributor extends ComponentPatternContributor {
 
@@ -57,7 +55,7 @@ public class GemMetadataContributor extends ComponentPatternContributor {
             // parse gemspec
             // FIXME: detect charset
             String content8859 = FileUtils.readFileToString(anchorFile, StandardCharsets.ISO_8859_1);
-            String contentUtf8 = FileUtils.readFileToString(anchorFile, StandardCharsets.ISO_8859_1);
+            String contentUtf8 = FileUtils.readFileToString(anchorFile, StandardCharsets.UTF_8);
 
             final String anchorFileName = anchorFile.getName();
             final String id = anchorFileName.replace(".gemspec", "");
@@ -88,8 +86,10 @@ public class GemMetadataContributor extends ComponentPatternContributor {
                 final ComponentPatternData componentPatternData = new ComponentPatternData();
                 final String contextRelPath = FileUtils.asRelativePath(contextBaseDir, anchorFile.getParentFile());
 
-                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, relativeAnchorPath);
+                componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, contextRelPath + "/" + anchorFileName);
                 componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR_CHECKSUM, anchorChecksum);
+
+                componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART_PATH, relativeAnchorPath);
 
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_NAME, name);
                 componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_VERSION, version);

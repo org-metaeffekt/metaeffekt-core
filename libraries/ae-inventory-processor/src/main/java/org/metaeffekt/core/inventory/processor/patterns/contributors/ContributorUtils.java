@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class ContributorUtils {
 
         String archivePath = path.substring(0, lastSlash);
 
-        final int lastDotIndex = archivePath.lastIndexOf(".");
+        final int lastDotIndex = archiveName.lastIndexOf(".");
 
         if (lastDotIndex > -1) {
             // apply square brackets only to archive name and extend with wildcard

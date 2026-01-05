@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,13 +131,19 @@ public class ArtifactUnwrapTask extends ScanTask {
                         // apply implicit exclusion only for sub-artifacts
                         final FileRef parentPath = new FileRef(fileRef.getFile().getParentFile().getAbsolutePath());
                         if (!parentPath.getPath().equals(fileSystemScanContext.getBaseDir().getPath())) {
-                            LOG.info("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Excluding archive [{}] from resulting artifacts. Classified as intermediate archive.", artifact.getId());
+                            }
                             markForDelete = true;
                         } else {
-                            LOG.info("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
+                            if (LOG.isDebugEnabled()) {
+                                LOG.debug("Including archive [{}] in resulting artifacts. Classified as intermediate top-level archive.", artifact.getId());
+                            }
                         }
                     } else {
-                        LOG.info("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Excluding archive [{}] from resulting artifacts. Explicitly classified for exclusion.", artifact.getId());
+                        }
                         markForDelete = true;
                     }
                 }
@@ -153,7 +159,7 @@ public class ArtifactUnwrapTask extends ScanTask {
                 }
 
                 // trigger collection of content
-                LOG.info("Collecting subtree on [{}].", targetFolder.getPath());
+                LOG.info("Collecting files in [{}].", targetFolder.getPath());
                 final FileRef dirRef = new FileRef(targetFolder);
 
                 // currently we anticipate a virtual context with any unwrapped artifact; except for those marked for deletion (implicit archives)
@@ -207,7 +213,7 @@ public class ArtifactUnwrapTask extends ScanTask {
 
             postProcessUnwrappedSavedContainer(targetFolder);
         } catch (Exception e) {
-            issues.add("Detected saved container, but unable to postprocess.");
+            issues.add("Detected saved container, but unable to postprocess all layers.");
         }
     }
 
@@ -229,11 +235,18 @@ public class ArtifactUnwrapTask extends ScanTask {
             final JSONArray layers = jsonObject.getJSONArray("Layers");
             final List<Object> layerList = layers.toList();
 
+            final List<Exception> exceptions = new ArrayList<>();
+
             // unpack layers in the given order
             for (Object layer : layerList) {
                 final File layerFile = new File(targetFolder, String.valueOf(layer));
                 final File layerContentDir = new File(targetFolder, CONTAINER_AGGREGATION_FOLDER);
-                ArchiveUtils.untar(layerFile, layerContentDir);
+
+                try {
+                    ArchiveUtils.untar(layerFile, layerContentDir);
+                } catch (Exception e) {
+                    exceptions.add(e);
+                }
 
                 // consume layer file (independent of the location)
                 deleteLayerFiles(layerFile);
@@ -247,6 +260,10 @@ public class ArtifactUnwrapTask extends ScanTask {
             // consume blobs dir; we are not expecting any contribution anymore
             final File blobsDir = new File(targetFolder, "blobs");
             FileUtils.deleteDirectoryQuietly(blobsDir);
+
+            if (!exceptions.isEmpty()) {
+                throw new IOException("Unable to process all layers.", exceptions.get(0));
+            }
         }
     }
 
