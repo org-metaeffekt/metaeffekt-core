@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
-import org.metaeffekt.core.inventory.processor.model.Constants;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
 import java.util.*;
@@ -57,7 +56,7 @@ public class RelationshipRegistry {
             return false;
         }
 
-        if (relationship.fromEntitiesEmpty() ||  relationship.toEntitiesEmpty()) {
+        if (relationship.isRootEntitiesEmpty() ||  relationship.isRelatedEntitiesEmpty()) {
             return false;
         }
 
@@ -102,11 +101,11 @@ public class RelationshipRegistry {
         List<Relationship<?, ?>> applicableRelationships = new ArrayList<>();
 
         for (Relationship<?, ?> relationship : copyOfRelationships) {
-            if (relationship.getFromEntities().stream().map(RelationshipEntity::getEntity).collect(Collectors.toSet()).contains(object)) {
+            if (relationship.getRootEntities().stream().map(RelationshipEntity::getEntity).collect(Collectors.toSet()).contains(object)) {
                 applicableRelationships.add(relationship);
             }
 
-            if (relationship.getToEntities().stream().map(RelationshipEntity::getEntity).collect(Collectors.toSet()).contains(object)) {
+            if (relationship.getRelatedEntities().stream().map(RelationshipEntity::getEntity).collect(Collectors.toSet()).contains(object)) {
                 applicableRelationships.add(relationship);
             }
         }
@@ -123,7 +122,7 @@ public class RelationshipRegistry {
         // group all relationships by their toNodes and type
         Map<RelationshipKey, List<Relationship<?, ?>>> groupedByToNodesAndType = relationships.stream()
                 .collect(Collectors.groupingBy(rel ->
-                        new RelationshipKey(rel.getType(), rel.getToEntities())));
+                        new RelationshipKey(rel.getType(), rel.getRelatedEntities())));
 
         List<Relationship<?, ?>> result = new ArrayList<>();
 
@@ -134,7 +133,7 @@ public class RelationshipRegistry {
             // create a new set containing all fromNodes from different relationships in the same group
             Set<RelationshipEntity<?>> mergedFrom = new HashSet<>();
             for (Relationship<?, ?> relationship : group) {
-                mergedFrom.addAll(relationship.getFromEntities());
+                mergedFrom.addAll(relationship.getRootEntities());
             }
 
             Relationship<Object, Object> mergedRelationship = getMergedRelationship(group, mergedFrom);
@@ -164,12 +163,12 @@ public class RelationshipRegistry {
 
         for (RelationshipEntity<?> fromEntity : mergedFrom) {
             RelationshipEntity<Object> typedFromEntity = (RelationshipEntity<Object>) fromEntity;
-            mergedRelationship.addFrom(typedFromEntity);
+            mergedRelationship.addRootEntity(typedFromEntity);
         }
 
-        for (RelationshipEntity<?> toEntity : relationshipTemplate.getToEntities()) {
+        for (RelationshipEntity<?> toEntity : relationshipTemplate.getRelatedEntities()) {
             RelationshipEntity<Object> typedToEntity = (RelationshipEntity<Object>) toEntity;
-            mergedRelationship.addTo(typedToEntity);
+            mergedRelationship.addRelatedEntity(typedToEntity);
         }
 
         return mergedRelationship;
@@ -186,84 +185,118 @@ public class RelationshipRegistry {
     public void applyToInventory(Inventory inventory) {
         log.info("Applying relationships to inventory. Found {} relationship entries.", relationships.size());
 
-        fillEntityRepresentatives();
-        Map<String, Map<RelationshipType, List<String>>> toEntityMap = buildToEntityRepresentativeMap();
-        log.info("Mapped {} relationships to {} Artifact -> Asset relationships.", relationships.size(), toEntityMap.size());
+        setMissingRelationshipEntityIdentifiers();
+        Map<String, Map<RelationshipType, List<String>>> relatedEntityToRootEntitiesMap = buildReversedRelationshipsMap();
 
         List<String> assetIds = inventory.getAssetMetaData().stream()
                 .map(a -> a.get(AssetMetaData.Attribute.ASSET_ID))
                 .collect(Collectors.toList());
 
+        // Iterate through all artifacts in the inventory.
         for (Artifact artifact : inventory.getArtifacts()) {
             String artifactId = artifact.get(Artifact.Attribute.ID);
 
-            Map<RelationshipType, List<String>> relationships = toEntityMap.get(artifactId);
-            if (relationships != null) {
-                for (Map.Entry<RelationshipType, List<String>> entry : relationships.entrySet()) {
-                    RelationshipType type = entry.getKey();
-                    String inventoryConstant = type.getInventoryConstant();
+            // Get all related assets and their relationship to the artifact
+            Map<RelationshipType, List<String>> artifactRelationships = relatedEntityToRootEntitiesMap.get(artifactId);
 
-                    for (String assetRepresentative : entry.getValue()) {
-                        if (assetIds.contains(assetRepresentative)) {
-                            artifact.set(assetRepresentative, inventoryConstant);
+            if (artifactRelationships != null) {
+
+                // For every related asset, create a column in the artifacts sheet with that assets id and set the correct marker
+                for (Map.Entry<RelationshipType, List<String>> relationshipEntry : artifactRelationships.entrySet()) {
+                    RelationshipType relationshipType = relationshipEntry.getKey();
+                    String inventoryMarker = relationshipType.getInventoryMarker();
+
+                    for (String assetIdentifier : relationshipEntry.getValue()) {
+                        if (assetIds.contains(assetIdentifier)) {
+                            artifact.set(assetIdentifier, inventoryMarker);
                         } else {
                             log.warn("Failed to map relationship [{} - {} - {}] because the inventory does not contain " +
-                                    "the asset: {}.", assetRepresentative, inventoryConstant, artifactId, assetRepresentative);
+                                    "the asset: {}.", assetIdentifier, inventoryMarker, artifactId, assetIdentifier);
                         }
                     }
                 }
             }
         }
         /*
-        FIXME JFU: If assets contain other assets, we currently have to represent them in the artifact sheet
+        FIXME-JFU: If assets contain other assets, we currently have to represent them in the artifact sheet
          as we dont track relationships anywhere else. Consider relocating to relationships sheet.
          */
     }
 
     /**
-     * Fills the representative String of each {@link RelationshipEntity} with the artifact or asset id if the entity
-     * is an instance of either of these object and has no set representative.
+     * Sets the artifact/asset id as an identifier for each {@link RelationshipEntity}, only if no identifer has been set.
      */
-    private void fillEntityRepresentatives() {
+    private void setMissingRelationshipEntityIdentifiers() {
         for (Relationship<?,?> relationship : relationships) {
-            updateRepresentatives(relationship.getFromEntities());
-            updateRepresentatives(relationship.getToEntities());
+            updateRelationshipEntityIdentifiers(relationship.getRootEntities());
+            updateRelationshipEntityIdentifiers(relationship.getRelatedEntities());
         }
     }
 
-    private void updateRepresentatives(Set<? extends RelationshipEntity<?>> relationshipEntities) {
+    private void updateRelationshipEntityIdentifiers(Set<? extends RelationshipEntity<?>> relationshipEntities) {
         for (RelationshipEntity<?> relationshipEntity : relationshipEntities) {
-            if (StringUtils.isNotBlank(relationshipEntity.getRepresentative())) {
-                String representative = null;
+            if (StringUtils.isNotBlank(relationshipEntity.getIdentifier())) {
+                String identifier = null;
 
                 if (relationshipEntity.getEntity() instanceof AssetMetaData) {
-                    representative = ((AssetMetaData) relationshipEntity.getEntity()).get(AssetMetaData.Attribute.ASSET_ID);
+                    identifier = ((AssetMetaData) relationshipEntity.getEntity()).get(AssetMetaData.Attribute.ASSET_ID);
                 } else if (relationshipEntity.getEntity() instanceof Artifact) {
-                    representative = ((Artifact) relationshipEntity.getEntity()).get(Artifact.Attribute.ID);
+                    identifier = ((Artifact) relationshipEntity.getEntity()).get(Artifact.Attribute.ID);
                 }
-                if (representative != null) {
-                    relationshipEntity.setRepresentative(representative);
+                if (identifier != null) {
+                    relationshipEntity.setIdentifier(identifier);
                 }
             }
         }
     }
 
-    private Map<String, Map<RelationshipType, List<String>>> buildToEntityRepresentativeMap() {
-        Map<String, Map<RelationshipType, List<String>>> map = new HashMap<>();
+    /**
+     * This method builds a map from all existing relationships where each key is a relatedEntity and each value a map
+     * containing every rootEntity as well as the relationship type.
+
+     * @return a map containing all relatedEntities as keys with the list of originEntities / types as values.
+     */
+    private Map<String, Map<RelationshipType, List<String>>> buildReversedRelationshipsMap() {
+        Map<String, Map<RelationshipType, Set<String>>> intermediateMap = new HashMap<>();
+
+        if (relationships == null) {
+            return new HashMap<>();
+        }
 
         for (Relationship<?, ?> relationship : relationships) {
-            List<String> fromRepresentatives = relationship.getFromRepresentatives();
-            RelationshipType relationshipType = relationship.getType();
+            List<String> rootIdentifiers = relationship.getRootEntityIdentifiers();
+            Set<? extends RelationshipEntity<?>> relatedEntities = relationship.getRelatedEntities();
+            RelationshipType type = relationship.getType();
 
-            for (RelationshipEntity<?> toEntity : relationship.getToEntities()) {
-                String toRepresentative = toEntity.getRepresentative();
-                Map<RelationshipType, List<String>> innerMap = map.computeIfAbsent(toRepresentative, k -> new HashMap<>());
-                List<String> representativesList = innerMap.computeIfAbsent(relationshipType, k -> new ArrayList<>());
-                representativesList.addAll(fromRepresentatives);
+            if (rootIdentifiers == null || rootIdentifiers.isEmpty()) {
+                continue;
+            }
+
+            for (RelationshipEntity<?> relatedEntity : relatedEntities) {
+                String relatedIdentifier = relatedEntity.getIdentifier();
+
+                if (relatedIdentifier == null) continue;
+
+                intermediateMap
+                        .computeIfAbsent(relatedIdentifier, k -> new HashMap<>())
+                        .computeIfAbsent(type, k -> new LinkedHashSet<>())
+                        .addAll(rootIdentifiers);
             }
         }
 
-        return map;
+        Map<String, Map<RelationshipType, List<String>>> finalMap = new HashMap<>();
+
+        for (Map.Entry<String, Map<RelationshipType, Set<String>>> entry : intermediateMap.entrySet()) {
+            Map<RelationshipType, List<String>> typeMap = new HashMap<>();
+
+            for (Map.Entry<RelationshipType, Set<String>> innerEntry : entry.getValue().entrySet()) {
+                typeMap.put(innerEntry.getKey(), new ArrayList<>(innerEntry.getValue()));
+            }
+
+            finalMap.put(entry.getKey(), typeMap);
+        }
+
+        return finalMap;
     }
 
     /**
@@ -288,15 +321,15 @@ public class RelationshipRegistry {
 
                 if (relationshipType != null && !relationshipType.equals(RelationshipType.DESCRIBES)) {
                     Relationship<AssetMetaData, Artifact> relationship = new Relationship<>();
-                    relationship.addFrom(new RelationshipEntity<>(assetMetaData, InventoryObjectIdentifier.createIdentifier(assetMetaData)));
-                    relationship.addTo(artifact,  InventoryObjectIdentifier.createIdentifier(artifact));
+                    relationship.addRootEntity(new RelationshipEntity<>(assetMetaData, InventoryObjectIdentifier.createIdentifier(assetMetaData)));
+                    relationship.addRelatedEntity(artifact,  InventoryObjectIdentifier.createIdentifier(artifact));
                     relationship.setType(relationshipType);
                     addRelationship(relationship);
 
                 } else if (relationshipType != null) {
                     Relationship<Artifact, AssetMetaData> relationship = new Relationship<>();
-                    relationship.addTo(new RelationshipEntity<>(assetMetaData, InventoryObjectIdentifier.createIdentifier(assetMetaData)));
-                    relationship.addFrom(artifact,  InventoryObjectIdentifier.createIdentifier(artifact));
+                    relationship.addRelatedEntity(new RelationshipEntity<>(assetMetaData, InventoryObjectIdentifier.createIdentifier(assetMetaData)));
+                    relationship.addRootEntity(artifact,  InventoryObjectIdentifier.createIdentifier(artifact));
                     relationship.setType(relationshipType);
                     addRelationship(relationship);
                 }

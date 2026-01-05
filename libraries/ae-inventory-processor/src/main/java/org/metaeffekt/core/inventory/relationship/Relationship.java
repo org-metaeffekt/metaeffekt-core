@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.relationship;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 import java.util.*;
@@ -36,91 +37,92 @@ public class Relationship<A, B> {
     @Setter
     private RelationshipType type;
 
-    private final Set<RelationshipEntity<A>> fromEntities;
-    private final Set<RelationshipEntity<B>> toEntities;
+    private final Set<RelationshipEntity<A>> rootEntities;
+    private final Set<RelationshipEntity<B>> relatedEntities;
 
     public Relationship(RelationshipType type, RelationshipEntity<A> from, RelationshipEntity<B> to) {
         this.id = UUID.randomUUID().toString();
         this.type = Objects.requireNonNull(type, "RelationshipType cannot be null");
-        this.fromEntities = new HashSet<>();
-        fromEntities.add(from);
-        this.toEntities = new HashSet<>();
-        toEntities.add(to);
+        this.rootEntities = new HashSet<>();
+        rootEntities.add(from);
+        this.relatedEntities = new HashSet<>();
+        relatedEntities.add(to);
     }
 
     public Relationship(RelationshipType type) {
         this.id = UUID.randomUUID().toString();
         this.type = Objects.requireNonNull(type, "RelationshipType cannot be null");
-        this.fromEntities = new HashSet<>();
-        this.toEntities = new HashSet<>();
+        this.rootEntities = new HashSet<>();
+        this.relatedEntities = new HashSet<>();
     }
 
     public Relationship() {
         this.id = UUID.randomUUID().toString();
         this.type = null;
-        this.fromEntities = new HashSet<>();
-        this.toEntities = new HashSet<>();
+        this.rootEntities = new HashSet<>();
+        this.relatedEntities = new HashSet<>();
     }
 
-    public boolean addFrom(A entity, String representative) {
-        return fromEntities.add(new RelationshipEntity<>(entity, representative));
+    public boolean addRootEntity(A entity, String representative) {
+        return rootEntities.add(new RelationshipEntity<>(entity, representative));
     }
 
-    public boolean addFrom(RelationshipEntity<A> relationshipEntity) {
-        return fromEntities.add(relationshipEntity);
+    public boolean addRootEntity(RelationshipEntity<A> relationshipEntity) {
+        return rootEntities.add(relationshipEntity);
     }
 
-    public boolean addTo(B entity, String representative) {
-        return toEntities.add(new RelationshipEntity<>(entity, representative));
+    public boolean addRelatedEntity(B entity, String representative) {
+        return relatedEntities.add(new RelationshipEntity<>(entity, representative));
     }
 
-    public boolean addTo(RelationshipEntity<B> relationshipEntity) {
-        return toEntities.add(relationshipEntity);
+    public boolean addRelatedEntity(RelationshipEntity<B> relationshipEntity) {
+        return relatedEntities.add(relationshipEntity);
     }
 
-    public boolean removeFrom(A entity) {
-        return fromEntities.removeIf(re -> re.getEntity().equals(entity));
+    public boolean removeRootEntity(A entity) {
+        return rootEntities.removeIf(re -> re.getEntity().equals(entity));
     }
 
-    public boolean removeTo(B entity) {
-        return toEntities.removeIf(re -> re.getEntity().equals(entity));
+    public boolean removeRelatedEntity(B entity) {
+        return relatedEntities.removeIf(re -> re.getEntity().equals(entity));
     }
 
-
-    public Set<RelationshipEntity<A>> getFromEntities() {
-        return Collections.unmodifiableSet(fromEntities);
+    @NonNull
+    public Set<RelationshipEntity<A>> getRootEntities() {
+        return Collections.unmodifiableSet(rootEntities);
     }
 
-    public Set<RelationshipEntity<B>> getToEntities() {
-        return Collections.unmodifiableSet(toEntities);
+    @NonNull
+    public Set<RelationshipEntity<B>> getRelatedEntities() {
+        return Collections.unmodifiableSet(relatedEntities);
     }
 
     public boolean isEmpty() {
-        return fromEntities.isEmpty() && toEntities.isEmpty();
+        return rootEntities.isEmpty() && relatedEntities.isEmpty();
     }
 
-    public boolean fromEntitiesEmpty() {
-        return fromEntities.isEmpty();
+    public boolean isRootEntitiesEmpty() {
+        return rootEntities.isEmpty();
     }
 
-    public boolean toEntitiesEmpty() {
-        return toEntities.isEmpty();
+    public boolean isRelatedEntitiesEmpty() {
+        return relatedEntities.isEmpty();
     }
 
-    public boolean containsFromEntity(A entity) {
-        return fromEntities.stream().anyMatch(re -> re.getEntity().equals(entity));
+    public boolean containsRootEntity(A entity) {
+        return rootEntities.stream().anyMatch(re -> re.getEntity().equals(entity));
     }
 
-    public boolean containsToEntity(B entity) {
-        return toEntities.stream().anyMatch(re -> re.getEntity().equals(entity));
+    public boolean containsRelatedEntity(B entity) {
+        return relatedEntities.stream().anyMatch(re -> re.getEntity().equals(entity));
     }
 
-    public List<String> getToRepresentatives() {
-        return toEntities.stream().map(RelationshipEntity::getRepresentative).collect(Collectors.toList());
+    public List<String> getRootEntityIdentifiers() {
+        return rootEntities.stream().map(RelationshipEntity::getIdentifier).collect(Collectors.toList());
     }
 
-    public List<String> getFromRepresentatives() {
-        return fromEntities.stream().map(RelationshipEntity::getRepresentative).collect(Collectors.toList());
+    public List<String> getRelatedEntityIdentifiers() {
+        return relatedEntities.stream().map(RelationshipEntity::getIdentifier).collect(Collectors.toList());
     }
 
     @Override
@@ -129,12 +131,12 @@ public class Relationship<A, B> {
         if (o == null || getClass() != o.getClass()) return false;
         Relationship<?, ?> that = (Relationship<?, ?>) o;
         return Objects.equals(type, that.type) &&
-                Objects.equals(fromEntities, that.fromEntities)
-                && Objects.equals(toEntities, that.toEntities);
+                Objects.equals(rootEntities, that.rootEntities)
+                && Objects.equals(relatedEntities, that.relatedEntities);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, fromEntities, toEntities);
+        return Objects.hash(type, rootEntities, relatedEntities);
     }
 }

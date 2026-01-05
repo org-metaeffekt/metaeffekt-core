@@ -103,7 +103,7 @@ public class InventorySeparator {
 
             for (Relationship<?, ?> relationship : relationshipRegistry.getRelationshipsByObject(primaryAsset)) {
                 if (!relationship.getType().equals(RelationshipType.DESCRIBES)) {
-                    for (RelationshipEntity<?> relationshipEntity : relationship.getToEntities()) {
+                    for (RelationshipEntity<?> relationshipEntity : relationship.getRelatedEntities()) {
                         if (relationshipEntity.getEntity() instanceof Artifact) {
                             Artifact artifactCopy = new Artifact((Artifact) relationshipEntity.getEntity());
                             splitInventory.getArtifacts().add(artifactCopy);

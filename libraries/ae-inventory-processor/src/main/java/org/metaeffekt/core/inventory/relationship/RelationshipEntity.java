@@ -31,15 +31,15 @@ import java.util.Objects;
 public class RelationshipEntity<T> {
 
     private T entity;
-    private String representative;
+    private String identifier;
 
     public RelationshipEntity(T entity) {
         this(entity, null);
     }
 
-    public RelationshipEntity(T entity, String representative) {
+    public RelationshipEntity(T entity, String identifier) {
         this.entity = entity;
-        this.representative = representative;
+        this.identifier = identifier;
     }
 
     @Override
@@ -47,16 +47,16 @@ public class RelationshipEntity<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         return Objects.equals(entity, ((RelationshipEntity<?>) o).entity) &&
-                Objects.equals(representative, ((RelationshipEntity<?>) o).getRepresentative());
+                Objects.equals(identifier, ((RelationshipEntity<?>) o).getIdentifier());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entity, representative);
+        return Objects.hash(entity, identifier);
     }
 
     @Override
     public String toString() {
-        return "Entity: " + entity.toString() + " Representative: " + representative;
+        return "Entity: " + entity.toString() + " Representative: " + identifier;
     }
 }

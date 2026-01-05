@@ -40,18 +40,17 @@ public class RelationshipRegistryTest {
         RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
         Relationship<String, String> relationship = new Relationship<>(
                 RelationshipType.CONTAINS,
-                new RelationshipEntity<>("fromEntity", "fromEntity"),
-                new RelationshipEntity<>("toEntity", "toEntity"));
+                new RelationshipEntity<>("rootEntity", "rootEntity"),
+                new RelationshipEntity<>("relatedEntity", "relatedEntity"));
 
         relationshipRegistry.addRelationship(relationship);
 
         assertThat(relationshipRegistry.getCopyOfRelationships().size()).isEqualTo(1);
-        assertThat(relationshipRegistry.getCopyOfRelationships().get(0).getFromRepresentatives()).contains("fromEntity");
-        assertThat(relationshipRegistry.getCopyOfRelationships().get(0).getToRepresentatives()).contains("toEntity");
+        assertThat(relationshipRegistry.getCopyOfRelationships().get(0).getRootEntityIdentifiers()).contains("rootEntity");
+        assertThat(relationshipRegistry.getCopyOfRelationships().get(0).getRelatedEntityIdentifiers()).contains("relatedEntity");
         assertThat(relationshipRegistry.removeRelationship(relationship)).isTrue();
         assertThat(relationshipRegistry.getCopyOfRelationships().size()).isEqualTo(0);
     }
-
 
     @Test
     public void testMergeRelationships() {
@@ -98,7 +97,7 @@ public class RelationshipRegistryTest {
         RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
         Relationship<String, String> relationship = buildRelationship(RelationshipType.CONTAINS, "a", "b");
         Relationship<String, String> relationship2 = buildRelationship(RelationshipType.CONTAINS, "c", "b");
-        relationship2.addTo(new RelationshipEntity<>("d", "d"));
+        relationship2.addRelatedEntity(new RelationshipEntity<>("d", "d"));
 
         relationshipRegistry.addRelationship(relationship);
         relationshipRegistry.addRelationship(relationship2);
@@ -168,13 +167,61 @@ public class RelationshipRegistryTest {
         assertThat(relationshipRegistry.getCopyOfRelationships()).isEmpty();
     }
 
+    /**
+     * Tests whether the {@link RelationshipRegistry} can handle missing assets in the asset sheet
+     * even though they are present as a relationship in the artifact sheet (present in an artifact column)
+     */
+    @Test
+    public void testBuildFromInventoryWithOnlyMissingAssets() {
+        Inventory inventory = new Inventory();
+
+        Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "test-artifact");
+
+        artifact.set("test-asset", RelationshipType.CONTAINS.getInventoryMarker());
+        artifact.set("test-asset2", RelationshipType.DESCRIBES.getInventoryMarker());
+
+        inventory.getArtifacts().add(artifact);
+
+        RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
+        relationshipRegistry.buildFromInventory(inventory);
+
+        assertThat(relationshipRegistry.getCopyOfRelationships()).isEmpty();
+    }
+
+    /**
+     * Tests whether the {@link RelationshipRegistry} can handle partially missing assets in the asset sheet
+     * even though they are present as a relationship in the artifact sheet (present in an artifact column)
+     */
+    @Test
+    public void testBuildFromInventoryWithSomeMissingAssets() {
+        Inventory inventory = new Inventory();
+
+        Artifact artifact = new Artifact();
+        artifact.set(Artifact.Attribute.ID, "test-artifact");
+
+        AssetMetaData assetMetaData = new AssetMetaData();
+        assetMetaData.set(AssetMetaData.Attribute.ASSET_ID, "test-asset");
+
+        artifact.set(assetMetaData.get(AssetMetaData.Attribute.ASSET_ID), RelationshipType.CONTAINS.getInventoryMarker());
+        artifact.set("test-asset2", RelationshipType.DESCRIBES.getInventoryMarker());
+
+        inventory.getArtifacts().add(artifact);
+        inventory.getAssetMetaData().add(assetMetaData);
+
+        RelationshipRegistry relationshipRegistry = new RelationshipRegistry();
+        relationshipRegistry.buildFromInventory(inventory);
+
+        assertThat(relationshipRegistry.getCopyOfRelationships().size()).isEqualTo(1);
+    }
+
     private static boolean hasRelationship(List<Relationship<?, ?>> relationships, RelationshipType relationshipType,
-                                           List<String> fromNodes, List<String> toNodes) {
+                                           List<String> rootEntities, List<String> relatedEntities) {
 
         Optional<Relationship<?, ?>> relationshipOptional = relationships.stream()
                 .filter(r -> r.getType().equals(relationshipType)
-                        && (r.getToRepresentatives().containsAll(toNodes) && toNodes.containsAll(r.getToRepresentatives()))
-                        && (r.getFromRepresentatives().containsAll(fromNodes) && fromNodes.containsAll(r.getFromRepresentatives())))
+                        && (r.getRootEntityIdentifiers().containsAll(rootEntities) && rootEntities.containsAll(r.getRootEntityIdentifiers()))
+                        && (r.getRelatedEntityIdentifiers().containsAll(relatedEntities) && relatedEntities.containsAll(r.getRelatedEntityIdentifiers())))
                 .findFirst();
 
         return relationshipOptional.isPresent();
