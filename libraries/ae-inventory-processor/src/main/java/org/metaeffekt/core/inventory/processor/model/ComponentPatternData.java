@@ -133,19 +133,21 @@ public class ComponentPatternData extends AbstractModelBase {
      * @return The derived string qualifier for this instance.
      */
     public String deriveQualifier() {
-        String sb = get(Attribute.INCLUDE_PATTERN) + "-" +
+        return get(Attribute.INCLUDE_PATTERN) + "-" +
+                get(Attribute.COMPONENT_PART) + "-" +
+                get(Attribute.COMPONENT_NAME) + "-" +
+                get(Attribute.COMPONENT_VERSION) + "-" +
                 get(Attribute.VERSION_ANCHOR) + "-" +
                 get(Attribute.VERSION_ANCHOR_CHECKSUM);
-        return sb;
     }
 
     /**
      * @return The derived simple qualifier for this instance.
      */
+    @Deprecated
     public String deriveSimpleQualifier() {
-        String sb = get(Attribute.VERSION_ANCHOR) + "-" +
+        return get(Attribute.VERSION_ANCHOR) + "-" +
                 get(Attribute.VERSION_ANCHOR_CHECKSUM);
-        return sb;
     }
 
     /**

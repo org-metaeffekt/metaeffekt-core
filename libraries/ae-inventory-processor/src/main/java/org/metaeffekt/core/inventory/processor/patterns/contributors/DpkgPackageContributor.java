@@ -97,6 +97,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 put("Status", "status");
                 put("Suggests", "suggests");
                 put("Version", "version");
+
+                put("Original-Maintainer", "originalMaintainer");
+                put("Original-Vcs-Browser", "originalVcsBrowser");
+                put("Original-Vcs-Git", "originalVcsGit");
             }
         });
 
@@ -156,6 +160,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         public String status;
         public String suggests;
         public String version;
+
+        public String originalMaintainer;
+        public String originalVcsBrowser;
+        public String originalVcsGit;
 
         /**
          * Overflow map containing dpkg keys to their values.<br>

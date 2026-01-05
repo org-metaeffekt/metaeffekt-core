@@ -514,4 +514,17 @@ public abstract class InventoryUtils {
         return qualifierArtifactMap;
     }
 
+    /**
+     * Duplicate merge based on ComponentPatternData.deriveQualifier.
+     *
+     * @param inventory The inventory to process.
+     */
+    public static void mergeDuplicateComponentPatterns(Inventory inventory) {
+        final Map<String, ComponentPatternData> qualifierCpdMap = new LinkedHashMap<>();
+        for (ComponentPatternData cpd : inventory.getComponentPatternData()) {
+            qualifierCpdMap.put(cpd.deriveQualifier(), cpd);
+        }
+        inventory.setComponentPatternData(new ArrayList<>(qualifierCpdMap.values()));
+    }
+
 }

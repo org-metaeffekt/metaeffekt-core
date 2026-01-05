@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,8 +34,8 @@ import java.util.stream.Collectors;
 import static org.metaeffekt.core.inventory.processor.model.Constants.*;
 
 /**
- * Class representing an inventory of artifact, license, and various other meta data.
- * The implementation offers various methods to analyze, optimize, and utilize the meta data.
+ * Class representing an inventory of artifact, license, and various other metadata.
+ * The implementation offers various methods to analyze, optimize, and utilize the metadata.
  * <p>
  * <strong>For Developers:</strong> This class is serializable. Because of this and for other
  * reasons, if you add new fields to this class, make sure to update the following methods in this class:
@@ -106,7 +105,7 @@ public class Inventory implements Serializable {
     // Components are structured by context. This is the content context.
     public static final String COMPONENT_CONTEXT_CONTENT = "content";
 
-    private List<Artifact> artifacts = new CopyOnWriteArrayList<>();
+    private List<Artifact> artifacts = new ArrayList<>();
 
     private List<LicenseMetaData> licenseMetaData = new ArrayList<>();
 

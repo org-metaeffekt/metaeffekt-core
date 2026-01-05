@@ -24,11 +24,9 @@ import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Container for context information during file system scanning.
@@ -130,13 +128,13 @@ public class FileSystemScanContext {
 
     public List<Artifact> getArtifactList() {
         synchronized (inventory) {
-            return new CopyOnWriteArrayList<>(inventory.getArtifacts());
+            return inventory.getArtifacts();
         }
     }
 
     public List<AssetMetaData> getAssetMetaDataList() {
         synchronized (inventory) {
-            return new CopyOnWriteArrayList<>(inventory.getAssetMetaData());
+            return inventory.getAssetMetaData();
         }
     }
 

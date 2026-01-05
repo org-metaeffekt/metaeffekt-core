@@ -98,23 +98,28 @@ public class ComponentPatternContributorRunner {
         final List<ComponentPatternData> results = new ArrayList<>();
         final String lowercasedPathInContext = relativeAnchorFilePath.toLowerCase(ComponentPatternProducer.LocaleConstants.PATH_LOCALE);
 
+        // provides a compiled pattern cache.
         final Map<String, Pattern> suffixPatternMap = new HashMap<>();
 
         for (Map.Entry<Integer, Map<String, List<ComponentPatternContributor>>> phaseEntry : phaseContributors.entrySet()) {
-            for (Map.Entry<String, List<ComponentPatternContributor>> suffixEntry : phaseEntry.getValue().entrySet()) {
 
-                // check whether on of the contributor applies before perform expensive regex operations
-                final List<ComponentPatternContributor> collect = suffixEntry.getValue().stream().
+            final Set<Map.Entry<String, List<ComponentPatternContributor>>> contributorsForPhase = phaseEntry.getValue().entrySet();
+            for (Map.Entry<String, List<ComponentPatternContributor>> suffixEntry : contributorsForPhase) {
+
+                // check whether one of the contributor applies before perform expensive regex operations
+                final List<ComponentPatternContributor> applicableCpcs = suffixEntry.getValue().stream().
                         filter(c -> c.applies(relativeAnchorFilePath)).collect(Collectors.toList());
 
-                if (!collect.isEmpty()) {
-                    final Pattern pattern = convertWildcardPatternToRegex(suffixEntry.getKey(), suffixPatternMap);
+                if (!applicableCpcs.isEmpty()) {
+                    // FIXME-KKL: use regexp in contributors to avoid need to maintain the conversion logic
+                    final String anchorFileWildcardPattern = suffixEntry.getKey();
+                    final Pattern pattern = convertWildcardPatternToRegex(anchorFileWildcardPattern, suffixPatternMap);
                     final Matcher matcher = pattern.matcher(lowercasedPathInContext);
                     if (matcher.find()) {
-                        for (ComponentPatternContributor contributor : collect) {
+                        for (ComponentPatternContributor contributor : applicableCpcs) {
                             try {
-                                List<ComponentPatternData> componentPatterns =
-                                        contributor.contribute(baseDir, relativeAnchorFilePath, checksum, context);
+                                List<ComponentPatternData> componentPatterns = contributor.contribute(
+                                        baseDir, relativeAnchorFilePath, checksum, context);
 
                                 componentPatterns.forEach(cpd -> cpd.setContext(contributor.getClass().getName()));
 
