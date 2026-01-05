@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.patterns.contributors;
 
+import lombok.Getter;
+import org.metaeffekt.core.inventory.processor.filepatterns.FileComponentPatternProcessor;
 import org.metaeffekt.core.inventory.processor.model.ComponentPatternData;
 import org.metaeffekt.core.util.FileUtils;
 
@@ -25,6 +27,9 @@ import java.util.Locale;
 import java.util.Optional;
 
 public abstract class ComponentPatternContributor {
+
+    @Getter
+    private FileComponentPatternProcessor fileComponentPatternProcessor = new FileComponentPatternProcessor();
 
     /**
      * Checks whether the contributor can work with the given file.
@@ -110,4 +115,5 @@ public abstract class ComponentPatternContributor {
 
         return FileUtils.asRelativePath(baseDir, dir);
     }
+
 }

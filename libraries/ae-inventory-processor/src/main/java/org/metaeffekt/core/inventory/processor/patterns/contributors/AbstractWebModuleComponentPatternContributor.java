@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.InventoryUtils;
+import org.metaeffekt.core.inventory.processor.filepatterns.FileMetaData;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModule;
 import org.metaeffekt.core.inventory.processor.patterns.contributors.web.WebModuleDependency;
@@ -72,18 +73,20 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
         try {
             final WebModule webModule = createWebModule(anchorFile, relativeAnchorPath, anchorChecksum, definitionFiles);
 
-            final Artifact artifact = createArtifact(webModule);
-
             // create inventory with subcomponents
             final Inventory inventoryFromLockFile = createSubcomponentInventory(relativeAnchorPath, webModule);
 
+            if (webModule.isIncomplete() && (inventoryFromLockFile == null || inventoryFromLockFile.getArtifacts().isEmpty())) {
+                return Collections.emptyList();
+            }
+
             // construct component pattern
             final ComponentPatternData componentPatternData = createComponentPatternData(
-                    anchorFile, anchorParentDir, anchorChecksum, artifact, contextBaseDir, inventoryFromLockFile);
+                    anchorFile, anchorParentDir, anchorChecksum, webModule, contextBaseDir, inventoryFromLockFile);
 
             return Collections.singletonList(componentPatternData);
         } catch (IOException e) {
-            log.warn("Unable to parse web module parts: {}", e.getMessage(), e);
+        log.warn("Unable to parse web module parts: {}", e.getMessage(), e);
             return Collections.emptyList();
         }
     }
@@ -160,14 +163,14 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
      * @param anchorFile Anchor file.
      * @param anchorParentDir Parent dir of the anchor.
      * @param anchorChecksum Checksum of the anchor.
-     * @param artifact The artifact on which the ComponentPatternData is based.
+     * @param webModule The webmodule on which the ComponentPatternData is based.
      * @param contextBaseDir The context base directory.
      * @param inventoryFromLockFile The subcomponent inventory in case available.
      *
      * @return The specific ComponentPatternData instance representing the collection details.
      */
     protected abstract ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir,
-           String anchorChecksum, Artifact artifact, File contextBaseDir, Inventory inventoryFromLockFile);
+           String anchorChecksum, WebModule webModule, File contextBaseDir, Inventory inventoryFromLockFile);
 
 
     protected String getVersion(JSONObject obj) {
@@ -183,7 +186,7 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
         return null;
     }
 
-    protected WebModule createWebModule(File anchorFile, String relAnchorPath, String anchorChecksum, List<File> definitionFiles) throws IOException {
+    protected WebModule createWebModule(File anchorFile, String relativeAnchorPath, String anchorChecksum, List<File> definitionFiles) throws IOException {
         final WebModule webModule = new WebModule();
 
         // check if there is a package.json or composer.json or bower.json
@@ -198,15 +201,29 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
             }
         }
 
-        if (webModule.getName() == null) {
-            webModule.setName(relAnchorPath);
+        if (webModule.getName() == null || webModule.getVersion() == null) {
+            webModule.setIncomplete(true);
+
+            // derive name and version in case not set
+            FileMetaData fileMetaData = getFileComponentPatternProcessor().deriveFileMetaData(relativeAnchorPath);
+            if (fileMetaData != null) {
+                if (webModule.getName() == null) {
+                    webModule.setName(fileMetaData.getName());
+                }
+                if (webModule.getVersion() == null) {
+                    webModule.setVersion(fileMetaData.getVersion());
+                }
+            }
+            if (webModule.getName() == null) {
+               if (anchorFile.getParentFile() != null) {
+                    webModule.setName(anchorFile.getParentFile().getName());
+                } else {
+                    webModule.setName(anchorFile.getName());
+                }
+            }
         }
 
-        if (webModule.getVersion() == null) {
-            webModule.setVersion(anchorChecksum);
-        }
-
-        webModule.setPath(relAnchorPath);
+        webModule.setPath(relativeAnchorPath);
 
         return webModule;
     }
@@ -305,5 +322,25 @@ public abstract class AbstractWebModuleComponentPatternContributor extends Compo
         inventory.getArtifacts().removeAll(removableArtifacts);
     }
 
+    public static String buildPurl(String packageManager, String name, String version) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+
+        String normalizedName = name.toLowerCase();
+        if (packageManager.equals("npm") && name.startsWith("@")) {
+            normalizedName = name;
+        }
+
+        if (version == null || version.isEmpty() || "unspecific".equalsIgnoreCase(version)) {
+            return String.format("pkg:%s/%s", packageManager.toLowerCase(), normalizedName);
+        }
+
+        if (version.startsWith("v")) {
+            version = version.substring(1);
+        }
+
+        return String.format("pkg:%s/%s@%s", packageManager.toLowerCase(), normalizedName, version);
+    }
 
 }

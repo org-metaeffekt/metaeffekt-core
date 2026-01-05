@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,26 +96,32 @@ public class FileSystemMap {
     }
 
     public String[] scanDirectoryForFiles(File scanBaseDir, Set<String> includes, Set<String> excludes) {
+        // defines the context of the matching against include and exclude patterns
         final File absoluteScanBaseDir = scanBaseDir.getAbsoluteFile();
-        String basePath = normalizePathToLinux(absoluteScanBaseDir.getPath());
+        final String basePath = normalizePathToLinux(absoluteScanBaseDir.getPath());
 
+        // retrieve all files starting in basePath
         final FolderContent baseFolderContent = absolutePathToContentMap.get(basePath);
+
+        // early exit; no files identified
         if (baseFolderContent == null) return new String[0];
         if (includes == null || includes.isEmpty()) return new String[0];
 
-        // walk map and collect all files and folders
-        List<FileRef> candidatePaths = getFiles(baseFolderContent);
+        // walk map and collect all files and folders; note that the FileRefs are still full paths (from baseDirRef)
+        final List<FileRef> candidatePaths = getFiles(baseFolderContent);
 
-        // apply excludes
+        // compute the relative path of the context; all FileRef
+        final String relativePath = FileUtils.asRelativePath(baseDirRef.getFile(), absoluteScanBaseDir);
+
+        // apply excludes (only in context)
         if (excludes != null && !excludes.isEmpty()) {
-            candidatePaths.removeIf(pathRef -> FileUtils.matches(excludes, pathRef.getPath()));
+            candidatePaths.removeIf(pathRef -> FileUtils.matchesWithContext(excludes, pathRef.getPath(), relativePath));
         }
 
         PatternSetMatcher includesMatcher = new PatternSetMatcher(includes);
 
         // apply includes
         final List<String> matchedFiles = new ArrayList<>();
-        final String relativePath = FileUtils.asRelativePath(baseDirRef.getFile(), absoluteScanBaseDir);
 
         validateRelativePath(relativePath);
 

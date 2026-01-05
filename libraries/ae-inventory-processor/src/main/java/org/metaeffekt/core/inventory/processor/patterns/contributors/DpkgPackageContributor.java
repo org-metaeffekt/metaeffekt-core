@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
                 put("Status", "status");
                 put("Suggests", "suggests");
                 put("Version", "version");
+
+                put("Original-Maintainer", "originalMaintainer");
+                put("Original-Vcs-Browser", "originalVcsBrowser");
+                put("Original-Vcs-Git", "originalVcsGit");
             }
         });
 
@@ -156,6 +160,10 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
         public String status;
         public String suggests;
         public String version;
+
+        public String originalMaintainer;
+        public String originalVcsBrowser;
+        public String originalVcsGit;
 
         /**
          * Overflow map containing dpkg keys to their values.<br>
@@ -374,9 +382,15 @@ public class DpkgPackageContributor extends ComponentPatternContributor {
 
         fileJoiner.add("usr/share/doc/" + entry.packageName + "/**/*");
 
+        fileJoiner.add("usr/lib/" + entry.packageName + "/**/*");
+        fileJoiner.add("var/lib/" + entry.packageName + "/**/*");
+
         fileJoiner.add("usr/share/lintian/overrides/" + entry.packageName + "/**/*");
         if ("tzdata".equals(entry.packageName)) {
             fileJoiner.add("usr/share/zoneinfo/**/*");
+        }
+        if ("shared-mime-info".equals(entry.packageName)) {
+            fileJoiner.add("usr/share/mime/**/*");
         }
 
         return fileJoiner;
