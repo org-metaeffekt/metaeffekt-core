@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,19 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ComponentPatternList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.UrlBasedTestSetup;
+import org.metaeffekt.core.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,7 +132,6 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
     @Test
     public void checkInvariants() {
         getAnalysisAfterInvariantCheck();
-
     }
 
     @Test
@@ -170,4 +173,31 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
         ComponentPatternList componentPatternList = analysis.selectComponentPatterns();
         componentPatternList.logListWithAllAttributes();
     }
+
+    @Test
+    public void assertAggregation() throws Exception {
+        final File baseDir = new File(AbstractCompositionAnalysisTest.testSetup.getScanFolder());
+        final File aggregationTargetDir = new File(testSetup.getInventoryFolder(), "aggregation");
+
+        FileUtils.deleteDirectoryQuietly(aggregationTargetDir);
+
+        final DirectoryScanAggregatorConfiguration aggregatorConfiguration =
+                new DirectoryScanAggregatorConfiguration(testSetup.readReferenceInventory(), testSetup.getInventory(), baseDir);
+
+        aggregatorConfiguration.aggregateFiles(aggregationTargetDir);
+
+        String[] testPaths = new String[] {
+
+        };
+
+        for (String testPath : testPaths) {
+            File file = new File(aggregationTargetDir, testPath);
+            FileUtils.validateExists(file);
+        }
+
+        final File aggregatedInventoryFile = new File(testSetup.getInventoryFolder(), "aggregated-inventory.xlsx");
+        new InventoryWriter().writeInventory(testSetup.getInventory(), aggregatedInventoryFile);
+    }
+
+
 }

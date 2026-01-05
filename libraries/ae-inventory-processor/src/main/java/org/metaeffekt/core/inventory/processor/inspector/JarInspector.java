@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -537,6 +537,9 @@ public class JarInspector extends AbstractJarInspector {
 
     @Override
     public void run(Inventory inventory, Properties properties) {
+        // FIXME-KKL: this should be really only applied to java modules; how can we filter?
+        // FIXME-KKL: use FileComponentPatternProcessor to support version derivation
+
         // get params
         final ProjectPathParam projectPathParam = new ProjectPathParam(properties);
         final JarInspectionParam jarInspectionParam = new JarInspectionParam(properties);

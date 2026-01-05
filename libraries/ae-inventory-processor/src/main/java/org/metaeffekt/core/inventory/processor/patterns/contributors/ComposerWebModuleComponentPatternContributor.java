@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,9 @@ import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.metaeffekt.core.util.FileUtils.asRelativePath;
 
@@ -78,7 +80,9 @@ public class ComposerWebModuleComponentPatternContributor extends AbstractWebMod
     }
 
     @Override
-    protected ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir, String anchorChecksum, Artifact artifact, File contextBaseDir, Inventory inventoryFromLockFile) {
+    protected ComponentPatternData createComponentPatternData(File anchorFile, File anchorParentDir, String anchorChecksum, WebModule webModule, File contextBaseDir, Inventory inventoryFromLockFile) {
+        final Artifact artifact = createArtifact(webModule);
+
         // construct component pattern
         final ComponentPatternData componentPatternData = new ComponentPatternData();
         componentPatternData.set(ComponentPatternData.Attribute.VERSION_ANCHOR, asRelativePath(contextBaseDir, anchorFile.getParentFile()) + "/" + anchorFile.getName());
@@ -89,6 +93,9 @@ public class ComposerWebModuleComponentPatternContributor extends AbstractWebMod
         componentPatternData.set(ComponentPatternData.Attribute.COMPONENT_PART, artifact.getId());
 
         componentPatternData.set(Constants.KEY_SPECIFIED_PACKAGE_LICENSE, artifact.get("Module Specified License"));
+
+        // create purl
+        componentPatternData.set(Artifact.Attribute.PURL, buildPurl("composer", webModule.getName(), webModule.getVersion()));
 
         final String anchorParentDirName = anchorParentDir.getName();
 

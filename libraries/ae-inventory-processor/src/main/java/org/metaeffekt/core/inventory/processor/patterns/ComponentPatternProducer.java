@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ public class ComponentPatternProducer {
             }
         }
 
-        // sort artifact by case-insentive then path-length order
+        // sort artifact by case-insensitive path then path-length order
         final List<String> filesByPathLength = new ArrayList<>(pathToArtifactMap.keySet());
         filesByPathLength.sort(String.CASE_INSENSITIVE_ORDER);
         filesByPathLength.sort(Comparator.comparingInt(String::length));
@@ -168,7 +168,10 @@ public class ComponentPatternProducer {
 
                 if (!componentPatternDataList.isEmpty()) {
                     for (ComponentPatternData cpd : componentPatternDataList) {
-                        LOG.info("Identified component pattern: [{}] [{}]", cpd.createToStringRepresentation(), cpd.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Identified component pattern: [{}] [{}]",
+                                    cpd.createToStringRepresentation(), cpd.get(Constants.KEY_COMPONENT_SOURCE_TYPE));
+                        }
 
                         // FIXME: defer to 2nd pass
                         final String version = cpd.get(ComponentPatternData.Attribute.COMPONENT_VERSION);
@@ -315,7 +318,11 @@ public class ComponentPatternProducer {
                                                      List<MatchResult> matchResultsWithoutFileMatches, FileSystemScanContext fileSystemScanContext) {
 
         final Inventory inventory = fileSystemScanContext.getInventory();
+
         synchronized (inventory) {
+
+            LOG.info("Evaluating [{}] match results against [{}] artifacts...",
+                    matchedComponentDataOnAnchor.size(), inventory.getArtifacts().size());
 
             // remove the matched files covered by the matched component patterns
             for (MatchResult matchResult : matchedComponentDataOnAnchor) {
@@ -328,9 +335,15 @@ public class ComponentPatternProducer {
                 final NormalizedPatternSet normalizedIncludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.INCLUDE_PATTERN));
                 final NormalizedPatternSet normalizedExcludePattern = normalizePattern(cpd.get(ComponentPatternData.Attribute.EXCLUDE_PATTERN));
 
-                boolean matched = false;
+                boolean matchedComponentPattern = false;
 
                 for (final Artifact artifact : inventory.getArtifacts()) {
+
+                    // skip artifacts that are already identified as separate
+                    if (!StringUtils.isBlank(artifact.getVersion())) continue;
+
+                    // skip artifacts that are not detected on file level
+                    if (StringUtils.isBlank(artifact.getChecksum())) continue;
 
                     final String relativePathFromBaseDir = getRelativePathFromBaseDir(artifact);
                     final String absolutePathFromBaseDir = "/" + relativePathFromBaseDir;
@@ -344,7 +357,7 @@ public class ComponentPatternProducer {
                     // match absolute include patterns
                     if (matches(normalizedIncludePattern.absolutePatterns, absolutePathFromBaseDir)) {
                         markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
-                        matched = true;
+                        matchedComponentPattern = true;
 
                         // continue with next artifact; skipping all further matching steps
                         continue;
@@ -368,14 +381,17 @@ public class ComponentPatternProducer {
                         // match patterns (relative only)
                         if (!matches(normalizedExcludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
                             if (matches(normalizedIncludePattern.relativePatterns, relativePathFromComponentBaseDir)) {
+                                // mark current artifact as matched
                                 markAsMatched(artifact, matchResult, cpd, relativePathFromBaseDir);
-                                matched = true;
+
+                                // indicate match for further processing
+                                matchedComponentPattern = true;
                             }
                         }
                     }
                 }
 
-                if (!matched) {
+                if (!matchedComponentPattern) {
                     // at this point none of the artifacts were matched
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("No files matched for component pattern {}.", matchResult.componentPatternData.createCompareStringRepresentation());
@@ -385,6 +401,10 @@ public class ComponentPatternProducer {
                     }
                 }
             }
+
+            LOG.info("Evaluating [{}] match results against [{}] artifacts completed.",
+                    matchedComponentDataOnAnchor.size(), inventory.getArtifacts().size());
+
         }
     }
 
@@ -476,8 +496,10 @@ public class ComponentPatternProducer {
 
         final String path = fileSystemScanContext.getBaseDir().getPath();
 
-        LOG.debug("Matching {} component patterns against {} artifacts...",
-                componentPatternSourceInventory.getComponentPatternData().size(), inputInventory.getArtifacts().size());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Matching {} component patterns against {} artifacts...",
+                    componentPatternSourceInventory.getComponentPatternData().size(), inputInventory.getArtifacts().size());
+        }
 
         for (final ComponentPatternData cpd : componentPatternSourceInventory.getComponentPatternData()) {
             if (LOG.isTraceEnabled()) {
@@ -575,7 +597,10 @@ public class ComponentPatternProducer {
             }
         }
 
-        LOG.debug("Matching component patterns completed.");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Matching {} component patterns against {} artifacts completed.",
+                    componentPatternSourceInventory.getComponentPatternData().size(), inputInventory.getArtifacts().size());
+        }
 
         return matchedComponentPatterns;
     }
@@ -615,6 +640,7 @@ public class ComponentPatternProducer {
         contributorRunnerBuilder.add(new ContainerAssetContributor());
         contributorRunnerBuilder.add(new ContainerComponentPatternContributor());
         contributorRunnerBuilder.add(new ContainerInspectAssetContributor());
+        contributorRunnerBuilder.add(new BowerWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new NpmWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new ComposerWebModuleComponentPatternContributor());
         contributorRunnerBuilder.add(new UnwrappedEclipseBundleContributor());

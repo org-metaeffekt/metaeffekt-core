@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ public class RepositoryReportTest {
         Assert.assertNotNull(inventory.getComponentPatternData());
         Assert.assertEquals(6, inventory.getComponentPatternData().size());
 
-        Assert.assertEquals("org/metaeffekt/core/**/*-org/metaeffekt.core/Inventory.class-ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).deriveQualifier());
+        Assert.assertEquals("org/metaeffekt/core/**/*-org/metaeffekt/core Classes-metaeffekt Core-0.21.0-org/metaeffekt.core/Inventory.class-ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).deriveQualifier());
         Assert.assertEquals("org/metaeffekt/core/**/*::metaeffekt Core:org/metaeffekt/core Classes::0.21.0::org/metaeffekt.core/Inventory.class:ABBBCBBASBANSB", inventory.getComponentPatternData().get(0).createCompareStringRepresentation());
 
         File targetFile = new File("target/test-inventory.xls");

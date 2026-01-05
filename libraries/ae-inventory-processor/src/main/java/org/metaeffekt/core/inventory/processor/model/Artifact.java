@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Artifact extends AbstractModelBase {
 
@@ -332,6 +333,7 @@ public class Artifact extends AbstractModelBase {
     public void merge(Artifact a) {
         // artifact root paths merge differently
         mergeRootPaths(a);
+        mergePathInAsset(a);
 
         // merge attributes
         super.merge(a);
@@ -343,6 +345,12 @@ public class Artifact extends AbstractModelBase {
         final Set<String> paths = new HashSet<>(getRootPaths());
         paths.addAll(a.getRootPaths());
         setRootPaths(paths);
+    }
+
+    private void mergePathInAsset(Artifact a) {
+        final Set<String> paths = getSet(Attribute.PATH_IN_ASSET);
+        paths.addAll(a.getSet(Attribute.PATH_IN_ASSET));
+        setPathInAsset(paths.stream().sorted().collect(Collectors.joining(PATH_DELIMITER)));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.configuration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.metaeffekt.core.inventory.InventoryMergeUtils;
+import org.metaeffekt.core.inventory.InventoryUtils;
 import org.metaeffekt.core.inventory.processor.filescan.ArtifactFile;
 import org.metaeffekt.core.inventory.processor.model.*;
 import org.metaeffekt.core.inventory.processor.patterns.ComponentPatternProducer;
@@ -45,12 +46,9 @@ public class DirectoryScanAggregatorConfiguration {
 
     final private File scanBaseDir;
 
-    final private File scanResultInventoryFile;
-
     public DirectoryScanAggregatorConfiguration(Inventory referenceInventory, Inventory resultInventory, File scanBaseDir) {
         this.scanBaseDir = scanBaseDir;
         this.referenceInventory = referenceInventory;
-        this.scanResultInventoryFile = null;
         this.resultInventory = resultInventory;
     }
 
@@ -58,8 +56,10 @@ public class DirectoryScanAggregatorConfiguration {
         // scan filesystem and create map
         final FileSystemMap fileSystemMap = FileSystemMap.create(getExtractedFilesBaseDir());
 
-        // initialize component pattern and file pattern map
+        // initialize component pattern map; the map composes qualifiers, artifacts and component patterns and tracks the files and includes/exclude patterns
         final Map<String, List<ComponentPatternData>> qualifierToComponentPatternMap = new HashMap<>();
+
+        // initialize file pattern mapper list
         final List<FilePatternQualifierMapper> filePatternQualifierMapperList = new ArrayList<>();
 
         // contribute component pattern from reference inventory
@@ -344,10 +344,6 @@ public class DirectoryScanAggregatorConfiguration {
         return deriveMapQualifier(cpd.get(COMPONENT_NAME), cpd.get(COMPONENT_PART), cpd.get(COMPONENT_VERSION));
     }
 
-    public File getResultInventoryFile() {
-        return scanResultInventoryFile;
-    }
-
     public void aggregateFiles(File aggregationDir) {
         if (aggregationDir != null && !aggregationDir.exists()) {
             try {
@@ -367,6 +363,23 @@ public class DirectoryScanAggregatorConfiguration {
             // aggregate files (atomic and component patterns)
             aggregateFilesForAllArtifacts(scanBaseDir, filePatternQualifierMappers, aggregationDir);
         }
+
+        // artifacts detected in different locations, with the same id and content checksum can be merged
+        InventoryUtils.mergeDuplicates(this.resultInventory, a -> {
+            final Set<String> qualifiers = new HashSet<>();
+
+            final String id = a.getId();
+
+            // id + content checksum
+            final String checksum = a.get(Constants.KEY_CONTENT_CHECKSUM);
+            if (StringUtils.isNotBlank(checksum)) {
+                // in case we have a checksum id and checksum are sufficient
+                qualifiers.add("i:[" + id + "]-cs:[" + checksum + "]");
+            }
+
+            return qualifiers;
+        });
+
     }
 
     private void aggregateFilesForAllArtifacts(File scanBaseDir, List<FilePatternQualifierMapper> filePatternQualifierMappers, File targetDir) {
@@ -819,7 +832,19 @@ public class DirectoryScanAggregatorConfiguration {
         final FilePatternQualifierMapper childMapper = qualifierToMapperMap.get(childQualifier);
         final Map<String, List<File>> subsetMap = new HashMap<>();
 
-        if (parentMapper != null && childMapper != null && !childMapper.isLocked()) {
+        // extract version agnostic name as we do not want to cannibalize components on the same level sharing files
+        // do not remove, when nothing should be removed. A module may have different representations or false versioning
+        // therefore we do not consider siblings in a parent-child context
+        String p = parentMapper.getArtifact().getId();
+        String c = childMapper.getArtifact().getId();
+        final String pV = parentMapper.getArtifact().getVersion();
+        final String cV = childMapper.getArtifact().getVersion();
+        if (p!= null && c != null && pV != null && !pV.isEmpty() && cV != null && !cV.isEmpty()) {
+            p = p.replace(pV, "");
+            c = c.replace(cV, "");
+        }
+
+        if (parentMapper != null && childMapper != null && !childMapper.isLocked() && !p.equals(c)) {
             LOG.info("Removing all files of child qualifier [{}] from parent qualifier [{}].", childQualifier, parentQualifier);
 
             // the lock prevents that files symmetrically being part of two components are bidirectionally removed

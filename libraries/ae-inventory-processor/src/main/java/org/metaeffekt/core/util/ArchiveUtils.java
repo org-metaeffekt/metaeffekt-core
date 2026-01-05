@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public class ArchiveUtils {
     private static final Set<String> allExtensions = new HashSet<>();
 
     static {
-        // in case no extension is avaiable we still attempt to unzip
+        // in case no extension is available we still attempt to unzip
         zipExtensions.add("");
 
         zipExtensions.add("war");
@@ -99,7 +99,7 @@ public class ArchiveUtils {
         tarExtensions.add("bz2");
         // zstd: z compression standard https://github.com/facebook/zstd
         tarExtensions.add("zst");
-        // xz: compression format xz(see also "lzma")
+        // xz: compression format xz (see also "lzma")
         tarExtensions.add("xz");
         // tgz: sometimes used as a shorthand for ".tar.gz"
         tarExtensions.add("tgz");
@@ -238,33 +238,36 @@ public class ArchiveUtils {
             }
         }
 
-        try {
-            // untar internal is the preferred approach
-            untarInternal(file, targetDir);
-        } catch (Exception e) {
-            LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
+        // we may already have expanded something; the new file may have a different extension
+        final String extension = FilenameUtils.getExtension(file.getName()).toLowerCase(Locale.US);
+        if (tarExtensions.contains(extension) || StringUtils.isEmpty(extension)) {
             try {
-                FileUtils.forceMkdir(targetDir);
-                extractFileWithSevenZip(file, targetDir, true);
-            } catch (Exception ex) {
-                LOG.warn("Cannot untar [{}]. Attempting native untar. to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
+                // untar internal is the preferred approach
+                untarInternal(file, targetDir);
+            } catch (Exception e) {
+                LOG.warn("Cannot untar [{}]. Attempting 7zip untar to compensate [{}].", file.getAbsolutePath(), e.getMessage());
                 try {
-                    nativeUntar(file, targetDir);
-                } catch(Exception exc) {
-                    throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), exc);
+                    FileUtils.forceMkdir(targetDir);
+                    extractFileWithSevenZip(file, targetDir, true);
+                } catch (Exception ex) {
+                    LOG.warn("Cannot untar [{}]. Attempting native untar to compensate [{}].", file.getAbsolutePath(), ex.getMessage());
+                    try {
+                        nativeUntar(file, targetDir);
+                    } catch(Exception exc) {
+                        throw new IllegalStateException(format("Cannot untar [%s] using native untar command.", file.getAbsolutePath()), exc);
+                    }
                 }
-            }
-        } finally {
-            for (File intermediateFile : intermediateFiles) {
-                LOG.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
-                FileUtils.forceDelete(intermediateFile);
+            } finally {
+                for (File intermediateFile : intermediateFiles) {
+                    LOG.trace("Deleting intermediate [{}]", intermediateFile.getAbsolutePath());
+                    FileUtils.forceDelete(intermediateFile);
+                }
             }
         }
     }
 
     private static String intermediateUnpackFile(String targetName, String suffix) {
-        // prefix with .unpack_to avoid name collisions
-        return ".unpack_" + targetName.substring(0, targetName.toLowerCase().lastIndexOf(suffix));
+        return targetName.substring(0, targetName.toLowerCase().lastIndexOf(suffix));
     }
 
     private static void expandXZ(File file, File targetFile) throws IOException {
@@ -573,7 +576,7 @@ public class ArchiveUtils {
         // FIXME: this fallback doesn't adjust file permissions, leading to "Permission denied" while scanning.
         //  this also means that prepareScanDirectory may fail on rescan.
         //  we should probably just make sure that the java-native unwrao doesn't fail instead of relying on
-        //  this last-ditch efford to give good support.
+        //  this last-ditch effort to give good support.
         String[] commandParts = new String[] {
                 "tar", "-x", "-f", file.getAbsolutePath(),
                 "--no-same-permissions", "-C", targetFile.getAbsolutePath() };
