@@ -84,7 +84,7 @@ public class ProcessTimeEntry {
             throw new RuntimeException(String.format("Process Id [%s] is not recognized", processIdString));
         }
 
-        final ProcessTimeEntry tracker = new ProcessTimeEntry(processType, json.optString("processName"), ProcessTimestamp.fromJSON(json.getJSONObject("timestamp")));
+        final ProcessTimeEntry tracker = new ProcessTimeEntry(processType, json.optString("processName", null), ProcessTimestamp.fromJSON(json.getJSONObject("timestamp")));
         if (json.getJSONArray("indexTimestamps") != null) {
             final JSONArray indexTimestamps = json.getJSONArray("indexTimestamps");
             for (int i = 0; i < indexTimestamps.length(); i++) {
