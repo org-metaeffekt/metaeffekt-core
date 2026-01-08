@@ -20,7 +20,7 @@ import lombok.AllArgsConstructor;
 import java.util.Arrays;
 
 @AllArgsConstructor
-public enum ProcessId {
+public enum ProcessType {
     SPDX_IMPORTER("spdx-importer"),
     CYCLONEDX_IMPORTER("cyclonedx-importer"),
     SBOM_CREATION("sbom-creation"),
@@ -36,8 +36,8 @@ public enum ProcessId {
         return id;
     }
 
-    public static ProcessId fromText(String text) {
-        return Arrays.stream(ProcessId.values())
+    public static ProcessType fromText(String text) {
+        return Arrays.stream(ProcessType.values())
                 .filter(v -> v.id.equals(text))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("unknown value: " + text));
