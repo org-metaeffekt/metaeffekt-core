@@ -16,6 +16,7 @@
 package org.metaeffekt.core.inventory.processor.report.configuration;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
@@ -57,6 +58,7 @@ import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole
  * Any filtering properties only apply at the last steps of the pipelines.
  */
 @Accessors(chain = true)
+@NoArgsConstructor
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);

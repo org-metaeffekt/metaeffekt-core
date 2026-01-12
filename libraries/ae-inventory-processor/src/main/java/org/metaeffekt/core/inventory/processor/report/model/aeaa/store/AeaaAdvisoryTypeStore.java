@@ -17,6 +17,7 @@ package org.metaeffekt.core.inventory.processor.report.model.aeaa.store;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -633,14 +634,6 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
         }
     }
 
-    private static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> createOsvIdentifier(String name, String wellFormedName, Pattern pattern) {
-        return new AeaaAdvisoryTypeIdentifier<>(
-                name, wellFormedName, "OSV",
-                pattern,
-                AeaaOsvAdvisorEntry.class,
-                () -> new AeaaOsvAdvisorEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation(name, "OSV")));
-    }
-
     public List<AeaaAdvisoryTypeIdentifier<?>> osvValues() {
         return valuesByImplementation(OSV_GENERIC_IDENTIFIER.getImplementation());
     }
@@ -653,5 +646,29 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
         return this.values().stream()
                 .filter(c -> c.getImplementation().equals(implementation))
                 .collect(Collectors.toList());
+    }
+
+    public static List<AeaaAdvisoryTypeIdentifier<?>> parseAdvisoryProviders(String jsonArrayProviders) {
+        return parseAdvisoryProviders(new JSONArray(jsonArrayProviders));
+    }
+
+    public static List<AeaaAdvisoryTypeIdentifier<?>> parseAdvisoryProviders(JSONArray providers) {
+        if (providers == null || providers.isEmpty()) {
+            return get().values();
+        } else {
+            final List<AeaaAdvisoryTypeIdentifier<?>> parsed = get().fromJsonNamesAndImplementations(providers);
+            if (parsed.contains(ANY_ADVISORY_FILTER_WILDCARD)) {
+                return get().values();
+            }
+            return parsed;
+        }
+    }
+
+    private static AeaaAdvisoryTypeIdentifier<AeaaOsvAdvisorEntry> createOsvIdentifier(String name, String wellFormedName, Pattern pattern) {
+        return new AeaaAdvisoryTypeIdentifier<>(
+                name, wellFormedName, "OSV",
+                pattern,
+                AeaaOsvAdvisorEntry.class,
+                () -> new AeaaOsvAdvisorEntry(AeaaAdvisoryTypeStore.get().fromNameAndImplementation(name, "OSV")));
     }
 }

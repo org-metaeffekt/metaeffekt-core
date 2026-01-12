@@ -15,11 +15,14 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -58,6 +61,8 @@ public abstract class ProcessConfiguration {
 
     private boolean active = true;
     private String id = buildInitialId();
+
+    private final LinkedHashMap<String, Pair<Integer, ?>> cachedProperties = new LinkedHashMap<>();
 
     public ProcessConfiguration setActive(boolean active) {
         this.active = active;
@@ -139,17 +144,105 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    public abstract LinkedHashMap<String, Object> getProperties();
+    //TODO: use something more sensible then hahscode()
+    protected <S, T> T accessCachedProperty(String propertyId, S property, Function<S, T> supplier) {
+        if (cachedProperties.containsKey(propertyId) && cachedProperties.get(propertyId).hashCode() == property.hashCode()) {
+            return (T) cachedProperties.get(propertyId).getRight();
+        }
 
-    public abstract void setProperties(LinkedHashMap<String, Object> properties);
+        T internal = supplier.apply(property);
+        cachedProperties.put(propertyId, Pair.of(property.hashCode(), internal));
+        return internal;
+
+    }
+
+    public LinkedHashMap<String, Object> getProperties() {
+        LinkedHashMap<String, Object> lhm = new LinkedHashMap<>();
+        for (Field f : this.getClass().getDeclaredFields()) {
+            f.setAccessible(true);
+            Class<?> type = f.getType();
+
+            ExcludedProcessProperty excludedAnnotation = f.getAnnotation(ExcludedProcessProperty.class);
+            if (excludedAnnotation != null) continue;
+
+            String propertyName;
+            Object deserialized;
+            try {
+                ConfigurableProcessProperty additionalConfigurationAnnotation = f.getAnnotation(ConfigurableProcessProperty.class);
+                if (additionalConfigurationAnnotation == null) {
+                    propertyName = f.getName();
+                    deserialized = deserialize(f.getType(), f.get(this));
+                } else {
+                    propertyName = additionalConfigurationAnnotation.customName();
+                    Class<? extends ConfigurationSerializer<Object, Object>> converterClass = (Class<? extends ConfigurationSerializer<Object, Object>>) additionalConfigurationAnnotation.converter();
+                    ConfigurationSerializer<Object, Object> converter = constructDefaultInstance(converterClass);
+
+                    deserialized = converter.deserialize(f.get(this));
+                }
+
+                lhm.put(propertyName, deserialized);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException("Cannot get field [" + f.getName() + "] of type [" + type + "] while serializing to JSON", e);
+            }
+        }
+
+        return lhm;
+    }
+
+    public void setProperties(LinkedHashMap<String, Object> properties) {
+        for (String key : properties.keySet()) {
+            Object o = properties.get(key);
+
+
+            Class<? extends ProcessConfiguration> clazz = this.getClass();
+
+            List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
+
+            fields.removeIf(f -> f.getAnnotation(ExcludedProcessProperty.class) != null);
+            Optional<Field> fieldO = fields.stream().filter(f -> key.equals(extractFieldName(f))).findFirst();
+
+
+            if (fieldO.isPresent()) {
+                Field f = fieldO.get();
+                f.setAccessible(true);
+
+                if(f.getAnnotation(ConfigurableProcessProperty.class) != null) {
+                    Class<? extends ConfigurationSerializer<Object, Object>> converterClass = (Class<? extends ConfigurationSerializer<Object, Object>>) f.getAnnotation(ConfigurableProcessProperty.class).converter();
+                    ConfigurationSerializer<Object, Object> converter = constructDefaultInstance(converterClass);
+
+                    try {
+                        f.set(this, converter.serialize(o));
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    try {
+                        Class<?> superclass = f.getType().getSuperclass();
+                        if(superclass != null && ProcessConfiguration.class.isAssignableFrom(superclass)) {
+                            ProcessConfiguration subProcessConfiguration = (ProcessConfiguration) constructDefaultInstance(f.getType());
+                            subProcessConfiguration.setProperties((LinkedHashMap<String, Object>) o);
+                            f.set(this, subProcessConfiguration);
+                        } else {
+                            f.set(this, o);
+                        }
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(e);
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException("No field found named: " + key + " in class: " + this.getClass().getSimpleName());
+            }
+        }
+    }
+
+    protected void collectMisconfigurations(List<ProcessMisconfiguration> misconfigurations) {
+    };
 
     public final List<ProcessMisconfiguration> collectMisconfigurations() {
         final ArrayList<ProcessMisconfiguration> reasons = new ArrayList<>();
         collectMisconfigurations(reasons);
         return reasons;
     }
-
-    protected abstract void collectMisconfigurations(List<ProcessMisconfiguration> misconfigurations);
 
     public void assertNoMisconfigurations() {
         final List<ProcessMisconfiguration> misconfigurations = collectMisconfigurations();
@@ -368,5 +461,80 @@ public abstract class ProcessConfiguration {
 
     protected IllegalArgumentException createPropertyException(String key, Object value, String expectedType) {
         return new IllegalArgumentException("Property '" + key + "' must be a '" + expectedType + "' on " + getClass().getSimpleName() + " from " + value);
+    }
+
+    private Object deserialize(Class<?> targetType, Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        // sub-configuration
+        if(targetType.getSuperclass() == ProcessConfiguration.class) {
+            return ((ProcessConfiguration) value).getProperties();
+        }
+
+        if (targetType.isInstance(value)) {
+            return value;
+        }
+
+
+        // string
+        if (targetType == String.class) {
+            return String.valueOf(value);
+
+            // boxed types
+        } else if (targetType == Boolean.class) {
+            if (value instanceof Boolean) return value;
+            else return Boolean.parseBoolean(String.valueOf(value));
+        } else if (targetType == Integer.class) {
+            if (value instanceof Number) return ((Number) value).intValue();
+            else return Integer.parseInt(String.valueOf(value));
+        } else if (targetType == Long.class) {
+            if (value instanceof Number) return ((Number) value).longValue();
+            else return Long.parseLong(String.valueOf(value));
+        } else if (targetType == Float.class) {
+            if (value instanceof Number) return ((Number) value).floatValue();
+            else return Float.parseFloat(String.valueOf(value));
+        } else if (targetType == Double.class) {
+            if (value instanceof Number) return ((Number) value).doubleValue();
+            else return Double.parseDouble(String.valueOf(value));
+
+            // primitive types
+        } else if (targetType == boolean.class) {
+            if (value instanceof Boolean) return value;
+            else return Boolean.parseBoolean(String.valueOf(value));
+        } else if (targetType == int.class) {
+            if (value instanceof Number) return ((Number) value).intValue();
+            else return Integer.parseInt(String.valueOf(value));
+        } else if (targetType == long.class) {
+            if (value instanceof Number) return ((Number) value).longValue();
+            else return Long.parseLong(String.valueOf(value));
+        } else if (targetType == float.class) {
+            if (value instanceof Number) return ((Number) value).floatValue();
+            else return Float.parseFloat(String.valueOf(value));
+        } else if (targetType == double.class) {
+            if (value instanceof Number) return ((Number) value).doubleValue();
+            else return Double.parseDouble(String.valueOf(value));
+
+        } else {
+            throw new IllegalArgumentException("Unsupported conversion from [" + value + " : " + value.getClass() + "] to [" + targetType + "]");
+        }
+    }
+
+    public static <T> T constructDefaultInstance(Class<T> clazz) {
+        try {
+            final Constructor<T> declaredConstructor = clazz.getDeclaredConstructor();
+            if (!declaredConstructor.isAccessible()) {
+                declaredConstructor.setAccessible(true);
+            }
+            return declaredConstructor.newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot instantiate target type " + clazz, e);
+        }
+    }
+
+    private String extractFieldName(Field f) {
+        ConfigurableProcessProperty annotation = f.getAnnotation(ConfigurableProcessProperty.class);
+        return annotation == null ? f.getName() : annotation.customName();
     }
 }
