@@ -4,15 +4,15 @@
     <title>Import / Export Informationen</title>
     <body>
         <p id="distribution-without-restricted-components-intro">
-            Das Land, in das die Softwaredistribution geliefert wird, kann Beschränkungen für den Import, den Besitz
+            Das Land, in das die Software-Distribution geliefert wird, kann Beschränkungen für den Import, den Besitz
             und/oder die Nutzung der Software haben. Darüber hinaus kann der Export oder Re-Export der
-            Softwaredistribution in andere Länder eingeschränkt oder sogar verboten sein.
+            Software-Distribution in andere Länder eingeschränkt oder sogar verboten sein.
         </p>
         <p id="distribution-with-restricted-components-intro">
-            Diese Softwaredistribution enthält Komponenten, die Export- und Importkontrollen unterliegen.
-            Das Land, in das die Softwaredistribution geliefert wird, kann Beschränkungen für den Import, den Besitz
+            Diese Software-Distribution enthält Komponenten, die Export- und Importkontrollen unterliegen.
+            Das Land, in das die Software-Distribution geliefert wird, kann Beschränkungen für den Import, den Besitz
             und/oder die Nutzung der Software haben. Darüber hinaus kann der Export oder Re-Export der
-            Softwaredistribution in andere Länder eingeschränkt oder sogar verboten sein.
+            Software-Distribution in andere Länder eingeschränkt oder sogar verboten sein.
         </p>
         <p id="distribution-of-restricted-components-hint">
             Prüfen Sie vor der Nutzung oder dem Re-Export dieser Distribution die länderspezifischen Gesetze,
@@ -20,7 +20,7 @@
         </p>
         <p id="distribution-with-restricted-components-table">
             Die folgende Tabelle enthält Export-/Importdetails zu einer spezifischen Softwarekomponente, die in dieser
-            Softwaredistribution enthalten ist:
+            Software-Distribution enthalten ist:
         </p>
         <p>
             <table>
@@ -71,7 +71,7 @@
             </table>
         </p>
         <p id="distribution-without-restricted-components-claim">
-            Diese Softwaredistribution enthält keine Komponenten, die als export-/importbeschränkt klassifiziert sind.
+            Diese Software-Distribution enthält keine Komponenten, die als export-/importbeschränkt klassifiziert sind.
         </p>
         <p id="distribution-of-restricted-components-disclaimer">
             Bitte beachten Sie, dass ${organization.name} keine Verantwortung für die Richtigkeit, Aktualität und den
