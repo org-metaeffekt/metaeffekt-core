@@ -161,7 +161,7 @@
                     <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
                           scope="external">$report.xmlEscapeString($license)
                         [external]
-                    </xref>
+                    </xref>.
                 #end
             #else
             $utils.getText("asset-report-bom.license-asset-topic")
@@ -170,7 +170,7 @@
                 <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
                       scope="external">$report.xmlEscapeString($license)
                     [external]
-                </xref>
+                </xref>.
             #end
             </p>
             <p>
