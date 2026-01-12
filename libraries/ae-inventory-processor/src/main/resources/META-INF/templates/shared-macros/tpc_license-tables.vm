@@ -155,6 +155,15 @@
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
         <p>
+            #if($assetLicenseDataList.size() == 1)
+                #if($folder)
+                    $utils.getText("asset-report-bom.license-asset-topic-location")
+                    <xref href="$report.getRelativeLicensePath()/$folder/" type="html"
+                          scope="external">$report.xmlEscapeString($license)
+                        [external]
+                    </xref>
+                #end
+            #else
             $utils.getText("asset-report-bom.license-asset-topic")
             #if($folder)
                 $utils.getText("asset-report-bom.license-asset-topic-location")
@@ -163,37 +172,38 @@
                     [external]
                 </xref>
             #end
-        </p>
-        <p>
-        <table otherprops="wide">
-            <tgroup cols="3">
-                <colspec colname="COLSPEC0" colnum="1" colwidth="10*" align="left"/>
-                <colspec colname="COLSPEC1" colnum="2" colwidth="70*" align="left"/>
-                <colspec colname="COLSPEC2" colnum="3" colwidth="20*" align="left"/>
-                <thead>
-                <row>
-                    <entry colname="COLSPEC0" valign="top">Type</entry>
-                    <entry colname="COLSPEC1" valign="top">Name / Repository</entry>
-                    <entry colname="COLSPEC2" valign="top">Version / Tag</entry>
-                </row>
-                </thead>
-                <tbody>
-                    #foreach($assetLicenseData in $assetLicenseDataList)
+            </p>
+            <p>
+            <table otherprops="wide">
+                <tgroup cols="3">
+                    <colspec colname="COLSPEC0" colnum="1" colwidth="10*" align="left"/>
+                    <colspec colname="COLSPEC1" colnum="2" colwidth="70*" align="left"/>
+                    <colspec colname="COLSPEC2" colnum="3" colwidth="20*" align="left"/>
+                    <thead>
                     <row>
-                        <entry>
-                            $report.xmlEscapeString($assetLicenseData.getAssetType())
-                        </entry>
-                        <entry>
-                            <codeph>$report.xmlEscapeArtifactId($assetLicenseData.getAssetName())</codeph>
-                        </entry>
-                        <entry>
-                            <codeph>$report.xmlEscapeGAV($assetLicenseData.getAssetVersion())</codeph>
-                        </entry>
+                        <entry colname="COLSPEC0" valign="top">Type</entry>
+                        <entry colname="COLSPEC1" valign="top">Name / Repository</entry>
+                        <entry colname="COLSPEC2" valign="top">Version / Tag</entry>
                     </row>
-                    #end
-                </tbody>
-            </tgroup>
-        </table>
+                    </thead>
+                    <tbody>
+                        #foreach($assetLicenseData in $assetLicenseDataList)
+                        <row>
+                            <entry>
+                                $report.xmlEscapeString($assetLicenseData.getAssetType())
+                            </entry>
+                            <entry>
+                                <codeph>$report.xmlEscapeArtifactId($assetLicenseData.getAssetName())</codeph>
+                            </entry>
+                            <entry>
+                                <codeph>$report.xmlEscapeGAV($assetLicenseData.getAssetVersion())</codeph>
+                            </entry>
+                        </row>
+                        #end
+                    </tbody>
+                </tgroup>
+            </table>
+        #end
         </p>
         </body>
     </topic>

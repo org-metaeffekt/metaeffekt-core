@@ -17,6 +17,7 @@ package org.metaeffekt.core.document.report;
 
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
+import org.metaeffekt.core.document.model.DocumentPartType;
 import org.metaeffekt.core.document.model.DocumentType;
 import org.metaeffekt.core.inventory.processor.InventorySeparator;
 import org.metaeffekt.core.inventory.processor.filescan.FileRef;
@@ -84,6 +85,9 @@ public class DocumentDescriptorReportGenerator {
 
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
                 if (inventoryContext.getAssetName() != null && inventoryContext.getAssetVersion() != null) {
+                    inventoryContexts.add(inventoryContext);
+                // separate handling for initial license documentation, since we want to report on all assets in the inventory but do not want to generate the content for each asset separately
+                } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null && documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
                     inventoryContexts.add(inventoryContext);
                 } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null) {
                     List<Inventory> splitInventories = InventorySeparator.separate(inventoryContext.getInventory());

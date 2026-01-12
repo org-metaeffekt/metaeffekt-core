@@ -26,6 +26,7 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentPartType;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.ReportUtils;
 import org.metaeffekt.core.util.FileUtils;
@@ -160,22 +161,32 @@ public class DocumentDescriptorReport {
 
     protected void createImprint(DocumentDescriptor documentDescriptor) throws IOException {
 
-        // collect asset names and asset versions from documentParts
         Map<String, TreeSet<String>> assetMap = new HashMap<>();
 
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
+
                 String assetName = inventoryContext.getAssetName();
                 String assetVersion = inventoryContext.getAssetVersion();
 
-                // Skip if assetName or version is null
-                if (assetName == null || assetVersion == null) continue;
+                for (AssetMetaData assetMetaData : inventoryContext.getInventory().getAssetMetaData()) {
+                    if (assetMetaData.isPrimary()) {
+                        String assetMetaName = assetMetaData.get(AssetMetaData.Attribute.NAME);
+                        String metaVersion = assetMetaData.get(AssetMetaData.Attribute.VERSION);
 
-                assetMap
-                        .computeIfAbsent(assetName, k -> new TreeSet<>())
-                        .add(assetVersion);
+                        if (assetMetaName == null || metaVersion == null) {
+                            continue;
+                        }
+
+                        assetMap
+                                .computeIfAbsent(assetMetaName, k -> new TreeSet<>())
+                                .add(metaVersion);
+
+                    }
+                }
             }
         }
+
 
         String templateResourcePath = TEMPLATES_BASE_DIR + "/imprint/tpc_imprint.dita.vt";
         File targetFile = new File(this.targetReportDir + "/imprint", "tpc_imprint.dita");
