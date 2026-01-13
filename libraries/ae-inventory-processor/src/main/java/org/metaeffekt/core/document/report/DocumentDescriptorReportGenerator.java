@@ -81,36 +81,37 @@ public class DocumentDescriptorReportGenerator {
 
     private static void deriveAssets(DocumentDescriptor documentDescriptor) throws IOException {
         for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-            List<InventoryContext> inventoryContexts = new ArrayList<>();
+            final List<InventoryContext> inventoryContexts = new ArrayList<>();
 
             for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
                 if (inventoryContext.getAssetName() != null && inventoryContext.getAssetVersion() != null) {
                     inventoryContexts.add(inventoryContext);
-                // separate handling for initial license documentation, since we want to report on all assets in the inventory but do not want to generate the content for each asset separately
-                } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null && documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
-                    inventoryContexts.add(inventoryContext);
                 } else if (inventoryContext.getAssetName() == null && inventoryContext.getAssetVersion() == null) {
-                    List<Inventory> splitInventories = InventorySeparator.separate(inventoryContext.getInventory());
+                    if (documentPart.getDocumentPartType() == DocumentPartType.INITIAL_LICENSE_DOCUMENTATION) {
+                        // separate handling for initial license documentation, since we want to report on all assets in
+                        // the inventory, but do not want to generate the content for each asset separately
+                        inventoryContexts.add(inventoryContext);
+                    } else {
+                        final List<Inventory> splitInventories = InventorySeparator.separate(inventoryContext.getInventory());
+                        for (Inventory inventory : splitInventories) {
+                            final Optional<AssetMetaData> primaryAsset = inventory.getAssetMetaData().stream()
+                                    .filter(AssetMetaData::isPrimary)
+                                    .findFirst();
 
-                    for (Inventory inventory : splitInventories) {
-                        Optional<AssetMetaData> primaryAsset = inventory.getAssetMetaData().stream()
-                                .filter(AssetMetaData::isPrimary)
-                                .findFirst();
+                            String assetName = primaryAsset
+                                    .map(a -> a.get(AssetMetaData.Attribute.NAME))
+                                    .orElseThrow(() -> new IllegalStateException("Missing asset name in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified name."));
 
-                        String assetName = primaryAsset
-                                .map(a -> a.get(AssetMetaData.Attribute.NAME))
-                                .orElseThrow(() -> new IllegalStateException("Missing asset name in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified name."));
+                            String assetVersion = primaryAsset
+                                    .map(a -> a.get(AssetMetaData.Attribute.VERSION))
+                                    .orElseThrow(() -> new IllegalStateException("Missing asset version in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified version."));
 
-                        String assetVersion = primaryAsset
-                                .map(a -> a.get(AssetMetaData.Attribute.VERSION))
-                                .orElseThrow(() -> new IllegalStateException("Missing asset version in primary asset for inventory [" + inventoryContext.getIdentifier() + "]. Please make sure that every primary asset has a specified version."));
-
-                        String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
-                        InventoryContext derivedContext = new InventoryContext(inventory, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
-                        derivedContext.setAssetName(assetName);
-                        derivedContext.setAssetVersion(assetVersion);
-                        inventoryContexts.add(derivedContext);
-                        writeInventoryToFile(inventory, documentDescriptor.getTargetReportDir().getAbsolutePath(), encodedAssetName);
+                            final String encodedAssetName = Base64.getEncoder().encodeToString(assetName.getBytes());
+                            InventoryContext derivedContext = new InventoryContext(inventory, encodedAssetName, inventoryContext.getReportContext(), inventoryContext.getLicensesPath(), inventoryContext.getComponentsPath());
+                            derivedContext.setAssetName(assetName);
+                            derivedContext.setAssetVersion(assetVersion);
+                            inventoryContexts.add(derivedContext);
+                        }
                     }
                 } else if (inventoryContext.getAssetName() == null) {
                     throw new IllegalStateException("The field 'assetVersion' for inventoryContext [" + inventoryContext.getIdentifier() + "] is set, but no 'assetName' is specified, please set an 'assetName' as well or remove the field 'assetName'.");
@@ -210,16 +211,6 @@ public class DocumentDescriptorReportGenerator {
 
             }
         }
-    }
-    public static void writeInventoryToFile(Inventory inventory, String targetReportDir, String encodedAssetName) throws IOException {
-        File outputDir = new File(targetReportDir, "intermediate-inventories");
-        if (!outputDir.exists() && !outputDir.mkdirs()) {
-            throw new IOException("Failed to create directory: " + outputDir.getAbsolutePath());
-        }
-
-        File outputFile = new File(outputDir, encodedAssetName + ".xlsx");
-        InventoryWriter inventoryWriter = new InventoryWriter();
-        inventoryWriter.writeInventory(inventory, outputFile);
     }
 
     private static void setPolicy(Map<String, String> params,
