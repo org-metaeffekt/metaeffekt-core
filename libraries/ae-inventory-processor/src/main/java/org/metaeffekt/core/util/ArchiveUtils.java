@@ -181,7 +181,7 @@ public class ArchiveUtils {
                 gunzip.setProject(new Project());
                 gunzip.setSrc(file);
                 String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".gz"));
+                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".gz", null));
                 gunzip.setDest(target);
                 intermediateFiles.add(target);
                 gunzip.execute();
@@ -193,7 +193,7 @@ public class ArchiveUtils {
                 gunzip.setProject(new Project());
                 gunzip.setSrc(file);
                 String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".tgz"));
+                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".tgz", ".tar"));
                 gunzip.setDest(target);
                 intermediateFiles.add(target);
 
@@ -203,7 +203,7 @@ public class ArchiveUtils {
 
             if (fileName.endsWith(".xz")) {
                 String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".xz"));
+                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".xz", null));
                 intermediateFiles.add(target);
 
                 expandXZ(file, target);
@@ -212,7 +212,7 @@ public class ArchiveUtils {
 
             if (fileName.endsWith(".bz2")) {
                 String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".bz2"));
+                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".bz2", null));
                 intermediateFiles.add(target);
 
                 expandBzip2(file, target);
@@ -221,7 +221,7 @@ public class ArchiveUtils {
 
             if(fileName.endsWith(".zst")) {
                 String targetName = file.getName();
-                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".zst"));
+                File target = new File(file.getParentFile(), intermediateUnpackFile(targetName, ".zst", null));
                 intermediateFiles.add(target);
 
                 expandZstd(file, target);
@@ -266,7 +266,10 @@ public class ArchiveUtils {
         }
     }
 
-    private static String intermediateUnpackFile(String targetName, String suffix) {
+    private static String intermediateUnpackFile(String targetName, String suffix, String newSuffix) {
+        if (newSuffix != null) {
+            return targetName.substring(0, targetName.toLowerCase().lastIndexOf(suffix)) + newSuffix;
+        }
         return targetName.substring(0, targetName.toLowerCase().lastIndexOf(suffix));
     }
 
