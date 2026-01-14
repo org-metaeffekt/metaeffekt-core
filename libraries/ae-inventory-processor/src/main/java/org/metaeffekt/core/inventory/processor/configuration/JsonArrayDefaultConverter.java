@@ -15,12 +15,20 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
+import org.json.JSONArray;
 
-public interface ConfigurationSerializer<EXT, INT> {
+import java.util.List;
 
-    INT serialize(EXT external);
+public class JsonArrayDefaultConverter implements ConfigurationSerializer<String, List<?>> {
 
-    EXT deserialize(INT internal);
+    @Override
+    public List<?> serialize(String internal) {
+        return new JSONArray(internal).toList();
 
+    }
+
+    @Override
+    public String deserialize(List<?> external) {
+        return new JSONArray(external).toString();
+    }
 }
-

@@ -654,7 +654,7 @@ public class AeaaAdvisoryTypeStore extends AeaaContentIdentifierStore<AeaaAdviso
 
     public static List<AeaaAdvisoryTypeIdentifier<?>> parseAdvisoryProviders(JSONArray providers) {
         if (providers == null || providers.isEmpty()) {
-            return get().values();
+            return Collections.emptyList();
         } else {
             final List<AeaaAdvisoryTypeIdentifier<?>> parsed = get().fromJsonNamesAndImplementations(providers);
             if (parsed.contains(ANY_ADVISORY_FILTER_WILDCARD)) {

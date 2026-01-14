@@ -15,14 +15,18 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -32,7 +36,7 @@ import java.util.stream.IntStream;
 
 /**
  * Base class for configurations classes. Used by the
- * {@link org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration} and other
+ * {@link CentralSecurityPolicyConfiguration} and other
  * classes containing configuration parameters for the inventory enrichment process.<br>
  * A configuration class usually has several qualities:
  * <ul>
@@ -45,7 +49,7 @@ import java.util.stream.IntStream;
  *     </li>
  *     <li>
  *         Has a method {@link ProcessConfiguration#getProperties()} and a counterpart
- *         {@link ProcessConfiguration#setProperties(LinkedHashMap)} that allow for loading and storing the
+ *         {@link ProcessConfiguration#setProperties(Map)} that allow for loading and storing the
  *         configuration from and to a map. Use the <code>loadProperties</code> methods to load the properties from the
  *         map.
  *     </li>
@@ -62,7 +66,7 @@ public abstract class ProcessConfiguration {
     private boolean active = true;
     private String id = buildInitialId();
 
-    private final LinkedHashMap<String, Pair<Integer, ?>> cachedProperties = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Pair<?, ?>> cachedProperties = new LinkedHashMap<>();
 
     public ProcessConfiguration setActive(boolean active) {
         this.active = active;
@@ -144,19 +148,18 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    //TODO: use something more sensible then hahscode()
-    protected <S, T> T accessCachedProperty(String propertyId, S property, Function<S, T> supplier) {
-        if (cachedProperties.containsKey(propertyId) && cachedProperties.get(propertyId).hashCode() == property.hashCode()) {
+    protected <S, T> T accessCachedProperty(String propertyId, S external, Function<S, T> supplier) {
+        if (cachedProperties.containsKey(propertyId) && cachedProperties.get(propertyId).getLeft().equals(external)) {
             return (T) cachedProperties.get(propertyId).getRight();
         }
 
-        T internal = supplier.apply(property);
-        cachedProperties.put(propertyId, Pair.of(property.hashCode(), internal));
+        T internal = supplier.apply(external);
+        cachedProperties.put(propertyId, Pair.of(external, internal));
         return internal;
 
     }
 
-    public LinkedHashMap<String, Object> getProperties() {
+    public Map<String, Object> getProperties() {
         LinkedHashMap<String, Object> lhm = new LinkedHashMap<>();
         for (Field f : this.getClass().getDeclaredFields()) {
             f.setAccessible(true);
@@ -165,22 +168,26 @@ public abstract class ProcessConfiguration {
             ExcludedProcessProperty excludedAnnotation = f.getAnnotation(ExcludedProcessProperty.class);
             if (excludedAnnotation != null) continue;
 
-            String propertyName;
-            Object deserialized;
+            ConfigurableProcessProperty additionalConfigurationAnnotation = f.getAnnotation(ConfigurableProcessProperty.class);
+
+            String propertyName = extractFieldName(f);
+            Object serialized;
             try {
-                ConfigurableProcessProperty additionalConfigurationAnnotation = f.getAnnotation(ConfigurableProcessProperty.class);
-                if (additionalConfigurationAnnotation == null) {
-                    propertyName = f.getName();
-                    deserialized = deserialize(f.getType(), f.get(this));
-                } else {
-                    propertyName = additionalConfigurationAnnotation.customName();
+                // use default serializer
+                if (additionalConfigurationAnnotation == null || additionalConfigurationAnnotation.converter() == ConfigurableProcessProperty.NoConfigurationSerializer.class) {
+                    serialized = serialize(f.getType(), f.get(this));
+                }
+                // use custom serializer
+                else {
                     Class<? extends ConfigurationSerializer<Object, Object>> converterClass = (Class<? extends ConfigurationSerializer<Object, Object>>) additionalConfigurationAnnotation.converter();
                     ConfigurationSerializer<Object, Object> converter = constructDefaultInstance(converterClass);
 
-                    deserialized = converter.deserialize(f.get(this));
+                    serialized = converter.serialize(f.get(this));
                 }
 
-                lhm.put(propertyName, deserialized);
+                if(serialized != null) {
+                    lhm.put(propertyName, serialized);
+                }
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException("Cannot get field [" + f.getName() + "] of type [" + type + "] while serializing to JSON", e);
             }
@@ -189,54 +196,46 @@ public abstract class ProcessConfiguration {
         return lhm;
     }
 
-    public void setProperties(LinkedHashMap<String, Object> properties) {
+    public void setProperties(Map<String, Object> properties) {
         for (String key : properties.keySet()) {
             Object o = properties.get(key);
 
+            Field f = findMatchingField(key);
 
-            Class<? extends ProcessConfiguration> clazz = this.getClass();
-
-            List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
-
-            fields.removeIf(f -> f.getAnnotation(ExcludedProcessProperty.class) != null);
-            Optional<Field> fieldO = fields.stream().filter(f -> key.equals(extractFieldName(f))).findFirst();
-
-
-            if (fieldO.isPresent()) {
-                Field f = fieldO.get();
+            if (f != null) {
                 f.setAccessible(true);
 
-                if(f.getAnnotation(ConfigurableProcessProperty.class) != null) {
-                    Class<? extends ConfigurationSerializer<Object, Object>> converterClass = (Class<? extends ConfigurationSerializer<Object, Object>>) f.getAnnotation(ConfigurableProcessProperty.class).converter();
-                    ConfigurationSerializer<Object, Object> converter = constructDefaultInstance(converterClass);
+                ConfigurableProcessProperty additionalConfigurationAnnotation = f.getAnnotation(ConfigurableProcessProperty.class);
+                try {
+                    if (additionalConfigurationAnnotation == null || additionalConfigurationAnnotation.converter() == ConfigurableProcessProperty.NoConfigurationSerializer.class) {
 
-                    try {
-                        f.set(this, converter.serialize(o));
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
-                } else {
-                    try {
-                        Class<?> superclass = f.getType().getSuperclass();
-                        if(superclass != null && ProcessConfiguration.class.isAssignableFrom(superclass)) {
+                        if (ProcessConfiguration.class.isAssignableFrom(f.getType())) {
                             ProcessConfiguration subProcessConfiguration = (ProcessConfiguration) constructDefaultInstance(f.getType());
                             subProcessConfiguration.setProperties((LinkedHashMap<String, Object>) o);
                             f.set(this, subProcessConfiguration);
                         } else {
-                            f.set(this, o);
+                            f.set(this, serialize(f.getType(), o));
                         }
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException(e);
+
+                    } else {
+                        Class<? extends ConfigurationSerializer<Object, Object>> converterClass = (Class<? extends ConfigurationSerializer<Object, Object>>) additionalConfigurationAnnotation.converter();
+                        ConfigurationSerializer<Object, Object> converter = constructDefaultInstance(converterClass);
+                        try {
+                            f.set(this, converter.deserialize(o));
+                        } catch (ClassCastException e) {
+                            LOG.info("?");
+                            throw e;
+                        }
                     }
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
                 }
-            } else {
-                throw new IllegalArgumentException("No field found named: " + key + " in class: " + this.getClass().getSimpleName());
             }
         }
     }
 
     protected void collectMisconfigurations(List<ProcessMisconfiguration> misconfigurations) {
-    };
+    }
 
     public final List<ProcessMisconfiguration> collectMisconfigurations() {
         final ArrayList<ProcessMisconfiguration> reasons = new ArrayList<>();
@@ -265,11 +264,14 @@ public abstract class ProcessConfiguration {
 
     /* PROPERTY LOADING UTILITY METHODS */
 
+
+
     protected <F, T> T optionalConversion(F value, Function<F, T> converter) {
         return value != null ? converter.apply(value) : null;
     }
 
-    protected void loadStringProperty(Map<String, Object> properties, String key, Consumer<String> consumer) {
+    protected void loadStringProperty(Map<String, Object> properties, String
+            key, Consumer<String> consumer) {
         try {
             if (properties != null && properties.containsKey(key)) {
                 final Object value = properties.get(key);
@@ -284,7 +286,8 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected void loadBooleanProperty(Map<String, Object> properties, String key, Consumer<Boolean> consumer) {
+    protected void loadBooleanProperty(Map<String, Object> properties, String
+            key, Consumer<Boolean> consumer) {
         if (properties != null && properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Boolean) {
@@ -297,7 +300,8 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected void loadIntegerProperty(Map<String, Object> properties, String key, Consumer<Integer> consumer) {
+    protected void loadIntegerProperty(Map<String, Object> properties, String
+            key, Consumer<Integer> consumer) {
         if (properties != null && properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Integer) {
@@ -327,7 +331,8 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected void loadDoubleProperty(Map<String, Object> properties, String key, Consumer<Double> consumer) {
+    protected void loadDoubleProperty(Map<String, Object> properties, String
+            key, Consumer<Double> consumer) {
         if (properties != null && properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Double) {
@@ -342,7 +347,8 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected void loadJsonObjectProperty(Map<String, Object> properties, String key, Consumer<JSONObject> consumer) {
+    protected void loadJsonObjectProperty(Map<String, Object> properties, String
+            key, Consumer<JSONObject> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Map<?, ?>) {
@@ -355,7 +361,8 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected void loadJsonArrayProperty(Map<String, Object> properties, String key, Consumer<JSONArray> consumer) {
+    protected void loadJsonArrayProperty(Map<String, Object> properties, String
+            key, Consumer<JSONArray> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof List<?>) {
@@ -368,14 +375,16 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected <T> void loadProperty(Map<String, Object> properties, String key, Function<Object, T> converter, Consumer<T> consumer) {
+    protected <T> void loadProperty(Map<String, Object> properties, String
+            key, Function<Object, T> converter, Consumer<T> consumer) {
         if (properties != null && properties.containsKey(key)) {
             final Object value = properties.get(key);
             consumer.accept(converter.apply(value));
         }
     }
 
-    protected <T> void loadListProperty(Map<String, Object> properties, String key, Function<Object, T> converter, Consumer<List<T>> consumer) {
+    protected <T> void loadListProperty(Map<String, Object> properties, String
+            key, Function<Object, T> converter, Consumer<List<T>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Collection<?>) {
@@ -390,7 +399,8 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected <K, V> void loadMapProperty(Map<String, Object> properties, String key, Function<Object, K> keyConverter, Function<Object, V> valueConverter, Consumer<Map<K, V>> consumer) {
+    protected <K, V> void loadMapProperty(Map<String, Object> properties, String
+            key, Function<Object, K> keyConverter, Function<Object, V> valueConverter, Consumer<Map<K, V>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Map<?, ?>) {
@@ -406,7 +416,8 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected <T> void loadSetProperty(Map<String, Object> properties, String key, Function<Object, T> converter, Consumer<Set<T>> consumer) {
+    protected <T> void loadSetProperty(Map<String, Object> properties, String
+            key, Function<Object, T> converter, Consumer<Set<T>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Collection<?>) {
@@ -421,7 +432,9 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected <T extends ProcessConfiguration> void loadSubConfiguration(Map<String, Object> properties, String key, Supplier<T> configurationSupplier, Consumer<T> consumer) {
+    protected <T extends ProcessConfiguration> void loadSubConfiguration
+            (Map<String, Object> properties, String
+                    key, Supplier<T> configurationSupplier, Consumer<T> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Map<?, ?>) {
@@ -435,7 +448,9 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    protected <T extends ProcessConfiguration> void loadSubConfigurations(Map<String, Object> properties, String key, Supplier<T> configurationSupplier, Consumer<List<T>> consumer) {
+    protected <T extends ProcessConfiguration> void loadSubConfigurations
+            (Map<String, Object> properties, String
+                    key, Supplier<T> configurationSupplier, Consumer<List<T>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
             if (value instanceof Collection<?>) {
@@ -463,20 +478,36 @@ public abstract class ProcessConfiguration {
         return new IllegalArgumentException("Property '" + key + "' must be a '" + expectedType + "' on " + getClass().getSimpleName() + " from " + value);
     }
 
-    private Object deserialize(Class<?> targetType, Object value) {
+    private Object serialize(Class<?> targetType, Object value) {
         if (value == null) {
             return null;
         }
 
         // sub-configuration
-        if(targetType.getSuperclass() == ProcessConfiguration.class) {
+        if (targetType.getSuperclass() == ProcessConfiguration.class) {
             return ((ProcessConfiguration) value).getProperties();
+        }
+
+        // sub-configurations
+        if (targetType == List.class) {
+            List<?> list = (List<?>) value;
+            if(!list.isEmpty() && list.get(0).getClass().isAssignableFrom(ProcessConfiguration.class)) {
+                return list.stream().map(e -> ((ProcessConfiguration) e).getProperties()).collect(Collectors.toList());
+            }
+        }
+
+        // enum
+        if(targetType.isEnum()) {
+            try {
+                Method valueOf = targetType.getMethod("valueOf", String.class);
+                return valueOf.invoke(null, value);
+            } catch (Exception e) {
+            }
         }
 
         if (targetType.isInstance(value)) {
             return value;
         }
-
 
         // string
         if (targetType == String.class) {
@@ -535,6 +566,92 @@ public abstract class ProcessConfiguration {
 
     private String extractFieldName(Field f) {
         ConfigurableProcessProperty annotation = f.getAnnotation(ConfigurableProcessProperty.class);
-        return annotation == null ? f.getName() : annotation.customName();
+        return annotation == null || StringUtils.isEmpty(annotation.customName()) ? f.getName() : annotation.customName();
+    }
+
+    /**
+     * Attempts to find the matching Field of the instance, by:
+     * <p>
+     *  first  -> checking the actual field names
+     *  second -> checking if a field has a matching custom name configured
+     *  third  -> checking if any matching alternative names exist for a field
+     * @param key the property key
+     * @return the appropriate field, or null if it is excluded
+     * @throws IllegalArgumentException if no field can be found
+     */
+    private Field findMatchingField(String key) {
+        Class<? extends ProcessConfiguration> clazz = this.getClass();
+        List<Field> fields = new ArrayList<>(Arrays.asList(clazz.getDeclaredFields()));
+
+        if(fields.stream().anyMatch(f -> f.getAnnotation(ExcludedProcessProperty.class) != null && f.getName().equals(key))) {
+            return null;
+        }
+
+        Optional<Field> f;
+
+        f = fields.stream().filter(field -> Objects.equals(field.getName(), key)).findAny();
+        if(f.isPresent()) {
+            return f.get();
+        }
+
+        f = fields.stream().filter(field -> field.getAnnotation(ConfigurableProcessProperty.class) != null &&
+                Objects.equals(field.getAnnotation(ConfigurableProcessProperty.class).customName(), key)).findAny();
+        if(f.isPresent()) {
+            return f.get();
+        }
+
+        f = fields.stream().filter(field -> field.getAnnotation(ConfigurableProcessProperty.class) != null &&
+                Arrays.asList(field.getAnnotation(ConfigurableProcessProperty.class).alternativeNames()).contains(key)).findAny();
+
+        return f.orElseThrow(() ->  new IllegalArgumentException("No field found named: " + key + " in class: " + this.getClass().getSimpleName()));
+    }
+
+    public static class JsonObjectDefaultConverter implements ConfigurationSerializer<String, Map<String, ?>> {
+
+        @Override
+        public Map<String, ?> serialize(String internal) {
+            return new JSONObject(internal).toMap();
+
+        }
+
+        @Override
+        public String deserialize(Map<String, ?> external) {
+            return new JSONArray(external).toString();
+        }
+    }
+
+    public static class FileDefaultConverter implements ConfigurationSerializer<File, Object> {
+
+        @Override
+        public Object serialize(File external) {
+            if(external == null) return null;
+            return external.getAbsolutePath();
+        }
+
+        @Override
+        public File deserialize(Object internal) {
+            if(internal instanceof File) return (File) internal;
+
+            return new File(String.valueOf(internal));
+        }
+    }
+
+    public static class FileListDefaultConverter implements ConfigurationSerializer<List<File>, List<Object>> {
+
+        @Override
+        public List<Object> serialize(List<File> external) {
+            return external.stream().map(File::getAbsolutePath).collect(Collectors.toList());
+        }
+
+        @Override
+        public List<File> deserialize(List<Object> internal) {
+            if(internal == null || internal.isEmpty()) {
+                return Collections.emptyList();
+            }
+            if(internal.get(0) instanceof File) {
+                return internal.stream().map(f -> ((File) f)).collect(Collectors.toList());
+            }
+            return internal.stream().map(f -> new File(String.valueOf(f))).collect(Collectors.toList());
+        }
     }
 }
