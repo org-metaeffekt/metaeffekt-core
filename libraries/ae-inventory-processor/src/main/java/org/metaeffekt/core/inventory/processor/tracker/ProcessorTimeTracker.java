@@ -76,7 +76,20 @@ public class ProcessorTimeTracker {
     }
 
     public ProcessTimeEntry getOrCreateTimestamp(ProcessType processType, long creationTimestamp) {
-        return entries.stream().filter(entry -> entry.getProcessType().equals(processType)).findFirst().orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, creationTimestamp)));
+        return entries.stream()
+                .filter(entry -> entry.getProcessType().equals(processType))
+                .findFirst()
+                .orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, creationTimestamp)));
+    }
+
+    public ProcessTimeEntry getOrCreateTimestamp(ProcessType processType, String processName, long creationTimestamp) {
+        if (processName == null) {
+            return getOrCreateTimestamp(processType, creationTimestamp);
+        }
+        return entries.stream()
+                .filter(entry -> entry.getProcessType().equals(processType) && Objects.equals(entry.getProcessName(), processName))
+                .findFirst()
+                .orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, processName, creationTimestamp)));
     }
 
     private boolean parse() {
