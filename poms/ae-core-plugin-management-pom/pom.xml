@@ -16,7 +16,7 @@
     </parent>
 
     <properties>
-        <header.copyright.year>2024</header.copyright.year>
+        <header.copyright.year>2026</header.copyright.year>
 
         <ae.core.version>HEAD-SNAPSHOT</ae.core.version>
 
@@ -219,7 +219,7 @@
                                     <owner>metaeffekt.org</owner>
                                     <email>contact@metaeffekt.org</email>
                                     <year.initial>2009</year.initial>
-                                    <year>2024</year>
+                                    <year>2026</year>
                                 </properties>
                                 <includes>
                                     <include>**/*.java</include>

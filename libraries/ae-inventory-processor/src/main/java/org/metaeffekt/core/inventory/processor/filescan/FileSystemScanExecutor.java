@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.metaeffekt.core.inventory.processor.filescan.FileSystemScanConstants.*;
@@ -266,7 +265,7 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         final List<AssetMetaData> assetMetaDataList = fileSystemScanContext.getAssetMetaDataList();
 
-        if (assetMetaDataList != null) {
+        if (assetMetaDataList != null && !assetMetaDataList.isEmpty()) {
             for (AssetMetaData assetMetaData : assetMetaDataList) {
                 if (assetMetaData != null) {
                     final String path = assetMetaData.get(AssetMetaData.Attribute.ASSET_PATH.getKey());
@@ -275,12 +274,8 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
                         // FIXME: we may need a map to list; validated; refers to putIfAbsent
                         fileSystemScanContext.getPathToAssetIdMap().putIfAbsent(path, assetId);
                     }
-                } else {
-                    LOG.warn("Potential concurrency issue detected in AssetMetaData object.");
                 }
             }
-        } else {
-            LOG.warn("Potential concurrency issue detected in AssetMetaData list.");
         }
     }
 
@@ -288,13 +283,13 @@ public class FileSystemScanExecutor implements FileSystemScanTaskListener {
 
         modulateArtifactRootPaths(inventory);
 
-        Function<Artifact, Set<String>> qualifierSupplier = a -> qualifiersOf(a);
-
-        InventoryUtils.mergeDuplicates(inventory, qualifierSupplier);
+        InventoryUtils.mergeDuplicates(inventory, this::qualifiersOf);
 
         InventoryUtils.mergeDuplicateAssets(inventory);
 
         mergeRedundantContainerArtifacts(inventory);
+
+        InventoryUtils.mergeDuplicateComponentPatterns(inventory);
     }
 
     /**

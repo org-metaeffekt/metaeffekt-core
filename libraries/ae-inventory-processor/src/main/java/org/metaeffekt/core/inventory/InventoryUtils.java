@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -512,6 +512,19 @@ public abstract class InventoryUtils {
             }
         }
         return qualifierArtifactMap;
+    }
+
+    /**
+     * Duplicate merge based on ComponentPatternData.deriveQualifier.
+     *
+     * @param inventory The inventory to process.
+     */
+    public static void mergeDuplicateComponentPatterns(Inventory inventory) {
+        final Map<String, ComponentPatternData> qualifierCpdMap = new LinkedHashMap<>();
+        for (ComponentPatternData cpd : inventory.getComponentPatternData()) {
+            qualifierCpdMap.put(cpd.deriveQualifier(), cpd);
+        }
+        inventory.setComponentPatternData(new ArrayList<>(qualifierCpdMap.values()));
     }
 
 }

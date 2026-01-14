@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentPartType;
+import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.InventoryContext;
 import org.metaeffekt.core.inventory.processor.report.ReportUtils;
 import org.metaeffekt.core.util.FileUtils;
@@ -80,6 +81,7 @@ public class DocumentDescriptorReport {
      * using the template specified in the report generation process.
      *
      * @param documentDescriptor the descriptor containing document-specific information for the report generation
+     *
      * @throws IOException if there is an error reading or writing report files
      */
     protected void createPartBookMap(DocumentDescriptor documentDescriptor) throws IOException {
@@ -160,22 +162,7 @@ public class DocumentDescriptorReport {
 
     protected void createImprint(DocumentDescriptor documentDescriptor) throws IOException {
 
-        // collect asset names and asset versions from documentParts
-        Map<String, TreeSet<String>> assetMap = new HashMap<>();
-
-        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
-            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
-                String assetName = inventoryContext.getAssetName();
-                String assetVersion = inventoryContext.getAssetVersion();
-
-                // Skip if assetName or version is null
-                if (assetName == null || assetVersion == null) continue;
-
-                assetMap
-                        .computeIfAbsent(assetName, k -> new TreeSet<>())
-                        .add(assetVersion);
-            }
-        }
+        Map<String, TreeSet<String>> assetMap = createAssetNameToVersionMap(documentDescriptor);
 
         String templateResourcePath = TEMPLATES_BASE_DIR + "/imprint/tpc_imprint.dita.vt";
         File targetFile = new File(this.targetReportDir + "/imprint", "tpc_imprint.dita");
@@ -199,6 +186,27 @@ public class DocumentDescriptorReport {
                 extraContext);
     }
 
+    private Map<String, TreeSet<String>> createAssetNameToVersionMap(DocumentDescriptor documentDescriptor) {
+        Map<String, TreeSet<String>> assetMap = new TreeMap<>();
+        for (DocumentPart documentPart : documentDescriptor.getDocumentParts()) {
+            for (InventoryContext inventoryContext : documentPart.getInventoryContexts()) {
+                for (AssetMetaData assetMetaData : inventoryContext.getInventory().getAssetMetaData()) {
+                    if (assetMetaData.isPrimary()) {
+                        String assetName = assetMetaData.get(AssetMetaData.Attribute.NAME);
+                        String assetVersion = assetMetaData.get(AssetMetaData.Attribute.VERSION);
+
+                        if (assetName == null || assetVersion == null) {
+                            continue;
+                        }
+
+                        assetMap.computeIfAbsent(assetName, k -> new TreeSet<>()).add(assetVersion);
+                    }
+                }
+            }
+        }
+        return assetMap;
+    }
+
     /**
      * Adapter class for holding properties related to document report generation.
      * <p>This class acts as a container for properties associated with each inventory context. It allows dynamic
@@ -207,7 +215,8 @@ public class DocumentDescriptorReport {
     @Setter
     @Getter
     public static class DocumentDescriptorReportAdapters {
-            Map<String, Properties> propertiesMap = new HashMap<>();
+
+        private Map<String, Properties> propertiesMap = new HashMap<>();
 
         private DocumentDescriptorReportAdapters() {
         }

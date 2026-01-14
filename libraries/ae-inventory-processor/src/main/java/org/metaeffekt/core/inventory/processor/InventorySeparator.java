@@ -1,5 +1,5 @@
 /*
- * Copyright 2009-2024 the original author or authors.
+ * Copyright 2009-2026 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,15 @@ public class InventorySeparator {
             }
 
             removeDanglingAssetEntries(splitInventory, primaryAsset, inventory.getAssetMetaData());
+
+            // when generating a splitInventory ensure that other relevant data is propagated (shallow)
+            splitInventory.setLicenseMetaData(inventory.getLicenseMetaData());
+            splitInventory.setLicenseData(inventory.getLicenseData());
+            splitInventory.setInventoryInfo(inventory.getInventoryInfo());
+            splitInventory.setAdvisoryMetaData(inventory.getAdvisoryMetaData());
+            splitInventory.setReportData(inventory.getReportData());
+            splitInventory.setVulnerabilityMetaData(inventory.getVulnerabilityMetaData());
+
             resultingInventories.add(splitInventory);
         }
         return resultingInventories;
