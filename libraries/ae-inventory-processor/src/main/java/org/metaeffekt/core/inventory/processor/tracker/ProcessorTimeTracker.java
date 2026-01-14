@@ -25,6 +25,7 @@ import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -41,16 +42,21 @@ public class ProcessorTimeTracker {
     @Getter
     private final List<ProcessTimeEntry> entries = new ArrayList<>();
 
-    public ProcessorTimeTracker(Inventory inventory) {
+    private ProcessorTimeTracker(Inventory inventory) {
         this.inventory = inventory;
         this.inventoryInfo = inventory.findOrCreateInventoryInfo(TIME_TRACKING_INVENTORY_INFO_ROW_KEY);
 
         this.parse();
     }
 
+    public static ProcessorTimeTracker fromInventory(Inventory inventory) {
+        return new ProcessorTimeTracker(inventory);
+    }
+
     public ProcessTimeEntry addTimestamp(ProcessTimeEntry newEntry) {
         for (ProcessTimeEntry entry : entries) {
-            if (entry.getProcessId().equals(newEntry.getProcessId())) {
+            if (Objects.equals(entry.getProcessType(), newEntry.getProcessType())
+                    && Objects.equals(entry.getProcessName(), newEntry.getProcessName())) {
                 entry.addAll(newEntry);
                 this.writeBack();
                 return entry;
@@ -61,12 +67,29 @@ public class ProcessorTimeTracker {
         return newEntry;
     }
 
-    public ProcessTimeEntry getTimestamp(ProcessId processId) {
-        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElse(null);
+    public ProcessTimeEntry getTimestamp(ProcessType processType) {
+        return getTimestamp(processType, null);
     }
 
-    public ProcessTimeEntry getOrCreateTimestamp(ProcessId processId, long creationTimestamp) {
-        return entries.stream().filter(entry -> entry.getProcessId().equals(processId.get())).findFirst().orElseGet(() -> addTimestamp(new ProcessTimeEntry(processId, creationTimestamp)));
+    public ProcessTimeEntry getTimestamp(ProcessType processType, String processName) {
+        return entries.stream().filter(entry -> Objects.equals(entry.getProcessType(), processType) && Objects.equals(entry.getProcessName(), processName)).findFirst().orElse(null);
+    }
+
+    public ProcessTimeEntry getOrCreateTimestamp(ProcessType processType, long creationTimestamp) {
+        return entries.stream()
+                .filter(entry -> entry.getProcessType().equals(processType))
+                .findFirst()
+                .orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, creationTimestamp)));
+    }
+
+    public ProcessTimeEntry getOrCreateTimestamp(ProcessType processType, String processName, long creationTimestamp) {
+        if (processName == null) {
+            return getOrCreateTimestamp(processType, creationTimestamp);
+        }
+        return entries.stream()
+                .filter(entry -> entry.getProcessType().equals(processType) && Objects.equals(entry.getProcessName(), processName))
+                .findFirst()
+                .orElseGet(() -> addTimestamp(new ProcessTimeEntry(processType, processName, creationTimestamp)));
     }
 
     private boolean parse() {
