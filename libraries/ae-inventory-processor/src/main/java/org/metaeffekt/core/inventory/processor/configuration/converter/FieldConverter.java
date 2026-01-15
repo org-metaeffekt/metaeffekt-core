@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.configuration;
+package org.metaeffekt.core.inventory.processor.configuration.converter;
 
-
-public interface ConfigurationSerializer<EXT, INT> {
-
+public interface FieldConverter<EXT, INT> {
     INT serialize(EXT external);
 
     EXT deserialize(INT internal);
-
 }
-

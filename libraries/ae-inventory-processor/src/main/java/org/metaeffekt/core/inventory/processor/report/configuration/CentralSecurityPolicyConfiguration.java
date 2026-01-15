@@ -23,6 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.configuration.*;
+import org.metaeffekt.core.inventory.processor.configuration.converter.FieldConverter;
+import org.metaeffekt.core.inventory.processor.configuration.converter.JsonArrayConverter;
 import org.metaeffekt.core.inventory.processor.model.AdvisoryMetaData;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.AdvisoryUtils;
@@ -60,7 +62,7 @@ import static org.metaeffekt.core.security.cvss.CvssSource.CvssIssuingEntityRole
 @NoArgsConstructor
 public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
-    @ExcludedProcessProperty
+    @ExcludeProcessConfigurationProperty
     private static final Logger LOG = LoggerFactory.getLogger(CentralSecurityPolicyConfiguration.class);
 
     /**
@@ -68,32 +70,23 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * The syntax defines ranges using a format like <code>Label:color:min:max</code>.<p>
      * Default: string value of {@link CvssSeverityRanges#CVSS_3_SEVERITY_RANGES}<p>
      * Parsed property:<br>
-     * cvssSeverityRanges &rarr; cachedCvssSeverityRanges<br>
      * <code>String &rarr; CvssSeverityRanges</code>
      */
     private String cvssSeverityRanges = CvssSeverityRanges.CVSS_3_SEVERITY_RANGES.toString();
-    /**
-     * See {@link CentralSecurityPolicyConfiguration#cvssSeverityRanges}.
-     */
 
     /**
      * Used to convert a numeric Priority Score (usually between 0.0 and 20.0 depending on configuration of {@link CentralSecurityPolicyConfiguration#priorityScoreConfiguration}) into a Priority Label (e.g. none, elevated, due, escalate) for displaying in reports and dashboards.<br>
      * The Priority Score is a metric calculated based on various factors (CVSS, EOL, Exploitability, etc.).<p>
      * Default: string value of {@link CvssSeverityRanges#PRIORITY_SCORE_SEVERITY_RANGES}<p>
      * Parsed property:<br>
-     * priorityScoreSeverityRanges &rarr; cachedPriorityScoreSeverityRanges<br>
      * <code>String &rarr; CvssSeverityRanges</code>
      */
     private String priorityScoreSeverityRanges = CvssSeverityRanges.PRIORITY_SCORE_SEVERITY_RANGES.toString();
-    /**
-     * See {@link CentralSecurityPolicyConfiguration#priorityScoreSeverityRanges}.
-     */
 
     /**
      * Used to convert an EPSS probability score (0.0 to 1.0) into a severity category for displaying in reports.<p>
      * Default: string value of {@link CvssSeverityRanges#EPSS_SCORE_SEVERITY_RANGES}<p>
      * Parsed property:<br>
-     * epssSeverityRanges &rarr; cachedEpssSeverityRanges<br>
      * <code>String &rarr; CvssSeverityRanges</code>
      */
     private String epssSeverityRanges = CvssSeverityRanges.EPSS_SCORE_SEVERITY_RANGES.toString();
@@ -106,7 +99,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * See the {@link CentralSecurityPolicyConfiguration#cvssVersionSelectionPolicy} parameter to change what vector version is then selected for displaying and calculations (severity, status &hellip;).<p>
      * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_INITIAL}<p>
      * Parsed property:<br>
-     * initialCvssSelector &rarr; cachedInitialCvssSelector<br>
      * <code>String &rarr; JSONObject &rarr; CvssSelector</code>
      */
     @ProcessConfigurationProperty(alternativeNames = {"baseCvssSelector"}, converter = CvssSelectorConverter.class)
@@ -118,19 +110,10 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * By default, it includes user-defined assessments that modify or override base vector metrics from external data sources.<p>
      * Default: JSON object value of {@link CentralSecurityPolicyConfiguration#CVSS_SELECTOR_CONTEXT}<p>
      * Parsed property:<br>
-     * contextCvssSelector &rarr; cachedContextCvssSelector<br>
      * <code>String &rarr; JSONObject &rarr; CvssSelector</code>
      */
     @ProcessConfigurationProperty(alternativeNames = {"effectiveCvssSelector"}, converter = CvssSelectorConverter.class)
     private String contextCvssSelector = CVSS_SELECTOR_CONTEXT.toJson().toString();
-
-    /**
-     * See {@link CentralSecurityPolicyConfiguration#initialCvssSelector}.
-     */
-
-    /**
-     * See {@link CentralSecurityPolicyConfiguration#contextCvssSelector}.
-     */
 
     /**
      * A list of {@link CvssScoreVersionSelectionPolicy} (enum) entries used to pick the final vector for display and calculation.<br>
@@ -141,7 +124,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: <code>[LATEST]</code>
      */
     @Getter @Setter
-    @ProcessConfigurationProperty(converter = CvssVersionSelectionPolicyConverter.class)
     private List<CvssScoreVersionSelectionPolicy> cvssVersionSelectionPolicy = Collections.singletonList(CvssScoreVersionSelectionPolicy.LATEST);
 
     /**
@@ -198,7 +180,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
     @Getter @Setter
     private JsonSchemaValidationErrorsHandling jsonSchemaValidationErrorsHandling = JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT;
 
-    @ExcludedProcessProperty
     public final static JsonSchemaValidationErrorsHandling JSON_SCHEMA_VALIDATION_ERRORS_DEFAULT = JsonSchemaValidationErrorsHandling.STRICT;
 
     public enum JsonSchemaValidationErrorsHandling {
@@ -221,7 +202,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * </ul>
      */
     @Getter
-//    @ConfigurableProcessProperty(converter = ListDefaultConverter.class)
     private final List<String> includeVulnerabilitiesWithAdvisoryReviewStatus = new ArrayList<>(Collections.singletonList("all"));
     /**
      * Filters vulnerabilities based on the provider of their security advisory.<br>
@@ -238,7 +218,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      *      {"name":"RHSA","implementation":"CSAF"}]
      * </pre>
      */
-    @ProcessConfigurationProperty(converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String includeVulnerabilitiesWithAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all")).toString();
     /**
@@ -250,7 +230,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * See {@link AeaaAdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
      */
-    @ProcessConfigurationProperty(converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String includeAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all")).toString();
     /**
@@ -268,7 +248,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * </pre>
      */
     @Getter
-    @ProcessConfigurationProperty(converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String generateOverviewTablesForAdvisories = new JSONArray().toString();
     /**
      * Filters advisories based on their specific type identifier (e.g. <code>alert</code>, <code>notice</code>, <code>news</code>).<br>
@@ -276,7 +256,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * <code>all</code> can be used to include all advisories.<p>
      */
     @Getter
-//    @ConfigurableProcessProperty(converter = ListDefaultConverter.class)
     private final List<String> includeAdvisoryTypes = new ArrayList<>(Collections.singletonList("all"));
 
     /**
@@ -290,20 +269,12 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      *     <li><code>review state</code> {@link CentralSecurityPolicyConfiguration#VULNERABILITY_STATUS_DISPLAY_MAPPER_REVIEW_STATE} (groups applicable/not applicable into a "reviewed" category)</li>
      * </ul>
      * Parsed property:<br>
-     * vulnerabilityStatusDisplayMapperName &rarr; vulnerabilityStatusDisplayMapper<br>
      * <code>String &rarr; VulnerabilityStatusMapper</code>
      */
     @Getter
     private String vulnerabilityStatusDisplayMapperName = "default";
-    /**
-     * See {@link CentralSecurityPolicyConfiguration#vulnerabilityStatusDisplayMapperName}.
-     */
-    @ExcludedProcessProperty
-    private VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper = VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT;
 
-    @Getter
-    @Setter
-    @ExcludedProcessProperty
+    @Getter @Setter
     private VulnerabilityPriorityScoreConfiguration priorityScoreConfiguration = new VulnerabilityPriorityScoreConfiguration();
 
     public CentralSecurityPolicyConfiguration setCvssSeverityRanges(String cvssSeverityRanges) {
@@ -535,70 +506,16 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
 
     public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(String vulnerabilityStatusDisplayMapper) {
         this.vulnerabilityStatusDisplayMapperName = vulnerabilityStatusDisplayMapper;
-        this.vulnerabilityStatusDisplayMapper = CentralSecurityPolicyConfiguration.getStatusMapperByName(vulnerabilityStatusDisplayMapper);
         return this;
     }
 
     public CentralSecurityPolicyConfiguration setVulnerabilityStatusDisplayMapper(VulnerabilityStatusMapper vulnerabilityStatusDisplayMapper) {
         this.vulnerabilityStatusDisplayMapperName = vulnerabilityStatusDisplayMapper.getName();
-        this.vulnerabilityStatusDisplayMapper = vulnerabilityStatusDisplayMapper;
         return this;
     }
 
     public VulnerabilityStatusMapper getVulnerabilityStatusDisplayMapper() {
-        if (this.vulnerabilityStatusDisplayMapper == null
-                || !this.vulnerabilityStatusDisplayMapperName.equals(this.vulnerabilityStatusDisplayMapper.getName())) {
-            this.setVulnerabilityStatusDisplayMapper(this.vulnerabilityStatusDisplayMapperName);
-        }
-        return this.vulnerabilityStatusDisplayMapper;
-    }
-
-    @Override
-    public Map<String, Object> getProperties() {
-        final Map<String, Object> configuration = super.getProperties();
-//        configuration.put("cvssSeverityRanges", cvssSeverityRanges);
-//        configuration.put("priorityScoreSeverityRanges", priorityScoreSeverityRanges);
-//        configuration.put("epssSeverityRanges", epssSeverityRanges);
-//        configuration.put("initialCvssSelector", super.optionalConversion(getInitialCvssSelector(), CvssSelector::toJson));
-//        configuration.put("contextCvssSelector", super.optionalConversion(getContextCvssSelector(), CvssSelector::toJson));
-//        configuration.put("insignificantThreshold", insignificantThreshold);
-//        configuration.put("includeScoreThreshold", includeScoreThreshold);
-//        configuration.put("assessmentReviewPeriod", assessmentReviewPeriod);
-//        configuration.put("sourceAssessmentContextPattern", sourceAssessmentContextPattern);
-//        configuration.put("jsonSchemaValidationErrorsHandling", jsonSchemaValidationErrorsHandling);
-//        configuration.put("includeVulnerabilitiesWithAdvisoryProviders", includeVulnerabilitiesWithAdvisoryProviders);
-//        configuration.put("includeVulnerabilitiesWithAdvisoryReviewStatus", includeVulnerabilitiesWithAdvisoryReviewStatus);
-//        configuration.put("includeAdvisoryProviders", includeAdvisoryProviders);
-//        configuration.put("generateOverviewTablesForAdvisories", generateOverviewTablesForAdvisories);
-//        configuration.put("includeAdvisoryTypes", includeAdvisoryTypes);
-//        configuration.put("vulnerabilityStatusDisplayMapperName", vulnerabilityStatusDisplayMapperName);
-//        configuration.put("cvssVersionSelectionPolicy", cvssVersionSelectionPolicy);
-        configuration.put("priorityScoreConfiguration", priorityScoreConfiguration.getProperties());
-
-        return configuration;
-    }
-
-    public void setProperties(LinkedHashMap<String, Object> properties) {
-        super.setProperties(properties);
-//        super.loadProperty(properties, "baseCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector))); // deprecated
-//        super.loadProperty(properties, "initialCvssSelector", this::parseJsonObjectFromProperties, selector -> setBaseCvssSelector(CvssSelector.fromJson(selector)));
-//        super.loadProperty(properties, "effectiveCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector))); // deprecated
-//        super.loadProperty(properties, "contextCvssSelector", this::parseJsonObjectFromProperties, selector -> setEffectiveCvssSelector(CvssSelector.fromJson(selector)));
-//
-//        super.loadProperty(properties, "jsonSchemaValidationErrorsHandling", value -> JsonSchemaValidationErrorsHandling.valueOf(String.valueOf(value)), this::setJsonSchemaValidationErrorsHandling);
-//        super.loadDoubleProperty(properties, "insignificantThreshold", this::setInsignificantThreshold);
-//        super.loadDoubleProperty(properties, "includeScoreThreshold", this::setIncludeScoreThreshold);
-//        super.loadStringProperty(properties, "assessmentReviewPeriod", this::setAssessmentReviewPeriod);
-//        super.loadStringProperty(properties, "sourceAssessmentContextPattern", this::setSourceAssessmentContextPattern);
-//        super.loadJsonArrayProperty(properties, "includeVulnerabilitiesWithAdvisoryProviders", this::setIncludeVulnerabilitiesWithAdvisoryProviders);
-//        super.loadListProperty(properties, "includeVulnerabilitiesWithAdvisoryReviewStatus", String::valueOf, this::setIncludeVulnerabilitiesWithAdvisoryReviewStatus);
-//        super.loadJsonArrayProperty(properties, "includeAdvisoryProviders", this::setIncludeAdvisoryProviders);
-//        super.loadJsonArrayProperty(properties, "generateOverviewTablesForAdvisories", this::setGenerateOverviewTablesForAdvisories);
-//        super.loadListProperty(properties, "includeAdvisoryTypes", String::valueOf, this::setIncludeAdvisoryTypes);
-//        super.loadStringProperty(properties, "vulnerabilityStatusDisplayMapperName", this::setVulnerabilityStatusDisplayMapper);
-//        super.loadListProperty(properties, "cvssVersionSelectionPolicy", value -> CvssScoreVersionSelectionPolicy.valueOf(String.valueOf(value)), this::setCvssVersionSelectionPolicy);
-//
-        super.loadSubConfiguration(properties, "priorityScoreConfiguration", VulnerabilityPriorityScoreConfiguration::new, this::setPriorityScoreConfiguration);
+        return super.accessCachedProperty("vulnerabilityStatusDisplayMapper", vulnerabilityStatusDisplayMapperName, CentralSecurityPolicyConfiguration::getStatusMapperByName);
     }
 
     private JSONObject parseJsonObjectFromProperties(Object input) {
@@ -656,7 +573,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         try {
             this.getVulnerabilityStatusDisplayMapper();
         } catch (IllegalArgumentException e) {
-            misconfigurations.add(new ProcessMisconfiguration("vulnerabilityStatusDisplayMapper", "Unknown status mapper: " + vulnerabilityStatusDisplayMapper));
+            misconfigurations.add(new ProcessMisconfiguration("vulnerabilityStatusDisplayMapperName", "Unknown status mapper: " + vulnerabilityStatusDisplayMapperName));
         }
 
         JSONArray includeVulnerabilitiesWithAdvisoryProvidersJ = new JSONArray(includeVulnerabilitiesWithAdvisoryProviders);
@@ -797,7 +714,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return configuration;
     }
 
-    @ExcludedProcessProperty
     public final static CvssSelector CVSS_SELECTOR_INITIAL = new CvssSelector(Collections.singletonList(
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
@@ -829,7 +745,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             )
     ));
 
-    @ExcludedProcessProperty
     public final static CvssSelector CVSS_SELECTOR_CONTEXT = new CvssSelector(Arrays.asList(
             new CvssRule(MergingMethod.ALL,
                     // NIST NVD
@@ -1001,7 +916,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         }
     }
 
-    @ExcludedProcessProperty
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED = new VulnerabilityStatusMapper(
             "unmodified",
             Arrays.asList(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW,
@@ -1035,10 +949,8 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     "return status; " +
                     "}");
 
-    @ExcludedProcessProperty
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT = VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.withName("default");
 
-    @ExcludedProcessProperty
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED = new VulnerabilityStatusMapper(
             "abstracted",
             Arrays.asList("affected", "potentially affected", "not affected"),
@@ -1080,7 +992,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     "return status; " +
                     "}");
 
-    @ExcludedProcessProperty
     public final static VulnerabilityStatusMapper VULNERABILITY_STATUS_DISPLAY_MAPPER_REVIEW_STATE = new VulnerabilityStatusMapper(
             "review state",
             Arrays.asList("reviewed", VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, VulnerabilityMetaData.STATUS_VALUE_VOID),
@@ -1108,7 +1019,6 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
                     "return status; " +
                     "}");
 
-    @ExcludedProcessProperty
     private final static List<VulnerabilityStatusMapper> REGISTERED_VULNERABILITY_STATUS_DISPLAY_MAPPERS = Arrays.asList(
             VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED,
             VULNERABILITY_STATUS_DISPLAY_MAPPER_DEFAULT,
@@ -1163,28 +1073,15 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         return value != null && isAny(value.getKey());
     }
 
-    private static class CvssSelectorConverter implements ConfigurationSerializer<String, Map> {
-
+    private static class CvssSelectorConverter implements FieldConverter<String, Map<?, ?>> {
         @Override
-        public Map serialize(String external) {
+        public Map<?, ?> serialize(String external) {
             return new JSONObject(external).toMap();
         }
 
         @Override
-        public String deserialize(Map internal) {
+        public String deserialize(Map<?, ?> internal) {
             return new JSONObject(internal).toString();
-        }
-    }
-
-    private static class CvssVersionSelectionPolicyConverter implements ConfigurationSerializer<List<CvssSelectionResult.CvssScoreVersionSelectionPolicy>, List<String>> {
-        @Override
-        public List<String> serialize(List<CvssScoreVersionSelectionPolicy> external) {
-            return external.stream().map(Enum::name).collect(Collectors.toList());
-        }
-
-        @Override
-        public List<CvssScoreVersionSelectionPolicy> deserialize(List<String> internal) {
-            return internal.stream().map(CvssSelectionResult.CvssScoreVersionSelectionPolicy::valueOf).collect(Collectors.toList());
         }
     }
 }

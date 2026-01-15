@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.configuration;
+package org.metaeffekt.core.inventory.processor.configuration.converter;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.json.JSONArray;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface ExcludedProcessProperty {
+import java.util.List;
 
+public class JsonArrayConverter implements FieldConverter<String, List<?>> {
+    @Override
+    public List<?> serialize(String internal) {
+        return new JSONArray(internal).toList();
+    }
+
+    @Override
+    public String deserialize(List<?> external) {
+        return new JSONArray(external).toString();
+    }
 }

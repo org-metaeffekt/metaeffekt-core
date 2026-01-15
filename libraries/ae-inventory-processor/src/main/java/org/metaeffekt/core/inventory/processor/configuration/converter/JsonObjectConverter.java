@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.inventory.processor.configuration;
+package org.metaeffekt.core.inventory.processor.configuration.converter;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
-import java.util.List;
+import java.util.Map;
 
-public class JsonArrayDefaultConverter implements ConfigurationSerializer<String, List<?>> {
-
+public class JsonObjectConverter implements FieldConverter<String, Map<String, ?>> {
     @Override
-    public List<?> serialize(String internal) {
-        return new JSONArray(internal).toList();
-
+    public Map<String, ?> serialize(String internal) {
+        return new JSONObject(internal).toMap();
     }
 
     @Override
-    public String deserialize(List<?> external) {
+    public String deserialize(Map<String, ?> external) {
         return new JSONArray(external).toString();
     }
 }

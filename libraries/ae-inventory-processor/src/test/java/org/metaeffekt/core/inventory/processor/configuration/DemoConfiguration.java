@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.json.JSONArray;
+import org.metaeffekt.core.inventory.processor.configuration.converter.JsonArrayConverter;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeStore;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaContentIdentifierStore;
@@ -33,11 +34,11 @@ public class DemoConfiguration extends ProcessConfiguration {
     @Setter
     private int number = -1;
 
-    @ProcessConfigurationProperty(alternativeNames = {"Deprecated Field Name"}, converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(alternativeNames = {"Deprecated Field Name"}, converter = JsonArrayConverter.class)
     private String advisoryTypes = new JSONArray()
             .put(AeaaAdvisoryTypeStore.OSV_GENERIC_IDENTIFIER.toJson()).toString();
 
-    @ExcludedProcessProperty
+    @ExcludeProcessConfigurationProperty
     private String ignoreProperty = "ignored";
 
     @Getter

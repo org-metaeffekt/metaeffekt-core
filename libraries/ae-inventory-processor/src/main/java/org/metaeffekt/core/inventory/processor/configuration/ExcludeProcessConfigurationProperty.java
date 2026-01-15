@@ -15,8 +15,6 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
-import org.metaeffekt.core.inventory.processor.configuration.converter.FieldConverter;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,22 +22,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ProcessConfigurationProperty {
-    String customName() default "";
+public @interface ExcludeProcessConfigurationProperty {
 
-    String[] alternativeNames() default {};
-
-    Class<? extends FieldConverter<?, ?>> converter() default ExcludeConverter.class;
-
-    class ExcludeConverter implements FieldConverter<Object, Object> {
-        @Override
-        public Object serialize(Object external) {
-            return null;
-        }
-
-        @Override
-        public Object deserialize(Object internal) {
-            return null;
-        }
-    }
 }
