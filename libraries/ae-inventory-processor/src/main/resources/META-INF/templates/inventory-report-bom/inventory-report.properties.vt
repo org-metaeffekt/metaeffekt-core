@@ -114,6 +114,14 @@ ae.inventory.artifact.effective.switch=$artifactsSwitch
 #end
 ae.inventory.components.no.license-switch=$componentsNoLicenseSwitch
 
+# Switch for displaying assets without license if there are any present
+#set($artifactsWithoutLicense=$inventoryReportAdapter.getArtifactsWithoutLicense())
+#set($assetsNoLicenseSwitch = true)
+#if ($assetsWithoutLicense.isEmpty())
+    #set($assetsNoLicenseSwitch = false)
+#end
+ae.inventory.assets.no.license-switch=$assetsNoLicenseSwitch
+
 # Switch to be used on a license details level
 # If no notices are available across all components switch is 'false'; 'true' otherwise
 #set($noticesSwitch = true)

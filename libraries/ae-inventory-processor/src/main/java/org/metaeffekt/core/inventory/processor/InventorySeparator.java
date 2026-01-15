@@ -113,6 +113,15 @@ public class InventorySeparator {
             }
 
             removeDanglingAssetEntries(splitInventory, primaryAsset, inventory.getAssetMetaData());
+
+            // when generating a splitInventory ensure that other relevant data is propagated (shallow)
+            splitInventory.setLicenseMetaData(inventory.getLicenseMetaData());
+            splitInventory.setLicenseData(inventory.getLicenseData());
+            splitInventory.setInventoryInfo(inventory.getInventoryInfo());
+            splitInventory.setAdvisoryMetaData(inventory.getAdvisoryMetaData());
+            splitInventory.setReportData(inventory.getReportData());
+            splitInventory.setVulnerabilityMetaData(inventory.getVulnerabilityMetaData());
+
             resultingInventories.add(splitInventory);
         }
         return resultingInventories;
