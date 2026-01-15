@@ -33,7 +33,7 @@ public class DemoConfiguration extends ProcessConfiguration {
     @Setter
     private int number = -1;
 
-    @ConfigurableProcessProperty(alternativeNames = {"Deprecated Field Name"}, converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(alternativeNames = {"Deprecated Field Name"}, converter = JsonArrayDefaultConverter.class)
     private String advisoryTypes = new JSONArray()
             .put(AeaaAdvisoryTypeStore.OSV_GENERIC_IDENTIFIER.toJson()).toString();
 
@@ -70,7 +70,7 @@ public class DemoConfiguration extends ProcessConfiguration {
         @Setter
         private int config1 = -1;
 
-        @ConfigurableProcessProperty(customName = "custom")
+        @ProcessConfigurationProperty(customName = "custom")
         private String advisoryTypes = new JSONArray()
                 .put(AeaaAdvisoryTypeStore.OSV_GENERIC_IDENTIFIER.toJson()).toString();
 

@@ -22,15 +22,18 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ConfigurableProcessProperty {
+public @interface ProcessConfigurationProperty {
     String customName() default "";
 
     String[] alternativeNames() default {};
 
-    Class<? extends ConfigurationSerializer<?,?>> converter() default NoConfigurationSerializer.class;
+    Class<?> genericKeyType() default ExcludeSerializer.class;
 
-    class NoConfigurationSerializer implements ConfigurationSerializer<Object, Object> {
+    Class<?> genericValueType() default ExcludeSerializer.class;
 
+    Class<? extends ConfigurationSerializer<?, ?>> converter() default ExcludeSerializer.class;
+
+    class ExcludeSerializer implements ConfigurationSerializer<Object, Object> {
         @Override
         public Object serialize(Object external) {
             return null;

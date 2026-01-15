@@ -109,7 +109,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * initialCvssSelector &rarr; cachedInitialCvssSelector<br>
      * <code>String &rarr; JSONObject &rarr; CvssSelector</code>
      */
-    @ConfigurableProcessProperty(alternativeNames = {"baseCvssSelector"}, converter = CvssSelectorConverter.class)
+    @ProcessConfigurationProperty(alternativeNames = {"baseCvssSelector"}, converter = CvssSelectorConverter.class)
     private String initialCvssSelector = CVSS_SELECTOR_INITIAL.toJson().toString();
 
     /**
@@ -121,7 +121,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * contextCvssSelector &rarr; cachedContextCvssSelector<br>
      * <code>String &rarr; JSONObject &rarr; CvssSelector</code>
      */
-    @ConfigurableProcessProperty(alternativeNames = {"effectiveCvssSelector"}, converter = CvssSelectorConverter.class)
+    @ProcessConfigurationProperty(alternativeNames = {"effectiveCvssSelector"}, converter = CvssSelectorConverter.class)
     private String contextCvssSelector = CVSS_SELECTOR_CONTEXT.toJson().toString();
 
     /**
@@ -141,7 +141,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * Default: <code>[LATEST]</code>
      */
     @Getter @Setter
-    @ConfigurableProcessProperty(converter = CvssVersionSelectionPolicyConverter.class)
+    @ProcessConfigurationProperty(converter = CvssVersionSelectionPolicyConverter.class)
     private List<CvssScoreVersionSelectionPolicy> cvssVersionSelectionPolicy = Collections.singletonList(CvssScoreVersionSelectionPolicy.LATEST);
 
     /**
@@ -238,7 +238,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      *      {"name":"RHSA","implementation":"CSAF"}]
      * </pre>
      */
-    @ConfigurableProcessProperty(converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(converter = JsonArrayDefaultConverter.class)
     private String includeVulnerabilitiesWithAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all")).toString();
     /**
@@ -250,7 +250,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * See {@link AeaaAdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
      */
-    @ConfigurableProcessProperty(converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(converter = JsonArrayDefaultConverter.class)
     private String includeAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all")).toString();
     /**
@@ -268,7 +268,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * </pre>
      */
     @Getter
-    @ConfigurableProcessProperty(converter = JsonArrayDefaultConverter.class)
+    @ProcessConfigurationProperty(converter = JsonArrayDefaultConverter.class)
     private String generateOverviewTablesForAdvisories = new JSONArray().toString();
     /**
      * Filters advisories based on their specific type identifier (e.g. <code>alert</code>, <code>notice</code>, <code>news</code>).<br>
