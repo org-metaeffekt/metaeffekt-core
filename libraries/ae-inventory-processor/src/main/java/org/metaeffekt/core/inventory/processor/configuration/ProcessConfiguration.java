@@ -235,27 +235,24 @@ public abstract class ProcessConfiguration {
                         final FieldConverter<Object, Object> converter = constructDefaultInstance(
                                 (Class<? extends FieldConverter<Object, Object>>) configAnnotation.converter());
                         field.set(this, converter.deserialize(value));
+
                     } else {
-                        setStandardProperty(field, key, value);
+                        final Class<?> targetType = field.getType();
+
+                        if (List.class.isAssignableFrom(targetType)) {
+                            field.set(this, this.deserializeCollection(key, field, value, ArrayList::new));
+                        } else if (Set.class.isAssignableFrom(targetType)) {
+                            field.set(this, this.deserializeCollection(key, field, value, HashSet::new));
+                        } else if (Map.class.isAssignableFrom(targetType)) {
+                            field.set(this, this.deserializeMap(key, field, value));
+                        } else {
+                            field.set(this, this.deserialize(key, targetType, value));
+                        }
                     }
                 }
             } catch (Exception e) {
                 throw new IllegalArgumentException(String.format("Failed to configure property [%s] with value [%s]. Cause: %s", key, value, e.getMessage()), e);
             }
-        }
-    }
-
-    private void setStandardProperty(Field field, String key, Object value) throws IllegalAccessException {
-        final Class<?> targetType = field.getType();
-
-        if (List.class.isAssignableFrom(targetType)) {
-            field.set(this, this.deserializeCollection(key, field, value, ArrayList::new));
-        } else if (Set.class.isAssignableFrom(targetType)) {
-            field.set(this, this.deserializeCollection(key, field, value, HashSet::new));
-        } else if (Map.class.isAssignableFrom(targetType)) {
-            field.set(this, this.deserializeMap(key, field, value));
-        } else {
-            field.set(this, this.deserialize(key, targetType, value));
         }
     }
 

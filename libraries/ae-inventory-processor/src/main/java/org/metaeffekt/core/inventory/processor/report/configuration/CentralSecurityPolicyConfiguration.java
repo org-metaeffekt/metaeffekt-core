@@ -230,6 +230,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
      * See {@link AeaaAdvisoryTypeStore} or <a href="https://github.com/org-metaeffekt/metaeffekt-documentation/blob/main/metaeffekt-vulnerability-management/inventory-enrichment/content-identifiers.md#security-advisories-providers">content-identifiers.md#security-advisories-providers</a> for all available providers.<p>
      * Use <code>[{"name": "all", "implementation": "all"}]</code> to ignore this check.<p>
      */
+    @Getter
     @ProcessConfigurationProperty(converter = JsonArrayConverter.class)
     private String includeAdvisoryProviders = new JSONArray()
             .put(new JSONObject().put("name", "all").put("implementation", "all")).toString();
@@ -394,7 +395,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
             return true;
         }
 
-        final List<AeaaAdvisoryTypeIdentifier<?>> filter = getIncludeAdvisoryProviders();
+        final List<AeaaAdvisoryTypeIdentifier<?>> filter = getIncludeAdvisoryProvidersInst();
         return isVulnerabilityIncludedRegardingAdvisoryProviders(vulnerability, filter);
     }
 
@@ -465,7 +466,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         this.includeAdvisoryProviders = advisoryProviders;
     }
 
-    public List<AeaaAdvisoryTypeIdentifier<?>> getIncludeAdvisoryProviders() {
+    public List<AeaaAdvisoryTypeIdentifier<?>> getIncludeAdvisoryProvidersInst() {
         return super.accessCachedProperty("includeAdvisoryProviders", this.includeAdvisoryProviders, AeaaAdvisoryTypeStore::parseAdvisoryProviders);
     }
 
@@ -484,7 +485,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (containsAny(new JSONArray(includeAdvisoryProviders))) {
             return true;
         }
-        for (AeaaAdvisoryTypeIdentifier<?> identifier : getIncludeAdvisoryProviders()) {
+        for (AeaaAdvisoryTypeIdentifier<?> identifier : getIncludeAdvisoryProvidersInst()) {
             if (identifier == advisory.getSourceIdentifier()) {
                 return true;
             }
@@ -496,7 +497,7 @@ public class CentralSecurityPolicyConfiguration extends ProcessConfiguration {
         if (containsAny(new JSONArray(includeAdvisoryProviders))) {
             return true;
         }
-        for (AeaaAdvisoryTypeIdentifier<?> identifier : getIncludeAdvisoryProviders()) {
+        for (AeaaAdvisoryTypeIdentifier<?> identifier : getIncludeAdvisoryProvidersInst()) {
             if (identifier.getName().equals(providerName)) {
                 return true;
             }
