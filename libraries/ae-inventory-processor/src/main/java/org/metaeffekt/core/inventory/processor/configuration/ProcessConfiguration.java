@@ -128,6 +128,8 @@ public abstract class ProcessConfiguration {
     private void logConfiguration(Map<String, Object> configuration, int indent, Consumer<String> logLevel) {
         if (!configuration.isEmpty()) {
             configuration.forEach((key, value) -> {
+                if ("id".equals(key)) return;
+                if ("$type".equals(key)) return;
                 final StringBuilder sb = new StringBuilder();
                 sb.append(IntStream.range(0, indent).mapToObj(i -> "  ").reduce("", String::concat))
                         .append(key).append(": ");
@@ -167,38 +169,52 @@ public abstract class ProcessConfiguration {
     /* PROPERTY ACCESS (GET / SET) */
 
     public Map<String, Object> getProperties() {
+        Class<?> currentClass = this.getClass();
+
         final LinkedHashMap<String, Object> properties = new LinkedHashMap<>();
+        properties.put("$type", currentClass.getSimpleName());
 
-        properties.put("configurationType", this.getClass().getSimpleName());
-
-        for (Field field : this.getClass().getDeclaredFields()) {
-            if (this.isExcluded(field)) {
-                continue;
-            }
-
-            field.setAccessible(true);
-            final String propertyName = this.extractFieldName(field);
-            final ProcessConfigurationProperty configAnnotation = field.getAnnotation(ProcessConfigurationProperty.class);
-
-            try {
-                final Object rawValue = field.get(this);
-                final Object serializedValue;
-
-                if (hasCustomConverter(configAnnotation)) {
-                    final FieldConverter<Object, Object> converter = constructDefaultInstance(
-                            (Class<? extends FieldConverter<Object, Object>>) configAnnotation.converter());
-                    serializedValue = converter.serialize(rawValue);
-                } else {
-                    serializedValue = this.serialize(rawValue);
+        while (currentClass != null && currentClass != Object.class) {
+            for (Field field : currentClass.getDeclaredFields()) {
+                if (this.isExcluded(field)) {
+                    continue;
                 }
 
-                if (serializedValue != null) {
-                    properties.put(propertyName, serializedValue);
+                field.setAccessible(true);
+                final String propertyName = this.extractFieldName(field);
+
+                // avoid shadowing/duplication when walking up the hierarchy
+                if (properties.containsKey(propertyName)) {
+                    continue;
                 }
-            } catch (IllegalAccessException e) {
-                throw new IllegalArgumentException("Cannot access field [" + field.getName() + "] during serialization", e);
+
+                final ProcessConfigurationProperty configAnnotation = field.getAnnotation(ProcessConfigurationProperty.class);
+
+                try {
+                    final Object rawValue = field.get(this);
+                    final Object serializedValue;
+
+                    if (hasCustomConverter(configAnnotation)) {
+                        final FieldConverter<Object, Object> converter = constructDefaultInstance(
+                                (Class<? extends FieldConverter<Object, Object>>) configAnnotation.converter());
+                        serializedValue = converter.serialize(rawValue);
+                    } else {
+                        serializedValue = this.serialize(rawValue);
+                    }
+
+                    if (serializedValue != null) {
+                        properties.put(propertyName, serializedValue);
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new IllegalArgumentException("Cannot access field [" + field.getName() + "] during serialization", e);
+                }
             }
+
+            if (currentClass == ProcessConfiguration.class) break;
+            currentClass = currentClass.getSuperclass();
         }
+
+        if (this.active) properties.remove("active");
 
         return properties;
     }
@@ -505,23 +521,28 @@ public abstract class ProcessConfiguration {
      * @throws IllegalArgumentException if no field can be found
      */
     private Field findMatchingField(String key) {
-        for (Field f : this.getClass().getDeclaredFields()) {
-            if (isExcluded(f)) continue;
+        Class<?> currentClass = this.getClass();
 
-            // 1. exact match
-            if (f.getName().equals(key)) return f;
+        while (currentClass != null && currentClass != Object.class) {
+            for (Field f : currentClass.getDeclaredFields()) {
+                if (isExcluded(f)) continue;
 
-            final ProcessConfigurationProperty p = f.getAnnotation(ProcessConfigurationProperty.class);
-            if (p != null) {
-                // 2. custom name match
-                if (StringUtils.equals(p.customName(), key)) {
-                    return f;
-                }
-                // 3. alternative names match
-                for (String alt : p.alternativeNames()) {
-                    if (alt.equals(key)) return f;
+                // 1. exact match
+                if (f.getName().equals(key)) return f;
+
+                final ProcessConfigurationProperty p = f.getAnnotation(ProcessConfigurationProperty.class);
+                if (p != null) {
+                    // 2. custom name match
+                    if (StringUtils.equals(p.customName(), key)) {
+                        return f;
+                    }
+                    // 3. alternative names match
+                    for (String alt : p.alternativeNames()) {
+                        if (alt.equals(key)) return f;
+                    }
                 }
             }
+            currentClass = currentClass.getSuperclass();
         }
 
         return null;
