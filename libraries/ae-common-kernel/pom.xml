@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.metaeffekt.core</groupId>
         <artifactId>ae-libraries</artifactId>
-        <version>HEAD-SNAPSHOT</version>
+        <version>0.151.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
