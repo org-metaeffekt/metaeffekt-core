@@ -38,13 +38,13 @@ public enum RelationshipType {
     private final String name;
 
     @Getter
-    private final String inventoryConstant;
+    private final String inventoryMarker;
 
     private static final Map<String, RelationshipType> INVENTORY_CONSTANT_MAP = new HashMap<>();
 
     static {
         for (RelationshipType relationshipType : RelationshipType.values()) {
-            INVENTORY_CONSTANT_MAP.put(relationshipType.inventoryConstant, relationshipType);
+            INVENTORY_CONSTANT_MAP.put(relationshipType.inventoryMarker, relationshipType);
         }
     }
 
@@ -58,9 +58,9 @@ public enum RelationshipType {
         return INVENTORY_CONSTANT_MAP.get(inventoryConstant);
     }
 
-    RelationshipType(String name, String inventoryConstant) {
+    RelationshipType(String name, String inventoryMarker) {
         this.name = name;
-        this.inventoryConstant = inventoryConstant;
+        this.inventoryMarker = inventoryMarker;
     }
 
 

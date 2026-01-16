@@ -23,7 +23,7 @@
                         <thead>
                             <row>
                                 <entry colname="COLSPEC0" valign="top">$utils.getText("general.short.component")</entry>
-                                <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.artifacts") / $utils.getText("general.short.packages") / $utils.getText("general.short.web-modules")</entry>
+                                <entry colname="COLSPEC1" valign="top">$utils.getText("general.short.artifacts")</entry>
                                 <entry colname="COLSPEC2" valign="top">Version</entry>
                             </row>
                         </thead>
