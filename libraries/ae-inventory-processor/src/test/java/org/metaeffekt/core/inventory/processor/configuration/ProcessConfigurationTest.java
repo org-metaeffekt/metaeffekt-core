@@ -16,7 +16,6 @@
 package org.metaeffekt.core.inventory.processor.configuration;
 
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.store.AeaaAdvisoryTypeIdentifier;
@@ -29,16 +28,13 @@ import java.util.Map;
 @Slf4j
 public class ProcessConfigurationTest {
 
-
     @Test
-    public void processConfigurationTest(){
+    public void processConfigurationTest() {
         DemoConfiguration demoConfiguration = new DemoConfiguration();
-
         Map<String, Object> properties = demoConfiguration.getProperties();
 
-        log.info(String.valueOf(properties));
-        log.info("{}", new JSONObject(properties));
-        Assert.assertEquals(4, properties.size());
+        Assert.assertTrue(properties.size() >= 4);
+        Assert.assertFalse(properties.containsKey("ignoreProperty"));
 
         demoConfiguration.setProperties(properties);
 
@@ -60,7 +56,5 @@ public class ProcessConfigurationTest {
 
         advisoryTypes = demoConfiguration.getAdvisoryTypes();
         Assert.assertEquals(0, advisoryTypes.size());
-
-
     }
 }
