@@ -276,7 +276,7 @@ public abstract class AeaaTimeUtils {
         Date parsedDate = AeaaTimeUtils.tryParse(string);
 
         if (parsedDate != null) {
-            return formatNormalizedDate(parsedDate);
+            return formatNormalizedDateEn(parsedDate);
         } else if (string.contains("T")) {
             return string.substring(0, string.indexOf("T"));
         }
@@ -284,17 +284,27 @@ public abstract class AeaaTimeUtils {
         return string;
     }
 
-    private final static SimpleDateFormat NORMALIZED_DATE_PATTERN = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final static SimpleDateFormat NORMALIZED_DATE_EN_PATTERN = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final static SimpleDateFormat NORMALIZED_DATE_DE_PATTERN = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
     private final static SimpleDateFormat NORMALIZED_DATE_ONLY_DATE_PATTERN = new SimpleDateFormat("yyyy-MM-dd");
 
     static {
-        NORMALIZED_DATE_PATTERN.setTimeZone(TimeZone.getTimeZone("UTC"));
+        NORMALIZED_DATE_EN_PATTERN.setTimeZone(TimeZone.getTimeZone("UTC"));
+        NORMALIZED_DATE_DE_PATTERN.setTimeZone(TimeZone.getTimeZone("UTC"));
         NORMALIZED_DATE_ONLY_DATE_PATTERN.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
-    public static String formatNormalizedDate(Date date) {
+    public static String formatNormalizedDateEn(Date date) {
         if (date == null) return "n.a.";
-        return NORMALIZED_DATE_PATTERN
+        return NORMALIZED_DATE_EN_PATTERN
+                .format(date)
+                .replace(" 00:00:00", "")
+                .replaceAll(":00$", "");
+    }
+
+    public static String formatNormalizedDateDe(Date date) {
+        if (date == null) return "n.a.";
+        return NORMALIZED_DATE_DE_PATTERN
                 .format(date)
                 .replace(" 00:00:00", "")
                 .replaceAll(":00$", "");
