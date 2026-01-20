@@ -22,10 +22,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.model.InventoryInfo;
+import org.metaeffekt.core.inventory.processor.report.adapter.VulnerabilityReportAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 
@@ -131,5 +133,68 @@ public class ProcessorTimeTracker {
         tracker2.getEntries().forEach(merged::addTimestamp);
 
         return merged;
+    }
+
+    public static String trackedProcessToPropertyName(String prefix, ProcessType processType, String processName, String indexName) {
+        final String s;
+        if (StringUtils.isBlank(processName)) {
+            s = String.format("%s.%s%s", prefix, processType.get(), indexName != null ? "." + indexName : "");
+        } else {
+            s = String.format("%s.%s.%s%s", prefix, processType.get(), processName, indexName != null ? "." + indexName : "");
+        }
+        return s.replaceAll("[- ]", ".").toLowerCase();
+    }
+
+
+    public static String generatePropertiesString(String propertyPrefix, long first, long last) {
+        if (first == Long.MAX_VALUE) first = 0;
+        if (last == Long.MAX_VALUE) last = first;
+        if (first == 0) first = last;
+
+        VulnerabilityReportAdapter.FormattedTime formattedTimeFirst = new VulnerabilityReportAdapter.FormattedTime(first);
+        final String formattedFirstEn = formattedTimeFirst.getEnDate();
+        final String formattedFirstDe = formattedTimeFirst.getDeDate();
+
+        final String formattedTimeFirstEn = formattedTimeFirst.getEnTimeAndDate();
+        final String formattedTimeFirstDe = formattedTimeFirst.getDeTimeAndDate();
+
+        VulnerabilityReportAdapter.FormattedTime formattedTimeLast = new VulnerabilityReportAdapter.FormattedTime(last);
+        final String formattedLastEn = formattedTimeLast.getEnDate();
+        final String formattedLastDe = formattedTimeLast.getDeDate();
+
+        final String formattedTimeLastEn = formattedTimeLast.getEnTimeAndDate();
+        final String formattedTimeLastDe = formattedTimeLast.getDeTimeAndDate();
+
+        final StringJoiner sj = new StringJoiner(propertyPrefix, propertyPrefix, "\n");
+
+        if (last == 0 && first == 0) {
+            sj.add(".timestamp=n.a\n\n");
+
+            sj.add(".date.en=n.a\n");
+            sj.add(".date.de=n.a\n\n");
+
+            sj.add(".datetime.en=n.a\n");
+            sj.add(".datetime.de=n.a\n");
+
+        } else if (last == first) {
+            sj.add(String.format(".timestamp=%d\n\n", last));
+
+            sj.add(String.format(".date.en=%s\n", formattedFirstEn));
+            sj.add(String.format(".date.de=%s\n\n", formattedFirstDe));
+
+            sj.add(String.format(".datetime.en=%s\n", formattedTimeFirstEn));
+            sj.add(String.format(".datetime.de=%s\n", formattedTimeFirstDe));
+
+        } else {
+            sj.add(String.format(".timestamp=%d - %d\n\n", first, last));
+
+            sj.add(String.format(".date.en=%s - %s\n", formattedFirstEn, formattedLastEn));
+            sj.add(String.format(".date.de=%s - %s\n\n", formattedFirstDe, formattedLastDe));
+
+            sj.add(String.format(".datetime.en=%s - %s\n", formattedTimeFirstEn, formattedTimeLastEn));
+            sj.add(String.format(".datetime.de=%s - %s\n", formattedTimeFirstDe, formattedTimeLastDe));
+        }
+
+        return sj.toString();
     }
 }
