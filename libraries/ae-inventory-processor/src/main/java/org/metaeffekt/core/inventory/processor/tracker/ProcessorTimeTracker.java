@@ -188,8 +188,13 @@ public class ProcessorTimeTracker {
         } else {
             sj.add(String.format(".timestamp=%d - %d\n\n", first, last));
 
-            sj.add(String.format(".date.en=%s - %s\n", formattedFirstEn, formattedLastEn));
-            sj.add(String.format(".date.de=%s - %s\n\n", formattedFirstDe, formattedLastDe));
+            if(formattedFirstEn.equals(formattedLastEn)) {
+                sj.add(String.format(".date.en=%s\n", formattedLastEn));
+                sj.add(String.format(".date.de=%s\n\n", formattedLastDe));
+            } else {
+                sj.add(String.format(".date.en=%s - %s\n", formattedFirstEn, formattedLastEn));
+                sj.add(String.format(".date.de=%s - %s\n\n", formattedFirstDe, formattedLastDe));
+            }
 
             sj.add(String.format(".datetime.en=%s - %s\n", formattedTimeFirstEn, formattedTimeLastEn));
             sj.add(String.format(".datetime.de=%s - %s\n", formattedTimeFirstDe, formattedTimeLastDe));
