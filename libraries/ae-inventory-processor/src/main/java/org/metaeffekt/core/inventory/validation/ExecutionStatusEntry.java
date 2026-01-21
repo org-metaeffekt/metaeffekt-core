@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.inventory.validation;
 
+import lombok.Getter;
+import org.metaeffekt.core.inventory.processor.model.Artifact;
+
+@Getter
 public class ExecutionStatusEntry {
 
-    public static enum SEVERITY {
+    public enum SEVERITY {
         ERROR,
         WARN,
         INFO
@@ -27,17 +31,12 @@ public class ExecutionStatusEntry {
 
     private final String message;
 
-    public ExecutionStatusEntry(SEVERITY severity, String message) {
+    private final Artifact artifact;
+
+    public ExecutionStatusEntry(SEVERITY severity, String message, Artifact artifact) {
         this.severity = severity;
         this.message = message;
-    }
-
-    public SEVERITY getSeverity() {
-        return severity;
-    }
-
-    public String getMessage() {
-        return message;
+        this.artifact = artifact;
     }
 
 }

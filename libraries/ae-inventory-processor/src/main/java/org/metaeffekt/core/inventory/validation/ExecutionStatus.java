@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.inventory.validation;
+
+import org.metaeffekt.core.inventory.processor.model.Artifact;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,20 +25,20 @@ public class ExecutionStatus {
 
     private final List<ExecutionStatusEntry> entryList = new ArrayList<>();
 
-    public void add(ExecutionStatusEntry.SEVERITY severity, String message) {
-        entryList.add(new ExecutionStatusEntry(severity, message));
+    public void add(ExecutionStatusEntry.SEVERITY severity, String message, Artifact artifact) {
+        entryList.add(new ExecutionStatusEntry(severity, message, artifact));
     }
 
-    public void info(String message) {
-        entryList.add(new ExecutionStatusEntry(ExecutionStatusEntry.SEVERITY.INFO, message));
+    public void info(String message, Artifact artifact) {
+        entryList.add(new ExecutionStatusEntry(ExecutionStatusEntry.SEVERITY.INFO, message, artifact));
     }
 
-    public void warn(String message) {
-        entryList.add(new ExecutionStatusEntry(ExecutionStatusEntry.SEVERITY.WARN, message));
+    public void warn(String message, Artifact artifact) {
+        entryList.add(new ExecutionStatusEntry(ExecutionStatusEntry.SEVERITY.WARN, message, artifact));
     }
 
-    public void error(String message) {
-        entryList.add(new ExecutionStatusEntry(ExecutionStatusEntry.SEVERITY.ERROR, message));
+    public void error(String message, Artifact artifact) {
+        entryList.add(new ExecutionStatusEntry(ExecutionStatusEntry.SEVERITY.ERROR, message, artifact));
     }
 
     public boolean isError() {

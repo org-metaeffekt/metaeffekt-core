@@ -32,6 +32,8 @@ import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.resolver.ArtifactPattern;
 import org.metaeffekt.core.inventory.resolver.ArtifactSourceRepository;
 import org.metaeffekt.core.inventory.resolver.SourceArchiveResolverResult;
+import org.metaeffekt.core.inventory.validation.ExecutionStatus;
+import org.metaeffekt.core.inventory.validation.ExecutionStatusEntry;
 import org.metaeffekt.core.maven.kernel.AbstractProjectAwareMojo;
 import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
@@ -256,19 +258,19 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
                 }
             }
 
-            logOrFailOn(format("Attempted resource locations:"), false, executionStatus);
+            logOrFailOn(format("Attempted resource locations:"), false, executionStatus, artifact);
             if (attemptedSourceLocations.isEmpty()) {
-                logOrFailOn("No resource location mapped.", false, executionStatus);
+                logOrFailOn("No resource location mapped.", false, executionStatus, artifact);
             } else {
                 for (String s : attemptedSourceLocations) {
-                    logOrFailOn(s, false, executionStatus);
+                    logOrFailOn(s, false, executionStatus, artifact);
                 }
             }
             logOrFailOn(format("No sources resolved for artifact [%s], while matching source repositories were: %s",
-                    artifactRepresentation, attemptedSourceRepositories), true, executionStatus);
+                    artifactRepresentation, attemptedSourceRepositories), true, executionStatus, artifact);
         } else {
             logOrFailOn(format("No sources resolved for artifact [%s], no matching source repository identified.",
-                    artifactRepresentation), true, executionStatus);
+                    artifactRepresentation), true, executionStatus, artifact);
         }
 
     }
@@ -324,10 +326,10 @@ public class AggregateSourceArchivesMojo extends AbstractProjectAwareMojo {
         return sb;
     }
 
-    private void logOrFailOn(String message, boolean failInCase, ExecutionStatus executionStatus) {
+    private void logOrFailOn(String message, boolean failInCase, ExecutionStatus executionStatus, Artifact artifact) {
         if (failOnMissingSources) {
             if (failInCase) {
-                executionStatus.error(message);
+                executionStatus.error(message, artifact);
             } else {
                 getLog().warn(message);
             }
