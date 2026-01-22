@@ -26,6 +26,10 @@ public class InventorySerializationContext {
     public static final String CONTEXT_KEY_LICENSE_NOTICE_DATA = "notices";
     public static final String CONTEXT_KEY_VULNERABILITY_DATA = "vulnerability";
     public static final String CONTEXT_KEY_ADVISORY_DATA = "advisory";
+    public static final String CONTEXT_KEY_THREAT_DATA = "threat";
+    public static final String CONTEXT_KEY_WEAKNESS_DATA = "weakness";
+    public static final String CONTEXT_KEY_ATTACK_PATTERN_DATA = "attack_pattern";
+    public static final String CONTEXT_KEY_INFO_DATA = "info";
     public static final String CONTEXT_KEY_REPORT_DATA = "report";
 
     /**
