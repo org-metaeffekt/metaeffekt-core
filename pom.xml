@@ -65,9 +65,9 @@
         <license.identifier>Apache License 2.0</license.identifier>
         <license.file>/META-INF/LICENSE</license.file>
 
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.jdk>1.8</maven.compiler.jdk>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.jdk>17</maven.compiler.jdk>
     </properties>
 
     <build>
