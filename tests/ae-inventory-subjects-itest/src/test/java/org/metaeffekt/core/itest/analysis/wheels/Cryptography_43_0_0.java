@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.wheels;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
@@ -29,7 +29,7 @@ import static org.metaeffekt.core.itest.common.predicates.AttributeValue.attribu
 
 public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://files.pythonhosted.org/packages/ca/25/7b53082e4c373127c1fb190f70c5aca7bf7a03ac11f67ba15473bc6d9a0e/cryptography-43.0.0-pp310-pypy310_pp73-win_amd64.whl")
@@ -38,16 +38,16 @@ public class Cryptography_43_0_0 extends AbstractCompositionAnalysisTest{
     }
 
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
     @Test

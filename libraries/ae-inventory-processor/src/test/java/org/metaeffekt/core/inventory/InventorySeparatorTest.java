@@ -15,8 +15,9 @@
  */
 package org.metaeffekt.core.inventory;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.InventorySeparator;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -35,7 +36,7 @@ public class InventorySeparatorTest {
     private static Inventory inventory;
     private static List<Inventory> separatedInventories;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         inventory = new InventoryReader().readInventory(new File("src/test/resources/separator/keycloak-25.0.4.xlsx"));
         separatedInventories = InventorySeparator.separate(inventory);

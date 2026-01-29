@@ -16,10 +16,9 @@
 package org.metaeffekt.core.itest.analysis.installer;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.ArtifactList;
@@ -35,7 +34,7 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://swupdate.openvpn.org/community/releases/OpenVPN-2.6.11-I002-x86.msi")
@@ -43,17 +42,16 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
                 .setName(MsiPackageTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
-
+        Assertions.assertThat(testSetup.clear()).isTrue();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertThat(testSetup.rebuildInventory()).isTrue();
 
         ArtifactList artifactList = getAnalysis().selectArtifacts();
         artifactList.logListWithAllAttributes();
@@ -68,6 +66,6 @@ public class MsiPackageTest extends AbstractCompositionAnalysisTest {
 
         // result depends on installation of 7z / platform
         // currently windows 7z has a problem when unpacking; ironic
-        Assertions.assertThat(size == 22);
+        Assertions.assertThat(size).isEqualTo(22);
     }
 }

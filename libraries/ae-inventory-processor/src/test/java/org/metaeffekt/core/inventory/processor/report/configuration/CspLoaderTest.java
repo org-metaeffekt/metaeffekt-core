@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor.report.configuration;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.security.cvss.processor.CvssSelectionResult;
 
 import java.io.File;
@@ -36,36 +36,36 @@ public class CspLoaderTest {
         loader.setActiveIds(Arrays.asList("config d", "config a"));
         final CentralSecurityPolicyConfiguration resultPolicy1 = loader.loadConfiguration();
 
-        Assert.assertEquals(Collections.singletonList("notice"), resultPolicy1.getIncludeAdvisoryTypes());
-        Assert.assertEquals(5, resultPolicy1.getIncludeScoreThreshold(), 0.01);
-        Assert.assertEquals(7.8, resultPolicy1.getInsignificantThreshold(), 0.01);
-        Assert.assertEquals(Collections.singletonList(CvssSelectionResult.CvssScoreVersionSelectionPolicy.HIGHEST), resultPolicy1.getCvssVersionSelectionPolicy());
-        Assert.assertEquals(CentralSecurityPolicyConfiguration.JsonSchemaValidationErrorsHandling.LENIENT, resultPolicy1.getJsonSchemaValidationErrorsHandling());
+        Assertions.assertEquals(Collections.singletonList("notice"), resultPolicy1.getIncludeAdvisoryTypes());
+        Assertions.assertEquals(5, resultPolicy1.getIncludeScoreThreshold(), 0.01);
+        Assertions.assertEquals(7.8, resultPolicy1.getInsignificantThreshold(), 0.01);
+        Assertions.assertEquals(Collections.singletonList(CvssSelectionResult.CvssScoreVersionSelectionPolicy.HIGHEST), resultPolicy1.getCvssVersionSelectionPolicy());
+        Assertions.assertEquals(CentralSecurityPolicyConfiguration.JsonSchemaValidationErrorsHandling.LENIENT, resultPolicy1.getJsonSchemaValidationErrorsHandling());
 
         loader.setActiveIds(Arrays.asList("config a", "config d"));
         final CentralSecurityPolicyConfiguration resultPolicy2 = loader.loadConfiguration();
 
-        Assert.assertEquals(Collections.singletonList("alert"), resultPolicy2.getIncludeAdvisoryTypes());
-        Assert.assertEquals(5, resultPolicy2.getIncludeScoreThreshold(), 0.01);
-        Assert.assertEquals(7.8, resultPolicy2.getInsignificantThreshold(), 0.01);
-        Assert.assertEquals(Collections.singletonList(CvssSelectionResult.CvssScoreVersionSelectionPolicy.HIGHEST), resultPolicy2.getCvssVersionSelectionPolicy());
-        Assert.assertEquals(CentralSecurityPolicyConfiguration.JsonSchemaValidationErrorsHandling.LENIENT, resultPolicy2.getJsonSchemaValidationErrorsHandling());
+        Assertions.assertEquals(Collections.singletonList("alert"), resultPolicy2.getIncludeAdvisoryTypes());
+        Assertions.assertEquals(5, resultPolicy2.getIncludeScoreThreshold(), 0.01);
+        Assertions.assertEquals(7.8, resultPolicy2.getInsignificantThreshold(), 0.01);
+        Assertions.assertEquals(Collections.singletonList(CvssSelectionResult.CvssScoreVersionSelectionPolicy.HIGHEST), resultPolicy2.getCvssVersionSelectionPolicy());
+        Assertions.assertEquals(CentralSecurityPolicyConfiguration.JsonSchemaValidationErrorsHandling.LENIENT, resultPolicy2.getJsonSchemaValidationErrorsHandling());
     }
 
 
     @Test
     public void invalidKeysTest() {
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "invalidTest/keys-1.json"));
             loader.loadConfiguration();
         });
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "invalidTest/keys-2.json"));
             loader.loadConfiguration();
         });
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "invalidTest/keys-3.json"));
             loader.loadConfiguration();
@@ -77,23 +77,23 @@ public class CspLoaderTest {
         {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "emptyWrapperContentTest/file-a.json"));
-            Assert.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
+            Assertions.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
         }
         {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "emptyWrapperContentTest/file-b.json"));
-            Assert.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
+            Assertions.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
         }
     }
 
     @Test
     public void noJsonContentTest() {
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "noJsonContentTest/file-a.json"));
             loader.loadConfiguration();
         });
-        Assert.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(RuntimeException.class, () -> {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "noJsonContentTest/file-b.json"));
             loader.loadConfiguration();
@@ -101,7 +101,7 @@ public class CspLoaderTest {
         {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "noJsonContentTest/file-c.json"));
-            Assert.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
+            Assertions.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
         }
     }
 }

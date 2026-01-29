@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -41,7 +41,7 @@ public class InventoryScanReportTest {
      * @throws Exception
      */
     @Test
-    @Ignore
+    @Disabled
     public void testInventory() throws Exception {
         InventoryScanReport report = new InventoryScanReport();
         report.setReferenceInventoryDir(GLOBAL_INVENTORY_DIR);
@@ -64,7 +64,7 @@ public class InventoryScanReportTest {
         report.createReport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testProjectInventory() throws Exception {
 
@@ -82,7 +82,7 @@ public class InventoryScanReportTest {
         report.createReport();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventoryScanReport() throws Exception {
         final InventoryScanReport report = setupReport();
@@ -115,7 +115,7 @@ public class InventoryScanReportTest {
         return report;
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void createReportFromScannedInventory() throws Exception {
         Inventory scanInventory = new InventoryReader().readInventory(new File("target/scan-inventory.xls"));

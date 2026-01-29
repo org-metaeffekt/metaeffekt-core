@@ -16,10 +16,10 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -41,7 +41,7 @@ import static org.metaeffekt.core.inventory.processor.model.Artifact.Attribute.T
 import static org.metaeffekt.core.itest.common.predicates.ContainsToken.containsToken;
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
-@Ignore // container no longer publicly available
+@Disabled // container no longer publicly available
 public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
@@ -57,7 +57,7 @@ public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
         }
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag("registry.opencode.de",
                 "bmi/opendesk/components/supplier/nordeck/images-mirror/web",
@@ -68,17 +68,17 @@ public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
                 .setName(OpenDeskJitsiWebTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
     @Test
@@ -103,6 +103,6 @@ public class OpenDeskJitsiWebTest extends AbstractCompositionAnalysisTest {
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
         duplicateList.identifyRemainingDuplicatesWithoutArtifact();
         // FIXME: we have to write a function, which ignores sym links or we have to process them before
-        Assert.assertEquals(51, duplicateList.getRemainingDuplicates().size());
+        Assertions.assertEquals(51, duplicateList.getRemainingDuplicates().size());
     }
 }

@@ -16,7 +16,7 @@
 package org.metaeffekt.core.util;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.metaeffekt.core.util.RegExUtils.replaceAll;
 

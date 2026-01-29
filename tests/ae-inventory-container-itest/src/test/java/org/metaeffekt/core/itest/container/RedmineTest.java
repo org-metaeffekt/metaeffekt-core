@@ -16,10 +16,10 @@
 
 package org.metaeffekt.core.itest.container;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.filescan.ComponentPatternValidator;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
@@ -45,7 +45,7 @@ import static org.metaeffekt.core.itest.common.predicates.ContainsToken.contains
 import static org.metaeffekt.core.itest.container.ContainerDumpSetup.saveContainerFromRegistryByRepositoryAndTag;
 
 // FIXME: this test runs extremely slow, ignored for now
-@Ignore
+@Disabled
 public class RedmineTest extends AbstractCompositionAnalysisTest {
 
     public static final NamedBasePredicate<AssetMetaData> CONTAINER_ASSET_PREDICATE = new NamedBasePredicate<AssetMetaData>() {
@@ -60,7 +60,7 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         }
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag(null, RedmineTest.class.getSimpleName().toLowerCase(), "6.0.1", RedmineTest.class.getName());
         String sha256Hash = FileUtils.computeSHA256Hash(baseDir);
@@ -70,17 +70,17 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
                 .setName(RedmineTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        Assertions.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
     }
 
     @Test
@@ -111,7 +111,7 @@ public class RedmineTest extends AbstractCompositionAnalysisTest {
         List<FilePatternQualifierMapper> filePatternQualifierMapperList = ComponentPatternValidator.evaluateComponentPatterns(referenceInventory, inventory, baseDir);
         DuplicateList duplicateList = new DuplicateList(filePatternQualifierMapperList);
         duplicateList.identifyRemainingDuplicatesWithoutFile("os-release");
-        Assert.assertEquals(130, duplicateList.getRemainingDuplicates().size());
-        Assert.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
+        Assertions.assertEquals(130, duplicateList.getRemainingDuplicates().size());
+        Assertions.assertFalse(duplicateList.getFileWithoutDuplicates().isEmpty());
     }
 }

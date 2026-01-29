@@ -15,9 +15,9 @@
  */
 package org.metaeffekt.core.maven.inventory.mojo;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.maven.inventory.extractor.InventoryExtractorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,10 +41,10 @@ public class InventoryExtractorUtilTest {
 
         // Prereq: symlink /bin -> /usr/bin + bash packages covers /bin/bash
         // Result: /usr/bin/bash is filtered, /bin/bash/ was never in file list
-        Assert.assertFalse(filteredFiles.contains("/bin/bash"));
-        Assert.assertFalse(filteredFiles.contains("/usr/bin/bash"));
+        Assertions.assertFalse(filteredFiles.contains("/bin/bash"));
+        Assertions.assertFalse(filteredFiles.contains("/usr/bin/bash"));
 
-        Assert.assertEquals(38241, filteredFiles.size());
+        Assertions.assertEquals(38241, filteredFiles.size());
     }
 
     @Test
@@ -56,9 +56,9 @@ public class InventoryExtractorUtilTest {
 
         // Prereq: symlink /bin -> /usr/bin + /bin/apt covered by exclude pattern
         // Result: /usr/bin/apt is filtered, /bin/apt/ was never in file list
-        Assert.assertFalse(filteredFiles.contains("/bin/apt"));
+        Assertions.assertFalse(filteredFiles.contains("/bin/apt"));
 
-        Assert.assertEquals(38241, filteredFiles.size());
+        Assertions.assertEquals(38241, filteredFiles.size());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class InventoryExtractorUtilTest {
 
         // Prereq: symlink /bin -> /usr/bin + /bin/apt covered by exclude pattern
         // Result: /usr/bin/apt is filtered, /bin/apt/ was never in file list
-        Assert.assertFalse(filteredFiles.contains("/bin/apt"));
+        Assertions.assertFalse(filteredFiles.contains("/bin/apt"));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class InventoryExtractorUtilTest {
             filteredFiles.forEach(LOG::debug);
         }
 
-        Assert.assertEquals(42, filteredFiles.size());
+        Assertions.assertEquals(42, filteredFiles.size());
     }
 
     @Test
@@ -134,8 +134,8 @@ public class InventoryExtractorUtilTest {
         filteredFiles.forEach(LOG::debug);
 
         // FIXME: reinsert additional filter step
-        // Assert.assertEquals(3, filteredFiles.size());
-        Assert.assertEquals(1644, filteredFiles.size());
+        // Assertions.assertEquals(3, filteredFiles.size());
+        Assertions.assertEquals(1644, filteredFiles.size());
     }
 
     @Test
@@ -148,7 +148,7 @@ public class InventoryExtractorUtilTest {
             Collection<String> filteredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
             LOG.debug("Filtered files size: {}", filteredFiles.size());
             filteredFiles.forEach(LOG::info);
-            Assert.assertEquals(3, filteredFiles.size());
+            Assertions.assertEquals(3, filteredFiles.size());
         }
 
         excludePatterns.add("/**/file-ba");
@@ -157,7 +157,7 @@ public class InventoryExtractorUtilTest {
             Collection<String> filteredFiles = InventoryExtractorUtil.filterFileList(analysisDir, excludePatterns);
             LOG.debug("Filtered files size: {}", filteredFiles.size());
             filteredFiles.forEach(LOG::info);
-            Assert.assertEquals(2, filteredFiles.size());
+            Assertions.assertEquals(2, filteredFiles.size());
         }
 
         // exclude symlink (target)
@@ -169,8 +169,8 @@ public class InventoryExtractorUtilTest {
             filteredFiles.forEach(LOG::info);
 
             // FIXME: reenable filter
-            // Assert.assertEquals(1, filteredFiles.size());
-            Assert.assertEquals(2, filteredFiles.size());
+            // Assertions.assertEquals(1, filteredFiles.size());
+            Assertions.assertEquals(2, filteredFiles.size());
         }
 
         // exclude symlink (file-level)
@@ -182,12 +182,12 @@ public class InventoryExtractorUtilTest {
             LOG.debug("Filtered files size: {}", filteredFiles.size());
             filteredFiles.forEach(LOG::info);
 
-            Assert.assertEquals(1, filteredFiles.size());
+            Assertions.assertEquals(1, filteredFiles.size());
         }
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testFileFilter_external_001() throws IOException {
         File analysisDir = new File("<path-to-analysis-folder>");
@@ -219,7 +219,7 @@ public class InventoryExtractorUtilTest {
         LOG.debug("Filtered files size: {}", filteredFiles.size());
         filteredFiles.forEach(LOG::debug);
 
-        Assert.assertEquals(expectedResultSize, filteredFiles.size());
+        Assertions.assertEquals(expectedResultSize, filteredFiles.size());
     }
 
 }

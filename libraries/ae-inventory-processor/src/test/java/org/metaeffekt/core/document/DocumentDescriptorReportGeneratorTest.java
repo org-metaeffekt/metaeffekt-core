@@ -16,8 +16,8 @@
 package org.metaeffekt.core.document;
 
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.document.model.DocumentDescriptor;
 import org.metaeffekt.core.document.model.DocumentPart;
 import org.metaeffekt.core.document.model.DocumentPartType;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 public class DocumentDescriptorReportGeneratorTest {
@@ -45,7 +45,7 @@ public class DocumentDescriptorReportGeneratorTest {
         List<DocumentPart> documentParts = new ArrayList<>();
 
         File targetTestDir = new File("target/test-document-descriptor-report-generator");
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         cleanUpTargetTestDir();
 
@@ -82,9 +82,9 @@ public class DocumentDescriptorReportGeneratorTest {
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
         File expectedFile01 = new File(targetReportDir, "parts/map_test-annex.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
     }
 
     @Test
@@ -104,9 +104,9 @@ public class DocumentDescriptorReportGeneratorTest {
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
         File expectedFile01 = new File(targetReportDir, "parts/map_test-initial-license-documentation.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
     }
 
     @Test
@@ -126,9 +126,9 @@ public class DocumentDescriptorReportGeneratorTest {
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
         File expectedFile01 = new File(targetReportDir, "parts/map_test-license-documentation.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
     }
 
     @Test
@@ -148,9 +148,9 @@ public class DocumentDescriptorReportGeneratorTest {
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
         File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-report.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
     }
 
     @Test
@@ -170,9 +170,9 @@ public class DocumentDescriptorReportGeneratorTest {
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
         File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-statistics-report.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
     }
 
     @Test
@@ -192,9 +192,9 @@ public class DocumentDescriptorReportGeneratorTest {
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
         File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-summary-part.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
     }
 
     @Test
@@ -214,9 +214,9 @@ public class DocumentDescriptorReportGeneratorTest {
         documentDescriptorReportGenerator.generate(documentDescriptor);
 
         File expectedFile01 = new File(targetReportDir, "parts/map_test-vulnerability-summary-report.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile01.getAbsolutePath(), expectedFile01.exists());
+        assertTrue(expectedFile01.exists(), "Expected file does not exist: " + expectedFile01.getAbsolutePath());
         File expectedFile02 = new File(targetReportDir, "map_test-document.ditamap");
-        assertTrue("Expected file does not exist: " + expectedFile02.getAbsolutePath(), expectedFile02.exists());
+        assertTrue(expectedFile02.exists(), "Expected file does not exist: " + expectedFile02.getAbsolutePath());
     }
 
 

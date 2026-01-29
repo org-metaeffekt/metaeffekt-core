@@ -15,10 +15,10 @@
  */
 package org.metaeffekt.core.itest.analysis.webarchives;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.configuration.DirectoryScanAggregatorConfiguration;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
@@ -49,7 +49,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() {
         testSetup = new UrlBasedTestSetup()
                 .setSource("https://ftp.halifax.rwth-aachen.de/jenkins/war-stable/2.479.2/jenkins.war")
@@ -57,20 +57,20 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .setName(JenkinsWarTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(testSetup.clear());
+        Assertions.assertTrue(testSetup.clear());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void inventorize() throws Exception {
-        Assert.assertTrue(testSetup.rebuildInventory());
+        Assertions.assertTrue(testSetup.rebuildInventory());
     }
 
-    // TODO: eliminate @Ignore
-    @Ignore
+    // TODO: eliminate @Disabled
+    @Disabled
     @Test
     public void typesMustBeSetPredicate() {
         getAnalysis()
@@ -78,8 +78,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty();
     }
 
-    // TODO: eliminate @Ignore
-    @Ignore
+    // TODO: eliminate @Disabled
+    @Disabled
     @Test
     public void noErrorsExist() {
         getAnalysisAfterInvariantCheck()
@@ -87,8 +87,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty();
     }
 
-    // TODO: eliminate @Ignore
-    @Ignore
+    // TODO: eliminate @Disabled
+    @Disabled
     @Test
     public void versionMismatch() {
          getAnalysis()
@@ -98,8 +98,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
                 .assertEmpty(idMismatchesVersion());
     }
 
-    // TODO: eliminate @Ignore
-    @Ignore
+    // TODO: eliminate @Disabled
+    @Disabled
     @Test
     public void testPredicatePrimitives() {
         getAnalysis()
@@ -116,8 +116,8 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
     }
 
-    // TODO: eliminate @Ignore
-    @Ignore
+    // TODO: eliminate @Disabled
+    @Disabled
     @Test
     public void namedLists() {
         getAnalysis()
@@ -128,7 +128,7 @@ public class JenkinsWarTest extends AbstractCompositionAnalysisTest {
 
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void checkInvariants() {
         getAnalysisAfterInvariantCheck();

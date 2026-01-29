@@ -17,16 +17,14 @@
 package org.metaeffekt.core.itest.container;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.AssetMetaData;
 import org.metaeffekt.core.inventory.processor.model.FilePatternQualifierMapper;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.itest.common.Analysis;
 import org.metaeffekt.core.itest.common.fluent.DuplicateList;
-import org.metaeffekt.core.itest.common.predicates.AttributeValue;
 import org.metaeffekt.core.itest.common.predicates.NamedBasePredicate;
 import org.metaeffekt.core.itest.common.setup.AbstractCompositionAnalysisTest;
 import org.metaeffekt.core.itest.common.setup.FolderBasedTestSetup;
@@ -58,7 +56,7 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
         }
     };
 
-    @BeforeClass
+    @BeforeAll
     public static void prepare() throws IOException, InterruptedException, NoSuchAlgorithmException {
         final File baseDir = saveContainerFromRegistryByRepositoryAndTag(
                 null,
@@ -71,16 +69,16 @@ public class ArchLinuxTest extends AbstractCompositionAnalysisTest {
                 .setName(ArchLinuxTest.class.getName());
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void clear() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.clear());
+        Assertions.assertThat(AbstractCompositionAnalysisTest.testSetup.clear()).isTrue();
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void analyse() throws Exception {
-        Assert.assertTrue(AbstractCompositionAnalysisTest.testSetup.rebuildInventory());
+        Assertions.assertThat(AbstractCompositionAnalysisTest.testSetup.rebuildInventory()).isTrue();
     }
 
     @Test

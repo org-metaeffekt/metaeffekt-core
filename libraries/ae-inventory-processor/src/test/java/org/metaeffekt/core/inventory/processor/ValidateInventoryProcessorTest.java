@@ -16,8 +16,8 @@
 package org.metaeffekt.core.inventory.processor;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
@@ -33,7 +33,7 @@ import java.util.List;
 
 import static org.metaeffekt.core.inventory.processor.model.Constants.ASTERISK;
 
-@Ignore // Integration Test; move out
+@Disabled // Integration Test; move out
 public class ValidateInventoryProcessorTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValidateInventoryProcessorTest.class);
