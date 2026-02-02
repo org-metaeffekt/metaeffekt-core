@@ -228,7 +228,7 @@ public class XlsInventoryReader extends AbstractInventoryReader {
             }
         };
 
-        parse(inventory, sheet, rowConsumer, InventorySerializationContext.CONTEXT_KEY_ATTACK_PATTERN_DATA);
+        parse(inventory, sheet, rowConsumer, InventorySerializationContext.CONTEXT_KEY_INFO_DATA);
     }
 
     protected void readReportData(HSSFWorkbook workbook, Inventory inventory) {

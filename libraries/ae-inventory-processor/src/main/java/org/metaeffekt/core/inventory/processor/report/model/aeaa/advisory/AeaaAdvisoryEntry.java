@@ -335,7 +335,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
             return "unknown";
         }
         try {
-            return AeaaTimeUtils.formatNormalizedDate(createDate);
+            return AeaaTimeUtils.formatNormalizedDateEn(createDate);
         } catch (Exception e) {
             return "unknown";
         }
@@ -361,7 +361,7 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
             return "unknown";
         }
         try {
-            return AeaaTimeUtils.formatNormalizedDate(updateDate);
+            return AeaaTimeUtils.formatNormalizedDateEn(updateDate);
         } catch (Exception e) {
             return "unknown";
         }
@@ -514,11 +514,11 @@ public class AeaaAdvisoryEntry extends AeaaMatchableDetailsAmbDataClass<Advisory
 
         if (createDate != null) {
             amd.set(AdvisoryMetaData.Attribute.CREATE_DATE, Long.toString(this.createDate.getTime()));
-            amd.set(AdvisoryMetaData.Attribute.CREATE_DATE_FORMATTED, AeaaTimeUtils.formatNormalizedDate(this.createDate));
+            amd.set(AdvisoryMetaData.Attribute.CREATE_DATE_FORMATTED, AeaaTimeUtils.formatNormalizedDateEn(this.createDate));
         }
         if (updateDate != null) {
             amd.set(AdvisoryMetaData.Attribute.UPDATE_DATE, Long.toString(this.updateDate.getTime()));
-            amd.set(AdvisoryMetaData.Attribute.UPDATE_DATE_FORMATTED, AeaaTimeUtils.formatNormalizedDate(this.updateDate));
+            amd.set(AdvisoryMetaData.Attribute.UPDATE_DATE_FORMATTED, AeaaTimeUtils.formatNormalizedDateEn(this.updateDate));
         }
 
         if (!this.cvssVectors.isEmpty()) {

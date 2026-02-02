@@ -13,31 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.metaeffekt.core.maven.inventory.mojo;
+package org.metaeffekt.core.inventory.processor.configuration.converter;
 
-public class ExecutionStatusEntry {
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-    public static enum SEVERITY {
-        ERROR,
-        WARN,
-        INFO
+import java.util.Map;
+
+public class JsonObjectConverter implements FieldConverter<String, Map<String, ?>> {
+    @Override
+    public Map<String, ?> serialize(String internal) {
+        return new JSONObject(internal).toMap();
     }
 
-    private final SEVERITY severity;
-
-    private final String message;
-
-    public ExecutionStatusEntry(SEVERITY severity, String message) {
-        this.severity = severity;
-        this.message = message;
+    @Override
+    public String deserialize(Map<String, ?> external) {
+        return new JSONArray(external).toString();
     }
-
-    public SEVERITY getSeverity() {
-        return severity;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
 }

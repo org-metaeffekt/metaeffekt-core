@@ -13,7 +13,7 @@
             <entry colname="COLSPEC0" valign="top">$utils.getText("inventory-report-bom.license-overview-title")</entry>
             <entry colname="COLSPEC1" valign="top">SPDX Id</entry>
             <entry colname="COLSPEC2" valign="top">OSI Status</entry>
-            <entry colname="COLSPEC3" valign="top">Open CoDE Approval</entry>
+            <entry colname="COLSPEC3" valign="top">$utils.getText("opencode-status.short")</entry>
             <entry colname="COLSPEC4" valign="top">$utils.getText("general.short.count")</entry>
         </row>
         </thead>
@@ -155,7 +155,7 @@
         <title>$report.xmlEscapeLicense($license)</title>
         <body>
         <p>
-            #if($assetLicenseDataList.size() == 1)
+            #if($inventory.assetMetaData.size() == 1)
                 #if($folder)
                     $utils.getText("asset-report-bom.license-asset-topic-location")
                     <xref href="$report.getRelativeLicensePath()/$folder/" type="html"

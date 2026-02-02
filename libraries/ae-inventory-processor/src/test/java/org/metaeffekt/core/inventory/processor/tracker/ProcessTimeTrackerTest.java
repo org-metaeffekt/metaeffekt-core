@@ -22,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
+import org.metaeffekt.core.inventory.processor.writer.InventoryWriter;
+import org.metaeffekt.core.util.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,5 +96,26 @@ public class ProcessTimeTrackerTest {
         // check if attempting to read or add a timestamp fails
         ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inv);
         tracker.addTimestamp(new ProcessTimeEntry(ProcessType.SPDX_IMPORTER, 1));
+    }
+
+    @Test
+    public void test() throws IOException {
+        final File testOutputDir = new File("target/process-time-tracker");
+        FileUtils.forceMkdir(testOutputDir);
+        File f = new File(testOutputDir, "multipleIds.xls");
+        Inventory inv = new Inventory();
+
+        ProcessorTimeTracker tracker = ProcessorTimeTracker.fromInventory(inv);
+        tracker.getOrCreateTimestamp(ProcessType.INVENTORY_ENRICHMENT, "correlate", 1);
+
+        new InventoryWriter().writeInventory(inv, f);
+        inv = new InventoryReader().readInventory(f);
+
+        tracker = ProcessorTimeTracker.fromInventory(inv);
+        ProcessTimeEntry advise = tracker.getOrCreateTimestamp(ProcessType.INVENTORY_ENRICHMENT, "advise", 1);
+        advise.addIndexTimestamp("index", 10);
+
+        log.info(String.valueOf(tracker.toJson()));
+
     }
 }

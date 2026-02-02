@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE glossentry PUBLIC "-//OASIS//DTD DITA Glossary//EN" "glossary.dtd">
-<glossentry id="g_supported">
+<glossentry id="supported">
     <glossterm>Supported</glossterm>
     <glossdef>
         <p>A configuration labeled supported can be used in a production setup. ${organization.name}

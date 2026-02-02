@@ -15,11 +15,15 @@
  */
 package org.metaeffekt.core.inventory.processor.configuration;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.metaeffekt.core.inventory.processor.configuration.converter.FieldConverter;
+import org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -29,7 +33,7 @@ import java.util.stream.IntStream;
 
 /**
  * Base class for configurations classes. Used by the
- * {@link org.metaeffekt.core.inventory.processor.report.configuration.CentralSecurityPolicyConfiguration} and other
+ * {@link CentralSecurityPolicyConfiguration} and other
  * classes containing configuration parameters for the inventory enrichment process.<br>
  * A configuration class usually has several qualities:
  * <ul>
@@ -42,7 +46,7 @@ import java.util.stream.IntStream;
  *     </li>
  *     <li>
  *         Has a method {@link ProcessConfiguration#getProperties()} and a counterpart
- *         {@link ProcessConfiguration#setProperties(LinkedHashMap)} that allow for loading and storing the
+ *         {@link ProcessConfiguration#setProperties(Map)} that allow for loading and storing the
  *         configuration from and to a map. Use the <code>loadProperties</code> methods to load the properties from the
  *         map.
  *     </li>
@@ -59,13 +63,16 @@ public abstract class ProcessConfiguration {
     private boolean active = true;
     private String id = buildInitialId();
 
+    @ExcludeProcessConfigurationProperty
+    private final LinkedHashMap<String, Pair<?, ?>> cachedProperties = new LinkedHashMap<>();
+
     public ProcessConfiguration setActive(boolean active) {
         this.active = active;
         return this;
     }
 
     public boolean isActive() {
-        return active;
+        return this.active;
     }
 
     public ProcessConfiguration setId(String id) {
@@ -74,8 +81,10 @@ public abstract class ProcessConfiguration {
     }
 
     public String getId() {
-        return id;
+        return this.id;
     }
+
+    /* LOGGING */
 
     public void debugLogConfiguration() {
         final Map<String, Object> configuration = getProperties();
@@ -119,6 +128,8 @@ public abstract class ProcessConfiguration {
     private void logConfiguration(Map<String, Object> configuration, int indent, Consumer<String> logLevel) {
         if (!configuration.isEmpty()) {
             configuration.forEach((key, value) -> {
+                if ("id".equals(key)) return;
+                if ("$type".equals(key)) return;
                 final StringBuilder sb = new StringBuilder();
                 sb.append(IntStream.range(0, indent).mapToObj(i -> "  ").reduce("", String::concat))
                         .append(key).append(": ");
@@ -139,17 +150,176 @@ public abstract class ProcessConfiguration {
         }
     }
 
-    public abstract LinkedHashMap<String, Object> getProperties();
+    /* CACHING */
 
-    public abstract void setProperties(LinkedHashMap<String, Object> properties);
+    protected <S, T> T accessCachedProperty(String propertyId, S external, Function<S, T> supplier) {
+        if (cachedProperties.containsKey(propertyId) && Objects.equals(cachedProperties.get(propertyId).getLeft(), external)) {
+            return (T) cachedProperties.get(propertyId).getRight();
+        }
+
+        try {
+            final T internal = supplier.apply(external);
+            cachedProperties.put(propertyId, Pair.of(external, internal));
+            return internal;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to construct configuration property [" + propertyId + "]. Cause: " + e.getMessage() + "\nConfiguration Value: " + external, e);
+        }
+    }
+
+    /* PROPERTY ACCESS (GET / SET) */
+
+    public Map<String, Object> getProperties() {
+        Class<?> currentClass = this.getClass();
+
+        final LinkedHashMap<String, Object> properties = new LinkedHashMap<>();
+        properties.put("$type", currentClass.getSimpleName());
+
+        while (currentClass != null && currentClass != Object.class) {
+            for (Field field : currentClass.getDeclaredFields()) {
+                if (this.isExcluded(field)) {
+                    continue;
+                }
+
+                field.setAccessible(true);
+                final String propertyName = this.extractFieldName(field);
+
+                // avoid shadowing/duplication when walking up the hierarchy
+                if (properties.containsKey(propertyName)) {
+                    continue;
+                }
+
+                final ProcessConfigurationProperty configAnnotation = field.getAnnotation(ProcessConfigurationProperty.class);
+
+                try {
+                    final Object rawValue = field.get(this);
+                    final Object serializedValue;
+
+                    if (hasCustomConverter(configAnnotation)) {
+                        final FieldConverter<Object, Object> converter = constructDefaultInstance(
+                                (Class<? extends FieldConverter<Object, Object>>) configAnnotation.converter());
+                        serializedValue = converter.serialize(rawValue);
+                    } else {
+                        serializedValue = this.serialize(rawValue);
+                    }
+
+                    if (serializedValue != null) {
+                        properties.put(propertyName, serializedValue);
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new IllegalArgumentException("Cannot access field [" + field.getName() + "] during serialization", e);
+                }
+            }
+
+            if (currentClass == ProcessConfiguration.class) break;
+            currentClass = currentClass.getSuperclass();
+        }
+
+        if (this.active) properties.remove("active");
+
+        return properties;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            final String key = entry.getKey();
+            final Object value = entry.getValue();
+
+            try {
+                final Field field = findMatchingField(key);
+
+                if (field != null) {
+                    field.setAccessible(true);
+                    final ProcessConfigurationProperty configAnnotation = field.getAnnotation(ProcessConfigurationProperty.class);
+
+                    if (hasCustomConverter(configAnnotation)) {
+                        final FieldConverter<Object, Object> converter = constructDefaultInstance(
+                                (Class<? extends FieldConverter<Object, Object>>) configAnnotation.converter());
+                        field.set(this, converter.deserialize(value));
+
+                    } else {
+                        final Class<?> targetType = field.getType();
+
+                        if (List.class.isAssignableFrom(targetType)) {
+                            field.set(this, this.deserializeCollection(key, field, value, ArrayList::new));
+                        } else if (Set.class.isAssignableFrom(targetType)) {
+                            field.set(this, this.deserializeCollection(key, field, value, HashSet::new));
+                        } else if (Map.class.isAssignableFrom(targetType)) {
+                            field.set(this, this.deserializeMap(key, field, value));
+                        } else {
+                            field.set(this, this.deserialize(key, targetType, value));
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException(String.format("Failed to configure property [%s] with value [%s]. Cause: %s", key, value, e.getMessage()), e);
+            }
+        }
+    }
+
+    private Collection<Object> deserializeCollection(String key, Field field, Object value, Supplier<Collection<Object>> constructor) {
+        if (value == null) return constructor.get();
+
+        if (!(value instanceof Collection)) {
+            throw this.createPropertyException(key, value, "Collection");
+        }
+
+        final Class<?> itemType = this.extractGenericType(field, 0);
+        final Collection<?> inputCollection = (Collection<?>) value;
+        final Collection<Object> targetCollection = constructor.get();
+
+        for (Object item : inputCollection) {
+            targetCollection.add(this.deserialize(key, itemType, item));
+        }
+        return targetCollection;
+    }
+
+    private Map<Object, Object> deserializeMap(String key, Field field, Object value) {
+        if (value == null) return new HashMap<>();
+
+        if (!(value instanceof Map)) {
+            throw this.createPropertyException(key, value, "Map");
+        }
+
+        final Class<?> keyType = this.extractGenericType(field, 0);
+        final Class<?> valueType = this.extractGenericType(field, 1);
+        final Map<?, ?> inputMap = (Map<?, ?>) value;
+        final Map<Object, Object> targetMap = new HashMap<>();
+
+        for (Map.Entry<?, ?> entry : inputMap.entrySet()) {
+            final Object k = this.deserialize(key + "-key", keyType, entry.getKey());
+            final Object v = this.deserialize(key + "-value", valueType, entry.getValue());
+            targetMap.put(k, v);
+        }
+        return targetMap;
+    }
+
+    private Class<?> extractGenericType(Field field, int index) {
+        final Type genericType = field.getGenericType();
+
+        if (genericType instanceof ParameterizedType) {
+            final Type[] typeArguments = ((ParameterizedType) genericType).getActualTypeArguments();
+            if (index < typeArguments.length) {
+                final Type argument = typeArguments[index];
+                if (argument instanceof Class) {
+                    return (Class<?>) argument;
+                }
+                throw new IllegalArgumentException("Field [" + field.getName() + "] uses wildcard or variable types, which are not supported for automatic configuration. Use a concrete type (e.g. List<String>).");
+            }
+        }
+
+        throw new IllegalArgumentException("Field [" + field.getName() + "] is a raw type (missing generic arguments). Please define strict types (e.g. List<String> instead of List).");
+    }
+
+    /* VALIDATION */
+
+    protected void collectMisconfigurations(List<ProcessMisconfiguration> misconfigurations) {
+    }
 
     public final List<ProcessMisconfiguration> collectMisconfigurations() {
         final ArrayList<ProcessMisconfiguration> reasons = new ArrayList<>();
         collectMisconfigurations(reasons);
         return reasons;
     }
-
-    protected abstract void collectMisconfigurations(List<ProcessMisconfiguration> misconfigurations);
 
     public void assertNoMisconfigurations() {
         final List<ProcessMisconfiguration> misconfigurations = collectMisconfigurations();
@@ -162,135 +332,31 @@ public abstract class ProcessConfiguration {
     }
 
     public String buildInitialId() {
-        final String id = getClass().getSimpleName()
+        final String simpleName = getClass().getSimpleName()
                 .replace("Configuration", "")
                 .replace("Inventory", "")
                 .replace("Enrichment", "");
-        final String[] split = id.split("(?=[A-Z])");
+        final String[] split = simpleName.split("(?=[A-Z])");
         return String.join("-", split).toLowerCase();
     }
 
     /* PROPERTY LOADING UTILITY METHODS */
 
-    protected <F, T> T optionalConversion(F value, Function<F, T> converter) {
-        return value != null ? converter.apply(value) : null;
-    }
-
-    protected void loadStringProperty(Map<String, Object> properties, String key, Consumer<String> consumer) {
-        try {
-            if (properties != null && properties.containsKey(key)) {
-                final Object value = properties.get(key);
-                if (value instanceof String) {
-                    consumer.accept((String) value);
-                } else {
-                    throw createPropertyException(key, value, "string");
-                }
-            }
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to set property '" + key + "' on " + getClass().getSimpleName() + " from " + properties, e);
-        }
-    }
-
-    protected void loadBooleanProperty(Map<String, Object> properties, String key, Consumer<Boolean> consumer) {
-        if (properties != null && properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof Boolean) {
-                consumer.accept((Boolean) value);
-            } else if (value instanceof String) {
-                consumer.accept(Boolean.valueOf((String) value));
-            } else {
-                throw createPropertyException(key, value, "boolean");
-            }
-        }
-    }
-
-    protected void loadIntegerProperty(Map<String, Object> properties, String key, Consumer<Integer> consumer) {
-        if (properties != null && properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof Integer) {
-                consumer.accept((Integer) value);
-            } else if (value instanceof Number) {
-                consumer.accept(((Number) value).intValue());
-            } else if (value instanceof String) {
-                consumer.accept(Integer.valueOf((String) value));
-            } else {
-                throw createPropertyException(key, value, "integer");
-            }
-        }
-    }
-
-    protected void loadLongProperty(Map<String, Object> properties, String key, Consumer<Long> consumer) {
-        if (properties != null && properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof Long) {
-                consumer.accept((Long) value);
-            } else if (value instanceof Number) {
-                consumer.accept(((Number) value).longValue());
-            } else if (value instanceof String) {
-                consumer.accept(Long.valueOf((String) value));
-            } else {
-                throw createPropertyException(key, value, "long");
-            }
-        }
-    }
-
-    protected void loadDoubleProperty(Map<String, Object> properties, String key, Consumer<Double> consumer) {
-        if (properties != null && properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof Double) {
-                consumer.accept((Double) value);
-            } else if (value instanceof Number) {
-                consumer.accept(((Number) value).doubleValue());
-            } else if (value instanceof String) {
-                consumer.accept(Double.valueOf((String) value));
-            } else {
-                throw createPropertyException(key, value, "double");
-            }
-        }
-    }
-
-    protected void loadJsonObjectProperty(Map<String, Object> properties, String key, Consumer<JSONObject> consumer) {
-        if (properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof Map<?, ?>) {
-                final Map<String, Object> valueMap = (Map<String, Object>) value;
-                final JSONObject jsonObject = new JSONObject(valueMap);
-                consumer.accept(jsonObject);
-            } else {
-                throw createPropertyException(key, value, "json-object");
-            }
-        }
-    }
-
-    protected void loadJsonArrayProperty(Map<String, Object> properties, String key, Consumer<JSONArray> consumer) {
-        if (properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof List<?>) {
-                final List<Object> valueList = (List<Object>) value;
-                final JSONArray jsonArray = new JSONArray(valueList);
-                consumer.accept(jsonArray);
-            } else {
-                throw createPropertyException(key, value, "json-array");
-            }
-        }
-    }
-
     protected <T> void loadProperty(Map<String, Object> properties, String key, Function<Object, T> converter, Consumer<T> consumer) {
         if (properties != null && properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            consumer.accept(converter.apply(value));
+            try {
+                consumer.accept(converter.apply(properties.get(key)));
+            } catch (Exception e) {
+                throw createPropertyException(key, properties.get(key), "valid-type-conversion");
+            }
         }
     }
 
     protected <T> void loadListProperty(Map<String, Object> properties, String key, Function<Object, T> converter, Consumer<List<T>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
-            if (value instanceof Collection<?>) {
-                final Collection<?> valueList = (Collection<?>) value;
-                final List<T> convertedList = valueList.stream()
-                        .map(converter)
-                        .collect(Collectors.toList());
-                consumer.accept(convertedList);
+            if (value instanceof Collection) {
+                consumer.accept(((Collection<?>) value).stream().map(converter).collect(Collectors.toList()));
             } else {
                 throw createPropertyException(key, value, "collection");
             }
@@ -300,12 +366,9 @@ public abstract class ProcessConfiguration {
     protected <K, V> void loadMapProperty(Map<String, Object> properties, String key, Function<Object, K> keyConverter, Function<Object, V> valueConverter, Consumer<Map<K, V>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
-            if (value instanceof Map<?, ?>) {
+            if (value instanceof Map) {
                 final Map<K, V> convertedMap = new LinkedHashMap<>();
-                final Map<?, ?> valueMap = (Map<?, ?>) value;
-                valueMap.forEach((k, v) -> {
-                    convertedMap.put(keyConverter.apply(k), valueConverter.apply(v));
-                });
+                ((Map<?, ?>) value).forEach((k, v) -> convertedMap.put(keyConverter.apply(k), valueConverter.apply(v)));
                 consumer.accept(convertedMap);
             } else {
                 throw createPropertyException(key, value, "map");
@@ -316,57 +379,189 @@ public abstract class ProcessConfiguration {
     protected <T> void loadSetProperty(Map<String, Object> properties, String key, Function<Object, T> converter, Consumer<Set<T>> consumer) {
         if (properties.containsKey(key)) {
             final Object value = properties.get(key);
-            if (value instanceof Collection<?>) {
-                final Collection<?> valueList = (Collection<?>) value;
-                final Set<T> convertedList = valueList.stream()
-                        .map(converter)
-                        .collect(Collectors.toSet());
-                consumer.accept(convertedList);
+            if (value instanceof Collection) {
+                consumer.accept(((Collection<?>) value).stream().map(converter).collect(Collectors.toSet()));
             } else {
                 throw createPropertyException(key, value, "collection");
             }
         }
     }
 
-    protected <T extends ProcessConfiguration> void loadSubConfiguration(Map<String, Object> properties, String key, Supplier<T> configurationSupplier, Consumer<T> consumer) {
-        if (properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof Map<?, ?>) {
-                final Map<String, Object> valueMap = (Map<String, Object>) value;
-                final T subConfiguration = configurationSupplier.get();
-                subConfiguration.setProperties(new LinkedHashMap<>(valueMap));
-                consumer.accept(subConfiguration);
-            } else {
-                throw createPropertyException(key, value, "map");
+    /* SERIALIZATION / DESERIALIZATION CORE */
+
+    private Object deserialize(String key, Class<?> targetType, Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        final Class<?> sourceType = value.getClass();
+
+        if (targetType.isAssignableFrom(sourceType)) {
+            return value;
+        }
+
+        if (targetType == String.class) {
+            return String.valueOf(value);
+        }
+
+        // primitives and wrappers
+        if (targetType == Boolean.class || targetType == boolean.class) {
+            return parseBoolean(value);
+        } else if (Number.class.isAssignableFrom(targetType) || targetType.isPrimitive()) {
+            return parseNumber(value, targetType, key);
+        }
+
+        if (targetType == File.class) {
+            return new File(String.valueOf(value));
+        }
+
+        if (targetType.isEnum()) {
+            try {
+                final Method valueOf = targetType.getMethod("valueOf", String.class);
+                return valueOf.invoke(null, String.valueOf(value));
+            } catch (Exception e) {
             }
         }
+
+        // sub-configuration
+        if (ProcessConfiguration.class.isAssignableFrom(targetType)) {
+            final ProcessConfiguration subConfig = (ProcessConfiguration) constructDefaultInstance(targetType);
+            if (value instanceof Map) {
+                subConfig.setProperties((Map<String, Object>) value);
+            }
+            return subConfig;
+        }
+
+        throw new IllegalArgumentException("Unsupported deserialization conversion from [" + sourceType.getSimpleName() + "] to [" + targetType.getSimpleName() + "]: " + value);
     }
 
-    protected <T extends ProcessConfiguration> void loadSubConfigurations(Map<String, Object> properties, String key, Supplier<T> configurationSupplier, Consumer<List<T>> consumer) {
-        if (properties.containsKey(key)) {
-            final Object value = properties.get(key);
-            if (value instanceof Collection<?>) {
-                final Collection<?> valueList = (Collection<?>) value;
-                final List<T> convertedList = valueList.stream()
-                        .map(v -> {
-                            if (v instanceof Map<?, ?>) {
-                                final Map<String, Object> valueMap = (Map<String, Object>) v;
-                                final T subConfiguration = configurationSupplier.get();
-                                subConfiguration.setProperties(new LinkedHashMap<>(valueMap));
-                                return subConfiguration;
-                            } else {
-                                throw new IllegalArgumentException("Property '" + key + "' must be a list of maps.");
-                            }
-                        })
-                        .collect(Collectors.toList());
-                consumer.accept(convertedList);
-            } else {
-                throw createPropertyException(key, value, "list");
+    private Object serialize(Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        final Class<?> sourceType = value.getClass();
+
+        // sub-configurations
+        if (value instanceof ProcessConfiguration) {
+            return ((ProcessConfiguration) value).getProperties();
+        }
+
+        if (value instanceof Collection) {
+            return ((Collection<?>) value).stream()
+                    .map(this::serialize)
+                    .collect(Collectors.toList());
+        } else if (value instanceof Map) {
+            final Map<Object, Object> targetMap = new LinkedHashMap<>();
+            ((Map<?, ?>) value).forEach((k, v) -> targetMap.put(serialize(k), serialize(v)));
+            return targetMap;
+        }
+
+        if (value instanceof File) {
+            return ((File) value).getPath();
+        }
+
+        if (sourceType.isEnum()) {
+            return ((Enum<?>) value).name();
+        }
+
+        if (sourceType == String.class || Number.class.isAssignableFrom(sourceType) || sourceType == Boolean.class) {
+            return value;
+        }
+
+        throw new IllegalArgumentException("Unsupported serialization conversion from [" + sourceType.getSimpleName() + "] to [external type]: " + value);
+    }
+
+    private Boolean parseBoolean(Object value) {
+        if (value instanceof Boolean) return (Boolean) value;
+        return Boolean.parseBoolean(String.valueOf(value));
+    }
+
+    private Object parseNumber(Object value, Class<?> targetType, String key) {
+        final boolean isNumber = value instanceof Number;
+        final Number numVal = isNumber ? (Number) value : null;
+        final String strVal = String.valueOf(value);
+
+        if (targetType == Integer.class || targetType == int.class) {
+            return isNumber ? numVal.intValue() : Integer.parseInt(strVal);
+        } else if (targetType == Long.class || targetType == long.class) {
+            return isNumber ? numVal.longValue() : Long.parseLong(strVal);
+        } else if (targetType == Double.class || targetType == double.class) {
+            return isNumber ? numVal.doubleValue() : Double.parseDouble(strVal);
+        } else if (targetType == Float.class || targetType == float.class) {
+            return isNumber ? numVal.floatValue() : Float.parseFloat(strVal);
+        }
+
+        throw createPropertyException(key, value, targetType.getSimpleName());
+    }
+
+    /* REFLECTION UTILS */
+
+    private String extractFieldName(Field f) {
+        final ProcessConfigurationProperty annotation = f.getAnnotation(ProcessConfigurationProperty.class);
+        return annotation == null || StringUtils.isEmpty(annotation.customName()) ? f.getName() : annotation.customName();
+    }
+
+    private boolean hasCustomConverter(ProcessConfigurationProperty annotation) {
+        return annotation != null && annotation.converter() != ProcessConfigurationProperty.ExcludeConverter.class;
+    }
+
+    /**
+     * Attempts to find the matching Field of the instance, by:
+     * <p>
+     * 1. checking the actual field names
+     * 2. checking if a field has a matching custom name configured
+     * 3. checking if any matching alternative names exist for a field
+     *
+     * @param key the property key
+     * @return the appropriate field, or null if it is excluded
+     * @throws IllegalArgumentException if no field can be found
+     */
+    private Field findMatchingField(String key) {
+        Class<?> currentClass = this.getClass();
+
+        while (currentClass != null && currentClass != Object.class) {
+            for (Field f : currentClass.getDeclaredFields()) {
+                if (isExcluded(f)) continue;
+
+                // 1. exact match
+                if (f.getName().equals(key)) return f;
+
+                final ProcessConfigurationProperty p = f.getAnnotation(ProcessConfigurationProperty.class);
+                if (p != null) {
+                    // 2. custom name match
+                    if (StringUtils.equals(p.customName(), key)) {
+                        return f;
+                    }
+                    // 3. alternative names match
+                    for (String alt : p.alternativeNames()) {
+                        if (alt.equals(key)) return f;
+                    }
+                }
             }
+            currentClass = currentClass.getSuperclass();
+        }
+
+        return null;
+    }
+
+    private boolean isExcluded(Field f) {
+        return Modifier.isStatic(f.getModifiers()) || f.isAnnotationPresent(ExcludeProcessConfigurationProperty.class);
+    }
+
+    public static <T> T constructDefaultInstance(Class<T> clazz) {
+        try {
+            final Constructor<T> constructor = clazz.getDeclaredConstructor();
+            if (!constructor.isAccessible()) {
+                constructor.setAccessible(true);
+            }
+            return constructor.newInstance();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Cannot instantiate target type " + clazz, e);
         }
     }
 
     protected IllegalArgumentException createPropertyException(String key, Object value, String expectedType) {
-        return new IllegalArgumentException("Property '" + key + "' must be a '" + expectedType + "' on " + getClass().getSimpleName() + " from " + value);
+        return new IllegalArgumentException("Property [" + key + "] must be a [" + expectedType + "] on " + getClass().getSimpleName() + " from " + value);
     }
 }
