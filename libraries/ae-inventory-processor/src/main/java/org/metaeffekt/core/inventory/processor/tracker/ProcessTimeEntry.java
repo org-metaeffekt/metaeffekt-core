@@ -61,7 +61,7 @@ public class ProcessTimeEntry {
                 .put("processId", processType.get())
                 .put("timestamp", timestamp.toJson());
 
-        if(processName != null) {
+        if (processName != null) {
             json.put("processName", processName);
         }
 
@@ -88,22 +88,19 @@ public class ProcessTimeEntry {
         Object indexTimestampJsonProperty = json.opt("indexTimestamps");
 
         // legacy format
-        if(indexTimestampJsonProperty instanceof JSONObject) {
+        if (indexTimestampJsonProperty instanceof JSONObject) {
             JSONObject indexTimestamps = (JSONObject) indexTimestampJsonProperty;
-            for(String index : indexTimestamps.keySet()) {
+            for (String index : indexTimestamps.keySet()) {
                 tracker.indexTimestamps.put(index, ProcessTimestamp.fromJSON(indexTimestamps.getJSONObject(index)));
             }
-        }
-
-        else if(indexTimestampJsonProperty instanceof JSONArray) {
+        } else if (indexTimestampJsonProperty instanceof JSONArray) {
             final JSONArray indexTimestamps = (JSONArray) indexTimestampJsonProperty;
             for (int i = 0; i < indexTimestamps.length(); i++) {
                 JSONObject index = indexTimestamps.getJSONObject(i);
                 ProcessTimestamp timestamp = ProcessTimestamp.fromJSON(index.getJSONObject("timestamp"));
                 tracker.indexTimestamps.put(index.getString("indexId"), timestamp);
             }
-        }
-        else {
+        } else {
             throw new RuntimeException(String.format("Property: 'indexTimestamps' is not able to be parsed in [ {%s} ]", json));
         }
 
