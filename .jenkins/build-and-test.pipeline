@@ -7,10 +7,12 @@ pipeline {
     }
     stages {
         stage('Check config') {
-            sh 'which mvn'
-            sh 'mvn -version'
-            sh 'which java'
-            sh 'java -version'
+            steps {
+                sh 'which mvn'
+                sh 'mvn -version'
+                sh 'which java'
+                sh 'java -version'
+            }
         }
 
         stage('Build and Test') {
