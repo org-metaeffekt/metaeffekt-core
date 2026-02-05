@@ -59,7 +59,8 @@ public class CspLoader {
             return this.loadConfigurationInternal();
         } catch (Exception e) {
             log.error("└── Failed to load Security Policy");
-            Arrays.stream(e.getMessage().split("\n")).forEach(msg -> log.error("    ├── {}", msg));
+            final String message = StringUtils.defaultString(e.getMessage(), e.getClass().getName());
+            Arrays.stream(message.split("\n")).forEach(msg -> log.error("    ├── {}", msg));
             log.error("    └── file={}, files={}, inlineOverwriteJson={}, activeIds={}", file, files, inlineOverwriteJson, activeIds);
             throw new RuntimeException("Central security policy loader failed to create Central security policy instance from parameters.", e);
         }
