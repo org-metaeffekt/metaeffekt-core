@@ -121,6 +121,7 @@ public class CspLoaderTest {
         {
             final CspLoader loader = new CspLoader();
             loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-c.json"));
+            loader.setInlineOverwriteJson("{}");
             loader.loadConfiguration();
         }
         Assert.assertThrows(RuntimeException.class, () -> {

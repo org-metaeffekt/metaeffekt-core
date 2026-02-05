@@ -57,7 +57,10 @@ public class CspLoader {
     public CentralSecurityPolicyConfiguration loadConfiguration() {
         try {
             return this.loadConfigurationInternal();
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.error("└── Failed to load Security Policy");
+            log.error("    ├── {}", e.getMessage());
+            log.error("    └── file={}, files={}, inlineOverwriteJson={}, activeIds={}", file, files, inlineOverwriteJson, activeIds);
             throw new RuntimeException("Central security policy loader failed to create Central security policy instance from parameters.", e);
         }
     }
@@ -75,15 +78,16 @@ public class CspLoader {
         }
 
         if (activeIds.isEmpty()) {
-            log.info("No active Ids provided to build security policy from, either activeByDefault or inlineOverwriteJson must be set to obtain any properties");
+            log.info("Security Policy Loader initialized, no active Ids provided (using defaults/inline only)");
         } else {
-            log.info("Building configurations from Ids: {}", activeIds);
+            log.info("Security Policy Loader initialized for active Ids: {}", activeIds);
         }
 
         final List<CspLoaderEntry> allEntries = new ArrayList<>();
         for (File policyFile : policyFiles) {
+            log.info("├── Loading: file://{}", canonicalOrAbsolute(policyFile));
             final List<CspLoaderEntry> entries = CspLoaderEntry.fromFile(this, policyFile);
-            log.info("  ↳ Parsed [{}] configurations", entries.size());
+            log.info("│   └── File provides {} configuration{}: {}", entries.size(), entries.size() == 1 ? "" : "s", entries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()));
             allEntries.addAll(entries);
         }
 
@@ -92,10 +96,14 @@ public class CspLoader {
             idToEntryMap.put(entry.getId(), entry);
         }
 
+        log.info("└── Resolving active configurations");
         final List<CspLoaderEntry> activeEntries = new ArrayList<>();
 
         // the ones that are active by default must be loaded first
-        allEntries.stream().filter(CspLoaderEntry::isActiveByDefault).forEach(activeEntries::add);
+        allEntries.stream().filter(CspLoaderEntry::isActiveByDefault).forEach(entry -> {
+            log.info("    ├── [{}] (active by default)", entry.getId());
+            activeEntries.add(entry);
+        });
 
         // search the user-specified ids in the known events
         for (String activeId : activeIds) {
@@ -104,10 +112,10 @@ public class CspLoader {
                 throw new IllegalStateException("Configured Configuration Id [" + activeId + "] does not exist");
             }
             if (!activeEntries.contains(foundEntry)) {
+                log.info("    ├── [{}]", foundEntry.getId());
                 activeEntries.add(foundEntry);
             }
         }
-        log.info("Activating configuration(s): {}", activeEntries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()));
 
         final Set<CspLoaderEntry> checkedExtends = new HashSet<>();
         final Queue<CspLoaderEntry> checkExtends = new LinkedList<>(activeEntries);
@@ -121,30 +129,30 @@ public class CspLoader {
                     throw new IllegalStateException("Configuration [" + current.getId() + "] extends entry does not exist [" + extendedId + "]");
                 }
                 if (!activeEntries.contains(extendsEntry)) {
-                    log.info("- Activating configuration [{}] because it is extended by [{}]", extendsEntry.getId(), current.getId());
+                    log.info("    ├── [{}] (dependency of {})", extendsEntry.getId(), current.getId());
                     activeEntries.add(0, extendsEntry);
                     checkExtends.add(extendsEntry);
                 }
             }
         }
 
-        log.info("Filtered total configurations [{}] {} to selected configurations [{}] {}",
-                idToEntryMap.size(), allEntries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()),
-                activeEntries.size(), activeEntries.stream().map(CspLoaderEntry::getId).collect(Collectors.toList()));
-
-        log.info("Merging [{}] configurations into effective configuration", activeEntries.size());
         final JSONObject mergedConfig = new JSONObject();
         for (CspLoaderEntry entry : activeEntries) {
-            log.debug("[{}]: {}", entry.getId(), entry.getConfiguration());
+            log.debug("    Merging [{}]: {}", entry.getId(), entry.getConfiguration());
             mergeJson(mergedConfig, entry.getConfiguration());
         }
 
-        if (inlineOverwriteJson != null && !inlineOverwriteJson.trim().isEmpty()) {
-            log.debug("inline overwrite: {}", inlineOverwriteJson);
-            mergeJson(mergedConfig, new JSONObject(inlineOverwriteJson));
+        final boolean hasOverwrite = inlineOverwriteJson != null && !inlineOverwriteJson.trim().isEmpty();
+        if (hasOverwrite) {
+            final JSONObject json = new JSONObject(inlineOverwriteJson);
+            log.info("    ├── Inline overwrite JSON with {} keys", json.keySet().size());
+            mergeJson(mergedConfig, json);
         }
 
-        log.debug("  ↳ {}", mergedConfig);
+        log.debug("    ├── {}", mergedConfig);
+        final int mergedConfigurations = activeEntries.size() + (hasOverwrite ? 1 : 0);
+        log.info("    └── Merged {} configuration{}", mergedConfigurations, mergedConfigurations == 1 ? "" : "s");
+
         return CentralSecurityPolicyConfiguration.fromJson(mergedConfig, "Central security policy failed to parse effective security policy configuration");
     }
 
@@ -169,7 +177,6 @@ public class CspLoader {
                 throw new FileNotFoundException("CSP file must exist but was not found: file://" + canonicalOrAbsolute(file));
             }
 
-            log.info("Loading file://{}", canonicalOrAbsolute(file));
             final List<CspLoaderEntry> entries = new ArrayList<>();
             // in the past there was a case where there were multiple empty lines at the start of a file.
             // it was therefore completely ignored by the if-else later in this method.
@@ -194,6 +201,14 @@ public class CspLoader {
             final List<CspLoaderEntry> entries = new ArrayList<>();
 
             if (json.has("configurations")) {
+                final String policyId = json.optString("id", file.getName());
+                final String policyName = json.optString("name", null);
+                final String policyDescription = json.optString("description", null);
+
+                if (policyName != null) log.info("│   ├── {} ({})", policyName, policyId);
+                else log.info("│   ├── {}", policyId);
+                if (policyDescription != null) log.info("│   ├── {}", policyDescription);
+
                 final String version = json.optString("version");
                 if (StringUtils.isEmpty(version) && loader.failOnMissingVersion) {
                     throw new IllegalStateException("'failOnMissingVersion' is active and policy file did not contain a version field. Latest version is [" + CentralSecurityPolicyConfiguration.LATEST_VERSION + "] in file://" + canonicalOrAbsolute(file));
