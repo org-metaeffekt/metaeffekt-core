@@ -15,7 +15,7 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                withMaven(maven: 'maven-3.9.12') {
+                withMaven() {
                     sh 'mvn -B clean install'
                 }
             }
