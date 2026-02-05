@@ -3,7 +3,7 @@ pipeline {
     agent any
     tools {
         jdk 'ZULU17'
-        maven 'maven-3.9.12'
+        maven 'MAVEN3912'
     }
     stages {
         stage('Check config') {
