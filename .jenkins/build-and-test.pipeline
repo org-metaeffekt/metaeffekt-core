@@ -6,6 +6,13 @@ pipeline {
         maven 'maven-3.9.12'
     }
     stages {
+        stage('Check config') {
+            sh 'which mvn'
+            sh 'mvn -version'
+            sh 'which java'
+            sh 'java -version'
+        }
+
         stage('Build and Test') {
             steps {
                 withMaven(maven: 'maven-3.9.12') {
