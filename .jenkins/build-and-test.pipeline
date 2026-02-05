@@ -9,12 +9,13 @@ pipeline {
         stage('Check config') {
             steps {
                 sh 'echo $JAVA_HOME'
+                sh 'which java || true'
+                sh 'java -version || true'
+
                 sh 'echo $MAVEN_HOME'
                 sh 'echo $MAVEN2_HOME'
                 sh 'which mvn || true'
                 sh 'mvn -version || true'
-                sh 'which java || true'
-                sh 'java -version || true'
             }
         }
 
