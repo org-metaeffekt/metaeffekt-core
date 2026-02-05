@@ -1,6 +1,8 @@
 #!/usr/bin/env groovy
 pipeline {
-    agent any
+    agent {
+        label 'metaeffekt-astronaut'
+    }
     tools {
         jdk 'ZULU17'
         maven 'MAVEN3912'
