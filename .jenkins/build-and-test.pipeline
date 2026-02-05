@@ -18,14 +18,13 @@ pipeline {
                 sh 'mvn -version || true'
 
                 sh 'export PATH=$PATH:$MAVEN_HOME/bin'
-
             }
         }
 
         stage('Build and Test') {
             steps {
                 withMaven() {
-                    sh 'mvn -B clean install'
+                    sh 'export PATH=$PATH:$MAVEN_HOME/bin && mvn -B clean install'
                 }
             }
         }
