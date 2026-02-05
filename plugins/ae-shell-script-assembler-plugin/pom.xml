@@ -31,4 +31,16 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <configuration>
+                    <goalPrefix>ae-shell-script-assembler</goalPrefix>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
