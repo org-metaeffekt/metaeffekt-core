@@ -1,0 +1,21 @@
+{
+  "id": "policy-001",
+  "name": "Test configuration",
+  "description": "Test configuration for versionComparisonTest",
+  "version": "1",
+  "configurations": [
+    {
+      "id": "config a",
+      "configuration": {
+        "includeAdvisoryTypes": ["notice"]
+      }
+    },
+    {
+      "id": "config b",
+      "activeByDefault": true,
+      "configuration": {
+        "includeAdvisoryTypes": ["notice"]
+      }
+    }
+  ]
+}
