@@ -59,7 +59,7 @@ public class CspLoader {
             return this.loadConfigurationInternal();
         } catch (Exception e) {
             log.error("└── Failed to load Security Policy");
-            log.error("    ├── {}", e.getMessage());
+            Arrays.stream(e.getMessage().split("\n")).forEach(msg -> log.error("    ├── {}", msg));
             log.error("    └── file={}, files={}, inlineOverwriteJson={}, activeIds={}", file, files, inlineOverwriteJson, activeIds);
             throw new RuntimeException("Central security policy loader failed to create Central security policy instance from parameters.", e);
         }
@@ -170,7 +170,8 @@ public class CspLoader {
         private final Set<String> extendsEntries = new HashSet<>();
         private JSONObject configuration;
 
-        private static final Set<String> ALLOWED_KEYS = new HashSet<>(Arrays.asList("id", "extends", "activeByDefault", "configuration"));
+        private static final Set<String> ALLOWED_WRAPPER_KEYS = new HashSet<>(Arrays.asList("id", "name", "description", "version", "configurations"));
+        private static final Set<String> ALLOWED_CONFIGURATION_KEYS = new HashSet<>(Arrays.asList("id", "extends", "activeByDefault", "configuration"));
 
         public static List<CspLoaderEntry> fromFile(CspLoader loader, File file) throws IOException {
             if (file == null || !file.exists() || !file.isFile()) {
@@ -200,8 +201,11 @@ public class CspLoader {
         private static List<CspLoaderEntry> fromJsonObject(CspLoader loader, File file, JSONObject json) {
             final List<CspLoaderEntry> entries = new ArrayList<>();
 
-            if (json.has("configurations")) {
-                final String policyId = json.optString("id", file.getName());
+            final String defaultEntryId = file.getName() + "-" + Integer.toHexString(file.getAbsolutePath().hashCode());
+            final boolean looksLikeWrapper = json.has("configurations") || json.has("version") || (json.has("id") && json.has("name"));
+
+            if (looksLikeWrapper) {
+                final String policyId = json.optString("id", defaultEntryId);
                 final String policyName = json.optString("name", null);
                 final String policyDescription = json.optString("description", null);
 
@@ -209,11 +213,22 @@ public class CspLoader {
                 else log.info("│   ├── {}", policyId);
                 if (policyDescription != null) log.info("│   ├── {}", policyDescription);
 
+                for (String key : json.keySet()) {
+                    if (!ALLOWED_WRAPPER_KEYS.contains(key)) {
+                        throw new IllegalStateException("Unknown key in configuration wrapper '" + key + "' in file://" + canonicalOrAbsolute(file));
+                    }
+                }
+
+                // version validation
                 final String version = json.optString("version");
                 if (StringUtils.isEmpty(version) && loader.failOnMissingVersion) {
                     throw new IllegalStateException("'failOnMissingVersion' is active and policy file did not contain a version field. Latest version is [" + CentralSecurityPolicyConfiguration.LATEST_VERSION + "] in file://" + canonicalOrAbsolute(file));
                 } else if (StringUtils.isNotEmpty(version) && !CentralSecurityPolicyConfiguration.LATEST_VERSION.equals(version) && loader.failOnVersionIncompatibility) {
                     throw new IllegalStateException("'failOnVersionIncompatibility' is active and policy file version [" + version + "] does not match latest version [" + CentralSecurityPolicyConfiguration.LATEST_VERSION + "] in file://" + canonicalOrAbsolute(file));
+                }
+
+                if (!json.has("configurations")) {
+                    throw new IllegalStateException("Policy file detected as Wrapper (contains metadata/version) but missing 'configurations' array: " + canonicalOrAbsolute(file));
                 }
 
                 final JSONArray jsonArray = json.optJSONArray("configurations");
@@ -224,7 +239,7 @@ public class CspLoader {
 
             } else {
                 final CspLoaderEntry entry = new CspLoaderEntry(file);
-                entry.id = file.getName() + UUID.randomUUID();
+                entry.id = defaultEntryId;
                 entry.configuration = json;
                 entry.activeByDefault = true;
                 entries.add(entry);
@@ -244,8 +259,8 @@ public class CspLoader {
 
                 final Set<String> keys = jsonEntry.keySet();
                 for (String key : keys) {
-                    if (!ALLOWED_KEYS.contains(key)) {
-                        throw new IllegalStateException("Unknown key in configuration entry [" + key + "] in file://" + canonicalOrAbsolute(file));
+                    if (!ALLOWED_CONFIGURATION_KEYS.contains(key)) {
+                        throw new IllegalStateException("Unknown key in configuration entry '" + key + "' in file://" + canonicalOrAbsolute(file));
                     }
                 }
 
