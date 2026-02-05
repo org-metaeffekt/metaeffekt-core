@@ -104,4 +104,35 @@ public class CspLoaderTest {
             Assert.assertEquals(2.34, loader.loadConfiguration().getInsignificantThreshold(), 0.001);
         }
     }
+
+    @Test
+    public void versionComparisonTest() {
+        {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-a.json"));
+            loader.setActiveIds(Collections.singletonList("config a"));
+            Assert.assertEquals("includeAdvisoryTypes", "[notice]", loader.loadConfiguration().getIncludeAdvisoryTypes().toString());
+        }
+        Assert.assertThrows(RuntimeException.class, () -> {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-b.json"));
+            loader.loadConfiguration();
+        });
+        {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-c.json"));
+            loader.loadConfiguration();
+        }
+        Assert.assertThrows(RuntimeException.class, () -> {
+            final CspLoader loader = new CspLoader();
+            loader.setFailOnMissingVersion(true);
+            loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-c.json"));
+            loader.loadConfiguration();
+        });
+        Assert.assertThrows(RuntimeException.class, () -> {
+            final CspLoader loader = new CspLoader();
+            loader.addFile(new File(RESOURCE_DIR, "versionComparisonTest/file-d.json"));
+            loader.loadConfiguration();
+        });
+    }
 }
