@@ -16,12 +16,15 @@ pipeline {
                 sh 'echo "MAVEN2_HOME: $MAVEN2_HOME"'
                 sh 'which mvn || true'
                 sh 'mvn -version || true'
+
+                sh 'export PATH=$PATH:$MAVEN_HOME/bin'
+
             }
         }
 
         stage('Build and Test') {
             steps {
-                withMaven(maven: 'MAVEN3912') {
+                withMaven() {
                     sh 'mvn -B clean install'
                 }
             }
