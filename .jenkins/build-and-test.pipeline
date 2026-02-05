@@ -24,7 +24,7 @@ pipeline {
         stage('Build and Test') {
             steps {
                 withMaven() {
-                    sh 'export PATH=$PATH:$MAVEN_HOME/bin && mvn -B clean install'
+                    sh '$MAVEN_HOME/bin/mvn -B clean install'
                 }
             }
         }
