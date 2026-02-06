@@ -8,20 +8,6 @@ pipeline {
         maven 'MAVEN3912'
     }
     stages {
-        stage('Check config') {
-            steps {
-                sh 'echo "JAVA_HOME: $JAVA_HOME"'
-                sh 'which java || true'
-                sh 'java -version || true'
-
-                sh 'echo "MAVEN_HOME: $MAVEN_HOME"'
-                sh 'echo "MAVEN2_HOME: $MAVEN2_HOME"'
-                sh '$MAVEN_HOME/bin/mvn -version || true'
-
-                sh 'export PATH=$PATH:$MAVEN_HOME/bin'
-            }
-        }
-
         stage('Build and Test') {
             steps {
                 withMaven() {
