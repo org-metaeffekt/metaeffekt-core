@@ -17,8 +17,8 @@ package org.metaeffekt.core.inventory.processor.report.configuration;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.VulnerabilityMetaData;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaCertFrAdvisorEntry;
 import org.metaeffekt.core.inventory.processor.report.model.aeaa.advisory.AeaaCertSeiAdvisorEntry;
@@ -46,121 +46,121 @@ public class CentralSecurityPolicyConfigurationTest {
         final Cvss3P1 someOtherAssessmentLowerCombinedVector = someOtherVector.clone();
         someOtherAssessmentLowerCombinedVector.applyVector(assessmentLowerVector);
 
-        Assert.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(someOtherVector)));
-        Assert.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(someOtherVector, assessmentUnknownVector)));
-        Assert.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(assessmentUnknownVector, someOtherVector)));
-        Assert.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(assessmentUnknownVector)));
-        Assert.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(assessmentLowerVector)));
+        Assertions.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(List.of(someOtherVector)));
+        Assertions.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(someOtherVector, assessmentUnknownVector)));
+        Assertions.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(Arrays.asList(assessmentUnknownVector, someOtherVector)));
+        Assertions.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(List.of(assessmentUnknownVector)));
+        Assertions.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_INITIAL.selectVector(List.of(assessmentLowerVector)));
 
-        Assert.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector)));
-        Assert.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentUnknownVector)));
-        Assert.assertEquals(someOtherAssessmentAllCombinedVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentAllVector)));
-        Assert.assertEquals(someOtherAssessmentLowerCombinedVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentLowerVector)));
-        Assert.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentHigherVector)));
+        Assertions.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(List.of(someOtherVector)));
+        Assertions.assertNull(CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentUnknownVector)));
+        Assertions.assertEquals(someOtherAssessmentAllCombinedVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentAllVector)));
+        Assertions.assertEquals(someOtherAssessmentLowerCombinedVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentLowerVector)));
+        Assertions.assertEquals(someOtherVector, CentralSecurityPolicyConfiguration.CVSS_SELECTOR_CONTEXT.selectVector(Arrays.asList(someOtherVector, assessmentHigherVector)));
     }
 
     @Test
     public void statusMapperUnmodifiedTest() {
         final Function<String, String> mapper = CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_UNMODIFIED.getMapper();
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(null));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(""));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_VOID, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_VOID));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, mapper.apply("potential vulnerability")); // apparently we had the case once that the status was "potential vulnerability"
-        Assert.assertEquals("some other", mapper.apply("some other"));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(null));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(""));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_VOID, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_VOID));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE, mapper.apply("potential vulnerability")); // apparently we had the case once that the status was "potential vulnerability"
+        Assertions.assertEquals("some other", mapper.apply("some other"));
     }
 
     @Test
     public void statusMapperAbstractedTest() {
         final Function<String, String> mapper = CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_ABSTRACTED.getMapper();
-        Assert.assertEquals("potentially affected", mapper.apply(null));
-        Assert.assertEquals("potentially affected", mapper.apply(""));
-        Assert.assertEquals("potentially affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW));
-        Assert.assertEquals("affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE));
-        Assert.assertEquals("not affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE));
-        Assert.assertEquals("potentially affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT));
-        Assert.assertEquals("not affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_VOID));
-        Assert.assertEquals("some other", mapper.apply("some other"));
+        Assertions.assertEquals("potentially affected", mapper.apply(null));
+        Assertions.assertEquals("potentially affected", mapper.apply(""));
+        Assertions.assertEquals("potentially affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW));
+        Assertions.assertEquals("affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE));
+        Assertions.assertEquals("not affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE));
+        Assertions.assertEquals("potentially affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT));
+        Assertions.assertEquals("not affected", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_VOID));
+        Assertions.assertEquals("some other", mapper.apply("some other"));
     }
 
     @Test
     public void statusMapperReviewStateTest() {
         final Function<String, String> mapper = CentralSecurityPolicyConfiguration.VULNERABILITY_STATUS_DISPLAY_MAPPER_REVIEW_STATE.getMapper();
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(null));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(""));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW));
-        Assert.assertEquals("reviewed", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE));
-        Assert.assertEquals("reviewed", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT));
-        Assert.assertEquals(VulnerabilityMetaData.STATUS_VALUE_VOID, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_VOID));
-        Assert.assertEquals("some other", mapper.apply("some other"));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(null));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(""));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_IN_REVIEW));
+        Assertions.assertEquals("reviewed", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_APPLICABLE));
+        Assertions.assertEquals("reviewed", mapper.apply(VulnerabilityMetaData.STATUS_VALUE_NOTAPPLICABLE));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_INSIGNIFICANT));
+        Assertions.assertEquals(VulnerabilityMetaData.STATUS_VALUE_VOID, mapper.apply(VulnerabilityMetaData.STATUS_VALUE_VOID));
+        Assertions.assertEquals("some other", mapper.apply("some other"));
     }
 
     @Test
     public void collectMisconfigurationIncludeAdvisoryTypesTest() {
         final CentralSecurityPolicyConfiguration securityPolicy = new CentralSecurityPolicyConfiguration();
 
-        Assert.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
 
         securityPolicy.setIncludeAdvisoryTypes(Collections.singletonList("all"));
-        Assert.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
 
         securityPolicy.setIncludeAdvisoryTypes(Collections.singletonList("some-other"));
-        Assert.assertFalse(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertFalse(securityPolicy.collectMisconfigurations().isEmpty());
 
         securityPolicy.setIncludeAdvisoryTypes(Collections.singletonList("notice"));
-        Assert.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
 
         securityPolicy.setIncludeAdvisoryTypes(Collections.singletonList("alert"));
-        Assert.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
 
         securityPolicy.setIncludeAdvisoryTypes(Collections.singletonList("news"));
-        Assert.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
 
         securityPolicy.setIncludeAdvisoryTypes(Arrays.asList("notice", "alert", "news"));
-        Assert.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertTrue(securityPolicy.collectMisconfigurations().isEmpty());
 
         securityPolicy.setIncludeAdvisoryTypes(Arrays.asList("some-other", "notice", "alert", "news"));
-        Assert.assertFalse(securityPolicy.collectMisconfigurations().isEmpty());
+        Assertions.assertFalse(securityPolicy.collectMisconfigurations().isEmpty());
     }
 
     @Test
     public void anyProviderTest() {
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.isAny((String) null));
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.isAny((Map.Entry<String, ?>) null));
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.isAny(""));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.isAny((String) null));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.isAny((Map.Entry<String, ?>) null));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.isAny(""));
 
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("any"));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("ANY"));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("all"));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.isAny("ALL"));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.isAny("any"));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.isAny("ANY"));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.isAny("all"));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.isAny("ALL"));
     }
 
     @Test
     public void anyProviderListTest() {
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny((Collection<String>) null));
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny((Map<String, String>) null));
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Collections.emptyList()));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny((Collection<String>) null));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny((Map<String, String>) null));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Collections.emptyList()));
 
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("any")));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("ANY")));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("all")));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("ALL")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("any")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("ANY")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("all")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Collections.singletonList("ALL")));
 
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("any", "all")));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("ANY", "ALL")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("any", "all")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("ANY", "ALL")));
 
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("any", "some-other")));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("ANY", "SOME-OTHER")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("any", "some-other")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("ANY", "SOME-OTHER")));
 
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("some-other", "any")));
-        Assert.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("SOME-OTHER", "ANY")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("some-other", "any")));
+        Assertions.assertTrue(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("SOME-OTHER", "ANY")));
 
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("some-other", "another-other")));
-        Assert.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("SOME-OTHER", "ANOTHER-OTHER")));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("some-other", "another-other")));
+        Assertions.assertFalse(CentralSecurityPolicyConfiguration.containsAny(Arrays.asList("SOME-OTHER", "ANOTHER-OTHER")));
     }
 
     @Test
@@ -169,19 +169,19 @@ public class CentralSecurityPolicyConfigurationTest {
         final AeaaCertFrAdvisorEntry certFr = new AeaaCertFrAdvisorEntry();
         final AeaaCertSeiAdvisorEntry certSei = new AeaaCertSeiAdvisorEntry();
 
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("all", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("ANY", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT_FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(new HashMap<String, String>() {{
+        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("all", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("ANY", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT_FR", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(new HashMap<String, String>() {{
             put("CERT_FR", "");
             put("CERT-SEI", "");
         }}).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assert.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT_SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
-        Assert.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assertions.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT_SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
+        Assertions.assertFalse(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certFr));
 
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));
-        Assert.assertTrue(securityPolicy.setIncludeAdvisoryProviders(new HashMap<String, String>() {{
+        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(Collections.singletonMap("CERT-SEI", "")).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));
+        Assertions.assertTrue(securityPolicy.setIncludeAdvisoryProviders(new HashMap<String, String>() {{
             put("CERT_FR", "");
             put("any", "");
         }}).isSecurityAdvisoryIncludedRegardingEntryProvider(certSei));

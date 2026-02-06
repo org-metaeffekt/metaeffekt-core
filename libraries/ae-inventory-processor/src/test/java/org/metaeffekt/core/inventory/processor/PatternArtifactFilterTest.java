@@ -15,8 +15,8 @@
  */
 package org.metaeffekt.core.inventory.processor;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.metaeffekt.core.inventory.processor.model.Artifact;
 import org.metaeffekt.core.inventory.processor.model.PatternArtifactFilter;
 
@@ -31,14 +31,14 @@ public class PatternArtifactFilterTest {
         patternArtifactFilter.setIncludePatterns(null);
         patternArtifactFilter.setExcludePatterns(null);
         Artifact defaultArtifact = createExampleArtifact();
-        Assert.assertTrue(patternArtifactFilter.filter(defaultArtifact));
+        Assertions.assertTrue(patternArtifactFilter.filter(defaultArtifact));
     }
 
     @Test
     public void testIncludeAndExclude_NotInitialized() {
         PatternArtifactFilter patternArtifactFilter = new PatternArtifactFilter();
         Artifact defaultArtifact = createExampleArtifact();
-        Assert.assertTrue(patternArtifactFilter.filter(defaultArtifact));
+        Assertions.assertTrue(patternArtifactFilter.filter(defaultArtifact));
     }
 
     @Test
@@ -46,7 +46,7 @@ public class PatternArtifactFilterTest {
         PatternArtifactFilter patternArtifactFilter = new PatternArtifactFilter();
         patternArtifactFilter.addIncludePattern(ASTERISK);
         Artifact defaultArtifact = createExampleArtifact();
-        Assert.assertTrue(patternArtifactFilter.filter(defaultArtifact));
+        Assertions.assertTrue(patternArtifactFilter.filter(defaultArtifact));
     }
 
     @Test
@@ -55,7 +55,7 @@ public class PatternArtifactFilterTest {
         patternArtifactFilter.addIncludePatterns(ASTERISK);
         patternArtifactFilter.addExcludePatterns("*:artifact:*");
         Artifact defaultArtifact = createExampleArtifact();
-        Assert.assertFalse(patternArtifactFilter.filter(defaultArtifact));
+        Assertions.assertFalse(patternArtifactFilter.filter(defaultArtifact));
     }
 
     @Test
@@ -64,7 +64,7 @@ public class PatternArtifactFilterTest {
         patternArtifactFilter.addIncludePattern(ASTERISK);
         patternArtifactFilter.addExcludePattern("*:nomatch:*");
         Artifact defaultArtifact = createExampleArtifact();
-        Assert.assertTrue(patternArtifactFilter.filter(defaultArtifact));
+        Assertions.assertTrue(patternArtifactFilter.filter(defaultArtifact));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class PatternArtifactFilterTest {
         PatternArtifactFilter patternArtifactFilter = new PatternArtifactFilter();
         patternArtifactFilter.addIncludePattern("^org\\.metaeffekt\\..*:*");
         Artifact defaultArtifact = createExampleArtifact();
-        Assert.assertTrue(patternArtifactFilter.filter(defaultArtifact));
+        Assertions.assertTrue(patternArtifactFilter.filter(defaultArtifact));
     }
 
     private Artifact createExampleArtifact() {
