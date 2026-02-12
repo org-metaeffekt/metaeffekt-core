@@ -42,7 +42,7 @@ public class XlsxInventoryWriter extends AbstractXlsxInventoryWriter {
     }
 
     public void writeInventory(Inventory inventory, File file) throws IOException {
-        final SXSSFWorkbook workbook = new SXSSFWorkbook();
+        final SXSSFWorkbook workbook = new SXSSFWorkbook(null, 100, true, true);
         final XlsxXSSFInventorySheetCellStylers stylers = new XlsxXSSFInventorySheetCellStylers(workbook);
 
         writeArtifacts(inventory, workbook, stylers);
