@@ -25,6 +25,7 @@ import org.metaeffekt.core.inventory.processor.model.Inventory;
 import org.metaeffekt.core.inventory.processor.reader.InventoryReader;
 import org.metaeffekt.core.inventory.processor.report.AnnexResourceProcessor;
 import org.metaeffekt.core.inventory.processor.report.configuration.ReportConfigurationParameters;
+import org.metaeffekt.core.maven.kernel.log.MavenLogAdapter;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,12 +59,20 @@ public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        // Validate mandatory inputs
+        // adapt maven logging to underlying logging facade
+        MavenLogAdapter.initialize(getLog());
+
+        // skip for pom packaging modules
+        if (isPomPackagingProject()) {
+            return;
+        }
+
+        // validate mandatory inputs
         if (inventoryFile == null || !inventoryFile.exists()) {
             throw new MojoExecutionException("Inventory file is missing or invalid: " + inventoryFile);
         }
 
-        // Check if the path is null, empty, or contains an unexpanded Maven placeholder
+        // check if the path is null, empty, or contains an unexpanded Maven placeholder
         if (isInvalidPath(targetComponentDir)) {
             File defaultDir = new File(getProject().getBuild().getDirectory(), "inventory/components");
             getLog().warn("Target component directory is not set or invalid. Falling back to: " + defaultDir);
@@ -76,7 +85,7 @@ public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
             this.targetLicenseDir = defaultDir;
         }
 
-        // Sanitize reference paths (ensure they aren't "${...}")
+        // sanitize reference paths (ensure they aren't "${...}")
         if (isInvalidString(referenceComponentPath)) {
             this.referenceComponentPath = "components";
         }
