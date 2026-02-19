@@ -30,7 +30,7 @@ import java.io.File;
 import java.io.IOException;
 
 @Mojo(name = "aggregate-annex-folders", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
-public class AnnexResourceMojo extends AbstractMojo {
+public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
 
     @Parameter(required = true)
     private File inventoryFile;
@@ -56,9 +56,6 @@ public class AnnexResourceMojo extends AbstractMojo {
     @Parameter
     private boolean failOnMissingLicenseFile = true;
 
-    @Parameter(defaultValue = "${project}", readonly = true)
-    private org.apache.maven.project.MavenProject project;
-
     @Override
     public void execute() throws MojoExecutionException {
         // Validate mandatory inputs
@@ -68,13 +65,13 @@ public class AnnexResourceMojo extends AbstractMojo {
 
         // Check if the path is null, empty, or contains an unexpanded Maven placeholder
         if (isInvalidPath(targetComponentDir)) {
-            File defaultDir = new File(project.getBuild().getDirectory(), "inventory/components");
+            File defaultDir = new File(getProject().getBuild().getDirectory(), "inventory/components");
             getLog().warn("Target component directory is not set or invalid. Falling back to: " + defaultDir);
             this.targetComponentDir = defaultDir;
         }
 
         if (isInvalidPath(targetLicenseDir)) {
-            File defaultDir = new File(project.getBuild().getDirectory(), "inventory/licenses");
+            File defaultDir = new File(getProject().getBuild().getDirectory(), "inventory/licenses");
             getLog().warn("Target license directory is not set or invalid. Falling back to: " + defaultDir);
             this.targetLicenseDir = defaultDir;
         }

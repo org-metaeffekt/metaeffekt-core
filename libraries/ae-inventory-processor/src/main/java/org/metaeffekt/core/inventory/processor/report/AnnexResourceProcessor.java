@@ -60,10 +60,10 @@ public class AnnexResourceProcessor {
     }
 
     public boolean execute() {
-        // Enrich the local inventory with reference data
+        // enrich the local inventory with reference data
         enrichInventory();
 
-        // Perform folder creation
+        // perform folder creation
         final Set<String> reportedSourceFolders = new HashSet<>();
         boolean missingFiles = false;
 
@@ -85,7 +85,7 @@ public class AnnexResourceProcessor {
 
             boolean isUndefinedVersion = version == null;
 
-            // Resolve license metadata from the now-enriched inventory
+            // resolve license metadata from the now-enriched inventory
             final LicenseMetaData matchingLicenseMetaData = inventory.
                     findMatchingLicenseMetaData(componentName, sourceLicense, version);
 
@@ -93,7 +93,8 @@ public class AnnexResourceProcessor {
             if (matchingLicenseMetaData != null) {
                 effectiveLicense = matchingLicenseMetaData.deriveLicenseInEffect();
             }
-            // Normalize license string for folder splitting
+
+            // normalize license string for folder splitting
             effectiveLicense = effectiveLicense.replaceAll("\\s*,\\s*", "|");
 
             final String versionUnspecificComponentFolder = LicenseMetaData.deriveComponentFolderName(componentName);
@@ -105,7 +106,7 @@ public class AnnexResourceProcessor {
             final String targetPath = (isArtifactVersionWildcard || isUndefinedVersion) ?
                     versionUnspecificComponentFolder : versionSpecificComponentFolder;
 
-            // Copy logic
+            // copy logic
             if (targetComponentDir != null) {
                 missingFiles |= checkAndCopyComponentFolder(sourcePath,
                         new File(targetComponentDir, targetPath), reportedSourceFolders);
@@ -119,8 +120,7 @@ public class AnnexResourceProcessor {
                     missingFiles |= checkAndCopyLicenseFolder(licenseFolderName,
                             licenseTargetDir, reportedSourceFolders);
 
-                    missingFiles |= checkAndCopyComponentFolder(sourcePath,
-                            new File(licenseTargetDir, targetPath), reportedSourceFolders);
+                    // NOTE: we do not copy the component files to the license folders anymore.
                 }
             }
         }
@@ -171,7 +171,7 @@ public class AnnexResourceProcessor {
     }
 
     private void copyFolderContent(File sourceRootDir, String sourcePath, File targetDir) {
-        log.info("copied {} from {} to {}", sourceRootDir, sourcePath, targetDir);
+        log.info("Copied [{}] from [{}] to [{}].", sourceRootDir, sourcePath, targetDir);
         Copy copy = new Copy();
         copy.setProject(new Project());
         FileSet fileSet = new FileSet();
