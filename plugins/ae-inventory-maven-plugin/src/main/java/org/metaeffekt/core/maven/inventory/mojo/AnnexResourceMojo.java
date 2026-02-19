@@ -62,11 +62,6 @@ public class AnnexResourceMojo extends AbstractProjectAwareConfiguredMojo {
         // adapt maven logging to underlying logging facade
         MavenLogAdapter.initialize(getLog());
 
-        // skip for pom packaging modules
-        if (isPomPackagingProject()) {
-            return;
-        }
-
         // validate mandatory inputs
         if (inventoryFile == null || !inventoryFile.exists()) {
             throw new MojoExecutionException("Inventory file is missing or invalid: " + inventoryFile);
